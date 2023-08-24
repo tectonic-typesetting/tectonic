@@ -24,7 +24,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 
 /*22: */
 
-typedef size_t buf_pointer;
 typedef size_t pool_pointer;
 typedef size_t hash_loc;
 typedef size_t cite_number;
@@ -108,7 +107,7 @@ static void x_equals(ExecCtx* ctx)
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
     if (ctx->pop1.tag != ctx->pop2.tag) {
-        if ((ctx->pop1.tag != STK_TYPE_ILLEGAL) && (ctx->pop2.tag != STK_TYPE_ILLEGAL)) {
+        if ((ctx->pop1.tag != ExecVal_Illegal) && (ctx->pop2.tag != ExecVal_Illegal)) {
             unwrap(print_stk_lit(ctx->pop1));
             puts_log(", ");
             unwrap(print_stk_lit(ctx->pop2));
@@ -117,14 +116,14 @@ static void x_equals(ExecCtx* ctx)
             unwrap(bst_ex_warn_print(ctx));
         }
         push_lit_stk(ctx, int_val(0));
-    } else if ((ctx->pop1.tag != STK_TYPE_INTEGER) && (ctx->pop1.tag != STK_TYPE_STRING)) {
-        if (ctx->pop1.tag != STK_TYPE_ILLEGAL) {
+    } else if ((ctx->pop1.tag != ExecVal_Integer) && (ctx->pop1.tag != ExecVal_String)) {
+        if (ctx->pop1.tag != ExecVal_Illegal) {
             unwrap(print_stk_lit(ctx->pop1));
             puts_log(", not an integer or a string,");
             unwrap(bst_ex_warn_print(ctx));
         }
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop1.tag == STK_TYPE_INTEGER) {
+    } else if (ctx->pop1.tag == ExecVal_Integer) {
 
         if (ctx->pop2.integer == ctx->pop1.integer)
             push_lit_stk(ctx, int_val(1));
@@ -140,10 +139,10 @@ static void x_greater_than(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
     } else if (ctx->pop2.integer > ctx->pop1.integer) {
@@ -157,10 +156,10 @@ static void x_less_than(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
     } else if (ctx->pop2.integer < ctx->pop1.integer)
@@ -173,10 +172,10 @@ static void x_plus(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
     } else
@@ -187,10 +186,10 @@ static void x_minus(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
     } else
@@ -202,10 +201,10 @@ static void x_concatenate(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.tag != STK_TYPE_STRING) {
+    } else if (ctx->pop2.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {                    /*352: */
@@ -330,7 +329,7 @@ static void x_gets(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_FUNCTION)
+    if (ctx->pop1.tag != ExecVal_Function)
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION));
     else if (((!ctx->mess_with_entries)
               && ((fn_type(ctx->pop1.function) == FN_CLASS_STR_ENTRY_VAR ) || (fn_type(ctx->pop1.function) == FN_CLASS_INT_ENTRY_VAR ))))
@@ -338,14 +337,14 @@ static void x_gets(ExecCtx* ctx)
     else
         switch ((fn_type(ctx->pop1.function))) {
         case FN_CLASS_INT_ENTRY_VAR:
-            if (ctx->pop2.tag != STK_TYPE_INTEGER)
+            if (ctx->pop2.tag != ExecVal_Integer)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
             else
                 set_entry_ints(cite_ptr() * num_ent_ints() + ilk_info(ctx->pop1.function), /*:356 */ ctx->pop2.integer);
             break;
         case FN_CLASS_STR_ENTRY_VAR:
             {
-                if (ctx->pop2.tag != STK_TYPE_STRING)
+                if (ctx->pop2.tag != ExecVal_String)
                     unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
                 else {
 
@@ -372,13 +371,13 @@ static void x_gets(ExecCtx* ctx)
             }
             break;
         case FN_CLASS_INT_GLBL_VAR:
-            if (ctx->pop2.tag != STK_TYPE_INTEGER)
+            if (ctx->pop2.tag != ExecVal_Integer)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
             else
                 set_ilk_info(ctx->pop1.function, /*:359 */ ctx->pop2.integer);
             break;
         case FN_CLASS_STR_GLBL_VAR:
-            if (ctx->pop2.tag != STK_TYPE_STRING) {
+            if (ctx->pop2.tag != ExecVal_String) {
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
             } else {
                 int32_t str_glb_ptr = ilk_info(ctx->pop1.function);
@@ -417,7 +416,7 @@ static void x_add_period(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) == 0)
@@ -483,15 +482,15 @@ static void x_add_period(ExecCtx* ctx)
 
 static void x_change_case(ExecCtx* ctx)
 {
-    buf_pointer tmp_ptr;
+    BufPointer tmp_ptr;
     bool prev_colon = false;
 
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.tag != STK_TYPE_STRING) {
+    } else if (ctx->pop2.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
@@ -548,12 +547,12 @@ static void x_change_case(ExecCtx* ctx)
                         while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)) {
 
                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                            buf_pointer ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
+                            BufPointer ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
                             while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (LEX_CLASS[bib_buf_at_offset(BUF_TY_EX, 1)] == LEX_CLASS_ALPHA ))
                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                             LookupRes hash = unwrap_lookup(
                                     str_lookup(BUF_TY_EX, ex_buf_xptr, bib_buf_offset(BUF_TY_EX, 1) - ex_buf_xptr,
-                                               14 /*control_seq_ilk */ , false));
+                                               STR_ILK_CONTROL_SEQ, false));
                             hash_loc control_seq_loc = hash.loc;
                             if (hash.exists) { /*373: */
                                 switch ((conversion_type)) {
@@ -691,7 +690,7 @@ static void x_change_case(ExecCtx* ctx)
 static void x_chr_to_int(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, int_val(0));
     } else if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) != 1) {
@@ -715,7 +714,7 @@ static void x_cite(ExecCtx* ctx)
 static void x_duplicate(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         push_lit_stk(ctx, ctx->pop1);
         push_lit_stk(ctx, ctx->pop1);
     } else {
@@ -790,17 +789,17 @@ static void x_format_name(ExecCtx* ctx)
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
     unwrap(pop_lit_stk(ctx, &ctx->pop3));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop3.tag != STK_TYPE_STRING) {
+    } else if (ctx->pop3.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
-        buf_pointer ex_buf_xptr = 0;
+        BufPointer ex_buf_xptr = 0;
         bib_set_buf_len(BUF_TY_EX, 0);
         add_buf_pool(ctx->pop3.string);
         {
@@ -826,7 +825,7 @@ static void x_format_name(ExecCtx* ctx)
                 }
             }
         }
-        buf_pointer num_tokens = 0, comma1 = 0, comma2 = 0, num_commas = 0, name_bf_ptr = 0;
+        BufPointer num_tokens = 0, comma1 = 0, comma2 = 0, num_commas = 0, name_bf_ptr = 0;
         {
             {
                 while (bib_buf_offset(BUF_TY_EX, 1) > ex_buf_xptr)
@@ -944,7 +943,7 @@ static void x_format_name(ExecCtx* ctx)
                 }
             set_name_tok(num_tokens, name_bf_ptr);
         }
-        buf_pointer first_start = 0, first_end = 0, last_end = 0, von_start = 0, von_end = 0, jr_end = 0, name_bf_xptr = 0;
+        BufPointer first_start = 0, first_end = 0, last_end = 0, von_start = 0, von_end = 0, jr_end = 0, name_bf_xptr = 0;
         {
             if (num_commas == 0) {
                 first_start = 0;
@@ -1002,7 +1001,7 @@ static void x_format_name(ExecCtx* ctx)
 static void x_int_to_chr(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else if ((ctx->pop1.integer < 0) || (ctx->pop1.integer > 127)) {
@@ -1026,7 +1025,7 @@ static void x_int_to_chr(ExecCtx* ctx)
 static void x_int_to_str(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
@@ -1040,14 +1039,14 @@ static void x_missing(ExecCtx* ctx)
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     if (!ctx->mess_with_entries)
         unwrap(bst_cant_mess_with_entries_print(ctx));
-    else if ((ctx->pop1.tag != STK_TYPE_STRING) && (ctx->pop1.tag != STK_TYPE_MISSING)) {
-        if (ctx->pop1.tag != STK_TYPE_ILLEGAL) {
+    else if ((ctx->pop1.tag != ExecVal_String) && (ctx->pop1.tag != ExecVal_Missing)) {
+        if (ctx->pop1.tag != ExecVal_Illegal) {
             unwrap(print_stk_lit(ctx->pop1));
             puts_log(", not a string or missing field,");
             unwrap(bst_ex_warn_print(ctx));
         }
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop1.tag == STK_TYPE_MISSING)
+    } else if (ctx->pop1.tag == ExecVal_Missing)
         push_lit_stk(ctx, int_val(1));
     else
         push_lit_stk(ctx, int_val(0));
@@ -1056,7 +1055,7 @@ static void x_missing(ExecCtx* ctx)
 static void x_num_names(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, int_val(0));
     } else {
@@ -1088,7 +1087,7 @@ static void x_preamble(ExecCtx* ctx)
 static void x_purify(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
@@ -1097,7 +1096,7 @@ static void x_purify(ExecCtx* ctx)
         add_buf_pool(ctx->pop1.string);
         {
             int32_t brace_level = 0;
-            buf_pointer ex_buf_xptr = 0;
+            BufPointer ex_buf_xptr = 0;
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
 
@@ -1126,13 +1125,13 @@ static void x_purify(ExecCtx* ctx)
                                 while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)) {
 
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                    buf_pointer ex_buf_yptr = bib_buf_offset(BUF_TY_EX, 1);
+                                    BufPointer ex_buf_yptr = bib_buf_offset(BUF_TY_EX, 1);
                                     while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
                                             && (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))] == LEX_CLASS_ALPHA )))
                                         bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
                                     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_EX, ex_buf_yptr,
                                                                               bib_buf_offset(BUF_TY_EX, 1) -
-                                                                              ex_buf_yptr, 14 /*control_seq_ilk */ ,
+                                                                              ex_buf_yptr, STR_ILK_CONTROL_SEQ,
                                                                               false));
                                     hash_loc control_seq_loc = hash.loc;
                                     if (hash.exists) { /*434: */
@@ -1213,13 +1212,13 @@ static void x_substring(ExecCtx* ctx)
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
     unwrap(pop_lit_stk(ctx, &ctx->pop3));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop3.tag != STK_TYPE_STRING) {
+    } else if (ctx->pop3.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
@@ -1288,14 +1287,14 @@ static void x_swap(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if ((ctx->pop1.tag != STK_TYPE_STRING ) || (ctx->pop1.string < ctx->bib_str_ptr)) {
+    if ((ctx->pop1.tag != ExecVal_String ) || (ctx->pop1.string < ctx->bib_str_ptr)) {
         push_lit_stk(ctx, ctx->pop1);
-        if ((ctx->pop2.tag == STK_TYPE_STRING ) && (ctx->pop2.string >= ctx->bib_str_ptr)) {
+        if ((ctx->pop2.tag == ExecVal_String ) && (ctx->pop2.string >= ctx->bib_str_ptr)) {
             bib_set_str_ptr(bib_str_ptr() + 1);
             bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
         }
         push_lit_stk(ctx, ctx->pop2);
-    } else if ((ctx->pop2.tag != STK_TYPE_STRING ) || (ctx->pop2.string < ctx->bib_str_ptr)) {
+    } else if ((ctx->pop2.tag != ExecVal_String ) || (ctx->pop2.string < ctx->bib_str_ptr)) {
         {
             bib_set_str_ptr(bib_str_ptr() + 1);
             bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
@@ -1326,12 +1325,12 @@ static void x_text_length(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
 
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
 
-        buf_pointer num_text_chars = 0;
+        BufPointer num_text_chars = 0;
         {
             sp_ptr = bib_str_start(ctx->pop1.string);
             sp_end = bib_str_start(ctx->pop1.string + 1);
@@ -1373,10 +1372,10 @@ static void x_text_prefix(ExecCtx* ctx)
 
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != ExecVal_Integer) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.tag != STK_TYPE_STRING) {
+    } else if (ctx->pop2.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else if (ctx->pop1.integer <= 0) {
@@ -1387,7 +1386,7 @@ static void x_text_prefix(ExecCtx* ctx)
         sp_ptr = bib_str_start(ctx->pop2.string);
         sp_end = bib_str_start(ctx->pop2.string + 1);
         {
-            buf_pointer num_text_chars = 0;
+            BufPointer num_text_chars = 0;
             pool_pointer sp_xptr1 = sp_ptr;
             while ((sp_xptr1 < sp_end) && (num_text_chars < (size_t)ctx->pop1.integer)) {
 
@@ -1457,7 +1456,7 @@ static void x_type(ExecCtx* ctx)
 static void x_warning(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING)
+    if (ctx->pop1.tag != ExecVal_String)
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
     else {
         puts_log("Warning--");
@@ -1469,7 +1468,7 @@ static void x_warning(ExecCtx* ctx)
 static void x_width(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != ExecVal_String) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, int_val(0));
     } else {
@@ -1491,7 +1490,7 @@ static void x_width(ExecCtx* ctx)
                             while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)) {
 
                                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                buf_pointer ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
+                                BufPointer ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
                                 while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
                                         && (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))] == LEX_CLASS_ALPHA )))
                                     bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
@@ -1500,7 +1499,7 @@ static void x_width(ExecCtx* ctx)
                                 else {
                                     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr,
                                                                               bib_buf_offset(BUF_TY_EX, 1) -
-                                                                              ex_buf_xptr, 14 /*control_seq_ilk */ ,
+                                                                              ex_buf_xptr, STR_ILK_CONTROL_SEQ ,
                                                                               false));
                                     hash_loc control_seq_loc = hash.loc;
                                     if (hash.exists) { /*454: */
@@ -1562,7 +1561,7 @@ static void x_width(ExecCtx* ctx)
 static void x_write(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != STK_TYPE_STRING)
+    if (ctx->pop1.tag != ExecVal_String)
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
     else
         add_out_pool(ctx->glbl_ctx, ctx->pop1.string);
@@ -1631,11 +1630,11 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(pop_lit_stk(ctx, &ctx->pop1));
             unwrap(pop_lit_stk(ctx, &ctx->pop2));
             unwrap(pop_lit_stk(ctx, &ctx->pop3));
-            if (ctx->pop1.tag != STK_TYPE_FUNCTION)
+            if (ctx->pop1.tag != ExecVal_Function)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION));
-            else if (ctx->pop2.tag != STK_TYPE_FUNCTION)
+            else if (ctx->pop2.tag != ExecVal_Function)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_FUNCTION));
-            else if (ctx->pop3.tag != STK_TYPE_INTEGER)
+            else if (ctx->pop3.tag != ExecVal_Integer)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_INTEGER));
             else if (ctx->pop3.integer > 0)
                 execute_fn(ctx, ctx->pop2.function);
@@ -1700,16 +1699,16 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 ExecVal r_pop1, r_pop2;
                 unwrap(pop_lit_stk(ctx, &r_pop1));
                 unwrap(pop_lit_stk(ctx, &r_pop2));
-                if (r_pop1.tag != STK_TYPE_FUNCTION)
+                if (r_pop1.tag != ExecVal_Function)
                     unwrap(print_wrong_stk_lit(ctx, r_pop1, STK_TYPE_FUNCTION));
-                else if (r_pop2.tag != STK_TYPE_FUNCTION)
+                else if (r_pop2.tag != ExecVal_Function)
                     unwrap(print_wrong_stk_lit(ctx, r_pop2, STK_TYPE_FUNCTION));
                 else
                     while (true) {
 
                         execute_fn(ctx, r_pop2.function);
                         unwrap(pop_lit_stk(ctx, &ctx->pop1));
-                        if (ctx->pop1.tag != STK_TYPE_INTEGER) {
+                        if (ctx->pop1.tag != ExecVal_Integer) {
                             unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
                             goto lab51;
                         } else if (ctx->pop1.integer > 0)
@@ -1853,7 +1852,7 @@ static void aux_bib_data_command(Bibtex* ctx)
 
         LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                                   (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  6 /*bib_file_ilk */ , true));
+                                                  STR_ILK_BIB_FILE, true));
         set_cur_bib(hash_text(hash.loc));
         if (hash.exists) {
             puts_log("This database file appears more than once: ");
@@ -1904,7 +1903,7 @@ static void aux_bib_style_command(Bibtex* ctx)
 
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              5 /*bst_file_ilk */ , true));
+                                              STR_ILK_BST_FILE, true));
     ctx->bst_str = hash_text(hash.loc);
     if (hash.exists) {
         puts_log("Already encountered style file");
@@ -1932,7 +1931,7 @@ static void aux_bib_style_command(Bibtex* ctx)
 
 static void aux_citation_command(Bibtex* ctx)
 {
-    buf_pointer tmp_ptr;
+    BufPointer tmp_ptr;
 
     ctx->citation_seen = true;
     while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
@@ -1974,12 +1973,12 @@ static void aux_citation_command(Bibtex* ctx)
         lower_case(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
         LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1),
                                                   (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  10 /*lc_cite_ilk */ , true));
+                                                  STR_ILK_LC_CITE, true));
         cite_number lc_cite_loc = hash.loc;
         if (hash.exists) { /*136: */
             hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                             (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                            9 /*cite_ilk */ , false));
+                                            STR_ILK_CITE, false));
             if (!hash.exists) {
                 puts_log("Case mismatch error between cite keys ");
                 print_a_token();
@@ -1992,7 +1991,7 @@ static void aux_citation_command(Bibtex* ctx)
         } else {            /*137: */
             hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                             (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                            9 /*cite_ilk */ , true));
+                                            STR_ILK_CITE, true));
             cite_number cite_loc = hash.loc;
             if (hash.exists) {
                 hash_cite_confusion();
@@ -2054,7 +2053,7 @@ static void aux_input_command(Bibtex* ctx)
     }
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              3 /*aux_file_ilk */ , true));
+                                              STR_ILK_AUX_FILE, true));
     set_cur_aux(hash_text(hash.loc));
     if (hash.exists) {
         puts_log("Already encountered file ");
@@ -2104,7 +2103,7 @@ static void get_aux_command_and_process(Bibtex* ctx)
         return;
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              2 /*aux_command_ilk */ , false));
+                                              STR_ILK_AUX_COMMAND, false));
     int32_t command_num = ilk_info(hash.loc);
     if (hash.exists)
         switch ((command_num)) {
@@ -2201,7 +2200,7 @@ static void bst_entry_command(Bibtex* ctx)
         lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
         LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                                   (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  11 /*bst_fn_ilk */ , true));
+                                                  STR_ILK_BST_FN, true));
         hash_loc fn_loc = hash.loc;
         if (hash.exists) {
             unwrap(already_seen_function_print(ctx, fn_loc));
@@ -2255,7 +2254,7 @@ static void bst_entry_command(Bibtex* ctx)
         lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
         LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                                   (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  11 /*bst_fn_ilk */ , true));
+                                                  STR_ILK_BST_FN, true));
         hash_loc fn_loc = hash.loc;
         if (hash.exists) {
             unwrap(already_seen_function_print(ctx, fn_loc));
@@ -2305,7 +2304,7 @@ static void bst_entry_command(Bibtex* ctx)
         lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
         LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                                   (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  11 /*bst_fn_ilk */ , true));
+                                                  STR_ILK_BST_FN, true));
         hash_loc fn_loc = hash.loc;
         if (hash.exists) {
             unwrap(already_seen_function_print(ctx, fn_loc));
@@ -2330,7 +2329,7 @@ static bool bad_argument_token(Bibtex* ctx, hash_loc* fn_out)
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              11 /*bst_fn_ilk */ , false));
+                                              STR_ILK_BST_FN, false));
     hash_loc fn_loc = hash.loc;
     if (fn_out != NULL) {
         *fn_out = fn_loc;
@@ -2446,7 +2445,7 @@ static void bst_function_command(ExecCtx* ctx)
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              11 /*bst_fn_ilk */ , true));
+                                              STR_ILK_BST_FN, true));
     wiz_loc = hash.loc;
     if (hash.exists) {
         unwrap(already_seen_function_print(ctx->glbl_ctx, wiz_loc));
@@ -2519,7 +2518,7 @@ static void bst_integers_command(Bibtex* ctx)
         lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
         LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                                   (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  11 /*bst_fn_ilk */ , true));
+                                                  STR_ILK_BST_FN, true));
         hash_loc fn_loc = hash.loc;
         if (hash.exists) {
             unwrap(already_seen_function_print(ctx, fn_loc));
@@ -2639,7 +2638,7 @@ static void bst_macro_command(Bibtex* ctx)
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              13 /*macro_ilk */ , true));
+                                              STR_ILK_MACRO, true));
     macro_name_loc = hash.loc;
     if (hash.exists) {
         print_a_token();
@@ -2693,7 +2692,7 @@ static void bst_macro_command(Bibtex* ctx)
     }
 
     hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                    (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), 0 /*text_ilk */ ,
+                                    (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), STR_ILK_TEXT,
                                     true));
     hash_loc macro_def_loc = hash.loc;
     set_fn_type(macro_def_loc, FN_CLASS_STR_LIT);
@@ -2716,7 +2715,7 @@ static void bst_macro_command(Bibtex* ctx)
 
 static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macro_loc, hash_loc* field_name_loc)
 {
-    buf_pointer tmp_ptr, tmp_end_ptr;
+    BufPointer tmp_ptr, tmp_end_ptr;
     int32_t command_num = 0;
     cite_number lc_cite_loc = 0;
     hash_loc entry_type_loc = 0;
@@ -2753,7 +2752,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              12 /*bib_command_ilk */ , false));
+                                              STR_ILK_BIB_COMMAND, false));
     command_num = ilk_info(hash.loc);
     if (hash.exists) {     /*240: */
         at_bib_command = true;
@@ -2822,7 +2821,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
             lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
             hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                             (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                            13 /*macro_ilk */ , true));
+                                            STR_ILK_MACRO, true));
             *cur_macro_loc = hash.loc;
             set_ilk_info(*cur_macro_loc, hash_text(*cur_macro_loc));
             if (!eat_bib_white_space()) {
@@ -2858,7 +2857,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
     } else {
         hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                         (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                        11 /*bst_fn_ilk */ , false));
+                                        STR_ILK_BST_FN, false));
         entry_type_loc = hash.loc;
         if ((!hash.exists) || (fn_type(entry_type_loc) != FN_CLASS_WIZARD))
             type_exists = false;
@@ -2897,7 +2896,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
     lower_case(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     hash = unwrap_lookup(str_lookup(BUF_TY_EX, bib_buf_offset(BUF_TY_BASE, 1),
                                     (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                    10 /*lc_cite_ilk */ , ctx->all_entries));
+                                    STR_ILK_LC_CITE, ctx->all_entries));
     lc_cite_loc = hash.loc;
     if (hash.exists) {
         set_entry_cite_ptr(ilk_info(ilk_info(lc_cite_loc)));
@@ -2906,7 +2905,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
                 if ((!ctx->all_entries) && (entry_cite_ptr() >= old_num_cites())) {
                     hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                                     (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                    9 /*cite_ilk */ , true));
+                                                    STR_ILK_CITE, true));
                     cite_number cite_loc = hash.loc;
                     if (!hash.exists) {
                         set_ilk_info(lc_cite_loc, cite_loc);
@@ -2932,7 +2931,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
                         bib_str_start(cite_info(entry_cite_ptr()))));
             hash = unwrap_lookup(str_lookup(BUF_TY_EX, 0,
                                             (bib_str_start(cite_info(entry_cite_ptr()) + 1) -
-                                             bib_str_start(cite_info(entry_cite_ptr()))), 10 /*lc_cite_ilk */ , false));
+                                             bib_str_start(cite_info(entry_cite_ptr()))), STR_ILK_LC_CITE, false));
             if (!hash.exists) {
                 cite_key_disappeared_confusion();
                 longjmp(error_jmpbuf, 1);
@@ -2964,7 +2963,7 @@ lab26:                        /*first_time_entry */ ;
         } else {
             hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                             (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                            9 /*cite_ilk */ , true));
+                                            STR_ILK_CITE, true));
             cite_loc = hash.loc;
             if (hash.exists) {
                 hash_cite_confusion();
@@ -3019,7 +3018,7 @@ lab22:                        /*cite_already_set */ ;
             lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
             hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                             (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                            11 /*bst_fn_ilk */ , false));
+                                            STR_ILK_BST_FN, false));
             *field_name_loc = hash.loc;
             if (hash.exists) {
                 if (fn_type(*field_name_loc) == FN_CLASS_FIELD)
@@ -3050,7 +3049,7 @@ loop_exit:
 
 static void bst_read_command(Bibtex* ctx)
 {
-    buf_pointer tmp_ptr;
+    BufPointer tmp_ptr;
 
     if (ctx->read_seen) {
         puts_log("Illegal, another read command");
@@ -3064,8 +3063,8 @@ static void bst_read_command(Bibtex* ctx)
         return;
     }
 
-    buf_pointer sv_offset1 = bib_buf_offset(BUF_TY_BASE, 2);
-    buf_pointer sv_offset2 = bib_buf_len(BUF_TY_BASE);
+    BufPointer sv_offset1 = bib_buf_offset(BUF_TY_BASE, 2);
+    BufPointer sv_offset2 = bib_buf_len(BUF_TY_BASE);
     tmp_ptr = sv_offset1;
     while (tmp_ptr < sv_offset2) {
 
@@ -3406,7 +3405,7 @@ bst_strings_command(Bibtex* ctx)
         lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1));
         LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                                   bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1),
-                                                  11 /*bst_fn_ilk */ , true));
+                                                  STR_ILK_BST_FN, true));
         hash_loc fn_loc = hash.loc;
         if (hash.exists) {
             unwrap(already_seen_function_print(ctx, fn_loc));
@@ -3444,7 +3443,7 @@ get_bst_command_and_process(ExecCtx* ctx)
     lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
     LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              4 /*bst_command_ilk */ , false));
+                                              STR_ILK_BST_COMMAND, false));
     int32_t command_num = ilk_info(hash.loc);
     if (!hash.exists) {
         print_a_token();

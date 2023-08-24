@@ -324,6 +324,7 @@ pub mod c_api {
         lc_found: bool,
     }
 
+    /// cbindgen:rename-all=ScreamingSnakeCase
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
     #[repr(u8)]
     pub enum StrIlk {

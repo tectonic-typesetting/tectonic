@@ -16,7 +16,6 @@ use crate::{
     },
     BibtexError,
 };
-use std::mem;
 
 const LIT_STK_SIZE: usize = 100;
 
@@ -51,7 +50,7 @@ pub enum ExecVal {
 
 impl ExecVal {
     fn empty() -> ExecVal {
-        unsafe { mem::zeroed() }
+        ExecVal::Integer(0)
     }
 
     #[no_mangle]
@@ -83,7 +82,7 @@ impl ExecVal {
     }
 }
 
-// SAFETY: StkType is valid as 0 because of StkType::Integer, i32 is always valid as 0
+// SAFETY: We require our zero discriminant to be an integer, which is valid for any bit pattern, including 0
 unsafe impl SafelyZero for ExecVal {}
 
 #[repr(C)]

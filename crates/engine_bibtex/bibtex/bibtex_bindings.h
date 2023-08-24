@@ -83,20 +83,20 @@ enum StrIlk
   : uint8_t
 #endif // __cplusplus
  {
-  StrIlk_Text = 0,
-  StrIlk_Integer = 1,
-  StrIlk_AuxCommand = 2,
-  StrIlk_AuxFile = 3,
-  StrIlk_BstCommand = 4,
-  StrIlk_BstFile = 5,
-  StrIlk_BibFile = 6,
-  StrIlk_FileExt = 7,
-  StrIlk_Cite = 9,
-  StrIlk_LcCite = 10,
-  StrIlk_BstFn = 11,
-  StrIlk_BibCommand = 12,
-  StrIlk_Macro = 13,
-  StrIlk_ControlSeq = 14,
+  STR_ILK_TEXT = 0,
+  STR_ILK_INTEGER = 1,
+  STR_ILK_AUX_COMMAND = 2,
+  STR_ILK_AUX_FILE = 3,
+  STR_ILK_BST_COMMAND = 4,
+  STR_ILK_BST_FILE = 5,
+  STR_ILK_BIB_FILE = 6,
+  STR_ILK_FILE_EXT = 7,
+  STR_ILK_CITE = 9,
+  STR_ILK_LC_CITE = 10,
+  STR_ILK_BST_FN = 11,
+  STR_ILK_BIB_COMMAND = 12,
+  STR_ILK_MACRO = 13,
+  STR_ILK_CONTROL_SEQ = 14,
 };
 #ifndef __cplusplus
 typedef uint8_t StrIlk;
