@@ -7,18 +7,16 @@ use crate::{
         history::mark_error,
         log::{
             brace_lvl_one_letters_complaint, braces_unbalanced_complaint, print_a_pool_str,
-            print_confusion, write_logs,
+            print_confusion, rs_print_a_pool_str, write_logs,
         },
-        pool::{
-            bib_set_pool_ptr, bib_set_str_ptr, bib_str_ptr, bib_str_start, with_pool,
-            with_pool_mut, StringPool,
-        },
+        pool::{with_pool, with_pool_mut, StringPool},
         scan::enough_text_chars,
         xbuf::{SafelyZero, XBuf},
         ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrNumber,
     },
     BibtexError,
 };
+use std::mem;
 
 const LIT_STK_SIZE: usize = 100;
 
@@ -34,50 +32,53 @@ pub enum StkType {
     Illegal = 4,
 }
 
-#[derive(Copy, Clone, PartialEq)]
-#[repr(C)]
-pub struct ExecVal {
-    pub typ: StkType,
-    pub lit: i32,
+// #[derive(Copy, Clone, PartialEq)]
+// #[repr(C)]
+// pub struct ExecVal {
+//     pub typ: StkType,
+//     pub lit: i32,
+// }
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(u8)]
+pub enum ExecVal {
+    Integer(i32) = 0,
+    String(StrNumber) = 1,
+    Function(HashPointer) = 2,
+    Missing(StrNumber) = 3,
+    Illegal = 4,
 }
 
 impl ExecVal {
     fn empty() -> ExecVal {
-        ExecVal {
-            typ: StkType::Integer,
-            lit: 0,
-        }
+        unsafe { mem::zeroed() }
     }
 
     #[no_mangle]
     pub extern "C" fn int_val(lit: i32) -> ExecVal {
-        ExecVal {
-            lit,
-            typ: StkType::Integer,
-        }
+        ExecVal::Integer(lit)
     }
 
     #[no_mangle]
     pub extern "C" fn str_val(str: StrNumber) -> ExecVal {
-        ExecVal {
-            lit: str as i32,
-            typ: StkType::String,
-        }
+        ExecVal::String(str)
     }
 
     #[no_mangle]
     pub extern "C" fn func_val(f: HashPointer) -> ExecVal {
-        ExecVal {
-            lit: f as i32,
-            typ: StkType::Function,
-        }
+        ExecVal::Function(f)
     }
 
     #[no_mangle]
     pub extern "C" fn missing_val(f: StrNumber) -> ExecVal {
-        ExecVal {
-            lit: f as i32,
-            typ: StkType::Missing,
+        ExecVal::Missing(f)
+    }
+
+    pub fn unwrap_str(&self) -> StrNumber {
+        if let ExecVal::String(s) = self {
+            *s
+        } else {
+            panic!("Expected ExecVal to be a string, got something else")
         }
     }
 }
@@ -121,36 +122,36 @@ pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
 
 #[no_mangle]
 pub extern "C" fn print_lit(val: ExecVal) -> CResult {
-    match val.typ {
-        StkType::Integer => {
-            write_logs(&format!("{}\n", val.lit));
+    match val {
+        ExecVal::Integer(val) => {
+            write_logs(&format!("{}\n", val));
             CResult::Ok
         }
-        StkType::String => {
-            match print_a_pool_str(val.lit as usize) {
+        ExecVal::String(str) => {
+            match print_a_pool_str(str as usize) {
                 CResult::Ok => (),
                 err => return err,
             }
             write_logs("\n");
             CResult::Ok
         }
-        StkType::Function => {
-            match print_a_pool_str(with_hash(|hash| hash.text(val.lit as usize))) {
+        ExecVal::Function(f) => {
+            match print_a_pool_str(with_hash(|hash| hash.text(f as usize))) {
                 CResult::Ok => (),
                 err => return err,
             }
             write_logs("\n");
             CResult::Ok
         }
-        StkType::Missing => {
-            match print_a_pool_str(val.lit as usize) {
+        ExecVal::Missing(s) => {
+            match print_a_pool_str(s as usize) {
                 CResult::Ok => (),
                 err => return err,
             }
             write_logs("\n");
             CResult::Ok
         }
-        StkType::Illegal => {
+        ExecVal::Illegal => {
             illegl_literal_confusion();
             CResult::Error
         }
@@ -159,39 +160,39 @@ pub extern "C" fn print_lit(val: ExecVal) -> CResult {
 
 #[no_mangle]
 pub extern "C" fn print_stk_lit(val: ExecVal) -> CResult {
-    match val.typ {
-        StkType::Integer => {
-            write_logs(&format!("{} is an integer literal", val.lit));
+    match val {
+        ExecVal::Integer(val) => {
+            write_logs(&format!("{} is an integer literal", val));
             CResult::Ok
         }
-        StkType::String => {
+        ExecVal::String(str) => {
             write_logs("\"");
-            match print_a_pool_str(val.lit as usize) {
+            match print_a_pool_str(str as usize) {
                 CResult::Ok => (),
                 err => return err,
             }
             write_logs("\" is a string literal");
             CResult::Ok
         }
-        StkType::Function => {
+        ExecVal::Function(f) => {
             write_logs("`");
-            match print_a_pool_str(with_hash(|hash| hash.text(val.lit as usize))) {
+            match print_a_pool_str(with_hash(|hash| hash.text(f as usize))) {
                 CResult::Ok => (),
                 err => return err,
             }
             write_logs("` is a function literal");
             CResult::Ok
         }
-        StkType::Missing => {
+        ExecVal::Missing(s) => {
             write_logs("`");
-            match print_a_pool_str(val.lit as usize) {
+            match print_a_pool_str(s as usize) {
                 CResult::Ok => (),
                 err => return err,
             }
             write_logs("` is a missing field");
             CResult::Ok
         }
-        StkType::Illegal => {
+        ExecVal::Illegal => {
             illegl_literal_confusion();
             CResult::Error
         }
@@ -204,77 +205,75 @@ pub unsafe extern "C" fn print_wrong_stk_lit(
     val: ExecVal,
     typ2: StkType,
 ) -> CResult {
-    if val.typ != StkType::Illegal {
-        match print_stk_lit(val) {
-            CResult::Ok => (),
-            err => return err,
+    match val {
+        ExecVal::Illegal => CResult::Ok,
+        _ => {
+            match print_stk_lit(val) {
+                CResult::Ok => (),
+                err => return err,
+            }
+
+            let res = match typ2 {
+                StkType::Integer => {
+                    write_logs(", not an integer,");
+                    CResult::Ok
+                }
+                StkType::String => {
+                    write_logs(", not a string,");
+                    CResult::Ok
+                }
+                StkType::Function => {
+                    write_logs(", not a function,");
+                    CResult::Ok
+                }
+                StkType::Missing | StkType::Illegal => {
+                    illegl_literal_confusion();
+                    CResult::Error
+                }
+            };
+
+            match res {
+                CResult::Ok => (),
+                err => return err,
+            }
+
+            with_pool(|pool| rs_bst_ex_warn_print(&*ctx, pool)).into()
         }
-        let res = match typ2 {
-            StkType::Integer => {
-                write_logs(", not an integer,");
-                CResult::Ok
-            }
-            StkType::String => {
-                write_logs(", not a string,");
-                CResult::Ok
-            }
-            StkType::Function => {
-                write_logs(", not a function,");
-                CResult::Ok
-            }
-            StkType::Missing | StkType::Illegal => {
-                illegl_literal_confusion();
-                CResult::Error
-            }
-        };
-        match res {
-            CResult::Ok => (),
-            err => return err,
-        }
-        rs_bst_ex_warn_print(&*ctx).into()
-    } else {
-        CResult::Ok
     }
 }
 
-pub fn rs_bst_ex_warn_print(ctx: &ExecCtx) -> Result<(), BibtexError> {
+pub fn rs_bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        let res = with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr())));
-        if res != CResult::Ok {
-            return res.into();
-        }
+        with_cites(|ci| rs_print_a_pool_str(ci.get_cite(ci.ptr()), pool))?;
     }
 
     write_logs("\nwhile executing-");
     // SAFETY: The `Bibtex` value pointed to by `ExecCtx` is guaranteed valid
-    bst_ln_num_print(unsafe { &*ctx.glbl_ctx })?;
+    bst_ln_num_print(unsafe { &*ctx.glbl_ctx }, pool)?;
     mark_error();
     Ok(())
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> CResult {
-    rs_bst_ex_warn_print(&*ctx).into()
+    with_pool(|pool| rs_bst_ex_warn_print(&*ctx, pool)).into()
 }
 
-pub fn bst_ln_num_print(glbl_ctx: &Bibtex) -> Result<(), BibtexError> {
+pub fn bst_ln_num_print(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", glbl_ctx.bst_line_num));
-    rs_print_bst_name(glbl_ctx)
+    rs_print_bst_name(glbl_ctx, pool)
 }
 
-pub fn rs_print_bst_name(glbl_ctx: &Bibtex) -> Result<(), BibtexError> {
-    let res = print_a_pool_str(glbl_ctx.bst_str);
-    if res != CResult::Ok {
-        return res.into();
-    }
+pub fn rs_print_bst_name(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
+    rs_print_a_pool_str(glbl_ctx.bst_str, pool)?;
     write_logs(".bst\n");
     Ok(())
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> CResult {
-    rs_print_bst_name(&*glbl_ctx).into()
+    with_pool(|pool| rs_print_bst_name(&*glbl_ctx, pool)).into()
 }
 
 fn rs_push_lit_stk(ctx: &mut ExecCtx, val: ExecVal) {
@@ -292,26 +291,24 @@ pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
     rs_push_lit_stk(&mut *ctx, val)
 }
 
-pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
+pub fn rs_pop_lit_stk(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<ExecVal, BibtexError> {
     if ctx.lit_stk_ptr == 0 {
         write_logs("You can't pop an empty literal stack");
-        rs_bst_ex_warn_print(ctx)?;
-        Ok(ExecVal {
-            lit: 0,
-            typ: StkType::Illegal,
-        })
+        rs_bst_ex_warn_print(ctx, pool)?;
+        Ok(ExecVal::Illegal)
     } else {
         ctx.lit_stk_ptr -= 1;
-        // SAFETY: lit_stack length guaranteed >= lit_stk_ptr
         let pop = ctx.lit_stack[ctx.lit_stk_ptr];
-        if pop.typ == StkType::String && pop.lit as usize >= ctx.bib_str_ptr {
-            if pop.lit as usize != bib_str_ptr() - 1 {
-                write_logs("Nontop top of string stack");
-                print_confusion();
-                return Err(BibtexError::Fatal);
+        if let ExecVal::String(str) = pop {
+            if str >= ctx.bib_str_ptr {
+                if str != pool.str_ptr() - 1 {
+                    write_logs("Nontop top of string stack");
+                    print_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+                pool.set_str_ptr(pool.str_ptr() - 1);
+                pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
             }
-            bib_set_str_ptr(bib_str_ptr() - 1);
-            bib_set_pool_ptr(bib_str_start(bib_str_ptr() as StrNumber))
         }
         Ok(pop)
     }
@@ -320,7 +317,7 @@ pub fn rs_pop_lit_stk(ctx: &mut ExecCtx) -> Result<ExecVal, BibtexError> {
 #[no_mangle]
 pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> CResult {
     let ctx = &mut *ctx;
-    match rs_pop_lit_stk(ctx) {
+    match with_pool_mut(|pool| rs_pop_lit_stk(ctx, pool)) {
         Ok(val) => {
             *out = val;
             CResult::Ok
@@ -336,8 +333,8 @@ pub fn illegl_literal_confusion() {
 }
 
 fn rs_pop_top_and_print(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
-    rs_pop_lit_stk(&mut *ctx).map(|val| {
-        if val.typ == StkType::Illegal {
+    with_pool_mut(|pool| rs_pop_lit_stk(&mut *ctx, pool)).map(|val| {
+        if let ExecVal::Illegal = val {
             write_logs("Empty literal\n");
         } else {
             print_lit(val);
@@ -399,7 +396,7 @@ pub fn rs_figure_out_the_formatted_name(
 ) -> Result<(), BibtexError> {
     let mut sp_xptr1;
     let mut sp_brace_level = 0;
-    let sp_str = pool.get_str(ctx.pop1.lit as usize);
+    let sp_str = pool.get_str(ctx.pop1.unwrap_str());
     let mut sp_ptr = 0;
 
     buffers.set_offset(BufTy::Ex, 1, 0);
@@ -421,7 +418,7 @@ pub fn rs_figure_out_the_formatted_name(
                 if LexClass::of(sp_str[sp_ptr]) == LexClass::Alpha {
                     sp_ptr += 1;
                     if alpha_found {
-                        brace_lvl_one_letters_complaint(ctx)?;
+                        brace_lvl_one_letters_complaint(ctx, pool)?;
                         to_be_written = false;
                     } else {
                         match sp_str[sp_ptr - 1] {
@@ -466,7 +463,7 @@ pub fn rs_figure_out_the_formatted_name(
                                 }
                             }
                             _ => {
-                                brace_lvl_one_letters_complaint(ctx)?;
+                                brace_lvl_one_letters_complaint(ctx, pool)?;
                                 to_be_written = false;
                                 break;
                             }
@@ -707,7 +704,7 @@ pub fn rs_figure_out_the_formatted_name(
                 }
             }
         } else if sp_str[sp_ptr] == b'}' {
-            braces_unbalanced_complaint(ctx, ctx.pop1.lit as usize)?;
+            braces_unbalanced_complaint(ctx, ctx.pop1.unwrap_str())?;
             sp_ptr += 1;
         } else {
             if buffers.offset(BufTy::Ex, 1) == buffers.len() {
@@ -720,7 +717,7 @@ pub fn rs_figure_out_the_formatted_name(
     }
 
     if sp_brace_level > 0 {
-        braces_unbalanced_complaint(ctx, ctx.pop1.lit as usize)?;
+        braces_unbalanced_complaint(ctx, ctx.pop1.unwrap_str())?;
     }
 
     buffers.set_init(BufTy::Ex, buffers.offset(BufTy::Ex, 1));
@@ -762,12 +759,12 @@ pub unsafe extern "C" fn figure_out_the_formatted_name(
     res.into()
 }
 
-fn rs_check_command_execution(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
+fn rs_check_command_execution(ctx: &mut ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
     if ctx.lit_stk_ptr != 0 {
         write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
         rs_pop_whole_stack(ctx)?;
         write_logs("---the literal stack isn't empty");
-        rs_bst_ex_warn_print(ctx)?;
+        rs_bst_ex_warn_print(ctx, pool)?;
     }
     if ctx.bib_str_ptr != with_pool(|pool| pool.str_ptr()) {
         write_logs("Nonempty empty string stack");
@@ -779,7 +776,7 @@ fn rs_check_command_execution(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
 
 #[no_mangle]
 pub unsafe extern "C" fn check_command_execution(ctx: *mut ExecCtx) -> CResult {
-    rs_check_command_execution(&mut *ctx).into()
+    with_pool(|pool| rs_check_command_execution(&mut *ctx, pool)).into()
 }
 
 fn rs_add_pool_buf_and_push(
@@ -789,13 +786,7 @@ fn rs_add_pool_buf_and_push(
 ) -> Result<(), BibtexError> {
     buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
-    rs_push_lit_stk(
-        ctx,
-        ExecVal {
-            lit: pool.add_string_raw(str)? as i32,
-            typ: StkType::String,
-        },
-    );
+    rs_push_lit_stk(ctx, ExecVal::str_val(pool.add_string_raw(str)?));
     Ok(())
 }
 
@@ -809,5 +800,5 @@ pub unsafe extern "C" fn add_pool_buf_and_push(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn cur_lit(ctx: *mut ExecCtx) -> *mut ExecVal {
-    &mut (*ctx).lit_stack[(*ctx).lit_stk_ptr]
+    core::ptr::addr_of_mut!((*ctx).lit_stack[(*ctx).lit_stk_ptr])
 }

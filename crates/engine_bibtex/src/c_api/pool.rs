@@ -185,6 +185,18 @@ impl StringPool {
         self.str_ptr
     }
 
+    pub fn set_str_ptr(&mut self, val: usize) {
+        self.str_ptr = val;
+    }
+
+    pub fn set_pool_ptr(&mut self, val: usize) {
+        self.pool_ptr = val;
+    }
+
+    pub fn str_start(&self, str: StrNumber) -> usize {
+        self.offsets[str]
+    }
+
     pub fn add_string_raw(&mut self, str: &[ASCIICode]) -> Result<PoolPointer, BibtexError> {
         while self.pool_ptr + str.len() > self.strings.len() {
             self.grow();

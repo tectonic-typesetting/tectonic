@@ -107,8 +107,8 @@ static void x_equals(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != ctx->pop2.typ) {
-        if ((ctx->pop1.typ != STK_TYPE_ILLEGAL) && (ctx->pop2.typ != STK_TYPE_ILLEGAL)) {
+    if (ctx->pop1.tag != ctx->pop2.tag) {
+        if ((ctx->pop1.tag != STK_TYPE_ILLEGAL) && (ctx->pop2.tag != STK_TYPE_ILLEGAL)) {
             unwrap(print_stk_lit(ctx->pop1));
             puts_log(", ");
             unwrap(print_stk_lit(ctx->pop2));
@@ -117,20 +117,20 @@ static void x_equals(ExecCtx* ctx)
             unwrap(bst_ex_warn_print(ctx));
         }
         push_lit_stk(ctx, int_val(0));
-    } else if ((ctx->pop1.typ != STK_TYPE_INTEGER) && (ctx->pop1.typ != STK_TYPE_STRING)) {
-        if (ctx->pop1.typ != STK_TYPE_ILLEGAL) {
+    } else if ((ctx->pop1.tag != STK_TYPE_INTEGER) && (ctx->pop1.tag != STK_TYPE_STRING)) {
+        if (ctx->pop1.tag != STK_TYPE_ILLEGAL) {
             unwrap(print_stk_lit(ctx->pop1));
             puts_log(", not an integer or a string,");
             unwrap(bst_ex_warn_print(ctx));
         }
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop1.typ == STK_TYPE_INTEGER) {
+    } else if (ctx->pop1.tag == STK_TYPE_INTEGER) {
 
-        if (ctx->pop2.lit == ctx->pop1.lit)
+        if (ctx->pop2.integer == ctx->pop1.integer)
             push_lit_stk(ctx, int_val(1));
         else
             push_lit_stk(ctx, int_val(0));
-    } else if (bib_str_eq_str(ctx->pop2.lit, ctx->pop1.lit))
+    } else if (bib_str_eq_str(ctx->pop2.string, ctx->pop1.string))
         push_lit_stk(ctx, int_val(1));
     else
         push_lit_stk(ctx, int_val(0));
@@ -140,29 +140,30 @@ static void x_greater_than(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.lit > ctx->pop1.lit)
+    } else if (ctx->pop2.integer > ctx->pop1.integer) {
         push_lit_stk(ctx, int_val(1));
-    else
+    } else {
         push_lit_stk(ctx, int_val(0));
+    }
 }
 
 static void x_less_than(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.lit < ctx->pop1.lit)
+    } else if (ctx->pop2.integer < ctx->pop1.integer)
         push_lit_stk(ctx, int_val(1));
     else
         push_lit_stk(ctx, int_val(0));
@@ -172,28 +173,28 @@ static void x_plus(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
     } else
-        push_lit_stk(ctx, int_val(ctx->pop2.lit + ctx->pop1.lit));
+        push_lit_stk(ctx, int_val(ctx->pop2.integer + ctx->pop1.integer));
 }
 
 static void x_minus(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, int_val(0));
     } else
-        push_lit_stk(ctx, int_val(ctx->pop2.lit - ctx->pop1.lit));
+        push_lit_stk(ctx, int_val(ctx->pop2.integer - ctx->pop1.integer));
 }
 
 static void x_concatenate(ExecCtx* ctx)
@@ -201,34 +202,34 @@ static void x_concatenate(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.typ != STK_TYPE_STRING) {
+    } else if (ctx->pop2.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {                    /*352: */
 
-        if ((size_t)ctx->pop2.lit >= ctx->bib_str_ptr) {
+        if (ctx->pop2.string >= ctx->bib_str_ptr) {
 
-            if ((size_t)ctx->pop1.lit >= ctx->bib_str_ptr) {
-                bib_set_str_start(ctx->pop1.lit, bib_str_start(ctx->pop1.lit + 1));
+            if (ctx->pop1.string >= ctx->bib_str_ptr) {
+                bib_set_str_start(ctx->pop1.string, bib_str_start(ctx->pop1.string + 1));
                 {
                     bib_set_str_ptr(bib_str_ptr() + 1);
                     bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
                 }
                 ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-            } else if ((bib_str_start(ctx->pop2.lit + 1) - bib_str_start(ctx->pop2.lit)) == 0)
-                push_lit_stk(ctx, str_val(ctx->pop1.lit));
+            } else if ((bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) == 0)
+                push_lit_stk(ctx, str_val(ctx->pop1.string));
             else {
 
-                bib_set_pool_ptr(bib_str_start(ctx->pop2.lit + 1));
+                bib_set_pool_ptr(bib_str_start(ctx->pop2.string + 1));
                 {
-                    while (bib_pool_ptr() + (bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) > bib_pool_size())
+                    while (bib_pool_ptr() + (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) > bib_pool_size())
                         pool_overflow();
                 }
-                sp_ptr = bib_str_start(ctx->pop1.lit);
-                sp_end = bib_str_start(ctx->pop1.lit + 1);
+                sp_ptr = bib_str_start(ctx->pop1.string);
+                sp_end = bib_str_start(ctx->pop1.string + 1);
                 while (sp_ptr < sp_end) {
 
                     {
@@ -241,27 +242,29 @@ static void x_concatenate(ExecCtx* ctx)
             }
         } else {                /*353: */
 
-            if ((size_t)ctx->pop1.lit >= ctx->bib_str_ptr) {
+            if (ctx->pop1.string >= ctx->bib_str_ptr) {
 
-                if ((bib_str_start(ctx->pop2.lit + 1) - bib_str_start(ctx->pop2.lit)) == 0) {
+                if ((bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) == 0) {
                     {
                         bib_set_str_ptr(bib_str_ptr() + 1);
                         bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
                     }
-                    cur_lit(ctx)->lit = ctx->pop1.lit;
+                    ExecVal* top = cur_lit(ctx);
+                    top->tag = ExecVal_String;
+                    top->string = ctx->pop1.string;
                     ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-                } else if ((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) == 0)
+                } else if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) == 0)
                     ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
                 else {
 
-                    pool_pointer sp_length = (bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit));
-                    pool_pointer sp2_length = (bib_str_start(ctx->pop2.lit + 1) - bib_str_start(ctx->pop2.lit));
+                    pool_pointer sp_length = (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string));
+                    pool_pointer sp2_length = (bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string));
                     {
                         while (bib_pool_ptr() + sp_length + sp2_length > bib_pool_size())
                             pool_overflow();
                     }
-                    sp_ptr = bib_str_start(ctx->pop1.lit + 1);
-                    sp_end = bib_str_start(ctx->pop1.lit);
+                    sp_ptr = bib_str_start(ctx->pop1.string + 1);
+                    sp_end = bib_str_start(ctx->pop1.string);
                     pool_pointer sp_xptr1 = sp_ptr + sp2_length;
                     while (sp_ptr > sp_end) {
 
@@ -269,8 +272,8 @@ static void x_concatenate(ExecCtx* ctx)
                         sp_xptr1 = sp_xptr1 - 1;
                         bib_set_str_pool(sp_xptr1, bib_str_pool(sp_ptr));
                     }
-                    sp_ptr = bib_str_start(ctx->pop2.lit);
-                    sp_end = bib_str_start(ctx->pop2.lit + 1);
+                    sp_ptr = bib_str_start(ctx->pop2.string);
+                    sp_end = bib_str_start(ctx->pop2.string + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -284,19 +287,19 @@ static void x_concatenate(ExecCtx* ctx)
                 }
             } else {            /*354: */
 
-                if ((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) == 0)
+                if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) == 0)
                     ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-                else if ((bib_str_start(ctx->pop2.lit + 1) - bib_str_start(ctx->pop2.lit)) == 0)
-                    push_lit_stk(ctx, str_val(ctx->pop1.lit));
+                else if ((bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) == 0)
+                    push_lit_stk(ctx, str_val(ctx->pop1.string));
                 else {
 
                     {
-                        while ((bib_pool_ptr() + (bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) +
-                                (bib_str_start(ctx->pop2.lit + 1) - bib_str_start(ctx->pop2.lit)) > bib_pool_size()))
+                        while ((bib_pool_ptr() + (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) +
+                                (bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) > bib_pool_size()))
                             pool_overflow();
                     }
-                    sp_ptr = bib_str_start(ctx->pop2.lit);
-                    sp_end = bib_str_start(ctx->pop2.lit + 1);
+                    sp_ptr = bib_str_start(ctx->pop2.string);
+                    sp_end = bib_str_start(ctx->pop2.string + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -305,8 +308,8 @@ static void x_concatenate(ExecCtx* ctx)
                         }
                         sp_ptr = sp_ptr + 1;
                     }
-                    sp_ptr = bib_str_start(ctx->pop1.lit);
-                    sp_end = bib_str_start(ctx->pop1.lit + 1);
+                    sp_ptr = bib_str_start(ctx->pop1.string);
+                    sp_end = bib_str_start(ctx->pop1.string + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -327,29 +330,29 @@ static void x_gets(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_FUNCTION)
+    if (ctx->pop1.tag != STK_TYPE_FUNCTION)
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION));
     else if (((!ctx->mess_with_entries)
-              && ((fn_type(ctx->pop1.lit) == FN_CLASS_STR_ENTRY_VAR ) || (fn_type(ctx->pop1.lit) == FN_CLASS_INT_ENTRY_VAR ))))
+              && ((fn_type(ctx->pop1.function) == FN_CLASS_STR_ENTRY_VAR ) || (fn_type(ctx->pop1.function) == FN_CLASS_INT_ENTRY_VAR ))))
         unwrap(bst_cant_mess_with_entries_print(ctx));
     else
-        switch ((fn_type(ctx->pop1.lit))) {
+        switch ((fn_type(ctx->pop1.function))) {
         case FN_CLASS_INT_ENTRY_VAR:
-            if (ctx->pop2.typ != STK_TYPE_INTEGER)
+            if (ctx->pop2.tag != STK_TYPE_INTEGER)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
             else
-                set_entry_ints(cite_ptr() * num_ent_ints() + ilk_info(ctx->pop1.lit), /*:356 */ ctx->pop2.lit);
+                set_entry_ints(cite_ptr() * num_ent_ints() + ilk_info(ctx->pop1.function), /*:356 */ ctx->pop2.integer);
             break;
         case FN_CLASS_STR_ENTRY_VAR:
             {
-                if (ctx->pop2.typ != STK_TYPE_STRING)
+                if (ctx->pop2.tag != STK_TYPE_STRING)
                     unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
                 else {
 
-                    str_ent_loc str_ent_ptr = cite_ptr() * num_ent_strs() + ilk_info(ctx->pop1.lit);
+                    str_ent_loc str_ent_ptr = cite_ptr() * num_ent_strs() + ilk_info(ctx->pop1.function);
                     int32_t ent_chr_ptr = 0;
-                    sp_ptr = bib_str_start(ctx->pop2.lit);
-                    pool_pointer sp_xptr1 = bib_str_start(ctx->pop2.lit + 1);
+                    sp_ptr = bib_str_start(ctx->pop2.string);
+                    pool_pointer sp_xptr1 = bib_str_start(ctx->pop2.string + 1);
                     if (sp_xptr1 - sp_ptr > ENT_STR_SIZE) {
                         {
                             bst_1print_string_size_exceeded();
@@ -369,23 +372,23 @@ static void x_gets(ExecCtx* ctx)
             }
             break;
         case FN_CLASS_INT_GLBL_VAR:
-            if (ctx->pop2.typ != STK_TYPE_INTEGER)
+            if (ctx->pop2.tag != STK_TYPE_INTEGER)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
             else
-                set_ilk_info(ctx->pop1.lit, /*:359 */ ctx->pop2.lit);
+                set_ilk_info(ctx->pop1.function, /*:359 */ ctx->pop2.integer);
             break;
         case FN_CLASS_STR_GLBL_VAR:
-            if (ctx->pop2.typ != STK_TYPE_STRING) {
+            if (ctx->pop2.tag != STK_TYPE_STRING) {
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
             } else {
-                int32_t str_glb_ptr = ilk_info(ctx->pop1.lit);
-                if ((size_t)ctx->pop2.lit < ctx->bib_str_ptr)
-                    set_glb_bib_str_ptr(str_glb_ptr, ctx->pop2.lit);
+                int32_t str_glb_ptr = ilk_info(ctx->pop1.function);
+                if ((size_t)ctx->pop2.string < ctx->bib_str_ptr)
+                    set_glb_bib_str_ptr(str_glb_ptr, ctx->pop2.string);
                 else {
                     set_glb_bib_str_ptr(str_glb_ptr, 0);
                     int32_t glob_chr_ptr = 0;
-                    sp_ptr = bib_str_start(ctx->pop2.lit);
-                    sp_end = bib_str_start(ctx->pop2.lit + 1);
+                    sp_ptr = bib_str_start(ctx->pop2.string);
+                    sp_end = bib_str_start(ctx->pop2.string + 1);
                     if (sp_end - sp_ptr > GLOB_STR_SIZE) {
                         bst_1print_string_size_exceeded();
                         printf_log("%ld, the global", (long) GLOB_STR_SIZE);
@@ -403,7 +406,7 @@ static void x_gets(ExecCtx* ctx)
             break;
         default:
             puts_log("You can't assign to type ");
-            print_fn_class(ctx->pop1.lit);
+            print_fn_class(ctx->pop1.function);
             puts_log(", a nonvariable function class");
             unwrap(bst_ex_warn_print(ctx));
             break;
@@ -414,15 +417,15 @@ static void x_add_period(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if ((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) == 0)
+    } else if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) == 0)
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     else {                      /*362: */
 
-        sp_ptr = bib_str_start(ctx->pop1.lit + 1);
-        sp_end = bib_str_start(ctx->pop1.lit);
+        sp_ptr = bib_str_start(ctx->pop1.string + 1);
+        sp_end = bib_str_start(ctx->pop1.string);
         while (sp_ptr > sp_end) {
 
             sp_ptr = sp_ptr - 1;
@@ -435,7 +438,7 @@ static void x_add_period(ExecCtx* ctx)
         case 63:
         case 33:
             {
-                if ((size_t)cur_lit(ctx)->lit >= ctx->bib_str_ptr) {
+                if (cur_lit(ctx)->string >= ctx->bib_str_ptr) {
                     bib_set_str_ptr(bib_str_ptr() + 1);
                     bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
                 }
@@ -444,13 +447,13 @@ static void x_add_period(ExecCtx* ctx)
             break;
         default:
             {
-                if ((size_t)ctx->pop1.lit < ctx->bib_str_ptr) {
+                if (ctx->pop1.string < ctx->bib_str_ptr) {
                     {
-                        while (bib_pool_ptr() + (bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) + 1 > bib_pool_size())
+                        while (bib_pool_ptr() + (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) + 1 > bib_pool_size())
                             pool_overflow();
                     }
-                    sp_ptr = bib_str_start(ctx->pop1.lit);
-                    sp_end = bib_str_start(ctx->pop1.lit + 1);
+                    sp_ptr = bib_str_start(ctx->pop1.string);
+                    sp_end = bib_str_start(ctx->pop1.string + 1);
                     while (sp_ptr < sp_end) {
 
                         {
@@ -461,7 +464,7 @@ static void x_add_period(ExecCtx* ctx)
                     }
                 } else {
 
-                    bib_set_pool_ptr(bib_str_start(ctx->pop1.lit + 1));
+                    bib_set_pool_ptr(bib_str_start(ctx->pop1.string + 1));
                     {
                         while (bib_pool_ptr() + 1 > bib_pool_size())
                             pool_overflow();
@@ -485,16 +488,16 @@ static void x_change_case(ExecCtx* ctx)
 
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.typ != STK_TYPE_STRING) {
+    } else if (ctx->pop2.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
         unsigned char conversion_type = 0;
         {
-            switch ((bib_str_pool(bib_str_start(ctx->pop1.lit)))) {
+            switch ((bib_str_pool(bib_str_start(ctx->pop1.string)))) {
             case 116:
             case 84:
                 conversion_type = 0 /*title_lowers */ ;
@@ -511,15 +514,15 @@ static void x_change_case(ExecCtx* ctx)
                 conversion_type = 3 /*bad_conversion */ ;
                 break;
             }
-            if (((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) != 1) || (conversion_type == 3 /*bad_conversion */ )) {
+            if (((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) != 1) || (conversion_type == 3 /*bad_conversion */ )) {
                 conversion_type = 3 /*bad_conversion */ ;
-                unwrap(print_a_pool_str(ctx->pop1.lit));
+                unwrap(print_a_pool_str(ctx->pop1.string));
                 puts_log(" is an illegal case-conversion string");
                 unwrap(bst_ex_warn_print(ctx));
             }
         }
         bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop2.lit);
+        add_buf_pool(ctx->pop2.string);
         {
             int32_t brace_level = 0;
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
@@ -647,7 +650,7 @@ static void x_change_case(ExecCtx* ctx)
                     }
  lab21:                        /*ok_pascal_i_give_up */ prev_colon = false;
                 } else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ ) {
-                    unwrap(decr_brace_level(ctx, ctx->pop2.lit, &brace_level));
+                    unwrap(decr_brace_level(ctx, ctx->pop2.string, &brace_level));
                     prev_colon = false;
                 } else if (brace_level == 0) {        /*377: */
                     switch ((conversion_type)) {
@@ -679,7 +682,7 @@ static void x_change_case(ExecCtx* ctx)
                 }
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            unwrap(check_brace_level(ctx, ctx->pop2.lit, brace_level));
+            unwrap(check_brace_level(ctx, ctx->pop2.string, brace_level));
         }
         unwrap(add_pool_buf_and_push(ctx));
     }
@@ -688,17 +691,17 @@ static void x_change_case(ExecCtx* ctx)
 static void x_chr_to_int(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, int_val(0));
-    } else if ((bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) != 1) {
+    } else if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) != 1) {
         putc_log('"');
-        unwrap(print_a_pool_str(ctx->pop1.lit));
+        unwrap(print_a_pool_str(ctx->pop1.string));
         puts_log("\" isn't a single character");
         unwrap(bst_ex_warn_print(ctx));
         push_lit_stk(ctx, int_val(0));
     } else
-        push_lit_stk(ctx, int_val(bib_str_pool(bib_str_start(ctx->pop1.lit))));
+        push_lit_stk(ctx, int_val(bib_str_pool(bib_str_start(ctx->pop1.string))));
 }
 
 static void x_cite(ExecCtx* ctx)
@@ -712,28 +715,28 @@ static void x_cite(ExecCtx* ctx)
 static void x_duplicate(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         push_lit_stk(ctx, ctx->pop1);
         push_lit_stk(ctx, ctx->pop1);
     } else {
 
         {
-            if ((size_t)cur_lit(ctx)->lit >= ctx->bib_str_ptr) {
+            if (cur_lit(ctx)->string >= ctx->bib_str_ptr) {
                 bib_set_str_ptr(bib_str_ptr() + 1);
                 bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
             }
             ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
         }
-        if ((size_t)ctx->pop1.lit < ctx->bib_str_ptr)
+        if (ctx->pop1.string < ctx->bib_str_ptr)
             push_lit_stk(ctx, ctx->pop1);
         else {
 
             {
-                while (bib_pool_ptr() + (bib_str_start(ctx->pop1.lit + 1) - bib_str_start(ctx->pop1.lit)) > bib_pool_size())
+                while (bib_pool_ptr() + (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) > bib_pool_size())
                     pool_overflow();
             }
-            pool_pointer sp_ptr = bib_str_start(ctx->pop1.lit);
-            pool_pointer sp_end = bib_str_start(ctx->pop1.lit + 1);
+            pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
+            pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
             while (sp_ptr < sp_end) {
 
                 {
@@ -750,11 +753,11 @@ static void x_duplicate(ExecCtx* ctx)
 static void x_empty(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    switch ((ctx->pop1.typ)) {
-    case 1:
+    switch ((ctx->pop1.tag)) {
+    case ExecVal_String:
         {
-            pool_pointer sp_ptr = bib_str_start(ctx->pop1.lit);
-            pool_pointer sp_end = bib_str_start(ctx->pop1.lit + 1);
+            pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
+            pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
             while (sp_ptr < sp_end) {
 
                 if (LEX_CLASS[bib_str_pool(sp_ptr)] != LEX_CLASS_WHITESPACE ) {
@@ -766,10 +769,10 @@ static void x_empty(ExecCtx* ctx)
             push_lit_stk(ctx, int_val(1));
         }
         break;
-    case 3:
+    case ExecVal_Missing:
         push_lit_stk(ctx, int_val(1));
         break;
-    case 4:
+    case ExecVal_Illegal:
         push_lit_stk(ctx, int_val(0));
         break;
     default:
@@ -787,36 +790,36 @@ static void x_format_name(ExecCtx* ctx)
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
     unwrap(pop_lit_stk(ctx, &ctx->pop3));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop3.typ != STK_TYPE_STRING) {
+    } else if (ctx->pop3.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
         buf_pointer ex_buf_xptr = 0;
         bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop3.lit);
+        add_buf_pool(ctx->pop3.string);
         {
             bib_set_buf_offset(BUF_TY_EX, 1, 0);
             int32_t num_names = 0;
-            while ((num_names < ctx->pop2.lit) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
+            while ((num_names < ctx->pop2.integer) && (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))) {
                 num_names = num_names + 1;
                 ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
-                unwrap(name_scan_for_and(ctx, ctx->pop3.lit, &brace_level));
+                unwrap(name_scan_for_and(ctx, ctx->pop3.string, &brace_level));
             }
             if (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 4);
-            if (num_names < ctx->pop2.lit) {
-                if (ctx->pop2.lit == 1) {
+            if (num_names < ctx->pop2.integer) {
+                if (ctx->pop2.integer == 1) {
                     puts_log("There is no name in \"");
                 } else {
-                    printf_log("There aren't %ld names in \"", (long) ctx->pop2.lit);
+                    printf_log("There aren't %ld names in \"", (long) ctx->pop2.integer);
                 }
-                unwrap(print_a_pool_str(ctx->pop3.lit));
+                unwrap(print_a_pool_str(ctx->pop3.string));
                 {
                     putc_log('"');
                     unwrap(bst_ex_warn_print(ctx));
@@ -834,8 +837,8 @@ static void x_format_name(ExecCtx* ctx)
                         break;
                     default:
                         if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) - 1) == 44 /*comma */ ) {
-                            printf_log("Name %ld in \"", (long) ctx->pop2.lit);
-                            unwrap(print_a_pool_str(ctx->pop3.lit));
+                            printf_log("Name %ld in \"", (long) ctx->pop2.integer);
+                            unwrap(print_a_pool_str(ctx->pop3.string));
                             puts_log("\" has a comma at the end");
                             unwrap(bst_ex_warn_print(ctx));
                             bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
@@ -851,8 +854,8 @@ static void x_format_name(ExecCtx* ctx)
                 case 44:
                     {
                         if (num_commas == 2) {
-                            printf_log("Too many commas in name %ld of \"", (long) ctx->pop2.lit);
-                            unwrap(print_a_pool_str(ctx->pop3.lit));
+                            printf_log("Too many commas in name %ld of \"", (long) ctx->pop2.integer);
+                            unwrap(print_a_pool_str(ctx->pop3.string));
                             putc_log('"');
                             unwrap(bst_ex_warn_print(ctx));
                         } else {
@@ -898,8 +901,8 @@ static void x_format_name(ExecCtx* ctx)
                             num_tokens = num_tokens + 1;
                         }
 
-                        printf_log("Name %ld of \"", (long) ctx->pop2.lit);
-                        unwrap(print_a_pool_str(ctx->pop3.lit));
+                        printf_log("Name %ld of \"", (long) ctx->pop2.integer);
+                        unwrap(print_a_pool_str(ctx->pop3.string));
                         puts_log("\" isn't brace balanced");
                         unwrap(bst_ex_warn_print(ctx));
                         ex_buf_xptr = ex_buf_xptr + 1;
@@ -990,7 +993,7 @@ static void x_format_name(ExecCtx* ctx)
             }
         }
         bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop1.lit);
+        add_buf_pool(ctx->pop1.string);
         figure_out_the_formatted_name(ctx, first_start, first_end, last_end, von_start, von_end, &name_bf_ptr, &name_bf_xptr, jr_end, &brace_level);
         unwrap(add_pool_buf_and_push(ctx));
     }
@@ -999,11 +1002,11 @@ static void x_format_name(ExecCtx* ctx)
 static void x_int_to_chr(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if ((ctx->pop1.lit < 0) || (ctx->pop1.lit > 127)) {
-        printf_log("%ld isn't valid ASCII", (long) ctx->pop1.lit);
+    } else if ((ctx->pop1.integer < 0) || (ctx->pop1.integer > 127)) {
+        printf_log("%ld isn't valid ASCII", (long) ctx->pop1.integer);
         unwrap(bst_ex_warn_print(ctx));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
@@ -1013,7 +1016,7 @@ static void x_int_to_chr(ExecCtx* ctx)
                 pool_overflow();
         }
         {
-            bib_set_str_pool(bib_pool_ptr(), ctx->pop1.lit);
+            bib_set_str_pool(bib_pool_ptr(), ctx->pop1.integer);
             bib_set_pool_ptr(bib_pool_ptr() + 1);
         }
         push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
@@ -1023,11 +1026,11 @@ static void x_int_to_chr(ExecCtx* ctx)
 static void x_int_to_str(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
-        bib_set_buf_len(BUF_TY_EX, int_to_ascii(ctx->pop1.lit, BUF_TY_EX, 0));
+        bib_set_buf_len(BUF_TY_EX, int_to_ascii(ctx->pop1.integer, BUF_TY_EX, 0));
         unwrap(add_pool_buf_and_push(ctx));
     }
 }
@@ -1037,14 +1040,14 @@ static void x_missing(ExecCtx* ctx)
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     if (!ctx->mess_with_entries)
         unwrap(bst_cant_mess_with_entries_print(ctx));
-    else if ((ctx->pop1.typ != STK_TYPE_STRING) && (ctx->pop1.typ != STK_TYPE_MISSING)) {
-        if (ctx->pop1.typ != STK_TYPE_ILLEGAL) {
+    else if ((ctx->pop1.tag != STK_TYPE_STRING) && (ctx->pop1.tag != STK_TYPE_MISSING)) {
+        if (ctx->pop1.tag != STK_TYPE_ILLEGAL) {
             unwrap(print_stk_lit(ctx->pop1));
             puts_log(", not a string or missing field,");
             unwrap(bst_ex_warn_print(ctx));
         }
         push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop1.typ == STK_TYPE_MISSING)
+    } else if (ctx->pop1.tag == STK_TYPE_MISSING)
         push_lit_stk(ctx, int_val(1));
     else
         push_lit_stk(ctx, int_val(0));
@@ -1053,18 +1056,18 @@ static void x_missing(ExecCtx* ctx)
 static void x_num_names(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, int_val(0));
     } else {
 
         bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop1.lit);
+        add_buf_pool(ctx->pop1.string);
         bib_set_buf_offset(BUF_TY_EX, 1, 0);
         int32_t num_names = 0;
         while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
             int32_t brace_level = 0;
-            unwrap(name_scan_for_and(ctx, ctx->pop1.lit, &brace_level));
+            unwrap(name_scan_for_and(ctx, ctx->pop1.string, &brace_level));
             num_names = num_names + 1;
         }
         push_lit_stk(ctx, int_val(num_names));
@@ -1085,13 +1088,13 @@ static void x_preamble(ExecCtx* ctx)
 static void x_purify(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
 
         bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop1.lit);
+        add_buf_pool(ctx->pop1.string);
         {
             int32_t brace_level = 0;
             buf_pointer ex_buf_xptr = 0;
@@ -1210,22 +1213,22 @@ static void x_substring(ExecCtx* ctx)
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
     unwrap(pop_lit_stk(ctx, &ctx->pop3));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.typ != STK_TYPE_INTEGER) {
+    } else if (ctx->pop2.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop3.typ != STK_TYPE_STRING) {
+    } else if (ctx->pop3.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
 
-        pool_pointer sp_length = (bib_str_start(ctx->pop3.lit + 1) - bib_str_start(ctx->pop3.lit));
-        if ((size_t)ctx->pop1.lit >= sp_length) {
-            if ((ctx->pop2.lit == 1) || (ctx->pop2.lit == -1)) {
+        pool_pointer sp_length = (bib_str_start(ctx->pop3.string + 1) - bib_str_start(ctx->pop3.string));
+        if ((size_t)ctx->pop1.integer >= sp_length) {
+            if ((ctx->pop2.integer == 1) || (ctx->pop2.integer == -1)) {
                 {
-                    if ((size_t)cur_lit(ctx)->lit >= ctx->bib_str_ptr) {
+                    if (cur_lit(ctx)->string >= ctx->bib_str_ptr) {
                         bib_set_str_ptr(bib_str_ptr() + 1);
                         bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
                     }
@@ -1234,20 +1237,20 @@ static void x_substring(ExecCtx* ctx)
                 return;
             }
         }
-        if ((ctx->pop1.lit <= 0) || (ctx->pop2.lit == 0) || (ctx->pop2.lit > (int32_t)sp_length) || (ctx->pop2.lit < -(int32_t)sp_length)) {
+        if ((ctx->pop1.integer <= 0) || (ctx->pop2.integer == 0) || (ctx->pop2.integer > (int32_t)sp_length) || (ctx->pop2.integer < -(int32_t)sp_length)) {
             push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
             return;
         } else {                /*439: */
 
-            if (ctx->pop2.lit > 0) {
-                if (ctx->pop1.lit > (int32_t)sp_length - (ctx->pop2.lit - 1))
-                    ctx->pop1.lit = sp_length - (ctx->pop2.lit - 1);
-                sp_ptr = bib_str_start(ctx->pop3.lit) + (ctx->pop2.lit - 1);
-                sp_end = sp_ptr + ctx->pop1.lit;
-                if (ctx->pop2.lit == 1) {
+            if (ctx->pop2.integer > 0) {
+                if (ctx->pop1.integer > (int32_t)sp_length - (ctx->pop2.integer - 1))
+                    ctx->pop1.integer = (int32_t)sp_length - (ctx->pop2.integer - 1);
+                sp_ptr = bib_str_start(ctx->pop3.string) + (ctx->pop2.integer - 1);
+                sp_end = sp_ptr + ctx->pop1.integer;
+                if (ctx->pop2.integer == 1) {
 
-                    if ((size_t)ctx->pop3.lit >= ctx->bib_str_ptr) {
-                        bib_set_str_start(ctx->pop3.lit + 1, sp_end);
+                    if ((size_t)ctx->pop3.string >= ctx->bib_str_ptr) {
+                        bib_set_str_start(ctx->pop3.string + 1, sp_end);
                         {
                             bib_set_str_ptr(bib_str_ptr() + 1);
                             bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
@@ -1258,11 +1261,11 @@ static void x_substring(ExecCtx* ctx)
                 }
             } else {
 
-                ctx->pop2.lit = -(int32_t) ctx->pop2.lit;
-                if (ctx->pop1.lit > (int32_t)sp_length - (ctx->pop2.lit - 1))
-                    ctx->pop1.lit = (int32_t)sp_length - (ctx->pop2.lit - 1);
-                sp_end = bib_str_start(ctx->pop3.lit + 1) - (ctx->pop2.lit - 1);
-                sp_ptr = sp_end - ctx->pop1.lit;
+                ctx->pop2.integer = -ctx->pop2.integer;
+                if (ctx->pop1.integer > (int32_t)sp_length - (ctx->pop2.integer - 1))
+                    ctx->pop1.integer = (int32_t)sp_length - (ctx->pop2.integer - 1);
+                sp_end = bib_str_start(ctx->pop3.string + 1) - (ctx->pop2.integer - 1);
+                sp_ptr = sp_end - ctx->pop1.integer;
             }
             {
                 while (bib_pool_ptr() + sp_end - sp_ptr > bib_pool_size())
@@ -1285,26 +1288,26 @@ static void x_swap(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if ((ctx->pop1.typ != STK_TYPE_STRING ) || ((size_t)ctx->pop1.lit < ctx->bib_str_ptr)) {
+    if ((ctx->pop1.tag != STK_TYPE_STRING ) || (ctx->pop1.string < ctx->bib_str_ptr)) {
         push_lit_stk(ctx, ctx->pop1);
-        if ((ctx->pop2.typ == STK_TYPE_STRING ) && ((size_t)ctx->pop2.lit >= ctx->bib_str_ptr)) {
+        if ((ctx->pop2.tag == STK_TYPE_STRING ) && (ctx->pop2.string >= ctx->bib_str_ptr)) {
             bib_set_str_ptr(bib_str_ptr() + 1);
             bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
         }
         push_lit_stk(ctx, ctx->pop2);
-    } else if ((ctx->pop2.typ != STK_TYPE_STRING ) || ((size_t)ctx->pop2.lit < ctx->bib_str_ptr)) {
+    } else if ((ctx->pop2.tag != STK_TYPE_STRING ) || (ctx->pop2.string < ctx->bib_str_ptr)) {
         {
             bib_set_str_ptr(bib_str_ptr() + 1);
             bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
         }
-        push_lit_stk(ctx, str_val(ctx->pop1.lit));
+        push_lit_stk(ctx, ctx->pop1);
         push_lit_stk(ctx, ctx->pop2);
     } else {                    /*441: */
 
         bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop2.lit);
-        pool_pointer sp_ptr = bib_str_start(ctx->pop1.lit);
-        pool_pointer sp_end = bib_str_start(ctx->pop1.lit + 1);
+        add_buf_pool(ctx->pop2.string);
+        pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
+        pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
         while (sp_ptr < sp_end) {
 
             {
@@ -1323,15 +1326,15 @@ static void x_text_length(ExecCtx* ctx)
     pool_pointer sp_ptr, sp_end;
 
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
     } else {
 
         buf_pointer num_text_chars = 0;
         {
-            sp_ptr = bib_str_start(ctx->pop1.lit);
-            sp_end = bib_str_start(ctx->pop1.lit + 1);
+            sp_ptr = bib_str_start(ctx->pop1.string);
+            sp_end = bib_str_start(ctx->pop1.string + 1);
             int32_t sp_brace_level = 0;
             while (sp_ptr < sp_end) {
 
@@ -1370,23 +1373,23 @@ static void x_text_prefix(ExecCtx* ctx)
 
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
     unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+    if (ctx->pop1.tag != STK_TYPE_INTEGER) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.typ != STK_TYPE_STRING) {
+    } else if (ctx->pop2.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop1.lit <= 0) {
+    } else if (ctx->pop1.integer <= 0) {
         push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
         return;
     } else {                    /*445: */
         int32_t sp_brace_level = 0;
-        sp_ptr = bib_str_start(ctx->pop2.lit);
-        sp_end = bib_str_start(ctx->pop2.lit + 1);
+        sp_ptr = bib_str_start(ctx->pop2.string);
+        sp_end = bib_str_start(ctx->pop2.string + 1);
         {
             buf_pointer num_text_chars = 0;
             pool_pointer sp_xptr1 = sp_ptr;
-            while ((sp_xptr1 < sp_end) && (num_text_chars < (size_t)ctx->pop1.lit)) {
+            while ((sp_xptr1 < sp_end) && (num_text_chars < (size_t)ctx->pop1.integer)) {
 
                 sp_xptr1 = sp_xptr1 + 1;
                 if (bib_str_pool(sp_xptr1 - 1) == 123 /*left_brace */ ) {
@@ -1418,7 +1421,7 @@ static void x_text_prefix(ExecCtx* ctx)
             while (bib_pool_ptr() + sp_brace_level + sp_end - sp_ptr > bib_pool_size())
                 pool_overflow();
         }
-        if ((size_t)ctx->pop2.lit >= ctx->bib_str_ptr)
+        if (ctx->pop2.string >= ctx->bib_str_ptr)
             bib_set_pool_ptr(sp_end);
         else
             while (sp_ptr < sp_end) {
@@ -1454,7 +1457,7 @@ static void x_type(ExecCtx* ctx)
 static void x_warning(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING)
+    if (ctx->pop1.tag != STK_TYPE_STRING)
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
     else {
         puts_log("Warning--");
@@ -1466,13 +1469,13 @@ static void x_warning(ExecCtx* ctx)
 static void x_width(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING) {
+    if (ctx->pop1.tag != STK_TYPE_STRING) {
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
         push_lit_stk(ctx, int_val(0));
     } else {
 
         bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop1.lit);
+        add_buf_pool(ctx->pop1.string);
         int32_t string_width = 0;
         {
             int32_t brace_level = 0;
@@ -1544,13 +1547,13 @@ static void x_width(ExecCtx* ctx)
                     } else
                         string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
                 } else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ ) {
-                    unwrap(decr_brace_level(ctx, ctx->pop1.lit, &brace_level));
+                    unwrap(decr_brace_level(ctx, ctx->pop1.string, &brace_level));
                     string_width = string_width + CHAR_WIDTH[125 /*right_brace */ ];
                 } else
                     string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))];
                 bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
             }
-            unwrap(check_brace_level(ctx, ctx->pop1.lit, brace_level));
+            unwrap(check_brace_level(ctx, ctx->pop1.string, brace_level));
         }
         push_lit_stk(ctx, int_val(string_width));
     }
@@ -1559,10 +1562,10 @@ static void x_width(ExecCtx* ctx)
 static void x_write(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.typ != STK_TYPE_STRING)
+    if (ctx->pop1.tag != STK_TYPE_STRING)
         unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
     else
-        add_out_pool(ctx->glbl_ctx, ctx->pop1.lit);
+        add_out_pool(ctx->glbl_ctx, ctx->pop1.string);
 }
 
 static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
@@ -1571,6 +1574,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
 
     switch ((fn_type(ex_fn_loc))) {
     case FN_CLASS_BUILTIN:
+//        printf_log("Executing builtin %d\n", ilk_info(ex_fn_loc));
         switch ((ilk_info(ex_fn_loc))) {
         case 0:
             x_equals(ctx);
@@ -1627,16 +1631,16 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(pop_lit_stk(ctx, &ctx->pop1));
             unwrap(pop_lit_stk(ctx, &ctx->pop2));
             unwrap(pop_lit_stk(ctx, &ctx->pop3));
-            if (ctx->pop1.typ != STK_TYPE_FUNCTION)
+            if (ctx->pop1.tag != STK_TYPE_FUNCTION)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION));
-            else if (ctx->pop2.typ != STK_TYPE_FUNCTION)
+            else if (ctx->pop2.tag != STK_TYPE_FUNCTION)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_FUNCTION));
-            else if (ctx->pop3.typ != STK_TYPE_INTEGER)
+            else if (ctx->pop3.tag != STK_TYPE_INTEGER)
                 unwrap(print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_INTEGER));
-            else if (ctx->pop3.lit > 0)
-                execute_fn(ctx, ctx->pop2.lit);
+            else if (ctx->pop3.integer > 0)
+                execute_fn(ctx, ctx->pop2.function);
             else
-                execute_fn(ctx, ctx->pop1.lit);
+                execute_fn(ctx, ctx->pop1.function);
             break;
         case 16:
             x_int_to_chr(ctx);
@@ -1696,20 +1700,20 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 ExecVal r_pop1, r_pop2;
                 unwrap(pop_lit_stk(ctx, &r_pop1));
                 unwrap(pop_lit_stk(ctx, &r_pop2));
-                if (r_pop1.typ != STK_TYPE_FUNCTION)
+                if (r_pop1.tag != STK_TYPE_FUNCTION)
                     unwrap(print_wrong_stk_lit(ctx, r_pop1, STK_TYPE_FUNCTION));
-                else if (r_pop2.typ != STK_TYPE_FUNCTION)
+                else if (r_pop2.tag != STK_TYPE_FUNCTION)
                     unwrap(print_wrong_stk_lit(ctx, r_pop2, STK_TYPE_FUNCTION));
                 else
                     while (true) {
 
-                        execute_fn(ctx, r_pop2.lit);
+                        execute_fn(ctx, r_pop2.function);
                         unwrap(pop_lit_stk(ctx, &ctx->pop1));
-                        if (ctx->pop1.typ != STK_TYPE_INTEGER) {
+                        if (ctx->pop1.tag != STK_TYPE_INTEGER) {
                             unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
                             goto lab51;
-                        } else if (ctx->pop1.lit > 0)
-                            execute_fn(ctx, r_pop1.lit);
+                        } else if (ctx->pop1.integer > 0)
+                            execute_fn(ctx, r_pop1.function);
                         else
                             goto lab51;
                     }
@@ -1728,8 +1732,10 @@ lab51:                        /*end_while */ ;
             longjmp(error_jmpbuf, 1);
             break;
         }
+//        printf_log("Exiting builtin %d\n", ilk_info(ex_fn_loc));
         break;
     case FN_CLASS_WIZARD:
+//        printf_log("Executing wizard %d\n", ilk_info(ex_fn_loc));
         wiz_ptr = ilk_info(ex_fn_loc);
         while (wiz_functions(wiz_ptr) != end_of_def()) {
 
@@ -1742,6 +1748,7 @@ lab51:                        /*end_while */ ;
             }
             wiz_ptr = wiz_ptr + 1;
         }
+//        printf_log("Exiting wizard %d\n", ilk_info(ex_fn_loc));
         break;
     case FN_CLASS_INT_LIT:
         push_lit_stk(ctx, int_val(ilk_info(ex_fn_loc)));

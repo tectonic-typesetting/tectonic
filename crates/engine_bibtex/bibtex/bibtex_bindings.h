@@ -179,9 +179,39 @@ typedef struct {
   bool lc_found;
 } FindCiteLocs;
 
-typedef struct {
-  StkType typ;
-  int32_t lit;
+enum ExecVal_Tag
+#ifdef __cplusplus
+  : uint8_t
+#endif // __cplusplus
+ {
+  ExecVal_Integer = 0,
+  ExecVal_String = 1,
+  ExecVal_Function = 2,
+  ExecVal_Missing = 3,
+  ExecVal_Illegal = 4,
+};
+#ifndef __cplusplus
+typedef uint8_t ExecVal_Tag;
+#endif // __cplusplus
+
+typedef union {
+  ExecVal_Tag tag;
+  struct {
+    ExecVal_Tag integer_tag;
+    int32_t integer;
+  };
+  struct {
+    ExecVal_Tag string_tag;
+    StrNumber string;
+  };
+  struct {
+    ExecVal_Tag function_tag;
+    HashPointer function;
+  };
+  struct {
+    ExecVal_Tag missing_tag;
+    StrNumber missing;
+  };
 } ExecVal;
 
 typedef struct {

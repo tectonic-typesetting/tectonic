@@ -10,7 +10,7 @@ use crate::{
         history::{mark_error, mark_fatal, mark_warning},
         other::with_other,
         peekable::rs_input_ln,
-        pool::with_pool,
+        pool::{with_pool, StringPool},
         scan::{Scan, ScanRes},
         ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex,
         CResult, FieldLoc, HashPointer, StrNumber,
@@ -232,19 +232,21 @@ pub(crate) fn out_pool_str(handle: &mut OutputHandle, s: StrNumber) -> bool {
     })
 }
 
+pub fn rs_print_a_pool_str(s: StrNumber, pool: &StringPool) -> Result<(), BibtexError> {
+    let str = pool.try_get_str(s);
+    if let Ok(str) = str {
+        write_logs(str);
+        Ok(())
+    } else {
+        write_logs(&format!("Illegal string number: {}", s));
+        print_confusion();
+        Err(BibtexError::Fatal)
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn print_a_pool_str(s: StrNumber) -> CResult {
-    with_pool(|pool| {
-        let str = pool.try_get_str(s);
-        if let Ok(str) = str {
-            write_logs(str);
-            CResult::Ok
-        } else {
-            write_logs(&format!("Illegal string number: {}", s));
-            print_confusion();
-            CResult::Error
-        }
-    })
+    with_pool(|pool| rs_print_a_pool_str(s, pool)).into()
 }
 
 pub fn sam_wrong_file_name_print(file: &CStr) {
@@ -401,7 +403,7 @@ pub extern "C" fn hash_cite_confusion() {
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_warn_print(ctx: *const Bibtex) -> CResult {
-    match bst_ln_num_print(&*ctx) {
+    match with_pool(|pool| bst_ln_num_print(&*ctx, pool)) {
         Ok(()) => (),
         err => return err.into(),
     }
@@ -611,7 +613,7 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn bst_cant_mess_with_entries_print(ctx: *const ExecCtx) -> CResult {
     write_logs("You can't mess with entries here");
-    rs_bst_ex_warn_print(&*ctx).into()
+    with_pool(|pool| rs_bst_ex_warn_print(&*ctx, pool)).into()
 }
 
 #[no_mangle]
@@ -670,7 +672,7 @@ pub fn rs_bst_err_print_and_look_for_blank_line(
     buffers: &mut GlobalBuffer,
 ) -> Result<(), BibtexError> {
     write_logs("-");
-    bst_ln_num_print(ctx)?;
+    with_pool(|pool| bst_ln_num_print(ctx, pool))?;
     print_bad_input_line(buffers);
     while buffers.init(BufTy::Base) != 0 {
         // SAFETY: bst_file guaranteed valid
@@ -748,7 +750,7 @@ pub unsafe extern "C" fn output_bbl_line(ctx: *mut Bibtex) {
 
 pub fn skip_token_print(ctx: &Bibtex, buffers: &mut GlobalBuffer) -> Result<(), BibtexError> {
     write_logs("-");
-    bst_ln_num_print(ctx)?;
+    with_pool(|pool| bst_ln_num_print(ctx, pool))?;
     mark_error();
 
     Scan::new()
@@ -789,14 +791,13 @@ pub fn skip_illegal_stuff_after_token_print(
     skip_token_print(ctx, buffers)
 }
 
-pub fn brace_lvl_one_letters_complaint(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
+pub fn brace_lvl_one_letters_complaint(
+    ctx: &mut ExecCtx,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
     write_logs("The format string \"");
-    match print_a_pool_str(ctx.pop1.lit as usize) {
-        CResult::Ok => (),
-        err => return err.into(),
-    }
+    rs_print_a_pool_str(ctx.pop1.unwrap_str(), pool)?;
     write_logs("\" has an illegal brace-level-1 letter");
-    rs_bst_ex_warn_print(ctx)?;
-
+    rs_bst_ex_warn_print(ctx, pool)?;
     Ok(())
 }
