@@ -224,11 +224,6 @@ pub fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
-    with_pool(|pool| pool.get_str(s1) == pool.get_str(s2))
-}
-
-#[no_mangle]
 pub extern "C" fn pool_overflow() {
     with_pool_mut(|pool| pool.grow());
 }

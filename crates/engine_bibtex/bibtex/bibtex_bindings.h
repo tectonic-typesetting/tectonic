@@ -638,8 +638,6 @@ bool tectonic_eof(PeekableInput *peekable);
 
 bool input_ln(PeekableInput *peekable);
 
-bool bib_str_eq_str(StrNumber s1, StrNumber s2);
-
 void pool_overflow(void);
 
 ASCIICode bib_str_pool(PoolPointer idx);
