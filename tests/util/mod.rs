@@ -99,13 +99,43 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
 
 /// Convenience structure for comparing expected and actual output in various
 /// tests.
-pub struct ExpectedInfo {
+#[must_use = "Expectations do nothing if not `finish`ed"]
+pub struct Expected<'a> {
+    files: Vec<ExpectedFile<'a>>,
+}
+
+impl<'a> Expected<'a> {
+    pub fn new() -> Self {
+        Expected { files: Vec::new() }
+    }
+
+    pub fn file(mut self, file: ExpectedFile<'a>) -> Self {
+        self.files.push(file);
+        self
+    }
+
+    pub fn finish(&self) {
+        let mut failures = Vec::new();
+        for file in &self.files {
+            if let Err(msg) = file.finish() {
+                failures.push(msg);
+            }
+        }
+        if !failures.is_empty() {
+            panic!("Expectations not met:\n{}", failures.join("\n\n"));
+        }
+    }
+}
+
+pub struct ExpectedFile<'a> {
     name: String,
     contents: Vec<u8>,
     gzipped: bool,
+
+    output: Option<ExpectedOutTy<'a>>,
 }
 
-impl ExpectedInfo {
+impl<'a> ExpectedFile<'a> {
     pub fn read<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
         let name = path
@@ -119,10 +149,12 @@ impl ExpectedInfo {
         let mut contents = Vec::new();
         f.read_to_end(&mut contents).unwrap();
 
-        ExpectedInfo {
+        ExpectedFile {
             name,
             contents,
             gzipped: false,
+
+            output: None,
         }
     }
 
@@ -158,16 +190,28 @@ impl ExpectedInfo {
             )
             .into_bytes();
 
-        ExpectedInfo {
+        ExpectedFile {
             name,
             contents,
             gzipped: true,
+
+            output: None,
         }
     }
 
-    pub fn test_data(&self, observed: &[u8]) {
+    pub fn data(mut self, observed: &'a [u8]) -> Self {
+        self.output = Some(ExpectedOutTy::Raw(observed));
+        self
+    }
+
+    pub fn collection(mut self, files: &'a MemoryFileCollection) -> Self {
+        self.output = Some(ExpectedOutTy::FromCollection(files));
+        self
+    }
+
+    fn finish_data(&self, observed: &[u8]) -> core::result::Result<(), String> {
         if self.contents == observed {
-            return;
+            return Ok(());
         }
 
         // For nontrivial tests, it's really tough to figure out what
@@ -177,37 +221,54 @@ impl ExpectedInfo {
             let mut n = self.name.clone();
             n.push_str(".expected");
             let mut f = File::create(&n)
-                .unwrap_or_else(|_| panic!("failed to create {} for test failure diagnosis", n));
+                .map_err(|_| format!("failed to create {} for test failure diagnosis", n))?;
             f.write_all(&self.contents)
-                .unwrap_or_else(|_| panic!("failed to write {} for test failure diagnosis", n));
+                .map_err(|_| format!("failed to write {} for test failure diagnosis", n))?;
         }
         {
             let mut n = self.name.clone();
             n.push_str(".observed");
             let mut f = File::create(&n)
-                .unwrap_or_else(|_| panic!("failed to create {} for test failure diagnosis", n));
+                .map_err(|_| format!("failed to create {} for test failure diagnosis", n))?;
             f.write_all(observed)
-                .unwrap_or_else(|_| panic!("failed to write {} for test failure diagnosis", n));
+                .map_err(|_| format!("failed to write {} for test failure diagnosis", n))?;
         }
-        panic!("difference in {}; contents saved to disk", self.name);
+        Err(format!(
+            "difference in {}; contents saved to disk",
+            self.name
+        ))
     }
 
-    pub fn test_from_collection(&self, files: &MemoryFileCollection) {
-        if !self.gzipped {
-            if let Some(file) = files.get(&self.name) {
-                self.test_data(&file.data)
-            } else {
-                panic!(
-                    "{:?} not in {:?}",
-                    self.name,
-                    files.keys().collect::<Vec<_>>()
-                )
+    fn finish(&self) -> core::result::Result<(), String> {
+        match self.output {
+            Some(ExpectedOutTy::Raw(observed)) => self.finish_data(observed),
+            Some(ExpectedOutTy::FromCollection(files)) => {
+                if !self.gzipped {
+                    if let Some(file) = files.get(&self.name) {
+                        self.finish_data(&file.data)
+                    } else {
+                        Err(format!(
+                            "{:?} not in {:?}",
+                            self.name,
+                            files.keys().collect::<Vec<_>>()
+                        ))
+                    }
+                } else {
+                    let mut buf = Vec::new();
+                    let mut dec = GzDecoder::new(&files.get(&self.name).unwrap().data[..]);
+                    dec.read_to_end(&mut buf).unwrap();
+                    self.finish_data(&buf)
+                }
             }
-        } else {
-            let mut buf = Vec::new();
-            let mut dec = GzDecoder::new(&files.get(&self.name).unwrap().data[..]);
-            dec.read_to_end(&mut buf).unwrap();
-            self.test_data(&buf);
+            None => Err(format!(
+                "No expected output provided for file {}",
+                self.name
+            )),
         }
     }
+}
+
+enum ExpectedOutTy<'a> {
+    Raw(&'a [u8]),
+    FromCollection(&'a MemoryFileCollection),
 }
