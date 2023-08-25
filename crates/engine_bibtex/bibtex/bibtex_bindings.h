@@ -472,6 +472,10 @@ CResult add_pool_buf_and_push(ExecCtx *ctx);
 
 ExecVal *cur_lit(ExecCtx *ctx);
 
+CResult x_equals(ExecCtx *ctx);
+
+CResult x_greater_than(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);

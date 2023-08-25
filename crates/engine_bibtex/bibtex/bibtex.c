@@ -102,56 +102,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void x_equals(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != ctx->pop2.tag) {
-        if ((ctx->pop1.tag != ExecVal_Illegal) && (ctx->pop2.tag != ExecVal_Illegal)) {
-            unwrap(print_stk_lit(ctx->pop1));
-            puts_log(", ");
-            unwrap(print_stk_lit(ctx->pop2));
-            putc_log('\n');
-            puts_log("---they aren't the same literal types");
-            unwrap(bst_ex_warn_print(ctx));
-        }
-        push_lit_stk(ctx, int_val(0));
-    } else if ((ctx->pop1.tag != ExecVal_Integer) && (ctx->pop1.tag != ExecVal_String)) {
-        if (ctx->pop1.tag != ExecVal_Illegal) {
-            unwrap(print_stk_lit(ctx->pop1));
-            puts_log(", not an integer or a string,");
-            unwrap(bst_ex_warn_print(ctx));
-        }
-        push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop1.tag == ExecVal_Integer) {
-
-        if (ctx->pop2.integer == ctx->pop1.integer)
-            push_lit_stk(ctx, int_val(1));
-        else
-            push_lit_stk(ctx, int_val(0));
-    } else if (bib_str_eq_str(ctx->pop2.string, ctx->pop1.string))
-        push_lit_stk(ctx, int_val(1));
-    else
-        push_lit_stk(ctx, int_val(0));
-}
-
-static void x_greater_than(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.integer > ctx->pop1.integer) {
-        push_lit_stk(ctx, int_val(1));
-    } else {
-        push_lit_stk(ctx, int_val(0));
-    }
-}
-
 static void x_less_than(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
@@ -1576,7 +1526,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
 //        printf_log("Executing builtin %d\n", ilk_info(ex_fn_loc));
         switch ((ilk_info(ex_fn_loc))) {
         case 0:
-            x_equals(ctx);
+            unwrap(x_equals(ctx));
             break;
         case 1:
             x_greater_than(ctx);

@@ -27,16 +27,8 @@ pub enum StkType {
     String = 1,
     Function = 2,
     Missing = 3,
-    // TODO: Maybe 'empty' instead?
     Illegal = 4,
 }
-
-// #[derive(Copy, Clone, PartialEq)]
-// #[repr(C)]
-// pub struct ExecVal {
-//     pub typ: StkType,
-//     pub lit: i32,
-// }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(u8)]
@@ -80,6 +72,16 @@ impl ExecVal {
             panic!("Expected ExecVal to be a string, got something else")
         }
     }
+
+    pub fn ty(&self) -> StkType {
+        match self {
+            ExecVal::Integer(_) => StkType::Integer,
+            ExecVal::String(_) => StkType::String,
+            ExecVal::Function(_) => StkType::Function,
+            ExecVal::Missing(_) => StkType::Missing,
+            ExecVal::Illegal => StkType::Illegal,
+        }
+    }
 }
 
 // SAFETY: We require our zero discriminant to be an integer, which is valid for any bit pattern, including 0
@@ -99,6 +101,39 @@ pub struct ExecCtx {
 }
 
 impl ExecCtx {
+    pub fn push_stack(&mut self, val: ExecVal) {
+        self.lit_stack[self.lit_stk_ptr] = val;
+
+        if self.lit_stk_ptr >= self.lit_stack.len() {
+            self.grow_stack();
+        }
+
+        self.lit_stk_ptr += 1;
+    }
+
+    pub fn pop_stack(&mut self, pool: &mut StringPool) -> Result<ExecVal, BibtexError> {
+        if self.lit_stk_ptr == 0 {
+            write_logs("You can't pop an empty literal stack");
+            rs_bst_ex_warn_print(self, pool)?;
+            Ok(ExecVal::Illegal)
+        } else {
+            self.lit_stk_ptr -= 1;
+            let pop = self.lit_stack[self.lit_stk_ptr];
+            if let ExecVal::String(str) = pop {
+                if str >= self.bib_str_ptr {
+                    if str != pool.str_ptr() - 1 {
+                        write_logs("Nontop top of string stack");
+                        print_confusion();
+                        return Err(BibtexError::Fatal);
+                    }
+                    pool.set_str_ptr(pool.str_ptr() - 1);
+                    pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+                }
+            }
+            Ok(pop)
+        }
+    }
+
     fn grow_stack(&mut self) {
         self.lit_stack.grow(LIT_STK_SIZE);
     }
@@ -157,43 +192,59 @@ pub extern "C" fn print_lit(val: ExecVal) -> CResult {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn print_stk_lit(val: ExecVal) -> CResult {
+pub fn rs_print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError> {
     match val {
-        ExecVal::Integer(val) => {
-            write_logs(&format!("{} is an integer literal", val));
-            CResult::Ok
-        }
+        ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
             write_logs("\"");
-            match print_a_pool_str(str as usize) {
-                CResult::Ok => (),
-                err => return err,
-            }
+            rs_print_a_pool_str(str as usize, pool)?;
             write_logs("\" is a string literal");
-            CResult::Ok
         }
         ExecVal::Function(f) => {
             write_logs("`");
-            match print_a_pool_str(with_hash(|hash| hash.text(f as usize))) {
-                CResult::Ok => (),
-                err => return err,
-            }
+            rs_print_a_pool_str(with_hash(|hash| hash.text(f as usize)), pool)?;
             write_logs("` is a function literal");
-            CResult::Ok
         }
         ExecVal::Missing(s) => {
             write_logs("`");
-            match print_a_pool_str(s as usize) {
-                CResult::Ok => (),
-                err => return err,
-            }
+            rs_print_a_pool_str(s as usize, pool)?;
             write_logs("` is a missing field");
-            CResult::Ok
         }
         ExecVal::Illegal => {
             illegl_literal_confusion();
-            CResult::Error
+            return Err(BibtexError::Fatal);
+        }
+    }
+    Ok(())
+}
+
+#[no_mangle]
+pub extern "C" fn print_stk_lit(val: ExecVal) -> CResult {
+    with_pool(|pool| rs_print_stk_lit(val, pool)).into()
+}
+
+pub fn rs_print_wrong_stk_lit(
+    ctx: &mut ExecCtx,
+    pool: &StringPool,
+    val: ExecVal,
+    typ2: StkType,
+) -> Result<(), BibtexError> {
+    match val {
+        ExecVal::Illegal => Ok(()),
+        _ => {
+            rs_print_stk_lit(val, pool)?;
+
+            match typ2 {
+                StkType::Integer => write_logs(", not an integer,"),
+                StkType::String => write_logs(", not a string,"),
+                StkType::Function => write_logs(", not a function,"),
+                StkType::Missing | StkType::Illegal => {
+                    illegl_literal_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+            };
+
+            rs_bst_ex_warn_print(&*ctx, pool)
         }
     }
 }
@@ -204,41 +255,7 @@ pub unsafe extern "C" fn print_wrong_stk_lit(
     val: ExecVal,
     typ2: StkType,
 ) -> CResult {
-    match val {
-        ExecVal::Illegal => CResult::Ok,
-        _ => {
-            match print_stk_lit(val) {
-                CResult::Ok => (),
-                err => return err,
-            }
-
-            let res = match typ2 {
-                StkType::Integer => {
-                    write_logs(", not an integer,");
-                    CResult::Ok
-                }
-                StkType::String => {
-                    write_logs(", not a string,");
-                    CResult::Ok
-                }
-                StkType::Function => {
-                    write_logs(", not a function,");
-                    CResult::Ok
-                }
-                StkType::Missing | StkType::Illegal => {
-                    illegl_literal_confusion();
-                    CResult::Error
-                }
-            };
-
-            match res {
-                CResult::Ok => (),
-                err => return err,
-            }
-
-            with_pool(|pool| rs_bst_ex_warn_print(&*ctx, pool)).into()
-        }
-    }
+    with_pool(|pool| rs_print_wrong_stk_lit(&mut *ctx, pool, val, typ2)).into()
 }
 
 pub fn rs_bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
@@ -275,48 +292,15 @@ pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> CResult {
     with_pool(|pool| rs_print_bst_name(&*glbl_ctx, pool)).into()
 }
 
-fn rs_push_lit_stk(ctx: &mut ExecCtx, val: ExecVal) {
-    ctx.lit_stack[ctx.lit_stk_ptr] = val;
-
-    if ctx.lit_stk_ptr >= ctx.lit_stack.len() {
-        ctx.grow_stack();
-    }
-
-    ctx.lit_stk_ptr += 1;
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
-    rs_push_lit_stk(&mut *ctx, val)
-}
-
-pub fn rs_pop_lit_stk(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<ExecVal, BibtexError> {
-    if ctx.lit_stk_ptr == 0 {
-        write_logs("You can't pop an empty literal stack");
-        rs_bst_ex_warn_print(ctx, pool)?;
-        Ok(ExecVal::Illegal)
-    } else {
-        ctx.lit_stk_ptr -= 1;
-        let pop = ctx.lit_stack[ctx.lit_stk_ptr];
-        if let ExecVal::String(str) = pop {
-            if str >= ctx.bib_str_ptr {
-                if str != pool.str_ptr() - 1 {
-                    write_logs("Nontop top of string stack");
-                    print_confusion();
-                    return Err(BibtexError::Fatal);
-                }
-                pool.set_str_ptr(pool.str_ptr() - 1);
-                pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
-            }
-        }
-        Ok(pop)
-    }
+    (&mut *ctx).push_stack(val)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> CResult {
     let ctx = &mut *ctx;
-    match with_pool_mut(|pool| rs_pop_lit_stk(ctx, pool)) {
+    match with_pool_mut(|pool| ctx.pop_stack(pool)) {
         Ok(val) => {
             *out = val;
             CResult::Ok
@@ -332,7 +316,7 @@ pub fn illegl_literal_confusion() {
 }
 
 fn rs_pop_top_and_print(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
-    with_pool_mut(|pool| rs_pop_lit_stk(&mut *ctx, pool)).map(|val| {
+    with_pool_mut(|pool| ctx.pop_stack(pool)).map(|val| {
         if let ExecVal::Illegal = val {
             write_logs("Empty literal\n");
         } else {
@@ -785,7 +769,7 @@ fn rs_add_pool_buf_and_push(
 ) -> Result<(), BibtexError> {
     buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
-    rs_push_lit_stk(ctx, ExecVal::str_val(pool.add_string_raw(str)?));
+    ctx.push_stack(ExecVal::str_val(pool.add_string_raw(str)?));
     Ok(())
 }
 
@@ -800,4 +784,64 @@ pub unsafe extern "C" fn add_pool_buf_and_push(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn cur_lit(ctx: *mut ExecCtx) -> *mut ExecVal {
     core::ptr::addr_of_mut!((*ctx).lit_stack[(*ctx).lit_stk_ptr])
+}
+
+fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    match (pop1, pop2) {
+        (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
+            ctx.push_stack(ExecVal::Integer((i1 == i2) as i32));
+        }
+        (ExecVal::String(s1), ExecVal::String(s2)) => {
+            // TODO: Can we just compare str numbers here?
+            ctx.push_stack(ExecVal::Integer(
+                (pool.get_str(s1) == pool.get_str(s2)) as i32,
+            ));
+        }
+        _ if pop1.ty() != pop2.ty() => {
+            if pop1.ty() != StkType::Illegal && pop2.ty() != StkType::Illegal {
+                rs_print_stk_lit(pop1, pool)?;
+                write_logs(", ");
+                rs_print_stk_lit(pop2, pool)?;
+                write_logs("\n---they aren't the same literal types");
+                rs_bst_ex_warn_print(ctx, pool)?;
+            }
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        _ => {
+            if pop1.ty() != StkType::Illegal {
+                rs_print_stk_lit(pop1, pool)?;
+                write_logs(", not an integer or a string,");
+                rs_bst_ex_warn_print(ctx, pool)?;
+            }
+            ctx.push_stack(ExecVal::Integer(0))
+        }
+    }
+    Ok(())
+}
+
+fn interp_gt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    match (pop1, pop2) {
+        (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
+            ctx.push_stack(ExecVal::Integer((i1 > i2) as i32));
+            Ok(())
+        }
+        (ExecVal::Integer(_), _) => rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer),
+        (_, _) => rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer),
+    }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_greater_than(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_gt(&mut *ctx, pool)).into()
 }
