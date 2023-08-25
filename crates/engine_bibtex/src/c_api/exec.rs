@@ -828,12 +828,18 @@ fn interp_gt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
 
     match (pop1, pop2) {
         (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
-            ctx.push_stack(ExecVal::Integer((i1 > i2) as i32));
-            Ok(())
+            ctx.push_stack(ExecVal::Integer((i2 > i1) as i32));
         }
-        (ExecVal::Integer(_), _) => rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer),
-        (_, _) => rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer),
+        (ExecVal::Integer(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        (_, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
     }
+    Ok(())
 }
 
 #[no_mangle]
