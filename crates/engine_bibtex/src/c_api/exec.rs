@@ -97,6 +97,7 @@ pub struct ExecCtx {
     pub lit_stack: Box<XBuf<ExecVal>>,
     pub lit_stk_ptr: usize,
     pub mess_with_entries: bool,
+    /// Pointer to the current top of the string pool, used to optimized certain string operations
     pub bib_str_ptr: StrNumber,
 }
 
@@ -136,6 +137,10 @@ impl ExecCtx {
 
     fn grow_stack(&mut self) {
         self.lit_stack.grow(LIT_STK_SIZE);
+    }
+
+    fn glbl_ctx(&self) -> &Bibtex {
+        unsafe { &*self.glbl_ctx }
     }
 }
 
@@ -842,6 +847,153 @@ fn interp_gt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
     Ok(())
 }
 
+fn interp_lt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    match (pop1, pop2) {
+        (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
+            ctx.push_stack(ExecVal::Integer((i2 < i1) as i32));
+        }
+        (ExecVal::Integer(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        (_, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+    }
+    Ok(())
+}
+
+fn interp_plus(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    match (pop1, pop2) {
+        (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
+            ctx.push_stack(ExecVal::Integer(i2 + i1));
+        }
+        (ExecVal::Integer(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        (_, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+    }
+    Ok(())
+}
+
+fn interp_minus(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    match (pop1, pop2) {
+        (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
+            ctx.push_stack(ExecVal::Integer(i2 - i1));
+        }
+        (ExecVal::Integer(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        (_, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+    }
+    Ok(())
+}
+
+fn interp_concat(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    let (s1, s2) = match (pop1, pop2) {
+        (ExecVal::String(s1), ExecVal::String(s2)) => (s1, s2),
+        (ExecVal::String(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+        (_, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    // A string pointer being >= bib_str_ptr means it's a 'scratch string' not yet saved permanently
+    // TODO: Add pool API for scratch strings, instead of doing it manually through dangerous manual
+    //       implementation of strings
+
+    if s2 >= ctx.bib_str_ptr && s1 >= ctx.bib_str_ptr {
+        // Both strings are 'scratch', they must be next to each-other due to external invariants,
+        // se we just make one new string covering both
+        pool.set_start(s1, pool.str_start(s1 + 1));
+        pool.set_str_ptr(pool.str_ptr() + 1);
+        pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+        ctx.push_stack(pop2);
+    } else if s2 >= ctx.bib_str_ptr {
+        if pool.get_str(s2).is_empty() {
+            ctx.push_stack(pop1);
+        } else {
+            // s2 is scratch, we add s1 to its end and return the new scratch string
+            let s1_len = pool.get_str(s1).len();
+            let ptr = pool.str_start(s2 + 1);
+            pool.copy_raw(s1, ptr);
+            pool.set_pool_ptr(ptr + s1_len);
+            let new = pool.make_string()?;
+            ctx.push_stack(ExecVal::String(new));
+        }
+    } else if s1 >= ctx.bib_str_ptr {
+        let str1 = pool.get_str(s1);
+        let str2 = pool.get_str(s2);
+
+        if str2.is_empty() {
+            // s1 is scratch and s2 is empty - just save s1 and return it
+            pool.set_str_ptr(pool.str_ptr() + 1);
+            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+            ctx.push_stack(pop1);
+        } else if str1.is_empty() {
+            // s1 is empty - just return s2
+            ctx.push_stack(pop2);
+        } else {
+            let s1_len = str1.len();
+            let s2_len = str2.len();
+
+            // s1 is scratch and s2 is not - we want to copy s1 forward by the length of s2,
+            // then write s2 in where it was, returning the new scratch string
+            pool.copy_raw(s1, pool.str_start(s1 + 1) + s2_len - s1_len);
+            pool.copy_raw(s2, pool.str_start(s1));
+            pool.set_pool_ptr(pool.str_start(s1) + s1_len + s2_len);
+            ctx.push_stack(ExecVal::String(pool.make_string()?));
+        }
+    } else {
+        let str1 = pool.get_str(s1);
+        let str2 = pool.get_str(s2);
+
+        if str1.is_empty() {
+            ctx.push_stack(pop2);
+        } else if str2.is_empty() {
+            ctx.push_stack(pop1);
+        } else {
+            // Neither is scratch or empty - make a new scratch string from the concat of both
+            let s1_len = str1.len();
+            let s2_len = str2.len();
+
+            let ptr = pool.pool_ptr();
+            pool.copy_raw(s2, ptr);
+            pool.copy_raw(s1, ptr + s2_len);
+            pool.set_pool_ptr(ptr + s1_len + s2_len);
+            ctx.push_stack(ExecVal::String(pool.make_string()?));
+        }
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -850,4 +1002,24 @@ pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_greater_than(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_gt(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_less_than(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_lt(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_plus(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_plus(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_minus(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_minus(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_concatenate(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_concat(&mut *ctx, pool)).into()
 }

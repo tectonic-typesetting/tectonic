@@ -70,7 +70,7 @@ impl StringPool {
 
     /// Used while defining strings - declare the current `pool_ptr` as the end of the current
     /// string, increment the `str_ptr`, and return the new string's `StrNumber`
-    fn make_string(&mut self) -> Result<StrNumber, BibtexError> {
+    pub fn make_string(&mut self) -> Result<StrNumber, BibtexError> {
         if self.str_ptr == MAX_STRINGS {
             print_overflow();
             write_logs(&format!("number of strings {}\n", MAX_STRINGS));
@@ -189,12 +189,32 @@ impl StringPool {
         self.str_ptr = val;
     }
 
+    pub fn pool_ptr(&self) -> usize {
+        self.pool_ptr
+    }
+
     pub fn set_pool_ptr(&mut self, val: usize) {
         self.pool_ptr = val;
     }
 
     pub fn str_start(&self, str: StrNumber) -> usize {
         self.offsets[str]
+    }
+
+    // TODO: Encapsulate better
+    pub fn set_start(&mut self, str: StrNumber, start: usize) {
+        self.offsets[str] = start;
+    }
+
+    pub fn copy_raw(&mut self, str: StrNumber, pos: usize) {
+        let start = self.offsets[str];
+        let end = self.offsets[str + 1];
+
+        while pos + (end - start) > self.strings.len() {
+            self.grow();
+        }
+
+        self.strings.copy_within(start..end, pos);
     }
 
     pub fn add_string_raw(&mut self, str: &[ASCIICode]) -> Result<PoolPointer, BibtexError> {
@@ -204,6 +224,10 @@ impl StringPool {
         self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
         self.pool_ptr += str.len();
         self.make_string()
+    }
+
+    pub fn len(&self) -> usize {
+        self.strings.len()
     }
 }
 

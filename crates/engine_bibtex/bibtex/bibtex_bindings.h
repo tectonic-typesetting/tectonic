@@ -223,6 +223,9 @@ typedef struct {
   XBuf_ExecVal *lit_stack;
   uintptr_t lit_stk_ptr;
   bool mess_with_entries;
+  /**
+   * Pointer to the current top of the string pool, used to optimized certain string operations
+   */
   StrNumber bib_str_ptr;
 } ExecCtx;
 
@@ -475,6 +478,14 @@ ExecVal *cur_lit(ExecCtx *ctx);
 CResult x_equals(ExecCtx *ctx);
 
 CResult x_greater_than(ExecCtx *ctx);
+
+CResult x_less_than(ExecCtx *ctx);
+
+CResult x_plus(ExecCtx *ctx);
+
+CResult x_minus(ExecCtx *ctx);
+
+CResult x_concatenate(ExecCtx *ctx);
 
 int32_t num_glb_strs(void);
 

@@ -102,178 +102,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void x_less_than(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.integer < ctx->pop1.integer)
-        push_lit_stk(ctx, int_val(1));
-    else
-        push_lit_stk(ctx, int_val(0));
-}
-
-static void x_plus(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else
-        push_lit_stk(ctx, int_val(ctx->pop2.integer + ctx->pop1.integer));
-}
-
-static void x_minus(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else if (ctx->pop2.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, int_val(0));
-    } else
-        push_lit_stk(ctx, int_val(ctx->pop2.integer - ctx->pop1.integer));
-}
-
-static void x_concatenate(ExecCtx* ctx)
-{
-    pool_pointer sp_ptr, sp_end;
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != ExecVal_String) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
-        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if (ctx->pop2.tag != ExecVal_String) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
-        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else {                    /*352: */
-
-        if (ctx->pop2.string >= ctx->bib_str_ptr) {
-
-            if (ctx->pop1.string >= ctx->bib_str_ptr) {
-                bib_set_str_start(ctx->pop1.string, bib_str_start(ctx->pop1.string + 1));
-                {
-                    bib_set_str_ptr(bib_str_ptr() + 1);
-                    bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
-                }
-                ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-            } else if ((bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) == 0)
-                push_lit_stk(ctx, str_val(ctx->pop1.string));
-            else {
-
-                bib_set_pool_ptr(bib_str_start(ctx->pop2.string + 1));
-                {
-                    while (bib_pool_ptr() + (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) > bib_pool_size())
-                        pool_overflow();
-                }
-                sp_ptr = bib_str_start(ctx->pop1.string);
-                sp_end = bib_str_start(ctx->pop1.string + 1);
-                while (sp_ptr < sp_end) {
-
-                    {
-                        bib_set_str_pool(bib_pool_ptr(), bib_str_pool(sp_ptr));
-                        bib_set_pool_ptr(bib_pool_ptr() + 1);
-                    }
-                    sp_ptr = sp_ptr + 1;
-                }
-                push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-            }
-        } else {                /*353: */
-
-            if (ctx->pop1.string >= ctx->bib_str_ptr) {
-
-                if ((bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) == 0) {
-                    {
-                        bib_set_str_ptr(bib_str_ptr() + 1);
-                        bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
-                    }
-                    ExecVal* top = cur_lit(ctx);
-                    top->tag = ExecVal_String;
-                    top->string = ctx->pop1.string;
-                    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-                } else if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) == 0)
-                    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-                else {
-
-                    pool_pointer sp_length = (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string));
-                    pool_pointer sp2_length = (bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string));
-                    {
-                        while (bib_pool_ptr() + sp_length + sp2_length > bib_pool_size())
-                            pool_overflow();
-                    }
-                    sp_ptr = bib_str_start(ctx->pop1.string + 1);
-                    sp_end = bib_str_start(ctx->pop1.string);
-                    pool_pointer sp_xptr1 = sp_ptr + sp2_length;
-                    while (sp_ptr > sp_end) {
-
-                        sp_ptr = sp_ptr - 1;
-                        sp_xptr1 = sp_xptr1 - 1;
-                        bib_set_str_pool(sp_xptr1, bib_str_pool(sp_ptr));
-                    }
-                    sp_ptr = bib_str_start(ctx->pop2.string);
-                    sp_end = bib_str_start(ctx->pop2.string + 1);
-                    while (sp_ptr < sp_end) {
-
-                        {
-                            bib_set_str_pool(bib_pool_ptr(), bib_str_pool(sp_ptr));
-                            bib_set_pool_ptr(bib_pool_ptr() + 1);
-                        }
-                        sp_ptr = sp_ptr + 1;
-                    }
-                    bib_set_pool_ptr(bib_pool_ptr() + sp_length);
-                    push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-                }
-            } else {            /*354: */
-
-                if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) == 0)
-                    ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-                else if ((bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) == 0)
-                    push_lit_stk(ctx, str_val(ctx->pop1.string));
-                else {
-
-                    {
-                        while ((bib_pool_ptr() + (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) +
-                                (bib_str_start(ctx->pop2.string + 1) - bib_str_start(ctx->pop2.string)) > bib_pool_size()))
-                            pool_overflow();
-                    }
-                    sp_ptr = bib_str_start(ctx->pop2.string);
-                    sp_end = bib_str_start(ctx->pop2.string + 1);
-                    while (sp_ptr < sp_end) {
-
-                        {
-                            bib_set_str_pool(bib_pool_ptr(), bib_str_pool(sp_ptr));
-                            bib_set_pool_ptr(bib_pool_ptr() + 1);
-                        }
-                        sp_ptr = sp_ptr + 1;
-                    }
-                    sp_ptr = bib_str_start(ctx->pop1.string);
-                    sp_end = bib_str_start(ctx->pop1.string + 1);
-                    while (sp_ptr < sp_end) {
-
-                        {
-                            bib_set_str_pool(bib_pool_ptr(), bib_str_pool(sp_ptr));
-                            bib_set_pool_ptr(bib_pool_ptr() + 1);
-                        }
-                        sp_ptr = sp_ptr + 1;
-                    }
-                    push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-                }
-            }
-        }
-    }
-}
-
 static void x_gets(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
@@ -1529,16 +1357,16 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(x_equals(ctx));
             break;
         case 1:
-            x_greater_than(ctx);
+            unwrap(x_greater_than(ctx));
             break;
         case 2:
-            x_less_than(ctx);
+            unwrap(x_less_than(ctx));
             break;
         case 3:
-            x_plus(ctx);
+            unwrap(x_plus(ctx));
             break;
         case 4:
-            x_minus(ctx);
+            unwrap(x_minus(ctx));
             break;
         case 5:
             x_concatenate(ctx);
