@@ -147,6 +147,10 @@ impl HashData {
         self.hash_ilk[pos] = val;
     }
 
+    pub fn ilk_info(&self, pos: usize) -> i32 {
+        self.ilk_info[pos]
+    }
+
     pub fn set_ilk_info(&mut self, pos: usize, info: i32) {
         self.ilk_info[pos] = info;
     }

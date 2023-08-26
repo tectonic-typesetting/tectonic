@@ -1,10 +1,21 @@
-use crate::c_api::{peekable::PeekableInput, xbuf::XBuf, BibNumber, StrNumber};
-use std::cell::RefCell;
+use crate::{
+    c_api::{
+        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        char_info::LexClass,
+        log::{rs_eat_bib_print, write_log_file},
+        peekable::{rs_input_ln, PeekableInput},
+        scan::Scan,
+        xbuf::XBuf,
+        BibNumber, StrNumber,
+    },
+    BibtexError,
+};
+use std::{cell::RefCell, ptr::NonNull};
 
 const MAX_BIB_FILES: usize = 20;
 
 pub struct BibData {
-    bib_file: XBuf<*mut PeekableInput>,
+    bib_file: XBuf<Option<NonNull<PeekableInput>>>,
     bib_list: XBuf<StrNumber>,
     bib_ptr: BibNumber,
     bib_line_num: i32,
@@ -32,12 +43,33 @@ impl BibData {
         self.bib_list[self.bib_ptr] = num;
     }
 
-    fn cur_bib_file(&self) -> *mut PeekableInput {
+    fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
+        match &mut self.bib_file[self.bib_ptr] {
+            // SAFETY: If non-null, bib files are guaranteed valid inputs
+            Some(r) => Some(unsafe { r.as_mut() }),
+            None => None,
+        }
+    }
+
+    fn cur_bib_file_raw(&mut self) -> Option<NonNull<PeekableInput>> {
         self.bib_file[self.bib_ptr]
     }
 
-    fn set_cur_bib_file(&mut self, input: *mut PeekableInput) {
+    fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
         self.bib_file[self.bib_ptr] = input;
+    }
+
+    pub fn line_num(&self) -> i32 {
+        self.bib_line_num
+    }
+
+    pub fn set_line_num(&mut self, val: i32) {
+        self.bib_line_num = val;
+    }
+
+    pub fn add_preamble(&mut self, s: StrNumber) {
+        self.preamble[self.preamble_ptr] = s;
+        self.preamble_ptr += 1;
     }
 
     fn grow(&mut self) {
@@ -55,7 +87,7 @@ fn with_bibs<T>(f: impl FnOnce(&BibData) -> T) -> T {
     BIBS.with(|bibs| f(&bibs.borrow()))
 }
 
-fn with_bibs_mut<T>(f: impl FnOnce(&mut BibData) -> T) -> T {
+pub fn with_bibs_mut<T>(f: impl FnOnce(&mut BibData) -> T) -> T {
     BIBS.with(|bibs| f(&mut bibs.borrow_mut()))
 }
 
@@ -74,12 +106,12 @@ pub extern "C" fn set_cur_bib(num: StrNumber) {
 }
 
 #[no_mangle]
-pub extern "C" fn cur_bib_file() -> *mut PeekableInput {
-    with_bibs(|bibs| bibs.cur_bib_file())
+pub extern "C" fn cur_bib_file() -> Option<NonNull<PeekableInput>> {
+    with_bibs_mut(|bibs| bibs.cur_bib_file_raw())
 }
 
 #[no_mangle]
-pub extern "C" fn set_cur_bib_file(input: *mut PeekableInput) {
+pub extern "C" fn set_cur_bib_file(input: Option<NonNull<PeekableInput>>) {
     with_bibs_mut(|bibs| bibs.set_cur_bib_file(input))
 }
 
@@ -99,14 +131,6 @@ pub extern "C" fn check_bib_files(ptr: BibNumber) {
         if ptr == bibs.bib_list.len() {
             bibs.grow();
         }
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn add_preamble(num: StrNumber) {
-    with_bibs_mut(|bibs| {
-        bibs.preamble[bibs.preamble_ptr] = num;
-        bibs.preamble_ptr += 1;
     })
 }
 
@@ -133,4 +157,68 @@ pub extern "C" fn bib_line_num() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_bib_line_num(num: i32) {
     with_bibs_mut(|bibs| bibs.bib_line_num = num)
+}
+
+pub fn rs_eat_bib_white_space(buffers: &mut GlobalBuffer) -> bool {
+    let mut init = buffers.init(BufTy::Base);
+    while !Scan::new()
+        .not_class(LexClass::Whitespace)
+        .scan_till(buffers, init)
+    {
+        let res = with_bibs_mut(|bibs| {
+            let bib_file = bibs.cur_bib_file();
+            !rs_input_ln(bib_file, buffers)
+        });
+
+        if res {
+            return false;
+        }
+
+        with_bibs_mut(|bibs| {
+            bibs.set_line_num(bibs.line_num() + 1);
+        });
+        buffers.set_offset(BufTy::Base, 2, 0);
+        init = buffers.init(BufTy::Base);
+    }
+    true
+}
+
+#[no_mangle]
+pub extern "C" fn eat_bib_white_space() -> bool {
+    with_buffers_mut(rs_eat_bib_white_space)
+}
+
+pub fn compress_bib_white(
+    buffers: &mut GlobalBuffer,
+    at_bib_command: bool,
+) -> Result<bool, BibtexError> {
+    if buffers.offset(BufTy::Ex, 1) == buffers.len() {
+        write_log_file("Field filled up at ' ', reallocating.\n");
+        buffers.grow_all();
+    }
+
+    buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b' ');
+    buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+    let mut last = buffers.init(BufTy::Base);
+    while !Scan::new()
+        .not_class(LexClass::Whitespace)
+        .scan_till(buffers, last)
+    {
+        let res = with_bibs_mut(|bibs| {
+            let bib_file = bibs.cur_bib_file();
+            !rs_input_ln(bib_file, buffers)
+        });
+
+        if res {
+            return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
+        }
+
+        with_bibs_mut(|bibs| {
+            bibs.set_line_num(bibs.line_num() + 1);
+        });
+        buffers.set_offset(BufTy::Base, 2, 0);
+        last = buffers.init(BufTy::Base);
+    }
+
+    Ok(true)
 }

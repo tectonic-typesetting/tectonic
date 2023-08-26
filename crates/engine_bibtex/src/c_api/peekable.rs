@@ -1,6 +1,6 @@
 use crate::{
     c_api::{
-        buffer::{with_buffers, with_buffers_mut, BufTy},
+        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer,
     },
@@ -32,7 +32,7 @@ impl PeekableInput {
                 saw_eof: false,
             }))
         } else {
-            Err(BibtexError)
+            Err(BibtexError::Fatal)
         }
     }
 
@@ -124,32 +124,28 @@ pub unsafe extern "C" fn tectonic_eof(peekable: Option<NonNull<PeekableInput>>) 
     peekable.eof()
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn input_ln(peekable: Option<NonNull<PeekableInput>>) -> bool {
-    let mut peekable = match peekable {
+pub fn rs_input_ln(peekable: Option<&mut PeekableInput>, buffers: &mut GlobalBuffer) -> bool {
+    let peekable = match peekable {
         Some(p) => p,
         None => return false,
     };
 
-    with_buffers_mut(|buffers| buffers.set_init(BufTy::Base, 0));
+    buffers.set_init(BufTy::Base, 0);
     let mut last = 0;
-    let peekable = peekable.as_mut();
     if peekable.eof() {
         return false;
     }
 
     // Read up to end-of-line
-    with_buffers_mut(|b| {
-        while !peekable.eoln() {
-            if last >= b.len() as BufPointer {
-                b.grow_all();
-            }
-
-            let ptr = &mut b.buffer_mut(BufTy::Base)[last];
-            *ptr = peekable.getc() as ASCIICode;
-            last += 1;
+    while !peekable.eoln() {
+        if last >= buffers.len() as BufPointer {
+            buffers.grow_all();
         }
-    });
+
+        let ptr = &mut buffers.buffer_mut(BufTy::Base)[last];
+        *ptr = peekable.getc() as ASCIICode;
+        last += 1;
+    }
 
     // For side effects - consume the eoln we saw
     let eoln = peekable.getc();
@@ -161,17 +157,20 @@ pub unsafe extern "C" fn input_ln(peekable: Option<NonNull<PeekableInput>>) -> b
     }
 
     // Trim whitespace
-    with_buffers(|b| {
-        while last > 0 {
-            if LexClass::of(b.at(BufTy::Base, last - 1)) == LexClass::Whitespace {
-                last -= 1;
-            } else {
-                break;
-            }
+    while last > 0 {
+        if LexClass::of(buffers.at(BufTy::Base, last - 1)) == LexClass::Whitespace {
+            last -= 1;
+        } else {
+            break;
         }
-    });
+    }
 
-    with_buffers_mut(|buffers| buffers.set_init(BufTy::Base, last));
+    buffers.set_init(BufTy::Base, last);
 
     true
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn input_ln(peekable: Option<NonNull<PeekableInput>>) -> bool {
+    with_buffers_mut(|buffers| rs_input_ln(peekable.map(|mut ptr| ptr.as_mut()), buffers))
 }

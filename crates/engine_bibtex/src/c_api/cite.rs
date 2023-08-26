@@ -1,7 +1,7 @@
 use crate::c_api::{
     entries::{with_entries, ENT_STR_SIZE},
-    hash::{with_hash, with_hash_mut},
-    other::with_other_mut,
+    hash::{with_hash, with_hash_mut, HashData},
+    other::{with_other_mut, OtherData},
     pool::with_pool,
     xbuf::XBuf,
     CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber,
@@ -85,8 +85,20 @@ impl CiteInfo {
         self.cite_ptr = ptr;
     }
 
+    pub fn entry_ptr(&self) -> CiteNumber {
+        self.entry_cite_ptr
+    }
+
+    pub fn set_entry_ptr(&mut self, ptr: CiteNumber) {
+        self.entry_cite_ptr = ptr;
+    }
+
     pub fn num_cites(&self) -> CiteNumber {
         self.num_cites
+    }
+
+    pub fn old_num_cites(&self) -> CiteNumber {
+        self.old_num_cites
     }
 }
 
@@ -237,6 +249,25 @@ pub extern "C" fn set_all_marker(val: CiteNumber) {
     with_cites_mut(|cites| cites.all_marker = val)
 }
 
+pub fn rs_add_database_cite(
+    cites: &mut CiteInfo,
+    other: &mut OtherData,
+    hash: &mut HashData,
+    new_cite: CiteNumber,
+    cite_loc: CiteNumber,
+    lc_cite_loc: CiteNumber,
+) -> CiteNumber {
+    if new_cite == cites.cite_list.len() {
+        cites.grow();
+    }
+    other.check_field_overflow(other.num_fields() * (new_cite + 1));
+
+    cites.set_cite(new_cite, hash.text(cite_loc));
+    hash.set_ilk_info(cite_loc, new_cite as i32);
+    hash.set_ilk_info(lc_cite_loc, cite_loc as i32);
+    new_cite + 1
+}
+
 #[no_mangle]
 pub extern "C" fn add_database_cite(
     new_cite: CiteNumber,
@@ -244,18 +275,12 @@ pub extern "C" fn add_database_cite(
     lc_cite_loc: CiteNumber,
 ) -> CiteNumber {
     with_cites_mut(|cites| {
-        if new_cite == cites.cite_list.len() {
-            cites.grow();
-        }
-        with_other_mut(|other| other.check_field_overflow(other.num_fields() * (new_cite + 1)));
-
-        with_hash_mut(|hash| {
-            cites.set_cite(new_cite, hash.text(cite_loc));
-            hash.set_ilk_info(cite_loc, new_cite as i32);
-            hash.set_ilk_info(lc_cite_loc, cite_loc as i32);
-        });
-    });
-    new_cite + 1
+        with_other_mut(|other| {
+            with_hash_mut(|hash| {
+                rs_add_database_cite(cites, other, hash, new_cite, cite_loc, lc_cite_loc)
+            })
+        })
+    })
 }
 
 #[no_mangle]

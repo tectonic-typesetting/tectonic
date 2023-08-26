@@ -24,8 +24,12 @@ use std::ffi::CString;
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
+#[doc(hidden)]
 #[derive(Debug)]
-pub(crate) struct BibtexError;
+pub enum BibtexError {
+    Fatal,
+    Recover,
+}
 
 /// A possible outcome from a BibTeX engine invocation.
 ///
@@ -145,6 +149,9 @@ pub mod c_api {
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
     const _: () = assert!(hash::HASH_PRIME >= 128);
+    const _: () = assert!(pool::MAX_PRINT_LINE > pool::MIN_PRINT_LINE);
+    const _: () = assert!(pool::MIN_PRINT_LINE >= 3);
+    const _: () = assert!(pool::MAX_PRINT_LINE < buffer::BUF_SIZE + 1);
     const _: () = assert!(hash::HASH_PRIME <= hash::HASH_SIZE);
     const _: () = assert!(pool::MAX_STRINGS <= hash::HASH_SIZE);
     const _: () = assert!(cite::MAX_CITES <= pool::MAX_STRINGS);
@@ -233,10 +240,31 @@ pub mod c_api {
     }
 
     #[repr(C)]
+    #[derive(PartialEq)]
     pub enum CResult {
         Error,
         Recover,
         Ok,
+    }
+
+    impl From<CResult> for Result<(), BibtexError> {
+        fn from(value: CResult) -> Self {
+            match value {
+                CResult::Error => Err(BibtexError::Fatal),
+                CResult::Recover => Err(BibtexError::Recover),
+                CResult::Ok => Ok(()),
+            }
+        }
+    }
+
+    impl From<Result<(), BibtexError>> for CResult {
+        fn from(value: Result<(), BibtexError>) -> Self {
+            match value {
+                Ok(()) => CResult::Ok,
+                Err(BibtexError::Fatal) => CResult::Error,
+                Err(BibtexError::Recover) => CResult::Recover,
+            }
+        }
     }
 
     #[repr(C)]
@@ -244,6 +272,23 @@ pub mod c_api {
         Error,
         Recover,
         Ok(StrNumber),
+    }
+
+    #[repr(C)]
+    pub enum CResultBool {
+        Error,
+        Recover,
+        Ok(bool),
+    }
+
+    impl From<Result<bool, BibtexError>> for CResultBool {
+        fn from(value: Result<bool, BibtexError>) -> Self {
+            match value {
+                Ok(val) => CResultBool::Ok(val),
+                Err(BibtexError::Fatal) => CResultBool::Error,
+                Err(BibtexError::Recover) => CResultBool::Recover,
+            }
+        }
     }
 
     #[repr(C)]
@@ -265,7 +310,7 @@ pub mod c_api {
         fn from(value: Result<LookupRes, BibtexError>) -> Self {
             match value {
                 Ok(val) => CResultLookup::Ok(val),
-                Err(BibtexError) => CResultLookup::Error,
+                Err(_) => CResultLookup::Error,
             }
         }
     }
@@ -412,8 +457,8 @@ pub mod c_api {
                     pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile)
                 })
             }) {
-                Err(BibtexError) => return CResultStr::Error,
                 Ok(res) => res,
+                Err(_) => return CResultStr::Error,
             };
             aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc)));
 

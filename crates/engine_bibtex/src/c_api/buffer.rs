@@ -2,9 +2,9 @@ use crate::c_api::{
     xbuf::{SafelyZero, XBuf},
     ASCIICode, BufPointer,
 };
-use std::cell::RefCell;
+use std::{cell::RefCell, slice};
 
-const BUF_SIZE: usize = 20000;
+pub(crate) const BUF_SIZE: usize = 20000;
 
 thread_local! {
     static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = RefCell::new(GlobalBuffer::new());
@@ -22,7 +22,7 @@ pub fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
     GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
 }
 
-struct Buffer<T: Copy + 'static, const N: usize> {
+struct Buffer<T: SafelyZero + 'static, const N: usize> {
     ptr: XBuf<T>,
     /// Stateful offsets into the buffer
     offset: [BufPointer; N],
@@ -77,6 +77,16 @@ impl GlobalBuffer {
         self.buf_len == 0
     }
 
+    fn buffer_raw(&mut self, ty: BufTy) -> *mut ASCIICode {
+        match ty {
+            BufTy::Base => self.buffer.ptr.as_mut_ptr(),
+            BufTy::Sv => self.sv_buffer.ptr.as_mut_ptr(),
+            BufTy::Ex => self.ex_buf.ptr.as_mut_ptr(),
+            BufTy::Out => self.out_buf.ptr.as_mut_ptr(),
+            BufTy::NameSep => self.name_sep_char.ptr.as_mut_ptr(),
+        }
+    }
+
     pub fn buffer(&self, ty: BufTy) -> &[ASCIICode] {
         match ty {
             BufTy::Base => &self.buffer.ptr,
@@ -95,6 +105,24 @@ impl GlobalBuffer {
             BufTy::Out => &mut self.out_buf.ptr,
             BufTy::NameSep => &mut self.name_sep_char.ptr,
         }
+    }
+
+    pub fn copy_within(
+        &mut self,
+        from: BufTy,
+        to: BufTy,
+        from_start: usize,
+        to_start: usize,
+        len: usize,
+    ) {
+        assert_ne!(from, to);
+        assert!(to_start + len < self.buf_len);
+        assert!(from_start + len < self.buf_len);
+        // SAFETY: Pointer guaranteed valid for up to `len`
+        let to = unsafe { slice::from_raw_parts_mut(self.buffer_raw(to).add(to_start), len) };
+        let from = &self.buffer(from)[from_start..from_start + len];
+
+        to.copy_from_slice(from);
     }
 
     pub fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
@@ -118,6 +146,16 @@ impl GlobalBuffer {
             }
         }
     }
+
+    // pub fn incr_offset(&mut self, ty: BufTy, offset: usize) {
+    //     match ty {
+    //         BufTy::Base => self.buffer.offset[offset - 1] += 1,
+    //         BufTy::Ex => self.ex_buf.offset[offset - 1] += 1,
+    //         BufTy::Sv | BufTy::Out | BufTy::NameSep => {
+    //             unreachable!("Buffer {:?} has no offsets", ty)
+    //         }
+    //     }
+    // }
 
     pub fn offset(&self, ty: BufTy, offset: usize) -> BufPointer {
         match ty {
@@ -149,6 +187,10 @@ impl GlobalBuffer {
         }
     }
 
+    pub fn name_tok(&self, pos: usize) -> BufPointer {
+        self.name_tok[pos]
+    }
+
     pub fn grow_all(&mut self) {
         let new_len = self.buf_len + BUF_SIZE;
         self.buffer.grow(BUF_SIZE);
@@ -162,7 +204,7 @@ impl GlobalBuffer {
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub enum BufTy {
     Base,
@@ -170,11 +212,6 @@ pub enum BufTy {
     Ex,
     Out,
     NameSep,
-}
-
-#[no_mangle]
-pub extern "C" fn bib_buf_size() -> usize {
-    with_buffers(|buffers| buffers.len())
 }
 
 #[no_mangle]
@@ -210,11 +247,6 @@ pub extern "C" fn bib_buf_len(ty: BufTy) -> BufPointer {
 #[no_mangle]
 pub extern "C" fn bib_set_buf_len(ty: BufTy, len: BufPointer) {
     with_buffers_mut(|buffers| buffers.set_init(ty, len))
-}
-
-#[no_mangle]
-pub extern "C" fn buffer_overflow() {
-    with_buffers_mut(|buffers| buffers.grow_all())
 }
 
 #[no_mangle]
