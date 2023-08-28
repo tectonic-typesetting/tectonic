@@ -1,7 +1,7 @@
 use crate::c_api::{
     pool,
     xbuf::{SafelyZero, XBuf},
-    CiteNumber, HashPointer, StrIlk, StrNumber,
+    HashPointer, StrIlk, StrNumber,
 };
 use std::cell::RefCell;
 

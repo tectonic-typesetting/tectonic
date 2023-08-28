@@ -422,11 +422,7 @@ void set_num_ent_strs(uintptr_t val);
 
 int32_t entry_ints(int32_t pos);
 
-void set_entry_ints(int32_t pos, int32_t val);
-
 ASCIICode entry_strs(int32_t pos);
-
-void set_entry_strs(int32_t pos, ASCIICode val);
 
 ExecVal int_val(int32_t lit);
 
@@ -489,6 +485,8 @@ CResult x_concatenate(ExecCtx *ctx);
 
 CResult x_gets(ExecCtx *ctx);
 
+CResult x_add_period(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
@@ -497,15 +495,9 @@ void check_grow_global_strs(void);
 
 uintptr_t glb_bib_str_ptr(uintptr_t pos);
 
-void set_glb_bib_str_ptr(uintptr_t pos, uintptr_t val);
-
 ASCIICode global_strs(uintptr_t pos);
 
-void set_global_strs(uintptr_t pos, ASCIICode val);
-
 uintptr_t glb_str_end(uintptr_t pos);
-
-void set_glb_str_end(uintptr_t pos, uintptr_t val);
 
 uintptr_t end_of_def(void);
 

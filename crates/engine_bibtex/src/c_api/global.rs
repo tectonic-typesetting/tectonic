@@ -32,8 +32,8 @@ impl GlobalData {
     }
 
     pub fn set_str(&mut self, pos: usize, val: &[ASCIICode]) {
-        let pos = pos * (GLOB_STR_SIZE + 1);
-        self.global_strs[pos..pos + val.len()].copy_from_slice(val);
+        let spos = pos * (GLOB_STR_SIZE + 1);
+        self.global_strs[spos..spos + val.len()].copy_from_slice(val);
         self.glb_str_end[pos] = val.len();
     }
 

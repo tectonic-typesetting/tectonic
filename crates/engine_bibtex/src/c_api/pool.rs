@@ -217,6 +217,11 @@ impl StringPool {
         self.strings.copy_within(start..end, pos);
     }
 
+    pub fn append(&mut self, c: ASCIICode) {
+        self.strings[self.pool_ptr] = c;
+        self.pool_ptr += 1;
+    }
+
     pub fn add_string_raw(&mut self, str: &[ASCIICode]) -> Result<PoolPointer, BibtexError> {
         while self.pool_ptr + str.len() > self.strings.len() {
             self.grow();

@@ -1088,6 +1088,55 @@ fn interp_gets(
     Ok(())
 }
 
+fn interp_add_period(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+
+    let s1 = match pop1 {
+        ExecVal::String(s1) => s1,
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    let str = pool.get_str(s1);
+
+    if str.len() == 0 {
+        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        return Ok(());
+    }
+
+    let pos = str.iter().copied().rposition(|c| c != b'}').unwrap_or(0);
+
+    match str[pos] {
+        b'.' | b'?' | b'!' => {
+            // If scratch, save
+            if s1 >= ctx.bib_str_ptr {
+                pool.set_str_ptr(pool.str_ptr() + 1);
+                pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+            }
+            ctx.push_stack(pop1);
+        }
+        _ => {
+            if s1 < ctx.bib_str_ptr {
+                let ptr = pool.pool_ptr();
+                let s_len = str.len();
+                pool.copy_raw(s1, ptr);
+                pool.set_pool_ptr(ptr + s_len);
+            } else {
+                pool.set_pool_ptr(pool.str_start(s1 + 1));
+                while pool.pool_ptr() + 1 > pool.len() {
+                    pool.grow();
+                }
+            }
+            pool.append(b'.');
+            ctx.push_stack(ExecVal::String(pool.make_string()?));
+        }
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1130,4 +1179,9 @@ pub unsafe extern "C" fn x_gets(ctx: *mut ExecCtx) -> CResult {
         })
     })
     .into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_add_period(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_add_period(&mut *ctx, pool)).into()
 }
