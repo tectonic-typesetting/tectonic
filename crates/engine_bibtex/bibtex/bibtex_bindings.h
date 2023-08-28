@@ -487,6 +487,8 @@ CResult x_minus(ExecCtx *ctx);
 
 CResult x_concatenate(ExecCtx *ctx);
 
+CResult x_gets(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
@@ -501,9 +503,9 @@ ASCIICode global_strs(uintptr_t pos);
 
 void set_global_strs(uintptr_t pos, ASCIICode val);
 
-int32_t glb_str_end(uintptr_t pos);
+uintptr_t glb_str_end(uintptr_t pos);
 
-void set_glb_str_end(uintptr_t pos, int32_t val);
+void set_glb_str_end(uintptr_t pos, uintptr_t val);
 
 uintptr_t end_of_def(void);
 
@@ -606,10 +608,6 @@ CResult bad_cross_reference_print(StrNumber s);
 CResult print_missing_entry(StrNumber s);
 
 CResult bst_cant_mess_with_entries_print(const ExecCtx *ctx);
-
-void bst_1print_string_size_exceeded(void);
-
-CResult bst_2print_string_size_exceeded(const ExecCtx *ctx);
 
 void case_conversion_confusion(void);
 

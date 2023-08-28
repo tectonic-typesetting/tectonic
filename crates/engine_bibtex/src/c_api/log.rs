@@ -597,39 +597,41 @@ pub extern "C" fn print_missing_entry(s: StrNumber) -> CResult {
     CResult::Ok
 }
 
-pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> CResult {
+pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
         match with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr()))) {
             CResult::Ok => (),
-            err => return err,
+            err => return err.into(),
         }
     }
     write_logs("\nwhile executing");
     // SAFETY: glbl_ctx pointer guaranteed valid
-    unsafe { bst_warn_print(ctx.glbl_ctx) }
+    unsafe { bst_warn_print(ctx.glbl_ctx) }.into()
+}
+
+pub fn rs_bst_cant_mess_with_entries_print(
+    ctx: &ExecCtx,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
+    write_logs("You can't mess with entries here");
+    rs_bst_ex_warn_print(ctx, pool)
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_cant_mess_with_entries_print(ctx: *const ExecCtx) -> CResult {
-    write_logs("You can't mess with entries here");
-    with_pool(|pool| rs_bst_ex_warn_print(&*ctx, pool)).into()
+    with_pool(|pool| rs_bst_cant_mess_with_entries_print(&*ctx, pool)).into()
 }
 
-#[no_mangle]
-pub extern "C" fn bst_1print_string_size_exceeded() {
+pub fn bst_1print_string_size_exceeded() {
     write_logs("Warning--you've exceeded ");
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bst_2print_string_size_exceeded(ctx: *const ExecCtx) -> CResult {
+pub fn bst_2print_string_size_exceeded(ctx: &ExecCtx) -> Result<(), BibtexError> {
     write_logs("-string-size,");
-    match bst_mild_ex_warn_print(&*ctx) {
-        CResult::Ok => (),
-        err => return err,
-    }
+    bst_mild_ex_warn_print(&*ctx)?;
     write_logs("*Please notify the bibstyle designer*\n");
-    CResult::Ok
+    Ok(())
 }
 
 pub fn braces_unbalanced_complaint(
@@ -642,7 +644,7 @@ pub fn braces_unbalanced_complaint(
         err => return err.into(),
     }
     write_logs("\" isn't a brace-balanced string");
-    bst_mild_ex_warn_print(ctx).into()
+    bst_mild_ex_warn_print(ctx)
 }
 
 #[no_mangle]

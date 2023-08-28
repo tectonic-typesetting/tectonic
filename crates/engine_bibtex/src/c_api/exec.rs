@@ -2,12 +2,16 @@ use crate::{
     c_api::{
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
-        cite::with_cites,
-        hash::with_hash,
+        cite::{with_cites, CiteInfo},
+        entries::{with_entries_mut, EntryData, ENT_STR_SIZE},
+        global::{with_globals_mut, GlobalData, GLOB_STR_SIZE},
+        hash::{with_hash, with_hash_mut, FnClass, HashData},
         history::mark_error,
         log::{
-            brace_lvl_one_letters_complaint, braces_unbalanced_complaint, print_a_pool_str,
-            print_confusion, rs_print_a_pool_str, write_logs,
+            brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
+            bst_1print_string_size_exceeded, bst_2print_string_size_exceeded, print_a_pool_str,
+            print_confusion, print_fn_class, rs_bst_cant_mess_with_entries_print,
+            rs_print_a_pool_str, write_logs,
         },
         pool::{with_pool, with_pool_mut, StringPool},
         scan::enough_text_chars,
@@ -994,6 +998,96 @@ fn interp_concat(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexE
     Ok(())
 }
 
+fn interp_gets(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &mut HashData,
+    entries: &mut EntryData,
+    globals: &mut GlobalData,
+    cites: &CiteInfo,
+) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    let f1 = match pop1 {
+        ExecVal::Function(f1) => f1,
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Function)?;
+            return Ok(());
+        }
+    };
+
+    let fn_ty = hash.ty(f1);
+    if !ctx.mess_with_entries && fn_ty == FnClass::StrEntryVar || fn_ty == FnClass::IntEntryVar {
+        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+        return Ok(());
+    }
+
+    match fn_ty {
+        FnClass::IntEntryVar => {
+            if let ExecVal::Integer(i2) = pop2 {
+                entries.set_int(
+                    cites.ptr() * entries.num_ent_ints() + hash.ilk_info(f1) as usize,
+                    i2,
+                )
+            } else {
+                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            }
+        }
+        FnClass::StrEntryVar => {
+            if let ExecVal::String(s2) = pop2 {
+                let mut s = pool.get_str(s2);
+                if s.len() > ENT_STR_SIZE {
+                    bst_1print_string_size_exceeded();
+                    write_logs(&format!("{}, the entry", ENT_STR_SIZE));
+                    bst_2print_string_size_exceeded(ctx)?;
+                    s = &s[..ENT_STR_SIZE];
+                }
+                entries.set_str(
+                    cites.ptr() * entries.num_ent_strs() + hash.ilk_info(f1) as usize,
+                    s,
+                );
+            } else {
+                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            }
+        }
+        FnClass::IntGlblVar => {
+            if let ExecVal::Integer(i2) = pop2 {
+                hash.set_ilk_info(f1, i2);
+            } else {
+                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            }
+        }
+        FnClass::StrGlblVar => {
+            if let ExecVal::String(s2) = pop2 {
+                let str_glb_ptr = hash.ilk_info(f1) as usize;
+                if s2 < ctx.bib_str_ptr {
+                    globals.set_str_ptr(str_glb_ptr, s2);
+                } else {
+                    globals.set_str_ptr(str_glb_ptr, 0);
+                    let mut s = pool.get_str(s2);
+                    if s.len() > GLOB_STR_SIZE {
+                        bst_1print_string_size_exceeded();
+                        write_logs(&format!("{}, the global", GLOB_STR_SIZE));
+                        bst_2print_string_size_exceeded(ctx)?;
+                        s = &s[..GLOB_STR_SIZE];
+                    }
+                    globals.set_str(str_glb_ptr, s);
+                }
+            } else {
+                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+            }
+        }
+        _ => {
+            write_logs("You can't assign to type ");
+            print_fn_class(f1);
+            write_logs(", a nonvariable function class");
+            rs_bst_ex_warn_print(ctx, pool)?;
+        }
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1022,4 +1116,18 @@ pub unsafe extern "C" fn x_minus(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_concatenate(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_concat(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_gets(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| {
+        with_hash_mut(|hash| {
+            with_entries_mut(|entries| {
+                with_globals_mut(|globals| {
+                    with_cites(|cites| interp_gets(&mut *ctx, pool, hash, entries, globals, cites))
+                })
+            })
+        })
+    })
+    .into()
 }

@@ -102,94 +102,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void x_gets(ExecCtx* ctx)
-{
-    pool_pointer sp_ptr, sp_end;
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if (ctx->pop1.tag != ExecVal_Function)
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION));
-    else if (((!ctx->mess_with_entries)
-              && ((fn_type(ctx->pop1.function) == FN_CLASS_STR_ENTRY_VAR ) || (fn_type(ctx->pop1.function) == FN_CLASS_INT_ENTRY_VAR ))))
-        unwrap(bst_cant_mess_with_entries_print(ctx));
-    else
-        switch ((fn_type(ctx->pop1.function))) {
-        case FN_CLASS_INT_ENTRY_VAR:
-            if (ctx->pop2.tag != ExecVal_Integer)
-                unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
-            else
-                set_entry_ints(cite_ptr() * num_ent_ints() + ilk_info(ctx->pop1.function), /*:356 */ ctx->pop2.integer);
-            break;
-        case FN_CLASS_STR_ENTRY_VAR:
-            {
-                if (ctx->pop2.tag != ExecVal_String)
-                    unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
-                else {
-
-                    str_ent_loc str_ent_ptr = cite_ptr() * num_ent_strs() + ilk_info(ctx->pop1.function);
-                    int32_t ent_chr_ptr = 0;
-                    sp_ptr = bib_str_start(ctx->pop2.string);
-                    pool_pointer sp_xptr1 = bib_str_start(ctx->pop2.string + 1);
-                    if (sp_xptr1 - sp_ptr > ENT_STR_SIZE) {
-                        {
-                            bst_1print_string_size_exceeded();
-                            printf_log("%ld, the entry", (long) ENT_STR_SIZE);
-                            unwrap(bst_2print_string_size_exceeded(ctx));
-                        }
-                        sp_xptr1 = sp_ptr + ENT_STR_SIZE;
-                    }
-                    while (sp_ptr < sp_xptr1) {
-
-                        set_entry_strs((str_ent_ptr) * (ENT_STR_SIZE + 1) + (ent_chr_ptr), bib_str_pool(sp_ptr));
-                        ent_chr_ptr = ent_chr_ptr + 1;
-                        sp_ptr = sp_ptr + 1;
-                    }
-                    set_entry_strs((str_ent_ptr) * (ENT_STR_SIZE + 1) + (ent_chr_ptr), 127 /*end_of_string */);
-                }
-            }
-            break;
-        case FN_CLASS_INT_GLBL_VAR:
-            if (ctx->pop2.tag != ExecVal_Integer)
-                unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_INTEGER));
-            else
-                set_ilk_info(ctx->pop1.function, /*:359 */ ctx->pop2.integer);
-            break;
-        case FN_CLASS_STR_GLBL_VAR:
-            if (ctx->pop2.tag != ExecVal_String) {
-                unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
-            } else {
-                int32_t str_glb_ptr = ilk_info(ctx->pop1.function);
-                if ((size_t)ctx->pop2.string < ctx->bib_str_ptr)
-                    set_glb_bib_str_ptr(str_glb_ptr, ctx->pop2.string);
-                else {
-                    set_glb_bib_str_ptr(str_glb_ptr, 0);
-                    int32_t glob_chr_ptr = 0;
-                    sp_ptr = bib_str_start(ctx->pop2.string);
-                    sp_end = bib_str_start(ctx->pop2.string + 1);
-                    if (sp_end - sp_ptr > GLOB_STR_SIZE) {
-                        bst_1print_string_size_exceeded();
-                        printf_log("%ld, the global", (long) GLOB_STR_SIZE);
-                        unwrap(bst_2print_string_size_exceeded(ctx));
-                        sp_end = sp_ptr + GLOB_STR_SIZE;
-                    }
-                    while (sp_ptr < sp_end) {
-                        set_global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr), bib_str_pool(sp_ptr));
-                        glob_chr_ptr = glob_chr_ptr + 1;
-                        sp_ptr = sp_ptr + 1;
-                    }
-                    set_glb_str_end(str_glb_ptr, glob_chr_ptr);
-                }
-            }
-            break;
-        default:
-            puts_log("You can't assign to type ");
-            print_fn_class(ctx->pop1.function);
-            puts_log(", a nonvariable function class");
-            unwrap(bst_ex_warn_print(ctx));
-            break;
-        }
-}
-
 static void x_add_period(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
@@ -1369,10 +1281,10 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(x_minus(ctx));
             break;
         case 5:
-            x_concatenate(ctx);
+            unwrap(x_concatenate(ctx));
             break;
         case 6:
-            x_gets(ctx);
+            unwrap(x_gets(ctx));
             break;
         case 7:
             x_add_period(ctx);

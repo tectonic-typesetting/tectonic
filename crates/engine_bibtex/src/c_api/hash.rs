@@ -1,7 +1,7 @@
 use crate::c_api::{
     pool,
     xbuf::{SafelyZero, XBuf},
-    HashPointer, StrIlk, StrNumber,
+    CiteNumber, HashPointer, StrIlk, StrNumber,
 };
 use std::cell::RefCell;
 
@@ -64,7 +64,7 @@ const fn compute_hash_prime() -> usize {
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 #[repr(C)]
 pub enum FnClass {
     Builtin = 0,
