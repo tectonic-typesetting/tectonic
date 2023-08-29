@@ -969,7 +969,7 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
     res.into()
 }
 
-fn rs_decr_brace_level(
+pub fn rs_decr_brace_level(
     ctx: &ExecCtx,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
@@ -992,7 +992,7 @@ pub unsafe extern "C" fn decr_brace_level(
     rs_decr_brace_level(&*ctx, pop_lit_var, &mut *brace_level).into()
 }
 
-fn rs_check_brace_level(
+pub fn rs_check_brace_level(
     ctx: &ExecCtx,
     pop_lit_var: StrNumber,
     brace_level: i32,

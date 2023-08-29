@@ -265,11 +265,6 @@ pub extern "C" fn lower_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
 }
 
 #[no_mangle]
-pub extern "C" fn upper_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
-    with_buffers_mut(|buffers| buffers.buffer_mut(buf)[ptr..(ptr + len)].make_ascii_uppercase())
-}
-
-#[no_mangle]
 pub extern "C" fn int_to_ascii(
     mut the_int: i32,
     int_buf: BufTy,

@@ -487,6 +487,8 @@ CResult x_gets(ExecCtx *ctx);
 
 CResult x_add_period(ExecCtx *ctx);
 
+CResult x_change_case(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);

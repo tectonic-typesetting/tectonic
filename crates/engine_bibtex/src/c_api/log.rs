@@ -648,12 +648,6 @@ pub fn braces_unbalanced_complaint(
 }
 
 #[no_mangle]
-pub extern "C" fn case_conversion_confusion() {
-    write_logs("Unknown type of case conversion");
-    print_confusion();
-}
-
-#[no_mangle]
 pub extern "C" fn print_fn_class(fn_loc: HashPointer) {
     let ty = with_hash(|hash| hash.ty(fn_loc));
     match ty {

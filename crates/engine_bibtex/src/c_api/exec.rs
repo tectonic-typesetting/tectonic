@@ -14,9 +14,9 @@ use crate::{
             rs_print_a_pool_str, write_logs,
         },
         pool::{with_pool, with_pool_mut, StringPool},
-        scan::enough_text_chars,
+        scan::{enough_text_chars, rs_check_brace_level, rs_decr_brace_level},
         xbuf::{SafelyZero, XBuf},
-        ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -778,7 +778,7 @@ fn rs_add_pool_buf_and_push(
 ) -> Result<(), BibtexError> {
     buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
-    ctx.push_stack(ExecVal::str_val(pool.add_string_raw(str)?));
+    ctx.push_stack(ExecVal::String(pool.add_string_raw(str)?));
     Ok(())
 }
 
@@ -1137,6 +1137,170 @@ fn interp_add_period(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
     Ok(())
 }
 
+fn interp_change_case(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
+    #[derive(PartialEq)]
+    enum ConvTy {
+        TitleLower,
+        AllLower,
+        AllUpper,
+        Bad,
+    }
+
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    match (pop1, pop2) {
+        (ExecVal::String(s1), ExecVal::String(s2)) => {
+            let mut prev_colon = false;
+
+            let str1 = pool.get_str(s1);
+            let conv_ty = if str1.len() == 1 {
+                match str1[0] {
+                    b't' | b'T' => ConvTy::TitleLower,
+                    b'l' | b'L' => ConvTy::AllLower,
+                    b'u' | b'U' => ConvTy::AllUpper,
+                    _ => ConvTy::Bad,
+                }
+            } else {
+                ConvTy::Bad
+            };
+
+            if conv_ty == ConvTy::Bad {
+                rs_print_a_pool_str(s1, pool)?;
+                write_logs(" is an illegal case-conversion string");
+                rs_bst_ex_warn_print(ctx, pool)?;
+            }
+
+            let str2 = pool.get_str(s2);
+            let mut scratch = Vec::from(str2);
+
+            let mut brace_level = 0;
+            let mut idx = 0;
+            while idx < scratch.len() {
+                if scratch[idx] == b'{' {
+                    brace_level += 1;
+                    if !(brace_level != 1
+                        || idx + 4 > str2.len()
+                        || scratch[idx + 1] != b'\\'
+                        || (conv_ty == ConvTy::TitleLower
+                            && (idx == 0
+                                || (prev_colon
+                                    && LexClass::of(scratch[idx - 1]) == LexClass::Whitespace))))
+                    {
+                        idx += 1;
+
+                        while idx < scratch.len() && brace_level > 0 {
+                            idx += 1;
+                            let old_idx = idx;
+                            while idx < scratch.len()
+                                && LexClass::of(scratch[idx]) == LexClass::Alpha
+                            {
+                                idx += 1;
+                            }
+
+                            let res =
+                                pool.lookup_str(hash, &scratch[old_idx..idx], StrIlk::ControlSeq);
+                            if res.exists {
+                                match conv_ty {
+                                    ConvTy::TitleLower | ConvTy::AllLower => {
+                                        match hash.ilk_info(res.loc) {
+                                            3 | 5 | 7 | 9 | 11 => {
+                                                scratch[old_idx..idx].make_ascii_lowercase()
+                                            }
+                                            _ => (),
+                                        }
+                                    }
+                                    ConvTy::AllUpper => match hash.ilk_info(res.loc) {
+                                        2 | 4 | 6 | 8 | 10 => {
+                                            scratch[old_idx..idx].make_ascii_uppercase()
+                                        }
+                                        0 | 1 | 12 => {
+                                            scratch[old_idx..idx].make_ascii_uppercase();
+                                            scratch.copy_within(old_idx..idx, old_idx - 1);
+                                            let old_idx = idx - 1;
+                                            while idx < scratch.len()
+                                                && LexClass::of(scratch[idx])
+                                                    == LexClass::Whitespace
+                                            {
+                                                idx += 1;
+                                            }
+                                            scratch.copy_within(idx.., old_idx);
+                                            scratch.truncate(scratch.len() - idx + old_idx);
+                                            idx = old_idx;
+                                        }
+                                        _ => (),
+                                    },
+                                    ConvTy::Bad => (),
+                                }
+                            }
+
+                            let old_idx = idx;
+                            while idx < scratch.len() && brace_level > 0 && scratch[idx] != b'\\' {
+                                match scratch[idx] {
+                                    b'{' => brace_level += 1,
+                                    b'}' => brace_level -= 1,
+                                    _ => (),
+                                }
+                                idx += 1;
+                            }
+
+                            match conv_ty {
+                                ConvTy::TitleLower | ConvTy::AllLower => {
+                                    scratch[old_idx..idx].make_ascii_lowercase()
+                                }
+                                ConvTy::AllUpper => scratch[old_idx..idx].make_ascii_uppercase(),
+                                ConvTy::Bad => (),
+                            }
+                        }
+                        idx -= 1;
+                    }
+
+                    prev_colon = false;
+                } else if scratch[idx] == b'}' {
+                    rs_decr_brace_level(ctx, s2, &mut brace_level)?;
+                    prev_colon = false;
+                } else if brace_level == 0 {
+                    match conv_ty {
+                        ConvTy::TitleLower => {
+                            if idx == 0
+                                || prev_colon
+                                    && LexClass::of(scratch[idx - 1]) == LexClass::Whitespace
+                            {
+                            } else {
+                                scratch[idx..idx + 1].make_ascii_lowercase()
+                            }
+                            if scratch[idx] == b':' {
+                                prev_colon = true;
+                            } else {
+                                prev_colon = false;
+                            }
+                        }
+                        ConvTy::AllLower => scratch[idx].make_ascii_lowercase(),
+                        ConvTy::AllUpper => scratch[idx].make_ascii_uppercase(),
+                        ConvTy::Bad => (),
+                    }
+                }
+                idx += 1;
+            }
+            rs_check_brace_level(ctx, s2, brace_level)?;
+            ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch)?));
+        }
+        (ExecVal::String(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        }
+        (_, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        }
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1184,4 +1348,9 @@ pub unsafe extern "C" fn x_gets(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_add_period(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_add_period(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_change_case(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| with_hash(|hash| interp_change_case(&mut *ctx, pool, hash))).into()
 }
