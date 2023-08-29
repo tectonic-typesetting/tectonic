@@ -37,7 +37,7 @@ pub struct StringPool {
 }
 
 impl StringPool {
-    fn new() -> StringPool {
+    pub(crate) fn new() -> StringPool {
         StringPool {
             strings: XBuf::new(POOL_SIZE),
             offsets: XBuf::new(MAX_STRINGS),
@@ -574,15 +574,10 @@ fn rs_add_out_pool(
             rs_output_bbl_line(ctx, buffers);
             buffers.set_at(BufTy::Out, 0, b' ');
             buffers.set_at(BufTy::Out, 1, b' ');
-            out_offset = 2;
-            buffers.copy_within(
-                BufTy::Out,
-                BufTy::Out,
-                break_ptr,
-                out_offset,
-                end_ptr - break_ptr,
-            );
-            buffers.set_init(BufTy::Out, end_ptr - break_ptr + 2);
+            let len = end_ptr - break_ptr;
+            buffers.copy_within(BufTy::Out, BufTy::Out, break_ptr, 2, len);
+            out_offset = 2 + len;
+            buffers.set_init(BufTy::Out, len + 2);
         }
     }
 }

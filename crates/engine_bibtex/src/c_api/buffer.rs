@@ -56,7 +56,7 @@ pub struct GlobalBuffer {
 }
 
 impl GlobalBuffer {
-    fn new() -> GlobalBuffer {
+    pub(crate) fn new() -> GlobalBuffer {
         let buf_len = BUF_SIZE + 1;
         GlobalBuffer {
             buf_len,

@@ -626,13 +626,11 @@ pub fn rs_figure_out_the_formatted_name(
                                         buffers.grow_all();
                                     }
 
-                                    sp_ptr = sp_xptr1;
-
                                     let ptr = buffers.offset(BufTy::Ex, 1);
-                                    let tmp_str = &sp_str[sp_ptr..sp_xptr2];
+                                    let tmp_str = &sp_str[sp_xptr1..sp_xptr2];
                                     buffers.copy_from(BufTy::Ex, ptr, tmp_str);
-                                    buffers.set_offset(BufTy::Ex, 1, tmp_str.len());
-                                    sp_ptr += tmp_str.len();
+                                    buffers.set_offset(BufTy::Ex, 1, ptr + tmp_str.len());
+                                    sp_ptr = sp_xptr2;
                                 }
                             }
                         }
