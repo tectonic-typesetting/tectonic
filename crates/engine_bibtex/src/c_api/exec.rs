@@ -1301,6 +1301,96 @@ fn interp_change_case(
     Ok(())
 }
 
+fn interp_chr_to_int(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    match pop1 {
+        ExecVal::String(s1) => {
+            let str = pool.get_str(s1);
+            if str.len() != 1 {
+                write_logs("\"");
+                rs_print_a_pool_str(s1, pool)?;
+                write_logs("\" isn't a single character");
+                rs_bst_ex_warn_print(ctx, pool)?;
+                ctx.push_stack(ExecVal::Integer(0));
+            } else {
+                ctx.push_stack(ExecVal::Integer(str[0] as i32))
+            }
+        }
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+    }
+    Ok(())
+}
+
+fn interp_cite(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    cites: &CiteInfo,
+) -> Result<(), BibtexError> {
+    if !ctx.mess_with_entries {
+        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+    } else {
+        ctx.push_stack(ExecVal::String(cites.get_cite(cites.ptr())))
+    }
+    Ok(())
+}
+
+fn interp_dup(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    match pop1 {
+        ExecVal::String(s1) => {
+            ctx.push_stack(pop1);
+            if s1 < ctx.bib_str_ptr {
+                ctx.push_stack(pop1);
+            } else {
+                pool.set_str_ptr(pool.str_ptr() + 1);
+                pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+
+                let str_len = pool.get_str(s1).len();
+                while pool.pool_ptr() + str_len > pool.len() {
+                    pool.grow();
+                }
+
+                let ptr = pool.pool_ptr();
+                pool.copy_raw(s1, ptr);
+                pool.set_pool_ptr(ptr + str_len);
+                ctx.push_stack(ExecVal::String(pool.make_string()?));
+            }
+        }
+        _ => {
+            ctx.push_stack(pop1);
+            ctx.push_stack(pop1);
+        }
+    }
+    Ok(())
+}
+
+fn interp_empty(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    match pop1 {
+        ExecVal::String(s1) => {
+            let str = pool.get_str(s1);
+            let res = str.iter().all(|c| LexClass::of(*c) == LexClass::Whitespace);
+            ctx.push_stack(ExecVal::Integer(res as i32));
+        }
+        ExecVal::Missing(_) => {
+            ctx.push_stack(ExecVal::Integer(1));
+        }
+        ExecVal::Illegal => {
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        _ => {
+            rs_print_stk_lit(pop1, pool)?;
+            write_logs(", not a string or missing field,");
+            rs_bst_ex_warn_print(ctx, pool)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1353,4 +1443,24 @@ pub unsafe extern "C" fn x_add_period(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_change_case(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| with_hash(|hash| interp_change_case(&mut *ctx, pool, hash))).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_chr_to_int(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_chr_to_int(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_cite(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| with_cites(|cites| interp_cite(&mut *ctx, pool, cites))).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_duplicate(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_dup(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_empty(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_empty(&mut *ctx, pool)).into()
 }

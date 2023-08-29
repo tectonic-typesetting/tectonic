@@ -358,8 +358,6 @@ void set_name_tok(BufPointer pos, BufPointer val);
 
 void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
 
-void upper_case(BufTy buf, BufPointer ptr, BufPointer len);
-
 BufPointer int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin);
 
 void quick_sort(CiteNumber left_end, CiteNumber right_end);
@@ -489,6 +487,14 @@ CResult x_add_period(ExecCtx *ctx);
 
 CResult x_change_case(ExecCtx *ctx);
 
+CResult x_chr_to_int(ExecCtx *ctx);
+
+CResult x_cite(ExecCtx *ctx);
+
+CResult x_duplicate(ExecCtx *ctx);
+
+CResult x_empty(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
@@ -602,8 +608,6 @@ CResult bad_cross_reference_print(StrNumber s);
 CResult print_missing_entry(StrNumber s);
 
 CResult bst_cant_mess_with_entries_print(const ExecCtx *ctx);
-
-void case_conversion_confusion(void);
 
 void print_fn_class(HashPointer fn_loc);
 

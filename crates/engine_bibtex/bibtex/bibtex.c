@@ -102,101 +102,39 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void x_chr_to_int(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_String) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
-        push_lit_stk(ctx, int_val(0));
-    } else if ((bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) != 1) {
-        putc_log('"');
-        unwrap(print_a_pool_str(ctx->pop1.string));
-        puts_log("\" isn't a single character");
-        unwrap(bst_ex_warn_print(ctx));
-        push_lit_stk(ctx, int_val(0));
-    } else
-        push_lit_stk(ctx, int_val(bib_str_pool(bib_str_start(ctx->pop1.string))));
-}
-
-static void x_cite(ExecCtx* ctx)
-{
-    if (!ctx->mess_with_entries)
-        unwrap(bst_cant_mess_with_entries_print(ctx));
-    else
-        push_lit_stk(ctx, str_val(cite_list(cite_ptr())));
-}
-
-static void x_duplicate(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_String) {
-        push_lit_stk(ctx, ctx->pop1);
-        push_lit_stk(ctx, ctx->pop1);
-    } else {
-
-        {
-            if (cur_lit(ctx)->string >= ctx->bib_str_ptr) {
-                bib_set_str_ptr(bib_str_ptr() + 1);
-                bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
-            }
-            ctx->lit_stk_ptr = ctx->lit_stk_ptr + 1;
-        }
-        if (ctx->pop1.string < ctx->bib_str_ptr)
-            push_lit_stk(ctx, ctx->pop1);
-        else {
-
-            {
-                while (bib_pool_ptr() + (bib_str_start(ctx->pop1.string + 1) - bib_str_start(ctx->pop1.string)) > bib_pool_size())
-                    pool_overflow();
-            }
-            pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
-            pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
-            while (sp_ptr < sp_end) {
-
-                {
-                    bib_set_str_pool(bib_pool_ptr(), bib_str_pool(sp_ptr));
-                    bib_set_pool_ptr(bib_pool_ptr() + 1);
-                }
-                sp_ptr = sp_ptr + 1;
-            }
-            push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-        }
-    }
-}
-
-static void x_empty(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    switch ((ctx->pop1.tag)) {
-    case ExecVal_String:
-        {
-            pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
-            pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
-            while (sp_ptr < sp_end) {
-
-                if (LEX_CLASS[bib_str_pool(sp_ptr)] != LEX_CLASS_WHITESPACE ) {
-                    push_lit_stk(ctx, int_val(0));
-                    return;
-                }
-                sp_ptr = sp_ptr + 1;
-            }
-            push_lit_stk(ctx, int_val(1));
-        }
-        break;
-    case ExecVal_Missing:
-        push_lit_stk(ctx, int_val(1));
-        break;
-    case ExecVal_Illegal:
-        push_lit_stk(ctx, int_val(0));
-        break;
-    default:
-        unwrap(print_stk_lit(ctx->pop1));
-        puts_log(", not a string or missing field,");
-        unwrap(bst_ex_warn_print(ctx));
-        push_lit_stk(ctx, int_val(0));
-        break;
-    }
-}
+//static void x_empty(ExecCtx* ctx)
+//{
+//    unwrap(pop_lit_stk(ctx, &ctx->pop1));
+//    switch ((ctx->pop1.tag)) {
+//    case ExecVal_String:
+//        {
+//            pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
+//            pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
+//            while (sp_ptr < sp_end) {
+//
+//                if (LEX_CLASS[bib_str_pool(sp_ptr)] != LEX_CLASS_WHITESPACE ) {
+//                    push_lit_stk(ctx, int_val(0));
+//                    return;
+//                }
+//                sp_ptr = sp_ptr + 1;
+//            }
+//            push_lit_stk(ctx, int_val(1));
+//        }
+//        break;
+//    case ExecVal_Missing:
+//        push_lit_stk(ctx, int_val(1));
+//        break;
+//    case ExecVal_Illegal:
+//        push_lit_stk(ctx, int_val(0));
+//        break;
+//    default:
+//        unwrap(print_stk_lit(ctx->pop1));
+//        puts_log(", not a string or missing field,");
+//        unwrap(bst_ex_warn_print(ctx));
+//        push_lit_stk(ctx, int_val(0));
+//        break;
+//    }
+//}
 
 static void x_format_name(ExecCtx* ctx)
 {
@@ -1012,7 +950,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(x_gets(ctx));
             break;
         case 7:
-            x_add_period(ctx);
+            unwrap(x_add_period(ctx));
             break;
         case 8:
             if (!ctx->mess_with_entries)
@@ -1024,19 +962,19 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 execute_fn(ctx, type_list(cite_ptr()));
             break;
         case 9:
-            x_change_case(ctx);
+            unwrap(x_change_case(ctx));
             break;
         case 10:
-            x_chr_to_int(ctx);
+            unwrap(x_chr_to_int(ctx));
             break;
         case 11:
-            x_cite(ctx);
+            unwrap(x_cite(ctx));
             break;
         case 12:
-            x_duplicate(ctx);
+            unwrap(x_duplicate(ctx));
             break;
         case 13:
-            x_empty(ctx);
+            unwrap(x_empty(ctx));
             break;
         case 14:
             x_format_name(ctx);
