@@ -1157,8 +1157,7 @@ fn interp_change_case(
                 rs_bst_ex_warn_print(ctx, pool)?;
             }
 
-            let str2 = pool.get_str(s2);
-            let mut scratch = Vec::from(str2);
+            let mut scratch = Vec::from(pool.get_str(s2));
 
             let mut brace_level = 0;
             let mut idx = 0;
@@ -1166,7 +1165,7 @@ fn interp_change_case(
                 if scratch[idx] == b'{' {
                     brace_level += 1;
                     if !(brace_level != 1
-                        || idx + 4 > str2.len()
+                        || idx + 4 > scratch.len()
                         || scratch[idx + 1] != b'\\'
                         || (conv_ty == ConvTy::TitleLower
                             && (idx == 0
@@ -1248,16 +1247,16 @@ fn interp_change_case(
                 } else if brace_level == 0 {
                     match conv_ty {
                         ConvTy::TitleLower => {
-                            if idx == 0
-                                || prev_colon
-                                    && LexClass::of(scratch[idx - 1]) == LexClass::Whitespace
+                            if idx != 0
+                                && !(prev_colon
+                                    && LexClass::of(scratch[idx - 1]) == LexClass::Whitespace)
                             {
-                            } else {
-                                scratch[idx..idx + 1].make_ascii_lowercase()
+                                scratch[idx].make_ascii_lowercase()
                             }
+
                             if scratch[idx] == b':' {
                                 prev_colon = true;
-                            } else {
+                            } else if LexClass::of(scratch[idx]) != LexClass::Whitespace {
                                 prev_colon = false;
                             }
                         }

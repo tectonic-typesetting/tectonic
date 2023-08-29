@@ -576,7 +576,6 @@ fn rs_add_out_pool(
             buffers.set_at(BufTy::Out, 1, b' ');
             let len = end_ptr - break_ptr;
             buffers.copy_within(BufTy::Out, BufTy::Out, break_ptr, 2, len);
-            out_offset = 2 + len;
             buffers.set_init(BufTy::Out, len + 2);
         }
     }
