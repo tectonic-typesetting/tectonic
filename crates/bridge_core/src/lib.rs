@@ -1227,7 +1227,7 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 #[no_mangle]
 pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
-    let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
+    let rdiag = unsafe { Box::from_raw(diag) };
     es.status
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
 }
