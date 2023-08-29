@@ -320,26 +320,16 @@ pub extern "C" fn bib_make_string() -> CResultStr {
 pub unsafe extern "C" fn add_buf_pool(p_str: StrNumber) {
     with_pool_mut(|pool| {
         with_buffers_mut(|buffers| {
-            let mut p_ptr1 = pool.offsets[p_str];
-            let p_ptr2 = pool.offsets[p_str + 1];
+            let str = pool.get_str(p_str);
 
-            if buffers.init(BufTy::Ex) + (p_ptr2 - p_ptr1) > buffers.len() {
+            if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
                 buffers.grow_all();
             }
 
-            buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
-
-            while p_ptr1 < p_ptr2 {
-                buffers.set_at(
-                    BufTy::Ex,
-                    buffers.offset(BufTy::Ex, 1),
-                    pool.strings[p_ptr1],
-                );
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
-                p_ptr1 += 1;
-            }
-
-            buffers.set_init(BufTy::Ex, buffers.offset(BufTy::Ex, 1));
+            let start = buffers.init(BufTy::Ex);
+            buffers.copy_from(BufTy::Ex, start, str);
+            buffers.set_offset(BufTy::Ex, 1, start + str.len());
+            buffers.set_init(BufTy::Ex, start + str.len());
         })
     })
 }
@@ -536,9 +526,7 @@ fn rs_add_out_pool(
     }
 
     let out_offset = buffers.init(BufTy::Out);
-    for (idx, c) in str.iter().copied().enumerate() {
-        buffers.set_at(BufTy::Out, out_offset + idx, c);
-    }
+    buffers.copy_from(BufTy::Out, out_offset, str);
     buffers.set_init(BufTy::Out, out_offset + str.len());
 
     let mut unbreakable_tail = false;
@@ -587,12 +575,13 @@ fn rs_add_out_pool(
             buffers.set_at(BufTy::Out, 0, b' ');
             buffers.set_at(BufTy::Out, 1, b' ');
             out_offset = 2;
-            let mut tmp_ptr = break_ptr;
-            while tmp_ptr < end_ptr {
-                buffers.set_at(BufTy::Out, out_offset, buffers.at(BufTy::Out, tmp_ptr));
-                out_offset += 1;
-                tmp_ptr += 1;
-            }
+            buffers.copy_within(
+                BufTy::Out,
+                BufTy::Out,
+                break_ptr,
+                out_offset,
+                end_ptr - break_ptr,
+            );
             buffers.set_init(BufTy::Out, end_ptr - break_ptr + 2);
         }
     }

@@ -107,6 +107,11 @@ impl GlobalBuffer {
         }
     }
 
+    fn copy_within_same(&mut self, ty: BufTy, from: usize, to: usize, len: usize) {
+        let buf = self.buffer_mut(ty);
+        buf.copy_within(from..from + len, to);
+    }
+
     pub fn copy_within(
         &mut self,
         from: BufTy,
@@ -115,14 +120,21 @@ impl GlobalBuffer {
         to_start: usize,
         len: usize,
     ) {
-        assert_ne!(from, to);
         assert!(to_start + len < self.buf_len);
         assert!(from_start + len < self.buf_len);
-        // SAFETY: Pointer guaranteed valid for up to `len`
-        let to = unsafe { slice::from_raw_parts_mut(self.buffer_raw(to).add(to_start), len) };
-        let from = &self.buffer(from)[from_start..from_start + len];
+        if from == to {
+            self.copy_within_same(from, from_start, to_start, len);
+        } else {
+            // SAFETY: Pointer guaranteed valid for up to `len`
+            let to = unsafe { slice::from_raw_parts_mut(self.buffer_raw(to).add(to_start), len) };
+            let from = &self.buffer(from)[from_start..from_start + len];
 
-        to.copy_from_slice(from);
+            to.copy_from_slice(from);
+        }
+    }
+
+    pub fn copy_from(&mut self, ty: BufTy, pos: usize, val: &[ASCIICode]) {
+        self.buffer_mut(ty)[pos..pos + val.len()].copy_from_slice(val);
     }
 
     pub fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {

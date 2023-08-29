@@ -513,20 +513,11 @@ pub fn rs_figure_out_the_formatted_name(
                                 {
                                     buffers.grow_all();
                                 }
-                                // TODO: Use buffers.copy_within
-                                while *name_bf_ptr < *name_bf_xptr {
-                                    buffers.set_at(
-                                        BufTy::Ex,
-                                        buffers.offset(BufTy::Ex, 1),
-                                        buffers.at(BufTy::Sv, *name_bf_ptr),
-                                    );
-                                    buffers.set_offset(
-                                        BufTy::Ex,
-                                        1,
-                                        buffers.offset(BufTy::Ex, 1) + 1,
-                                    );
-                                    *name_bf_ptr += 1;
-                                }
+                                let ptr = buffers.offset(BufTy::Ex, 1);
+                                let len = *name_bf_xptr - *name_bf_ptr;
+                                buffers.copy_within(BufTy::Sv, BufTy::Ex, *name_bf_ptr, ptr, len);
+                                buffers.set_offset(BufTy::Ex, 1, ptr + len);
+                                *name_bf_ptr += len;
                             } else {
                                 while *name_bf_ptr < *name_bf_xptr {
                                     if LexClass::of(buffers.at(BufTy::Sv, *name_bf_ptr))
@@ -636,19 +627,12 @@ pub fn rs_figure_out_the_formatted_name(
                                     }
 
                                     sp_ptr = sp_xptr1;
-                                    while sp_ptr < sp_xptr2 {
-                                        buffers.set_at(
-                                            BufTy::Ex,
-                                            buffers.offset(BufTy::Ex, 1),
-                                            sp_str[sp_ptr],
-                                        );
-                                        buffers.set_offset(
-                                            BufTy::Ex,
-                                            1,
-                                            buffers.offset(BufTy::Ex, 1) + 1,
-                                        );
-                                        sp_ptr += 1;
-                                    }
+
+                                    let ptr = buffers.offset(BufTy::Ex, 1);
+                                    let tmp_str = &sp_str[sp_ptr..sp_xptr2];
+                                    buffers.copy_from(BufTy::Ex, ptr, tmp_str);
+                                    buffers.set_offset(BufTy::Ex, 1, tmp_str.len());
+                                    sp_ptr += tmp_str.len();
                                 }
                             }
                         }

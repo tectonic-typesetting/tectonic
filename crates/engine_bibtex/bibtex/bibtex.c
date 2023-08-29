@@ -102,40 +102,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-//static void x_empty(ExecCtx* ctx)
-//{
-//    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-//    switch ((ctx->pop1.tag)) {
-//    case ExecVal_String:
-//        {
-//            pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
-//            pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
-//            while (sp_ptr < sp_end) {
-//
-//                if (LEX_CLASS[bib_str_pool(sp_ptr)] != LEX_CLASS_WHITESPACE ) {
-//                    push_lit_stk(ctx, int_val(0));
-//                    return;
-//                }
-//                sp_ptr = sp_ptr + 1;
-//            }
-//            push_lit_stk(ctx, int_val(1));
-//        }
-//        break;
-//    case ExecVal_Missing:
-//        push_lit_stk(ctx, int_val(1));
-//        break;
-//    case ExecVal_Illegal:
-//        push_lit_stk(ctx, int_val(0));
-//        break;
-//    default:
-//        unwrap(print_stk_lit(ctx->pop1));
-//        puts_log(", not a string or missing field,");
-//        unwrap(bst_ex_warn_print(ctx));
-//        push_lit_stk(ctx, int_val(0));
-//        break;
-//    }
-//}
-
 static void x_format_name(ExecCtx* ctx)
 {
     int32_t brace_level = 0;
