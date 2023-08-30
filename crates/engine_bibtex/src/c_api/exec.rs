@@ -13,8 +13,11 @@ use crate::{
             print_confusion, print_fn_class, rs_bst_cant_mess_with_entries_print,
             rs_print_a_pool_str, write_logs,
         },
-        pool::{with_pool, with_pool_mut, StringPool},
-        scan::{enough_text_chars, rs_check_brace_level, rs_decr_brace_level},
+        pool::{rs_add_buf_pool, with_pool, with_pool_mut, StringPool},
+        scan::{
+            enough_text_chars, rs_check_brace_level, rs_decr_brace_level, rs_name_scan_for_and,
+            von_name_ends_and_last_name_starts_stuff, von_token_found,
+        },
         xbuf::{SafelyZero, XBuf},
         ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrIlk, StrNumber,
     },
@@ -372,10 +375,11 @@ pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i3
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn rs_figure_out_the_formatted_name(
+pub fn figure_out_the_formatted_name(
     ctx: &mut ExecCtx,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
+    str: StrNumber,
     first_start: BufPointer,
     first_end: BufPointer,
     last_end: BufPointer,
@@ -386,18 +390,18 @@ pub fn rs_figure_out_the_formatted_name(
     jr_end: BufPointer,
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
-    let mut sp_xptr1;
-    let mut sp_brace_level = 0;
-    let sp_str = pool.get_str(ctx.pop1.unwrap_str());
-    let mut sp_ptr = 0;
+    let mut old_idx;
+    let mut inner_brace_level = 0;
+    let str = pool.get_str(str);
+    let mut idx = 0;
 
     buffers.set_offset(BufTy::Ex, 1, 0);
 
-    while sp_ptr < sp_str.len() {
-        if sp_str[sp_ptr] == b'{' {
-            sp_brace_level += 1;
-            sp_ptr += 1;
-            sp_xptr1 = sp_ptr;
+    while idx < str.len() {
+        if str[idx] == b'{' {
+            inner_brace_level += 1;
+            idx += 1;
+            old_idx = idx;
 
             let mut alpha_found = false;
             let mut double_letter = false;
@@ -406,21 +410,21 @@ pub fn rs_figure_out_the_formatted_name(
             let mut cur_token = 0;
             let mut last_token = 0;
 
-            while !end_of_group && sp_ptr < sp_str.len() {
-                if LexClass::of(sp_str[sp_ptr]) == LexClass::Alpha {
-                    sp_ptr += 1;
+            while !end_of_group && idx < str.len() {
+                if LexClass::of(str[idx]) == LexClass::Alpha {
+                    idx += 1;
                     if alpha_found {
                         brace_lvl_one_letters_complaint(ctx, pool)?;
                         to_be_written = false;
                     } else {
-                        match sp_str[sp_ptr - 1] {
+                        match str[idx - 1] {
                             b'f' | b'F' => {
                                 cur_token = first_start;
                                 last_token = first_end;
                                 if cur_token == last_token {
                                     to_be_written = false;
                                 }
-                                if sp_str[sp_ptr] == b'f' || sp_str[sp_ptr] == b'F' {
+                                if str[idx] == b'f' || str[idx] == b'F' {
                                     double_letter = true;
                                 }
                             }
@@ -430,7 +434,7 @@ pub fn rs_figure_out_the_formatted_name(
                                 if cur_token == last_token {
                                     to_be_written = false;
                                 }
-                                if sp_str[sp_ptr] == b'v' || sp_str[sp_ptr] == b'V' {
+                                if str[idx] == b'v' || str[idx] == b'V' {
                                     double_letter = true;
                                 }
                             }
@@ -440,7 +444,7 @@ pub fn rs_figure_out_the_formatted_name(
                                 if cur_token == last_token {
                                     to_be_written = false;
                                 }
-                                if sp_str[sp_ptr] == b'l' || sp_str[sp_ptr] == b'L' {
+                                if str[idx] == b'l' || str[idx] == b'L' {
                                     double_letter = true;
                                 }
                             }
@@ -450,7 +454,7 @@ pub fn rs_figure_out_the_formatted_name(
                                 if cur_token == last_token {
                                     to_be_written = false;
                                 }
-                                if sp_str[sp_ptr] == b'j' || sp_str[sp_ptr] == b'J' {
+                                if str[idx] == b'j' || str[idx] == b'J' {
                                     double_letter = true;
                                 }
                             }
@@ -461,48 +465,47 @@ pub fn rs_figure_out_the_formatted_name(
                             }
                         }
                         if double_letter {
-                            sp_ptr += 1;
+                            idx += 1;
                         }
                     }
                     alpha_found = true;
-                } else if sp_str[sp_ptr] == b'}' {
-                    sp_brace_level -= 1;
-                    sp_ptr += 1;
+                } else if str[idx] == b'}' {
+                    inner_brace_level -= 1;
+                    idx += 1;
                     end_of_group = true;
-                } else if sp_str[sp_ptr] == b'{' {
-                    sp_brace_level += 1;
-                    sp_ptr = skip_brace_level_greater_than_one(
-                        &sp_str[sp_ptr + 1..],
-                        &mut sp_brace_level,
-                    ) + sp_ptr;
-                    sp_ptr += 1;
+                } else if str[idx] == b'{' {
+                    inner_brace_level += 1;
+                    idx =
+                        skip_brace_level_greater_than_one(&str[idx + 1..], &mut inner_brace_level)
+                            + idx;
+                    idx += 1;
                 } else {
-                    sp_ptr += 1;
+                    idx += 1;
                 }
             }
 
             if end_of_group && to_be_written {
                 let buf_ptr = buffers.offset(BufTy::Ex, 1);
-                sp_ptr = sp_xptr1;
-                sp_brace_level = 1;
-                while sp_brace_level > 0 {
-                    if LexClass::of(sp_str[sp_ptr]) == LexClass::Alpha && sp_brace_level == 1 {
-                        sp_ptr += 1;
+                idx = old_idx;
+                inner_brace_level = 1;
+                while inner_brace_level > 0 {
+                    if LexClass::of(str[idx]) == LexClass::Alpha && inner_brace_level == 1 {
+                        idx += 1;
                         if double_letter {
-                            sp_ptr += 1;
+                            idx += 1;
                         }
                         let mut use_default = true;
-                        let mut sp_xptr2 = sp_ptr;
-                        if sp_str[sp_ptr] == b'{' {
+                        let mut sp_xptr2 = idx;
+                        if str[idx] == b'{' {
                             use_default = false;
-                            sp_brace_level += 1;
-                            sp_ptr += 1;
-                            sp_xptr1 = sp_ptr;
-                            sp_ptr = skip_brace_level_greater_than_one(
-                                &sp_str[sp_ptr..],
-                                &mut sp_brace_level,
-                            ) + sp_ptr;
-                            sp_xptr2 = sp_ptr - 1;
+                            inner_brace_level += 1;
+                            idx += 1;
+                            old_idx = idx;
+                            idx = skip_brace_level_greater_than_one(
+                                &str[idx..],
+                                &mut inner_brace_level,
+                            ) + idx;
+                            sp_xptr2 = idx - 1;
                         }
                         while cur_token < last_token {
                             *name_bf_ptr = buffers.name_tok(cur_token);
@@ -620,36 +623,36 @@ pub fn rs_figure_out_the_formatted_name(
                                         buffers.offset(BufTy::Ex, 1) + 1,
                                     );
                                 } else {
-                                    if buffers.offset(BufTy::Ex, 1) + (sp_xptr2 - sp_xptr1)
+                                    if buffers.offset(BufTy::Ex, 1) + (sp_xptr2 - old_idx)
                                         > buffers.len()
                                     {
                                         buffers.grow_all();
                                     }
 
                                     let ptr = buffers.offset(BufTy::Ex, 1);
-                                    let tmp_str = &sp_str[sp_xptr1..sp_xptr2];
+                                    let tmp_str = &str[old_idx..sp_xptr2];
                                     buffers.copy_from(BufTy::Ex, ptr, tmp_str);
                                     buffers.set_offset(BufTy::Ex, 1, ptr + tmp_str.len());
-                                    sp_ptr = sp_xptr2;
+                                    idx = sp_xptr2;
                                 }
                             }
                         }
                         if !use_default {
-                            sp_ptr = sp_xptr2 + 1;
+                            idx = sp_xptr2 + 1;
                         }
-                    } else if sp_str[sp_ptr] == b'}' {
-                        sp_brace_level -= 1;
-                        sp_ptr += 1;
-                        if sp_brace_level > 0 {
+                    } else if str[idx] == b'}' {
+                        inner_brace_level -= 1;
+                        idx += 1;
+                        if inner_brace_level > 0 {
                             if buffers.offset(BufTy::Ex, 1) == buffers.len() {
                                 buffers.grow_all();
                             }
                             buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b'}');
                             buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                         }
-                    } else if sp_str[sp_ptr] == b'{' {
-                        sp_brace_level += 1;
-                        sp_ptr += 1;
+                    } else if str[idx] == b'{' {
+                        inner_brace_level += 1;
+                        idx += 1;
                         if buffers.offset(BufTy::Ex, 1) == buffers.len() {
                             buffers.grow_all();
                         }
@@ -659,9 +662,9 @@ pub fn rs_figure_out_the_formatted_name(
                         if buffers.offset(BufTy::Ex, 1) == buffers.len() {
                             buffers.grow_all();
                         }
-                        buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), sp_str[sp_ptr]);
+                        buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), str[idx]);
                         buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
-                        sp_ptr += 1;
+                        idx += 1;
                     }
                 }
                 if buffers.offset(BufTy::Ex, 1) > 0
@@ -677,60 +680,26 @@ pub fn rs_figure_out_the_formatted_name(
                     }
                 }
             }
-        } else if sp_str[sp_ptr] == b'}' {
+        } else if str[idx] == b'}' {
             braces_unbalanced_complaint(ctx, ctx.pop1.unwrap_str())?;
-            sp_ptr += 1;
+            idx += 1;
         } else {
             if buffers.offset(BufTy::Ex, 1) == buffers.len() {
                 buffers.grow_all();
             }
-            buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), sp_str[sp_ptr]);
+            buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), str[idx]);
             buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
-            sp_ptr += 1;
+            idx += 1;
         }
     }
 
-    if sp_brace_level > 0 {
+    if inner_brace_level > 0 {
         braces_unbalanced_complaint(ctx, ctx.pop1.unwrap_str())?;
     }
 
     buffers.set_init(BufTy::Ex, buffers.offset(BufTy::Ex, 1));
 
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn figure_out_the_formatted_name(
-    ctx: *mut ExecCtx,
-    first_start: BufPointer,
-    first_end: BufPointer,
-    last_end: BufPointer,
-    von_start: BufPointer,
-    von_end: BufPointer,
-    name_bf_ptr: *mut BufPointer,
-    name_bf_xptr: *mut BufPointer,
-    jr_end: BufPointer,
-    brace_level: *mut i32,
-) -> CResult {
-    let res = with_buffers_mut(|buffers| {
-        with_pool(|pool| {
-            rs_figure_out_the_formatted_name(
-                &mut *ctx,
-                buffers,
-                pool,
-                first_start,
-                first_end,
-                last_end,
-                von_start,
-                von_end,
-                &mut *name_bf_ptr,
-                &mut *name_bf_xptr,
-                jr_end,
-                &mut *brace_level,
-            )
-        })
-    });
-    res.into()
 }
 
 fn rs_check_command_execution(ctx: &mut ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
@@ -1372,6 +1341,276 @@ fn interp_empty(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexEr
     Ok(())
 }
 
+fn interp_format_name(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    buffers: &mut GlobalBuffer,
+) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+    let pop3 = ctx.pop_stack(pool)?;
+
+    let (s1, i2, s3) = match (pop1, pop2, pop3) {
+        (ExecVal::String(s1), ExecVal::Integer(i2), ExecVal::String(s3)) => (s1, i2, s3),
+        (ExecVal::String(_), ExecVal::Integer(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop3, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+        (ExecVal::String(_), _, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+        (_, _, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    let mut brace_level = 0;
+    let mut xptr = 0;
+    buffers.set_init(BufTy::Ex, 0);
+    rs_add_buf_pool(pool, buffers, s3);
+    buffers.set_offset(BufTy::Ex, 1, 0);
+
+    let mut num_names = 0;
+    while num_names < i2 && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
+        num_names += 1;
+        xptr = buffers.offset(BufTy::Ex, 1);
+        rs_name_scan_for_and(ctx, buffers, s3, &mut brace_level)?;
+    }
+
+    if buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
+        buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 4);
+    }
+
+    if num_names < i2 {
+        if i2 == 1 {
+            write_logs("There is no name in \"");
+        } else {
+            write_logs(&format!("There aren't {} names in \"", i2));
+        }
+        rs_print_a_pool_str(s3, pool)?;
+        write_logs("\"");
+        rs_bst_ex_warn_print(ctx, pool)?;
+    }
+
+    while buffers.offset(BufTy::Ex, 1) > xptr {
+        match LexClass::of(buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1)) {
+            LexClass::Whitespace | LexClass::Sep => {
+                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
+            }
+            _ => {
+                if buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b',' {
+                    write_logs(&format!("Name {} in \"", i2));
+                    rs_print_a_pool_str(s3, pool)?;
+                    write_logs("\" has a comma at the end");
+                    rs_bst_ex_warn_print(ctx, pool)?;
+                    buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    enum Commas {
+        None,
+        One(BufPointer),
+        Two(BufPointer, BufPointer),
+    }
+
+    let mut num_tokens = 0;
+    let mut commas = Commas::None;
+    let mut name_ptr = 0;
+    let mut token_starting = true;
+
+    while xptr < buffers.offset(BufTy::Ex, 1) {
+        match buffers.at(BufTy::Ex, xptr) {
+            b',' => {
+                match commas {
+                    Commas::None => {
+                        commas = Commas::One(num_tokens);
+                        buffers.set_at(BufTy::NameSep, num_tokens, b',');
+                    }
+                    Commas::One(first) => {
+                        commas = Commas::Two(first, num_tokens);
+                        buffers.set_at(BufTy::NameSep, num_tokens, b',');
+                    }
+                    Commas::Two(_, _) => {
+                        write_logs(&format!("Too many commas in name {} of \"", i2));
+                        rs_print_a_pool_str(s3, pool)?;
+                        write_logs("\"");
+                        rs_bst_ex_warn_print(ctx, pool)?;
+                    }
+                }
+                xptr += 1;
+                token_starting = true;
+            }
+            b'{' => {
+                brace_level += 1;
+                if token_starting {
+                    buffers.set_name_tok(num_tokens, name_ptr);
+                    num_tokens += 1;
+                }
+                buffers.set_at(BufTy::Sv, name_ptr, buffers.at(BufTy::Ex, xptr));
+                name_ptr += 1;
+                xptr += 1;
+                while brace_level > 0 && xptr < buffers.offset(BufTy::Ex, 1) {
+                    match buffers.at(BufTy::Ex, xptr) {
+                        b'{' => brace_level += 1,
+                        b'}' => brace_level -= 1,
+                        _ => (),
+                    }
+                    buffers.set_at(BufTy::Sv, name_ptr, buffers.at(BufTy::Ex, xptr));
+                    name_ptr += 1;
+                    xptr += 1;
+                }
+                token_starting = false;
+            }
+            b'}' => {
+                if token_starting {
+                    buffers.set_name_tok(num_tokens, name_ptr);
+                    num_tokens += 1;
+                }
+
+                write_logs(&format!("Name {} of \"", i2));
+                rs_print_a_pool_str(s3, pool)?;
+                write_logs("\" isn't brace balanced");
+                rs_bst_ex_warn_print(ctx, pool)?;
+                xptr += 1;
+                token_starting = false;
+            }
+            _ => match LexClass::of(buffers.at(BufTy::Ex, xptr)) {
+                LexClass::Whitespace => {
+                    if !token_starting {
+                        buffers.set_at(BufTy::NameSep, num_tokens, b' ');
+                    }
+                    xptr += 1;
+                    token_starting = true;
+                }
+                LexClass::Sep => {
+                    if !token_starting {
+                        buffers.set_at(BufTy::NameSep, num_tokens, buffers.at(BufTy::Ex, xptr));
+                    }
+                    xptr += 1;
+                    token_starting = true;
+                }
+                _ => {
+                    if token_starting {
+                        buffers.set_name_tok(num_tokens, name_ptr);
+                        num_tokens += 1;
+                    }
+                    buffers.set_at(BufTy::Sv, name_ptr, buffers.at(BufTy::Ex, xptr));
+                    name_ptr += 1;
+                    xptr += 1;
+                    token_starting = false;
+                }
+            },
+        }
+    }
+
+    buffers.set_name_tok(num_tokens, name_ptr);
+
+    let mut first_start = 0;
+    let mut first_end = 0;
+    let last_end;
+    let mut von_start = 0;
+    let mut von_end = 0;
+    let jr_end;
+    let mut name_ptr2 = 0;
+
+    match commas {
+        Commas::None => {
+            last_end = num_tokens;
+            jr_end = last_end;
+
+            let mut second_loop = true;
+            while von_start < last_end - 1 {
+                name_ptr = buffers.name_tok(von_start);
+                name_ptr2 = buffers.name_tok(von_start + 1);
+                if von_token_found(buffers, &mut name_ptr, name_ptr2)? {
+                    von_name_ends_and_last_name_starts_stuff(
+                        buffers,
+                        last_end,
+                        von_start,
+                        &mut von_end,
+                        &mut name_ptr,
+                        &mut name_ptr2,
+                    )?;
+                    second_loop = false;
+                    break;
+                }
+                von_start += 1;
+            }
+
+            if second_loop {
+                while von_start > 0 {
+                    if LexClass::of(buffers.at(BufTy::NameSep, von_start)) != LexClass::Sep
+                        || buffers.at(BufTy::NameSep, von_start) == b'~'
+                    {
+                        break;
+                    }
+                    von_start -= 1;
+                }
+                von_end = von_start;
+            }
+            first_end = von_start;
+        }
+        Commas::One(comma) => {
+            last_end = comma;
+            jr_end = last_end;
+            first_start = jr_end;
+            first_end = num_tokens;
+            von_name_ends_and_last_name_starts_stuff(
+                buffers,
+                last_end,
+                von_start,
+                &mut von_end,
+                &mut name_ptr,
+                &mut name_ptr2,
+            )?;
+        }
+        Commas::Two(comma1, comma2) => {
+            last_end = comma1;
+            jr_end = comma2;
+            first_start = jr_end;
+            first_end = num_tokens;
+            von_name_ends_and_last_name_starts_stuff(
+                buffers,
+                last_end,
+                von_start,
+                &mut von_end,
+                &mut name_ptr,
+                &mut name_ptr2,
+            )?;
+        }
+    }
+
+    buffers.set_init(BufTy::Ex, 0);
+    rs_add_buf_pool(pool, buffers, s1);
+    figure_out_the_formatted_name(
+        ctx,
+        buffers,
+        pool,
+        s1,
+        first_start,
+        first_end,
+        last_end,
+        von_start,
+        von_end,
+        &mut name_ptr,
+        &mut name_ptr2,
+        jr_end,
+        &mut brace_level,
+    )?;
+    rs_add_pool_buf_and_push(ctx, buffers, pool)?;
+
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1444,4 +1683,10 @@ pub unsafe extern "C" fn x_duplicate(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_empty(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_empty(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_format_name(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| with_buffers_mut(|buffers| interp_format_name(&mut *ctx, pool, buffers)))
+        .into()
 }

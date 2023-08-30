@@ -159,6 +159,14 @@ impl GlobalBuffer {
         }
     }
 
+    pub fn name_tok(&self, pos: BufPointer) -> BufPointer {
+        self.name_tok[pos]
+    }
+
+    pub fn set_name_tok(&mut self, pos: BufPointer, val: BufPointer) {
+        self.name_tok[pos] = val;
+    }
+
     // pub fn incr_offset(&mut self, ty: BufTy, offset: usize) {
     //     match ty {
     //         BufTy::Base => self.buffer.offset[offset - 1] += 1,
@@ -197,10 +205,6 @@ impl GlobalBuffer {
             BufTy::Out => self.out_buf.init = val,
             BufTy::NameSep => self.name_sep_char.init = val,
         }
-    }
-
-    pub fn name_tok(&self, pos: usize) -> BufPointer {
-        self.name_tok[pos]
     }
 
     pub fn grow_all(&mut self) {
@@ -259,16 +263,6 @@ pub extern "C" fn bib_buf_len(ty: BufTy) -> BufPointer {
 #[no_mangle]
 pub extern "C" fn bib_set_buf_len(ty: BufTy, len: BufPointer) {
     with_buffers_mut(|buffers| buffers.set_init(ty, len))
-}
-
-#[no_mangle]
-pub extern "C" fn name_tok(pos: BufPointer) -> BufPointer {
-    with_buffers(|buffers| buffers.name_tok[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_name_tok(pos: BufPointer, val: BufPointer) {
-    with_buffers_mut(|buffers| buffers.name_tok[pos] = val)
 }
 
 #[no_mangle]

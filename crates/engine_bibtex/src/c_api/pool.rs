@@ -316,22 +316,22 @@ pub extern "C" fn bib_make_string() -> CResultStr {
     })
 }
 
+pub fn rs_add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
+    let str = pool.get_str(str);
+
+    if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
+        buffers.grow_all();
+    }
+
+    let start = buffers.init(BufTy::Ex);
+    buffers.copy_from(BufTy::Ex, start, str);
+    buffers.set_offset(BufTy::Ex, 1, start + str.len());
+    buffers.set_init(BufTy::Ex, start + str.len());
+}
+
 #[no_mangle]
-pub unsafe extern "C" fn add_buf_pool(p_str: StrNumber) {
-    with_pool_mut(|pool| {
-        with_buffers_mut(|buffers| {
-            let str = pool.get_str(p_str);
-
-            if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
-                buffers.grow_all();
-            }
-
-            let start = buffers.init(BufTy::Ex);
-            buffers.copy_from(BufTy::Ex, start, str);
-            buffers.set_offset(BufTy::Ex, 1, start + str.len());
-            buffers.set_init(BufTy::Ex, start + str.len());
-        })
-    })
+pub unsafe extern "C" fn add_buf_pool(str: StrNumber) {
+    with_pool_mut(|pool| with_buffers_mut(|buffers| rs_add_buf_pool(pool, buffers, str)))
 }
 
 #[no_mangle]

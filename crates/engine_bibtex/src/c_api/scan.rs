@@ -1012,7 +1012,7 @@ pub unsafe extern "C" fn check_brace_level(
     rs_check_brace_level(&*ctx, pop_lit_var, brace_level).into()
 }
 
-fn rs_name_scan_for_and(
+pub fn rs_name_scan_for_and(
     ctx: &ExecCtx,
     buffers: &mut GlobalBuffer,
     pop_lit_var: StrNumber,
@@ -1080,7 +1080,7 @@ pub unsafe extern "C" fn name_scan_for_and(
     })
 }
 
-fn rs_von_token_found(
+pub fn von_token_found(
     buffers: &GlobalBuffer,
     name_bf_ptr: &mut BufPointer,
     name_bf_xptr: BufPointer,
@@ -1150,15 +1150,7 @@ fn rs_von_token_found(
     Ok(false)
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn von_token_found(
-    name_bf_ptr: *mut BufPointer,
-    name_bf_xptr: BufPointer,
-) -> CResultBool {
-    with_buffers_mut(|buffers| rs_von_token_found(buffers, &mut *name_bf_ptr, name_bf_xptr).into())
-}
-
-fn rs_von_name_ends_and_last_name_starts_stuff(
+pub fn von_name_ends_and_last_name_starts_stuff(
     buffers: &GlobalBuffer,
     last_end: BufPointer,
     von_start: BufPointer,
@@ -1170,33 +1162,12 @@ fn rs_von_name_ends_and_last_name_starts_stuff(
     while *von_end > von_start {
         *name_bf_ptr = buffers.name_tok(*von_end - 1);
         *name_bf_xptr = buffers.name_tok(*von_end);
-        if rs_von_token_found(buffers, name_bf_ptr, *name_bf_xptr)? {
+        if von_token_found(buffers, name_bf_ptr, *name_bf_xptr)? {
             return Ok(());
         }
         *von_end -= 1;
     }
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn von_name_ends_and_last_name_starts_stuff(
-    last_end: BufPointer,
-    von_start: BufPointer,
-    von_end: *mut BufPointer,
-    name_bf_ptr: *mut BufPointer,
-    name_bf_xptr: *mut BufPointer,
-) -> CResult {
-    with_buffers_mut(|buffers| {
-        rs_von_name_ends_and_last_name_starts_stuff(
-            buffers,
-            last_end,
-            von_start,
-            &mut *von_end,
-            &mut *name_bf_ptr,
-            &mut *name_bf_xptr,
-        )
-        .into()
-    })
 }
 
 pub fn enough_text_chars(

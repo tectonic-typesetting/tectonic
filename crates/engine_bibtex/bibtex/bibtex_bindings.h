@@ -352,10 +352,6 @@ BufPointer bib_buf_len(BufTy ty);
 
 void bib_set_buf_len(BufTy ty, BufPointer len);
 
-BufPointer name_tok(BufPointer pos);
-
-void set_name_tok(BufPointer pos, BufPointer val);
-
 void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
 
 BufPointer int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin);
@@ -452,17 +448,6 @@ CResult pop_whole_stack(ExecCtx *ctx);
 
 void init_command_execution(ExecCtx *ctx);
 
-CResult figure_out_the_formatted_name(ExecCtx *ctx,
-                                      BufPointer first_start,
-                                      BufPointer first_end,
-                                      BufPointer last_end,
-                                      BufPointer von_start,
-                                      BufPointer von_end,
-                                      BufPointer *name_bf_ptr,
-                                      BufPointer *name_bf_xptr,
-                                      BufPointer jr_end,
-                                      int32_t *brace_level);
-
 CResult check_command_execution(ExecCtx *ctx);
 
 CResult add_pool_buf_and_push(ExecCtx *ctx);
@@ -494,6 +479,8 @@ CResult x_cite(ExecCtx *ctx);
 CResult x_duplicate(ExecCtx *ctx);
 
 CResult x_empty(ExecCtx *ctx);
+
+CResult x_format_name(ExecCtx *ctx);
 
 int32_t num_glb_strs(void);
 
@@ -669,7 +656,7 @@ void bib_set_pool_ptr(PoolPointer ptr);
 
 CResultStr bib_make_string(void);
 
-void add_buf_pool(StrNumber p_str);
+void add_buf_pool(StrNumber str);
 
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
@@ -705,14 +692,6 @@ CResult decr_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t *bra
 CResult check_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t brace_level);
 
 CResult name_scan_for_and(ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
-
-CResultBool von_token_found(BufPointer *name_bf_ptr, BufPointer name_bf_xptr);
-
-CResult von_name_ends_and_last_name_starts_stuff(BufPointer last_end,
-                                                 BufPointer von_start,
-                                                 BufPointer *von_end,
-                                                 BufPointer *name_bf_ptr,
-                                                 BufPointer *name_bf_xptr);
 
 #ifdef __cplusplus
 } // extern "C"
