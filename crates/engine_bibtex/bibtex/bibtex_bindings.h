@@ -482,6 +482,10 @@ CResult x_empty(ExecCtx *ctx);
 
 CResult x_format_name(ExecCtx *ctx);
 
+CResult x_int_to_chr(ExecCtx *ctx);
+
+CResult x_int_to_str(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);

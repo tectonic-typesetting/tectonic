@@ -636,13 +636,11 @@ pub fn bst_2print_string_size_exceeded(ctx: &ExecCtx) -> Result<(), BibtexError>
 
 pub fn braces_unbalanced_complaint(
     ctx: &ExecCtx,
+    pool: &StringPool,
     pop_lit_var: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("Warning--\"");
-    match print_a_pool_str(pop_lit_var) {
-        CResult::Ok => (),
-        err => return err.into(),
-    }
+    rs_print_a_pool_str(pop_lit_var, pool)?;
     write_logs("\" isn't a brace-balanced string");
     bst_mild_ex_warn_print(ctx)
 }

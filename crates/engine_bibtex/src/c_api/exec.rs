@@ -681,7 +681,7 @@ pub fn figure_out_the_formatted_name(
                 }
             }
         } else if str[idx] == b'}' {
-            braces_unbalanced_complaint(ctx, ctx.pop1.unwrap_str())?;
+            braces_unbalanced_complaint(ctx, pool, ctx.pop1.unwrap_str())?;
             idx += 1;
         } else {
             if buffers.offset(BufTy::Ex, 1) == buffers.len() {
@@ -694,7 +694,7 @@ pub fn figure_out_the_formatted_name(
     }
 
     if inner_brace_level > 0 {
-        braces_unbalanced_complaint(ctx, ctx.pop1.unwrap_str())?;
+        braces_unbalanced_complaint(ctx, pool, ctx.pop1.unwrap_str())?;
     }
 
     buffers.set_init(BufTy::Ex, buffers.offset(BufTy::Ex, 1));
@@ -1211,7 +1211,7 @@ fn interp_change_case(
 
                     prev_colon = false;
                 } else if scratch[idx] == b'}' {
-                    rs_decr_brace_level(ctx, s2, &mut brace_level)?;
+                    rs_decr_brace_level(ctx, pool, s2, &mut brace_level)?;
                     prev_colon = false;
                 } else if brace_level == 0 {
                     match conv_ty {
@@ -1236,7 +1236,7 @@ fn interp_change_case(
                 }
                 idx += 1;
             }
-            rs_check_brace_level(ctx, s2, brace_level)?;
+            rs_check_brace_level(ctx, pool, s2, brace_level)?;
             ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch)?));
         }
         (ExecVal::String(_), _) => {
@@ -1379,7 +1379,7 @@ fn interp_format_name(
     while num_names < i2 && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
         num_names += 1;
         xptr = buffers.offset(BufTy::Ex, 1);
-        rs_name_scan_for_and(ctx, buffers, s3, &mut brace_level)?;
+        rs_name_scan_for_and(ctx, pool, buffers, s3, &mut brace_level)?;
     }
 
     if buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
@@ -1515,7 +1515,7 @@ fn interp_format_name(
     buffers.set_name_tok(num_tokens, name_ptr);
 
     let mut first_start = 0;
-    let mut first_end = 0;
+    let first_end;
     let last_end;
     let mut von_start = 0;
     let mut von_end = 0;
@@ -1611,6 +1611,48 @@ fn interp_format_name(
     Ok(())
 }
 
+fn interp_int_to_chr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let i1 = match pop1 {
+        ExecVal::Integer(i1) => i1,
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    if i1 < 0 || i1 > 127 {
+        write_logs(&format!("{} isn't valid ASCII", i1));
+        rs_bst_ex_warn_print(ctx, pool)?;
+        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+    } else {
+        if pool.pool_ptr() + 1 > pool.len() {
+            pool.grow();
+        }
+
+        pool.append(i1 as u8);
+        ctx.push_stack(ExecVal::String(pool.make_string()?));
+    }
+    Ok(())
+}
+
+fn interp_int_to_str(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let i1 = match pop1 {
+        ExecVal::Integer(i1) => i1,
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    let scratch = i1.to_string();
+    ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch.as_bytes())?));
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1689,4 +1731,14 @@ pub unsafe extern "C" fn x_empty(ctx: *mut ExecCtx) -> CResult {
 pub unsafe extern "C" fn x_format_name(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| with_buffers_mut(|buffers| interp_format_name(&mut *ctx, pool, buffers)))
         .into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_int_to_chr(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_int_to_chr(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_int_to_str(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_int_to_str(&mut *ctx, pool)).into()
 }

@@ -17,7 +17,7 @@ use crate::{
         },
         other::with_other_mut,
         peekable::rs_input_ln,
-        pool::{with_pool, with_pool_mut},
+        pool::{with_pool, with_pool_mut, StringPool},
         ASCIICode, Bibtex, BufPointer, CResult, CResultBool, CiteNumber, FnDefLoc, HashPointer,
         StrIlk, StrNumber,
     },
@@ -971,11 +971,12 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
 
 pub fn rs_decr_brace_level(
     ctx: &ExecCtx,
+    pool: &StringPool,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
     if *brace_level == 0 {
-        braces_unbalanced_complaint(ctx, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pool, pop_lit_var)?;
     } else {
         *brace_level -= 1;
     }
@@ -989,16 +990,17 @@ pub unsafe extern "C" fn decr_brace_level(
     pop_lit_var: StrNumber,
     brace_level: *mut i32,
 ) -> CResult {
-    rs_decr_brace_level(&*ctx, pop_lit_var, &mut *brace_level).into()
+    with_pool(|pool| rs_decr_brace_level(&*ctx, pool, pop_lit_var, &mut *brace_level)).into()
 }
 
 pub fn rs_check_brace_level(
     ctx: &ExecCtx,
+    pool: &StringPool,
     pop_lit_var: StrNumber,
     brace_level: i32,
 ) -> Result<(), BibtexError> {
     if brace_level > 0 {
-        braces_unbalanced_complaint(ctx, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pool, pop_lit_var)?;
     }
     Ok(())
 }
@@ -1009,11 +1011,12 @@ pub unsafe extern "C" fn check_brace_level(
     pop_lit_var: StrNumber,
     brace_level: i32,
 ) -> CResult {
-    rs_check_brace_level(&*ctx, pop_lit_var, brace_level).into()
+    with_pool(|pool| rs_check_brace_level(&*ctx, pool, pop_lit_var, brace_level)).into()
 }
 
 pub fn rs_name_scan_for_and(
     ctx: &ExecCtx,
+    pool: &StringPool,
     buffers: &mut GlobalBuffer,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
@@ -1054,7 +1057,7 @@ pub fn rs_name_scan_for_and(
                 preceding_white = false;
             }
             b'}' => {
-                rs_decr_brace_level(ctx, pop_lit_var, brace_level)?;
+                rs_decr_brace_level(ctx, pool, pop_lit_var, brace_level)?;
                 buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                 preceding_white = false;
             }
@@ -1066,7 +1069,7 @@ pub fn rs_name_scan_for_and(
         }
     }
 
-    rs_check_brace_level(ctx, pop_lit_var, *brace_level)
+    rs_check_brace_level(ctx, pool, pop_lit_var, *brace_level)
 }
 
 #[no_mangle]
@@ -1076,7 +1079,9 @@ pub unsafe extern "C" fn name_scan_for_and(
     brace_level: *mut i32,
 ) -> CResult {
     with_buffers_mut(|buffers| {
-        rs_name_scan_for_and(&*ctx, buffers, pop_lit_var, &mut *brace_level).into()
+        with_pool(|pool| {
+            rs_name_scan_for_and(&*ctx, pool, buffers, pop_lit_var, &mut *brace_level).into()
+        })
     })
 }
 

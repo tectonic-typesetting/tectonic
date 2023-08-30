@@ -102,41 +102,17 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void x_int_to_chr(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else if ((ctx->pop1.integer < 0) || (ctx->pop1.integer > 127)) {
-        printf_log("%ld isn't valid ASCII", (long) ctx->pop1.integer);
-        unwrap(bst_ex_warn_print(ctx));
-        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else {
-
-        {
-            while (bib_pool_ptr() + 1 > bib_pool_size())
-                pool_overflow();
-        }
-        {
-            bib_set_str_pool(bib_pool_ptr(), ctx->pop1.integer);
-            bib_set_pool_ptr(bib_pool_ptr() + 1);
-        }
-        push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-    }
-}
-
-static void x_int_to_str(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_Integer) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else {
-        bib_set_buf_len(BUF_TY_EX, int_to_ascii(ctx->pop1.integer, BUF_TY_EX, 0));
-        unwrap(add_pool_buf_and_push(ctx));
-    }
-}
+//static void x_int_to_str(ExecCtx* ctx)
+//{
+//    unwrap(pop_lit_stk(ctx, &ctx->pop1));
+//    if (ctx->pop1.tag != ExecVal_Integer) {
+//        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
+//        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
+//    } else {
+//        bib_set_buf_len(BUF_TY_EX, int_to_ascii(ctx->pop1.integer, BUF_TY_EX, 0));
+//        unwrap(add_pool_buf_and_push(ctx));
+//    }
+//}
 
 static void x_missing(ExecCtx* ctx)
 {
@@ -746,10 +722,10 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
                 execute_fn(ctx, ctx->pop1.function);
             break;
         case 16:
-            x_int_to_chr(ctx);
+            unwrap(x_int_to_chr(ctx));
             break;
         case 17:
-            x_int_to_str(ctx);
+            unwrap(x_int_to_str(ctx));
             break;
         case 18:
             x_missing(ctx);
