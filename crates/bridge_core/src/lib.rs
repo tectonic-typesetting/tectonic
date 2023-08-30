@@ -1224,6 +1224,10 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 }
 
 /// "Finish" a diagnostic: report it to the driver and free the diagnostic object.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw Diagnostic pointer
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
