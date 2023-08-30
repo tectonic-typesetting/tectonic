@@ -341,25 +341,22 @@ pub extern "C" fn aux_end2_err_print() -> CResult {
     CResult::Ok
 }
 
-#[no_mangle]
-pub extern "C" fn print_bib_name() -> CResult {
-    match print_a_pool_str(cur_bib()) {
-        CResult::Ok => (),
-        err => return err,
-    }
-    let res = with_pool(|pool| {
-        pool.try_get_str(cur_bib())
-            .map(|str| str.ends_with(b".bib"))
-    });
-    match res {
-        Ok(true) => (),
-        Ok(false) => {
-            write_logs(".bib");
-        }
-        Err(_) => return CResult::Error,
+pub fn rs_print_bib_name(pool: &StringPool) -> Result<(), BibtexError> {
+    rs_print_a_pool_str(cur_bib(), pool)?;
+    let res = pool
+        .try_get_str(cur_bib())
+        .map_err(|_| BibtexError::Fatal)
+        .map(|str| str.ends_with(b".bib"))?;
+    if !res {
+        write_logs(".bib");
     }
     write_logs("\n");
-    CResult::Ok
+    Ok(())
+}
+
+#[no_mangle]
+pub extern "C" fn print_bib_name() -> CResult {
+    with_pool(|pool| rs_print_bib_name(pool)).into()
 }
 
 #[no_mangle]
@@ -461,14 +458,18 @@ pub extern "C" fn bst_right_brace_print() {
     write_logs("\"}\" is missing in command: ");
 }
 
-pub(crate) fn bib_ln_num_print() -> Result<(), BibtexError> {
+pub(crate) fn bib_ln_num_print(pool: &StringPool) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", bib_line_num()));
-    print_bib_name().into()
+    rs_print_bib_name(pool)
 }
 
-pub fn rs_bib_err_print(buffers: &GlobalBuffer, at_bib_command: bool) -> Result<(), BibtexError> {
+pub fn rs_bib_err_print(
+    buffers: &GlobalBuffer,
+    pool: &StringPool,
+    at_bib_command: bool,
+) -> Result<(), BibtexError> {
     write_logs("-");
-    bib_ln_num_print()?;
+    bib_ln_num_print(pool)?;
     print_bad_input_line(buffers);
     print_skipping_whatever_remains();
     if at_bib_command {
@@ -481,27 +482,32 @@ pub fn rs_bib_err_print(buffers: &GlobalBuffer, at_bib_command: bool) -> Result<
 
 #[no_mangle]
 pub extern "C" fn bib_err_print(at_bib_command: bool) -> CResult {
-    with_buffers(|buffers| rs_bib_err_print(buffers, at_bib_command)).into()
+    with_buffers(|buffers| with_pool(|pool| rs_bib_err_print(buffers, pool, at_bib_command))).into()
+}
+
+pub fn rs_bib_warn_print(pool: &StringPool) -> Result<(), BibtexError> {
+    bib_ln_num_print(pool)?;
+    mark_warning();
+    Ok(())
 }
 
 #[no_mangle]
 pub extern "C" fn bib_warn_print() -> CResult {
-    match bib_ln_num_print() {
-        Ok(()) => (),
-        err => return err.into(),
-    }
-    mark_warning();
-    CResult::Ok
+    with_pool(|pool| rs_bib_warn_print(pool)).into()
 }
 
-pub fn rs_eat_bib_print(buffers: &GlobalBuffer, at_bib_command: bool) -> Result<(), BibtexError> {
+pub fn rs_eat_bib_print(
+    buffers: &GlobalBuffer,
+    pool: &StringPool,
+    at_bib_command: bool,
+) -> Result<(), BibtexError> {
     write_logs("Illegal end of database file");
-    rs_bib_err_print(buffers, at_bib_command)
+    rs_bib_err_print(buffers, pool, at_bib_command)
 }
 
 #[no_mangle]
 pub extern "C" fn eat_bib_print(at_bib_command: bool) -> CResult {
-    with_buffers(|buffers| rs_eat_bib_print(buffers, at_bib_command)).into()
+    with_buffers(|buffers| with_pool(|pool| rs_eat_bib_print(buffers, pool, at_bib_command))).into()
 }
 
 #[no_mangle]
@@ -664,9 +670,10 @@ pub extern "C" fn print_fn_class(fn_loc: HashPointer) {
 pub fn rs_bst_err_print_and_look_for_blank_line(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
+    pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs("-");
-    with_pool(|pool| bst_ln_num_print(ctx, pool))?;
+    bst_ln_num_print(ctx, pool)?;
     print_bad_input_line(buffers);
     while buffers.init(BufTy::Base) != 0 {
         // SAFETY: bst_file guaranteed valid
@@ -683,7 +690,10 @@ pub fn rs_bst_err_print_and_look_for_blank_line(
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut Bibtex) -> CResult {
-    with_buffers_mut(|buffers| rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers).into())
+    with_buffers_mut(|buffers| {
+        with_pool(|pool| rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers, pool))
+    })
+    .into()
 }
 
 #[no_mangle]
@@ -698,7 +708,10 @@ pub unsafe extern "C" fn already_seen_function_print(
     write_logs(" is already a type \"");
     print_fn_class(seen_fn_loc);
     write_logs("\" function name\n");
-    with_buffers_mut(|buffers| rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers)).into()
+    with_buffers_mut(|buffers| {
+        with_pool(|pool| rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers, pool))
+    })
+    .into()
 }
 
 #[no_mangle]

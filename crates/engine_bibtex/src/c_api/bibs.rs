@@ -4,6 +4,7 @@ use crate::{
         char_info::LexClass,
         log::{rs_eat_bib_print, write_log_file},
         peekable::{rs_input_ln, PeekableInput},
+        pool::StringPool,
         scan::Scan,
         xbuf::XBuf,
         BibNumber, StrNumber,
@@ -190,6 +191,7 @@ pub extern "C" fn eat_bib_white_space() -> bool {
 
 pub fn compress_bib_white(
     buffers: &mut GlobalBuffer,
+    pool: &StringPool,
     at_bib_command: bool,
 ) -> Result<bool, BibtexError> {
     if buffers.offset(BufTy::Ex, 1) == buffers.len() {
@@ -210,7 +212,7 @@ pub fn compress_bib_white(
         });
 
         if res {
-            return rs_eat_bib_print(buffers, at_bib_command).map(|_| false);
+            return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
         }
 
         with_bibs_mut(|bibs| {

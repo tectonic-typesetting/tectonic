@@ -1345,6 +1345,7 @@ fn interp_format_name(
     ctx: &mut ExecCtx,
     pool: &mut StringPool,
     buffers: &mut GlobalBuffer,
+    hash: &HashData,
 ) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
@@ -1531,9 +1532,11 @@ fn interp_format_name(
             while von_start < last_end - 1 {
                 name_ptr = buffers.name_tok(von_start);
                 name_ptr2 = buffers.name_tok(von_start + 1);
-                if von_token_found(buffers, &mut name_ptr, name_ptr2)? {
+                if von_token_found(buffers, hash, pool, &mut name_ptr, name_ptr2)? {
                     von_name_ends_and_last_name_starts_stuff(
                         buffers,
+                        hash,
+                        pool,
                         last_end,
                         von_start,
                         &mut von_end,
@@ -1566,6 +1569,8 @@ fn interp_format_name(
             first_end = num_tokens;
             von_name_ends_and_last_name_starts_stuff(
                 buffers,
+                hash,
+                pool,
                 last_end,
                 von_start,
                 &mut von_end,
@@ -1580,6 +1585,8 @@ fn interp_format_name(
             first_end = num_tokens;
             von_name_ends_and_last_name_starts_stuff(
                 buffers,
+                hash,
+                pool,
                 last_end,
                 von_start,
                 &mut von_end,
@@ -1729,8 +1736,12 @@ pub unsafe extern "C" fn x_empty(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn x_format_name(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_buffers_mut(|buffers| interp_format_name(&mut *ctx, pool, buffers)))
-        .into()
+    with_pool_mut(|pool| {
+        with_buffers_mut(|buffers| {
+            with_hash(|hash| interp_format_name(&mut *ctx, pool, buffers, hash))
+        })
+    })
+    .into()
 }
 
 #[no_mangle]
