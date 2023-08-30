@@ -1,5 +1,6 @@
 use crate::{
     c_api::{
+        bibs::{with_bibs_mut, BibData},
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::{with_cites, CiteInfo},
@@ -15,7 +16,7 @@ use crate::{
         },
         pool::{rs_add_buf_pool, with_pool, with_pool_mut, StringPool},
         scan::{
-            enough_text_chars, rs_check_brace_level, rs_decr_brace_level, rs_name_scan_for_and,
+            enough_text_chars, name_scan_for_and, rs_check_brace_level, rs_decr_brace_level,
             von_name_ends_and_last_name_starts_stuff, von_token_found,
         },
         xbuf::{SafelyZero, XBuf},
@@ -122,7 +123,7 @@ impl ExecCtx {
     pub fn pop_stack(&mut self, pool: &mut StringPool) -> Result<ExecVal, BibtexError> {
         if self.lit_stk_ptr == 0 {
             write_logs("You can't pop an empty literal stack");
-            rs_bst_ex_warn_print(self, pool)?;
+            bst_ex_warn_print(self, pool)?;
             Ok(ExecVal::Illegal)
         } else {
             self.lit_stk_ptr -= 1;
@@ -196,7 +197,7 @@ pub extern "C" fn print_lit(val: ExecVal) -> CResult {
     with_pool(|pool| with_hash(|hash| rs_print_lit(pool, hash, val))).into()
 }
 
-pub fn rs_print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError> {
+pub fn print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
@@ -222,11 +223,6 @@ pub fn rs_print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexErr
     Ok(())
 }
 
-#[no_mangle]
-pub extern "C" fn print_stk_lit(val: ExecVal) -> CResult {
-    with_pool(|pool| rs_print_stk_lit(val, pool)).into()
-}
-
 pub fn rs_print_wrong_stk_lit(
     ctx: &mut ExecCtx,
     pool: &StringPool,
@@ -236,7 +232,7 @@ pub fn rs_print_wrong_stk_lit(
     match val {
         ExecVal::Illegal => Ok(()),
         _ => {
-            rs_print_stk_lit(val, pool)?;
+            print_stk_lit(val, pool)?;
 
             match typ2 {
                 StkType::Integer => write_logs(", not an integer,"),
@@ -248,7 +244,7 @@ pub fn rs_print_wrong_stk_lit(
                 }
             };
 
-            rs_bst_ex_warn_print(&*ctx, pool)
+            bst_ex_warn_print(&*ctx, pool)
         }
     }
 }
@@ -262,7 +258,7 @@ pub unsafe extern "C" fn print_wrong_stk_lit(
     with_pool(|pool| rs_print_wrong_stk_lit(&mut *ctx, pool, val, typ2)).into()
 }
 
-pub fn rs_bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
+pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
         with_cites(|ci| rs_print_a_pool_str(ci.get_cite(ci.ptr()), pool))?;
@@ -273,11 +269,6 @@ pub fn rs_bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), Bibt
     bst_ln_num_print(unsafe { &*ctx.glbl_ctx }, pool)?;
     mark_error();
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_ex_warn_print(ctx: *const ExecCtx) -> CResult {
-    with_pool(|pool| rs_bst_ex_warn_print(&*ctx, pool)).into()
 }
 
 pub fn bst_ln_num_print(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
@@ -712,7 +703,7 @@ fn rs_check_command_execution(
         write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
         rs_pop_whole_stack(ctx, pool, hash)?;
         write_logs("---the literal stack isn't empty");
-        rs_bst_ex_warn_print(ctx, pool)?;
+        bst_ex_warn_print(ctx, pool)?;
     }
     if ctx.bib_str_ptr != pool.str_ptr() {
         write_logs("Nonempty empty string stack");
@@ -767,19 +758,19 @@ fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
         }
         _ if pop1.ty() != pop2.ty() => {
             if pop1.ty() != StkType::Illegal && pop2.ty() != StkType::Illegal {
-                rs_print_stk_lit(pop1, pool)?;
+                print_stk_lit(pop1, pool)?;
                 write_logs(", ");
-                rs_print_stk_lit(pop2, pool)?;
+                print_stk_lit(pop2, pool)?;
                 write_logs("\n---they aren't the same literal types");
-                rs_bst_ex_warn_print(ctx, pool)?;
+                bst_ex_warn_print(ctx, pool)?;
             }
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
             if pop1.ty() != StkType::Illegal {
-                rs_print_stk_lit(pop1, pool)?;
+                print_stk_lit(pop1, pool)?;
                 write_logs(", not an integer or a string,");
-                rs_bst_ex_warn_print(ctx, pool)?;
+                bst_ex_warn_print(ctx, pool)?;
             }
             ctx.push_stack(ExecVal::Integer(0))
         }
@@ -1038,7 +1029,7 @@ fn interp_gets(
             write_logs("You can't assign to type ");
             rs_print_fn_class(hash, f1);
             write_logs(", a nonvariable function class");
-            rs_bst_ex_warn_print(ctx, pool)?;
+            bst_ex_warn_print(ctx, pool)?;
         }
     }
     Ok(())
@@ -1128,7 +1119,7 @@ fn interp_change_case(
             if conv_ty == ConvTy::Bad {
                 rs_print_a_pool_str(s1, pool)?;
                 write_logs(" is an illegal case-conversion string");
-                rs_bst_ex_warn_print(ctx, pool)?;
+                bst_ex_warn_print(ctx, pool)?;
             }
 
             let mut scratch = Vec::from(pool.get_str(s2));
@@ -1265,7 +1256,7 @@ fn interp_chr_to_int(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
                 write_logs("\"");
                 rs_print_a_pool_str(s1, pool)?;
                 write_logs("\" isn't a single character");
-                rs_bst_ex_warn_print(ctx, pool)?;
+                bst_ex_warn_print(ctx, pool)?;
                 ctx.push_stack(ExecVal::Integer(0));
             } else {
                 ctx.push_stack(ExecVal::Integer(str[0] as i32))
@@ -1337,9 +1328,9 @@ fn interp_empty(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexEr
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            rs_print_stk_lit(pop1, pool)?;
+            print_stk_lit(pop1, pool)?;
             write_logs(", not a string or missing field,");
-            rs_bst_ex_warn_print(ctx, pool)?;
+            bst_ex_warn_print(ctx, pool)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -1385,7 +1376,7 @@ fn interp_format_name(
     while num_names < i2 && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
         num_names += 1;
         xptr = buffers.offset(BufTy::Ex, 1);
-        rs_name_scan_for_and(ctx, pool, buffers, s3, &mut brace_level)?;
+        name_scan_for_and(ctx, pool, buffers, s3, &mut brace_level)?;
     }
 
     if buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
@@ -1400,7 +1391,7 @@ fn interp_format_name(
         }
         rs_print_a_pool_str(s3, pool)?;
         write_logs("\"");
-        rs_bst_ex_warn_print(ctx, pool)?;
+        bst_ex_warn_print(ctx, pool)?;
     }
 
     while buffers.offset(BufTy::Ex, 1) > xptr {
@@ -1413,7 +1404,7 @@ fn interp_format_name(
                     write_logs(&format!("Name {} in \"", i2));
                     rs_print_a_pool_str(s3, pool)?;
                     write_logs("\" has a comma at the end");
-                    rs_bst_ex_warn_print(ctx, pool)?;
+                    bst_ex_warn_print(ctx, pool)?;
                     buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
                 } else {
                     break;
@@ -1449,7 +1440,7 @@ fn interp_format_name(
                         write_logs(&format!("Too many commas in name {} of \"", i2));
                         rs_print_a_pool_str(s3, pool)?;
                         write_logs("\"");
-                        rs_bst_ex_warn_print(ctx, pool)?;
+                        bst_ex_warn_print(ctx, pool)?;
                     }
                 }
                 xptr += 1;
@@ -1485,7 +1476,7 @@ fn interp_format_name(
                 write_logs(&format!("Name {} of \"", i2));
                 rs_print_a_pool_str(s3, pool)?;
                 write_logs("\" isn't brace balanced");
-                rs_bst_ex_warn_print(ctx, pool)?;
+                bst_ex_warn_print(ctx, pool)?;
                 xptr += 1;
                 token_starting = false;
             }
@@ -1636,7 +1627,7 @@ fn interp_int_to_chr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
 
     if i1 < 0 || i1 > 127 {
         write_logs(&format!("{} isn't valid ASCII", i1));
-        rs_bst_ex_warn_print(ctx, pool)?;
+        bst_ex_warn_print(ctx, pool)?;
         ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
     } else {
         if pool.pool_ptr() + 1 > pool.len() {
@@ -1662,6 +1653,75 @@ fn interp_int_to_str(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
 
     let scratch = i1.to_string();
     ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch.as_bytes())?));
+    Ok(())
+}
+
+fn interp_missing(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    if !ctx.mess_with_entries {
+        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+        return Ok(());
+    }
+    match pop1 {
+        ExecVal::String(_) => {
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        ExecVal::Missing(_) => {
+            ctx.push_stack(ExecVal::Integer(1));
+        }
+        ExecVal::Illegal => {
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+        _ => {
+            print_stk_lit(pop1, pool)?;
+            write_logs(", not a string or missing field,");
+            bst_ex_warn_print(ctx, pool)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+    }
+    Ok(())
+}
+
+fn interp_num_names(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    buffers: &mut GlobalBuffer,
+) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    match pop1 {
+        ExecVal::String(s1) => {
+            buffers.set_init(BufTy::Ex, 0);
+            rs_add_buf_pool(pool, buffers, s1);
+            buffers.set_offset(BufTy::Ex, 1, 0);
+            let mut num_names = 0;
+            while buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
+                let mut brace_level = 0;
+                name_scan_for_and(ctx, pool, buffers, s1, &mut brace_level)?;
+                num_names += 1;
+            }
+            ctx.push_stack(ExecVal::Integer(num_names))
+        }
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::Integer(0));
+        }
+    }
+    Ok(())
+}
+
+fn interp_preamble(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    bibs: &mut BibData,
+) -> Result<(), BibtexError> {
+    let mut out = Vec::with_capacity(ctx.glbl_ctx().num_preamble_strings * 32);
+    bibs.set_preamble_ptr(0);
+    while bibs.preamble_ptr() < ctx.glbl_ctx().num_preamble_strings {
+        out.extend(pool.get_str(bibs.cur_preamble()));
+        bibs.set_preamble_ptr(bibs.preamble_ptr() + 1);
+    }
+    let s = pool.add_string_raw(&out)?;
+    ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
 
@@ -1757,4 +1817,20 @@ pub unsafe extern "C" fn x_int_to_chr(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_int_to_str(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_int_to_str(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_missing(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_missing(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_num_names(ctx: *mut ExecCtx) -> CResult {
+    with_buffers_mut(|buffers| with_pool_mut(|pool| interp_num_names(&mut *ctx, pool, buffers)))
+        .into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_preamble(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| with_bibs_mut(|bibs| interp_preamble(&mut *ctx, pool, bibs))).into()
 }

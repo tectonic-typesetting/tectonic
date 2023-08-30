@@ -5,7 +5,7 @@ use crate::{
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::with_cites,
-        exec::{bst_ln_num_print, rs_bst_ex_warn_print, ExecCtx},
+        exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
         hash::{with_hash, FnClass, HashData},
         history::{mark_error, mark_fatal, mark_warning},
         other::with_other,
@@ -620,7 +620,7 @@ pub fn rs_bst_cant_mess_with_entries_print(
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs("You can't mess with entries here");
-    rs_bst_ex_warn_print(ctx, pool)
+    bst_ex_warn_print(ctx, pool)
 }
 
 #[no_mangle]
@@ -829,6 +829,6 @@ pub fn brace_lvl_one_letters_complaint(
     write_logs("The format string \"");
     rs_print_a_pool_str(ctx.pop1.unwrap_str(), pool)?;
     write_logs("\" has an illegal brace-level-1 letter");
-    rs_bst_ex_warn_print(ctx, pool)?;
+    bst_ex_warn_print(ctx, pool)?;
     Ok(())
 }

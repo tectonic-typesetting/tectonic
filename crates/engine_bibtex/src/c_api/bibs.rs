@@ -73,6 +73,18 @@ impl BibData {
         self.preamble_ptr += 1;
     }
 
+    pub fn preamble_ptr(&self) -> usize {
+        self.preamble_ptr
+    }
+
+    pub fn set_preamble_ptr(&mut self, val: usize) {
+        self.preamble_ptr = val;
+    }
+
+    pub fn cur_preamble(&self) -> StrNumber {
+        self.preamble[self.preamble_ptr]
+    }
+
     fn grow(&mut self) {
         self.bib_list.grow(MAX_BIB_FILES);
         self.bib_file.grow(MAX_BIB_FILES);
@@ -136,18 +148,8 @@ pub extern "C" fn check_bib_files(ptr: BibNumber) {
 }
 
 #[no_mangle]
-pub extern "C" fn cur_preamble() -> StrNumber {
-    with_bibs(|bibs| bibs.preamble[bibs.preamble_ptr])
-}
-
-#[no_mangle]
 pub extern "C" fn preamble_ptr() -> BibNumber {
     with_bibs(|bibs| bibs.preamble_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_preamble_ptr(num: BibNumber) {
-    with_bibs_mut(|bibs| bibs.preamble_ptr = num)
 }
 
 #[no_mangle]

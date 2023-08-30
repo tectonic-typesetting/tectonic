@@ -326,11 +326,7 @@ void set_bib_ptr(BibNumber num);
 
 void check_bib_files(BibNumber ptr);
 
-StrNumber cur_preamble(void);
-
 BibNumber preamble_ptr(void);
-
-void set_preamble_ptr(BibNumber num);
 
 int32_t bib_line_num(void);
 
@@ -353,8 +349,6 @@ BufPointer bib_buf_len(BufTy ty);
 void bib_set_buf_len(BufTy ty, BufPointer len);
 
 void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
-
-BufPointer int_to_ascii(int32_t the_int, BufTy int_buf, BufPointer int_begin);
 
 void quick_sort(CiteNumber left_end, CiteNumber right_end);
 
@@ -430,11 +424,7 @@ ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
 CResult print_lit(ExecVal val);
 
-CResult print_stk_lit(ExecVal val);
-
 CResult print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
-
-CResult bst_ex_warn_print(const ExecCtx *ctx);
 
 CResult print_bst_name(const Bibtex *glbl_ctx);
 
@@ -485,6 +475,12 @@ CResult x_format_name(ExecCtx *ctx);
 CResult x_int_to_chr(ExecCtx *ctx);
 
 CResult x_int_to_str(ExecCtx *ctx);
+
+CResult x_missing(ExecCtx *ctx);
+
+CResult x_num_names(ExecCtx *ctx);
+
+CResult x_preamble(ExecCtx *ctx);
 
 int32_t num_glb_strs(void);
 
@@ -694,8 +690,6 @@ CResultBool scan_and_store_the_field_value_and_eat_white(Bibtex *ctx,
 CResult decr_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
 
 CResult check_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t brace_level);
-
-CResult name_scan_for_and(ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
 
 #ifdef __cplusplus
 } // extern "C"

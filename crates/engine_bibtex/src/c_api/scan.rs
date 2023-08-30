@@ -1004,7 +1004,7 @@ pub unsafe extern "C" fn check_brace_level(
     with_pool(|pool| rs_check_brace_level(&*ctx, pool, pop_lit_var, brace_level)).into()
 }
 
-pub fn rs_name_scan_for_and(
+pub fn name_scan_for_and(
     ctx: &ExecCtx,
     pool: &StringPool,
     buffers: &mut GlobalBuffer,
@@ -1060,19 +1060,6 @@ pub fn rs_name_scan_for_and(
     }
 
     rs_check_brace_level(ctx, pool, pop_lit_var, *brace_level)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn name_scan_for_and(
-    ctx: *mut ExecCtx,
-    pop_lit_var: StrNumber,
-    brace_level: *mut i32,
-) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_pool(|pool| {
-            rs_name_scan_for_and(&*ctx, pool, buffers, pop_lit_var, &mut *brace_level).into()
-        })
-    })
 }
 
 pub fn von_token_found(
