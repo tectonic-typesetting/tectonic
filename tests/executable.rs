@@ -403,7 +403,7 @@ fn biber_no_such_tool() {
 
     command.env("TECTONIC_TEST_FAKE_BIBER", "ohnothereisnobiberprogram");
 
-    const REST: &str = r#"\bye"#;
+    const REST: &str = r"\bye";
     let tex = format!("{BIBER_TRIGGER_TEX}{REST}");
 
     command
@@ -431,7 +431,7 @@ fn biber_signal() {
 
 #[test]
 fn biber_success() {
-    const REST: &str = r#"
+    const REST: &str = r"
 \ifsecond
 \ifnum\input{biberout.qqq}=456\relax
 a
@@ -439,7 +439,7 @@ a
 \ohnothebiberdidntwork
 \fi
 \fi
-\bye"#;
+\bye";
     let tex = format!("{BIBER_TRIGGER_TEX}{REST}");
     let output = run_with_biber("success", &tex);
     success_or_panic(&output);
@@ -771,14 +771,14 @@ fn v2_dump_suffix() {
         writeln!(
             file,
             "{}", // <= works around {} fussiness in Rust format strings
-            r#"\newwrite\w
+            r"\newwrite\w
 \immediate\openout\w=first.demo\relax
 \immediate\write\w{content-un}
 \immediate\closeout\w
 \immediate\openout\w=second.demo\relax
 \immediate\write\w{content-deux}
 \immediate\closeout\w
-"#
+"
         )
         .unwrap();
     }
@@ -806,7 +806,7 @@ fn v2_dump_suffix() {
     assert!(saw_first && saw_second);
 }
 
-const SHELL_ESCAPE_TEST_DOC: &str = r#"\immediate\write18{mkdir shellwork}
+const SHELL_ESCAPE_TEST_DOC: &str = r"\immediate\write18{mkdir shellwork}
 \immediate\write18{echo 123 >shellwork/persist}
 \ifnum123=\input{shellwork/persist}
 a
@@ -814,7 +814,7 @@ a
 \ohnotheshellescapedidntwork
 \fi
 \bye
-"#;
+";
 
 /// Test that shell escape actually runs the commands
 #[test]
