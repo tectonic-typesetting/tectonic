@@ -102,111 +102,110 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void x_purify(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_String) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
-        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    } else {
-
-        bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop1.string);
-        int32_t brace_level = 0;
-        BufPointer ex_buf_xptr = 0;
-        bib_set_buf_offset(BUF_TY_EX, 1, 0);
-        while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
-
-            switch ((LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))])) {
-            case LEX_CLASS_WHITESPACE:
-            case LEX_CLASS_SEP:
-                {
-                    bib_set_buf(BUF_TY_EX, ex_buf_xptr, 32 /*space */ );
-                    ex_buf_xptr = ex_buf_xptr + 1;
-                }
-                break;
-            case LEX_CLASS_ALPHA:
-            case LEX_CLASS_NUMERIC:
-                {
-                    bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)));
-                    ex_buf_xptr = ex_buf_xptr + 1;
-                }
-                break;
-            default:
-                if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 123 /*left_brace */ ) {
-                    brace_level = brace_level + 1;
-                    if ((brace_level == 1) && (bib_buf_offset(BUF_TY_EX, 1) + 1 < bib_buf_len(BUF_TY_EX))) {
-
-                        if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) + 1) == 92 /*backslash */ ) {       /*433: */
-                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                            while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)) {
-
-                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                BufPointer ex_buf_yptr = bib_buf_offset(BUF_TY_EX, 1);
-                                while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
-                                        && (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))] == LEX_CLASS_ALPHA )))
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_EX, ex_buf_yptr,
-                                                                          bib_buf_offset(BUF_TY_EX, 1) -
-                                                                          ex_buf_yptr, STR_ILK_CONTROL_SEQ,
-                                                                          false));
-                                hash_loc control_seq_loc = hash.loc;
-                                if (hash.exists) { /*434: */
-                                    bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, ex_buf_yptr));
-                                    ex_buf_xptr = ex_buf_xptr + 1;
-                                    switch ((ilk_info(control_seq_loc))) {
-                                    case 2:
-                                    case 3:
-                                    case 4:
-                                    case 5:
-                                    case 12:
-                                        {
-                                            bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, ex_buf_yptr + 1));
-                                            ex_buf_xptr = ex_buf_xptr + 1;
-                                        }
-                                        break;
-                                    default:
-                                        ;
-                                        break;
-                                    }
-                                }
-                                while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)
-                                        && (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) != 92 /*backslash */ ))) {
-
-                                    switch ((LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))])) {
-                                    case LEX_CLASS_ALPHA:
-                                    case LEX_CLASS_NUMERIC:
-                                        {
-                                            bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)));
-                                            ex_buf_xptr = ex_buf_xptr + 1;
-                                        }
-                                        break;
-                                    default:
-                                        if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ )
-                                            brace_level = brace_level - 1;
-                                        else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 123 /*left_brace */ )
-                                            brace_level = brace_level + 1;
-                                        break;
-                                    }
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                }
-                            }
-                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
-                        }
-                    }
-                } else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ ) {
-
-                    if (brace_level > 0)
-                        brace_level = brace_level - 1;
-                }
-                break;
-            }
-            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-        }
-        bib_set_buf_len(BUF_TY_EX, ex_buf_xptr);
-        unwrap(add_pool_buf_and_push(ctx));
-    }
-}
+//static void x_purify(ExecCtx* ctx)
+//{
+//    unwrap(pop_lit_stk(ctx, &ctx->pop1));
+//    if (ctx->pop1.tag != ExecVal_String) {
+//        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
+//        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
+//    } else {
+//
+//        bib_set_buf_len(BUF_TY_EX, 0);
+//        add_buf_pool(ctx->pop1.string);
+//        int32_t brace_level = 0;
+//        BufPointer ex_buf_xptr = 0;
+//        bib_set_buf_offset(BUF_TY_EX, 1, 0);
+//        while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
+//
+//            switch ((LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))])) {
+//            case LEX_CLASS_WHITESPACE:
+//            case LEX_CLASS_SEP:
+//                {
+//                    bib_set_buf(BUF_TY_EX, ex_buf_xptr, 32 /*space */ );
+//                    ex_buf_xptr = ex_buf_xptr + 1;
+//                }
+//                break;
+//            case LEX_CLASS_ALPHA:
+//            case LEX_CLASS_NUMERIC:
+//                {
+//                    bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)));
+//                    ex_buf_xptr = ex_buf_xptr + 1;
+//                }
+//                break;
+//            default:
+//                if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 123 /*left_brace */ ) {
+//                    brace_level = brace_level + 1;
+//                    if ((brace_level == 1) && (bib_buf_offset(BUF_TY_EX, 1) + 1 < bib_buf_len(BUF_TY_EX))
+//                        && bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) + 1) == 92 /*backslash */) {
+//
+//                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+//                        while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)) {
+//
+//                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+//                            BufPointer ex_buf_yptr = bib_buf_offset(BUF_TY_EX, 1);
+//                            while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
+//                                    && (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))] == LEX_CLASS_ALPHA )))
+//                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+//                            LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_EX, ex_buf_yptr,
+//                                                                      bib_buf_offset(BUF_TY_EX, 1) -
+//                                                                      ex_buf_yptr, STR_ILK_CONTROL_SEQ,
+//                                                                      false));
+//                            hash_loc control_seq_loc = hash.loc;
+//                            if (hash.exists) { /*434: */
+//                                bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, ex_buf_yptr));
+//                                ex_buf_xptr = ex_buf_xptr + 1;
+//                                switch ((ilk_info(control_seq_loc))) {
+//                                case 2:
+//                                case 3:
+//                                case 4:
+//                                case 5:
+//                                case 12:
+//                                    {
+//                                        bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, ex_buf_yptr + 1));
+//                                        ex_buf_xptr = ex_buf_xptr + 1;
+//                                    }
+//                                    break;
+//                                default:
+//                                    ;
+//                                    break;
+//                                }
+//                            }
+//                            while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)
+//                                    && (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) != 92 /*backslash */ ))) {
+//
+//                                switch ((LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))])) {
+//                                case LEX_CLASS_ALPHA:
+//                                case LEX_CLASS_NUMERIC:
+//                                    {
+//                                        bib_set_buf(BUF_TY_EX, ex_buf_xptr, bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)));
+//                                        ex_buf_xptr = ex_buf_xptr + 1;
+//                                    }
+//                                    break;
+//                                default:
+//                                    if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ )
+//                                        brace_level = brace_level - 1;
+//                                    else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 123 /*left_brace */ )
+//                                        brace_level = brace_level + 1;
+//                                    break;
+//                                }
+//                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+//                            }
+//                        }
+//                        bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
+//                    }
+//                } else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ ) {
+//
+//                    if (brace_level > 0)
+//                        brace_level = brace_level - 1;
+//                }
+//                break;
+//            }
+//            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
+//        }
+//        bib_set_buf_len(BUF_TY_EX, ex_buf_xptr);
+//        unwrap(add_pool_buf_and_push(ctx));
+//    }
+//}
 
 static void x_quote(ExecCtx* ctx)
 {
@@ -679,7 +678,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(x_preamble(ctx));
             break;
         case 23:
-            x_purify(ctx);
+            unwrap(x_purify(ctx));
             break;
         case 24:
             x_quote(ctx);

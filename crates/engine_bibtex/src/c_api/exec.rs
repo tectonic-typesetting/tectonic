@@ -1725,6 +1725,99 @@ fn interp_preamble(
     Ok(())
 }
 
+fn interp_purify(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let s1 = match pop1 {
+        ExecVal::String(s1) => s1,
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    let mut scratch = Vec::from(pool.get_str(s1));
+    let mut idx = 0;
+    let mut brace_level = 0;
+    let mut write_idx = 0;
+
+    while idx < scratch.len() {
+        match LexClass::of(scratch[idx]) {
+            LexClass::Whitespace | LexClass::Sep => {
+                scratch[write_idx] = b' ';
+                write_idx += 1;
+            }
+            LexClass::Alpha | LexClass::Numeric => {
+                scratch[write_idx] = scratch[idx];
+                write_idx += 1;
+            }
+            _ => match scratch[idx] {
+                b'{' => {
+                    brace_level += 1;
+                    if brace_level == 1 && idx + 1 < scratch.len() && scratch[idx + 1] == b'\\' {
+                        idx += 1;
+                        while idx < scratch.len() && brace_level > 0 {
+                            idx += 1;
+                            let old_idx = idx;
+                            while idx < scratch.len()
+                                && LexClass::of(scratch[idx]) == LexClass::Alpha
+                            {
+                                idx += 1;
+                            }
+
+                            let res =
+                                pool.lookup_str(hash, &scratch[old_idx..idx], StrIlk::ControlSeq);
+                            if res.exists {
+                                scratch[write_idx] = scratch[old_idx];
+                                write_idx += 1;
+                                match hash.ilk_info(res.loc) {
+                                    2 | 3 | 4 | 5 | 12 => {
+                                        scratch[write_idx] = scratch[old_idx + 1];
+                                        write_idx += 1;
+                                    }
+                                    _ => (),
+                                }
+                            }
+                            while idx < scratch.len() && brace_level > 0 && scratch[idx] != b'\\' {
+                                match LexClass::of(scratch[idx]) {
+                                    LexClass::Alpha | LexClass::Numeric => {
+                                        scratch[write_idx] = scratch[idx];
+                                        write_idx += 1;
+                                    }
+                                    _ => match scratch[idx] {
+                                        b'{' => brace_level += 1,
+                                        b'}' => brace_level -= 1,
+                                        _ => (),
+                                    },
+                                }
+                                idx += 1;
+                            }
+                        }
+                        idx -= 1;
+                    }
+                }
+                b'}' => {
+                    if brace_level > 0 {
+                        brace_level -= 1;
+                    }
+                }
+                _ => (),
+            },
+        }
+        idx += 1;
+    }
+
+    scratch.truncate(write_idx);
+    let out = pool.add_string_raw(&scratch)?;
+    ctx.push_stack(ExecVal::String(out));
+
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1833,4 +1926,9 @@ pub unsafe extern "C" fn x_num_names(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_preamble(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| with_bibs_mut(|bibs| interp_preamble(&mut *ctx, pool, bibs))).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_purify(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| with_hash(|hash| interp_purify(&mut *ctx, pool, hash))).into()
 }
