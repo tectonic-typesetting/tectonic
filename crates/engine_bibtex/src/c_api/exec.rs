@@ -9,9 +9,9 @@ use crate::{
         history::mark_error,
         log::{
             brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
-            bst_1print_string_size_exceeded, bst_2print_string_size_exceeded, print_a_pool_str,
-            print_confusion, print_fn_class, rs_bst_cant_mess_with_entries_print,
-            rs_print_a_pool_str, write_logs,
+            bst_1print_string_size_exceeded, bst_2print_string_size_exceeded, print_confusion,
+            rs_bst_cant_mess_with_entries_print, rs_print_a_pool_str, rs_print_fn_class,
+            write_logs,
         },
         pool::{rs_add_buf_pool, with_pool, with_pool_mut, StringPool},
         scan::{
@@ -146,7 +146,7 @@ impl ExecCtx {
         self.lit_stack.grow(LIT_STK_SIZE);
     }
 
-    fn glbl_ctx(&self) -> &Bibtex {
+    pub(crate) fn glbl_ctx(&self) -> &Bibtex {
         unsafe { &*self.glbl_ctx }
     }
 }
@@ -166,42 +166,34 @@ pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn print_lit(val: ExecVal) -> CResult {
+pub fn rs_print_lit(pool: &StringPool, hash: &HashData, val: ExecVal) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => {
             write_logs(&format!("{}\n", val));
-            CResult::Ok
         }
         ExecVal::String(str) => {
-            match print_a_pool_str(str as usize) {
-                CResult::Ok => (),
-                err => return err,
-            }
+            rs_print_a_pool_str(str, pool)?;
             write_logs("\n");
-            CResult::Ok
         }
         ExecVal::Function(f) => {
-            match print_a_pool_str(with_hash(|hash| hash.text(f as usize))) {
-                CResult::Ok => (),
-                err => return err,
-            }
+            rs_print_a_pool_str(hash.text(f), pool)?;
             write_logs("\n");
-            CResult::Ok
         }
         ExecVal::Missing(s) => {
-            match print_a_pool_str(s as usize) {
-                CResult::Ok => (),
-                err => return err,
-            }
+            rs_print_a_pool_str(s, pool)?;
             write_logs("\n");
-            CResult::Ok
         }
         ExecVal::Illegal => {
             illegl_literal_confusion();
-            CResult::Error
+            return Err(BibtexError::Fatal);
         }
     }
+    Ok(())
+}
+
+#[no_mangle]
+pub extern "C" fn print_lit(val: ExecVal) -> CResult {
+    with_pool(|pool| with_hash(|hash| rs_print_lit(pool, hash, val))).into()
 }
 
 pub fn rs_print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError> {
@@ -327,31 +319,40 @@ pub fn illegl_literal_confusion() {
     print_confusion();
 }
 
-fn rs_pop_top_and_print(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
-    with_pool_mut(|pool| ctx.pop_stack(pool)).map(|val| {
+fn rs_pop_top_and_print(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
+    ctx.pop_stack(pool).and_then(|val| {
         if let ExecVal::Illegal = val {
             write_logs("Empty literal\n");
+            Ok(())
         } else {
-            print_lit(val);
+            rs_print_lit(pool, hash, val)
         }
     })
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn pop_top_and_print(ctx: *mut ExecCtx) -> CResult {
-    rs_pop_top_and_print(&mut *ctx).into()
+    with_pool_mut(|pool| with_hash(|hash| rs_pop_top_and_print(&mut *ctx, pool, hash))).into()
 }
 
-fn rs_pop_whole_stack(ctx: &mut ExecCtx) -> Result<(), BibtexError> {
+fn rs_pop_whole_stack(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     while ctx.lit_stk_ptr > 0 {
-        rs_pop_top_and_print(ctx)?;
+        rs_pop_top_and_print(ctx, pool, hash)?;
     }
     Ok(())
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn pop_whole_stack(ctx: *mut ExecCtx) -> CResult {
-    rs_pop_whole_stack(&mut *ctx).into()
+    with_pool_mut(|pool| with_hash(|hash| rs_pop_whole_stack(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -702,14 +703,18 @@ pub fn figure_out_the_formatted_name(
     Ok(())
 }
 
-fn rs_check_command_execution(ctx: &mut ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
+fn rs_check_command_execution(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     if ctx.lit_stk_ptr != 0 {
         write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
-        rs_pop_whole_stack(ctx)?;
+        rs_pop_whole_stack(ctx, pool, hash)?;
         write_logs("---the literal stack isn't empty");
         rs_bst_ex_warn_print(ctx, pool)?;
     }
-    if ctx.bib_str_ptr != with_pool(|pool| pool.str_ptr()) {
+    if ctx.bib_str_ptr != pool.str_ptr() {
         write_logs("Nonempty empty string stack");
         print_confusion();
         return Err(BibtexError::Fatal);
@@ -719,7 +724,7 @@ fn rs_check_command_execution(ctx: &mut ExecCtx, pool: &StringPool) -> Result<()
 
 #[no_mangle]
 pub unsafe extern "C" fn check_command_execution(ctx: *mut ExecCtx) -> CResult {
-    with_pool(|pool| rs_check_command_execution(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| rs_check_command_execution(&mut *ctx, pool, hash))).into()
 }
 
 fn rs_add_pool_buf_and_push(
@@ -991,7 +996,7 @@ fn interp_gets(
                 if s.len() > ENT_STR_SIZE {
                     bst_1print_string_size_exceeded();
                     write_logs(&format!("{}, the entry", ENT_STR_SIZE));
-                    bst_2print_string_size_exceeded(ctx)?;
+                    bst_2print_string_size_exceeded(ctx, pool)?;
                     s = &s[..ENT_STR_SIZE];
                 }
                 entries.set_str(
@@ -1020,7 +1025,7 @@ fn interp_gets(
                     if s.len() > GLOB_STR_SIZE {
                         bst_1print_string_size_exceeded();
                         write_logs(&format!("{}, the global", GLOB_STR_SIZE));
-                        bst_2print_string_size_exceeded(ctx)?;
+                        bst_2print_string_size_exceeded(ctx, pool)?;
                         s = &s[..GLOB_STR_SIZE];
                     }
                     globals.set_str(str_glb_ptr, s);
@@ -1031,7 +1036,7 @@ fn interp_gets(
         }
         _ => {
             write_logs("You can't assign to type ");
-            print_fn_class(f1);
+            rs_print_fn_class(hash, f1);
             write_logs(", a nonvariable function class");
             rs_bst_ex_warn_print(ctx, pool)?;
         }

@@ -8,11 +8,11 @@ use crate::{
         hash,
         hash::{end_of_def, with_hash_mut, FnClass, HashData},
         log::{
-            bib_cmd_confusion, bib_unbalanced_braces_print, bib_warn_print,
-            braces_unbalanced_complaint, eat_bst_print, hash_cite_confusion, macro_warn_print,
-            print_confusion, print_recursion_illegal, rs_bib_err_print, rs_bib_id_print,
-            rs_bib_warn_print, rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print,
-            rs_print_a_pool_str, skip_illegal_stuff_after_token_print, skip_token_print,
+            bib_cmd_confusion, bib_unbalanced_braces_print, braces_unbalanced_complaint,
+            eat_bst_print, hash_cite_confusion, macro_warn_print, print_confusion,
+            print_recursion_illegal, rs_bib_err_print, rs_bib_id_print, rs_bib_warn_print,
+            rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print, rs_print_a_pool_str,
+            skip_illegal_stuff_after_token_print, skip_token_print,
             skip_token_unknown_function_print, write_log_file, write_logs,
         },
         other::with_other_mut,
@@ -249,7 +249,7 @@ fn handle_char(
 
             if !scan_integer(buffers, &mut token_value) {
                 write_logs("Illegal integer in integer literal");
-                return skip_token_print(ctx, buffers);
+                return skip_token_print(ctx, buffers, pool);
             }
 
             let res = {
@@ -271,7 +271,7 @@ fn handle_char(
                 && char != b'}'
                 && char != b'%'
             {
-                return skip_illegal_stuff_after_token_print(ctx, buffers);
+                return skip_illegal_stuff_after_token_print(ctx, buffers, pool);
             }
 
             single_function.push(res.loc);
@@ -282,7 +282,7 @@ fn handle_char(
             let init = buffers.init(BufTy::Base);
             if !Scan::new().chars(&[b'"']).scan_till(buffers, init) {
                 write_logs("No `\"` to end string literal");
-                return skip_token_print(ctx, buffers);
+                return skip_token_print(ctx, buffers, pool);
             }
 
             let res = {
@@ -302,7 +302,7 @@ fn handle_char(
                 && char != b'}'
                 && char != b'%'
             {
-                return skip_illegal_stuff_after_token_print(ctx, buffers);
+                return skip_illegal_stuff_after_token_print(ctx, buffers, pool);
             }
 
             single_function.push(res.loc);
@@ -323,9 +323,9 @@ fn handle_char(
             let res = pool.lookup_str(hash, str, StrIlk::BstFn);
 
             if !res.exists {
-                return skip_token_unknown_function_print(ctx, buffers);
+                return skip_token_unknown_function_print(ctx, buffers, pool);
             } else if res.loc == wiz_loc {
-                return print_recursion_illegal(ctx, buffers);
+                return print_recursion_illegal(ctx, buffers, pool);
             }
 
             single_function.push(QUOTE_NEXT_FN);
@@ -368,9 +368,9 @@ fn handle_char(
             let str = &buffers.buffer(BufTy::Base)[range];
             let res = pool.lookup_str(hash, str, StrIlk::BstFn);
             if !res.exists {
-                return skip_token_unknown_function_print(ctx, buffers);
+                return skip_token_unknown_function_print(ctx, buffers, pool);
             } else if res.loc == wiz_loc {
-                return print_recursion_illegal(ctx, buffers);
+                return print_recursion_illegal(ctx, buffers, pool);
             }
 
             single_function.push(res.loc);
@@ -544,7 +544,8 @@ fn scan_balanced_braces(
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(at_bib_command).map(|_| false);
+                    return bib_unbalanced_braces_print(buffers, pool, at_bib_command)
+                        .map(|_| false);
                 }
                 c => {
                     if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
@@ -599,7 +600,8 @@ fn scan_balanced_braces(
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(at_bib_command).map(|_| false);
+                    return bib_unbalanced_braces_print(buffers, pool, at_bib_command)
+                        .map(|_| false);
                 }
                 _ => {
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
@@ -701,22 +703,14 @@ fn scan_a_field_token_and_eat_white(
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("used in its own definition\n");
-                    match bib_warn_print() {
-                        CResult::Ok => (),
-                        CResult::Error => return Err(BibtexError::Fatal),
-                        CResult::Recover => return Err(BibtexError::Recover),
-                    }
+                    rs_bib_warn_print(pool)?;
                 }
 
                 if !res.exists {
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("undefined\n");
-                    match bib_warn_print() {
-                        CResult::Ok => (),
-                        CResult::Error => return Err(BibtexError::Fatal),
-                        CResult::Recover => return Err(BibtexError::Recover),
-                    }
+                    rs_bib_warn_print(pool)?;
                 }
 
                 if store_token {
