@@ -488,6 +488,10 @@ CResult x_substring(ExecCtx *ctx);
 
 CResult x_swap(ExecCtx *ctx);
 
+CResult x_text_length(ExecCtx *ctx);
+
+CResult x_text_prefix(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);

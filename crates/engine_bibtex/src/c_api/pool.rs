@@ -14,7 +14,7 @@ use crate::{
     },
     BibtexError,
 };
-use std::cell::RefCell;
+use std::{cell::RefCell, ops::Range};
 
 const POOL_SIZE: usize = 65000;
 pub(crate) const MAX_PRINT_LINE: usize = 79;
@@ -215,6 +215,13 @@ impl StringPool {
         }
 
         self.strings.copy_within(start..end, pos);
+    }
+
+    pub fn copy_range_raw(&mut self, range: Range<usize>, pos: usize) {
+        while pos + (range.end - range.start) > self.strings.len() {
+            self.grow();
+        }
+        self.strings.copy_within(range, pos)
     }
 
     pub fn append(&mut self, c: ASCIICode) {

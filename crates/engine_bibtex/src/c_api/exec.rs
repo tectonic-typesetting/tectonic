@@ -1935,6 +1935,127 @@ fn interp_swap(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexErr
     Ok(())
 }
 
+fn interp_text_len(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+
+    let s1 = match pop1 {
+        ExecVal::String(s1) => s1,
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    let str = pool.get_str(s1);
+    let mut idx = 0;
+    let mut brace_level = 0;
+    let mut num_chars = 0;
+    while idx < str.len() {
+        idx += 1;
+        match str[idx - 1] {
+            b'{' => {
+                brace_level += 1;
+                if brace_level == 1 && idx < str.len() && str[idx] == b'\\' {
+                    idx += 1;
+                    while idx < str.len() && brace_level > 0 {
+                        match str[idx] {
+                            b'{' => brace_level += 1,
+                            b'}' => brace_level -= 1,
+                            _ => (),
+                        }
+                        num_chars += 1;
+                    }
+                }
+            }
+            b'}' => {
+                if brace_level > 0 {
+                    brace_level -= 1;
+                }
+            }
+            _ => num_chars += 1,
+        }
+    }
+
+    ctx.push_stack(ExecVal::Integer(num_chars));
+    Ok(())
+}
+
+fn interp_text_prefix(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    let (i1, s2) = match (pop1, pop2) {
+        (ExecVal::Integer(i1), ExecVal::String(s2)) => (i1, s2),
+        (ExecVal::Integer(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+        (_, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    if i1 <= 0 {
+        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        return Ok(());
+    }
+
+    let mut brace_level = 0;
+    let str = pool.get_str(s2);
+    let mut num_chars = 0;
+    let mut idx = 0;
+    while idx < str.len() && num_chars < i1 {
+        idx += 1;
+        match str[idx - 1] {
+            b'{' => {
+                brace_level += 1;
+                if brace_level == 1 && idx < str.len() && str[idx] == b'\\' {
+                    idx += 1;
+                    while idx < str.len() && brace_level > 0 {
+                        match str[idx] {
+                            b'{' => brace_level += 1,
+                            b'}' => brace_level -= 1,
+                            _ => (),
+                        }
+                        num_chars += 1;
+                    }
+                }
+            }
+            b'}' => {
+                if brace_level > 0 {
+                    brace_level -= 1;
+                }
+            }
+            _ => num_chars += 1,
+        }
+    }
+
+    let start = pool.str_start(s2);
+
+    while pool.pool_ptr() + brace_level + idx > pool.len() {
+        pool.grow();
+    }
+
+    if s2 >= ctx.bib_str_ptr {
+        pool.set_pool_ptr(start + idx)
+    } else {
+        let ptr = pool.pool_ptr();
+        pool.copy_range_raw(start..start + idx, ptr);
+        pool.set_pool_ptr(ptr + idx);
+    }
+
+    for _ in 0..brace_level {
+        pool.append(b'}');
+    }
+
+    ctx.push_stack(ExecVal::String(pool.make_string()?));
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -2063,6 +2184,16 @@ pub unsafe extern "C" fn x_substring(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_swap(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_swap(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_text_length(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_text_len(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_text_prefix(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_text_prefix(&mut *ctx, pool)).into()
 }
 
 #[cfg(test)]
