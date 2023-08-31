@@ -739,11 +739,6 @@ pub unsafe extern "C" fn add_pool_buf_and_push(ctx: *mut ExecCtx) -> CResult {
     .into()
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn cur_lit(ctx: *mut ExecCtx) -> *mut ExecVal {
-    core::ptr::addr_of_mut!((*ctx).lit_stack[(*ctx).lit_stk_ptr])
-}
-
 fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
@@ -1912,6 +1907,34 @@ fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexE
     Ok(())
 }
 
+fn interp_swap(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+
+    match (pop1, pop2) {
+        (ExecVal::String(s1), ExecVal::String(s2))
+            if s1 >= ctx.bib_str_ptr && s2 >= ctx.bib_str_ptr =>
+        {
+            let tmp = Vec::from(pool.get_str(s2));
+            let s1_len = pool.get_str(s1).len();
+            let ptr = pool.pool_ptr();
+            pool.copy_raw(s1, ptr);
+            pool.set_pool_ptr(ptr + s1_len);
+            ctx.push_stack(ExecVal::String(pool.make_string()?));
+            ctx.push_stack(ExecVal::String(pool.add_string_raw(&tmp)?));
+            return Ok(());
+        }
+        (ExecVal::String(s), _) | (_, ExecVal::String(s)) if s >= ctx.bib_str_ptr => {
+            pool.set_str_ptr(pool.str_ptr() + 1);
+            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+        }
+        (_, _) => (),
+    }
+    ctx.push_stack(pop1);
+    ctx.push_stack(pop2);
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -2035,6 +2058,11 @@ pub unsafe extern "C" fn x_quote(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_substring(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_substr(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_swap(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_swap(&mut *ctx, pool)).into()
 }
 
 #[cfg(test)]

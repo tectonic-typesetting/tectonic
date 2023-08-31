@@ -102,43 +102,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-static void x_swap(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-    if ((ctx->pop1.tag != ExecVal_String ) || (ctx->pop1.string < ctx->bib_str_ptr)) {
-        push_lit_stk(ctx, ctx->pop1);
-        if ((ctx->pop2.tag == ExecVal_String ) && (ctx->pop2.string >= ctx->bib_str_ptr)) {
-            bib_set_str_ptr(bib_str_ptr() + 1);
-            bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
-        }
-        push_lit_stk(ctx, ctx->pop2);
-    } else if ((ctx->pop2.tag != ExecVal_String ) || (ctx->pop2.string < ctx->bib_str_ptr)) {
-        {
-            bib_set_str_ptr(bib_str_ptr() + 1);
-            bib_set_pool_ptr(bib_str_start(bib_str_ptr()));
-        }
-        push_lit_stk(ctx, ctx->pop1);
-        push_lit_stk(ctx, ctx->pop2);
-    } else {                    /*441: */
-
-        bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop2.string);
-        pool_pointer sp_ptr = bib_str_start(ctx->pop1.string);
-        pool_pointer sp_end = bib_str_start(ctx->pop1.string + 1);
-        while (sp_ptr < sp_end) {
-
-            {
-                bib_set_str_pool(bib_pool_ptr(), bib_str_pool(sp_ptr));
-                bib_set_pool_ptr(bib_pool_ptr() + 1);
-            }
-            sp_ptr = sp_ptr + 1;
-        }
-        push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-        unwrap(add_pool_buf_and_push(ctx));
-    }
-}
-
 static void x_text_length(ExecCtx* ctx)
 {
     pool_pointer sp_ptr, sp_end;
@@ -496,7 +459,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(x_substring(ctx));
             break;
         case 28:
-            x_swap(ctx);
+            unwrap(x_swap(ctx));
             break;
         case 29:
             x_text_length(ctx);

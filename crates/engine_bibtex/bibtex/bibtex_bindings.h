@@ -442,8 +442,6 @@ CResult check_command_execution(ExecCtx *ctx);
 
 CResult add_pool_buf_and_push(ExecCtx *ctx);
 
-ExecVal *cur_lit(ExecCtx *ctx);
-
 CResult x_equals(ExecCtx *ctx);
 
 CResult x_greater_than(ExecCtx *ctx);
@@ -487,6 +485,8 @@ CResult x_purify(ExecCtx *ctx);
 CResult x_quote(ExecCtx *ctx);
 
 CResult x_substring(ExecCtx *ctx);
+
+CResult x_swap(ExecCtx *ctx);
 
 int32_t num_glb_strs(void);
 
