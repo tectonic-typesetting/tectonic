@@ -149,6 +149,7 @@ impl ExecCtx {
     }
 
     pub(crate) fn glbl_ctx(&self) -> &Bibtex {
+        // SAFETY: Contained pointer is always valid
         unsafe { &*self.glbl_ctx }
     }
 }
@@ -203,17 +204,17 @@ pub fn print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError>
         ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
             write_logs("\"");
-            rs_print_a_pool_str(str as usize, pool)?;
+            rs_print_a_pool_str(str, pool)?;
             write_logs("\" is a string literal");
         }
         ExecVal::Function(f) => {
             write_logs("`");
-            rs_print_a_pool_str(with_hash(|hash| hash.text(f as usize)), pool)?;
+            rs_print_a_pool_str(with_hash(|hash| hash.text(f)), pool)?;
             write_logs("` is a function literal");
         }
         ExecVal::Missing(s) => {
             write_logs("`");
-            rs_print_a_pool_str(s as usize, pool)?;
+            rs_print_a_pool_str(s, pool)?;
             write_logs("` is a missing field");
         }
         ExecVal::Illegal => {
@@ -290,7 +291,7 @@ pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
-    (&mut *ctx).push_stack(val)
+    (*ctx).push_stack(val)
 }
 
 #[no_mangle]
@@ -1050,7 +1051,7 @@ fn interp_add_period(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
 
     let str = pool.get_str(s1);
 
-    if str.len() == 0 {
+    if str.is_empty() {
         ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
         return Ok(());
     }
@@ -1626,7 +1627,7 @@ fn interp_int_to_chr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
         }
     };
 
-    if i1 < 0 || i1 > 127 {
+    if !(0..=127).contains(&i1) {
         write_logs(&format!("{} isn't valid ASCII", i1));
         bst_ex_warn_print(ctx, pool)?;
         ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
@@ -1653,7 +1654,7 @@ fn interp_int_to_str(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
     };
 
     let scratch = i1.to_string();
-    ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch.as_bytes())?));
+    ctx.push_stack(ExecVal::String(pool.add_string_raw(scratch.as_bytes())?));
     Ok(())
 }
 
@@ -1836,14 +1837,17 @@ impl<T> Index<SLRange> for [T] {
 
     fn index(&self, index: SLRange) -> &Self::Output {
         let len = usize::min(self.len() + 1 - index.start.unsigned_abs(), index.len);
-        if index.start < 0 {
-            let start = index.start.unsigned_abs() - 1;
-            &self[self.len() - start - len..self.len() - start]
-        } else if index.start > 0 {
-            let start = index.start as usize - 1;
-            &self[start..start + len]
-        } else {
-            &[]
+
+        match index.start {
+            ..=-1 => {
+                let start = index.start.unsigned_abs() - 1;
+                &self[self.len() - start - len..self.len() - start]
+            }
+            1.. => {
+                let start = index.start as usize - 1;
+                &self[start..start + len]
+            }
+            _ => &[],
         }
     }
 }
@@ -1874,7 +1878,7 @@ fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexE
 
     let str = pool.get_str(s3);
 
-    if len <= 0 || start == 0 || start.abs() as usize > str.len() {
+    if len <= 0 || start == 0 || start.unsigned_abs() as usize > str.len() {
         ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
         return Ok(());
     }
@@ -1882,7 +1886,7 @@ fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexE
     let len = len as usize;
     let start = start as isize;
 
-    if len >= str.len() && start == 1 || start == -1 {
+    if len >= str.len() && (start == 1 || start == -1) {
         if s3 >= ctx.bib_str_ptr {
             pool.set_str_ptr(pool.str_ptr() + 1);
             pool.set_pool_ptr(pool.str_start(pool.str_ptr()));

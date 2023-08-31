@@ -354,7 +354,7 @@ pub fn rs_print_bib_name(pool: &StringPool) -> Result<(), BibtexError> {
 
 #[no_mangle]
 pub extern "C" fn print_bib_name() -> CResult {
-    with_pool(|pool| rs_print_bib_name(pool)).into()
+    with_pool(rs_print_bib_name).into()
 }
 
 #[no_mangle]
@@ -492,7 +492,7 @@ pub fn rs_bib_warn_print(pool: &StringPool) -> Result<(), BibtexError> {
 
 #[no_mangle]
 pub extern "C" fn bib_warn_print() -> CResult {
-    with_pool(|pool| rs_bib_warn_print(pool)).into()
+    with_pool(rs_bib_warn_print).into()
 }
 
 pub fn rs_eat_bib_print(
@@ -612,7 +612,7 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result
         with_cites(|cites| rs_print_a_pool_str(cites.get_cite(cites.ptr()), pool))?;
     }
     write_logs("\nwhile executing");
-    rs_bst_warn_print(ctx.glbl_ctx(), pool).into()
+    rs_bst_warn_print(ctx.glbl_ctx(), pool)
 }
 
 pub fn rs_bst_cant_mess_with_entries_print(

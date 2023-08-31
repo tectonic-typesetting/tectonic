@@ -622,6 +622,7 @@ fn scan_balanced_braces(
     Ok(true)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn scan_a_field_token_and_eat_white(
     buffers: &mut GlobalBuffer,
     hash: &HashData,
@@ -1132,6 +1133,7 @@ pub fn von_token_found(
     Ok(false)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn von_name_ends_and_last_name_starts_stuff(
     buffers: &GlobalBuffer,
     hash: &HashData,
