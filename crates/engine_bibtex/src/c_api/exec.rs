@@ -1818,6 +1818,79 @@ fn interp_purify(
     Ok(())
 }
 
+fn interp_quote(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let s = pool.add_string_raw(b"\"")?;
+    ctx.push_stack(ExecVal::String(s));
+    Ok(())
+}
+
+fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    let pop2 = ctx.pop_stack(pool)?;
+    let pop3 = ctx.pop_stack(pool)?;
+
+    let (len, start, s3) = match (pop1, pop2, pop3) {
+        (ExecVal::Integer(i1), ExecVal::Integer(i2), ExecVal::String(s3)) => (i1, i2, s3),
+        (ExecVal::Integer(_), ExecVal::Integer(_), _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop3, StkType::String)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+        (ExecVal::Integer(_), _, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+        (_, _, _) => {
+            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            return Ok(());
+        }
+    };
+
+    let str = pool.get_str(s3);
+    if len as usize >= str.len() && start == 1 || start == -1 {
+        if s3 >= ctx.bib_str_ptr {
+            pool.set_str_ptr(pool.str_ptr() + 1);
+            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+        }
+        ctx.push_stack(pop3);
+        return Ok(());
+    }
+
+    if len <= 0 || start == 0 || start.abs() as usize > str.len() {
+        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        return Ok(());
+    }
+
+    let len = if len as usize <= str.len() + 1 - start.abs() as usize {
+        len as usize
+    } else {
+        str.len() + 1 - start.abs() as usize
+    };
+
+    // TODO: Remove this intermediate allocation
+    let new_str = if start > 0 {
+        let start = start as usize;
+        if start == 1 && s3 >= ctx.bib_str_ptr {
+            pool.set_start(s3 + 1, pool.str_start(s3) + len);
+            pool.set_str_ptr(pool.str_ptr() + 1);
+            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+            ctx.push_stack(pop3);
+            return Ok(());
+        }
+        Vec::from(&str[(start - 1)..(start - 1) + len])
+    } else {
+        let start = start.abs() as usize;
+        Vec::from(&str[(str.len() + 1 - start) - len..str.len() + 1 - start])
+    };
+
+    let out = pool.add_string_raw(&new_str)?;
+    ctx.push_stack(ExecVal::String(out));
+
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -1931,4 +2004,14 @@ pub unsafe extern "C" fn x_preamble(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_purify(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| with_hash(|hash| interp_purify(&mut *ctx, pool, hash))).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_quote(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_quote(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_substring(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| interp_substr(&mut *ctx, pool)).into()
 }

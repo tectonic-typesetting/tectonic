@@ -484,6 +484,10 @@ CResult x_preamble(ExecCtx *ctx);
 
 CResult x_purify(ExecCtx *ctx);
 
+CResult x_quote(ExecCtx *ctx);
+
+CResult x_substring(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
