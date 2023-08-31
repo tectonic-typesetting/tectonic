@@ -422,8 +422,6 @@ ExecVal missing_val(StrNumber f);
 
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
-CResult print_lit(ExecVal val);
-
 CResult print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
 
 CResult print_bst_name(const Bibtex *glbl_ctx);
@@ -492,6 +490,10 @@ CResult x_text_length(ExecCtx *ctx);
 
 CResult x_text_prefix(ExecCtx *ctx);
 
+CResult x_type(ExecCtx *ctx);
+
+CResult x_warning(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
@@ -504,9 +506,9 @@ ASCIICode global_strs(uintptr_t pos);
 
 uintptr_t glb_str_end(uintptr_t pos);
 
-uintptr_t end_of_def(void);
-
 uintptr_t undefined(void);
+
+uintptr_t end_of_def(void);
 
 FnClass fn_type(HashPointer pos);
 

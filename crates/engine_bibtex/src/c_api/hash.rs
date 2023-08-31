@@ -103,6 +103,11 @@ impl HashData {
         }
     }
 
+    #[no_mangle]
+    pub extern "C" fn undefined() -> usize {
+        HASH_MAX + 1
+    }
+
     pub fn text(&self, pos: usize) -> StrNumber {
         self.hash_text[pos]
     }
@@ -174,11 +179,6 @@ pub fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
 
 #[no_mangle]
 pub extern "C" fn end_of_def() -> usize {
-    HASH_MAX + 1
-}
-
-#[no_mangle]
-pub extern "C" fn undefined() -> usize {
     HASH_MAX + 1
 }
 

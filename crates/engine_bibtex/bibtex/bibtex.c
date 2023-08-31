@@ -102,96 +102,6 @@ printf_log(const char *fmt, ...)
 
 /*:159*//*160: */
 
-//static void x_text_prefix(ExecCtx* ctx)
-//{
-//    pool_pointer sp_ptr, sp_end;
-//
-//    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-//    unwrap(pop_lit_stk(ctx, &ctx->pop2));
-//    if (ctx->pop1.tag != ExecVal_Integer) {
-//        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-//        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-//    } else if (ctx->pop2.tag != ExecVal_String) {
-//        unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_STRING));
-//        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-//    } else if (ctx->pop1.integer <= 0) {
-//        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-//        return;
-//    } else {                    /*445: */
-//        int32_t sp_brace_level = 0;
-//        sp_ptr = bib_str_start(ctx->pop2.string);
-//        sp_end = bib_str_start(ctx->pop2.string + 1);
-//
-//        BufPointer num_text_chars = 0;
-//        pool_pointer sp_xptr1 = sp_ptr;
-//        while ((sp_xptr1 < sp_end) && (num_text_chars < (size_t)ctx->pop1.integer)) {
-//            sp_xptr1 = sp_xptr1 + 1;
-//            if (bib_str_pool(sp_xptr1 - 1) == 123 /*left_brace */ ) {
-//                sp_brace_level = sp_brace_level + 1;
-//                if ((sp_brace_level == 1) && (sp_xptr1 < sp_end)) {
-//
-//                    if (bib_str_pool(sp_xptr1) == 92 /*backslash */ ) {
-//                        sp_xptr1 = sp_xptr1 + 1;
-//                        while ((sp_xptr1 < sp_end) && (sp_brace_level > 0)) {
-//
-//                            if (bib_str_pool(sp_xptr1) == 125 /*right_brace */ )
-//                                sp_brace_level = sp_brace_level - 1;
-//                            else if (bib_str_pool(sp_xptr1) == 123 /*left_brace */ )
-//                                sp_brace_level = sp_brace_level + 1;
-//                            sp_xptr1 = sp_xptr1 + 1;
-//                        }
-//                        num_text_chars = num_text_chars + 1;
-//                    }
-//                }
-//            } else if (bib_str_pool(sp_xptr1 - 1) == 125 /*right_brace */ ) {
-//                if (sp_brace_level > 0)
-//                    sp_brace_level = sp_brace_level - 1;
-//            } else
-//                num_text_chars = num_text_chars + 1;
-//        }
-//
-//        sp_end = sp_xptr1;
-//        while (bib_pool_ptr() + sp_brace_level + sp_end - sp_ptr > bib_pool_size())
-//            pool_overflow();
-//        if (ctx->pop2.string >= ctx->bib_str_ptr)
-//            bib_set_pool_ptr(sp_end);
-//        else
-//            while (sp_ptr < sp_end) {
-//                bib_set_str_pool(bib_pool_ptr(), bib_str_pool(sp_ptr));
-//                bib_set_pool_ptr(bib_pool_ptr() + 1);
-//                sp_ptr = sp_ptr + 1;
-//            }
-//        while (sp_brace_level > 0) {
-//            bib_set_str_pool(bib_pool_ptr(), 125 /*right_brace */ );
-//            bib_set_pool_ptr(bib_pool_ptr() + 1);
-//            sp_brace_level = sp_brace_level - 1;
-//        }
-//        push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-//    }
-//}
-
-static void x_type(ExecCtx* ctx)
-{
-    if (!ctx->mess_with_entries)
-        unwrap(bst_cant_mess_with_entries_print(ctx));
-    else if ((type_list(cite_ptr()) == undefined()) || (type_list(cite_ptr()) == 0 /*empty */ ))
-        push_lit_stk(ctx, str_val(ctx->glbl_ctx->s_null));
-    else
-        push_lit_stk(ctx, str_val(hash_text(type_list(cite_ptr()))));
-}
-
-static void x_warning(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_String)
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
-    else {
-        puts_log("Warning--");
-        unwrap(print_lit(ctx->pop1));
-        mark_warning();
-    }
-}
-
 static void x_width(ExecCtx* ctx)
 {
     unwrap(pop_lit_stk(ctx, &ctx->pop1));
@@ -416,7 +326,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(pop_top_and_print(ctx));
             break;
         case 32:
-            x_type(ctx);
+            unwrap(x_type(ctx));
             break;
         case 33:
             x_warning(ctx);

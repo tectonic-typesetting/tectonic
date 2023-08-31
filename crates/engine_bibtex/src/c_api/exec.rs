@@ -7,7 +7,7 @@ use crate::{
         entries::{with_entries_mut, EntryData, ENT_STR_SIZE},
         global::{with_globals_mut, GlobalData, GLOB_STR_SIZE},
         hash::{with_hash, with_hash_mut, FnClass, HashData},
-        history::mark_error,
+        history::{mark_error, mark_warning},
         log::{
             brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
             bst_1print_string_size_exceeded, bst_2print_string_size_exceeded, print_confusion,
@@ -169,7 +169,7 @@ pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
     }
 }
 
-pub fn rs_print_lit(pool: &StringPool, hash: &HashData, val: ExecVal) -> Result<(), BibtexError> {
+pub fn print_lit(pool: &StringPool, hash: &HashData, val: ExecVal) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => {
             write_logs(&format!("{}\n", val));
@@ -192,11 +192,6 @@ pub fn rs_print_lit(pool: &StringPool, hash: &HashData, val: ExecVal) -> Result<
         }
     }
     Ok(())
-}
-
-#[no_mangle]
-pub extern "C" fn print_lit(val: ExecVal) -> CResult {
-    with_pool(|pool| with_hash(|hash| rs_print_lit(pool, hash, val))).into()
 }
 
 pub fn print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError> {
@@ -322,7 +317,7 @@ fn rs_pop_top_and_print(
             write_logs("Empty literal\n");
             Ok(())
         } else {
-            rs_print_lit(pool, hash, val)
+            print_lit(pool, hash, val)
         }
     })
 }
@@ -2056,6 +2051,44 @@ fn interp_text_prefix(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bi
     Ok(())
 }
 
+fn interp_ty(
+    ctx: &mut ExecCtx,
+    pool: &StringPool,
+    hash: &HashData,
+    cites: &CiteInfo,
+) -> Result<(), BibtexError> {
+    if !ctx.mess_with_entries {
+        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+        return Ok(());
+    }
+
+    let ty = cites.get_type(cites.ptr());
+    let s = if ty == HashData::undefined() || ty == 0 {
+        ctx.glbl_ctx().s_null
+    } else {
+        hash.text(ty)
+    };
+    ctx.push_stack(ExecVal::String(s));
+    Ok(())
+}
+
+fn interp_warning(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    match pop1 {
+        ExecVal::String(_) => {
+            write_logs("Warning--");
+            print_lit(pool, hash, pop1)?;
+            mark_warning();
+        }
+        _ => rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?,
+    }
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
@@ -2194,6 +2227,17 @@ pub unsafe extern "C" fn x_text_length(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_text_prefix(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_text_prefix(&mut *ctx, pool)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_type(ctx: *mut ExecCtx) -> CResult {
+    with_pool(|pool| with_hash(|hash| with_cites(|cites| interp_ty(&mut *ctx, pool, hash, cites))))
+        .into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_warning(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| with_hash(|hash| interp_warning(&mut *ctx, pool, hash))).into()
 }
 
 #[cfg(test)]
