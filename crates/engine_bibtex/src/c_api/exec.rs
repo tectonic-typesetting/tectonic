@@ -24,6 +24,7 @@ use crate::{
     },
     BibtexError,
 };
+use std::ops::Index;
 
 const LIT_STK_SIZE: usize = 100;
 
@@ -1824,6 +1825,29 @@ fn interp_quote(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexEr
     Ok(())
 }
 
+#[derive(Copy, Clone)]
+struct SLRange {
+    start: isize,
+    len: usize,
+}
+
+impl<T> Index<SLRange> for [T] {
+    type Output = [T];
+
+    fn index(&self, index: SLRange) -> &Self::Output {
+        let len = usize::min(self.len() + 1 - index.start.unsigned_abs(), index.len);
+        if index.start < 0 {
+            let start = index.start.unsigned_abs() - 1;
+            &self[self.len() - start - len..self.len() - start]
+        } else if index.start > 0 {
+            let start = index.start as usize - 1;
+            &self[start..start + len]
+        } else {
+            &[]
+        }
+    }
+}
+
 fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
@@ -1849,7 +1873,16 @@ fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexE
     };
 
     let str = pool.get_str(s3);
-    if len as usize >= str.len() && start == 1 || start == -1 {
+
+    if len <= 0 || start == 0 || start.abs() as usize > str.len() {
+        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        return Ok(());
+    }
+
+    let len = len as usize;
+    let start = start as isize;
+
+    if len >= str.len() && start == 1 || start == -1 {
         if s3 >= ctx.bib_str_ptr {
             pool.set_str_ptr(pool.str_ptr() + 1);
             pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
@@ -1858,33 +1891,17 @@ fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexE
         return Ok(());
     }
 
-    if len <= 0 || start == 0 || start.abs() as usize > str.len() {
-        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+    if start == 1 && s3 >= ctx.bib_str_ptr {
+        pool.set_start(s3 + 1, pool.str_start(s3) + len);
+        pool.set_str_ptr(pool.str_ptr() + 1);
+        pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+        ctx.push_stack(pop3);
         return Ok(());
     }
 
-    let len = if len as usize <= str.len() + 1 - start.abs() as usize {
-        len as usize
-    } else {
-        str.len() + 1 - start.abs() as usize
-    };
-
-    // TODO: Remove this intermediate allocation
-    let new_str = if start > 0 {
-        let start = start as usize;
-        if start == 1 && s3 >= ctx.bib_str_ptr {
-            pool.set_start(s3 + 1, pool.str_start(s3) + len);
-            pool.set_str_ptr(pool.str_ptr() + 1);
-            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
-            ctx.push_stack(pop3);
-            return Ok(());
-        }
-        Vec::from(&str[(start - 1)..(start - 1) + len])
-    } else {
-        let start = start.abs() as usize;
-        Vec::from(&str[(str.len() + 1 - start) - len..str.len() + 1 - start])
-    };
-
+    // TODO: Remove this intermediate allocation, currently can't pass a `&str` from a StringPool
+    //       to that StringPool.
+    let new_str = Vec::from(&str[SLRange { start, len }]);
     let out = pool.add_string_raw(&new_str)?;
     ctx.push_stack(ExecVal::String(out));
 
@@ -2014,4 +2031,47 @@ pub unsafe extern "C" fn x_quote(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_substring(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| interp_substr(&mut *ctx, pool)).into()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_empty_sl_range() {
+        let slice = b"0123456789";
+
+        let r1 = SLRange { start: 0, len: 0 };
+        assert_eq!(&slice[r1], &[]);
+        let r2 = SLRange { start: 5, len: 0 };
+        assert_eq!(&slice[r2], &[]);
+        let r3 = SLRange { start: -5, len: 0 };
+        assert_eq!(&slice[r3], &[]);
+    }
+
+    #[test]
+    fn test_sl_range() {
+        let slice = b"0123456789";
+
+        let r1 = SLRange { start: 1, len: 5 };
+        assert_eq!(&slice[r1], b"01234");
+        let r2 = SLRange { start: 3, len: 2 };
+        assert_eq!(&slice[r2], b"23");
+        let r3 = SLRange { start: -1, len: 2 };
+        assert_eq!(&slice[r3], b"89");
+    }
+
+    #[test]
+    fn test_sl_range_long() {
+        let slice = b"0123456789";
+
+        let r1 = SLRange { start: 1, len: 100 };
+        assert_eq!(&slice[r1], b"0123456789");
+
+        let r1 = SLRange {
+            start: -1,
+            len: 100,
+        };
+        assert_eq!(&slice[r1], b"0123456789");
+    }
 }
