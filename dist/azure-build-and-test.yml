@@ -173,15 +173,51 @@ parameters:
     vars:
       TARGET: i686-unknown-linux-gnu
 
-  - name: mips_unknown_linux_gnu
-    vars:
-      TARGET: mips-unknown-linux-gnu
-
   - name: x86_64_unknown_linux_musl
     vars:
       TARGET: x86_64-unknown-linux-musl
 
 jobs:
+
+# rustfmt check
+- job: rustfmt
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+    - bash: rustup component add rustfmt
+      displayName: "Install rustfmt"
+    - bash: cargo fmt --all -- --check
+      displayName: "Check rustfmt (cargo)"
+  variables:
+    TOOLCHAIN: stable
+
+# clippy check
+- job: clippy
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+    - template: azure-generic-build-setup.yml
+    - bash: |
+        rustup component add clippy
+        cargo clippy --version
+      displayName: "Install clippy"
+    # Ew, redundant with stock builds:
+    - bash: |
+        set -xeuo pipefail
+        sudo apt-get update
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+          libgraphite2-dev \
+          libharfbuzz-dev \
+          libfontconfig1-dev \
+          libicu-dev \
+          libssl-dev \
+          openssl \
+          zlib1g-dev
+      displayName: "Install pkg-config dependencies (Ubuntu)"
+    - bash: cargo clippy --all --all-targets --all-features -- --deny warnings
+      displayName: "Check clippy (cargo)"
+  variables:
+    TOOLCHAIN: stable
 
 # pkg-config builds
 - ${{ each build in parameters.pkgconfigBuilds }}:
@@ -224,46 +260,6 @@ jobs:
     vmImage: ubuntu-20.04
   steps:
     - template: azure-coverage.yml
-  variables:
-    TOOLCHAIN: stable
-
-# rustfmt check
-- job: rustfmt
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-    - bash: rustup component add rustfmt
-      displayName: "Install rustfmt"
-    - bash: cargo fmt --all -- --check
-      displayName: "Check rustfmt (cargo)"
-  variables:
-    TOOLCHAIN: stable
-
-# clippy check
-- job: clippy
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-    - template: azure-generic-build-setup.yml
-    - bash: |
-        rustup component add clippy
-        cargo clippy --version
-      displayName: "Install clippy"
-    # Ew, redundant with stock builds:
-    - bash: |
-        set -xeuo pipefail
-        sudo apt-get update
-        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
-          libgraphite2-dev \
-          libharfbuzz-dev \
-          libfontconfig1-dev \
-          libicu-dev \
-          libssl-dev \
-          openssl \
-          zlib1g-dev
-      displayName: "Install pkg-config dependencies (Ubuntu)"
-    - bash: cargo clippy --all --all-targets --all-features -- --deny warnings
-      displayName: "Check clippy (cargo)"
   variables:
     TOOLCHAIN: stable
 
