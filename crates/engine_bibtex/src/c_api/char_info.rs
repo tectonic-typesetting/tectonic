@@ -101,7 +101,6 @@ pub const ID_CLASS: [IdClass; 256] = {
     id_class
 };
 
-#[no_mangle]
 pub static CHAR_WIDTH: [i32; 256] = {
     let mut char_width = [0; 256];
 

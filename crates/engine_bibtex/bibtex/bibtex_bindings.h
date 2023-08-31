@@ -284,8 +284,6 @@ extern "C" {
 
 extern const LexClass LEX_CLASS[256];
 
-extern const int32_t CHAR_WIDTH[256];
-
 void reset_all(void);
 
 bool bib_str_eq_buf(StrNumber s, BufTy buf, BufPointer ptr, BufPointer len);
@@ -494,6 +492,10 @@ CResult x_type(ExecCtx *ctx);
 
 CResult x_warning(ExecCtx *ctx);
 
+CResult x_width(ExecCtx *ctx);
+
+CResult x_write(ExecCtx *ctx);
+
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
@@ -668,13 +670,9 @@ void bib_set_pool_ptr(PoolPointer ptr);
 
 CResultStr bib_make_string(void);
 
-void add_buf_pool(StrNumber str);
-
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
 CResult pre_def_certain_strings(Bibtex *ctx);
-
-void add_out_pool(Bibtex *ctx, StrNumber str);
 
 bool scan1(ASCIICode char1);
 
@@ -698,10 +696,6 @@ CResultBool scan_and_store_the_field_value_and_eat_white(Bibtex *ctx,
                                                          HashPointer cur_macro_loc,
                                                          ASCIICode right_outer_delim,
                                                          HashPointer field_name_loc);
-
-CResult decr_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t *brace_level);
-
-CResult check_brace_level(const ExecCtx *ctx, StrNumber pop_lit_var, int32_t brace_level);
 
 #ifdef __cplusplus
 } // extern "C"

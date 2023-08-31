@@ -2,7 +2,7 @@ use crate::{
     c_api::{
         bibs::{with_bibs_mut, BibData},
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
-        char_info::LexClass,
+        char_info::{LexClass, CHAR_WIDTH},
         cite::{with_cites, CiteInfo},
         entries::{with_entries_mut, EntryData, ENT_STR_SIZE},
         global::{with_globals_mut, GlobalData, GLOB_STR_SIZE},
@@ -14,9 +14,9 @@ use crate::{
             rs_bst_cant_mess_with_entries_print, rs_print_a_pool_str, rs_print_fn_class,
             write_logs,
         },
-        pool::{rs_add_buf_pool, with_pool, with_pool_mut, StringPool},
+        pool::{add_buf_pool, add_out_pool, with_pool, with_pool_mut, StringPool},
         scan::{
-            enough_text_chars, name_scan_for_and, rs_check_brace_level, rs_decr_brace_level,
+            check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
             von_name_ends_and_last_name_starts_stuff, von_token_found,
         },
         xbuf::{SafelyZero, XBuf},
@@ -152,6 +152,11 @@ impl ExecCtx {
         // SAFETY: Contained pointer is always valid
         unsafe { &*self.glbl_ctx }
     }
+
+    pub(crate) fn glbl_ctx_mut(&mut self) -> &mut Bibtex {
+        // SAFETY: Contained pointer is always valid
+        unsafe { &mut *self.glbl_ctx }
+    }
 }
 
 #[no_mangle]
@@ -194,7 +199,7 @@ pub fn print_lit(pool: &StringPool, hash: &HashData, val: ExecVal) -> Result<(),
     Ok(())
 }
 
-pub fn print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError> {
+pub fn print_stk_lit(val: ExecVal, pool: &StringPool, hash: &HashData) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
@@ -204,7 +209,7 @@ pub fn print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError>
         }
         ExecVal::Function(f) => {
             write_logs("`");
-            rs_print_a_pool_str(with_hash(|hash| hash.text(f)), pool)?;
+            rs_print_a_pool_str(hash.text(f), pool)?;
             write_logs("` is a function literal");
         }
         ExecVal::Missing(s) => {
@@ -223,13 +228,14 @@ pub fn print_stk_lit(val: ExecVal, pool: &StringPool) -> Result<(), BibtexError>
 pub fn rs_print_wrong_stk_lit(
     ctx: &mut ExecCtx,
     pool: &StringPool,
+    hash: &HashData,
     val: ExecVal,
     typ2: StkType,
 ) -> Result<(), BibtexError> {
     match val {
         ExecVal::Illegal => Ok(()),
         _ => {
-            print_stk_lit(val, pool)?;
+            print_stk_lit(val, pool, hash)?;
 
             match typ2 {
                 StkType::Integer => write_logs(", not an integer,"),
@@ -241,7 +247,7 @@ pub fn rs_print_wrong_stk_lit(
                 }
             };
 
-            bst_ex_warn_print(&*ctx, pool)
+            bst_ex_warn_print(ctx, pool)
         }
     }
 }
@@ -252,7 +258,8 @@ pub unsafe extern "C" fn print_wrong_stk_lit(
     val: ExecVal,
     typ2: StkType,
 ) -> CResult {
-    with_pool(|pool| rs_print_wrong_stk_lit(&mut *ctx, pool, val, typ2)).into()
+    with_pool(|pool| with_hash(|hash| rs_print_wrong_stk_lit(&mut *ctx, pool, hash, val, typ2)))
+        .into()
 }
 
 pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
@@ -734,7 +741,7 @@ pub unsafe extern "C" fn add_pool_buf_and_push(ctx: *mut ExecCtx) -> CResult {
     .into()
 }
 
-fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool, hash: &HashData) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
 
@@ -750,9 +757,9 @@ fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
         }
         _ if pop1.ty() != pop2.ty() => {
             if pop1.ty() != StkType::Illegal && pop2.ty() != StkType::Illegal {
-                print_stk_lit(pop1, pool)?;
+                print_stk_lit(pop1, pool, hash)?;
                 write_logs(", ");
-                print_stk_lit(pop2, pool)?;
+                print_stk_lit(pop2, pool, hash)?;
                 write_logs("\n---they aren't the same literal types");
                 bst_ex_warn_print(ctx, pool)?;
             }
@@ -760,7 +767,7 @@ fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
         }
         _ => {
             if pop1.ty() != StkType::Illegal {
-                print_stk_lit(pop1, pool)?;
+                print_stk_lit(pop1, pool, hash)?;
                 write_logs(", not an integer or a string,");
                 bst_ex_warn_print(ctx, pool)?;
             }
@@ -770,7 +777,7 @@ fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
     Ok(())
 }
 
-fn interp_gt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_gt(ctx: &mut ExecCtx, pool: &mut StringPool, hash: &HashData) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
 
@@ -779,18 +786,18 @@ fn interp_gt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
             ctx.push_stack(ExecVal::Integer((i2 > i1) as i32));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
     Ok(())
 }
 
-fn interp_lt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_lt(ctx: &mut ExecCtx, pool: &mut StringPool, hash: &HashData) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
 
@@ -799,18 +806,22 @@ fn interp_lt(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError
             ctx.push_stack(ExecVal::Integer((i2 < i1) as i32));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
     Ok(())
 }
 
-fn interp_plus(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_plus(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
 
@@ -819,18 +830,22 @@ fn interp_plus(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexErr
             ctx.push_stack(ExecVal::Integer(i2 + i1));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
     Ok(())
 }
 
-fn interp_minus(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_minus(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
 
@@ -839,30 +854,34 @@ fn interp_minus(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexEr
             ctx.push_stack(ExecVal::Integer(i2 - i1));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
     Ok(())
 }
 
-fn interp_concat(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_concat(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
 
     let (s1, s2) = match (pop1, pop2) {
         (ExecVal::String(s1), ExecVal::String(s2)) => (s1, s2),
         (ExecVal::String(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -951,7 +970,7 @@ fn interp_gets(
     let f1 = match pop1 {
         ExecVal::Function(f1) => f1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Function)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Function)?;
             return Ok(());
         }
     };
@@ -970,7 +989,7 @@ fn interp_gets(
                     i2,
                 )
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             }
         }
         FnClass::StrEntryVar => {
@@ -987,14 +1006,14 @@ fn interp_gets(
                     s,
                 );
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             }
         }
         FnClass::IntGlblVar => {
             if let ExecVal::Integer(i2) = pop2 {
                 hash.set_ilk_info(f1, i2);
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             }
         }
         FnClass::StrGlblVar => {
@@ -1014,7 +1033,7 @@ fn interp_gets(
                     globals.set_str(str_glb_ptr, s);
                 }
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             }
         }
         _ => {
@@ -1027,13 +1046,17 @@ fn interp_gets(
     Ok(())
 }
 
-fn interp_add_period(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_add_period(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
 
     let s1 = match pop1 {
         ExecVal::String(s1) => s1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1199,7 +1222,7 @@ fn interp_change_case(
 
                     prev_colon = false;
                 } else if scratch[idx] == b'}' {
-                    rs_decr_brace_level(ctx, pool, s2, &mut brace_level)?;
+                    decr_brace_level(ctx, pool, s2, &mut brace_level)?;
                     prev_colon = false;
                 } else if brace_level == 0 {
                     match conv_ty {
@@ -1224,22 +1247,26 @@ fn interp_change_case(
                 }
                 idx += 1;
             }
-            rs_check_brace_level(ctx, pool, s2, brace_level)?;
+            check_brace_level(ctx, pool, s2, brace_level)?;
             ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch)?));
         }
         (ExecVal::String(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
         }
     }
     Ok(())
 }
 
-fn interp_chr_to_int(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_chr_to_int(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     match pop1 {
         ExecVal::String(s1) => {
@@ -1255,7 +1282,7 @@ fn interp_chr_to_int(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
             }
         }
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -1305,7 +1332,11 @@ fn interp_dup(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexErro
     Ok(())
 }
 
-fn interp_empty(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_empty(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     match pop1 {
         ExecVal::String(s1) => {
@@ -1320,7 +1351,7 @@ fn interp_empty(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexEr
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(pop1, pool)?;
+            print_stk_lit(pop1, pool, hash)?;
             write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool)?;
             ctx.push_stack(ExecVal::Integer(0));
@@ -1342,17 +1373,17 @@ fn interp_format_name(
     let (s1, i2, s3) = match (pop1, pop2, pop3) {
         (ExecVal::String(s1), ExecVal::Integer(i2), ExecVal::String(s3)) => (s1, i2, s3),
         (ExecVal::String(_), ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop3, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop3, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (ExecVal::String(_), _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1361,7 +1392,7 @@ fn interp_format_name(
     let mut brace_level = 0;
     let mut xptr = 0;
     buffers.set_init(BufTy::Ex, 0);
-    rs_add_buf_pool(pool, buffers, s3);
+    add_buf_pool(pool, buffers, s3);
     buffers.set_offset(BufTy::Ex, 1, 0);
 
     let mut num_names = 0;
@@ -1585,7 +1616,7 @@ fn interp_format_name(
     }
 
     buffers.set_init(BufTy::Ex, 0);
-    rs_add_buf_pool(pool, buffers, s1);
+    add_buf_pool(pool, buffers, s1);
     figure_out_the_formatted_name(
         ctx,
         buffers,
@@ -1606,12 +1637,16 @@ fn interp_format_name(
     Ok(())
 }
 
-fn interp_int_to_chr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_int_to_chr(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let i1 = match pop1 {
         ExecVal::Integer(i1) => i1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1632,12 +1667,16 @@ fn interp_int_to_chr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
     Ok(())
 }
 
-fn interp_int_to_str(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_int_to_str(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let i1 = match pop1 {
         ExecVal::Integer(i1) => i1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1648,7 +1687,11 @@ fn interp_int_to_str(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bib
     Ok(())
 }
 
-fn interp_missing(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_missing(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     if !ctx.mess_with_entries {
         rs_bst_cant_mess_with_entries_print(ctx, pool)?;
@@ -1665,7 +1708,7 @@ fn interp_missing(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bibtex
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(pop1, pool)?;
+            print_stk_lit(pop1, pool, hash)?;
             write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool)?;
             ctx.push_stack(ExecVal::Integer(0));
@@ -1678,12 +1721,13 @@ fn interp_num_names(
     ctx: &mut ExecCtx,
     pool: &mut StringPool,
     buffers: &mut GlobalBuffer,
+    hash: &HashData,
 ) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     match pop1 {
         ExecVal::String(s1) => {
             buffers.set_init(BufTy::Ex, 0);
-            rs_add_buf_pool(pool, buffers, s1);
+            add_buf_pool(pool, buffers, s1);
             buffers.set_offset(BufTy::Ex, 1, 0);
             let mut num_names = 0;
             while buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
@@ -1694,7 +1738,7 @@ fn interp_num_names(
             ctx.push_stack(ExecVal::Integer(num_names))
         }
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -1726,7 +1770,7 @@ fn interp_purify(
     let s1 = match pop1 {
         ExecVal::String(s1) => s1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1734,7 +1778,7 @@ fn interp_purify(
 
     let mut scratch = Vec::from(pool.get_str(s1));
     let mut idx = 0;
-    let mut brace_level = 0;
+    let mut brace_level: i32 = 0;
     let mut write_idx = 0;
 
     while idx < scratch.len() {
@@ -1793,9 +1837,7 @@ fn interp_purify(
                     }
                 }
                 b'}' => {
-                    if brace_level > 0 {
-                        brace_level -= 1;
-                    }
+                    brace_level = brace_level.saturating_sub(1);
                 }
                 _ => (),
             },
@@ -1842,7 +1884,11 @@ impl<T> Index<SLRange> for [T] {
     }
 }
 
-fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_substr(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
     let pop3 = ctx.pop_stack(pool)?;
@@ -1850,17 +1896,17 @@ fn interp_substr(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexE
     let (len, start, s3) = match (pop1, pop2, pop3) {
         (ExecVal::Integer(i1), ExecVal::Integer(i2), ExecVal::String(s3)) => (i1, i2, s3),
         (ExecVal::Integer(_), ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop3, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop3, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (ExecVal::Integer(_), _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1930,13 +1976,17 @@ fn interp_swap(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexErr
     Ok(())
 }
 
-fn interp_text_len(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_text_len(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
 
     let s1 = match pop1 {
         ExecVal::String(s1) => s1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1944,7 +1994,7 @@ fn interp_text_len(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bibte
 
     let str = pool.get_str(s1);
     let mut idx = 0;
-    let mut brace_level = 0;
+    let mut brace_level: i32 = 0;
     let mut num_chars = 0;
     while idx < str.len() {
         idx += 1;
@@ -1964,9 +2014,7 @@ fn interp_text_len(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bibte
                 }
             }
             b'}' => {
-                if brace_level > 0 {
-                    brace_level -= 1;
-                }
+                brace_level = brace_level.saturating_sub(1);
             }
             _ => num_chars += 1,
         }
@@ -1976,19 +2024,23 @@ fn interp_text_len(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bibte
     Ok(())
 }
 
-fn interp_text_prefix(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), BibtexError> {
+fn interp_text_prefix(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     let pop2 = ctx.pop_stack(pool)?;
 
     let (i1, s2) = match (pop1, pop2) {
         (ExecVal::Integer(i1), ExecVal::String(s2)) => (i1, s2),
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop2, StkType::String)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::Integer)?;
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1999,7 +2051,7 @@ fn interp_text_prefix(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bi
         return Ok(());
     }
 
-    let mut brace_level = 0;
+    let mut brace_level: usize = 0;
     let str = pool.get_str(s2);
     let mut num_chars = 0;
     let mut idx = 0;
@@ -2021,9 +2073,7 @@ fn interp_text_prefix(ctx: &mut ExecCtx, pool: &mut StringPool) -> Result<(), Bi
                 }
             }
             b'}' => {
-                if brace_level > 0 {
-                    brace_level -= 1;
-                }
+                brace_level = brace_level.saturating_sub(1);
             }
             _ => num_chars += 1,
         }
@@ -2084,39 +2134,143 @@ fn interp_warning(
             print_lit(pool, hash, pop1)?;
             mark_warning();
         }
-        _ => rs_print_wrong_stk_lit(ctx, pool, pop1, StkType::String)?,
+        _ => rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?,
+    }
+    Ok(())
+}
+
+fn interp_width(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+
+    let s1 = match pop1 {
+        ExecVal::String(s1) => s1,
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            ctx.push_stack(ExecVal::Integer(0));
+            return Ok(());
+        }
+    };
+
+    let str = pool.get_str(s1);
+
+    let mut string_width = 0;
+    let mut brace_level = 0;
+    let mut idx = 0;
+
+    while idx < str.len() {
+        match str[idx] {
+            b'{' => {
+                brace_level += 1;
+                if brace_level == 1 && idx + 1 < str.len() && str[idx + 1] == b'\\' {
+                    while idx < str.len() && brace_level > 0 {
+                        idx += 1;
+                        let old_idx = idx;
+
+                        while idx < str.len() && LexClass::of(str[idx]) == LexClass::Alpha {
+                            idx += 1;
+                        }
+
+                        if idx < str.len() && idx == old_idx {
+                            idx += 1;
+                        } else {
+                            let res = pool.lookup_str(hash, &str[old_idx..idx], StrIlk::ControlSeq);
+                            if res.exists {
+                                match hash.ilk_info(res.loc) {
+                                    12 => string_width += 500,
+                                    4 => string_width += 722,
+                                    2 => string_width += 778,
+                                    5 => string_width += 903,
+                                    3 => string_width += 1014,
+                                    _ => string_width += CHAR_WIDTH[str[old_idx] as usize],
+                                }
+                            }
+                        }
+
+                        while idx < str.len() && LexClass::of(str[idx]) == LexClass::Whitespace {
+                            idx += 1;
+                        }
+
+                        while idx < str.len() && brace_level > 0 && str[idx] != b'\\' {
+                            match str[idx] {
+                                b'{' => brace_level += 1,
+                                b'}' => brace_level -= 1,
+                                c => string_width += CHAR_WIDTH[c as usize],
+                            }
+                            idx += 1;
+                        }
+                    }
+
+                    idx -= 1;
+                } else {
+                    string_width += CHAR_WIDTH[b'{' as usize];
+                }
+            }
+            b'}' => {
+                decr_brace_level(ctx, pool, s1, &mut brace_level)?;
+                string_width += CHAR_WIDTH[b'}' as usize];
+            }
+            _ => string_width += CHAR_WIDTH[str[idx] as usize],
+        }
+
+        idx += 1;
+    }
+
+    check_brace_level(ctx, pool, s1, brace_level)?;
+    ctx.push_stack(ExecVal::Integer(string_width));
+
+    Ok(())
+}
+
+fn interp_write(
+    ctx: &mut ExecCtx,
+    pool: &mut StringPool,
+    hash: &HashData,
+    buffers: &mut GlobalBuffer,
+) -> Result<(), BibtexError> {
+    let pop1 = ctx.pop_stack(pool)?;
+    match pop1 {
+        ExecVal::String(s1) => {
+            add_out_pool(ctx.glbl_ctx_mut(), buffers, pool, s1);
+        }
+        _ => {
+            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+        }
     }
     Ok(())
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_eq(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_eq(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_greater_than(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_gt(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_gt(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_less_than(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_lt(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_lt(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_plus(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_plus(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_plus(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_minus(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_minus(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_minus(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_concatenate(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_concat(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_concat(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -2135,7 +2289,7 @@ pub unsafe extern "C" fn x_gets(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn x_add_period(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_add_period(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_add_period(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -2145,7 +2299,7 @@ pub unsafe extern "C" fn x_change_case(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn x_chr_to_int(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_chr_to_int(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_chr_to_int(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -2160,7 +2314,7 @@ pub unsafe extern "C" fn x_duplicate(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn x_empty(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_empty(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_empty(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -2175,23 +2329,25 @@ pub unsafe extern "C" fn x_format_name(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn x_int_to_chr(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_int_to_chr(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_int_to_chr(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_int_to_str(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_int_to_str(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_int_to_str(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_missing(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_missing(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_missing(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_num_names(ctx: *mut ExecCtx) -> CResult {
-    with_buffers_mut(|buffers| with_pool_mut(|pool| interp_num_names(&mut *ctx, pool, buffers)))
-        .into()
+    with_buffers_mut(|buffers| {
+        with_pool_mut(|pool| with_hash(|hash| interp_num_names(&mut *ctx, pool, buffers, hash)))
+    })
+    .into()
 }
 
 #[no_mangle]
@@ -2211,7 +2367,7 @@ pub unsafe extern "C" fn x_quote(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn x_substring(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_substr(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_substr(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -2221,12 +2377,12 @@ pub unsafe extern "C" fn x_swap(ctx: *mut ExecCtx) -> CResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn x_text_length(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_text_len(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_text_len(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn x_text_prefix(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_text_prefix(&mut *ctx, pool)).into()
+    with_pool_mut(|pool| with_hash(|hash| interp_text_prefix(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -2238,6 +2394,19 @@ pub unsafe extern "C" fn x_type(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn x_warning(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| with_hash(|hash| interp_warning(&mut *ctx, pool, hash))).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_width(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| with_hash(|hash| interp_width(&mut *ctx, pool, hash))).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn x_write(ctx: *mut ExecCtx) -> CResult {
+    with_pool_mut(|pool| {
+        with_hash(|hash| with_buffers_mut(|buffers| interp_write(&mut *ctx, pool, hash, buffers)))
+    })
+    .into()
 }
 
 #[cfg(test)]

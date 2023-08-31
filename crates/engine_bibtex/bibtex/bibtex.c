@@ -24,7 +24,6 @@ static jmp_buf error_jmpbuf, recover_jmpbuf;
 
 /*22: */
 
-typedef size_t pool_pointer;
 typedef size_t hash_loc;
 typedef size_t cite_number;
 typedef size_t wiz_fn_loc;
@@ -101,108 +100,6 @@ printf_log(const char *fmt, ...)
 }
 
 /*:159*//*160: */
-
-static void x_width(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_String) {
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
-        push_lit_stk(ctx, int_val(0));
-    } else {
-
-        bib_set_buf_len(BUF_TY_EX, 0);
-        add_buf_pool(ctx->pop1.string);
-        int32_t string_width = 0;
-        {
-            int32_t brace_level = 0;
-            bib_set_buf_offset(BUF_TY_EX, 1, 0);
-            while (bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) {
-
-                if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 123 /*left_brace */ ) {
-                    brace_level = brace_level + 1;
-                    if ((brace_level == 1) && (bib_buf_offset(BUF_TY_EX, 1) + 1 < bib_buf_len(BUF_TY_EX))) {
-
-                        if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1) + 1) == 92 /*backslash */ ) {   /*453: */
-                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                            while ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)) {
-
-                                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                BufPointer ex_buf_xptr = bib_buf_offset(BUF_TY_EX, 1);
-                                while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
-                                        && (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))] == LEX_CLASS_ALPHA )))
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                if ((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (bib_buf_offset(BUF_TY_EX, 1) == ex_buf_xptr))
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                else {
-                                    LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_EX, ex_buf_xptr,
-                                                                              bib_buf_offset(BUF_TY_EX, 1) -
-                                                                              ex_buf_xptr, STR_ILK_CONTROL_SEQ ,
-                                                                              false));
-                                    hash_loc control_seq_loc = hash.loc;
-                                    if (hash.exists) { /*454: */
-                                        switch ((ilk_info(control_seq_loc))) {
-                                        case 12:
-                                            string_width = string_width + 500;
-                                            break;
-                                        case 4:
-                                            string_width = string_width + 722;
-                                            break;
-                                        case 2:
-                                            string_width = string_width + 778;
-                                            break;
-                                        case 5:
-                                            string_width = string_width + 903;
-                                            break;
-                                        case 3:
-                                            string_width = string_width + 1014;
-                                            break;
-                                        default:
-                                            string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX, ex_buf_xptr)];
-                                            break;
-                                        }
-                                    }
-                                }
-                                while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX))
-                                        && (LEX_CLASS[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))] == LEX_CLASS_WHITESPACE )))
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                while (((bib_buf_offset(BUF_TY_EX, 1) < bib_buf_len(BUF_TY_EX)) && (brace_level > 0)
-                                        && (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) != 92 /*backslash */ ))) {
-
-                                    if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ )
-                                        brace_level = brace_level - 1;
-                                    else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 123 /*left_brace */ )
-                                        brace_level = brace_level + 1;
-                                    else
-                                        string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))];
-                                    bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-                                }
-                            }
-                            bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) - 1);
-                        } else
-                            string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
-                    } else
-                        string_width = string_width + CHAR_WIDTH[123 /*left_brace */ ];
-                } else if (bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1)) == 125 /*right_brace */ ) {
-                    unwrap(decr_brace_level(ctx, ctx->pop1.string, &brace_level));
-                    string_width = string_width + CHAR_WIDTH[125 /*right_brace */ ];
-                } else
-                    string_width = string_width + CHAR_WIDTH[bib_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1))];
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-            }
-            unwrap(check_brace_level(ctx, ctx->pop1.string, brace_level));
-        }
-        push_lit_stk(ctx, int_val(string_width));
-    }
-}
-
-static void x_write(ExecCtx* ctx)
-{
-    unwrap(pop_lit_stk(ctx, &ctx->pop1));
-    if (ctx->pop1.tag != ExecVal_String)
-        unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_STRING));
-    else
-        add_out_pool(ctx->glbl_ctx, ctx->pop1.string);
-}
 
 static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
 {
@@ -329,7 +226,7 @@ static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
             unwrap(x_type(ctx));
             break;
         case 33:
-            x_warning(ctx);
+            unwrap(x_warning(ctx));
             break;
         case 34:
             {
@@ -357,10 +254,10 @@ lab51:                        /*end_while */ ;
             }
             break;
         case 35:
-            x_width(ctx);
+            unwrap(x_width(ctx));
             break;
         case 36:
-            x_write(ctx);
+            unwrap(x_write(ctx));
             break;
         default:
             puts_log("Unknown built-in function");

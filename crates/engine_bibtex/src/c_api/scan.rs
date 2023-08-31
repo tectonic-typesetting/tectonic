@@ -17,7 +17,7 @@ use crate::{
         },
         other::with_other_mut,
         peekable::rs_input_ln,
-        pool::{with_pool, with_pool_mut, StringPool},
+        pool::{with_pool_mut, StringPool},
         ASCIICode, Bibtex, BufPointer, CResult, CResultBool, CiteNumber, FnDefLoc, HashPointer,
         StrIlk, StrNumber,
     },
@@ -960,7 +960,7 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
     res.into()
 }
 
-pub fn rs_decr_brace_level(
+pub fn decr_brace_level(
     ctx: &ExecCtx,
     pool: &StringPool,
     pop_lit_var: StrNumber,
@@ -975,16 +975,7 @@ pub fn rs_decr_brace_level(
     Ok(())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn decr_brace_level(
-    ctx: *const ExecCtx,
-    pop_lit_var: StrNumber,
-    brace_level: *mut i32,
-) -> CResult {
-    with_pool(|pool| rs_decr_brace_level(&*ctx, pool, pop_lit_var, &mut *brace_level)).into()
-}
-
-pub fn rs_check_brace_level(
+pub fn check_brace_level(
     ctx: &ExecCtx,
     pool: &StringPool,
     pop_lit_var: StrNumber,
@@ -994,15 +985,6 @@ pub fn rs_check_brace_level(
         braces_unbalanced_complaint(ctx, pool, pop_lit_var)?;
     }
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn check_brace_level(
-    ctx: *const ExecCtx,
-    pop_lit_var: StrNumber,
-    brace_level: i32,
-) -> CResult {
-    with_pool(|pool| rs_check_brace_level(&*ctx, pool, pop_lit_var, brace_level)).into()
 }
 
 pub fn name_scan_for_and(
@@ -1048,7 +1030,7 @@ pub fn name_scan_for_and(
                 preceding_white = false;
             }
             b'}' => {
-                rs_decr_brace_level(ctx, pool, pop_lit_var, brace_level)?;
+                decr_brace_level(ctx, pool, pop_lit_var, brace_level)?;
                 buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                 preceding_white = false;
             }
@@ -1060,7 +1042,7 @@ pub fn name_scan_for_and(
         }
     }
 
-    rs_check_brace_level(ctx, pool, pop_lit_var, *brace_level)
+    check_brace_level(ctx, pool, pop_lit_var, *brace_level)
 }
 
 pub fn von_token_found(

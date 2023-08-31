@@ -1,6 +1,6 @@
 use crate::{
     c_api::{
-        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{with_buffers, BufTy, GlobalBuffer},
         char_info::LexClass,
         entries::{with_entries_mut, ENT_STR_SIZE},
         global::GLOB_STR_SIZE,
@@ -324,7 +324,7 @@ pub extern "C" fn bib_make_string() -> CResultStr {
     })
 }
 
-pub fn rs_add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
+pub fn add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
     let str = pool.get_str(str);
 
     if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
@@ -335,11 +335,6 @@ pub fn rs_add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: S
     buffers.copy_from(BufTy::Ex, start, str);
     buffers.set_offset(BufTy::Ex, 1, start + str.len());
     buffers.set_init(BufTy::Ex, start + str.len());
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn add_buf_pool(str: StrNumber) {
-    with_pool_mut(|pool| with_buffers_mut(|buffers| rs_add_buf_pool(pool, buffers, str)))
 }
 
 #[no_mangle]
@@ -521,7 +516,7 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     res.into()
 }
 
-fn rs_add_out_pool(
+pub fn add_out_pool(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
@@ -587,11 +582,6 @@ fn rs_add_out_pool(
             buffers.set_init(BufTy::Out, len + 2);
         }
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn add_out_pool(ctx: *mut Bibtex, str: StrNumber) {
-    with_buffers_mut(|buffers| with_pool(|pool| rs_add_out_pool(&mut *ctx, buffers, pool, str)))
 }
 
 #[cfg(test)]
