@@ -354,7 +354,6 @@ pub mod c_api {
     type BufPointer = usize;
     type PoolPointer = usize;
     type HashPointer = usize;
-    type HashPointer2 = usize;
     type AuxNumber = usize;
     type BibNumber = usize;
     type WizFnLoc = usize;

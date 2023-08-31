@@ -10,14 +10,15 @@ use crate::{
         history::{mark_error, mark_warning},
         log::{
             brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
-            bst_1print_string_size_exceeded, bst_2print_string_size_exceeded, print_confusion,
-            rs_bst_cant_mess_with_entries_print, rs_print_a_pool_str, rs_print_fn_class,
-            write_logs,
+            bst_1print_string_size_exceeded, bst_2print_string_size_exceeded,
+            bst_cant_mess_with_entries_print, output_bbl_line, print_confusion,
+            rs_print_a_pool_str, rs_print_fn_class, write_logs,
         },
+        other::{with_other, OtherData},
         pool::{add_buf_pool, add_out_pool, with_pool, with_pool_mut, StringPool},
         scan::{
             check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
-            von_name_ends_and_last_name_starts_stuff, von_token_found,
+            von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
         },
         xbuf::{SafelyZero, XBuf},
         ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrIlk, StrNumber,
@@ -28,10 +29,8 @@ use std::ops::Index;
 
 const LIT_STK_SIZE: usize = 100;
 
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, PartialEq, Eq)]
-#[repr(C)]
-pub enum StkType {
+pub(crate) enum StkType {
     Integer = 0,
     String = 1,
     Function = 2,
@@ -40,48 +39,15 @@ pub enum StkType {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-#[repr(u8)]
-pub enum ExecVal {
-    Integer(i32) = 0,
-    String(StrNumber) = 1,
-    Function(HashPointer) = 2,
-    Missing(StrNumber) = 3,
-    Illegal = 4,
+pub(crate) enum ExecVal {
+    Integer(i32),
+    String(StrNumber),
+    Function(HashPointer),
+    Missing(StrNumber),
+    Illegal,
 }
 
 impl ExecVal {
-    fn empty() -> ExecVal {
-        ExecVal::Integer(0)
-    }
-
-    #[no_mangle]
-    pub extern "C" fn int_val(lit: i32) -> ExecVal {
-        ExecVal::Integer(lit)
-    }
-
-    #[no_mangle]
-    pub extern "C" fn str_val(str: StrNumber) -> ExecVal {
-        ExecVal::String(str)
-    }
-
-    #[no_mangle]
-    pub extern "C" fn func_val(f: HashPointer) -> ExecVal {
-        ExecVal::Function(f)
-    }
-
-    #[no_mangle]
-    pub extern "C" fn missing_val(f: StrNumber) -> ExecVal {
-        ExecVal::Missing(f)
-    }
-
-    pub fn unwrap_str(&self) -> StrNumber {
-        if let ExecVal::String(s) = self {
-            *s
-        } else {
-            panic!("Expected ExecVal to be a string, got something else")
-        }
-    }
-
     pub fn ty(&self) -> StkType {
         match self {
             ExecVal::Integer(_) => StkType::Integer,
@@ -100,10 +66,7 @@ unsafe impl SafelyZero for ExecVal {}
 pub struct ExecCtx {
     pub glbl_ctx: *mut Bibtex,
     pub _default: HashPointer,
-    pub pop1: ExecVal,
-    pub pop2: ExecVal,
-    pub pop3: ExecVal,
-    pub lit_stack: Box<XBuf<ExecVal>>,
+    pub(crate) lit_stack: Box<XBuf<ExecVal>>,
     pub lit_stk_ptr: usize,
     pub mess_with_entries: bool,
     /// Pointer to the current top of the string pool, used to optimized certain string operations
@@ -111,7 +74,7 @@ pub struct ExecCtx {
 }
 
 impl ExecCtx {
-    pub fn push_stack(&mut self, val: ExecVal) {
+    pub(crate) fn push_stack(&mut self, val: ExecVal) {
         self.lit_stack[self.lit_stk_ptr] = val;
 
         if self.lit_stk_ptr >= self.lit_stack.len() {
@@ -121,7 +84,7 @@ impl ExecCtx {
         self.lit_stk_ptr += 1;
     }
 
-    pub fn pop_stack(&mut self, pool: &mut StringPool) -> Result<ExecVal, BibtexError> {
+    pub(crate) fn pop_stack(&mut self, pool: &mut StringPool) -> Result<ExecVal, BibtexError> {
         if self.lit_stk_ptr == 0 {
             write_logs("You can't pop an empty literal stack");
             bst_ex_warn_print(self, pool)?;
@@ -164,9 +127,6 @@ pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
     ExecCtx {
         glbl_ctx,
         _default: 0,
-        pop1: ExecVal::empty(),
-        pop2: ExecVal::empty(),
-        pop3: ExecVal::empty(),
         lit_stack: Box::new(XBuf::new(LIT_STK_SIZE + 1)),
         lit_stk_ptr: 0,
         mess_with_entries: false,
@@ -174,7 +134,11 @@ pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
     }
 }
 
-pub fn print_lit(pool: &StringPool, hash: &HashData, val: ExecVal) -> Result<(), BibtexError> {
+pub(crate) fn print_lit(
+    pool: &StringPool,
+    hash: &HashData,
+    val: ExecVal,
+) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => {
             write_logs(&format!("{}\n", val));
@@ -199,7 +163,11 @@ pub fn print_lit(pool: &StringPool, hash: &HashData, val: ExecVal) -> Result<(),
     Ok(())
 }
 
-pub fn print_stk_lit(val: ExecVal, pool: &StringPool, hash: &HashData) -> Result<(), BibtexError> {
+pub(crate) fn print_stk_lit(
+    val: ExecVal,
+    pool: &StringPool,
+    hash: &HashData,
+) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
@@ -225,7 +193,7 @@ pub fn print_stk_lit(val: ExecVal, pool: &StringPool, hash: &HashData) -> Result
     Ok(())
 }
 
-pub fn rs_print_wrong_stk_lit(
+pub(crate) fn print_wrong_stk_lit(
     ctx: &mut ExecCtx,
     pool: &StringPool,
     hash: &HashData,
@@ -250,16 +218,6 @@ pub fn rs_print_wrong_stk_lit(
             bst_ex_warn_print(ctx, pool)
         }
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn print_wrong_stk_lit(
-    ctx: *mut ExecCtx,
-    val: ExecVal,
-    typ2: StkType,
-) -> CResult {
-    with_pool(|pool| with_hash(|hash| rs_print_wrong_stk_lit(&mut *ctx, pool, hash, val, typ2)))
-        .into()
 }
 
 pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
@@ -291,30 +249,12 @@ pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> CResult {
     with_pool(|pool| rs_print_bst_name(&*glbl_ctx, pool)).into()
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn push_lit_stk(ctx: *mut ExecCtx, val: ExecVal) {
-    (*ctx).push_stack(val)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn pop_lit_stk(ctx: *mut ExecCtx, out: *mut ExecVal) -> CResult {
-    let ctx = &mut *ctx;
-    match with_pool_mut(|pool| ctx.pop_stack(pool)) {
-        Ok(val) => {
-            *out = val;
-            CResult::Ok
-        }
-        Err(BibtexError::Fatal) => CResult::Error,
-        Err(BibtexError::Recover) => CResult::Recover,
-    }
-}
-
 pub fn illegl_literal_confusion() {
     write_logs("Illegal literal type");
     print_confusion();
 }
 
-fn rs_pop_top_and_print(
+fn pop_top_and_print(
     ctx: &mut ExecCtx,
     pool: &mut StringPool,
     hash: &HashData,
@@ -329,25 +269,15 @@ fn rs_pop_top_and_print(
     })
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn pop_top_and_print(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| rs_pop_top_and_print(&mut *ctx, pool, hash))).into()
-}
-
-fn rs_pop_whole_stack(
+fn pop_whole_stack(
     ctx: &mut ExecCtx,
     pool: &mut StringPool,
     hash: &HashData,
 ) -> Result<(), BibtexError> {
     while ctx.lit_stk_ptr > 0 {
-        rs_pop_top_and_print(ctx, pool, hash)?;
+        pop_top_and_print(ctx, pool, hash)?;
     }
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn pop_whole_stack(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| rs_pop_whole_stack(&mut *ctx, pool, hash))).into()
 }
 
 #[no_mangle]
@@ -375,7 +305,7 @@ pub fn figure_out_the_formatted_name(
     ctx: &mut ExecCtx,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
-    str: StrNumber,
+    s1: StrNumber,
     first_start: BufPointer,
     first_end: BufPointer,
     last_end: BufPointer,
@@ -388,7 +318,7 @@ pub fn figure_out_the_formatted_name(
 ) -> Result<(), BibtexError> {
     let mut old_idx;
     let mut inner_brace_level = 0;
-    let str = pool.get_str(str);
+    let str = pool.get_str(s1);
     let mut idx = 0;
 
     buffers.set_offset(BufTy::Ex, 1, 0);
@@ -410,7 +340,7 @@ pub fn figure_out_the_formatted_name(
                 if LexClass::of(str[idx]) == LexClass::Alpha {
                     idx += 1;
                     if alpha_found {
-                        brace_lvl_one_letters_complaint(ctx, pool)?;
+                        brace_lvl_one_letters_complaint(ctx, pool, s1)?;
                         to_be_written = false;
                     } else {
                         match str[idx - 1] {
@@ -455,7 +385,7 @@ pub fn figure_out_the_formatted_name(
                                 }
                             }
                             _ => {
-                                brace_lvl_one_letters_complaint(ctx, pool)?;
+                                brace_lvl_one_letters_complaint(ctx, pool, s1)?;
                                 to_be_written = false;
                                 break;
                             }
@@ -677,7 +607,7 @@ pub fn figure_out_the_formatted_name(
                 }
             }
         } else if str[idx] == b'}' {
-            braces_unbalanced_complaint(ctx, pool, ctx.pop1.unwrap_str())?;
+            braces_unbalanced_complaint(ctx, pool, s1)?;
             idx += 1;
         } else {
             if buffers.offset(BufTy::Ex, 1) == buffers.len() {
@@ -690,7 +620,7 @@ pub fn figure_out_the_formatted_name(
     }
 
     if inner_brace_level > 0 {
-        braces_unbalanced_complaint(ctx, pool, ctx.pop1.unwrap_str())?;
+        braces_unbalanced_complaint(ctx, pool, s1)?;
     }
 
     buffers.set_init(BufTy::Ex, buffers.offset(BufTy::Ex, 1));
@@ -705,7 +635,7 @@ fn rs_check_command_execution(
 ) -> Result<(), BibtexError> {
     if ctx.lit_stk_ptr != 0 {
         write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
-        rs_pop_whole_stack(ctx, pool, hash)?;
+        pop_whole_stack(ctx, pool, hash)?;
         write_logs("---the literal stack isn't empty");
         bst_ex_warn_print(ctx, pool)?;
     }
@@ -722,7 +652,7 @@ pub unsafe extern "C" fn check_command_execution(ctx: *mut ExecCtx) -> CResult {
     with_pool_mut(|pool| with_hash(|hash| rs_check_command_execution(&mut *ctx, pool, hash))).into()
 }
 
-fn rs_add_pool_buf_and_push(
+fn add_pool_buf_and_push(
     ctx: &mut ExecCtx,
     buffers: &mut GlobalBuffer,
     pool: &mut StringPool,
@@ -731,14 +661,6 @@ fn rs_add_pool_buf_and_push(
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
     ctx.push_stack(ExecVal::String(pool.add_string_raw(str)?));
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn add_pool_buf_and_push(ctx: *mut ExecCtx) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_pool_mut(|pool| rs_add_pool_buf_and_push(&mut *ctx, buffers, pool))
-    })
-    .into()
 }
 
 fn interp_eq(ctx: &mut ExecCtx, pool: &mut StringPool, hash: &HashData) -> Result<(), BibtexError> {
@@ -786,11 +708,11 @@ fn interp_gt(ctx: &mut ExecCtx, pool: &mut StringPool, hash: &HashData) -> Resul
             ctx.push_stack(ExecVal::Integer((i2 > i1) as i32));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -806,11 +728,11 @@ fn interp_lt(ctx: &mut ExecCtx, pool: &mut StringPool, hash: &HashData) -> Resul
             ctx.push_stack(ExecVal::Integer((i2 < i1) as i32));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -830,11 +752,11 @@ fn interp_plus(
             ctx.push_stack(ExecVal::Integer(i2 + i1));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -854,11 +776,11 @@ fn interp_minus(
             ctx.push_stack(ExecVal::Integer(i2 - i1));
         }
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -876,12 +798,12 @@ fn interp_concat(
     let (s1, s2) = match (pop1, pop2) {
         (ExecVal::String(s1), ExecVal::String(s2)) => (s1, s2),
         (ExecVal::String(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -970,14 +892,14 @@ fn interp_gets(
     let f1 = match pop1 {
         ExecVal::Function(f1) => f1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Function)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Function)?;
             return Ok(());
         }
     };
 
     let fn_ty = hash.ty(f1);
     if !ctx.mess_with_entries && fn_ty == FnClass::StrEntryVar || fn_ty == FnClass::IntEntryVar {
-        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+        bst_cant_mess_with_entries_print(ctx, pool)?;
         return Ok(());
     }
 
@@ -989,7 +911,7 @@ fn interp_gets(
                     i2,
                 )
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+                print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             }
         }
         FnClass::StrEntryVar => {
@@ -1006,14 +928,14 @@ fn interp_gets(
                     s,
                 );
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+                print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             }
         }
         FnClass::IntGlblVar => {
             if let ExecVal::Integer(i2) = pop2 {
                 hash.set_ilk_info(f1, i2);
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+                print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             }
         }
         FnClass::StrGlblVar => {
@@ -1033,7 +955,7 @@ fn interp_gets(
                     globals.set_str(str_glb_ptr, s);
                 }
             } else {
-                rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
+                print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             }
         }
         _ => {
@@ -1056,7 +978,7 @@ fn interp_add_period(
     let s1 = match pop1 {
         ExecVal::String(s1) => s1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1251,11 +1173,11 @@ fn interp_change_case(
             ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch)?));
         }
         (ExecVal::String(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
         }
     }
@@ -1282,7 +1204,7 @@ fn interp_chr_to_int(
             }
         }
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -1295,7 +1217,7 @@ fn interp_cite(
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if !ctx.mess_with_entries {
-        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+        bst_cant_mess_with_entries_print(ctx, pool)?;
     } else {
         ctx.push_stack(ExecVal::String(cites.get_cite(cites.ptr())))
     }
@@ -1373,17 +1295,17 @@ fn interp_format_name(
     let (s1, i2, s3) = match (pop1, pop2, pop3) {
         (ExecVal::String(s1), ExecVal::Integer(i2), ExecVal::String(s3)) => (s1, i2, s3),
         (ExecVal::String(_), ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop3, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop3, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (ExecVal::String(_), _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1632,7 +1554,7 @@ fn interp_format_name(
         jr_end,
         &mut brace_level,
     )?;
-    rs_add_pool_buf_and_push(ctx, buffers, pool)?;
+    add_pool_buf_and_push(ctx, buffers, pool)?;
 
     Ok(())
 }
@@ -1646,7 +1568,7 @@ fn interp_int_to_chr(
     let i1 = match pop1 {
         ExecVal::Integer(i1) => i1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1676,7 +1598,7 @@ fn interp_int_to_str(
     let i1 = match pop1 {
         ExecVal::Integer(i1) => i1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1694,7 +1616,7 @@ fn interp_missing(
 ) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool)?;
     if !ctx.mess_with_entries {
-        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+        bst_cant_mess_with_entries_print(ctx, pool)?;
         return Ok(());
     }
     match pop1 {
@@ -1738,7 +1660,7 @@ fn interp_num_names(
             ctx.push_stack(ExecVal::Integer(num_names))
         }
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
     }
@@ -1770,7 +1692,7 @@ fn interp_purify(
     let s1 = match pop1 {
         ExecVal::String(s1) => s1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1896,17 +1818,17 @@ fn interp_substr(
     let (len, start, s3) = match (pop1, pop2, pop3) {
         (ExecVal::Integer(i1), ExecVal::Integer(i2), ExecVal::String(s3)) => (i1, i2, s3),
         (ExecVal::Integer(_), ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop3, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop3, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (ExecVal::Integer(_), _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -1986,7 +1908,7 @@ fn interp_text_len(
     let s1 = match pop1 {
         ExecVal::String(s1) => s1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -2035,12 +1957,12 @@ fn interp_text_prefix(
     let (i1, s2) = match (pop1, pop2) {
         (ExecVal::Integer(i1), ExecVal::String(s2)) => (i1, s2),
         (ExecVal::Integer(_), _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop2, StkType::String)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
         (_, _) => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::Integer)?;
             ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
             return Ok(());
         }
@@ -2108,7 +2030,7 @@ fn interp_ty(
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if !ctx.mess_with_entries {
-        rs_bst_cant_mess_with_entries_print(ctx, pool)?;
+        bst_cant_mess_with_entries_print(ctx, pool)?;
         return Ok(());
     }
 
@@ -2134,7 +2056,7 @@ fn interp_warning(
             print_lit(pool, hash, pop1)?;
             mark_warning();
         }
-        _ => rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?,
+        _ => print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?,
     }
     Ok(())
 }
@@ -2149,7 +2071,7 @@ fn interp_width(
     let s1 = match pop1 {
         ExecVal::String(s1) => s1,
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
             ctx.push_stack(ExecVal::Integer(0));
             return Ok(());
         }
@@ -2237,174 +2159,282 @@ fn interp_write(
             add_out_pool(ctx.glbl_ctx_mut(), buffers, pool, s1);
         }
         _ => {
-            rs_print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
+            print_wrong_stk_lit(ctx, pool, hash, pop1, StkType::String)?;
         }
     }
     Ok(())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn x_equals(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_eq(&mut *ctx, pool, hash))).into()
+struct GlobalItems<'a> {
+    buffers: &'a mut GlobalBuffer,
+    pool: &'a mut StringPool,
+    hash: &'a mut HashData,
+    entries: &'a mut EntryData,
+    globals: &'a mut GlobalData,
+    bibs: &'a mut BibData,
+    cites: &'a CiteInfo,
+    other: &'a OtherData,
+}
+
+fn rs_execute_fn(
+    ctx: &mut ExecCtx,
+    globals: &mut GlobalItems<'_>,
+    ex_fn_loc: HashPointer,
+) -> Result<(), BibtexError> {
+    match globals.hash.ty(ex_fn_loc) {
+        FnClass::Builtin => match globals.hash.ilk_info(ex_fn_loc) {
+            0 => interp_eq(ctx, globals.pool, globals.hash),
+            1 => interp_gt(ctx, globals.pool, globals.hash),
+            2 => interp_lt(ctx, globals.pool, globals.hash),
+            3 => interp_plus(ctx, globals.pool, globals.hash),
+            4 => interp_minus(ctx, globals.pool, globals.hash),
+            5 => interp_concat(ctx, globals.pool, globals.hash),
+            6 => interp_gets(
+                ctx,
+                globals.pool,
+                globals.hash,
+                globals.entries,
+                globals.globals,
+                globals.cites,
+            ),
+            7 => interp_add_period(ctx, globals.pool, globals.hash),
+            8 => {
+                let default = globals.cites.get_type(globals.cites.ptr());
+                if !ctx.mess_with_entries {
+                    bst_cant_mess_with_entries_print(ctx, globals.pool)?;
+                    Ok(())
+                } else if default == HashData::undefined() {
+                    rs_execute_fn(ctx, globals, ctx._default)
+                } else if default != 0 {
+                    rs_execute_fn(ctx, globals, default)
+                } else {
+                    Ok(())
+                }
+            }
+            9 => interp_change_case(ctx, globals.pool, globals.hash),
+            10 => interp_chr_to_int(ctx, globals.pool, globals.hash),
+            11 => interp_cite(ctx, globals.pool, globals.cites),
+            12 => interp_dup(ctx, globals.pool),
+            13 => interp_empty(ctx, globals.pool, globals.hash),
+            14 => interp_format_name(ctx, globals.pool, globals.buffers, globals.hash),
+            15 => {
+                let pop1 = ctx.pop_stack(globals.pool)?;
+                let pop2 = ctx.pop_stack(globals.pool)?;
+                let pop3 = ctx.pop_stack(globals.pool)?;
+
+                match (pop1, pop2, pop3) {
+                    (ExecVal::Function(f1), ExecVal::Function(f2), ExecVal::Integer(i3)) => {
+                        if i3 > 0 {
+                            rs_execute_fn(ctx, globals, f2)
+                        } else {
+                            rs_execute_fn(ctx, globals, f1)
+                        }
+                    }
+                    (ExecVal::Function(_), ExecVal::Function(_), _) => {
+                        print_wrong_stk_lit(ctx, globals.pool, globals.hash, pop3, StkType::Integer)
+                    }
+                    (ExecVal::Function(_), _, _) => print_wrong_stk_lit(
+                        ctx,
+                        globals.pool,
+                        globals.hash,
+                        pop2,
+                        StkType::Function,
+                    ),
+                    (_, _, _) => print_wrong_stk_lit(
+                        ctx,
+                        globals.pool,
+                        globals.hash,
+                        pop1,
+                        StkType::Function,
+                    ),
+                }
+            }
+            16 => interp_int_to_chr(ctx, globals.pool, globals.hash),
+            17 => interp_int_to_str(ctx, globals.pool, globals.hash),
+            18 => interp_missing(ctx, globals.pool, globals.hash),
+            19 => {
+                output_bbl_line(ctx.glbl_ctx_mut(), globals.buffers);
+                Ok(())
+            }
+            20 => interp_num_names(ctx, globals.pool, globals.buffers, globals.hash),
+            21 => ctx.pop_stack(globals.pool).map(|_| ()),
+            22 => interp_preamble(ctx, globals.pool, globals.bibs),
+            23 => interp_purify(ctx, globals.pool, globals.hash),
+            24 => interp_quote(ctx, globals.pool),
+            25 => Ok(()),
+            26 => pop_whole_stack(ctx, globals.pool, globals.hash),
+            27 => interp_substr(ctx, globals.pool, globals.hash),
+            28 => interp_swap(ctx, globals.pool),
+            29 => interp_text_len(ctx, globals.pool, globals.hash),
+            30 => interp_text_prefix(ctx, globals.pool, globals.hash),
+            31 => pop_top_and_print(ctx, globals.pool, globals.hash),
+            32 => interp_ty(ctx, globals.pool, globals.hash, globals.cites),
+            33 => interp_warning(ctx, globals.pool, globals.hash),
+            34 => {
+                let pop1 = ctx.pop_stack(globals.pool)?;
+                let pop2 = ctx.pop_stack(globals.pool)?;
+
+                match (pop1, pop2) {
+                    (ExecVal::Function(f1), ExecVal::Function(f2)) => {
+                        loop {
+                            rs_execute_fn(ctx, globals, f2)?;
+                            let res = ctx.pop_stack(globals.pool)?;
+                            if let ExecVal::Integer(i1) = res {
+                                if i1 > 0 {
+                                    rs_execute_fn(ctx, globals, f1)?;
+                                } else {
+                                    break;
+                                }
+                            } else {
+                                print_wrong_stk_lit(
+                                    ctx,
+                                    globals.pool,
+                                    globals.hash,
+                                    res,
+                                    StkType::Integer,
+                                )?;
+                                break;
+                            }
+                        }
+                        Ok(())
+                    }
+                    (ExecVal::Function(_), _) => print_wrong_stk_lit(
+                        ctx,
+                        globals.pool,
+                        globals.hash,
+                        pop2,
+                        StkType::Function,
+                    ),
+                    (_, _) => print_wrong_stk_lit(
+                        ctx,
+                        globals.pool,
+                        globals.hash,
+                        pop1,
+                        StkType::Function,
+                    ),
+                }
+            }
+            35 => interp_width(ctx, globals.pool, globals.hash),
+            36 => interp_write(ctx, globals.pool, globals.hash, globals.buffers),
+            _ => {
+                write_logs("Unknown built-in function");
+                print_confusion();
+                Err(BibtexError::Fatal)
+            }
+        },
+        FnClass::Wizard => {
+            let mut wiz_ptr = globals.hash.ilk_info(ex_fn_loc) as usize;
+            let mut cur_fn = globals.other.wiz_function(wiz_ptr);
+            while cur_fn != HashData::end_of_def() {
+                if cur_fn != QUOTE_NEXT_FN {
+                    rs_execute_fn(ctx, globals, cur_fn)?;
+                } else {
+                    wiz_ptr += 1;
+                    cur_fn = globals.other.wiz_function(wiz_ptr);
+                    ctx.push_stack(ExecVal::Function(cur_fn))
+                }
+                wiz_ptr += 1;
+                cur_fn = globals.other.wiz_function(wiz_ptr);
+            }
+            Ok(())
+        }
+        FnClass::IntLit => {
+            ctx.push_stack(ExecVal::Integer(globals.hash.ilk_info(ex_fn_loc)));
+            Ok(())
+        }
+        FnClass::StrLit => {
+            ctx.push_stack(ExecVal::String(globals.hash.text(ex_fn_loc)));
+            Ok(())
+        }
+        FnClass::Field => {
+            if !ctx.mess_with_entries {
+                bst_cant_mess_with_entries_print(ctx, globals.pool)
+            } else {
+                let field_ptr = globals.cites.ptr() * globals.other.num_fields()
+                    + globals.hash.ilk_info(ex_fn_loc) as usize;
+                if field_ptr >= globals.other.max_fields() {
+                    write_logs("field_info index is out of range");
+                    print_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+
+                let field = globals.other.field(field_ptr);
+                if field == 0 {
+                    ctx.push_stack(ExecVal::Missing(globals.hash.text(ex_fn_loc)));
+                } else {
+                    ctx.push_stack(ExecVal::String(field));
+                }
+                Ok(())
+            }
+        }
+        FnClass::IntEntryVar => {
+            if !ctx.mess_with_entries {
+                bst_cant_mess_with_entries_print(ctx, globals.pool)
+            } else {
+                ctx.push_stack(ExecVal::Integer(globals.entries.ints(
+                    globals.cites.ptr() * globals.entries.num_ent_ints()
+                        + globals.hash.ilk_info(ex_fn_loc) as usize,
+                )));
+                Ok(())
+            }
+        }
+        FnClass::StrEntryVar => {
+            if !ctx.mess_with_entries {
+                bst_cant_mess_with_entries_print(ctx, globals.pool)
+            } else {
+                let str_ent_ptr = globals.cites.ptr() * globals.entries.num_ent_strs()
+                    + globals.hash.ilk_info(ex_fn_loc) as usize;
+                let str = globals.entries.strs(str_ent_ptr);
+                ctx.push_stack(ExecVal::String(globals.pool.add_string_raw(str)?));
+                Ok(())
+            }
+        }
+        FnClass::IntGlblVar => {
+            ctx.push_stack(ExecVal::Integer(globals.hash.ilk_info(ex_fn_loc)));
+            Ok(())
+        }
+        FnClass::StrGlblVar => {
+            let str_glb_ptr = globals.hash.ilk_info(ex_fn_loc) as usize;
+            let str_ptr = globals.globals.str_ptr(str_glb_ptr);
+            if str_ptr > 0 {
+                ctx.push_stack(ExecVal::String(str_ptr));
+            } else {
+                let str = globals.globals.str(str_glb_ptr);
+                ctx.push_stack(ExecVal::String(globals.pool.add_string_raw(str)?));
+            }
+            Ok(())
+        }
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn x_greater_than(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_gt(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_less_than(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_lt(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_plus(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_plus(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_minus(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_minus(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_concatenate(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_concat(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_gets(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| {
-        with_hash_mut(|hash| {
-            with_entries_mut(|entries| {
-                with_globals_mut(|globals| {
-                    with_cites(|cites| interp_gets(&mut *ctx, pool, hash, entries, globals, cites))
+pub unsafe extern "C" fn execute_fn(ctx: *mut ExecCtx, ex_fn_loc: HashPointer) -> CResult {
+    with_buffers_mut(|buffers| {
+        with_pool_mut(|pool| {
+            with_hash_mut(|hash| {
+                with_entries_mut(|entries| {
+                    with_globals_mut(|globals| {
+                        with_bibs_mut(|bibs| {
+                            with_cites(|cites| {
+                                with_other(|other| {
+                                    let mut globals = GlobalItems {
+                                        buffers,
+                                        pool,
+                                        hash,
+                                        entries,
+                                        globals,
+                                        bibs,
+                                        cites,
+                                        other,
+                                    };
+                                    rs_execute_fn(&mut *ctx, &mut globals, ex_fn_loc)
+                                })
+                            })
+                        })
+                    })
                 })
             })
         })
-    })
-    .into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_add_period(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_add_period(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_change_case(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_change_case(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_chr_to_int(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_chr_to_int(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_cite(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_cites(|cites| interp_cite(&mut *ctx, pool, cites))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_duplicate(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_dup(&mut *ctx, pool)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_empty(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_empty(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_format_name(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| {
-        with_buffers_mut(|buffers| {
-            with_hash(|hash| interp_format_name(&mut *ctx, pool, buffers, hash))
-        })
-    })
-    .into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_int_to_chr(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_int_to_chr(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_int_to_str(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_int_to_str(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_missing(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_missing(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_num_names(ctx: *mut ExecCtx) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_pool_mut(|pool| with_hash(|hash| interp_num_names(&mut *ctx, pool, buffers, hash)))
-    })
-    .into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_preamble(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_bibs_mut(|bibs| interp_preamble(&mut *ctx, pool, bibs))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_purify(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_purify(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_quote(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_quote(&mut *ctx, pool)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_substring(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_substr(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_swap(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| interp_swap(&mut *ctx, pool)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_text_length(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_text_len(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_text_prefix(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_text_prefix(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_type(ctx: *mut ExecCtx) -> CResult {
-    with_pool(|pool| with_hash(|hash| with_cites(|cites| interp_ty(&mut *ctx, pool, hash, cites))))
-        .into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_warning(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_warning(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_width(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| with_hash(|hash| interp_width(&mut *ctx, pool, hash))).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn x_write(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| {
-        with_hash(|hash| with_buffers_mut(|buffers| interp_write(&mut *ctx, pool, hash, buffers)))
     })
     .into()
 }

@@ -6,11 +6,11 @@ use crate::{
         global::GLOB_STR_SIZE,
         hash,
         hash::{with_hash, with_hash_mut, FnClass, HashData},
-        log::{print_overflow, rs_output_bbl_line, write_logs},
+        log::{output_bbl_line, print_overflow, write_logs},
         other::with_other_mut,
         xbuf::XBuf,
-        ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, CResultStr, HashPointer, LookupRes,
-        PoolPointer, StrIlk, StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, HashPointer, LookupRes, PoolPointer,
+        StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -261,18 +261,8 @@ pub fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn pool_overflow() {
-    with_pool_mut(|pool| pool.grow());
-}
-
-#[no_mangle]
 pub extern "C" fn bib_str_pool(idx: PoolPointer) -> ASCIICode {
     with_pool(|pool| pool.strings[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_str_pool(idx: PoolPointer, code: ASCIICode) {
-    with_pool_mut(|pool| pool.strings[idx] = code)
 }
 
 #[no_mangle]
@@ -296,32 +286,13 @@ pub extern "C" fn bib_set_str_start(s: StrNumber, ptr: PoolPointer) {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_pool_size() -> usize {
-    with_pool(|pool| pool.strings.len())
-}
-
-#[no_mangle]
 pub extern "C" fn bib_max_strings() -> usize {
     MAX_STRINGS
 }
 
 #[no_mangle]
-pub extern "C" fn bib_pool_ptr() -> PoolPointer {
-    with_pool(|pool| pool.pool_ptr)
-}
-
-#[no_mangle]
 pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
     with_pool_mut(|pool| pool.pool_ptr = ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn bib_make_string() -> CResultStr {
-    with_pool_mut(|pool| match pool.make_string() {
-        Ok(str) => CResultStr::Ok(str),
-        Err(BibtexError::Fatal) => CResultStr::Error,
-        Err(BibtexError::Recover) => CResultStr::Recover,
-    })
 }
 
 pub fn add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
@@ -574,7 +545,7 @@ pub fn add_out_pool(
         if break_pt_found {
             buffers.set_init(BufTy::Out, out_offset);
             let break_ptr = buffers.init(BufTy::Out) + 1;
-            rs_output_bbl_line(ctx, buffers);
+            output_bbl_line(ctx, buffers);
             buffers.set_at(BufTy::Out, 0, b' ');
             buffers.set_at(BufTy::Out, 1, b' ');
             let len = end_ptr - break_ptr;

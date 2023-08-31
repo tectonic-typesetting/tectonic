@@ -27,6 +27,15 @@ impl GlobalData {
         self.glb_str_end.grow(MAX_GLOB_STRS);
     }
 
+    pub fn str(&self, pos: usize) -> &[ASCIICode] {
+        let spos = pos * (GLOB_STR_SIZE + 1);
+        &self.global_strs[spos..spos + self.glb_str_end[pos]]
+    }
+
+    pub fn str_ptr(&self, pos: usize) -> StrNumber {
+        self.glb_bib_str_ptr[pos]
+    }
+
     pub fn set_str_ptr(&mut self, pos: usize, val: StrNumber) {
         self.glb_bib_str_ptr[pos] = val;
     }
@@ -75,19 +84,4 @@ pub extern "C" fn check_grow_global_strs() {
             globals.grow();
         }
     })
-}
-
-#[no_mangle]
-pub extern "C" fn glb_bib_str_ptr(pos: usize) -> usize {
-    with_globals(|globals| globals.glb_bib_str_ptr[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn global_strs(pos: usize) -> ASCIICode {
-    with_globals(|globals| globals.global_strs[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn glb_str_end(pos: usize) -> usize {
-    with_globals(|globals| globals.glb_str_end[pos])
 }

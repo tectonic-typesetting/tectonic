@@ -1,10 +1,10 @@
 use crate::c_api::{
-    entries::{with_entries, ENT_STR_SIZE},
+    entries::with_entries,
     hash::{with_hash, with_hash_mut, HashData},
     other::{with_other_mut, OtherData},
     pool::with_pool,
     xbuf::XBuf,
-    CiteNumber, FindCiteLocs, HashPointer2, StrIlk, StrNumber,
+    CiteNumber, FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
 use std::{cell::RefCell, cmp::Ordering};
 
@@ -13,7 +13,7 @@ pub const MAX_CITES: usize = 750;
 pub struct CiteInfo {
     cite_list: XBuf<StrNumber>,
     cite_info: XBuf<StrNumber>,
-    type_list: XBuf<HashPointer2>,
+    type_list: XBuf<HashPointer>,
     entry_exists: XBuf<bool>,
     cite_ptr: CiteNumber,
 
@@ -61,11 +61,11 @@ impl CiteInfo {
         self.cite_info[offset] = num;
     }
 
-    pub fn get_type(&self, offset: usize) -> HashPointer2 {
+    pub fn get_type(&self, offset: usize) -> HashPointer {
         self.type_list[offset]
     }
 
-    pub fn set_type(&mut self, offset: usize, ty: HashPointer2) {
+    pub fn set_type(&mut self, offset: usize, ty: HashPointer) {
         self.type_list[offset] = ty;
     }
 
@@ -122,21 +122,22 @@ fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
     with_entries(|entries| {
         let ptr1 = arg1 * entries.num_ent_strs() + entries.sort_key_num();
         let ptr2 = arg2 * entries.num_ent_strs() + entries.sort_key_num();
-        let mut char_ptr = 0;
-        loop {
-            let char1 = entries.strs(ptr1 * (ENT_STR_SIZE + 1) + char_ptr);
-            let char2 = entries.strs(ptr2 * (ENT_STR_SIZE + 1) + char_ptr);
 
-            match (char1, char2) {
-                (127, 127) => return arg1.cmp(arg2),
-                (127, _) => return Ordering::Less,
-                (_, 127) => return Ordering::Greater,
-                (char1, char2) if char1 != char2 => return char1.cmp(&char2),
-                _ => (),
-            }
+        let str1 = entries.strs(ptr1);
+        let str2 = entries.strs(ptr2);
 
-            char_ptr += 1;
-        }
+        Ord::cmp(str1, str2)
+        // for (){
+        //     match (char1, char2) {
+        //         (127, 127) => return arg1.cmp(arg2),
+        //         (127, _) => return Ordering::Less,
+        //         (_, 127) => return Ordering::Greater,
+        //         (char1, char2) if char1 != char2 => return char1.cmp(&char2),
+        //         _ => (),
+        //     }
+        //
+        //     char_ptr += 1;
+        // }
     })
 }
 
@@ -190,12 +191,12 @@ pub extern "C" fn set_cite_info(num: CiteNumber, info: StrNumber) {
 }
 
 #[no_mangle]
-pub extern "C" fn type_list(num: CiteNumber) -> HashPointer2 {
+pub extern "C" fn type_list(num: CiteNumber) -> HashPointer {
     with_cites(|cites| cites.get_type(num))
 }
 
 #[no_mangle]
-pub extern "C" fn set_type_list(num: CiteNumber, ty: HashPointer2) {
+pub extern "C" fn set_type_list(num: CiteNumber, ty: HashPointer) {
     with_cites_mut(|cites| cites.set_type(num, ty))
 }
 

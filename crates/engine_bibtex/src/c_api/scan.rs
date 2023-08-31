@@ -6,7 +6,7 @@ use crate::{
         cite::{rs_add_database_cite, with_cites_mut},
         exec::ExecCtx,
         hash,
-        hash::{end_of_def, with_hash_mut, FnClass, HashData},
+        hash::{with_hash_mut, FnClass, HashData},
         log::{
             bib_cmd_confusion, bib_unbalanced_braces_print, braces_unbalanced_complaint,
             eat_bst_print, hash_cite_confusion, macro_warn_print, print_confusion,
@@ -24,7 +24,7 @@ use crate::{
     BibtexError,
 };
 
-const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
+pub const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
 
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[repr(C)]
@@ -418,7 +418,7 @@ fn inner_scan_fn_def(
         char = buffers.at_offset(BufTy::Base, 2);
     }
 
-    single_function.push(end_of_def());
+    single_function.push(HashData::end_of_def());
 
     with_other_mut(|other| {
         other.check_wiz_overflow(single_function.len());

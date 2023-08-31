@@ -15,6 +15,8 @@
 
 #define HASH_BASE 1
 
+
+
 typedef enum {
   BUF_TY_BASE,
   BUF_TY_SV,
@@ -69,14 +71,6 @@ typedef enum {
   SCAN_RES_OTHER_CHAR_ADJACENT = 2,
   SCAN_RES_WHITESPACE_ADJACENT = 3,
 } ScanRes;
-
-typedef enum {
-  STK_TYPE_INTEGER = 0,
-  STK_TYPE_STRING = 1,
-  STK_TYPE_FUNCTION = 2,
-  STK_TYPE_MISSING = 3,
-  STK_TYPE_ILLEGAL = 4,
-} StkType;
 
 enum StrIlk
 #ifdef __cplusplus
@@ -170,8 +164,6 @@ typedef uintptr_t BibNumber;
 
 typedef uintptr_t CiteNumber;
 
-typedef uintptr_t HashPointer2;
-
 typedef struct {
   CiteNumber cite_loc;
   CiteNumber lc_cite_loc;
@@ -179,47 +171,9 @@ typedef struct {
   bool lc_found;
 } FindCiteLocs;
 
-enum ExecVal_Tag
-#ifdef __cplusplus
-  : uint8_t
-#endif // __cplusplus
- {
-  ExecVal_Integer = 0,
-  ExecVal_String = 1,
-  ExecVal_Function = 2,
-  ExecVal_Missing = 3,
-  ExecVal_Illegal = 4,
-};
-#ifndef __cplusplus
-typedef uint8_t ExecVal_Tag;
-#endif // __cplusplus
-
-typedef union {
-  ExecVal_Tag tag;
-  struct {
-    ExecVal_Tag integer_tag;
-    int32_t integer;
-  };
-  struct {
-    ExecVal_Tag string_tag;
-    StrNumber string;
-  };
-  struct {
-    ExecVal_Tag function_tag;
-    HashPointer function;
-  };
-  struct {
-    ExecVal_Tag missing_tag;
-    StrNumber missing;
-  };
-} ExecVal;
-
 typedef struct {
   Bibtex *glbl_ctx;
   HashPointer _default;
-  ExecVal pop1;
-  ExecVal pop2;
-  ExecVal pop3;
   XBuf_ExecVal *lit_stack;
   uintptr_t lit_stk_ptr;
   bool mess_with_entries;
@@ -230,8 +184,6 @@ typedef struct {
 } ExecCtx;
 
 typedef uintptr_t FieldLoc;
-
-typedef uintptr_t WizFnLoc;
 
 typedef uintptr_t PoolPointer;
 
@@ -366,9 +318,9 @@ StrNumber cite_info(CiteNumber num);
 
 void set_cite_info(CiteNumber num, StrNumber info);
 
-HashPointer2 type_list(CiteNumber num);
+HashPointer type_list(CiteNumber num);
 
-void set_type_list(CiteNumber num, HashPointer2 ty);
+void set_type_list(CiteNumber num, HashPointer ty);
 
 bool entry_exists(CiteNumber num);
 
@@ -406,95 +358,15 @@ uintptr_t num_ent_strs(void);
 
 void set_num_ent_strs(uintptr_t val);
 
-int32_t entry_ints(int32_t pos);
-
-ASCIICode entry_strs(int32_t pos);
-
-ExecVal int_val(int32_t lit);
-
-ExecVal str_val(StrNumber str);
-
-ExecVal func_val(HashPointer f);
-
-ExecVal missing_val(StrNumber f);
-
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
-CResult print_wrong_stk_lit(ExecCtx *ctx, ExecVal val, StkType typ2);
-
 CResult print_bst_name(const Bibtex *glbl_ctx);
-
-void push_lit_stk(ExecCtx *ctx, ExecVal val);
-
-CResult pop_lit_stk(ExecCtx *ctx, ExecVal *out);
-
-CResult pop_top_and_print(ExecCtx *ctx);
-
-CResult pop_whole_stack(ExecCtx *ctx);
 
 void init_command_execution(ExecCtx *ctx);
 
 CResult check_command_execution(ExecCtx *ctx);
 
-CResult add_pool_buf_and_push(ExecCtx *ctx);
-
-CResult x_equals(ExecCtx *ctx);
-
-CResult x_greater_than(ExecCtx *ctx);
-
-CResult x_less_than(ExecCtx *ctx);
-
-CResult x_plus(ExecCtx *ctx);
-
-CResult x_minus(ExecCtx *ctx);
-
-CResult x_concatenate(ExecCtx *ctx);
-
-CResult x_gets(ExecCtx *ctx);
-
-CResult x_add_period(ExecCtx *ctx);
-
-CResult x_change_case(ExecCtx *ctx);
-
-CResult x_chr_to_int(ExecCtx *ctx);
-
-CResult x_cite(ExecCtx *ctx);
-
-CResult x_duplicate(ExecCtx *ctx);
-
-CResult x_empty(ExecCtx *ctx);
-
-CResult x_format_name(ExecCtx *ctx);
-
-CResult x_int_to_chr(ExecCtx *ctx);
-
-CResult x_int_to_str(ExecCtx *ctx);
-
-CResult x_missing(ExecCtx *ctx);
-
-CResult x_num_names(ExecCtx *ctx);
-
-CResult x_preamble(ExecCtx *ctx);
-
-CResult x_purify(ExecCtx *ctx);
-
-CResult x_quote(ExecCtx *ctx);
-
-CResult x_substring(ExecCtx *ctx);
-
-CResult x_swap(ExecCtx *ctx);
-
-CResult x_text_length(ExecCtx *ctx);
-
-CResult x_text_prefix(ExecCtx *ctx);
-
-CResult x_type(ExecCtx *ctx);
-
-CResult x_warning(ExecCtx *ctx);
-
-CResult x_width(ExecCtx *ctx);
-
-CResult x_write(ExecCtx *ctx);
+CResult execute_fn(ExecCtx *ctx, HashPointer ex_fn_loc);
 
 int32_t num_glb_strs(void);
 
@@ -502,15 +374,7 @@ void set_num_glb_strs(int32_t val);
 
 void check_grow_global_strs(void);
 
-uintptr_t glb_bib_str_ptr(uintptr_t pos);
-
-ASCIICode global_strs(uintptr_t pos);
-
-uintptr_t glb_str_end(uintptr_t pos);
-
 uintptr_t undefined(void);
-
-uintptr_t end_of_def(void);
 
 FnClass fn_type(HashPointer pos);
 
@@ -580,8 +444,6 @@ CResult bst_warn_print(const Bibtex *ctx);
 
 void eat_bst_print(void);
 
-void unknwn_function_class_confusion(void);
-
 CResult bst_id_print(ScanRes scan_result);
 
 void bst_left_brace_print(void);
@@ -608,8 +470,6 @@ CResult bad_cross_reference_print(StrNumber s);
 
 CResult print_missing_entry(StrNumber s);
 
-CResult bst_cant_mess_with_entries_print(const ExecCtx *ctx);
-
 void print_fn_class(HashPointer fn_loc);
 
 CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
@@ -617,10 +477,6 @@ CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
 CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
 
 CResult nonexistent_cross_reference_error(FieldLoc field_ptr);
-
-void output_bbl_line(Bibtex *ctx);
-
-HashPointer2 wiz_functions(WizFnLoc pos);
 
 StrNumber field_info(FieldLoc pos);
 
@@ -646,11 +502,7 @@ bool tectonic_eof(PeekableInput *peekable);
 
 bool input_ln(PeekableInput *peekable);
 
-void pool_overflow(void);
-
 ASCIICode bib_str_pool(PoolPointer idx);
-
-void bib_set_str_pool(PoolPointer idx, ASCIICode code);
 
 StrNumber bib_str_ptr(void);
 
@@ -660,15 +512,9 @@ PoolPointer bib_str_start(StrNumber s);
 
 void bib_set_str_start(StrNumber s, PoolPointer ptr);
 
-uintptr_t bib_pool_size(void);
-
 uintptr_t bib_max_strings(void);
 
-PoolPointer bib_pool_ptr(void);
-
 void bib_set_pool_ptr(PoolPointer ptr);
-
-CResultStr bib_make_string(void);
 
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 

@@ -16,18 +16,10 @@
 
 static jmp_buf error_jmpbuf, recover_jmpbuf;
 
-/*14:*/
-
-#define hash_base 1 /*empty 1*/
-#define quote_next_fn (hash_base - 1)
 #define aux_stack_size 20
-
-/*22: */
 
 typedef size_t hash_loc;
 typedef size_t cite_number;
-typedef size_t wiz_fn_loc;
-typedef size_t str_ent_loc;
 typedef size_t field_loc;
 
 static void unwrap(CResult res) {
@@ -82,8 +74,6 @@ static LookupRes unwrap_lookup(CResultLookup res) {
     return res.ok;
 }
 
-/*:473*//*12: *//*3: */
-
 #define FMT_BUF_SIZE 1024
 static char fmt_buf[FMT_BUF_SIZE] = "";
 
@@ -97,262 +87,6 @@ printf_log(const char *fmt, ...)
     va_end (ap);
 
     puts_log(fmt_buf);
-}
-
-/*:159*//*160: */
-
-static void execute_fn(ExecCtx* ctx, hash_loc ex_fn_loc)
-{
-    wiz_fn_loc wiz_ptr;
-
-    switch ((fn_type(ex_fn_loc))) {
-    case FN_CLASS_BUILTIN:
-//        printf_log("Executing builtin %d\n", ilk_info(ex_fn_loc));
-        switch ((ilk_info(ex_fn_loc))) {
-        case 0:
-            unwrap(x_equals(ctx));
-            break;
-        case 1:
-            unwrap(x_greater_than(ctx));
-            break;
-        case 2:
-            unwrap(x_less_than(ctx));
-            break;
-        case 3:
-            unwrap(x_plus(ctx));
-            break;
-        case 4:
-            unwrap(x_minus(ctx));
-            break;
-        case 5:
-            unwrap(x_concatenate(ctx));
-            break;
-        case 6:
-            unwrap(x_gets(ctx));
-            break;
-        case 7:
-            unwrap(x_add_period(ctx));
-            break;
-        case 8:
-            if (!ctx->mess_with_entries)
-                unwrap(bst_cant_mess_with_entries_print(ctx));
-            else if (type_list(cite_ptr()) == undefined())
-                execute_fn(ctx, ctx->_default);
-            else if (type_list(cite_ptr()) == 0 /*empty */ ) ;
-            else
-                execute_fn(ctx, type_list(cite_ptr()));
-            break;
-        case 9:
-            unwrap(x_change_case(ctx));
-            break;
-        case 10:
-            unwrap(x_chr_to_int(ctx));
-            break;
-        case 11:
-            unwrap(x_cite(ctx));
-            break;
-        case 12:
-            unwrap(x_duplicate(ctx));
-            break;
-        case 13:
-            unwrap(x_empty(ctx));
-            break;
-        case 14:
-            unwrap(x_format_name(ctx));
-            break;
-        case 15:
-            unwrap(pop_lit_stk(ctx, &ctx->pop1));
-            unwrap(pop_lit_stk(ctx, &ctx->pop2));
-            unwrap(pop_lit_stk(ctx, &ctx->pop3));
-            if (ctx->pop1.tag != ExecVal_Function)
-                unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_FUNCTION));
-            else if (ctx->pop2.tag != ExecVal_Function)
-                unwrap(print_wrong_stk_lit(ctx, ctx->pop2, STK_TYPE_FUNCTION));
-            else if (ctx->pop3.tag != ExecVal_Integer)
-                unwrap(print_wrong_stk_lit(ctx, ctx->pop3, STK_TYPE_INTEGER));
-            else if (ctx->pop3.integer > 0)
-                execute_fn(ctx, ctx->pop2.function);
-            else
-                execute_fn(ctx, ctx->pop1.function);
-            break;
-        case 16:
-            unwrap(x_int_to_chr(ctx));
-            break;
-        case 17:
-            unwrap(x_int_to_str(ctx));
-            break;
-        case 18:
-            unwrap(x_missing(ctx));
-            break;
-        case 19:
-            output_bbl_line(ctx->glbl_ctx);
-            break;
-        case 20:
-            unwrap(x_num_names(ctx));
-            break;
-        case 21:
-            unwrap(pop_lit_stk(ctx, &ctx->pop1));
-            break;
-        case 22:
-            unwrap(x_preamble(ctx));
-            break;
-        case 23:
-            unwrap(x_purify(ctx));
-            break;
-        case 24:
-            unwrap(x_quote(ctx));
-            break;
-        case 25:
-            break;
-        case 26:
-            unwrap(pop_whole_stack(ctx));
-            break;
-        case 27:
-            unwrap(x_substring(ctx));
-            break;
-        case 28:
-            unwrap(x_swap(ctx));
-            break;
-        case 29:
-            unwrap(x_text_length(ctx));
-            break;
-        case 30:
-            unwrap(x_text_prefix(ctx));
-            break;
-        case 31:
-            unwrap(pop_top_and_print(ctx));
-            break;
-        case 32:
-            unwrap(x_type(ctx));
-            break;
-        case 33:
-            unwrap(x_warning(ctx));
-            break;
-        case 34:
-            {
-                ExecVal r_pop1, r_pop2;
-                unwrap(pop_lit_stk(ctx, &r_pop1));
-                unwrap(pop_lit_stk(ctx, &r_pop2));
-                if (r_pop1.tag != ExecVal_Function)
-                    unwrap(print_wrong_stk_lit(ctx, r_pop1, STK_TYPE_FUNCTION));
-                else if (r_pop2.tag != ExecVal_Function)
-                    unwrap(print_wrong_stk_lit(ctx, r_pop2, STK_TYPE_FUNCTION));
-                else
-                    while (true) {
-
-                        execute_fn(ctx, r_pop2.function);
-                        unwrap(pop_lit_stk(ctx, &ctx->pop1));
-                        if (ctx->pop1.tag != ExecVal_Integer) {
-                            unwrap(print_wrong_stk_lit(ctx, ctx->pop1, STK_TYPE_INTEGER));
-                            goto lab51;
-                        } else if (ctx->pop1.integer > 0)
-                            execute_fn(ctx, r_pop1.function);
-                        else
-                            goto lab51;
-                    }
-lab51:                        /*end_while */ ;
-            }
-            break;
-        case 35:
-            unwrap(x_width(ctx));
-            break;
-        case 36:
-            unwrap(x_write(ctx));
-            break;
-        default:
-            puts_log("Unknown built-in function");
-            print_confusion();
-            longjmp(error_jmpbuf, 1);
-            break;
-        }
-//        printf_log("Exiting builtin %d\n", ilk_info(ex_fn_loc));
-        break;
-    case FN_CLASS_WIZARD:
-//        printf_log("Executing wizard %d\n", ilk_info(ex_fn_loc));
-        wiz_ptr = ilk_info(ex_fn_loc);
-        while (wiz_functions(wiz_ptr) != end_of_def()) {
-
-            if (wiz_functions(wiz_ptr) != quote_next_fn)
-                execute_fn(ctx, wiz_functions(wiz_ptr));
-            else {
-
-                wiz_ptr = wiz_ptr + 1;
-                push_lit_stk(ctx, func_val(wiz_functions(wiz_ptr)));
-            }
-            wiz_ptr = wiz_ptr + 1;
-        }
-//        printf_log("Exiting wizard %d\n", ilk_info(ex_fn_loc));
-        break;
-    case FN_CLASS_INT_LIT:
-        push_lit_stk(ctx, int_val(ilk_info(ex_fn_loc)));
-        break;
-    case FN_CLASS_STR_LIT:
-        push_lit_stk(ctx, str_val(hash_text(ex_fn_loc)));
-        break;
-    case FN_CLASS_FIELD:
-        if (!ctx->mess_with_entries)
-            unwrap(bst_cant_mess_with_entries_print(ctx));
-        else {
-            field_loc field_ptr = cite_ptr() * num_fields() + ilk_info(ex_fn_loc);
-            if (field_ptr >= max_fields()) {
-                puts_log("field_info index is out of range");
-                print_confusion();
-                longjmp(error_jmpbuf, 1);
-            }
-            if (field_info(field_ptr) == 0 /*missing */ )
-                push_lit_stk(ctx, missing_val(hash_text(ex_fn_loc)));
-            else
-                push_lit_stk(ctx, str_val(field_info(field_ptr)));
-        }
-        break;
-    case FN_CLASS_INT_ENTRY_VAR:
-        if (!ctx->mess_with_entries)
-            unwrap(bst_cant_mess_with_entries_print(ctx));
-        else
-            push_lit_stk(ctx, int_val(entry_ints(cite_ptr() * num_ent_ints() + ilk_info(ex_fn_loc))));
-        break;
-    case FN_CLASS_STR_ENTRY_VAR:
-        if (!ctx->mess_with_entries)
-            unwrap(bst_cant_mess_with_entries_print(ctx));
-        else {
-
-            str_ent_loc str_ent_ptr = cite_ptr() * num_ent_strs() + ilk_info(ex_fn_loc);
-            bib_set_buf_offset(BUF_TY_EX, 1, 0);
-            while (entry_strs((str_ent_ptr) * (ENT_STR_SIZE + 1) + (bib_buf_offset(BUF_TY_EX, 1))) != 127 /*end_of_string */ ) {
-
-                bib_set_buf(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1), entry_strs((str_ent_ptr) * (ENT_STR_SIZE + 1) + (bib_buf_offset(BUF_TY_EX, 1))));
-                bib_set_buf_offset(BUF_TY_EX, 1, bib_buf_offset(BUF_TY_EX, 1) + 1);
-            }
-            bib_set_buf_len(BUF_TY_EX, bib_buf_offset(BUF_TY_EX, 1));
-            unwrap(add_pool_buf_and_push(ctx));
-        }
-        break;
-    case FN_CLASS_INT_GLBL_VAR:
-        push_lit_stk(ctx, int_val(ilk_info(ex_fn_loc)));
-        break;
-    case FN_CLASS_STR_GLBL_VAR:
-        {
-            int32_t str_glb_ptr = ilk_info(ex_fn_loc);
-            if (glb_bib_str_ptr(str_glb_ptr) > 0) {
-                push_lit_stk(ctx, str_val(glb_bib_str_ptr(str_glb_ptr)));
-            } else {
-                while (bib_pool_ptr() + glb_str_end(str_glb_ptr) > bib_pool_size())
-                    pool_overflow();
-                int32_t glob_chr_ptr = 0;
-                while (glob_chr_ptr < glb_str_end(str_glb_ptr)) {
-                    bib_set_str_pool(bib_pool_ptr(), global_strs((str_glb_ptr) * (GLOB_STR_SIZE + 1) + (glob_chr_ptr)));
-                    bib_set_pool_ptr(bib_pool_ptr() + 1);
-                    glob_chr_ptr = glob_chr_ptr + 1;
-                }
-                push_lit_stk(ctx, str_val(unwrap_str(bib_make_string())));
-            }
-        }
-        break;
-    default:
-        unknwn_function_class_confusion();
-        longjmp(error_jmpbuf, 1);
-        break;
-    }
 }
 
 static void aux_bib_data_command(Bibtex* ctx)
@@ -509,7 +243,7 @@ static void aux_citation_command(Bibtex* ctx)
                                                   (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
                                                   STR_ILK_LC_CITE, true));
         cite_number lc_cite_loc = hash.loc;
-        if (hash.exists) { /*136: */
+        if (hash.exists) {
             hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                             (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
                                             STR_ILK_CITE, false));
@@ -522,7 +256,7 @@ static void aux_citation_command(Bibtex* ctx)
                 unwrap(aux_err_print());
                 return;
             }
-        } else {            /*137: */
+        } else {
             hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
                                             (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
                                             STR_ILK_CITE, true));
@@ -1288,7 +1022,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
                                               (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
                                               STR_ILK_BIB_COMMAND, false));
     command_num = ilk_info(hash.loc);
-    if (hash.exists) {     /*240: */
+    if (hash.exists) {
         at_bib_command = true;
         switch ((command_num)) {
         case 0:
@@ -1485,7 +1219,7 @@ static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macr
 lab26:                        /*first_time_entry */ ;
     }
     bool store_entry = true;
-    if (ctx->all_entries) {        /*273: */
+    if (ctx->all_entries) {
         cite_number cite_loc = 0;
         if (hash.exists) {
             if (entry_cite_ptr() < all_marker())
@@ -1509,7 +1243,7 @@ lab26:                        /*first_time_entry */ ;
 lab22:                        /*cite_already_set */ ;
     } else if (!hash.exists)
         store_entry = false;
-    if (store_entry) {        /*274: */
+    if (store_entry) {
         if (type_exists)
             set_type_list(entry_cite_ptr(), entry_type_loc);
         else {
@@ -1740,7 +1474,7 @@ static void bst_read_command(Bibtex* ctx)
                     } else {
 
                         field_loc field_parent_ptr = cite_parent_ptr * num_fields() + crossref_num();
-                        if (field_info(field_parent_ptr) != 0 /*missing */ ) {        /*283: */
+                        if (field_info(field_parent_ptr) != 0 /*missing */ ) {
                             puts_log("Warning--you've nested cross references");
                             unwrap(bad_cross_reference_print(cite_list(cite_parent_ptr)));
                             puts_log("\", which also refers to something\n");
@@ -1760,7 +1494,7 @@ static void bst_read_command(Bibtex* ctx)
             if (type_list(cite_ptr()) == 0 /*empty */ ) {
                 unwrap(print_missing_entry(cite_list(cite_ptr())));
             } else if ((ctx->all_entries) || (cite_ptr() < old_num_cites()) || (cite_info(cite_ptr()) >= ctx->config.min_crossrefs)) {
-                if (cite_ptr() > ctx->cite_xptr) {   /*286: */
+                if (cite_ptr() > ctx->cite_xptr) {
                     if ((ctx->cite_xptr + 1) * num_fields() > max_fields()) {
                         puts_log("field_info index is out of range");
                         print_confusion();
@@ -1795,7 +1529,7 @@ static void bst_read_command(Bibtex* ctx)
             set_cite_ptr(cite_ptr() + 1);
         }
         set_num_cites(ctx->cite_xptr);
-        if (ctx->all_entries) {    /*287: */
+        if (ctx->all_entries) {
             set_cite_ptr(all_marker());
             while (cite_ptr() < old_num_cites()) {
 
@@ -2120,7 +1854,6 @@ bibtex_main(Bibtex* glbl_ctx, const char *aux_file_name)
     ttstub_output_close (glbl_ctx->bbl_file);
 
 close_up_shop:
-    /*456:*/
 
     if (glbl_ctx->read_performed && !glbl_ctx->reading_completed) {
         printf_log("Aborted at line %ld of file ", (long) bib_line_num());

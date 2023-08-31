@@ -412,12 +412,6 @@ pub extern "C" fn eat_bst_print() {
     write_logs("Illegal end of style file in command: ");
 }
 
-#[no_mangle]
-pub extern "C" fn unknwn_function_class_confusion() {
-    write_logs("Unknown function class");
-    print_confusion();
-}
-
 pub fn id_scanning_confusion() {
     write_logs("Identifier scanning error");
     print_confusion();
@@ -615,17 +609,12 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result
     rs_bst_warn_print(ctx.glbl_ctx(), pool)
 }
 
-pub fn rs_bst_cant_mess_with_entries_print(
+pub fn bst_cant_mess_with_entries_print(
     ctx: &ExecCtx,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs("You can't mess with entries here");
     bst_ex_warn_print(ctx, pool)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_cant_mess_with_entries_print(ctx: *const ExecCtx) -> CResult {
-    with_pool(|pool| rs_bst_cant_mess_with_entries_print(&*ctx, pool)).into()
 }
 
 pub fn bst_1print_string_size_exceeded() {
@@ -743,7 +732,7 @@ pub extern "C" fn nonexistent_cross_reference_error(field_ptr: FieldLoc) -> CRes
     CResult::Ok
 }
 
-pub fn rs_output_bbl_line(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) {
+pub fn output_bbl_line(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) {
     if buffers.init(BufTy::Out) != 0 {
         let mut init = buffers.init(BufTy::Out);
         while init > 0 {
@@ -765,11 +754,6 @@ pub fn rs_output_bbl_line(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) {
     writeln!(unsafe { &mut *ctx.bbl_file }).unwrap();
     ctx.bbl_line_num += 1;
     buffers.set_init(BufTy::Out, 0);
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn output_bbl_line(ctx: *mut Bibtex) {
-    with_buffers_mut(|buffers| rs_output_bbl_line(&mut *ctx, buffers))
 }
 
 pub fn skip_token_print(
@@ -825,9 +809,10 @@ pub fn skip_illegal_stuff_after_token_print(
 pub fn brace_lvl_one_letters_complaint(
     ctx: &mut ExecCtx,
     pool: &StringPool,
+    str: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("The format string \"");
-    rs_print_a_pool_str(ctx.pop1.unwrap_str(), pool)?;
+    rs_print_a_pool_str(str, pool)?;
     write_logs("\" has an illegal brace-level-1 letter");
     bst_ex_warn_print(ctx, pool)?;
     Ok(())

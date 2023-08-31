@@ -22,12 +22,23 @@ impl EntryData {
         }
     }
 
+    pub fn ints(&self, pos: usize) -> i32 {
+        self.entry_ints.as_ref().unwrap()[pos]
+    }
+
     pub fn set_int(&mut self, pos: usize, val: i32) {
         self.entry_ints.as_mut().unwrap()[pos] = val;
     }
 
-    pub fn strs(&self, pos: usize) -> ASCIICode {
-        self.entry_strs.as_ref().unwrap()[pos]
+    pub fn strs(&self, start: usize) -> &[ASCIICode] {
+        let start = start * (ENT_STR_SIZE + 1);
+        let strs = self.entry_strs.as_ref().unwrap();
+        let end_pos = strs[start..start + ENT_STR_SIZE + 1]
+            .iter()
+            .position(|c| *c == 127)
+            .unwrap_or(ENT_STR_SIZE + 1);
+
+        &strs[start..start + end_pos]
     }
 
     pub fn set_str(&mut self, pos: usize, val: &[ASCIICode]) {
@@ -112,14 +123,4 @@ pub extern "C" fn num_ent_strs() -> usize {
 #[no_mangle]
 pub extern "C" fn set_num_ent_strs(val: usize) {
     with_entries_mut(|entries| entries.num_entry_strs = val)
-}
-
-#[no_mangle]
-pub extern "C" fn entry_ints(pos: i32) -> i32 {
-    with_entries(|entries| entries.entry_ints.as_ref().unwrap()[pos as usize])
-}
-
-#[no_mangle]
-pub extern "C" fn entry_strs(pos: i32) -> ASCIICode {
-    with_entries(|entries| entries.entry_strs.as_ref().unwrap()[pos as usize])
 }
