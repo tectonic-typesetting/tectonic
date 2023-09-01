@@ -92,12 +92,8 @@ impl PeekableInput {
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn peekable_open(
-    path: *const libc::c_char,
-    format: FileFormat,
-) -> *mut PeekableInput {
-    PeekableInput::open(CStr::from_ptr(path), format)
+pub fn peekable_open(path: &CStr, format: FileFormat) -> *mut PeekableInput {
+    PeekableInput::open(path, format)
         .map(Box::into_raw)
         .unwrap_or(ptr::null_mut())
 }

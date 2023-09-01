@@ -1,7 +1,7 @@
 use crate::{
     c_api::{
-        auxi::{cur_aux, cur_aux_ln, with_aux, AuxData},
-        bibs::{bib_line_num, with_bibs, BibData},
+        auxi::{with_aux, AuxData},
+        bibs::{with_bibs, BibData},
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::with_cites,
@@ -136,8 +136,7 @@ pub unsafe extern "C" fn puts_log(str: *const libc::c_char) {
     let _ = with_stdout(|out| out.write_all(str.to_bytes()));
 }
 
-#[no_mangle]
-pub extern "C" fn print_overflow() {
+pub fn print_overflow() {
     write_logs("Sorry---you've exceeded BibTeX's ");
     mark_fatal();
 }
@@ -261,35 +260,30 @@ pub extern "C" fn print_aux_name() -> CResult {
     with_aux(|aux| with_pool(|pool| rs_print_aux_name(aux, pool))).into()
 }
 
-#[no_mangle]
-pub extern "C" fn log_pr_aux_name() -> CResult {
+pub fn rs_log_pr_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
-        match with_pool(|pool| out_pool_str(pool, log, cur_aux())) {
-            Ok(()) => (),
-            err => return err.into(),
-        }
+        out_pool_str(pool, log, aux.at_ptr())?;
         writeln!(log).unwrap();
-        CResult::Ok
+        Ok(())
     })
 }
 
-pub fn rs_aux_err_print(
+#[no_mangle]
+pub extern "C" fn log_pr_aux_name() -> CResult {
+    with_pool(|pool| with_aux(|aux| rs_log_pr_aux_name(aux, pool))).into()
+}
+
+pub fn aux_err_print(
     buffers: &GlobalBuffer,
     aux: &AuxData,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
-    write_logs(&format!("---line {} of file ", cur_aux_ln()));
+    write_logs(&format!("---line {} of file ", aux.ln_at_ptr()));
     rs_print_aux_name(aux, pool)?;
     print_bad_input_line(buffers);
     print_skipping_whatever_remains();
     write_logs("command\n");
     Ok(())
-}
-
-#[no_mangle]
-pub extern "C" fn aux_err_print() -> CResult {
-    with_buffers(|buffers| with_aux(|aux| with_pool(|pool| rs_aux_err_print(buffers, aux, pool))))
-        .into()
 }
 
 pub enum AuxTy {
@@ -307,18 +301,15 @@ pub fn aux_err_illegal_another_print(cmd: AuxTy) -> Result<(), BibtexError> {
     Ok(())
 }
 
-#[no_mangle]
-pub extern "C" fn aux_err_no_right_brace_print() {
+pub fn aux_err_no_right_brace_print() {
     write_logs("No \"}\"");
 }
 
-#[no_mangle]
-pub extern "C" fn aux_err_stuff_after_right_brace_print() {
+pub fn aux_err_stuff_after_right_brace_print() {
     write_logs("Stuff after \"}\"");
 }
 
-#[no_mangle]
-pub extern "C" fn aux_err_white_space_in_argument_print() {
+pub fn aux_err_white_space_in_argument_print() {
     write_logs("White space in argument");
 }
 
@@ -452,7 +443,7 @@ pub extern "C" fn bst_right_brace_print() {
 }
 
 pub(crate) fn bib_ln_num_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
-    write_logs(&format!("--line {} of file ", bib_line_num()));
+    write_logs(&format!("--line {} of file ", bibs.line_num()));
     rs_print_bib_name(pool, bibs)
 }
 

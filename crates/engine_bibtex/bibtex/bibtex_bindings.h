@@ -51,20 +51,6 @@ typedef enum {
   HISTORY_ABORTED = 4,
 } History;
 
-/**
- * The lexer class of a character - this represents whether the parser considers it to be alphabetic,
- * numeric, etc. Illegal represents tokens that shouldn't show up at all, such as ASCII backspace.
- *
- */
-typedef enum {
-  LEX_CLASS_ILLEGAL = 0,
-  LEX_CLASS_WHITESPACE = 1,
-  LEX_CLASS_ALPHA = 2,
-  LEX_CLASS_NUMERIC = 3,
-  LEX_CLASS_SEP = 4,
-  LEX_CLASS_OTHER = 5,
-} LexClass;
-
 typedef enum {
   SCAN_RES_ID_NULL = 0,
   SCAN_RES_SPECIFIED_CHAR_ADJACENT = 1,
@@ -101,15 +87,6 @@ typedef struct PeekableInput PeekableInput;
 typedef struct XBuf_ExecVal XBuf_ExecVal;
 
 typedef uintptr_t StrNumber;
-
-typedef uintptr_t BufPointer;
-
-typedef uint8_t ASCIICode;
-
-typedef struct {
-  ASCIICode *name_of_file;
-  int32_t name_length;
-} NameAndLen;
 
 typedef enum {
   CResultStr_Error,
@@ -161,6 +138,10 @@ typedef struct {
 typedef uintptr_t AuxNumber;
 
 typedef uintptr_t BibNumber;
+
+typedef uint8_t ASCIICode;
+
+typedef uintptr_t BufPointer;
 
 typedef uintptr_t CiteNumber;
 
@@ -234,21 +215,11 @@ typedef struct {
 extern "C" {
 #endif // __cplusplus
 
-extern const LexClass LEX_CLASS[256];
-
 void reset_all(void);
-
-bool bib_str_eq_buf(StrNumber s, BufTy buf, BufPointer ptr, BufPointer len);
-
-NameAndLen start_name(StrNumber file_name);
 
 CResultStr get_the_top_level_aux_file_name(Bibtex *ctx, const char *aux_file_name);
 
 extern History tt_engine_bibtex_main(ttbc_state_t *api, Bibtex *ctx, const char *aux_name);
-
-StrNumber cur_aux(void);
-
-void set_cur_aux(StrNumber num);
 
 PeekableInput *cur_aux_file(void);
 
@@ -267,6 +238,8 @@ CResult aux_bib_data_command(Bibtex *ctx);
 CResult aux_bib_style_command(Bibtex *ctx);
 
 CResult aux_citation_command(Bibtex *ctx);
+
+CResult aux_input_command(Bibtex *ctx);
 
 PeekableInput *cur_bib_file(void);
 
@@ -402,8 +375,6 @@ void bib_log_prints(const char *str);
 
 void puts_log(const char *str);
 
-void print_overflow(void);
-
 void print_confusion(void);
 
 void print_a_token(void);
@@ -411,14 +382,6 @@ void print_a_token(void);
 CResult print_aux_name(void);
 
 CResult log_pr_aux_name(void);
-
-CResult aux_err_print(void);
-
-void aux_err_no_right_brace_print(void);
-
-void aux_err_stuff_after_right_brace_print(void);
-
-void aux_err_white_space_in_argument_print(void);
 
 void aux_end1_err_print(void);
 
@@ -483,8 +446,6 @@ void set_num_fields(FieldLoc val);
 FieldLoc num_pre_defined_fields(void);
 
 FieldLoc crossref_num(void);
-
-PeekableInput *peekable_open(const char *path, ttbc_file_format format);
 
 int peekable_close(PeekableInput *peekable);
 

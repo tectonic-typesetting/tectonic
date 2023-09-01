@@ -114,19 +114,18 @@ impl BibtexEngine {
 pub mod c_api {
     use crate::BibtexError;
     use auxi::with_aux_mut;
-    use buffer::{with_buffers, BufTy};
     use hash::{with_hash, with_hash_mut};
     use history::History;
     use log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
     use peekable::PeekableInput;
-    use pool::{with_pool, with_pool_mut};
+    use pool::with_pool_mut;
     use std::{
         ffi::CStr,
         ptr::{self, NonNull},
     };
     use tectonic_bridge_core::{CoreBridgeState, FileFormat};
     use tectonic_io_base::{InputHandle, OutputHandle};
-    use xbuf::{xcalloc_zeroed, SafelyZero};
+    use xbuf::SafelyZero;
 
     pub mod auxi;
     pub mod bibs;
@@ -230,13 +229,6 @@ pub mod c_api {
                 s_aux_extension: 0,
             }
         }
-    }
-
-    /// cbindgen:field-names=[name_of_file, name_length]
-    #[repr(C)]
-    pub struct NameAndLen {
-        name: *mut ASCIICode,
-        len: i32,
     }
 
     #[repr(C)]
@@ -373,36 +365,6 @@ pub mod c_api {
         other::reset();
         entries::reset();
         global::reset();
-    }
-
-    #[no_mangle]
-    pub extern "C" fn bib_str_eq_buf(
-        s: StrNumber,
-        buf: BufTy,
-        ptr: BufPointer,
-        len: BufPointer,
-    ) -> bool {
-        with_buffers(|buffers| {
-            with_pool(|pool| {
-                let buf = &buffers.buffer(buf)[ptr..(ptr + len)];
-                let str = pool.get_str(s);
-                buf == str
-            })
-        })
-    }
-
-    #[no_mangle]
-    pub extern "C" fn start_name(file_name: StrNumber) -> NameAndLen {
-        with_pool(|pool| {
-            let file_name = pool.get_str(file_name);
-            let new_name = xcalloc_zeroed::<ASCIICode>(file_name.len() + 1).unwrap();
-            new_name[..file_name.len()].copy_from_slice(file_name);
-            new_name[file_name.len()] = 0;
-            NameAndLen {
-                name: (new_name as *mut [_]).cast(),
-                len: file_name.len() as i32,
-            }
-        })
     }
 
     #[no_mangle]

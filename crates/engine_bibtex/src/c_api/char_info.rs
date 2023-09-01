@@ -56,8 +56,7 @@ impl IdClass {
     }
 }
 
-#[no_mangle]
-pub static LEX_CLASS: [LexClass; 256] = {
+static LEX_CLASS: [LexClass; 256] = {
     let mut lex_class = [LexClass::Other; 256];
 
     const_for!(128..=255 => lex_class[..] = LexClass::Alpha);

@@ -7,11 +7,11 @@ use crate::{
         exec::print_bst_name,
         hash::{with_hash_mut, HashData},
         log::{
-            aux_err_illegal_another_print, aux_err_no_right_brace_print,
+            aux_err_illegal_another_print, aux_err_no_right_brace_print, aux_err_print,
             aux_err_stuff_after_right_brace_print, aux_err_white_space_in_argument_print,
             hash_cite_confusion, log_pr_bst_name, print_a_pool_str, print_confusion,
-            rs_aux_err_print, rs_print_a_token, rs_print_bib_name, write_log_file, write_logs,
-            AuxTy,
+            print_overflow, rs_log_pr_aux_name, rs_print_a_token, rs_print_aux_name,
+            rs_print_bib_name, write_log_file, write_logs, AuxTy,
         },
         peekable::{peekable_open, PeekableInput},
         pool::{with_pool_mut, StringPool},
@@ -42,6 +42,10 @@ impl AuxData {
         }
     }
 
+    pub fn ptr(&self) -> AuxNumber {
+        self.aux_ptr
+    }
+
     pub fn set_ptr(&mut self, ptr: AuxNumber) {
         self.aux_ptr = ptr;
     }
@@ -62,7 +66,7 @@ impl AuxData {
         self.aux_file[self.aux_ptr] = file;
     }
 
-    fn ln_at_ptr(&self) -> i32 {
+    pub fn ln_at_ptr(&self) -> i32 {
         self.aux_ln_stack[self.aux_ptr]
     }
 
@@ -85,16 +89,6 @@ pub fn with_aux<T>(f: impl FnOnce(&AuxData) -> T) -> T {
 
 pub fn with_aux_mut<T>(f: impl FnOnce(&mut AuxData) -> T) -> T {
     AUX.with(|aux| f(&mut aux.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn cur_aux() -> StrNumber {
-    with_aux(|aux| aux.at_ptr())
-}
-
-#[no_mangle]
-pub extern "C" fn set_cur_aux(num: StrNumber) {
-    with_aux_mut(|aux| aux.set_at_ptr(num))
 }
 
 #[no_mangle]
@@ -137,7 +131,7 @@ fn rs_aux_bib_data_command(
 ) -> Result<(), BibtexError> {
     if ctx.bib_seen {
         aux_err_illegal_another_print(AuxTy::Data)?;
-        rs_aux_err_print(buffers, aux, pool)?;
+        aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
     ctx.bib_seen = true;
@@ -151,13 +145,13 @@ fn rs_aux_bib_data_command(
             .scan_till(buffers, init)
         {
             aux_err_no_right_brace_print();
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
 
         if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
             aux_err_white_space_in_argument_print();
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
 
@@ -165,7 +159,7 @@ fn rs_aux_bib_data_command(
             && buffers.at_offset(BufTy::Base, 2) == b'}'
         {
             aux_err_stuff_after_right_brace_print();
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
 
@@ -180,17 +174,17 @@ fn rs_aux_bib_data_command(
         if res.exists {
             write_logs("This database file appears more than once: ");
             rs_print_bib_name(pool, bibs)?;
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
 
         let name = pool.get_str(bibs.cur_bib());
         let fname = CString::new(name).unwrap();
-        let bib_in = unsafe { peekable_open(fname.as_ptr(), FileFormat::Bib) };
+        let bib_in = peekable_open(&fname, FileFormat::Bib);
         if bib_in.is_null() {
             write_logs("I couldn't open the database file ");
             rs_print_bib_name(pool, bibs)?;
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
         bibs.set_cur_bib_file(NonNull::new(bib_in));
@@ -209,7 +203,7 @@ fn rs_aux_bib_style_command(
 ) -> Result<(), BibtexError> {
     if ctx.bst_seen {
         aux_err_illegal_another_print(AuxTy::Style)?;
-        rs_aux_err_print(buffers, aux, pool)?;
+        aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
     ctx.bst_seen = true;
@@ -222,19 +216,19 @@ fn rs_aux_bib_style_command(
         .scan_till(buffers, init)
     {
         aux_err_no_right_brace_print();
-        rs_aux_err_print(buffers, aux, pool)?;
+        aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
 
     if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
         aux_err_white_space_in_argument_print();
-        rs_aux_err_print(buffers, aux, pool)?;
+        aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
 
     if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1 {
         aux_err_stuff_after_right_brace_print();
-        rs_aux_err_print(buffers, aux, pool)?;
+        aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
 
@@ -250,12 +244,12 @@ fn rs_aux_bib_style_command(
 
     let name = pool.get_str(ctx.bst_str);
     let fname = CString::new(name).unwrap();
-    let ptr = unsafe { peekable_open(fname.as_ptr(), FileFormat::Bst) };
+    let ptr = peekable_open(&fname, FileFormat::Bst);
     if ptr.is_null() {
         write_logs("I couldn't open style file ");
         print_bst_name(ctx, pool)?;
         ctx.bst_str = 0;
-        rs_aux_err_print(buffers, aux, pool)?;
+        aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
     ctx.bst_file = NonNull::new(ptr);
@@ -291,19 +285,19 @@ fn rs_aux_citation_command(
             .scan_till(buffers, init)
         {
             aux_err_no_right_brace_print();
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
         if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
             aux_err_white_space_in_argument_print();
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
         if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1
             && buffers.at_offset(BufTy::Base, 2) == b'}'
         {
             aux_err_stuff_after_right_brace_print();
-            rs_aux_err_print(buffers, aux, pool)?;
+            aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
 
@@ -311,7 +305,7 @@ fn rs_aux_citation_command(
             if buffers.at_offset(BufTy::Base, 1) == b'*' {
                 if ctx.all_entries {
                     write_logs("Multiple inclusions of entire database\n");
-                    rs_aux_err_print(buffers, aux, pool)?;
+                    aux_err_print(buffers, aux, pool)?;
                     return Ok(());
                 } else {
                     ctx.all_entries = true;
@@ -347,7 +341,7 @@ fn rs_aux_citation_command(
                     pool,
                 )?;
                 write_logs("\n");
-                rs_aux_err_print(buffers, aux, pool)?;
+                aux_err_print(buffers, aux, pool)?;
                 return Ok(());
             }
         } else {
@@ -369,6 +363,96 @@ fn rs_aux_citation_command(
             cites.set_ptr(cites.ptr() + 1);
         }
     }
+
+    Ok(())
+}
+
+fn rs_aux_input_command(
+    ctx: &mut Bibtex,
+    buffers: &mut GlobalBuffer,
+    aux: &mut AuxData,
+    pool: &mut StringPool,
+    hash: &mut HashData,
+) -> Result<(), BibtexError> {
+    buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+
+    let init = buffers.init(BufTy::Base);
+    if !Scan::new()
+        .chars(&[b'}'])
+        .class(LexClass::Whitespace)
+        .scan_till(buffers, init)
+    {
+        aux_err_no_right_brace_print();
+        aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+    if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
+        aux_err_white_space_in_argument_print();
+        aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+    if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1 {
+        aux_err_stuff_after_right_brace_print();
+        aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+
+    aux.set_ptr(aux.ptr() + 1);
+    if aux.ptr() == AUX_STACK_SIZE {
+        rs_print_a_token(buffers);
+        write_logs(": ");
+        print_overflow();
+        write_logs(&format!("auxiliary file depth {}\n", AUX_STACK_SIZE));
+        return Err(BibtexError::Fatal);
+    }
+
+    let aux_ext = pool.get_str(ctx.s_aux_extension);
+    let aux_extension_ok = if (buffers.offset(BufTy::Base, 2) - buffers.offset(BufTy::Base, 1)
+        < aux_ext.len())
+        || aux_ext
+            != &buffers.buffer(BufTy::Base)
+                [buffers.offset(BufTy::Base, 2) - aux_ext.len()..buffers.offset(BufTy::Base, 2)]
+    {
+        false
+    } else {
+        true
+    };
+
+    if !aux_extension_ok {
+        rs_print_a_token(buffers);
+        write_logs(" has a wrong extension");
+        aux.set_ptr(aux.ptr() - 1);
+        aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+
+    let file = &buffers.buffer(BufTy::Base)
+        [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
+    let res = pool.lookup_str_insert(hash, file, StrIlk::AuxFile)?;
+    aux.set_at_ptr(hash.text(res.loc));
+    if res.exists {
+        write_logs("Already encountered file ");
+        rs_print_aux_name(aux, pool)?;
+        aux.set_ptr(aux.ptr() - 1);
+        aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+
+    let name = pool.get_str(aux.at_ptr());
+    let fname = CString::new(name).unwrap();
+    let ptr = peekable_open(&fname, FileFormat::Tex);
+    if ptr.is_null() {
+        write_logs("I couldn't open auxiliary file ");
+        rs_print_aux_name(aux, pool)?;
+        aux.set_ptr(aux.ptr() - 1);
+        aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+    aux.set_file_at_ptr(ptr);
+
+    write_logs(&format!("A level-{} auxiliary file: ", aux.ptr()));
+    rs_log_pr_aux_name(aux, pool)?;
+    aux.set_ln_at_ptr(0);
 
     Ok(())
 }
@@ -411,6 +495,18 @@ pub unsafe extern "C" fn aux_citation_command(ctx: *mut Bibtex) -> CResult {
                         rs_aux_citation_command(&mut *ctx, buffers, aux, pool, hash, cites)
                     })
                 })
+            })
+        })
+    })
+    .into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn aux_input_command(ctx: *mut Bibtex) -> CResult {
+    with_buffers_mut(|buffers| {
+        with_aux_mut(|aux| {
+            with_pool_mut(|pool| {
+                with_hash_mut(|hash| rs_aux_input_command(&mut *ctx, buffers, aux, pool, hash))
             })
         })
     })
