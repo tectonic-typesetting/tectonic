@@ -1,11 +1,11 @@
 use crate::{
     c_api::{
         bibs::{with_bibs_mut, BibData},
-        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::{with_cites_mut, CiteInfo},
         exec::print_bst_name,
-        hash::{with_hash_mut, HashData},
+        hash::HashData,
         log::{
             aux_end1_err_print, aux_end2_err_print, aux_err_illegal_another_print,
             aux_err_no_right_brace_print, aux_err_print, aux_err_stuff_after_right_brace_print,
@@ -15,9 +15,9 @@ use crate::{
             AuxTy,
         },
         peekable::{peekable_close, peekable_open, PeekableInput},
-        pool::{with_pool, with_pool_mut, StringPool},
+        pool::{with_pool, StringPool},
         scan::Scan,
-        AuxNumber, Bibtex, CResult, StrIlk, StrNumber,
+        AuxNumber, Bibtex, CResult, GlobalItems, StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -26,7 +26,7 @@ use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
 
-pub struct AuxData {
+pub(crate) struct AuxData {
     aux_list: [StrNumber; AUX_STACK_SIZE + 1],
     aux_file: [*mut PeekableInput; AUX_STACK_SIZE + 1],
     aux_ln_stack: [i32; AUX_STACK_SIZE + 1],
@@ -77,18 +77,18 @@ impl AuxData {
 }
 
 thread_local! {
-    pub static AUX: RefCell<AuxData> = RefCell::new(AuxData::new());
+    static AUX: RefCell<AuxData> = RefCell::new(AuxData::new());
 }
 
 pub fn reset() {
     AUX.with(|aux| *aux.borrow_mut() = AuxData::new());
 }
 
-pub fn with_aux<T>(f: impl FnOnce(&AuxData) -> T) -> T {
+pub(crate) fn with_aux<T>(f: impl FnOnce(&AuxData) -> T) -> T {
     AUX.with(|aux| f(&aux.borrow()))
 }
 
-pub fn with_aux_mut<T>(f: impl FnOnce(&mut AuxData) -> T) -> T {
+pub(crate) fn with_aux_mut<T>(f: impl FnOnce(&mut AuxData) -> T) -> T {
     AUX.with(|aux| f(&mut aux.borrow_mut()))
 }
 
@@ -438,15 +438,6 @@ fn aux_input_command(
     Ok(())
 }
 
-struct GlobalItems<'a> {
-    buffers: &'a mut GlobalBuffer,
-    aux: &'a mut AuxData,
-    pool: &'a mut StringPool,
-    hash: &'a mut HashData,
-    cites: &'a mut CiteInfo,
-    bibs: &'a mut BibData,
-}
-
 fn rs_get_aux_command_and_process(
     ctx: &mut Bibtex,
     globals: &mut GlobalItems<'_>,
@@ -507,29 +498,7 @@ fn rs_get_aux_command_and_process(
 
 #[no_mangle]
 pub unsafe extern "C" fn get_aux_command_and_process(ctx: *mut Bibtex) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_aux_mut(|aux| {
-            with_pool_mut(|pool| {
-                with_hash_mut(|hash| {
-                    with_cites_mut(|cites| {
-                        with_bibs_mut(|bibs| {
-                            let mut globals = GlobalItems {
-                                buffers,
-                                aux,
-                                pool,
-                                hash,
-                                cites,
-                                bibs,
-                            };
-
-                            rs_get_aux_command_and_process(&mut *ctx, &mut globals)
-                        })
-                    })
-                })
-            })
-        })
-    })
-    .into()
+    GlobalItems::with_globals(|globals| rs_get_aux_command_and_process(&mut *ctx, globals)).into()
 }
 
 fn rs_pop_the_aux_stack(aux: &mut AuxData) -> bool {

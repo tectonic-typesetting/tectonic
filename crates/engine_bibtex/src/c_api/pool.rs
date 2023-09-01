@@ -27,7 +27,7 @@ pub enum LookupErr {
     DoesntExist,
 }
 
-pub struct StringPool {
+pub(crate) struct StringPool {
     strings: XBuf<u8>,
     // Stores string starting locations in the string pool
     // length of string `s` is offsets[s + 1] - offsets[s]
@@ -252,11 +252,11 @@ pub(crate) fn reset() {
     STRING_POOL.with(|pool| *pool.borrow_mut() = StringPool::new());
 }
 
-pub fn with_pool<T>(f: impl FnOnce(&StringPool) -> T) -> T {
+pub(crate) fn with_pool<T>(f: impl FnOnce(&StringPool) -> T) -> T {
     STRING_POOL.with(|pool| f(&pool.borrow()))
 }
 
-pub fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
+pub(crate) fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
     STRING_POOL.with(|pool| f(&mut pool.borrow_mut()))
 }
 
@@ -295,7 +295,7 @@ pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
     with_pool_mut(|pool| pool.pool_ptr = ptr)
 }
 
-pub fn add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
+pub(crate) fn add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
     let str = pool.get_str(str);
 
     if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
@@ -487,7 +487,7 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     res.into()
 }
 
-pub fn add_out_pool(
+pub(crate) fn add_out_pool(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,

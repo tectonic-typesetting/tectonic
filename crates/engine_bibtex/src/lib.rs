@@ -113,12 +113,18 @@ impl BibtexEngine {
 #[allow(clippy::assertions_on_constants)]
 pub mod c_api {
     use crate::BibtexError;
-    use auxi::with_aux_mut;
-    use hash::{with_hash, with_hash_mut};
+    use auxi::{with_aux_mut, AuxData};
+    use bibs::{with_bibs_mut, BibData};
+    use buffer::{with_buffers_mut, GlobalBuffer};
+    use cite::{with_cites_mut, CiteInfo};
+    use entries::{with_entries_mut, EntryData};
+    use global::{with_globals_mut, GlobalData};
+    use hash::{with_hash, with_hash_mut, HashData};
     use history::History;
     use log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
+    use other::OtherData;
     use peekable::PeekableInput;
-    use pool::with_pool_mut;
+    use pool::{with_pool_mut, StringPool};
     use std::{
         ffi::CStr,
         ptr::{self, NonNull},
@@ -129,6 +135,7 @@ pub mod c_api {
 
     pub mod auxi;
     pub mod bibs;
+    pub mod bst;
     pub mod buffer;
     pub(crate) mod char_info;
     pub mod cite;
@@ -144,6 +151,7 @@ pub mod c_api {
     pub mod scan;
     pub(crate) mod xbuf;
 
+    use crate::c_api::other::with_other_mut;
     pub use external::*;
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
@@ -154,6 +162,54 @@ pub mod c_api {
     const _: () = assert!(hash::HASH_PRIME <= hash::HASH_SIZE);
     const _: () = assert!(pool::MAX_STRINGS <= hash::HASH_SIZE);
     const _: () = assert!(cite::MAX_CITES <= pool::MAX_STRINGS);
+
+    pub(crate) struct GlobalItems<'a> {
+        buffers: &'a mut GlobalBuffer,
+        pool: &'a mut StringPool,
+        hash: &'a mut HashData,
+        entries: &'a mut EntryData,
+        globals: &'a mut GlobalData,
+        bibs: &'a mut BibData,
+        aux: &'a mut AuxData,
+        cites: &'a mut CiteInfo,
+        other: &'a mut OtherData,
+    }
+
+    impl GlobalItems<'_> {
+        fn with_globals<T>(f: impl FnOnce(&mut GlobalItems<'_>) -> T) -> T {
+            with_buffers_mut(|buffers| {
+                with_pool_mut(|pool| {
+                    with_hash_mut(|hash| {
+                        with_entries_mut(|entries| {
+                            with_globals_mut(|globals| {
+                                with_bibs_mut(|bibs| {
+                                    with_aux_mut(|aux| {
+                                        with_cites_mut(|cites| {
+                                            with_other_mut(|other| {
+                                                let mut globals = GlobalItems {
+                                                    buffers,
+                                                    pool,
+                                                    hash,
+                                                    entries,
+                                                    globals,
+                                                    bibs,
+                                                    aux,
+                                                    cites,
+                                                    other,
+                                                };
+
+                                                f(&mut globals)
+                                            })
+                                        })
+                                    })
+                                })
+                            })
+                        })
+                    })
+                })
+            })
+        }
+    }
 
     #[repr(C)]
     #[derive(Clone, Debug)]

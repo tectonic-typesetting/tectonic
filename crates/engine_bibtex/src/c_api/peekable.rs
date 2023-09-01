@@ -120,7 +120,10 @@ pub unsafe extern "C" fn tectonic_eof(peekable: Option<NonNull<PeekableInput>>) 
     peekable.eof()
 }
 
-pub fn rs_input_ln(peekable: Option<&mut PeekableInput>, buffers: &mut GlobalBuffer) -> bool {
+pub(crate) fn rs_input_ln(
+    peekable: Option<&mut PeekableInput>,
+    buffers: &mut GlobalBuffer,
+) -> bool {
     let peekable = match peekable {
         Some(p) => p,
         None => return false,

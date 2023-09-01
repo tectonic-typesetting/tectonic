@@ -4,7 +4,7 @@ use std::cell::RefCell;
 const MAX_GLOB_STRS: usize = 10;
 pub(crate) const GLOB_STR_SIZE: usize = 20000;
 
-pub struct GlobalData {
+pub(crate) struct GlobalData {
     glb_bib_str_ptr: XBuf<StrNumber>,
     global_strs: XBuf<ASCIICode>,
     glb_str_end: XBuf<usize>,
@@ -45,14 +45,10 @@ impl GlobalData {
         self.global_strs[spos..spos + val.len()].copy_from_slice(val);
         self.glb_str_end[pos] = val.len();
     }
-
-    pub fn set_str_end(&mut self, pos: usize, val: usize) {
-        self.glb_str_end[pos] = val;
-    }
 }
 
 thread_local! {
-    pub static GLOBALS: RefCell<GlobalData> = RefCell::new(GlobalData::new());
+    static GLOBALS: RefCell<GlobalData> = RefCell::new(GlobalData::new());
 }
 
 pub fn reset() {
@@ -63,7 +59,7 @@ fn with_globals<T>(f: impl FnOnce(&GlobalData) -> T) -> T {
     GLOBALS.with(|globals| f(&globals.borrow()))
 }
 
-pub fn with_globals_mut<T>(f: impl FnOnce(&mut GlobalData) -> T) -> T {
+pub(crate) fn with_globals_mut<T>(f: impl FnOnce(&mut GlobalData) -> T) -> T {
     GLOBALS.with(|globals| f(&mut globals.borrow_mut()))
 }
 

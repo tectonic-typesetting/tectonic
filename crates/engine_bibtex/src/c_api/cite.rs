@@ -10,7 +10,7 @@ use std::{cell::RefCell, cmp::Ordering};
 
 pub(crate) const MAX_CITES: usize = 750;
 
-pub struct CiteInfo {
+pub(crate) struct CiteInfo {
     cite_list: XBuf<StrNumber>,
     cite_info: XBuf<StrNumber>,
     type_list: XBuf<HashPointer>,
@@ -115,18 +115,18 @@ impl CiteInfo {
 }
 
 thread_local! {
-    pub static CITE_INFO: RefCell<CiteInfo> = RefCell::new(CiteInfo::new());
+    static CITE_INFO: RefCell<CiteInfo> = RefCell::new(CiteInfo::new());
 }
 
 pub fn reset() {
     CITE_INFO.with(|ci| *ci.borrow_mut() = CiteInfo::new());
 }
 
-pub fn with_cites<T>(f: impl FnOnce(&CiteInfo) -> T) -> T {
+pub(crate) fn with_cites<T>(f: impl FnOnce(&CiteInfo) -> T) -> T {
     CITE_INFO.with(|ci| f(&ci.borrow()))
 }
 
-pub fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
+pub(crate) fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
     CITE_INFO.with(|ci| f(&mut ci.borrow_mut()))
 }
 
@@ -242,7 +242,7 @@ pub extern "C" fn set_all_marker(val: CiteNumber) {
     with_cites_mut(|cites| cites.all_marker = val)
 }
 
-pub fn rs_add_database_cite(
+pub(crate) fn rs_add_database_cite(
     cites: &mut CiteInfo,
     other: &mut OtherData,
     hash: &mut HashData,

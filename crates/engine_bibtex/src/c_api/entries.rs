@@ -3,7 +3,7 @@ use std::cell::RefCell;
 
 pub(crate) const ENT_STR_SIZE: usize = 250;
 
-pub struct EntryData {
+pub(crate) struct EntryData {
     num_entry_ints: usize,
     num_entry_strs: usize,
     sort_key_num: usize,
@@ -53,6 +53,10 @@ impl EntryData {
         self.num_entry_ints
     }
 
+    pub fn set_num_ent_ints(&mut self, val: usize) {
+        self.num_entry_ints = val;
+    }
+
     pub fn num_ent_strs(&self) -> usize {
         self.num_entry_strs
     }
@@ -71,18 +75,18 @@ impl EntryData {
 }
 
 thread_local! {
-    pub static ENTRIES: RefCell<EntryData> = RefCell::new(EntryData::new());
+    static ENTRIES: RefCell<EntryData> = RefCell::new(EntryData::new());
 }
 
 pub fn reset() {
     ENTRIES.with(|entries| *entries.borrow_mut() = EntryData::new());
 }
 
-pub fn with_entries<T>(f: impl FnOnce(&EntryData) -> T) -> T {
+pub(crate) fn with_entries<T>(f: impl FnOnce(&EntryData) -> T) -> T {
     ENTRIES.with(|entries| f(&entries.borrow()))
 }
 
-pub fn with_entries_mut<T>(f: impl FnOnce(&mut EntryData) -> T) -> T {
+pub(crate) fn with_entries_mut<T>(f: impl FnOnce(&mut EntryData) -> T) -> T {
     ENTRIES.with(|entries| f(&mut entries.borrow_mut()))
 }
 
@@ -103,24 +107,4 @@ pub extern "C" fn init_entry_strs() {
         new_buf.fill(127);
         entries.entry_strs = Some(new_buf);
     })
-}
-
-#[no_mangle]
-pub extern "C" fn num_ent_ints() -> usize {
-    with_entries(|entries| entries.num_entry_ints)
-}
-
-#[no_mangle]
-pub extern "C" fn set_num_ent_ints(val: usize) {
-    with_entries_mut(|entries| entries.num_entry_ints = val)
-}
-
-#[no_mangle]
-pub extern "C" fn num_ent_strs() -> usize {
-    with_entries(|entries| entries.num_entry_strs)
-}
-
-#[no_mangle]
-pub extern "C" fn set_num_ent_strs(val: usize) {
-    with_entries_mut(|entries| entries.num_entry_strs = val)
 }

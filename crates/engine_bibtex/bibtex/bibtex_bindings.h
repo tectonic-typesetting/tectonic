@@ -127,18 +127,20 @@ typedef struct {
 
 typedef uintptr_t BibNumber;
 
-typedef uint8_t ASCIICode;
-
-typedef uintptr_t BufPointer;
-
-typedef uintptr_t CiteNumber;
+typedef enum {
+  CResultBool_Error,
+  CResultBool_Recover,
+  CResultBool_Ok,
+} CResultBool_Tag;
 
 typedef struct {
-  CiteNumber cite_loc;
-  CiteNumber lc_cite_loc;
-  bool cite_found;
-  bool lc_found;
-} FindCiteLocs;
+  CResultBool_Tag tag;
+  union {
+    struct {
+      bool ok;
+    };
+  };
+} CResultBool;
 
 typedef struct {
   Bibtex *glbl_ctx;
@@ -151,6 +153,19 @@ typedef struct {
    */
   StrNumber bib_str_ptr;
 } ExecCtx;
+
+typedef uint8_t ASCIICode;
+
+typedef uintptr_t BufPointer;
+
+typedef uintptr_t CiteNumber;
+
+typedef struct {
+  CiteNumber cite_loc;
+  CiteNumber lc_cite_loc;
+  bool cite_found;
+  bool lc_found;
+} FindCiteLocs;
 
 typedef uintptr_t FieldLoc;
 
@@ -181,21 +196,6 @@ typedef struct {
     };
   };
 } CResultLookup;
-
-typedef enum {
-  CResultBool_Error,
-  CResultBool_Recover,
-  CResultBool_Ok,
-} CResultBool_Tag;
-
-typedef struct {
-  CResultBool_Tag tag;
-  union {
-    struct {
-      bool ok;
-    };
-  };
-} CResultBool;
 
 #ifdef __cplusplus
 extern "C" {
@@ -236,6 +236,12 @@ int32_t bib_line_num(void);
 void set_bib_line_num(int32_t num);
 
 bool eat_bib_white_space(void);
+
+CResultBool bad_argument_token(Bibtex *ctx, HashPointer *fn_out);
+
+CResult bst_entry_command(Bibtex *ctx);
+
+CResult bst_execute_command(ExecCtx *ctx);
 
 ASCIICode bib_buf(BufTy ty, BufPointer pos);
 
@@ -301,14 +307,6 @@ void init_entry_ints(void);
 
 void init_entry_strs(void);
 
-uintptr_t num_ent_ints(void);
-
-void set_num_ent_ints(uintptr_t val);
-
-uintptr_t num_ent_strs(void);
-
-void set_num_ent_strs(uintptr_t val);
-
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
 void init_command_execution(ExecCtx *ctx);
@@ -367,8 +365,6 @@ CResult log_pr_bib_name(void);
 
 void hash_cite_confusion(void);
 
-CResult bst_warn_print(const Bibtex *ctx);
-
 void eat_bst_print(void);
 
 CResult bst_id_print(ScanRes scan_result);
@@ -397,8 +393,6 @@ CResult bad_cross_reference_print(StrNumber s);
 
 CResult print_missing_entry(StrNumber s);
 
-void print_fn_class(HashPointer fn_loc);
-
 CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
 
 CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
@@ -414,8 +408,6 @@ void check_field_overflow(uintptr_t total_fields);
 uintptr_t max_fields(void);
 
 FieldLoc num_fields(void);
-
-void set_num_fields(FieldLoc val);
 
 FieldLoc num_pre_defined_fields(void);
 

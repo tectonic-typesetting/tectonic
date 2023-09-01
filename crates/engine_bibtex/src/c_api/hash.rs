@@ -82,7 +82,7 @@ pub enum FnClass {
 unsafe impl SafelyZero for FnClass {}
 
 // TODO: Split string-pool stuff into string pool, executor stuff into execution context
-pub struct HashData {
+pub(crate) struct HashData {
     hash_next: XBuf<HashPointer>,
     hash_text: XBuf<StrNumber>,
     hash_ilk: XBuf<StrIlk>,
@@ -166,18 +166,18 @@ impl HashData {
 }
 
 thread_local! {
-    pub static HASHES: RefCell<HashData> = RefCell::new(HashData::new());
+    static HASHES: RefCell<HashData> = RefCell::new(HashData::new());
 }
 
 pub fn reset() {
     HASHES.with(|hash| *hash.borrow_mut() = HashData::new());
 }
 
-pub fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
+pub(crate) fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
     HASHES.with(|h| f(&h.borrow()))
 }
 
-pub fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
+pub(crate) fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
     HASHES.with(|h| f(&mut h.borrow_mut()))
 }
 

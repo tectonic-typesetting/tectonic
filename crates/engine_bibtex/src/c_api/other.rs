@@ -4,7 +4,7 @@ use std::cell::RefCell;
 const WIZ_FN_SPACE: usize = 3000;
 const MAX_FIELDS: usize = 17250;
 
-pub struct OtherData {
+pub(crate) struct OtherData {
     wiz_functions: XBuf<HashPointer>,
     wiz_def_ptr: WizFnLoc,
     field_info: XBuf<StrNumber>,
@@ -43,6 +43,10 @@ impl OtherData {
 
     pub fn set_num_fields(&mut self, val: FieldLoc) {
         self.num_fields = val;
+    }
+
+    pub fn pre_defined_fields(&self) -> FieldLoc {
+        self.num_pre_defined_fields
     }
 
     pub fn set_pre_defined_fields(&mut self, val: FieldLoc) {
@@ -87,18 +91,18 @@ impl OtherData {
 }
 
 thread_local! {
-    pub static OTHER: RefCell<OtherData> = RefCell::new(OtherData::new());
+    static OTHER: RefCell<OtherData> = RefCell::new(OtherData::new());
 }
 
 pub fn reset() {
     OTHER.with(|other| *other.borrow_mut() = OtherData::new());
 }
 
-pub fn with_other<T>(f: impl FnOnce(&OtherData) -> T) -> T {
+pub(crate) fn with_other<T>(f: impl FnOnce(&OtherData) -> T) -> T {
     OTHER.with(|other| f(&other.borrow()))
 }
 
-pub fn with_other_mut<T>(f: impl FnOnce(&mut OtherData) -> T) -> T {
+pub(crate) fn with_other_mut<T>(f: impl FnOnce(&mut OtherData) -> T) -> T {
     OTHER.with(|other| f(&mut other.borrow_mut()))
 }
 
@@ -125,11 +129,6 @@ pub extern "C" fn max_fields() -> usize {
 #[no_mangle]
 pub extern "C" fn num_fields() -> FieldLoc {
     with_other(|other| other.num_fields)
-}
-
-#[no_mangle]
-pub extern "C" fn set_num_fields(val: FieldLoc) {
-    with_other_mut(|other| other.num_fields = val)
 }
 
 #[no_mangle]

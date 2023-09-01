@@ -68,7 +68,7 @@ pub fn xrealloc_zeroed<T: SafelyZero>(
 }
 
 #[derive(Debug)]
-pub struct XBuf<T: SafelyZero + 'static>(&'static mut [T]);
+pub(crate) struct XBuf<T: SafelyZero + 'static>(&'static mut [T]);
 
 impl<T: SafelyZero + 'static> XBuf<T> {
     pub fn new(init_len: usize) -> XBuf<T> {

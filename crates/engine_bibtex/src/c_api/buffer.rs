@@ -14,11 +14,11 @@ pub(crate) fn reset() {
     GLOBAL_BUFFERS.with(|cell| *cell.borrow_mut() = GlobalBuffer::new());
 }
 
-pub fn with_buffers<T>(f: impl FnOnce(&GlobalBuffer) -> T) -> T {
+pub(crate) fn with_buffers<T>(f: impl FnOnce(&GlobalBuffer) -> T) -> T {
     GLOBAL_BUFFERS.with(|buffers| f(&buffers.borrow()))
 }
 
-pub fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
+pub(crate) fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
     GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
 }
 
@@ -44,7 +44,7 @@ impl<T: SafelyZero + Copy + 'static, const N: usize> Buffer<T, N> {
     }
 }
 
-pub struct GlobalBuffer {
+pub(crate) struct GlobalBuffer {
     /// Allocated length of all buffers
     buf_len: usize,
     buffer: Buffer<ASCIICode, 2>,
@@ -71,10 +71,6 @@ impl GlobalBuffer {
 
     pub fn len(&self) -> usize {
         self.buf_len
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.buf_len == 0
     }
 
     fn buffer_raw(&mut self, ty: BufTy) -> *mut ASCIICode {

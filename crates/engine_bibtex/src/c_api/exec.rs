@@ -1,12 +1,12 @@
 use crate::{
     c_api::{
-        bibs::{with_bibs_mut, BibData},
-        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        bibs::BibData,
+        buffer::{BufTy, GlobalBuffer},
         char_info::{LexClass, CHAR_WIDTH},
         cite::{with_cites, CiteInfo},
-        entries::{with_entries_mut, EntryData, ENT_STR_SIZE},
-        global::{with_globals_mut, GlobalData, GLOB_STR_SIZE},
-        hash::{with_hash, with_hash_mut, FnClass, HashData},
+        entries::{EntryData, ENT_STR_SIZE},
+        global::{GlobalData, GLOB_STR_SIZE},
+        hash::{with_hash, FnClass, HashData},
         history::{mark_error, mark_warning},
         log::{
             brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
@@ -14,14 +14,14 @@ use crate::{
             bst_cant_mess_with_entries_print, output_bbl_line, print_a_pool_str, print_confusion,
             rs_print_fn_class, write_logs,
         },
-        other::{with_other, OtherData},
         pool::{add_buf_pool, add_out_pool, with_pool, with_pool_mut, StringPool},
         scan::{
             check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
             von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
         },
         xbuf::{SafelyZero, XBuf},
-        ASCIICode, Bibtex, BufPointer, CResult, HashPointer, PoolPointer, StrIlk, StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResult, GlobalItems, HashPointer, PoolPointer, StrIlk,
+        StrNumber,
     },
     BibtexError,
 };
@@ -220,7 +220,7 @@ pub(crate) fn print_wrong_stk_lit(
     }
 }
 
-pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
         with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr()), pool))?;
@@ -232,12 +232,12 @@ pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexE
     Ok(())
 }
 
-pub fn bst_ln_num_print(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn bst_ln_num_print(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", glbl_ctx.bst_line_num));
     print_bst_name(glbl_ctx, pool)
 }
 
-pub fn print_bst_name(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn print_bst_name(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
     print_a_pool_str(glbl_ctx.bst_str, pool)?;
     write_logs(".bst\n");
     Ok(())
@@ -295,7 +295,7 @@ pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i3
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn figure_out_the_formatted_name(
+pub(crate) fn figure_out_the_formatted_name(
     ctx: &mut ExecCtx,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
@@ -622,7 +622,7 @@ pub fn figure_out_the_formatted_name(
     Ok(())
 }
 
-fn rs_check_command_execution(
+pub(crate) fn rs_check_command_execution(
     ctx: &mut ExecCtx,
     pool: &mut StringPool,
     hash: &HashData,
@@ -2159,18 +2159,7 @@ fn interp_write(
     Ok(())
 }
 
-struct GlobalItems<'a> {
-    buffers: &'a mut GlobalBuffer,
-    pool: &'a mut StringPool,
-    hash: &'a mut HashData,
-    entries: &'a mut EntryData,
-    globals: &'a mut GlobalData,
-    bibs: &'a mut BibData,
-    cites: &'a CiteInfo,
-    other: &'a OtherData,
-}
-
-fn rs_execute_fn(
+pub(crate) fn rs_execute_fn(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
     ex_fn_loc: HashPointer,
@@ -2403,34 +2392,7 @@ fn rs_execute_fn(
 
 #[no_mangle]
 pub unsafe extern "C" fn execute_fn(ctx: *mut ExecCtx, ex_fn_loc: HashPointer) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_pool_mut(|pool| {
-            with_hash_mut(|hash| {
-                with_entries_mut(|entries| {
-                    with_globals_mut(|globals| {
-                        with_bibs_mut(|bibs| {
-                            with_cites(|cites| {
-                                with_other(|other| {
-                                    let mut globals = GlobalItems {
-                                        buffers,
-                                        pool,
-                                        hash,
-                                        entries,
-                                        globals,
-                                        bibs,
-                                        cites,
-                                        other,
-                                    };
-                                    rs_execute_fn(&mut *ctx, &mut globals, ex_fn_loc)
-                                })
-                            })
-                        })
-                    })
-                })
-            })
-        })
-    })
-    .into()
+    GlobalItems::with_globals(|globals| rs_execute_fn(&mut *ctx, globals, ex_fn_loc)).into()
 }
 
 #[cfg(test)]

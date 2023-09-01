@@ -87,252 +87,6 @@ printf_log(const char *fmt, ...)
     puts_log(fmt_buf);
 }
 
-static void bst_entry_command(Bibtex* ctx)
-{
-    if (ctx->entry_seen) {
-        puts_log("Illegal, another entry command");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    ctx->entry_seen = true;
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-        if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-        else {
-            unwrap(bst_id_print(scan_result));
-            puts_log("entry");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-
-        lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-        LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                                  (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  STR_ILK_BST_FN, true));
-        hash_loc fn_loc = hash.loc;
-        if (hash.exists) {
-            unwrap(already_seen_function_print(ctx, fn_loc));
-            return;
-        }
-        set_fn_type(fn_loc, FN_CLASS_FIELD);
-        set_ilk_info(fn_loc, num_fields());
-        set_num_fields(num_fields() + 1);
-
-        if (!eat_bst_white_space(ctx)) {
-            eat_bst_print();
-            puts_log("entry");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (num_fields() == num_pre_defined_fields()) {
-        puts_log("Warning--I didn't find any fields");
-        unwrap(bst_warn_print(ctx));
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-        if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-        else {
-            unwrap(bst_id_print(scan_result));
-            puts_log("entry");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-
-        lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-        LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                                  (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  STR_ILK_BST_FN, true));
-        hash_loc fn_loc = hash.loc;
-        if (hash.exists) {
-            unwrap(already_seen_function_print(ctx, fn_loc));
-            return;
-        }
-        set_fn_type(fn_loc, FN_CLASS_INT_ENTRY_VAR);
-        set_ilk_info(fn_loc, num_ent_ints());
-        set_num_ent_ints(num_ent_ints() + 1);
-
-        if (!eat_bst_white_space(ctx)) {
-            eat_bst_print();
-            puts_log("entry");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("entry");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-        if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-        else {
-            unwrap(bst_id_print(scan_result));
-            puts_log("entry");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-
-        lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-        LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                                  (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  STR_ILK_BST_FN, true));
-        hash_loc fn_loc = hash.loc;
-        if (hash.exists) {
-            unwrap(already_seen_function_print(ctx, fn_loc));
-            return;
-        }
-        set_fn_type(fn_loc, FN_CLASS_STR_ENTRY_VAR);
-        set_ilk_info(fn_loc, num_ent_strs());
-        set_num_ent_strs(num_ent_strs() + 1);
-
-        if (!eat_bst_white_space(ctx)) {
-            eat_bst_print();
-            puts_log("entry");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-}
-
-static bool bad_argument_token(Bibtex* ctx, hash_loc* fn_out)
-{
-    lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-    LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                              (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              STR_ILK_BST_FN, false));
-    hash_loc fn_loc = hash.loc;
-    if (fn_out != NULL) {
-        *fn_out = fn_loc;
-    }
-    if (!hash.exists) {
-        print_a_token();
-        puts_log(" is an unknown function");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return true;
-    } else if ((fn_type(fn_loc) != FN_CLASS_BUILTIN) && (fn_type(fn_loc) != FN_CLASS_WIZARD)) {
-        print_a_token();
-        puts_log(" has bad function type ");
-        print_fn_class(fn_loc);
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return true;
-    }
-    return false;
-}
-
-static void bst_execute_command(ExecCtx* ctx)
-{
-    if (!ctx->glbl_ctx->read_seen) {
-        puts_log("Illegal, execute command before read command");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    if (!eat_bst_white_space(ctx->glbl_ctx)) {
-        eat_bst_print();
-        puts_log("execute");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("execute");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx->glbl_ctx)) {
-        eat_bst_print();
-        puts_log("execute");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-    if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-    else {
-        unwrap(bst_id_print(scan_result));
-        puts_log("execute");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    hash_loc fn_loc = 0;
-    if (bad_argument_token(ctx->glbl_ctx, &fn_loc))
-        return;
-    if (!eat_bst_white_space(ctx->glbl_ctx)) {
-        eat_bst_print();
-        puts_log("execute");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        bst_right_brace_print();
-        puts_log("execute");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-
-    init_command_execution(ctx);
-    ctx->mess_with_entries = false;
-    execute_fn(ctx, fn_loc);
-    unwrap(check_command_execution(ctx));
-}
-
 static void bst_function_command(ExecCtx* ctx)
 {
     hash_loc wiz_loc = 0;
@@ -498,7 +252,7 @@ static void bst_iterate_command(ExecCtx* ctx)
         return;
     }
     hash_loc fn_loc = 0;
-    if (bad_argument_token(ctx->glbl_ctx, &fn_loc))
+    if (unwrap_bool(bad_argument_token(ctx->glbl_ctx, &fn_loc)))
         return;
     if (!eat_bst_white_space(ctx->glbl_ctx)) {
         eat_bst_print();
@@ -1249,7 +1003,7 @@ static void bst_reverse_command(ExecCtx* ctx)
         return;
     }
     hash_loc fn_loc = 0;
-    if (bad_argument_token(ctx->glbl_ctx, &fn_loc))
+    if (unwrap_bool(bad_argument_token(ctx->glbl_ctx, &fn_loc)))
         return;
     if (!eat_bst_white_space(ctx->glbl_ctx)) {
         eat_bst_print();
@@ -1381,10 +1135,10 @@ get_bst_command_and_process(ExecCtx* ctx)
 
     switch (command_num) {
     case 0:
-        bst_entry_command(ctx->glbl_ctx);
+        unwrap(bst_entry_command(ctx->glbl_ctx));
         break;
     case 1:
-        bst_execute_command(ctx);
+        unwrap(bst_execute_command(ctx));
         break;
     case 2:
         bst_function_command(ctx);

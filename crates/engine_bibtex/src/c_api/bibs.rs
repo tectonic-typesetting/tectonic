@@ -15,7 +15,7 @@ use std::{cell::RefCell, ptr::NonNull};
 
 const MAX_BIB_FILES: usize = 20;
 
-pub struct BibData {
+pub(crate) struct BibData {
     bib_file: XBuf<Option<NonNull<PeekableInput>>>,
     bib_list: XBuf<StrNumber>,
     bib_ptr: BibNumber,
@@ -105,14 +105,14 @@ impl BibData {
 }
 
 thread_local! {
-    pub static BIBS: RefCell<BibData> = RefCell::new(BibData::new());
+    static BIBS: RefCell<BibData> = RefCell::new(BibData::new());
 }
 
-pub fn with_bibs<T>(f: impl FnOnce(&BibData) -> T) -> T {
+pub(crate) fn with_bibs<T>(f: impl FnOnce(&BibData) -> T) -> T {
     BIBS.with(|bibs| f(&bibs.borrow()))
 }
 
-pub fn with_bibs_mut<T>(f: impl FnOnce(&mut BibData) -> T) -> T {
+pub(crate) fn with_bibs_mut<T>(f: impl FnOnce(&mut BibData) -> T) -> T {
     BIBS.with(|bibs| f(&mut bibs.borrow_mut()))
 }
 
@@ -164,7 +164,7 @@ pub extern "C" fn set_bib_line_num(num: i32) {
     with_bibs_mut(|bibs| bibs.bib_line_num = num)
 }
 
-pub fn rs_eat_bib_white_space(buffers: &mut GlobalBuffer) -> bool {
+pub(crate) fn rs_eat_bib_white_space(buffers: &mut GlobalBuffer) -> bool {
     let mut init = buffers.init(BufTy::Base);
     while !Scan::new()
         .not_class(LexClass::Whitespace)
@@ -193,7 +193,7 @@ pub extern "C" fn eat_bib_white_space() -> bool {
     with_buffers_mut(rs_eat_bib_white_space)
 }
 
-pub fn compress_bib_white(
+pub(crate) fn compress_bib_white(
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,

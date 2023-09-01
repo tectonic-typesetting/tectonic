@@ -36,7 +36,7 @@ pub enum ScanRes {
 }
 
 #[derive(Default)]
-pub struct Scan<'a> {
+pub(crate) struct Scan<'a> {
     chars: &'a [ASCIICode],
     not_class: Option<LexClass>,
     class: Option<LexClass>,
@@ -141,7 +141,7 @@ pub extern "C" fn scan_alpha() -> bool {
     })
 }
 
-fn rs_scan_identifier(
+pub(crate) fn rs_scan_identifier(
     buffers: &mut GlobalBuffer,
     char1: ASCIICode,
     char2: ASCIICode,
@@ -206,7 +206,7 @@ fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
     idx - start != if sign { 1 } else { 0 }
 }
 
-fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool {
+pub(crate) fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool {
     loop {
         let init = buffers.init(BufTy::Base);
         if Scan::new()
@@ -971,7 +971,7 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
     res.into()
 }
 
-pub fn decr_brace_level(
+pub(crate) fn decr_brace_level(
     ctx: &ExecCtx,
     pool: &StringPool,
     pop_lit_var: StrNumber,
@@ -986,7 +986,7 @@ pub fn decr_brace_level(
     Ok(())
 }
 
-pub fn check_brace_level(
+pub(crate) fn check_brace_level(
     ctx: &ExecCtx,
     pool: &StringPool,
     pop_lit_var: StrNumber,
@@ -998,7 +998,7 @@ pub fn check_brace_level(
     Ok(())
 }
 
-pub fn name_scan_for_and(
+pub(crate) fn name_scan_for_and(
     ctx: &ExecCtx,
     pool: &StringPool,
     buffers: &mut GlobalBuffer,
@@ -1056,7 +1056,7 @@ pub fn name_scan_for_and(
     check_brace_level(ctx, pool, pop_lit_var, *brace_level)
 }
 
-pub fn von_token_found(
+pub(crate) fn von_token_found(
     buffers: &GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
@@ -1127,7 +1127,7 @@ pub fn von_token_found(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn von_name_ends_and_last_name_starts_stuff(
+pub(crate) fn von_name_ends_and_last_name_starts_stuff(
     buffers: &GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
@@ -1149,7 +1149,7 @@ pub fn von_name_ends_and_last_name_starts_stuff(
     Ok(())
 }
 
-pub fn enough_text_chars(
+pub(crate) fn enough_text_chars(
     buffers: &mut GlobalBuffer,
     enough_chars: BufPointer,
     buf_start: BufPointer,
