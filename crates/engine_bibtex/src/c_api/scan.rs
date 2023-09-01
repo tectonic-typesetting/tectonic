@@ -233,6 +233,7 @@ pub unsafe extern "C" fn eat_bst_white_space(ctx: *mut Bibtex) -> bool {
     with_buffers_mut(|buffers| rs_eat_bst_white_space(&mut *ctx, buffers))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn handle_char(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
