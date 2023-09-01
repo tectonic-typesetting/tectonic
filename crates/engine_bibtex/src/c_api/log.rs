@@ -313,20 +313,15 @@ pub fn aux_err_white_space_in_argument_print() {
     write_logs("White space in argument");
 }
 
-#[no_mangle]
-pub extern "C" fn aux_end1_err_print() {
+pub fn aux_end1_err_print() {
     write_logs("I found no ");
 }
 
-#[no_mangle]
-pub extern "C" fn aux_end2_err_print() -> CResult {
+pub fn aux_end2_err_print(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
     write_logs("---while reading file ");
-    match print_aux_name() {
-        CResult::Ok => (),
-        err => return err,
-    }
+    rs_print_aux_name(aux, pool)?;
     mark_error();
-    CResult::Ok
+    Ok(())
 }
 
 pub fn rs_print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {

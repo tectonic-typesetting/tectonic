@@ -16,8 +16,6 @@
 
 static jmp_buf error_jmpbuf, recover_jmpbuf;
 
-#define aux_stack_size 20
-
 typedef size_t hash_loc;
 typedef size_t cite_number;
 typedef size_t field_loc;
@@ -87,83 +85,6 @@ printf_log(const char *fmt, ...)
     va_end (ap);
 
     puts_log(fmt_buf);
-}
-
-static int
-pop_the_aux_stack(void)
-{
-    peekable_close (cur_aux_file());
-    set_cur_aux_file(NULL);
-
-    if (aux_ptr() == 0)
-        return 1;
-
-    set_aux_ptr(aux_ptr() - 1);
-    return 0;
-}
-
-static void get_aux_command_and_process(Bibtex* ctx)
-{
-    bib_set_buf_offset(BUF_TY_BASE, 2, 0);
-    if (!scan1(123 /*left_brace */))
-        return;
-    LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                              (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              STR_ILK_AUX_COMMAND, false));
-    int32_t command_num = ilk_info(hash.loc);
-    if (hash.exists)
-        switch ((command_num)) {
-        case 0:
-            unwrap(aux_bib_data_command(ctx));
-            break;
-        case 1:
-            unwrap(aux_bib_style_command(ctx));
-            break;
-        case 2:
-            unwrap(aux_citation_command(ctx));
-            break;
-        case 3:
-            unwrap(aux_input_command(ctx));
-            break;
-        default:
-            puts_log("Unknown auxiliary-file command");
-            print_confusion();
-            longjmp(error_jmpbuf, 1);
-            break;
-        }
-}
-
-static void last_check_for_aux_errors(Bibtex* ctx)
-{
-    set_num_cites(cite_ptr());
-    ctx->num_bib_files = bib_ptr();
-    if (!ctx->citation_seen) {
-        aux_end1_err_print();
-        puts_log("\\citation commands");
-        unwrap(aux_end2_err_print());
-    } else if ((num_cites() == 0) && (!ctx->all_entries)) {
-        aux_end1_err_print();
-        puts_log("cite keys");
-        unwrap(aux_end2_err_print());
-    }
-    if (!ctx->bib_seen) {
-        aux_end1_err_print();
-        puts_log("\\bibdata command");
-        unwrap(aux_end2_err_print());
-    } else if (ctx->num_bib_files == 0) {
-        aux_end1_err_print();
-        puts_log("database files");
-        unwrap(aux_end2_err_print());
-    }
-    if (!ctx->bst_seen) {
-        aux_end1_err_print();
-        puts_log("\\bibstyle command");
-        unwrap(aux_end2_err_print());
-    } else if (ctx->bst_str == 0) {
-        aux_end1_err_print();
-        puts_log("style file");
-        unwrap(aux_end2_err_print());
-    }
 }
 
 static void bst_entry_command(Bibtex* ctx)
@@ -1563,11 +1484,11 @@ bibtex_main(Bibtex* glbl_ctx, const char *aux_file_name)
             if (pop_the_aux_stack())
                 break;
         } else {
-            get_aux_command_and_process(glbl_ctx);
+            unwrap(get_aux_command_and_process(glbl_ctx));
         }
     }
 
-    last_check_for_aux_errors(glbl_ctx);
+    unwrap(last_check_for_aux_errors(glbl_ctx));
 
     if (glbl_ctx->bst_str == 0)
         goto no_bst_file;

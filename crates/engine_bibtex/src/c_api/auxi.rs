@@ -7,14 +7,15 @@ use crate::{
         exec::print_bst_name,
         hash::{with_hash_mut, HashData},
         log::{
-            aux_err_illegal_another_print, aux_err_no_right_brace_print, aux_err_print,
-            aux_err_stuff_after_right_brace_print, aux_err_white_space_in_argument_print,
-            hash_cite_confusion, log_pr_bst_name, print_a_pool_str, print_confusion,
-            print_overflow, rs_log_pr_aux_name, rs_print_a_token, rs_print_aux_name,
-            rs_print_bib_name, write_log_file, write_logs, AuxTy,
+            aux_end1_err_print, aux_end2_err_print, aux_err_illegal_another_print,
+            aux_err_no_right_brace_print, aux_err_print, aux_err_stuff_after_right_brace_print,
+            aux_err_white_space_in_argument_print, hash_cite_confusion, log_pr_bst_name,
+            print_a_pool_str, print_confusion, print_overflow, rs_log_pr_aux_name,
+            rs_print_a_token, rs_print_aux_name, rs_print_bib_name, write_log_file, write_logs,
+            AuxTy,
         },
-        peekable::{peekable_open, PeekableInput},
-        pool::{with_pool_mut, StringPool},
+        peekable::{peekable_close, peekable_open, PeekableInput},
+        pool::{with_pool, with_pool_mut, StringPool},
         scan::Scan,
         AuxNumber, Bibtex, CResult, StrIlk, StrNumber,
     },
@@ -97,11 +98,6 @@ pub extern "C" fn cur_aux_file() -> *mut PeekableInput {
 }
 
 #[no_mangle]
-pub extern "C" fn set_cur_aux_file(file: *mut PeekableInput) {
-    with_aux_mut(|aux| aux.set_file_at_ptr(file))
-}
-
-#[no_mangle]
 pub extern "C" fn cur_aux_ln() -> i32 {
     with_aux(|aux| aux.ln_at_ptr())
 }
@@ -111,17 +107,7 @@ pub extern "C" fn set_cur_aux_ln(ln: i32) {
     with_aux_mut(|aux| aux.set_ln_at_ptr(ln))
 }
 
-#[no_mangle]
-pub extern "C" fn aux_ptr() -> AuxNumber {
-    with_aux(|aux| aux.aux_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_aux_ptr(num: AuxNumber) {
-    with_aux_mut(|aux| aux.aux_ptr = num)
-}
-
-fn rs_aux_bib_data_command(
+fn aux_bib_data_command(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     bibs: &mut BibData,
@@ -194,7 +180,7 @@ fn rs_aux_bib_data_command(
     Ok(())
 }
 
-fn rs_aux_bib_style_command(
+fn aux_bib_style_command(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     aux: &AuxData,
@@ -265,7 +251,7 @@ fn rs_aux_bib_style_command(
     Ok(())
 }
 
-fn rs_aux_citation_command(
+fn aux_citation_command(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     aux: &AuxData,
@@ -367,7 +353,7 @@ fn rs_aux_citation_command(
     Ok(())
 }
 
-fn rs_aux_input_command(
+fn aux_input_command(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     aux: &mut AuxData,
@@ -457,56 +443,166 @@ fn rs_aux_input_command(
     Ok(())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn aux_bib_data_command(ctx: *mut Bibtex) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_bibs_mut(|bibs| {
-            with_aux(|aux| {
-                with_pool_mut(|pool| {
-                    with_hash_mut(|hash| {
-                        rs_aux_bib_data_command(&mut *ctx, buffers, bibs, aux, pool, hash)
-                    })
-                })
-            })
-        })
-    })
-    .into()
+struct GlobalItems<'a> {
+    buffers: &'a mut GlobalBuffer,
+    aux: &'a mut AuxData,
+    pool: &'a mut StringPool,
+    hash: &'a mut HashData,
+    cites: &'a mut CiteInfo,
+    bibs: &'a mut BibData,
+}
+
+fn rs_get_aux_command_and_process(
+    ctx: &mut Bibtex,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
+    globals.buffers.set_offset(BufTy::Base, 2, 0);
+    let init = globals.buffers.init(BufTy::Base);
+    if !Scan::new().chars(&[b'{']).scan_till(globals.buffers, init) {
+        return Ok(());
+    }
+
+    let line = &globals.buffers.buffer(BufTy::Base)
+        [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
+    let res = globals
+        .pool
+        .lookup_str(globals.hash, line, StrIlk::AuxCommand);
+
+    if res.exists {
+        match globals.hash.ilk_info(res.loc) {
+            0 => aux_bib_data_command(
+                ctx,
+                globals.buffers,
+                globals.bibs,
+                globals.aux,
+                globals.pool,
+                globals.hash,
+            )?,
+            1 => aux_bib_style_command(
+                ctx,
+                globals.buffers,
+                globals.aux,
+                globals.pool,
+                globals.hash,
+            )?,
+            2 => aux_citation_command(
+                ctx,
+                globals.buffers,
+                globals.aux,
+                globals.pool,
+                globals.hash,
+                globals.cites,
+            )?,
+            3 => aux_input_command(
+                ctx,
+                globals.buffers,
+                globals.aux,
+                globals.pool,
+                globals.hash,
+            )?,
+            _ => {
+                write_logs("Unknown auxiliary-file command");
+                print_confusion();
+                return Err(BibtexError::Fatal);
+            }
+        }
+    }
+    Ok(())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn aux_bib_style_command(ctx: *mut Bibtex) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_aux(|aux| {
-            with_pool_mut(|pool| {
-                with_hash_mut(|hash| rs_aux_bib_style_command(&mut *ctx, buffers, aux, pool, hash))
-            })
-        })
-    })
-    .into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn aux_citation_command(ctx: *mut Bibtex) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_aux(|aux| {
-            with_pool_mut(|pool| {
-                with_cites_mut(|cites| {
-                    with_hash_mut(|hash| {
-                        rs_aux_citation_command(&mut *ctx, buffers, aux, pool, hash, cites)
-                    })
-                })
-            })
-        })
-    })
-    .into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn aux_input_command(ctx: *mut Bibtex) -> CResult {
+pub unsafe extern "C" fn get_aux_command_and_process(ctx: *mut Bibtex) -> CResult {
     with_buffers_mut(|buffers| {
         with_aux_mut(|aux| {
             with_pool_mut(|pool| {
-                with_hash_mut(|hash| rs_aux_input_command(&mut *ctx, buffers, aux, pool, hash))
+                with_hash_mut(|hash| {
+                    with_cites_mut(|cites| {
+                        with_bibs_mut(|bibs| {
+                            let mut globals = GlobalItems {
+                                buffers,
+                                aux,
+                                pool,
+                                hash,
+                                cites,
+                                bibs,
+                            };
+
+                            rs_get_aux_command_and_process(&mut *ctx, &mut globals)
+                        })
+                    })
+                })
+            })
+        })
+    })
+    .into()
+}
+
+fn rs_pop_the_aux_stack(aux: &mut AuxData) -> bool {
+    unsafe { peekable_close(NonNull::new(aux.file_at_ptr())) };
+    aux.set_file_at_ptr(ptr::null_mut());
+    if aux.ptr() == 0 {
+        true
+    } else {
+        aux.set_ptr(aux.ptr() - 1);
+        false
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn pop_the_aux_stack() -> bool {
+    with_aux_mut(|aux| rs_pop_the_aux_stack(aux))
+}
+
+fn rs_last_check_for_aux_errors(
+    ctx: &mut Bibtex,
+    aux: &AuxData,
+    pool: &StringPool,
+    cites: &mut CiteInfo,
+    bibs: &mut BibData,
+) -> Result<(), BibtexError> {
+    cites.set_num_cites(cites.ptr());
+    ctx.num_bib_files = bibs.ptr();
+    if !ctx.citation_seen {
+        aux_end1_err_print();
+        write_logs("\\citation commands");
+        aux_end2_err_print(aux, pool)?;
+    } else if cites.num_cites() == 0 && !ctx.all_entries {
+        aux_end1_err_print();
+        write_logs("cite keys");
+        aux_end2_err_print(aux, pool)?;
+    }
+
+    if !ctx.bib_seen {
+        aux_end1_err_print();
+        write_logs("\\bibdata command");
+        aux_end2_err_print(aux, pool)?;
+    } else if ctx.num_bib_files == 0 {
+        aux_end1_err_print();
+        write_logs("database files");
+        aux_end2_err_print(aux, pool)?;
+    }
+
+    if !ctx.bst_seen {
+        aux_end1_err_print();
+        write_logs("\\bibstyle command");
+        aux_end2_err_print(aux, pool)?;
+    } else if ctx.bst_str == 0 {
+        aux_end1_err_print();
+        write_logs("style file");
+        aux_end2_err_print(aux, pool)?;
+    }
+
+    Ok(())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn last_check_for_aux_errors(ctx: *mut Bibtex) -> CResult {
+    with_cites_mut(|cites| {
+        with_aux(|aux| {
+            with_pool(|pool| {
+                with_bibs_mut(|bibs| {
+                    rs_last_check_for_aux_errors(&mut *ctx, aux, pool, cites, bibs)
+                })
             })
         })
     })

@@ -1,7 +1,7 @@
 use crate::c_api::{cite::with_cites, xbuf::XBuf, ASCIICode};
 use std::cell::RefCell;
 
-pub const ENT_STR_SIZE: usize = 250;
+pub(crate) const ENT_STR_SIZE: usize = 250;
 
 pub struct EntryData {
     num_entry_ints: usize,

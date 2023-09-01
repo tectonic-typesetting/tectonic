@@ -24,7 +24,7 @@ use crate::{
     BibtexError,
 };
 
-pub const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
+pub(crate) const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
 
 /// cbindgen:rename-all=ScreamingSnakeCase
 #[repr(C)]

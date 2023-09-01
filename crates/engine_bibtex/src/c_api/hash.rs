@@ -5,14 +5,14 @@ use crate::c_api::{
 };
 use std::cell::RefCell;
 
-pub const HASH_BASE: usize = 1;
-pub const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
+pub(crate) const HASH_BASE: usize = 1;
+pub(crate) const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
     pool::MAX_STRINGS
 } else {
     5000
 };
 const HASH_MAX: usize = HASH_SIZE + HASH_BASE - 1;
-pub const HASH_PRIME: usize = compute_hash_prime();
+pub(crate) const HASH_PRIME: usize = compute_hash_prime();
 
 /// Calculate a prime number for use in hashing that's at least 17/20 of `HASH_SIZE`
 const fn compute_hash_prime() -> usize {

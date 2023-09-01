@@ -78,7 +78,7 @@ static LEX_CLASS: [LexClass; 256] = {
     lex_class
 };
 
-pub const ID_CLASS: [IdClass; 256] = {
+const ID_CLASS: [IdClass; 256] = {
     let mut id_class = [IdClass::LegalIdChar; 256];
 
     // NUL..=US

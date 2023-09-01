@@ -7,16 +7,6 @@
 #include <stdlib.h>
 #include "tectonic_bridge_core.h"
 
-#define MAX_CITES 750
-
-#define ENT_STR_SIZE 250
-
-#define GLOB_STR_SIZE 20000
-
-#define HASH_BASE 1
-
-
-
 typedef enum {
   BUF_TY_BASE,
   BUF_TY_SV,
@@ -135,8 +125,6 @@ typedef struct {
   HashPointer s_aux_extension;
 } Bibtex;
 
-typedef uintptr_t AuxNumber;
-
 typedef uintptr_t BibNumber;
 
 typedef uint8_t ASCIICode;
@@ -209,8 +197,6 @@ typedef struct {
   };
 } CResultBool;
 
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -223,23 +209,15 @@ extern History tt_engine_bibtex_main(ttbc_state_t *api, Bibtex *ctx, const char 
 
 PeekableInput *cur_aux_file(void);
 
-void set_cur_aux_file(PeekableInput *file);
-
 int32_t cur_aux_ln(void);
 
 void set_cur_aux_ln(int32_t ln);
 
-AuxNumber aux_ptr(void);
+CResult get_aux_command_and_process(Bibtex *ctx);
 
-void set_aux_ptr(AuxNumber num);
+bool pop_the_aux_stack(void);
 
-CResult aux_bib_data_command(Bibtex *ctx);
-
-CResult aux_bib_style_command(Bibtex *ctx);
-
-CResult aux_citation_command(Bibtex *ctx);
-
-CResult aux_input_command(Bibtex *ctx);
+CResult last_check_for_aux_errors(Bibtex *ctx);
 
 PeekableInput *cur_bib_file(void);
 
@@ -382,10 +360,6 @@ void print_a_token(void);
 CResult print_aux_name(void);
 
 CResult log_pr_aux_name(void);
-
-void aux_end1_err_print(void);
-
-CResult aux_end2_err_print(void);
 
 CResult print_bib_name(void);
 

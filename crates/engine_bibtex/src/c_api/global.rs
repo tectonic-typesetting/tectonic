@@ -2,7 +2,7 @@ use crate::c_api::{xbuf::XBuf, ASCIICode, StrNumber};
 use std::cell::RefCell;
 
 const MAX_GLOB_STRS: usize = 10;
-pub const GLOB_STR_SIZE: usize = 20000;
+pub(crate) const GLOB_STR_SIZE: usize = 20000;
 
 pub struct GlobalData {
     glb_bib_str_ptr: XBuf<StrNumber>,

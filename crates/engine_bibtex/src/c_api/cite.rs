@@ -8,7 +8,7 @@ use crate::c_api::{
 };
 use std::{cell::RefCell, cmp::Ordering};
 
-pub const MAX_CITES: usize = 750;
+pub(crate) const MAX_CITES: usize = 750;
 
 pub struct CiteInfo {
     cite_list: XBuf<StrNumber>,
@@ -95,6 +95,10 @@ impl CiteInfo {
 
     pub fn num_cites(&self) -> CiteNumber {
         self.num_cites
+    }
+
+    pub fn set_num_cites(&mut self, num: CiteNumber) {
+        self.num_cites = num;
     }
 
     pub fn old_num_cites(&self) -> CiteNumber {
