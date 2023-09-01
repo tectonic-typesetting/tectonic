@@ -130,7 +130,7 @@ pub mod c_api {
     pub mod auxi;
     pub mod bibs;
     pub mod buffer;
-    pub mod char_info;
+    pub(crate) mod char_info;
     pub mod cite;
     pub mod entries;
     pub mod exec;
@@ -142,7 +142,7 @@ pub mod c_api {
     pub mod peekable;
     pub mod pool;
     pub mod scan;
-    pub mod xbuf;
+    pub(crate) mod xbuf;
 
     pub use external::*;
 

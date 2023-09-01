@@ -287,17 +287,17 @@ fn aux_citation_command(
             return Ok(());
         }
 
-        if buffers.offset(BufTy::Base, 2) - buffers.offset(BufTy::Base, 1) == 1 {
-            if buffers.at_offset(BufTy::Base, 1) == b'*' {
-                if ctx.all_entries {
-                    write_logs("Multiple inclusions of entire database\n");
-                    aux_err_print(buffers, aux, pool)?;
-                    return Ok(());
-                } else {
-                    ctx.all_entries = true;
-                    cites.set_all_marker(cites.ptr());
-                    continue;
-                }
+        if buffers.offset(BufTy::Base, 2) - buffers.offset(BufTy::Base, 1) == 1
+            && buffers.at_offset(BufTy::Base, 1) == b'*'
+        {
+            if ctx.all_entries {
+                write_logs("Multiple inclusions of entire database\n");
+                aux_err_print(buffers, aux, pool)?;
+                return Ok(());
+            } else {
+                ctx.all_entries = true;
+                cites.set_all_marker(cites.ptr());
+                continue;
             }
         }
 
@@ -393,16 +393,11 @@ fn aux_input_command(
     }
 
     let aux_ext = pool.get_str(ctx.s_aux_extension);
-    let aux_extension_ok = if (buffers.offset(BufTy::Base, 2) - buffers.offset(BufTy::Base, 1)
+    let aux_extension_ok = !((buffers.offset(BufTy::Base, 2) - buffers.offset(BufTy::Base, 1)
         < aux_ext.len())
         || aux_ext
             != &buffers.buffer(BufTy::Base)
-                [buffers.offset(BufTy::Base, 2) - aux_ext.len()..buffers.offset(BufTy::Base, 2)]
-    {
-        false
-    } else {
-        true
-    };
+                [buffers.offset(BufTy::Base, 2) - aux_ext.len()..buffers.offset(BufTy::Base, 2)]);
 
     if !aux_extension_ok {
         rs_print_a_token(buffers);
@@ -538,6 +533,7 @@ pub unsafe extern "C" fn get_aux_command_and_process(ctx: *mut Bibtex) -> CResul
 }
 
 fn rs_pop_the_aux_stack(aux: &mut AuxData) -> bool {
+    // SAFETY: Aux file at pointer guaranteed valid at this point
     unsafe { peekable_close(NonNull::new(aux.file_at_ptr())) };
     aux.set_file_at_ptr(ptr::null_mut());
     if aux.ptr() == 0 {
@@ -550,7 +546,7 @@ fn rs_pop_the_aux_stack(aux: &mut AuxData) -> bool {
 
 #[no_mangle]
 pub extern "C" fn pop_the_aux_stack() -> bool {
-    with_aux_mut(|aux| rs_pop_the_aux_stack(aux))
+    with_aux_mut(rs_pop_the_aux_stack)
 }
 
 fn rs_last_check_for_aux_errors(
