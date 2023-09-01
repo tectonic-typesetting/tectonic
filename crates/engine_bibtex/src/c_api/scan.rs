@@ -1,6 +1,6 @@
 use crate::{
     c_api::{
-        bibs::{compress_bib_white, rs_eat_bib_white_space, with_bibs_mut},
+        bibs::{compress_bib_white, rs_eat_bib_white_space, with_bibs_mut, BibData},
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::{IdClass, LexClass},
         cite::{rs_add_database_cite, with_cites_mut},
@@ -455,6 +455,7 @@ pub unsafe extern "C" fn scan_fn_def(
 fn scan_balanced_braces(
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
+    bibs: &BibData,
     store_field: bool,
     at_bib_command: bool,
     right_str_delim: ASCIICode,
@@ -463,7 +464,7 @@ fn scan_balanced_braces(
 
     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-        && !compress_bib_white(buffers, pool, at_bib_command)?
+        && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
     {
         return Ok(false);
     }
@@ -494,7 +495,7 @@ fn scan_balanced_braces(
 
                     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                        && !compress_bib_white(buffers, pool, at_bib_command)?
+                        && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
                     {
                         return Ok(false);
                     }
@@ -533,7 +534,7 @@ fn scan_balanced_braces(
 
                         if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                             || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                            && !compress_bib_white(buffers, pool, at_bib_command)?
+                            && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
                         {
                             return Ok(false);
                         }
@@ -544,7 +545,7 @@ fn scan_balanced_braces(
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(buffers, pool, at_bib_command)
+                    return bib_unbalanced_braces_print(buffers, pool, bibs, at_bib_command)
                         .map(|_| false);
                 }
                 c => {
@@ -563,7 +564,7 @@ fn scan_balanced_braces(
 
                     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                        && !compress_bib_white(buffers, pool, at_bib_command)?
+                        && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
                     {
                         return Ok(false);
                     }
@@ -577,7 +578,8 @@ fn scan_balanced_braces(
                     brace_level += 1;
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
                     if !rs_eat_bib_white_space(buffers) {
-                        return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+                        return rs_eat_bib_print(buffers, pool, bibs, at_bib_command)
+                            .map(|_| false);
                     }
                     while brace_level > 0 {
                         let c = buffers.at_offset(BufTy::Base, 2);
@@ -595,12 +597,13 @@ fn scan_balanced_braces(
                             || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
                             && !rs_eat_bib_white_space(buffers)
                         {
-                            return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+                            return rs_eat_bib_print(buffers, pool, bibs, at_bib_command)
+                                .map(|_| false);
                         }
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(buffers, pool, at_bib_command)
+                    return bib_unbalanced_braces_print(buffers, pool, bibs, at_bib_command)
                         .map(|_| false);
                 }
                 _ => {
@@ -611,7 +614,8 @@ fn scan_balanced_braces(
                         .scan_till(buffers, init)
                         && !rs_eat_bib_white_space(buffers)
                     {
-                        return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+                        return rs_eat_bib_print(buffers, pool, bibs, at_bib_command)
+                            .map(|_| false);
                     }
                 }
             }
@@ -627,6 +631,7 @@ fn scan_a_field_token_and_eat_white(
     buffers: &mut GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
+    bibs: &BibData,
     store_field: bool,
     at_bib_command: bool,
     command_num: i32,
@@ -635,12 +640,12 @@ fn scan_a_field_token_and_eat_white(
 ) -> Result<bool, BibtexError> {
     match buffers.at_offset(BufTy::Base, 2) {
         b'{' => {
-            if !scan_balanced_braces(buffers, pool, store_field, at_bib_command, b'}')? {
+            if !scan_balanced_braces(buffers, pool, bibs, store_field, at_bib_command, b'}')? {
                 return Ok(false);
             }
         }
         b'"' => {
-            if !scan_balanced_braces(buffers, pool, store_field, at_bib_command, b'"')? {
+            if !scan_balanced_braces(buffers, pool, bibs, store_field, at_bib_command, b'"')? {
                 return Ok(false);
             }
         }
@@ -687,7 +692,7 @@ fn scan_a_field_token_and_eat_white(
             ) {
                 rs_bib_id_print(buffers, res)?;
                 write_logs("a field part");
-                rs_bib_err_print(buffers, pool, at_bib_command)?;
+                rs_bib_err_print(buffers, pool, bibs, at_bib_command)?;
                 return Ok(false);
             }
 
@@ -704,14 +709,14 @@ fn scan_a_field_token_and_eat_white(
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("used in its own definition\n");
-                    rs_bib_warn_print(pool)?;
+                    rs_bib_warn_print(pool, bibs)?;
                 }
 
                 if !res.exists {
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("undefined\n");
-                    rs_bib_warn_print(pool)?;
+                    rs_bib_warn_print(pool, bibs)?;
                 }
 
                 if store_token {
@@ -760,7 +765,7 @@ fn scan_a_field_token_and_eat_white(
     }
 
     if !rs_eat_bib_white_space(buffers) {
-        return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+        return rs_eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
     }
     Ok(true)
 }
@@ -772,6 +777,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
+    bibs: &mut BibData,
     store_field: bool,
     at_bib_command: bool,
     command_num: i32,
@@ -786,6 +792,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
         buffers,
         hash,
         pool,
+        bibs,
         store_field,
         at_bib_command,
         command_num,
@@ -797,12 +804,13 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
     while buffers.at_offset(BufTy::Base, 2) == b'#' {
         buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
         if !rs_eat_bib_white_space(buffers) {
-            return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+            return rs_eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
         }
         if !scan_a_field_token_and_eat_white(
             buffers,
             hash,
             pool,
+            bibs,
             store_field,
             at_bib_command,
             command_num,
@@ -841,7 +849,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
 
         if at_bib_command {
             match command_num {
-                1 => with_bibs_mut(|bibs| bibs.add_preamble(hash.text(res.loc))),
+                1 => bibs.add_preamble(hash.text(res.loc)),
                 2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i32),
                 _ => {
                     // TODO: Replace command_num with an enum
@@ -868,7 +876,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
                         write_logs("'s extra \"");
                         rs_print_a_pool_str(hash.text(field_name_loc), pool)?;
                         write_logs("\" field\n");
-                        rs_bib_warn_print(pool)?;
+                        rs_bib_warn_print(pool, bibs)?;
                     } else {
                         other.set_field(field_ptr, hash.text(res.loc));
                         if hash.ilk_info(field_name_loc) as usize == other.crossref_num()
@@ -940,19 +948,22 @@ pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
     let res = with_buffers_mut(|buffers| {
         with_hash_mut(|hash| {
             with_pool_mut(|pool| {
-                rs_scan_and_store_the_field_value_and_eat_white(
-                    &*ctx,
-                    buffers,
-                    hash,
-                    pool,
-                    store_field,
-                    at_bib_command,
-                    command_num,
-                    cite_out.as_mut(),
-                    cur_macro_loc,
-                    right_outer_delim,
-                    field_name_loc,
-                )
+                with_bibs_mut(|bibs| {
+                    rs_scan_and_store_the_field_value_and_eat_white(
+                        &*ctx,
+                        buffers,
+                        hash,
+                        pool,
+                        bibs,
+                        store_field,
+                        at_bib_command,
+                        command_num,
+                        cite_out.as_mut(),
+                        cur_macro_loc,
+                        right_outer_delim,
+                        field_name_loc,
+                    )
+                })
             })
         })
     });

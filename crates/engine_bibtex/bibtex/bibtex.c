@@ -89,61 +89,6 @@ printf_log(const char *fmt, ...)
     puts_log(fmt_buf);
 }
 
-static void aux_bib_data_command(Bibtex* ctx)
-{
-    if (ctx->bib_seen) {
-        unwrap(aux_err_illegal_another_print(0 /*n_aux_bibdata */ ));
-        unwrap(aux_err_print());
-        return;
-    }
-    ctx->bib_seen = true;
-    while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-
-        bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-        if (!scan2_white(125 /*right_brace */ , 44 /*comma */)) {
-            aux_err_no_right_brace_print();
-            unwrap(aux_err_print());
-            return;
-        }
-        if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
-            aux_err_white_space_in_argument_print();
-            unwrap(aux_err_print());
-            return;
-        }
-        if ((bib_buf_len(BUF_TY_BASE) > bib_buf_offset(BUF_TY_BASE, 2) + 1) && (bib_buf_at_offset(BUF_TY_BASE, 2) == 125 /*right_brace */ )) {
-            aux_err_stuff_after_right_brace_print();
-            unwrap(aux_err_print());
-            return;
-        }
-
-        check_bib_files(bib_ptr());
-
-        LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                                  (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  STR_ILK_BIB_FILE, true));
-        set_cur_bib(hash_text(hash.loc));
-        if (hash.exists) {
-            puts_log("This database file appears more than once: ");
-            unwrap(print_bib_name());
-            unwrap(aux_err_print());
-            return;
-        }
-        NameAndLen nal = start_name(cur_bib());
-        PeekableInput* bib_in = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_BIB);
-        if (bib_in == NULL) {
-            puts_log("I couldn't open database file ");
-            unwrap(print_bib_name());
-            unwrap(aux_err_print());
-            free(nal.name_of_file);
-            return;
-        }
-        set_cur_bib_file(bib_in);
-        free(nal.name_of_file);
-
-        set_bib_ptr(bib_ptr() + 1);
-    }
-}
-
 static void aux_bib_style_command(Bibtex* ctx)
 {
     if (ctx->bst_seen) {

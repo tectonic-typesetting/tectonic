@@ -1,7 +1,7 @@
 use crate::{
     c_api::{
-        auxi::{cur_aux, cur_aux_ln},
-        bibs::{bib_line_num, cur_bib},
+        auxi::{cur_aux, cur_aux_ln, with_aux, AuxData},
+        bibs::{bib_line_num, cur_bib, with_bibs, BibData},
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::with_cites,
@@ -258,14 +258,15 @@ pub fn sam_wrong_file_name_print(file: &CStr) {
     })
 }
 
+pub fn rs_print_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
+    rs_print_a_pool_str(aux.at_ptr(), pool)?;
+    write_logs("\n");
+    Ok(())
+}
+
 #[no_mangle]
 pub extern "C" fn print_aux_name() -> CResult {
-    match print_a_pool_str(cur_aux()) {
-        CResult::Ok => (),
-        err => return err,
-    }
-    write_logs("\n");
-    CResult::Ok
+    with_aux(|aux| with_pool(|pool| rs_print_aux_name(aux, pool))).into()
 }
 
 #[no_mangle]
@@ -279,21 +280,26 @@ pub extern "C" fn log_pr_aux_name() -> CResult {
     })
 }
 
-#[no_mangle]
-pub extern "C" fn aux_err_print() -> CResult {
+pub fn rs_aux_err_print(
+    buffers: &GlobalBuffer,
+    aux: &AuxData,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
     write_logs(&format!("---line {} of file ", cur_aux_ln()));
-    match print_aux_name() {
-        CResult::Ok => (),
-        err => return err,
-    }
-    with_buffers(print_bad_input_line);
+    rs_print_aux_name(aux, pool)?;
+    print_bad_input_line(buffers);
     print_skipping_whatever_remains();
     write_logs("command\n");
-    CResult::Ok
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn aux_err_illegal_another_print(cmd_num: i32) -> CResult {
+pub extern "C" fn aux_err_print() -> CResult {
+    with_buffers(|buffers| with_aux(|aux| with_pool(|pool| rs_aux_err_print(buffers, aux, pool))))
+        .into()
+}
+
+pub fn rs_aux_err_illegal_another_print(cmd_num: i32) -> Result<(), BibtexError> {
     write_logs("Illegal, another \\bib");
     match cmd_num {
         0 => write_logs("data"),
@@ -301,11 +307,16 @@ pub extern "C" fn aux_err_illegal_another_print(cmd_num: i32) -> CResult {
         _ => {
             write_logs("Illegal auxiliary-file command");
             print_confusion();
-            return CResult::Error;
+            return Err(BibtexError::Fatal);
         }
     }
     write_logs(" command");
-    CResult::Ok
+    Ok(())
+}
+
+#[no_mangle]
+pub extern "C" fn aux_err_illegal_another_print(cmd_num: i32) -> CResult {
+    rs_aux_err_illegal_another_print(cmd_num).into()
 }
 
 #[no_mangle]
@@ -339,10 +350,10 @@ pub extern "C" fn aux_end2_err_print() -> CResult {
     CResult::Ok
 }
 
-pub fn rs_print_bib_name(pool: &StringPool) -> Result<(), BibtexError> {
-    rs_print_a_pool_str(cur_bib(), pool)?;
+pub fn rs_print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
+    rs_print_a_pool_str(bibs.cur_bib(), pool)?;
     let res = pool
-        .try_get_str(cur_bib())
+        .try_get_str(bibs.cur_bib())
         .map_err(|_| BibtexError::Fatal)
         .map(|str| str.ends_with(b".bib"))?;
     if !res {
@@ -354,7 +365,7 @@ pub fn rs_print_bib_name(pool: &StringPool) -> Result<(), BibtexError> {
 
 #[no_mangle]
 pub extern "C" fn print_bib_name() -> CResult {
-    with_pool(rs_print_bib_name).into()
+    with_pool(|pool| with_bibs(|bibs| rs_print_bib_name(pool, bibs))).into()
 }
 
 #[no_mangle]
@@ -451,18 +462,19 @@ pub extern "C" fn bst_right_brace_print() {
     write_logs("\"}\" is missing in command: ");
 }
 
-pub(crate) fn bib_ln_num_print(pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn bib_ln_num_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", bib_line_num()));
-    rs_print_bib_name(pool)
+    rs_print_bib_name(pool, bibs)
 }
 
 pub fn rs_bib_err_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
+    bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("-");
-    bib_ln_num_print(pool)?;
+    bib_ln_num_print(pool, bibs)?;
     print_bad_input_line(buffers);
     print_skipping_whatever_remains();
     if at_bib_command {
@@ -475,32 +487,39 @@ pub fn rs_bib_err_print(
 
 #[no_mangle]
 pub extern "C" fn bib_err_print(at_bib_command: bool) -> CResult {
-    with_buffers(|buffers| with_pool(|pool| rs_bib_err_print(buffers, pool, at_bib_command))).into()
+    with_buffers(|buffers| {
+        with_pool(|pool| with_bibs(|bibs| rs_bib_err_print(buffers, pool, bibs, at_bib_command)))
+    })
+    .into()
 }
 
-pub fn rs_bib_warn_print(pool: &StringPool) -> Result<(), BibtexError> {
-    bib_ln_num_print(pool)?;
+pub fn rs_bib_warn_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
+    bib_ln_num_print(pool, bibs)?;
     mark_warning();
     Ok(())
 }
 
 #[no_mangle]
 pub extern "C" fn bib_warn_print() -> CResult {
-    with_pool(rs_bib_warn_print).into()
+    with_pool(|pool| with_bibs(|bibs| rs_bib_warn_print(pool, bibs))).into()
 }
 
 pub fn rs_eat_bib_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
+    bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("Illegal end of database file");
-    rs_bib_err_print(buffers, pool, at_bib_command)
+    rs_bib_err_print(buffers, pool, bibs, at_bib_command)
 }
 
 #[no_mangle]
 pub extern "C" fn eat_bib_print(at_bib_command: bool) -> CResult {
-    with_buffers(|buffers| with_pool(|pool| rs_eat_bib_print(buffers, pool, at_bib_command))).into()
+    with_buffers(|buffers| {
+        with_pool(|pool| with_bibs(|bibs| rs_eat_bib_print(buffers, pool, bibs, at_bib_command)))
+    })
+    .into()
 }
 
 #[no_mangle]
@@ -513,22 +532,29 @@ pub extern "C" fn bib_one_of_two_print(
         "I was expecting a `{}' or a `{}'",
         char1 as char, char2 as char
     ));
-    with_buffers(|buffers| with_pool(|pool| rs_bib_err_print(buffers, pool, at_bib_command))).into()
+    with_buffers(|buffers| {
+        with_pool(|pool| with_bibs(|bibs| rs_bib_err_print(buffers, pool, bibs, at_bib_command)))
+    })
+    .into()
 }
 
 #[no_mangle]
 pub extern "C" fn bib_equals_sign_print(at_bib_command: bool) -> CResult {
     write_logs("I was expecting an \"=\"");
-    with_buffers(|buffers| with_pool(|pool| rs_bib_err_print(buffers, pool, at_bib_command))).into()
+    with_buffers(|buffers| {
+        with_pool(|pool| with_bibs(|bibs| rs_bib_err_print(buffers, pool, bibs, at_bib_command)))
+    })
+    .into()
 }
 
 pub fn bib_unbalanced_braces_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
+    bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("Unbalanced braces");
-    rs_bib_err_print(buffers, pool, at_bib_command)
+    rs_bib_err_print(buffers, pool, bibs, at_bib_command)
 }
 
 pub fn macro_warn_print(buffers: &GlobalBuffer) {

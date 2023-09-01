@@ -1,5 +1,23 @@
-use crate::c_api::{peekable::PeekableInput, AuxNumber, StrNumber};
-use std::{cell::RefCell, ptr};
+use crate::{
+    c_api::{
+        bibs::{with_bibs_mut, BibData},
+        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        char_info::LexClass,
+        hash::{with_hash_mut, HashData},
+        log::{
+            aux_err_no_right_brace_print, aux_err_stuff_after_right_brace_print,
+            aux_err_white_space_in_argument_print, rs_aux_err_illegal_another_print,
+            rs_aux_err_print, rs_print_bib_name, write_logs,
+        },
+        peekable::{peekable_open, PeekableInput},
+        pool::{with_pool_mut, StringPool},
+        scan::Scan,
+        AuxNumber, Bibtex, CResult, StrIlk, StrNumber,
+    },
+    BibtexError,
+};
+use std::{cell::RefCell, ffi::CString, ptr, ptr::NonNull};
+use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
 
@@ -24,7 +42,7 @@ impl AuxData {
         self.aux_ptr = ptr;
     }
 
-    fn at_ptr(&self) -> StrNumber {
+    pub fn at_ptr(&self) -> StrNumber {
         self.aux_list[self.aux_ptr]
     }
 
@@ -103,4 +121,93 @@ pub extern "C" fn aux_ptr() -> AuxNumber {
 #[no_mangle]
 pub extern "C" fn set_aux_ptr(num: AuxNumber) {
     with_aux_mut(|aux| aux.aux_ptr = num)
+}
+
+fn rs_aux_bib_data_command(
+    ctx: &mut Bibtex,
+    buffers: &mut GlobalBuffer,
+    bibs: &mut BibData,
+    aux: &AuxData,
+    pool: &mut StringPool,
+    hash: &mut HashData,
+) -> Result<(), BibtexError> {
+    if ctx.bib_seen {
+        rs_aux_err_illegal_another_print(0)?;
+        rs_aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+    ctx.bib_seen = true;
+
+    while buffers.at_offset(BufTy::Base, 2) != b'}' {
+        buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+        let init = buffers.init(BufTy::Base);
+        if !Scan::new()
+            .chars(&[b'}', b','])
+            .class(LexClass::Whitespace)
+            .scan_till(buffers, init)
+        {
+            aux_err_no_right_brace_print();
+            rs_aux_err_print(buffers, aux, pool)?;
+            return Ok(());
+        }
+
+        if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
+            aux_err_white_space_in_argument_print();
+            rs_aux_err_print(buffers, aux, pool)?;
+            return Ok(());
+        }
+
+        if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1
+            && buffers.at_offset(BufTy::Base, 2) == b'}'
+        {
+            aux_err_stuff_after_right_brace_print();
+            rs_aux_err_print(buffers, aux, pool)?;
+            return Ok(());
+        }
+
+        if bibs.ptr() == bibs.len() {
+            bibs.grow();
+        }
+
+        let file = &buffers.buffer(BufTy::Base)
+            [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
+        let res = pool.lookup_str_insert(hash, file, StrIlk::BibFile)?;
+        bibs.set_cur_bib(hash.text(res.loc));
+        if res.exists {
+            write_logs("This database file appears more than once: ");
+            rs_print_bib_name(pool, bibs)?;
+            rs_aux_err_print(buffers, aux, pool)?;
+            return Ok(());
+        }
+
+        let name = pool.get_str(bibs.cur_bib());
+        let fname = CString::new(name).unwrap();
+        let bib_in = unsafe { peekable_open(fname.as_ptr(), FileFormat::Bib) };
+        if bib_in.is_null() {
+            write_logs("I couldn't open the database file ");
+            rs_print_bib_name(pool, bibs)?;
+            rs_aux_err_print(buffers, aux, pool)?;
+            return Ok(());
+        }
+        bibs.set_cur_bib_file(NonNull::new(bib_in));
+        bibs.set_ptr(bibs.ptr() + 1);
+    }
+
+    Ok(())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn aux_bib_data_command(ctx: *mut Bibtex) -> CResult {
+    with_buffers_mut(|buffers| {
+        with_bibs_mut(|bibs| {
+            with_aux(|aux| {
+                with_pool_mut(|pool| {
+                    with_hash_mut(|hash| {
+                        rs_aux_bib_data_command(&mut *ctx, buffers, bibs, aux, pool, hash)
+                    })
+                })
+            })
+        })
+    })
+    .into()
 }

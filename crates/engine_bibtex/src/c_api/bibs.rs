@@ -36,11 +36,11 @@ impl BibData {
         }
     }
 
-    fn cur_bib(&self) -> StrNumber {
+    pub fn cur_bib(&self) -> StrNumber {
         self.bib_list[self.bib_ptr]
     }
 
-    fn set_cur_bib(&mut self, num: StrNumber) {
+    pub fn set_cur_bib(&mut self, num: StrNumber) {
         self.bib_list[self.bib_ptr] = num;
     }
 
@@ -56,7 +56,7 @@ impl BibData {
         self.bib_file[self.bib_ptr]
     }
 
-    fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
+    pub fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
         self.bib_file[self.bib_ptr] = input;
     }
 
@@ -85,7 +85,19 @@ impl BibData {
         self.preamble[self.preamble_ptr]
     }
 
-    fn grow(&mut self) {
+    pub fn ptr(&self) -> BibNumber {
+        self.bib_ptr
+    }
+
+    pub fn set_ptr(&mut self, val: BibNumber) {
+        self.bib_ptr = val;
+    }
+
+    pub fn len(&self) -> usize {
+        self.bib_list.len()
+    }
+
+    pub fn grow(&mut self) {
         self.bib_list.grow(MAX_BIB_FILES);
         self.bib_file.grow(MAX_BIB_FILES);
         self.preamble.grow(MAX_BIB_FILES);
@@ -96,7 +108,7 @@ thread_local! {
     pub static BIBS: RefCell<BibData> = RefCell::new(BibData::new());
 }
 
-fn with_bibs<T>(f: impl FnOnce(&BibData) -> T) -> T {
+pub fn with_bibs<T>(f: impl FnOnce(&BibData) -> T) -> T {
     BIBS.with(|bibs| f(&bibs.borrow()))
 }
 
@@ -194,6 +206,7 @@ pub extern "C" fn eat_bib_white_space() -> bool {
 pub fn compress_bib_white(
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
+    bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<bool, BibtexError> {
     if buffers.offset(BufTy::Ex, 1) == buffers.len() {
@@ -214,7 +227,7 @@ pub fn compress_bib_white(
         });
 
         if res {
-            return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+            return rs_eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
         }
 
         with_bibs_mut(|bibs| {
