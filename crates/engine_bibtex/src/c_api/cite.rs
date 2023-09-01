@@ -89,10 +89,6 @@ impl CiteInfo {
         self.entry_cite_ptr
     }
 
-    pub fn set_entry_ptr(&mut self, ptr: CiteNumber) {
-        self.entry_cite_ptr = ptr;
-    }
-
     pub fn num_cites(&self) -> CiteNumber {
         self.num_cites
     }
