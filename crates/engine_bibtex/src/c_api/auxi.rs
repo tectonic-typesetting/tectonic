@@ -3,11 +3,13 @@ use crate::{
         bibs::{with_bibs_mut, BibData},
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
+        exec::rs_print_bst_name,
         hash::{with_hash_mut, HashData},
         log::{
             aux_err_no_right_brace_print, aux_err_stuff_after_right_brace_print,
-            aux_err_white_space_in_argument_print, rs_aux_err_illegal_another_print,
-            rs_aux_err_print, rs_print_bib_name, write_logs,
+            aux_err_white_space_in_argument_print, print_confusion,
+            rs_aux_err_illegal_another_print, rs_aux_err_print, rs_log_pr_bst_name,
+            rs_print_bib_name, write_log_file, write_logs,
         },
         peekable::{peekable_open, PeekableInput},
         pool::{with_pool_mut, StringPool},
@@ -196,6 +198,77 @@ fn rs_aux_bib_data_command(
     Ok(())
 }
 
+fn rs_aux_bib_style_command(
+    ctx: &mut Bibtex,
+    buffers: &mut GlobalBuffer,
+    aux: &AuxData,
+    pool: &mut StringPool,
+    hash: &mut HashData,
+) -> Result<(), BibtexError> {
+    if ctx.bst_seen {
+        rs_aux_err_illegal_another_print(1)?;
+        rs_aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+    ctx.bst_seen = true;
+
+    buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+    let init = buffers.init(BufTy::Base);
+    if !Scan::new()
+        .chars(&[b'}'])
+        .class(LexClass::Whitespace)
+        .scan_till(buffers, init)
+    {
+        aux_err_no_right_brace_print();
+        rs_aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+
+    if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
+        aux_err_white_space_in_argument_print();
+        rs_aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+
+    if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1 {
+        aux_err_stuff_after_right_brace_print();
+        rs_aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+
+    let file = &buffers.buffer(BufTy::Base)
+        [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
+    let res = pool.lookup_str_insert(hash, file, StrIlk::BstFile)?;
+    ctx.bst_str = hash.text(res.loc);
+    if res.exists {
+        write_logs("Already encountered style file");
+        print_confusion();
+        return Err(BibtexError::Fatal);
+    }
+
+    let name = pool.get_str(ctx.bst_str);
+    let fname = CString::new(name).unwrap();
+    let ptr = unsafe { peekable_open(fname.as_ptr(), FileFormat::Bst) };
+    if ptr.is_null() {
+        write_logs("I couldn't open style file ");
+        rs_print_bst_name(ctx, pool)?;
+        ctx.bst_str = 0;
+        rs_aux_err_print(buffers, aux, pool)?;
+        return Ok(());
+    }
+    ctx.bst_file = NonNull::new(ptr);
+
+    if ctx.config.verbose {
+        write_logs("The style file: ");
+        rs_print_bst_name(ctx, pool)?;
+    } else {
+        write_log_file("The style file: ");
+        rs_log_pr_bst_name(ctx, pool)?;
+    }
+
+    Ok(())
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn aux_bib_data_command(ctx: *mut Bibtex) -> CResult {
     with_buffers_mut(|buffers| {
@@ -206,6 +279,18 @@ pub unsafe extern "C" fn aux_bib_data_command(ctx: *mut Bibtex) -> CResult {
                         rs_aux_bib_data_command(&mut *ctx, buffers, bibs, aux, pool, hash)
                     })
                 })
+            })
+        })
+    })
+    .into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn aux_bib_style_command(ctx: *mut Bibtex) -> CResult {
+    with_buffers_mut(|buffers| {
+        with_aux(|aux| {
+            with_pool_mut(|pool| {
+                with_hash_mut(|hash| rs_aux_bib_style_command(&mut *ctx, buffers, aux, pool, hash))
             })
         })
     })

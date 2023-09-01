@@ -89,58 +89,58 @@ printf_log(const char *fmt, ...)
     puts_log(fmt_buf);
 }
 
-static void aux_bib_style_command(Bibtex* ctx)
-{
-    if (ctx->bst_seen) {
-        unwrap(aux_err_illegal_another_print(1 /*n_aux_bibstyle */ ));
-        unwrap(aux_err_print());
-        return;
-    }
-    ctx->bst_seen = true;
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!scan1_white(125 /*right_brace */)) {
-        aux_err_no_right_brace_print();
-        unwrap(aux_err_print());
-        return;
-    }
-    if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
-        aux_err_white_space_in_argument_print();
-        unwrap(aux_err_print());
-        return;
-    }
-    if (bib_buf_len(BUF_TY_BASE) > bib_buf_offset(BUF_TY_BASE, 2) + 1) {
-        aux_err_stuff_after_right_brace_print();
-        unwrap(aux_err_print());
-        return;
-    }
-
-    LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                              (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              STR_ILK_BST_FILE, true));
-    ctx->bst_str = hash_text(hash.loc);
-    if (hash.exists) {
-        puts_log("Already encountered style file");
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-    }
-    NameAndLen nal = start_name(ctx->bst_str);
-    if ((ctx->bst_file = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_BST)) == NULL) {
-        puts_log("I couldn't open style file ");
-        unwrap(print_bst_name(ctx));
-        ctx->bst_str = 0;
-        unwrap(aux_err_print());
-        free(nal.name_of_file);
-        return;
-    }
-    free(nal.name_of_file);
-    if (ctx->config.verbose) {
-        puts_log("The style file: ");
-        unwrap(print_bst_name(ctx));
-    } else {
-        bib_log_prints("The style file: ");
-        unwrap(log_pr_bst_name(ctx));
-    }
-}
+//static void aux_bib_style_command(Bibtex* ctx)
+//{
+//    if (ctx->bst_seen) {
+//        unwrap(aux_err_illegal_another_print(1 /*n_aux_bibstyle */ ));
+//        unwrap(aux_err_print());
+//        return;
+//    }
+//    ctx->bst_seen = true;
+//    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
+//    if (!scan1_white(125 /*right_brace */)) {
+//        aux_err_no_right_brace_print();
+//        unwrap(aux_err_print());
+//        return;
+//    }
+//    if (LEX_CLASS[bib_buf_at_offset(BUF_TY_BASE, 2)] == LEX_CLASS_WHITESPACE ) {
+//        aux_err_white_space_in_argument_print();
+//        unwrap(aux_err_print());
+//        return;
+//    }
+//    if (bib_buf_len(BUF_TY_BASE) > bib_buf_offset(BUF_TY_BASE, 2) + 1) {
+//        aux_err_stuff_after_right_brace_print();
+//        unwrap(aux_err_print());
+//        return;
+//    }
+//
+//    LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
+//                                              (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
+//                                              STR_ILK_BST_FILE, true));
+//    ctx->bst_str = hash_text(hash.loc);
+//    if (hash.exists) {
+//        puts_log("Already encountered style file");
+//        print_confusion();
+//        longjmp(error_jmpbuf, 1);
+//    }
+//    NameAndLen nal = start_name(ctx->bst_str);
+//    if ((ctx->bst_file = peekable_open ((char *) nal.name_of_file, TTBC_FILE_FORMAT_BST)) == NULL) {
+//        puts_log("I couldn't open style file ");
+//        unwrap(print_bst_name(ctx));
+//        ctx->bst_str = 0;
+//        unwrap(aux_err_print());
+//        free(nal.name_of_file);
+//        return;
+//    }
+//    free(nal.name_of_file);
+//    if (ctx->config.verbose) {
+//        puts_log("The style file: ");
+//        unwrap(print_bst_name(ctx));
+//    } else {
+//        bib_log_prints("The style file: ");
+//        unwrap(log_pr_bst_name(ctx));
+//    }
+//}
 
 static void aux_citation_command(Bibtex* ctx)
 {
@@ -321,10 +321,10 @@ static void get_aux_command_and_process(Bibtex* ctx)
     if (hash.exists)
         switch ((command_num)) {
         case 0:
-            aux_bib_data_command(ctx);
+            unwrap(aux_bib_data_command(ctx));
             break;
         case 1:
-            aux_bib_style_command(ctx);
+            unwrap(aux_bib_style_command(ctx));
             break;
         case 2:
             aux_citation_command(ctx);

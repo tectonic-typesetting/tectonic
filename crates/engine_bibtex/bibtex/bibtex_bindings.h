@@ -262,6 +262,10 @@ AuxNumber aux_ptr(void);
 
 void set_aux_ptr(AuxNumber num);
 
+CResult aux_bib_data_command(Bibtex *ctx);
+
+CResult aux_bib_style_command(Bibtex *ctx);
+
 StrNumber cur_bib(void);
 
 void set_cur_bib(StrNumber num);

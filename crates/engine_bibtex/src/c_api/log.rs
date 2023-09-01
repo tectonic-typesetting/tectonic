@@ -390,15 +390,19 @@ pub extern "C" fn log_pr_bib_name() -> CResult {
     })
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn log_pr_bst_name(ctx: *const Bibtex) -> CResult {
+pub fn rs_log_pr_bst_name(ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
-        if !with_pool(|pool| out_pool_str(pool, log, (*ctx).bst_str)) {
-            return CResult::Error;
+        if !out_pool_str(pool, log, ctx.bst_str) {
+            return Err(BibtexError::Fatal);
         }
         writeln!(log, ".bst").unwrap();
-        CResult::Ok
+        Ok(())
     })
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn log_pr_bst_name(ctx: *const Bibtex) -> CResult {
+    with_pool(|pool| rs_log_pr_bst_name(&*ctx, pool)).into()
 }
 
 #[no_mangle]
