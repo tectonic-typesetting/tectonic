@@ -9,9 +9,9 @@ use crate::{
         hash::{with_hash_mut, FnClass, HashData},
         log::{
             bib_cmd_confusion, bib_unbalanced_braces_print, braces_unbalanced_complaint,
-            eat_bst_print, hash_cite_confusion, macro_warn_print, print_confusion,
-            print_recursion_illegal, rs_bib_err_print, rs_bib_id_print, rs_bib_warn_print,
-            rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print, rs_print_a_pool_str,
+            eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str,
+            print_confusion, print_recursion_illegal, rs_bib_err_print, rs_bib_id_print,
+            rs_bib_warn_print, rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print,
             skip_illegal_stuff_after_token_print, skip_token_print,
             skip_token_unknown_function_print, write_log_file, write_logs,
         },
@@ -872,9 +872,9 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
                     /* missing */
                     {
                         write_logs("Warning--I'm ignoring ");
-                        rs_print_a_pool_str(cites.get_cite(cites.entry_ptr()), pool)?;
+                        print_a_pool_str(cites.get_cite(cites.entry_ptr()), pool)?;
                         write_logs("'s extra \"");
-                        rs_print_a_pool_str(hash.text(field_name_loc), pool)?;
+                        print_a_pool_str(hash.text(field_name_loc), pool)?;
                         write_logs("\" field\n");
                         rs_bib_warn_print(pool, bibs)?;
                     } else {

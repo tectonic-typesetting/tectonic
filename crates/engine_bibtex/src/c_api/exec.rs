@@ -11,8 +11,8 @@ use crate::{
         log::{
             brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
             bst_1print_string_size_exceeded, bst_2print_string_size_exceeded,
-            bst_cant_mess_with_entries_print, output_bbl_line, print_confusion,
-            rs_print_a_pool_str, rs_print_fn_class, write_logs,
+            bst_cant_mess_with_entries_print, output_bbl_line, print_a_pool_str, print_confusion,
+            rs_print_fn_class, write_logs,
         },
         other::{with_other, OtherData},
         pool::{add_buf_pool, add_out_pool, with_pool, with_pool_mut, StringPool},
@@ -144,15 +144,15 @@ pub(crate) fn print_lit(
             write_logs(&format!("{}\n", val));
         }
         ExecVal::String(str) => {
-            rs_print_a_pool_str(str, pool)?;
+            print_a_pool_str(str, pool)?;
             write_logs("\n");
         }
         ExecVal::Function(f) => {
-            rs_print_a_pool_str(hash.text(f), pool)?;
+            print_a_pool_str(hash.text(f), pool)?;
             write_logs("\n");
         }
         ExecVal::Missing(s) => {
-            rs_print_a_pool_str(s, pool)?;
+            print_a_pool_str(s, pool)?;
             write_logs("\n");
         }
         ExecVal::Illegal => {
@@ -172,17 +172,17 @@ pub(crate) fn print_stk_lit(
         ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
             write_logs("\"");
-            rs_print_a_pool_str(str, pool)?;
+            print_a_pool_str(str, pool)?;
             write_logs("\" is a string literal");
         }
         ExecVal::Function(f) => {
             write_logs("`");
-            rs_print_a_pool_str(hash.text(f), pool)?;
+            print_a_pool_str(hash.text(f), pool)?;
             write_logs("` is a function literal");
         }
         ExecVal::Missing(s) => {
             write_logs("`");
-            rs_print_a_pool_str(s, pool)?;
+            print_a_pool_str(s, pool)?;
             write_logs("` is a missing field");
         }
         ExecVal::Illegal => {
@@ -223,7 +223,7 @@ pub(crate) fn print_wrong_stk_lit(
 pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        with_cites(|ci| rs_print_a_pool_str(ci.get_cite(ci.ptr()), pool))?;
+        with_cites(|ci| print_a_pool_str(ci.get_cite(ci.ptr()), pool))?;
     }
 
     write_logs("\nwhile executing-");
@@ -234,18 +234,13 @@ pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexE
 
 pub fn bst_ln_num_print(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", glbl_ctx.bst_line_num));
-    rs_print_bst_name(glbl_ctx, pool)
+    print_bst_name(glbl_ctx, pool)
 }
 
-pub fn rs_print_bst_name(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
-    rs_print_a_pool_str(glbl_ctx.bst_str, pool)?;
+pub fn print_bst_name(glbl_ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
+    print_a_pool_str(glbl_ctx.bst_str, pool)?;
     write_logs(".bst\n");
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn print_bst_name(glbl_ctx: *const Bibtex) -> CResult {
-    with_pool(|pool| rs_print_bst_name(&*glbl_ctx, pool)).into()
 }
 
 pub fn illegl_literal_confusion() {
@@ -1053,7 +1048,7 @@ fn interp_change_case(
             };
 
             if conv_ty == ConvTy::Bad {
-                rs_print_a_pool_str(s1, pool)?;
+                print_a_pool_str(s1, pool)?;
                 write_logs(" is an illegal case-conversion string");
                 bst_ex_warn_print(ctx, pool)?;
             }
@@ -1194,7 +1189,7 @@ fn interp_chr_to_int(
             let str = pool.get_str(s1);
             if str.len() != 1 {
                 write_logs("\"");
-                rs_print_a_pool_str(s1, pool)?;
+                print_a_pool_str(s1, pool)?;
                 write_logs("\" isn't a single character");
                 bst_ex_warn_print(ctx, pool)?;
                 ctx.push_stack(ExecVal::Integer(0));
@@ -1333,7 +1328,7 @@ fn interp_format_name(
         } else {
             write_logs(&format!("There aren't {} names in \"", i2));
         }
-        rs_print_a_pool_str(s3, pool)?;
+        print_a_pool_str(s3, pool)?;
         write_logs("\"");
         bst_ex_warn_print(ctx, pool)?;
     }
@@ -1346,7 +1341,7 @@ fn interp_format_name(
             _ => {
                 if buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b',' {
                     write_logs(&format!("Name {} in \"", i2));
-                    rs_print_a_pool_str(s3, pool)?;
+                    print_a_pool_str(s3, pool)?;
                     write_logs("\" has a comma at the end");
                     bst_ex_warn_print(ctx, pool)?;
                     buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
@@ -1382,7 +1377,7 @@ fn interp_format_name(
                     }
                     Commas::Two(_, _) => {
                         write_logs(&format!("Too many commas in name {} of \"", i2));
-                        rs_print_a_pool_str(s3, pool)?;
+                        print_a_pool_str(s3, pool)?;
                         write_logs("\"");
                         bst_ex_warn_print(ctx, pool)?;
                     }
@@ -1418,7 +1413,7 @@ fn interp_format_name(
                 }
 
                 write_logs(&format!("Name {} of \"", i2));
-                rs_print_a_pool_str(s3, pool)?;
+                print_a_pool_str(s3, pool)?;
                 write_logs("\" isn't brace balanced");
                 bst_ex_warn_print(ctx, pool)?;
                 xptr += 1;

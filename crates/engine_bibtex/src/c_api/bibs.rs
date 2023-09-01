@@ -121,16 +121,6 @@ pub fn reset() {
 }
 
 #[no_mangle]
-pub extern "C" fn cur_bib() -> StrNumber {
-    with_bibs(|bibs| bibs.cur_bib())
-}
-
-#[no_mangle]
-pub extern "C" fn set_cur_bib(num: StrNumber) {
-    with_bibs_mut(|bibs| bibs.set_cur_bib(num))
-}
-
-#[no_mangle]
 pub extern "C" fn cur_bib_file() -> Option<NonNull<PeekableInput>> {
     with_bibs_mut(|bibs| bibs.cur_bib_file_raw())
 }

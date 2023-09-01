@@ -1,7 +1,7 @@
 use crate::{
     c_api::{
         auxi::{cur_aux, cur_aux_ln, with_aux, AuxData},
-        bibs::{bib_line_num, cur_bib, with_bibs, BibData},
+        bibs::{bib_line_num, with_bibs, BibData},
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::with_cites,
@@ -130,13 +130,6 @@ pub unsafe extern "C" fn bib_log_prints(str: *const libc::c_char) {
 }
 
 #[no_mangle]
-pub extern "C" fn putc_log(c: libc::c_int) {
-    let c = c as u8;
-    let _ = with_log(|log| log.write_all(&[c]));
-    let _ = with_stdout(|out| out.write_all(&[c]));
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn puts_log(str: *const libc::c_char) {
     let str = CStr::from_ptr(str);
     let _ = with_log(|log| log.write_all(str.to_bytes()));
@@ -218,19 +211,23 @@ pub(crate) fn print_skipping_whatever_remains() {
     write_logs("I'm skipping whatever remains of this ");
 }
 
-pub(crate) fn out_pool_str(pool: &StringPool, handle: &mut OutputHandle, s: StrNumber) -> bool {
+pub(crate) fn out_pool_str(
+    pool: &StringPool,
+    handle: &mut OutputHandle,
+    s: StrNumber,
+) -> Result<(), BibtexError> {
     let str = pool.try_get_str(s);
     if let Ok(str) = str {
         handle.write_all(str).unwrap();
-        true
+        Ok(())
     } else {
         write_logs(&format!("Illegal string number: {}", s));
         print_confusion();
-        false
+        Err(BibtexError::Fatal)
     }
 }
 
-pub fn rs_print_a_pool_str(s: StrNumber, pool: &StringPool) -> Result<(), BibtexError> {
+pub fn print_a_pool_str(s: StrNumber, pool: &StringPool) -> Result<(), BibtexError> {
     let str = pool.try_get_str(s);
     if let Ok(str) = str {
         write_logs(str);
@@ -240,11 +237,6 @@ pub fn rs_print_a_pool_str(s: StrNumber, pool: &StringPool) -> Result<(), Bibtex
         print_confusion();
         Err(BibtexError::Fatal)
     }
-}
-
-#[no_mangle]
-pub extern "C" fn print_a_pool_str(s: StrNumber) -> CResult {
-    with_pool(|pool| rs_print_a_pool_str(s, pool)).into()
 }
 
 pub fn sam_wrong_file_name_print(file: &CStr) {
@@ -259,7 +251,7 @@ pub fn sam_wrong_file_name_print(file: &CStr) {
 }
 
 pub fn rs_print_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
-    rs_print_a_pool_str(aux.at_ptr(), pool)?;
+    print_a_pool_str(aux.at_ptr(), pool)?;
     write_logs("\n");
     Ok(())
 }
@@ -272,8 +264,9 @@ pub extern "C" fn print_aux_name() -> CResult {
 #[no_mangle]
 pub extern "C" fn log_pr_aux_name() -> CResult {
     with_log(|log| {
-        if !with_pool(|pool| out_pool_str(pool, log, cur_aux())) {
-            return CResult::Error;
+        match with_pool(|pool| out_pool_str(pool, log, cur_aux())) {
+            Ok(()) => (),
+            err => return err.into(),
         }
         writeln!(log).unwrap();
         CResult::Ok
@@ -299,24 +292,19 @@ pub extern "C" fn aux_err_print() -> CResult {
         .into()
 }
 
-pub fn rs_aux_err_illegal_another_print(cmd_num: i32) -> Result<(), BibtexError> {
+pub enum AuxTy {
+    Data,
+    Style,
+}
+
+pub fn aux_err_illegal_another_print(cmd: AuxTy) -> Result<(), BibtexError> {
     write_logs("Illegal, another \\bib");
-    match cmd_num {
-        0 => write_logs("data"),
-        1 => write_logs("style"),
-        _ => {
-            write_logs("Illegal auxiliary-file command");
-            print_confusion();
-            return Err(BibtexError::Fatal);
-        }
+    match cmd {
+        AuxTy::Data => write_logs("data"),
+        AuxTy::Style => write_logs("style"),
     }
     write_logs(" command");
     Ok(())
-}
-
-#[no_mangle]
-pub extern "C" fn aux_err_illegal_another_print(cmd_num: i32) -> CResult {
-    rs_aux_err_illegal_another_print(cmd_num).into()
 }
 
 #[no_mangle]
@@ -351,7 +339,7 @@ pub extern "C" fn aux_end2_err_print() -> CResult {
 }
 
 pub fn rs_print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
-    rs_print_a_pool_str(bibs.cur_bib(), pool)?;
+    print_a_pool_str(bibs.cur_bib(), pool)?;
     let res = pool
         .try_get_str(bibs.cur_bib())
         .map_err(|_| BibtexError::Fatal)
@@ -371,38 +359,35 @@ pub extern "C" fn print_bib_name() -> CResult {
 #[no_mangle]
 pub extern "C" fn log_pr_bib_name() -> CResult {
     with_log(|log| {
-        if !with_pool(|pool| out_pool_str(pool, log, cur_bib())) {
-            return CResult::Error;
-        }
-        let res = with_pool(|pool| {
-            pool.try_get_str(cur_bib())
-                .map(|str| str.ends_with(b".bib"))
-        });
-        match res {
-            Ok(true) => (),
-            Ok(false) => {
-                write!(log, ".bib").unwrap();
+        with_bibs(|bibs| {
+            match with_pool(|pool| out_pool_str(pool, log, bibs.cur_bib())) {
+                Ok(()) => (),
+                err => return err.into(),
             }
-            Err(_) => return CResult::Error,
-        }
-        writeln!(log).unwrap();
-        CResult::Ok
+            let res = with_pool(|pool| {
+                pool.try_get_str(bibs.cur_bib())
+                    .map(|str| str.ends_with(b".bib"))
+            });
+            match res {
+                Ok(true) => (),
+                Ok(false) => {
+                    write!(log, ".bib").unwrap();
+                }
+                Err(_) => return CResult::Error,
+            }
+            writeln!(log).unwrap();
+            CResult::Ok
+        })
     })
 }
 
-pub fn rs_log_pr_bst_name(ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
+pub fn log_pr_bst_name(ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
-        if !out_pool_str(pool, log, ctx.bst_str) {
-            return Err(BibtexError::Fatal);
-        }
+        // TODO: This call can panic if bst_str doesn't exist
+        out_pool_str(pool, log, ctx.bst_str)?;
         writeln!(log, ".bst").unwrap();
         Ok(())
     })
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn log_pr_bst_name(ctx: *const Bibtex) -> CResult {
-    with_pool(|pool| rs_log_pr_bst_name(&*ctx, pool)).into()
 }
 
 #[no_mangle]
@@ -604,26 +589,28 @@ pub extern "C" fn cite_key_disappeared_confusion() {
 
 #[no_mangle]
 pub extern "C" fn bad_cross_reference_print(s: StrNumber) -> CResult {
-    write_logs("--entry \"");
-    match with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr()))) {
-        CResult::Ok => (),
-        err => return err,
-    }
-    write_logs("\"\nrefers to entry \"");
-    match print_a_pool_str(s) {
-        CResult::Ok => (),
-        err => return err,
-    }
-    write_logs("\"");
-    CResult::Ok
+    with_pool(|pool| {
+        write_logs("--entry \"");
+        match with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr()), pool)) {
+            Ok(()) => (),
+            err => return err.into(),
+        }
+        write_logs("\"\nrefers to entry \"");
+        match print_a_pool_str(s, pool) {
+            Ok(()) => (),
+            err => return err.into(),
+        }
+        write_logs("\"");
+        CResult::Ok
+    })
 }
 
 #[no_mangle]
 pub extern "C" fn print_missing_entry(s: StrNumber) -> CResult {
     write_logs("Warning--I didn't find a database entry for \"");
-    match print_a_pool_str(s) {
-        CResult::Ok => (),
-        err => return err,
+    match with_pool(|pool| print_a_pool_str(s, pool)) {
+        Ok(()) => (),
+        err => return err.into(),
     }
     write_logs("\"\n");
     mark_warning();
@@ -633,7 +620,7 @@ pub extern "C" fn print_missing_entry(s: StrNumber) -> CResult {
 pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        with_cites(|cites| rs_print_a_pool_str(cites.get_cite(cites.ptr()), pool))?;
+        with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr()), pool))?;
     }
     write_logs("\nwhile executing");
     rs_bst_warn_print(ctx.glbl_ctx(), pool)
@@ -667,7 +654,7 @@ pub fn braces_unbalanced_complaint(
     pop_lit_var: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("Warning--\"");
-    rs_print_a_pool_str(pop_lit_var, pool)?;
+    print_a_pool_str(pop_lit_var, pool)?;
     write_logs("\" isn't a brace-balanced string");
     bst_mild_ex_warn_print(ctx, pool)
 }
@@ -728,7 +715,7 @@ fn rs_already_seen_function_print(
     hash: &HashData,
     seen_fn_loc: HashPointer,
 ) -> Result<(), BibtexError> {
-    rs_print_a_pool_str(hash.text(seen_fn_loc), pool)?;
+    print_a_pool_str(hash.text(seen_fn_loc), pool)?;
     write_logs(" is already a type \"");
     rs_print_fn_class(hash, seen_fn_loc);
     write_logs("\" function name\n");
@@ -842,7 +829,7 @@ pub fn brace_lvl_one_letters_complaint(
     str: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("The format string \"");
-    rs_print_a_pool_str(str, pool)?;
+    print_a_pool_str(str, pool)?;
     write_logs("\" has an illegal brace-level-1 letter");
     bst_ex_warn_print(ctx, pool)?;
     Ok(())

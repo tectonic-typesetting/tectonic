@@ -266,9 +266,7 @@ CResult aux_bib_data_command(Bibtex *ctx);
 
 CResult aux_bib_style_command(Bibtex *ctx);
 
-StrNumber cur_bib(void);
-
-void set_cur_bib(StrNumber num);
+CResult aux_citation_command(Bibtex *ctx);
 
 PeekableInput *cur_bib_file(void);
 
@@ -313,8 +311,6 @@ void set_cite_list(CiteNumber num, StrNumber str);
 CiteNumber cite_ptr(void);
 
 void set_cite_ptr(CiteNumber num);
-
-void check_cite_overflow(CiteNumber last_cite);
 
 uintptr_t max_cites(void);
 
@@ -364,8 +360,6 @@ void set_num_ent_strs(uintptr_t val);
 
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
-CResult print_bst_name(const Bibtex *glbl_ctx);
-
 void init_command_execution(ExecCtx *ctx);
 
 CResult check_command_execution(ExecCtx *ctx);
@@ -406,8 +400,6 @@ void bib_close_log(void);
 
 void bib_log_prints(const char *str);
 
-void putc_log(int c);
-
 void puts_log(const char *str);
 
 void print_overflow(void);
@@ -416,15 +408,11 @@ void print_confusion(void);
 
 void print_a_token(void);
 
-CResult print_a_pool_str(StrNumber s);
-
 CResult print_aux_name(void);
 
 CResult log_pr_aux_name(void);
 
 CResult aux_err_print(void);
-
-CResult aux_err_illegal_another_print(int32_t cmd_num);
 
 void aux_err_no_right_brace_print(void);
 
@@ -439,8 +427,6 @@ CResult aux_end2_err_print(void);
 CResult print_bib_name(void);
 
 CResult log_pr_bib_name(void);
-
-CResult log_pr_bst_name(const Bibtex *ctx);
 
 void hash_cite_confusion(void);
 

@@ -38,7 +38,7 @@ impl CiteInfo {
         }
     }
 
-    fn grow(&mut self) {
+    pub fn grow(&mut self) {
         self.cite_list.grow(MAX_CITES);
         self.cite_info.grow(MAX_CITES);
         self.type_list.grow(MAX_CITES);
@@ -100,6 +100,14 @@ impl CiteInfo {
     pub fn old_num_cites(&self) -> CiteNumber {
         self.old_num_cites
     }
+
+    pub fn len(&self) -> usize {
+        self.cite_list.len()
+    }
+
+    pub fn set_all_marker(&mut self, val: CiteNumber) {
+        self.all_marker = val;
+    }
 }
 
 thread_local! {
@@ -153,15 +161,6 @@ pub extern "C" fn cite_ptr() -> CiteNumber {
 #[no_mangle]
 pub extern "C" fn set_cite_ptr(num: CiteNumber) {
     with_cites_mut(|cites| cites.set_ptr(num))
-}
-
-#[no_mangle]
-pub extern "C" fn check_cite_overflow(last_cite: CiteNumber) {
-    with_cites_mut(|cites| {
-        if last_cite == cites.cite_list.len() {
-            cites.grow();
-        }
-    })
 }
 
 #[no_mangle]
