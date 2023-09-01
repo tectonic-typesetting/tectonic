@@ -9,8 +9,8 @@ use crate::{
         log::{output_bbl_line, print_overflow, write_logs},
         other::with_other_mut,
         xbuf::XBuf,
-        ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, HashPointer, LookupRes, PoolPointer,
-        StrIlk, StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResultLookup, HashPointer, LookupRes, PoolPointer, StrIlk,
+        StrNumber,
     },
     BibtexError,
 };
@@ -266,33 +266,13 @@ pub extern "C" fn bib_str_pool(idx: PoolPointer) -> ASCIICode {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_str_ptr() -> StrNumber {
-    with_pool(|pool| pool.str_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_str_ptr(ptr: StrNumber) {
-    with_pool_mut(|pool| pool.str_ptr = ptr);
-}
-
-#[no_mangle]
 pub extern "C" fn bib_str_start(s: StrNumber) -> PoolPointer {
     with_pool(|pool| pool.offsets[s])
 }
 
 #[no_mangle]
-pub extern "C" fn bib_set_str_start(s: StrNumber, ptr: PoolPointer) {
-    with_pool_mut(|pool| pool.offsets[s] = ptr)
-}
-
-#[no_mangle]
 pub extern "C" fn bib_max_strings() -> usize {
     MAX_STRINGS
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
-    with_pool_mut(|pool| pool.pool_ptr = ptr)
 }
 
 pub(crate) fn add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
@@ -328,163 +308,160 @@ pub extern "C" fn str_lookup(
     })
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
-    let ctx = &mut *ctx;
-    let res: Result<_, BibtexError> = with_hash_mut(|hash| {
-        with_pool_mut(|pool| {
-            let res = pool.lookup_str_insert(hash, b".aux", StrIlk::FileExt)?;
-            ctx.s_aux_extension = hash.text(res.loc);
+pub(crate) fn pre_def_certain_strings(
+    ctx: &mut Bibtex,
+    pool: &mut StringPool,
+    hash: &mut HashData,
+) -> Result<(), BibtexError> {
+    let res = pool.lookup_str_insert(hash, b".aux", StrIlk::FileExt)?;
+    ctx.s_aux_extension = hash.text(res.loc);
 
-            let res = pool.lookup_str_insert(hash, b"\\citation", StrIlk::AuxCommand)?;
-            hash.set_ilk_info(res.loc, 2);
-            let res = pool.lookup_str_insert(hash, b"\\bibdata", StrIlk::AuxCommand)?;
-            hash.set_ilk_info(res.loc, 0);
-            let res = pool.lookup_str_insert(hash, b"\\bibstyle", StrIlk::AuxCommand)?;
-            hash.set_ilk_info(res.loc, 1);
-            let res = pool.lookup_str_insert(hash, b"\\@input", StrIlk::AuxCommand)?;
-            hash.set_ilk_info(res.loc, 3);
+    let res = pool.lookup_str_insert(hash, b"\\citation", StrIlk::AuxCommand)?;
+    hash.set_ilk_info(res.loc, 2);
+    let res = pool.lookup_str_insert(hash, b"\\bibdata", StrIlk::AuxCommand)?;
+    hash.set_ilk_info(res.loc, 0);
+    let res = pool.lookup_str_insert(hash, b"\\bibstyle", StrIlk::AuxCommand)?;
+    hash.set_ilk_info(res.loc, 1);
+    let res = pool.lookup_str_insert(hash, b"\\@input", StrIlk::AuxCommand)?;
+    hash.set_ilk_info(res.loc, 3);
 
-            let res = pool.lookup_str_insert(hash, b"entry", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 0);
-            let res = pool.lookup_str_insert(hash, b"execute", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 1);
-            let res = pool.lookup_str_insert(hash, b"function", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 2);
-            let res = pool.lookup_str_insert(hash, b"integers", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 3);
-            let res = pool.lookup_str_insert(hash, b"iterate", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 4);
-            let res = pool.lookup_str_insert(hash, b"macro", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 5);
-            let res = pool.lookup_str_insert(hash, b"read", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 6);
-            let res = pool.lookup_str_insert(hash, b"reverse", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 7);
-            let res = pool.lookup_str_insert(hash, b"sort", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 8);
-            let res = pool.lookup_str_insert(hash, b"strings", StrIlk::BstCommand)?;
-            hash.set_ilk_info(res.loc, 9);
+    let res = pool.lookup_str_insert(hash, b"entry", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 0);
+    let res = pool.lookup_str_insert(hash, b"execute", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 1);
+    let res = pool.lookup_str_insert(hash, b"function", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 2);
+    let res = pool.lookup_str_insert(hash, b"integers", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 3);
+    let res = pool.lookup_str_insert(hash, b"iterate", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 4);
+    let res = pool.lookup_str_insert(hash, b"macro", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 5);
+    let res = pool.lookup_str_insert(hash, b"read", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 6);
+    let res = pool.lookup_str_insert(hash, b"reverse", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 7);
+    let res = pool.lookup_str_insert(hash, b"sort", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 8);
+    let res = pool.lookup_str_insert(hash, b"strings", StrIlk::BstCommand)?;
+    hash.set_ilk_info(res.loc, 9);
 
-            let res = pool.lookup_str_insert(hash, b"comment", StrIlk::BibCommand)?;
-            hash.set_ilk_info(res.loc, 0);
-            let res = pool.lookup_str_insert(hash, b"preamble", StrIlk::BibCommand)?;
-            hash.set_ilk_info(res.loc, 1);
-            let res = pool.lookup_str_insert(hash, b"string", StrIlk::BibCommand)?;
-            hash.set_ilk_info(res.loc, 2);
+    let res = pool.lookup_str_insert(hash, b"comment", StrIlk::BibCommand)?;
+    hash.set_ilk_info(res.loc, 0);
+    let res = pool.lookup_str_insert(hash, b"preamble", StrIlk::BibCommand)?;
+    hash.set_ilk_info(res.loc, 1);
+    let res = pool.lookup_str_insert(hash, b"string", StrIlk::BibCommand)?;
+    hash.set_ilk_info(res.loc, 2);
 
-            let mut build_in = |pds: &[ASCIICode], blt_in_num| {
-                let res = pool.lookup_str_insert(hash, pds, StrIlk::BstFn)?;
-                hash.set_ty(res.loc, FnClass::Builtin);
-                hash.set_ilk_info(res.loc, blt_in_num);
-                Ok(res.loc)
-            };
+    let mut build_in = |pds: &[ASCIICode], blt_in_num| {
+        let res = pool.lookup_str_insert(hash, pds, StrIlk::BstFn)?;
+        hash.set_ty(res.loc, FnClass::Builtin);
+        hash.set_ilk_info(res.loc, blt_in_num);
+        Ok(res.loc)
+    };
 
-            build_in(b"=", 0)?;
-            build_in(b">", 1)?;
-            build_in(b"<", 2)?;
-            build_in(b"+", 3)?;
-            build_in(b"-", 4)?;
-            build_in(b"*", 5)?;
-            build_in(b":=", 6)?;
-            build_in(b"add.period$", 7)?;
-            build_in(b"call.type$", 8)?;
-            build_in(b"change.case$", 9)?;
-            build_in(b"chr.to.int$", 10)?;
-            build_in(b"cite$", 11)?;
-            build_in(b"duplicate$", 12)?;
-            build_in(b"empty$", 13)?;
-            build_in(b"format.name$", 14)?;
-            build_in(b"if$", 15)?;
-            build_in(b"int.to.chr$", 16)?;
-            build_in(b"int.to.str$", 17)?;
-            build_in(b"missing$", 18)?;
-            build_in(b"newline$", 19)?;
-            build_in(b"num.names$", 20)?;
-            build_in(b"pop$", 21)?;
-            build_in(b"preamble$", 22)?;
-            build_in(b"purify$", 23)?;
-            build_in(b"quote$", 24)?;
-            let skip_loc = build_in(b"skip$", 25)?;
-            build_in(b"stack$", 26)?;
-            build_in(b"substring$", 27)?;
-            build_in(b"swap$", 28)?;
-            build_in(b"text.length$", 29)?;
-            build_in(b"text.prefix$", 30)?;
-            build_in(b"top$", 31)?;
-            build_in(b"type$", 32)?;
-            build_in(b"warning$", 33)?;
-            build_in(b"while$", 34)?;
-            build_in(b"width$", 35)?;
-            build_in(b"write$", 36)?;
+    build_in(b"=", 0)?;
+    build_in(b">", 1)?;
+    build_in(b"<", 2)?;
+    build_in(b"+", 3)?;
+    build_in(b"-", 4)?;
+    build_in(b"*", 5)?;
+    build_in(b":=", 6)?;
+    build_in(b"add.period$", 7)?;
+    build_in(b"call.type$", 8)?;
+    build_in(b"change.case$", 9)?;
+    build_in(b"chr.to.int$", 10)?;
+    build_in(b"cite$", 11)?;
+    build_in(b"duplicate$", 12)?;
+    build_in(b"empty$", 13)?;
+    build_in(b"format.name$", 14)?;
+    build_in(b"if$", 15)?;
+    build_in(b"int.to.chr$", 16)?;
+    build_in(b"int.to.str$", 17)?;
+    build_in(b"missing$", 18)?;
+    build_in(b"newline$", 19)?;
+    build_in(b"num.names$", 20)?;
+    build_in(b"pop$", 21)?;
+    build_in(b"preamble$", 22)?;
+    build_in(b"purify$", 23)?;
+    build_in(b"quote$", 24)?;
+    let skip_loc = build_in(b"skip$", 25)?;
+    build_in(b"stack$", 26)?;
+    build_in(b"substring$", 27)?;
+    build_in(b"swap$", 28)?;
+    build_in(b"text.length$", 29)?;
+    build_in(b"text.prefix$", 30)?;
+    build_in(b"top$", 31)?;
+    build_in(b"type$", 32)?;
+    build_in(b"warning$", 33)?;
+    build_in(b"while$", 34)?;
+    build_in(b"width$", 35)?;
+    build_in(b"write$", 36)?;
 
-            let res = pool.lookup_str_insert(hash, b"", StrIlk::Text)?;
-            hash.set_ty(res.loc, FnClass::StrLit);
-            ctx.s_null = hash.text(res.loc);
-            let res = pool.lookup_str_insert(hash, b"default.type", StrIlk::Text)?;
-            hash.set_ty(res.loc, FnClass::StrLit);
-            ctx.s_default = hash.text(res.loc);
-            ctx.b_default = skip_loc;
+    let res = pool.lookup_str_insert(hash, b"", StrIlk::Text)?;
+    hash.set_ty(res.loc, FnClass::StrLit);
+    ctx.s_null = hash.text(res.loc);
+    let res = pool.lookup_str_insert(hash, b"default.type", StrIlk::Text)?;
+    hash.set_ty(res.loc, FnClass::StrLit);
+    ctx.s_default = hash.text(res.loc);
+    ctx.b_default = skip_loc;
 
-            let res = pool.lookup_str_insert(hash, b"i", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 0);
-            let res = pool.lookup_str_insert(hash, b"j", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 1);
-            let res = pool.lookup_str_insert(hash, b"oe", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 2);
-            let res = pool.lookup_str_insert(hash, b"OE", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 3);
-            let res = pool.lookup_str_insert(hash, b"ae", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 4);
-            let res = pool.lookup_str_insert(hash, b"AE", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 5);
-            let res = pool.lookup_str_insert(hash, b"aa", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 6);
-            let res = pool.lookup_str_insert(hash, b"AA", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 7);
-            let res = pool.lookup_str_insert(hash, b"o", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 8);
-            let res = pool.lookup_str_insert(hash, b"O", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 9);
-            let res = pool.lookup_str_insert(hash, b"l", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 10);
-            let res = pool.lookup_str_insert(hash, b"L", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 11);
-            let res = pool.lookup_str_insert(hash, b"ss", StrIlk::ControlSeq)?;
-            hash.set_ilk_info(res.loc, 12);
+    let res = pool.lookup_str_insert(hash, b"i", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 0);
+    let res = pool.lookup_str_insert(hash, b"j", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 1);
+    let res = pool.lookup_str_insert(hash, b"oe", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 2);
+    let res = pool.lookup_str_insert(hash, b"OE", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 3);
+    let res = pool.lookup_str_insert(hash, b"ae", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 4);
+    let res = pool.lookup_str_insert(hash, b"AE", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 5);
+    let res = pool.lookup_str_insert(hash, b"aa", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 6);
+    let res = pool.lookup_str_insert(hash, b"AA", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 7);
+    let res = pool.lookup_str_insert(hash, b"o", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 8);
+    let res = pool.lookup_str_insert(hash, b"O", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 9);
+    let res = pool.lookup_str_insert(hash, b"l", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 10);
+    let res = pool.lookup_str_insert(hash, b"L", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 11);
+    let res = pool.lookup_str_insert(hash, b"ss", StrIlk::ControlSeq)?;
+    hash.set_ilk_info(res.loc, 12);
 
-            with_other_mut(|other| {
-                let res = pool.lookup_str_insert(hash, b"crossref", StrIlk::BstFn)?;
-                let num_fields = other.num_fields();
-                hash.set_ty(res.loc, FnClass::Field);
-                hash.set_ilk_info(res.loc, num_fields as i32);
-                other.set_crossref_num(num_fields);
-                other.set_num_fields(num_fields + 1);
-                other.set_pre_defined_fields(num_fields + 1);
-                Ok(())
-            })?;
+    with_other_mut(|other| {
+        let res = pool.lookup_str_insert(hash, b"crossref", StrIlk::BstFn)?;
+        let num_fields = other.num_fields();
+        hash.set_ty(res.loc, FnClass::Field);
+        hash.set_ilk_info(res.loc, num_fields as i32);
+        other.set_crossref_num(num_fields);
+        other.set_num_fields(num_fields + 1);
+        other.set_pre_defined_fields(num_fields + 1);
+        Ok(())
+    })?;
 
-            with_entries_mut(|entries| {
-                let res = pool.lookup_str_insert(hash, b"sort.key$", StrIlk::BstFn)?;
-                hash.set_ty(res.loc, FnClass::StrEntryVar);
-                hash.set_ilk_info(res.loc, entries.num_ent_strs() as i32);
-                entries.set_sort_key_num(entries.num_ent_strs());
-                entries.set_num_ent_strs(entries.num_ent_strs() + 1);
-                Ok(())
-            })?;
+    with_entries_mut(|entries| {
+        let res = pool.lookup_str_insert(hash, b"sort.key$", StrIlk::BstFn)?;
+        hash.set_ty(res.loc, FnClass::StrEntryVar);
+        hash.set_ilk_info(res.loc, entries.num_ent_strs() as i32);
+        entries.set_sort_key_num(entries.num_ent_strs());
+        entries.set_num_ent_strs(entries.num_ent_strs() + 1);
+        Ok(())
+    })?;
 
-            let res = pool.lookup_str_insert(hash, b"entry.max$", StrIlk::BstFn)?;
-            hash.set_ty(res.loc, FnClass::IntGlblVar);
-            hash.set_ilk_info(res.loc, ENT_STR_SIZE as i32);
+    let res = pool.lookup_str_insert(hash, b"entry.max$", StrIlk::BstFn)?;
+    hash.set_ty(res.loc, FnClass::IntGlblVar);
+    hash.set_ilk_info(res.loc, ENT_STR_SIZE as i32);
 
-            let res = pool.lookup_str_insert(hash, b"global.max$", StrIlk::BstFn)?;
-            hash.set_ty(res.loc, FnClass::IntGlblVar);
-            hash.set_ilk_info(res.loc, GLOB_STR_SIZE as i32);
+    let res = pool.lookup_str_insert(hash, b"global.max$", StrIlk::BstFn)?;
+    hash.set_ty(res.loc, FnClass::IntGlblVar);
+    hash.set_ilk_info(res.loc, GLOB_STR_SIZE as i32);
 
-            Ok(())
-        })
-    });
-    res.into()
+    Ok(())
 }
 
 pub(crate) fn add_out_pool(

@@ -15,11 +15,11 @@ use crate::{
             skip_illegal_stuff_after_token_print, skip_token_print,
             skip_token_unknown_function_print, write_log_file, write_logs,
         },
-        other::with_other_mut,
+        other::{with_other_mut, OtherData},
         peekable::rs_input_ln,
         pool::{with_pool_mut, StringPool},
-        ASCIICode, Bibtex, BufPointer, CResult, CResultBool, CiteNumber, FnDefLoc, HashPointer,
-        StrIlk, StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResultBool, CiteNumber, FnDefLoc, HashPointer, StrIlk,
+        StrNumber,
     },
     BibtexError,
 };
@@ -238,6 +238,7 @@ fn handle_char(
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
+    other: &mut OtherData,
     single_function: &mut Vec<FnDefLoc>,
     wiz_loc: HashPointer,
     char: ASCIICode,
@@ -352,7 +353,7 @@ fn handle_char(
             single_function.push(QUOTE_NEXT_FN);
             single_function.push(res.loc);
 
-            inner_scan_fn_def(ctx, buffers, hash, pool, res.loc, wiz_loc)?;
+            scan_fn_def(ctx, buffers, hash, pool, other, res.loc, wiz_loc)?;
         }
         _ => {
             let init = buffers.init(BufTy::Base);
@@ -379,11 +380,12 @@ fn handle_char(
     Ok(())
 }
 
-fn inner_scan_fn_def(
+pub(crate) fn scan_fn_def(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
+    other: &mut OtherData,
     fn_hash_loc: HashPointer,
     wiz_loc: HashPointer,
 ) -> Result<(), BibtexError> {
@@ -404,6 +406,7 @@ fn inner_scan_fn_def(
             buffers,
             hash,
             pool,
+            other,
             &mut single_function,
             wiz_loc,
             char,
@@ -420,36 +423,18 @@ fn inner_scan_fn_def(
 
     single_function.push(HashData::end_of_def());
 
-    with_other_mut(|other| {
-        other.check_wiz_overflow(single_function.len());
-        hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i32);
+    other.check_wiz_overflow(single_function.len());
+    hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i32);
 
-        for ptr in single_function {
-            let wiz_ptr = other.wiz_def_ptr();
-            other.set_wiz_function(wiz_ptr, ptr);
-            other.set_wiz_def_ptr(wiz_ptr + 1);
-        }
-    });
+    for ptr in single_function {
+        let wiz_ptr = other.wiz_def_ptr();
+        other.set_wiz_function(wiz_ptr, ptr);
+        other.set_wiz_def_ptr(wiz_ptr + 1);
+    }
 
     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn scan_fn_def(
-    ctx: *mut Bibtex,
-    fn_hash_loc: HashPointer,
-    wiz_loc: HashPointer,
-) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_hash_mut(|hash| {
-            with_pool_mut(|pool| {
-                inner_scan_fn_def(&mut *ctx, buffers, hash, pool, fn_hash_loc, wiz_loc)
-            })
-        })
-    })
-    .into()
 }
 
 fn scan_balanced_braces(

@@ -119,7 +119,7 @@ pub mod c_api {
     use cite::{with_cites_mut, CiteInfo};
     use entries::{with_entries_mut, EntryData};
     use global::{with_globals_mut, GlobalData};
-    use hash::{with_hash, with_hash_mut, HashData};
+    use hash::{with_hash_mut, HashData};
     use history::History;
     use log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
     use other::OtherData;
@@ -151,7 +151,7 @@ pub mod c_api {
     pub mod scan;
     pub(crate) mod xbuf;
 
-    use crate::c_api::other::with_other_mut;
+    use crate::c_api::{buffer::BufTy, other::with_other_mut, pool::pre_def_certain_strings};
     pub use external::*;
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
@@ -316,10 +316,20 @@ pub mod c_api {
     }
 
     #[repr(C)]
-    pub enum CResultStr {
+    pub enum CResultInt {
         Error,
         Recover,
-        Ok(StrNumber),
+        Ok(i32),
+    }
+
+    impl From<Result<i32, BibtexError>> for CResultInt {
+        fn from(value: Result<i32, BibtexError>) -> Self {
+            match value {
+                Ok(i) => CResultInt::Ok(i),
+                Err(BibtexError::Fatal) => CResultInt::Error,
+                Err(BibtexError::Recover) => CResultInt::Recover,
+            }
+        }
     }
 
     #[repr(C)]
@@ -423,13 +433,14 @@ pub mod c_api {
         global::reset();
     }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn get_the_top_level_aux_file_name(
-        ctx: *mut Bibtex,
-        aux_file_name: *const libc::c_char,
-    ) -> CResultStr {
+    pub(crate) fn get_the_top_level_aux_file_name(
+        ctx: &mut Bibtex,
+        pool: &mut StringPool,
+        hash: &mut HashData,
+        aux: &mut AuxData,
+        aux_file_name: &CStr,
+    ) -> Result<i32, BibtexError> {
         let ctx = &mut *ctx;
-        let aux_file_name = CStr::from_ptr(aux_file_name);
         let aux_bytes = aux_file_name.to_bytes_with_nul();
 
         // This will be our scratch space for CStr filenames
@@ -442,52 +453,98 @@ pub mod c_api {
             path[range].copy_from_slice(extension);
         };
 
-        with_aux_mut(|aux| {
-            aux.set_ptr(0);
+        aux.set_ptr(0);
 
-            let aux_file = match PeekableInput::open(aux_file_name, FileFormat::Tex) {
-                Ok(file) => file,
-                Err(_) => {
-                    sam_wrong_file_name_print(aux_file_name);
-                    return CResultStr::Ok(1);
-                }
-            };
-            aux.set_file_at_ptr(Box::into_raw(aux_file));
-
-            set_extension(&mut path, b".blg");
-            let log_file = CStr::from_bytes_with_nul(&path).unwrap();
-            if !init_log_file(log_file) {
-                sam_wrong_file_name_print(log_file);
-                return CResultStr::Ok(1);
+        let aux_file = match PeekableInput::open(aux_file_name, FileFormat::Tex) {
+            Ok(file) => file,
+            Err(_) => {
+                sam_wrong_file_name_print(aux_file_name);
+                return Ok(1);
             }
+        };
+        aux.set_file_at_ptr(Box::into_raw(aux_file));
 
-            set_extension(&mut path, b".bbl");
-            let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
-            ctx.bbl_file = ttstub_output_open(bbl_file.as_ptr(), 0);
-            if ctx.bbl_file.is_null() {
-                sam_wrong_file_name_print(bbl_file);
-                return CResultStr::Ok(1);
-            }
+        set_extension(&mut path, b".blg");
+        let log_file = CStr::from_bytes_with_nul(&path).unwrap();
+        if !init_log_file(log_file) {
+            sam_wrong_file_name_print(log_file);
+            return Ok(1);
+        }
 
-            set_extension(&mut path, b".aux");
-            let lookup = match with_hash_mut(|hash| {
-                with_pool_mut(|pool| {
-                    pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile)
+        set_extension(&mut path, b".bbl");
+        let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
+        ctx.bbl_file = unsafe { ttstub_output_open(bbl_file.as_ptr(), 0) };
+        if ctx.bbl_file.is_null() {
+            sam_wrong_file_name_print(bbl_file);
+            return Ok(1);
+        }
+
+        set_extension(&mut path, b".aux");
+        let lookup = match pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile) {
+            Ok(res) => res,
+            Err(_) => return Err(BibtexError::Fatal),
+        };
+        aux.set_at_ptr(hash.text(lookup.loc));
+
+        if lookup.exists {
+            write_logs("Already encountered auxiliary file");
+            print_confusion();
+            return Err(BibtexError::Fatal);
+        }
+
+        Ok(0)
+    }
+
+    fn rs_initialize(
+        ctx: &mut Bibtex,
+        buffers: &mut GlobalBuffer,
+        pool: &mut StringPool,
+        hash: &mut HashData,
+        aux: &mut AuxData,
+        aux_file_name: &CStr,
+    ) -> Result<i32, BibtexError> {
+        pool.set_pool_ptr(0);
+        pool.set_str_ptr(1);
+        pool.set_start(pool.str_ptr(), 0);
+
+        ctx.bib_seen = false;
+        ctx.bst_seen = false;
+        ctx.citation_seen = false;
+        ctx.all_entries = false;
+
+        ctx.entry_seen = false;
+        ctx.read_seen = false;
+        ctx.read_performed = false;
+        ctx.reading_completed = false;
+        ctx.impl_fn_num = 0;
+        buffers.set_init(BufTy::Out, 0);
+
+        pre_def_certain_strings(ctx, pool, hash)?;
+        get_the_top_level_aux_file_name(ctx, pool, hash, aux, aux_file_name)
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn initialize(
+        ctx: *mut Bibtex,
+        aux_file_name: *const libc::c_char,
+    ) -> CResultInt {
+        with_buffers_mut(|buffers| {
+            with_pool_mut(|pool| {
+                with_hash_mut(|hash| {
+                    with_aux_mut(|aux| {
+                        rs_initialize(
+                            &mut *ctx,
+                            buffers,
+                            pool,
+                            hash,
+                            aux,
+                            CStr::from_ptr(aux_file_name),
+                        )
+                    })
                 })
-            }) {
-                Ok(res) => res,
-                Err(_) => return CResultStr::Error,
-            };
-            aux.set_at_ptr(with_hash(|hash| hash.text(lookup.loc)));
-
-            if lookup.exists {
-                write_logs("Already encountered auxiliary file");
-                print_confusion();
-                return CResultStr::Error;
-            }
-
-            CResultStr::Ok(0)
+            })
         })
+        .into()
     }
 
     #[allow(improper_ctypes)] // for CoreBridgeState

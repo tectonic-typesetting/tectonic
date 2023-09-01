@@ -9,7 +9,7 @@ use crate::{
             rs_bst_id_print, rs_print_a_token, rs_print_fn_class, write_logs,
         },
         pool::{with_pool, StringPool},
-        scan::{rs_eat_bst_white_space, rs_scan_identifier, ScanRes},
+        scan::{rs_eat_bst_white_space, rs_scan_identifier, scan_fn_def, ScanRes},
         Bibtex, CResult, CResultBool, GlobalItems, HashPointer, StrIlk,
     },
     BibtexError,
@@ -253,6 +253,115 @@ fn rs_bst_execute_command(
     Ok(())
 }
 
+fn rs_bst_function_command(
+    ctx: &mut ExecCtx,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
+    eat_bst_white!(
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.pool,
+        "function"
+    );
+    bst_brace!(
+        '{',
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.pool,
+        "function"
+    );
+    globals
+        .buffers
+        .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
+    eat_bst_white!(
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.pool,
+        "function"
+    );
+
+    let scan_res = rs_scan_identifier(globals.buffers, b'}', b'#', b'#');
+    match scan_res {
+        ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
+        _ => {
+            rs_bst_id_print(globals.buffers, scan_res)?;
+            write_logs("function");
+            rs_bst_err_print_and_look_for_blank_line(
+                ctx.glbl_ctx_mut(),
+                globals.buffers,
+                globals.pool,
+            )?;
+            return Ok(());
+        }
+    }
+
+    let range = globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
+    let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
+    bst_fn.make_ascii_lowercase();
+
+    let res = globals
+        .pool
+        .lookup_str_insert(globals.hash, bst_fn, StrIlk::BstFn)?;
+    if res.exists {
+        rs_already_seen_function_print(
+            ctx.glbl_ctx_mut(),
+            globals.buffers,
+            globals.pool,
+            globals.hash,
+            res.loc,
+        )?;
+        return Ok(());
+    }
+
+    globals.hash.set_ty(res.loc, FnClass::Wizard);
+    if globals.hash.text(res.loc) == ctx.glbl_ctx().s_default {
+        ctx._default = res.loc;
+    }
+
+    eat_bst_white!(
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.pool,
+        "function"
+    );
+    bst_brace!(
+        '}',
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.pool,
+        "function"
+    );
+    globals
+        .buffers
+        .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
+    eat_bst_white!(
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.pool,
+        "function"
+    );
+    bst_brace!(
+        '{',
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.pool,
+        "function"
+    );
+    globals
+        .buffers
+        .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
+    scan_fn_def(
+        ctx.glbl_ctx_mut(),
+        globals.buffers,
+        globals.hash,
+        globals.pool,
+        globals.other,
+        res.loc,
+        res.loc,
+    )?;
+    Ok(())
+}
+
 fn rs_bad_argument_token(
     ctx: &mut Bibtex,
     fn_out: Option<&mut HashPointer>,
@@ -307,4 +416,9 @@ pub unsafe extern "C" fn bst_entry_command(ctx: *mut Bibtex) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn bst_execute_command(ctx: *mut ExecCtx) -> CResult {
     GlobalItems::with_globals(|globals| rs_bst_execute_command(&mut *ctx, globals)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bst_function_command(ctx: *mut ExecCtx) -> CResult {
+    GlobalItems::with_globals(|globals| rs_bst_function_command(&mut *ctx, globals)).into()
 }

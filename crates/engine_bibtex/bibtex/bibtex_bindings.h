@@ -76,27 +76,27 @@ typedef struct PeekableInput PeekableInput;
 
 typedef struct XBuf_ExecVal XBuf_ExecVal;
 
-typedef uintptr_t StrNumber;
-
 typedef enum {
-  CResultStr_Error,
-  CResultStr_Recover,
-  CResultStr_Ok,
-} CResultStr_Tag;
+  CResultInt_Error,
+  CResultInt_Recover,
+  CResultInt_Ok,
+} CResultInt_Tag;
 
 typedef struct {
-  CResultStr_Tag tag;
+  CResultInt_Tag tag;
   union {
     struct {
-      StrNumber ok;
+      int32_t ok;
     };
   };
-} CResultStr;
+} CResultInt;
 
 typedef struct {
   uint32_t min_crossrefs;
   bool verbose;
 } BibtexConfig;
+
+typedef uintptr_t StrNumber;
 
 typedef uintptr_t HashPointer;
 
@@ -203,7 +203,7 @@ extern "C" {
 
 void reset_all(void);
 
-CResultStr get_the_top_level_aux_file_name(Bibtex *ctx, const char *aux_file_name);
+CResultInt initialize(Bibtex *ctx, const char *aux_file_name);
 
 extern History tt_engine_bibtex_main(ttbc_state_t *api, Bibtex *ctx, const char *aux_name);
 
@@ -242,6 +242,8 @@ CResultBool bad_argument_token(Bibtex *ctx, HashPointer *fn_out);
 CResult bst_entry_command(Bibtex *ctx);
 
 CResult bst_execute_command(ExecCtx *ctx);
+
+CResult bst_function_command(ExecCtx *ctx);
 
 ASCIICode bib_buf(BufTy ty, BufPointer pos);
 
@@ -421,21 +423,11 @@ bool input_ln(PeekableInput *peekable);
 
 ASCIICode bib_str_pool(PoolPointer idx);
 
-StrNumber bib_str_ptr(void);
-
-void bib_set_str_ptr(StrNumber ptr);
-
 PoolPointer bib_str_start(StrNumber s);
-
-void bib_set_str_start(StrNumber s, PoolPointer ptr);
 
 uintptr_t bib_max_strings(void);
 
-void bib_set_pool_ptr(PoolPointer ptr);
-
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
-
-CResult pre_def_certain_strings(Bibtex *ctx);
 
 bool scan1(ASCIICode char1);
 
@@ -448,8 +440,6 @@ bool scan_alpha(void);
 ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
 bool eat_bst_white_space(Bibtex *ctx);
-
-CResult scan_fn_def(Bibtex *ctx, HashPointer fn_hash_loc, HashPointer wiz_loc);
 
 CResultBool scan_and_store_the_field_value_and_eat_white(Bibtex *ctx,
                                                          bool store_field,
