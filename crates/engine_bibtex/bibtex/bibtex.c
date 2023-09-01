@@ -87,235 +87,6 @@ printf_log(const char *fmt, ...)
     puts_log(fmt_buf);
 }
 
-static void bst_integers_command(Bibtex* ctx)
-{
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("integers");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("integers");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("integers");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-        if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-        else {
-            unwrap(bst_id_print(scan_result));
-            puts_log("integers");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-
-        lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-        LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                                  (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                                  STR_ILK_BST_FN, true));
-        hash_loc fn_loc = hash.loc;
-        if (hash.exists) {
-            unwrap(already_seen_function_print(ctx, fn_loc));
-            return;
-        }
-        set_fn_type(fn_loc, FN_CLASS_INT_GLBL_VAR);
-        set_ilk_info(fn_loc, 0);
-        if (!eat_bst_white_space(ctx)) {
-            eat_bst_print();
-            puts_log("integers");
-            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-            return;
-        }
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-}
-
-static void bst_iterate_command(ExecCtx* ctx)
-{
-    if (!ctx->glbl_ctx->read_seen) {
-        puts_log("Illegal, iterate command before read command");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    if (!eat_bst_white_space(ctx->glbl_ctx)) {
-        eat_bst_print();
-        puts_log("iterate");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("iterate");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx->glbl_ctx)) {
-        eat_bst_print();
-        puts_log("iterate");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-    if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-    else {
-        unwrap(bst_id_print(scan_result));
-        puts_log("iterate");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    hash_loc fn_loc = 0;
-    if (unwrap_bool(bad_argument_token(ctx->glbl_ctx, &fn_loc)))
-        return;
-    if (!eat_bst_white_space(ctx->glbl_ctx)) {
-        eat_bst_print();
-        puts_log("iterate");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        bst_right_brace_print();
-        puts_log("iterate");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-
-    init_command_execution(ctx);
-    ctx->mess_with_entries = true;
-    cite_number sort_cite_ptr = 0;
-    while (sort_cite_ptr < num_cites()) {
-
-        set_cite_ptr(cite_info(sort_cite_ptr));
-
-        execute_fn(ctx, fn_loc);
-        unwrap(check_command_execution(ctx));
-        sort_cite_ptr = sort_cite_ptr + 1;
-    }
-}
-
-static void bst_macro_command(Bibtex* ctx)
-{
-    if (ctx->read_seen) {
-        puts_log("Illegal, macro command after read command");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    hash_loc macro_name_loc = 0;
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-    if ((scan_result == SCAN_RES_WHITESPACE_ADJACENT) || (scan_result == SCAN_RES_SPECIFIED_CHAR_ADJACENT)) ;
-    else {
-        unwrap(bst_id_print(scan_result));
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-    LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                              (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              STR_ILK_MACRO, true));
-    macro_name_loc = hash.loc;
-    if (hash.exists) {
-        print_a_token();
-        puts_log(" is already defined as a macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    set_ilk_info(macro_name_loc, hash_text(macro_name_loc));
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        bst_right_brace_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-        bst_left_brace_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 34 /*double_quote */ ) {
-        puts_log("A macro definition must be \"-delimited");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!scan1(34 /*double_quote */)) {
-        puts_log("There's no `\"' to end macro definition");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-
-    hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                    (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)), STR_ILK_TEXT,
-                                    true));
-    hash_loc macro_def_loc = hash.loc;
-    set_fn_type(macro_def_loc, FN_CLASS_STR_LIT);
-    set_ilk_info(macro_name_loc, hash_text(macro_def_loc));
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-    if (!eat_bst_white_space(ctx)) {
-        eat_bst_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-        bst_right_brace_print();
-        puts_log("macro");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-}
-
 static void get_bib_command_or_entry_and_process(Bibtex* ctx, hash_loc* cur_macro_loc, hash_loc* field_name_loc)
 {
     BufPointer tmp_ptr, tmp_end_ptr;
@@ -1057,7 +828,7 @@ get_bst_command_and_process(ExecCtx* ctx)
 
     switch (command_num) {
     case 0:
-        unwrap(bst_entry_command(ctx->glbl_ctx));
+        unwrap(bst_entry_command(ctx));
         break;
     case 1:
         unwrap(bst_execute_command(ctx));
@@ -1066,13 +837,13 @@ get_bst_command_and_process(ExecCtx* ctx)
         unwrap(bst_function_command(ctx));
         break;
     case 3:
-        bst_integers_command(ctx->glbl_ctx);
+        unwrap(bst_integers_command(ctx));
         break;
     case 4:
-        bst_iterate_command(ctx);
+        unwrap(bst_iterate_command(ctx));
         break;
     case 5:
-        bst_macro_command(ctx->glbl_ctx);
+        unwrap(bst_macro_command(ctx));
         break;
     case 6:
         bst_read_command(ctx->glbl_ctx);

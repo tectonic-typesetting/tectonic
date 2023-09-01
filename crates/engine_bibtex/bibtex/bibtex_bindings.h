@@ -239,11 +239,17 @@ bool eat_bib_white_space(void);
 
 CResultBool bad_argument_token(Bibtex *ctx, HashPointer *fn_out);
 
-CResult bst_entry_command(Bibtex *ctx);
+CResult bst_entry_command(ExecCtx *ctx);
 
 CResult bst_execute_command(ExecCtx *ctx);
 
 CResult bst_function_command(ExecCtx *ctx);
+
+CResult bst_integers_command(ExecCtx *ctx);
+
+CResult bst_iterate_command(ExecCtx *ctx);
+
+CResult bst_macro_command(ExecCtx *ctx);
 
 ASCIICode bib_buf(BufTy ty, BufPointer pos);
 
