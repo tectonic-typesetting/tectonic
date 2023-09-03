@@ -498,7 +498,7 @@ fn rs_get_aux_command_and_process(
 
 #[no_mangle]
 pub unsafe extern "C" fn get_aux_command_and_process(ctx: *mut Bibtex) -> CResult {
-    GlobalItems::with_globals(|globals| rs_get_aux_command_and_process(&mut *ctx, globals)).into()
+    GlobalItems::with(|globals| rs_get_aux_command_and_process(&mut *ctx, globals)).into()
 }
 
 fn rs_pop_the_aux_stack(aux: &mut AuxData) -> bool {

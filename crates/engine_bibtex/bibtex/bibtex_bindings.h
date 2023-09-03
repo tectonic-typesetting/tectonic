@@ -169,8 +169,6 @@ typedef struct {
 
 typedef uintptr_t FieldLoc;
 
-typedef uintptr_t PoolPointer;
-
 typedef struct {
   /**
    * The location of the string - where it exists, was inserted, of if insert is false,
@@ -227,15 +225,15 @@ BibNumber bib_ptr(void);
 
 void set_bib_ptr(BibNumber num);
 
-void check_bib_files(BibNumber ptr);
-
 BibNumber preamble_ptr(void);
 
 int32_t bib_line_num(void);
 
 void set_bib_line_num(int32_t num);
 
-bool eat_bib_white_space(void);
+CResult get_bib_command_or_entry_and_process(Bibtex *ctx,
+                                             HashPointer *cur_macro_loc,
+                                             HashPointer *field_name_loc);
 
 CResultBool bad_argument_token(Bibtex *ctx, HashPointer *fn_out);
 
@@ -291,10 +289,6 @@ bool entry_exists(CiteNumber num);
 
 void set_entry_exists(CiteNumber num, bool exists);
 
-CiteNumber entry_cite_ptr(void);
-
-void set_entry_cite_ptr(CiteNumber val);
-
 CiteNumber num_cites(void);
 
 void set_num_cites(CiteNumber val);
@@ -306,8 +300,6 @@ void set_old_num_cites(CiteNumber val);
 CiteNumber all_marker(void);
 
 void set_all_marker(CiteNumber val);
-
-CiteNumber add_database_cite(CiteNumber new_cite, CiteNumber cite_loc, CiteNumber lc_cite_loc);
 
 FindCiteLocs find_cite_locs_for_this_cite_key(StrNumber cite_str);
 
@@ -330,8 +322,6 @@ void set_num_glb_strs(int32_t val);
 void check_grow_global_strs(void);
 
 uintptr_t undefined(void);
-
-FnClass fn_type(HashPointer pos);
 
 void set_fn_type(HashPointer pos, FnClass ty);
 
@@ -381,20 +371,6 @@ void bst_left_brace_print(void);
 
 void bst_right_brace_print(void);
 
-CResult bib_err_print(bool at_bib_command);
-
-CResult bib_warn_print(void);
-
-CResult eat_bib_print(bool at_bib_command);
-
-CResult bib_one_of_two_print(ASCIICode char1, ASCIICode char2, bool at_bib_command);
-
-CResult bib_equals_sign_print(bool at_bib_command);
-
-CResult bib_id_print(ScanRes scan_res);
-
-void bib_cmd_confusion(void);
-
 void cite_key_disappeared_confusion(void);
 
 CResult bad_cross_reference_print(StrNumber s);
@@ -427,34 +403,15 @@ bool tectonic_eof(PeekableInput *peekable);
 
 bool input_ln(PeekableInput *peekable);
 
-ASCIICode bib_str_pool(PoolPointer idx);
-
-PoolPointer bib_str_start(StrNumber s);
-
 uintptr_t bib_max_strings(void);
 
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
-
-bool scan1(ASCIICode char1);
-
-bool scan1_white(ASCIICode char1);
-
-bool scan2_white(ASCIICode char1, ASCIICode char2);
 
 bool scan_alpha(void);
 
 ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
 bool eat_bst_white_space(Bibtex *ctx);
-
-CResultBool scan_and_store_the_field_value_and_eat_white(Bibtex *ctx,
-                                                         bool store_field,
-                                                         bool at_bib_command,
-                                                         int32_t command_num,
-                                                         CiteNumber *cite_out,
-                                                         HashPointer cur_macro_loc,
-                                                         ASCIICode right_outer_delim,
-                                                         HashPointer field_name_loc);
 
 #ifdef __cplusplus
 } // extern "C"

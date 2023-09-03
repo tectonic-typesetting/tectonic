@@ -182,11 +182,6 @@ pub(crate) fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn fn_type(pos: HashPointer) -> FnClass {
-    with_hash(|hash| hash.fn_type[pos])
-}
-
-#[no_mangle]
 pub extern "C" fn set_fn_type(pos: HashPointer, ty: FnClass) {
     with_hash_mut(|hash| hash.fn_type[pos] = ty)
 }

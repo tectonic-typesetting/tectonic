@@ -176,7 +176,7 @@ pub mod c_api {
     }
 
     impl GlobalItems<'_> {
-        fn with_globals<T>(f: impl FnOnce(&mut GlobalItems<'_>) -> T) -> T {
+        fn with<T>(f: impl FnOnce(&mut GlobalItems<'_>) -> T) -> T {
             with_buffers_mut(|buffers| {
                 with_pool_mut(|pool| {
                     with_hash_mut(|hash| {
@@ -349,6 +349,7 @@ pub mod c_api {
         }
     }
 
+    #[derive(Copy, Clone, Debug)]
     #[repr(C)]
     pub struct LookupRes {
         /// The location of the string - where it exists, was inserted, of if insert is false,

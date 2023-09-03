@@ -442,7 +442,7 @@ pub(crate) fn bib_ln_num_print(pool: &StringPool, bibs: &BibData) -> Result<(), 
     rs_print_bib_name(pool, bibs)
 }
 
-pub(crate) fn rs_bib_err_print(
+pub(crate) fn bib_err_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
@@ -460,66 +460,45 @@ pub(crate) fn rs_bib_err_print(
     Ok(())
 }
 
-#[no_mangle]
-pub extern "C" fn bib_err_print(at_bib_command: bool) -> CResult {
-    with_buffers(|buffers| {
-        with_pool(|pool| with_bibs(|bibs| rs_bib_err_print(buffers, pool, bibs, at_bib_command)))
-    })
-    .into()
-}
-
-pub(crate) fn rs_bib_warn_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
+pub(crate) fn bib_warn_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
     bib_ln_num_print(pool, bibs)?;
     mark_warning();
     Ok(())
 }
 
-#[no_mangle]
-pub extern "C" fn bib_warn_print() -> CResult {
-    with_pool(|pool| with_bibs(|bibs| rs_bib_warn_print(pool, bibs))).into()
-}
-
-pub(crate) fn rs_eat_bib_print(
+pub(crate) fn eat_bib_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("Illegal end of database file");
-    rs_bib_err_print(buffers, pool, bibs, at_bib_command)
+    bib_err_print(buffers, pool, bibs, at_bib_command)
 }
 
-#[no_mangle]
-pub extern "C" fn eat_bib_print(at_bib_command: bool) -> CResult {
-    with_buffers(|buffers| {
-        with_pool(|pool| with_bibs(|bibs| rs_eat_bib_print(buffers, pool, bibs, at_bib_command)))
-    })
-    .into()
-}
-
-#[no_mangle]
-pub extern "C" fn bib_one_of_two_print(
+pub(crate) fn bib_one_of_two_print(
+    buffers: &GlobalBuffer,
+    pool: &StringPool,
+    bibs: &BibData,
     char1: ASCIICode,
     char2: ASCIICode,
     at_bib_command: bool,
-) -> CResult {
+) -> Result<(), BibtexError> {
     write_logs(&format!(
         "I was expecting a `{}' or a `{}'",
         char1 as char, char2 as char
     ));
-    with_buffers(|buffers| {
-        with_pool(|pool| with_bibs(|bibs| rs_bib_err_print(buffers, pool, bibs, at_bib_command)))
-    })
-    .into()
+    bib_err_print(buffers, pool, bibs, at_bib_command)
 }
 
-#[no_mangle]
-pub extern "C" fn bib_equals_sign_print(at_bib_command: bool) -> CResult {
+pub(crate) fn bib_equals_sign_print(
+    buffers: &GlobalBuffer,
+    pool: &StringPool,
+    bibs: &BibData,
+    at_bib_command: bool,
+) -> Result<(), BibtexError> {
     write_logs("I was expecting an \"=\"");
-    with_buffers(|buffers| {
-        with_pool(|pool| with_bibs(|bibs| rs_bib_err_print(buffers, pool, bibs, at_bib_command)))
-    })
-    .into()
+    bib_err_print(buffers, pool, bibs, at_bib_command)
 }
 
 pub(crate) fn bib_unbalanced_braces_print(
@@ -529,7 +508,7 @@ pub(crate) fn bib_unbalanced_braces_print(
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("Unbalanced braces");
-    rs_bib_err_print(buffers, pool, bibs, at_bib_command)
+    bib_err_print(buffers, pool, bibs, at_bib_command)
 }
 
 pub(crate) fn macro_warn_print(buffers: &GlobalBuffer) {
@@ -538,10 +517,7 @@ pub(crate) fn macro_warn_print(buffers: &GlobalBuffer) {
     write_logs("\" is ");
 }
 
-pub(crate) fn rs_bib_id_print(
-    buffers: &GlobalBuffer,
-    scan_res: ScanRes,
-) -> Result<(), BibtexError> {
+pub(crate) fn bib_id_print(buffers: &GlobalBuffer, scan_res: ScanRes) -> Result<(), BibtexError> {
     match scan_res {
         ScanRes::IdNull => {
             write_logs("You're missing ");
@@ -559,13 +535,7 @@ pub(crate) fn rs_bib_id_print(
     }
 }
 
-#[no_mangle]
-pub extern "C" fn bib_id_print(scan_res: ScanRes) -> CResult {
-    with_buffers(|buffers| rs_bib_id_print(buffers, scan_res)).into()
-}
-
-#[no_mangle]
-pub extern "C" fn bib_cmd_confusion() {
+pub(crate) fn bib_cmd_confusion() {
     write_logs("Unknown database-file command");
     print_confusion();
 }

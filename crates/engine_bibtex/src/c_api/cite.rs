@@ -1,7 +1,7 @@
 use crate::c_api::{
     entries::with_entries,
-    hash::{with_hash, with_hash_mut, HashData},
-    other::{with_other_mut, OtherData},
+    hash::{with_hash, HashData},
+    other::OtherData,
     pool::with_pool,
     xbuf::XBuf,
     CiteNumber, FindCiteLocs, HashPointer, StrIlk, StrNumber,
@@ -89,6 +89,10 @@ impl CiteInfo {
         self.entry_cite_ptr
     }
 
+    pub fn set_entry_ptr(&mut self, val: CiteNumber) {
+        self.entry_cite_ptr = val;
+    }
+
     pub fn num_cites(&self) -> CiteNumber {
         self.num_cites
     }
@@ -103,6 +107,10 @@ impl CiteInfo {
 
     pub fn len(&self) -> usize {
         self.cite_list.len()
+    }
+
+    pub fn all_marker(&self) -> CiteNumber {
+        self.all_marker
     }
 
     pub fn set_all_marker(&mut self, val: CiteNumber) {
@@ -199,16 +207,6 @@ pub extern "C" fn set_entry_exists(num: CiteNumber, exists: bool) {
 }
 
 #[no_mangle]
-pub extern "C" fn entry_cite_ptr() -> CiteNumber {
-    with_cites(|cites| cites.entry_cite_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_entry_cite_ptr(val: CiteNumber) {
-    with_cites_mut(|cites| cites.entry_cite_ptr = val)
-}
-
-#[no_mangle]
 pub extern "C" fn num_cites() -> CiteNumber {
     with_cites(|cites| cites.num_cites)
 }
@@ -238,7 +236,7 @@ pub extern "C" fn set_all_marker(val: CiteNumber) {
     with_cites_mut(|cites| cites.all_marker = val)
 }
 
-pub(crate) fn rs_add_database_cite(
+pub(crate) fn add_database_cite(
     cites: &mut CiteInfo,
     other: &mut OtherData,
     hash: &mut HashData,
@@ -255,21 +253,6 @@ pub(crate) fn rs_add_database_cite(
     hash.set_ilk_info(cite_loc, new_cite as i32);
     hash.set_ilk_info(lc_cite_loc, cite_loc as i32);
     new_cite + 1
-}
-
-#[no_mangle]
-pub extern "C" fn add_database_cite(
-    new_cite: CiteNumber,
-    cite_loc: CiteNumber,
-    lc_cite_loc: CiteNumber,
-) -> CiteNumber {
-    with_cites_mut(|cites| {
-        with_other_mut(|other| {
-            with_hash_mut(|hash| {
-                rs_add_database_cite(cites, other, hash, new_cite, cite_loc, lc_cite_loc)
-            })
-        })
-    })
 }
 
 #[no_mangle]

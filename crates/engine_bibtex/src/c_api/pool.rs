@@ -261,16 +261,6 @@ pub(crate) fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_str_pool(idx: PoolPointer) -> ASCIICode {
-    with_pool(|pool| pool.strings[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn bib_str_start(s: StrNumber) -> PoolPointer {
-    with_pool(|pool| pool.offsets[s])
-}
-
-#[no_mangle]
 pub extern "C" fn bib_max_strings() -> usize {
     MAX_STRINGS
 }

@@ -575,30 +575,30 @@ pub unsafe extern "C" fn bad_argument_token(
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_entry_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with_globals(|globals| rs_bst_entry_command(&mut *ctx, globals)).into()
+    GlobalItems::with(|globals| rs_bst_entry_command(&mut *ctx, globals)).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_execute_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with_globals(|globals| rs_bst_execute_command(&mut *ctx, globals)).into()
+    GlobalItems::with(|globals| rs_bst_execute_command(&mut *ctx, globals)).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_function_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with_globals(|globals| rs_bst_function_command(&mut *ctx, globals)).into()
+    GlobalItems::with(|globals| rs_bst_function_command(&mut *ctx, globals)).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_integers_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with_globals(|globals| rs_bst_integers_command(&mut *ctx, globals)).into()
+    GlobalItems::with(|globals| rs_bst_integers_command(&mut *ctx, globals)).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_iterate_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with_globals(|globals| rs_bst_iterate_command(&mut *ctx, globals)).into()
+    GlobalItems::with(|globals| rs_bst_iterate_command(&mut *ctx, globals)).into()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn bst_macro_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with_globals(|globals| rs_bst_macro_command(&mut *ctx, globals)).into()
+    GlobalItems::with(|globals| rs_bst_macro_command(&mut *ctx, globals)).into()
 }

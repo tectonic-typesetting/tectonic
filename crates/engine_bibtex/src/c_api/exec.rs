@@ -2392,7 +2392,7 @@ pub(crate) fn rs_execute_fn(
 
 #[no_mangle]
 pub unsafe extern "C" fn execute_fn(ctx: *mut ExecCtx, ex_fn_loc: HashPointer) -> CResult {
-    GlobalItems::with_globals(|globals| rs_execute_fn(&mut *ctx, globals, ex_fn_loc)).into()
+    GlobalItems::with(|globals| rs_execute_fn(&mut *ctx, globals, ex_fn_loc)).into()
 }
 
 #[cfg(test)]
