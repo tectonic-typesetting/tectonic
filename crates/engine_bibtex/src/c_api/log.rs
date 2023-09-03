@@ -4,16 +4,16 @@ use crate::{
         bibs::{with_bibs, BibData},
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
-        cite::with_cites,
+        cite::{with_cites, CiteInfo},
         exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
         hash::{with_hash, FnClass, HashData},
         history::{mark_error, mark_fatal, mark_warning},
-        other::with_other,
+        other::OtherData,
         peekable::rs_input_ln,
         pool::{with_pool, StringPool},
         scan::{Scan, ScanRes},
         ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex,
-        CResult, FieldLoc, HashPointer, StrNumber,
+        CResult, CiteNumber, FieldLoc, HashPointer, StrNumber,
     },
     BibtexError,
 };
@@ -342,29 +342,24 @@ pub extern "C" fn print_bib_name() -> CResult {
     with_pool(|pool| with_bibs(|bibs| rs_print_bib_name(pool, bibs))).into()
 }
 
+pub(crate) fn rs_log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
+    with_log(|log| {
+        out_pool_str(pool, log, bibs.cur_bib())?;
+        let res = pool
+            .try_get_str(bibs.cur_bib())
+            .map(|str| str.ends_with(b".bib"))
+            .map_err(|_| BibtexError::Fatal)?;
+        if !res {
+            write!(log, ".bib").unwrap();
+        }
+        writeln!(log).unwrap();
+        Ok(())
+    })
+}
+
 #[no_mangle]
 pub extern "C" fn log_pr_bib_name() -> CResult {
-    with_log(|log| {
-        with_bibs(|bibs| {
-            match with_pool(|pool| out_pool_str(pool, log, bibs.cur_bib())) {
-                Ok(()) => (),
-                err => return err.into(),
-            }
-            let res = with_pool(|pool| {
-                pool.try_get_str(bibs.cur_bib())
-                    .map(|str| str.ends_with(b".bib"))
-            });
-            match res {
-                Ok(true) => (),
-                Ok(false) => {
-                    write!(log, ".bib").unwrap();
-                }
-                Err(_) => return CResult::Error,
-            }
-            writeln!(log).unwrap();
-            CResult::Ok
-        })
-    })
+    with_bibs(|bibs| with_pool(|pool| rs_log_pr_bib_name(bibs, pool))).into()
 }
 
 pub(crate) fn log_pr_bst_name(ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
@@ -546,34 +541,31 @@ pub extern "C" fn cite_key_disappeared_confusion() {
     print_confusion();
 }
 
-#[no_mangle]
-pub extern "C" fn bad_cross_reference_print(s: StrNumber) -> CResult {
-    with_pool(|pool| {
-        write_logs("--entry \"");
-        match with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr()), pool)) {
-            Ok(()) => (),
-            err => return err.into(),
-        }
-        write_logs("\"\nrefers to entry \"");
-        match print_a_pool_str(s, pool) {
-            Ok(()) => (),
-            err => return err.into(),
-        }
-        write_logs("\"");
-        CResult::Ok
-    })
+pub(crate) fn rs_bad_cross_reference_print(
+    pool: &StringPool,
+    cites: &CiteInfo,
+    cite_ptr: CiteNumber,
+    s: StrNumber,
+) -> Result<(), BibtexError> {
+    write_logs("--entry \"");
+    print_a_pool_str(cites.get_cite(cite_ptr), pool)?;
+    write_logs("\"\nrefers to entry \"");
+    print_a_pool_str(s, pool)?;
+    write_logs("\"");
+    Ok(())
+}
+
+pub(crate) fn rs_print_missing_entry(pool: &StringPool, s: StrNumber) -> Result<(), BibtexError> {
+    write_logs("Warning--I didn't find a database entry for \"");
+    print_a_pool_str(s, pool)?;
+    write_logs("\"\n");
+    mark_warning();
+    Ok(())
 }
 
 #[no_mangle]
 pub extern "C" fn print_missing_entry(s: StrNumber) -> CResult {
-    write_logs("Warning--I didn't find a database entry for \"");
-    match with_pool(|pool| print_a_pool_str(s, pool)) {
-        Ok(()) => (),
-        err => return err.into(),
-    }
-    write_logs("\"\n");
-    mark_warning();
-    CResult::Ok
+    with_pool(|pool| rs_print_missing_entry(pool, s)).into()
 }
 
 pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
@@ -691,16 +683,18 @@ pub unsafe extern "C" fn already_seen_function_print(
     .into()
 }
 
-#[no_mangle]
-pub extern "C" fn nonexistent_cross_reference_error(field_ptr: FieldLoc) -> CResult {
+pub(crate) fn rs_nonexistent_cross_reference_error(
+    pool: &StringPool,
+    cites: &CiteInfo,
+    other: &OtherData,
+    cite_ptr: CiteNumber,
+    field_ptr: FieldLoc,
+) -> Result<(), BibtexError> {
     write_logs("A bad cross reference-");
-    match bad_cross_reference_print(with_other(|other| other.field(field_ptr))) {
-        CResult::Ok => (),
-        err => return err,
-    }
+    rs_bad_cross_reference_print(pool, cites, cite_ptr, other.field(field_ptr))?;
     write_logs(", which doesn't exist\n");
     mark_error();
-    CResult::Ok
+    Ok(())
 }
 
 pub(crate) fn output_bbl_line(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) {

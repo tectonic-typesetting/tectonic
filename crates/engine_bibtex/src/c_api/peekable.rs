@@ -110,14 +110,12 @@ pub unsafe extern "C" fn peekable_close(peekable: Option<NonNull<PeekableInput>>
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn tectonic_eof(peekable: Option<NonNull<PeekableInput>>) -> bool {
+pub fn tectonic_eof(peekable: Option<&mut PeekableInput>) -> bool {
     // Check for EOF following Pascal semantics.
-    let peekable = match peekable {
-        Some(mut p) => p.as_mut(),
+    match peekable {
+        Some(peek) => peek.eof(),
         None => return true,
-    };
-    peekable.eof()
+    }
 }
 
 pub(crate) fn rs_input_ln(

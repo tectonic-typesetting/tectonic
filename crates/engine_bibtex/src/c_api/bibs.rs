@@ -13,7 +13,7 @@ use crate::{
         pool::StringPool,
         scan::{rs_scan_identifier, scan_and_store_the_field_value_and_eat_white, Scan, ScanRes},
         xbuf::XBuf,
-        BibNumber, Bibtex, CResult, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
+        BibNumber, Bibtex, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -50,7 +50,7 @@ impl BibData {
         self.bib_list[self.bib_ptr] = num;
     }
 
-    fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
+    pub fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
         match &mut self.bib_file[self.bib_ptr] {
             // SAFETY: If non-null, bib files are guaranteed valid inputs
             Some(r) => Some(unsafe { r.as_mut() }),
@@ -58,8 +58,10 @@ impl BibData {
         }
     }
 
-    fn cur_bib_file_raw(&mut self) -> Option<NonNull<PeekableInput>> {
+    pub fn take_cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
         self.bib_file[self.bib_ptr]
+            .take()
+            .map(|mut ptr| unsafe { ptr.as_mut() })
     }
 
     pub fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
@@ -127,38 +129,8 @@ pub fn reset() {
 }
 
 #[no_mangle]
-pub extern "C" fn cur_bib_file() -> Option<NonNull<PeekableInput>> {
-    with_bibs_mut(|bibs| bibs.cur_bib_file_raw())
-}
-
-#[no_mangle]
-pub extern "C" fn set_cur_bib_file(input: Option<NonNull<PeekableInput>>) {
-    with_bibs_mut(|bibs| bibs.set_cur_bib_file(input))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_ptr() -> BibNumber {
-    with_bibs(|bibs| bibs.bib_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_bib_ptr(num: BibNumber) {
-    with_bibs_mut(|bibs| bibs.bib_ptr = num)
-}
-
-#[no_mangle]
-pub extern "C" fn preamble_ptr() -> BibNumber {
-    with_bibs(|bibs| bibs.preamble_ptr)
-}
-
-#[no_mangle]
 pub extern "C" fn bib_line_num() -> i32 {
     with_bibs(|bibs| bibs.bib_line_num)
-}
-
-#[no_mangle]
-pub extern "C" fn set_bib_line_num(num: i32) {
-    with_bibs_mut(|bibs| bibs.bib_line_num = num)
 }
 
 pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData) -> bool {
@@ -220,7 +192,7 @@ pub(crate) fn compress_bib_white(
 //       - Most at_bib_command uses are statically known
 //       - tied to that, command_num is only used when at_bib_command is true
 //       - There's some messed up control flow that's porting weird `goto` style, can probably be simplified
-fn rs_get_bib_command_or_entry_and_process(
+pub(crate) fn get_bib_command_or_entry_and_process(
     ctx: &mut Bibtex,
     globals: &mut GlobalItems<'_>,
     cur_macro_loc: &mut HashPointer,
@@ -585,8 +557,8 @@ fn rs_get_bib_command_or_entry_and_process(
                     }
                     return None;
                 }
-            } else if !globals.cites.get_exists(entry_ptr) {
-                let s = globals.pool.get_str(globals.cites.get_info(entry_ptr));
+            } else if !globals.cites.exists(entry_ptr) {
+                let s = globals.pool.get_str(globals.cites.info(entry_ptr));
                 globals.buffers.copy_from(BufTy::Ex, 0, s);
                 let lc_cite = &mut globals.buffers.buffer_mut(BufTy::Ex)[0..s.len()];
                 lc_cite.make_ascii_lowercase();
@@ -791,21 +763,4 @@ fn rs_get_bib_command_or_entry_and_process(
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn get_bib_command_or_entry_and_process(
-    ctx: *mut Bibtex,
-    cur_macro_loc: *mut HashPointer,
-    field_name_loc: *mut HashPointer,
-) -> CResult {
-    GlobalItems::with(|globals| {
-        rs_get_bib_command_or_entry_and_process(
-            &mut *ctx,
-            globals,
-            &mut *cur_macro_loc,
-            &mut *field_name_loc,
-        )
-    })
-    .into()
 }

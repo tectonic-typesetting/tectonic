@@ -374,6 +374,7 @@ pub mod c_api {
         }
     }
 
+    #[derive(Debug)]
     #[repr(C)]
     pub struct FindCiteLocs {
         cite_loc: CiteNumber,

@@ -168,7 +168,7 @@ fn aux_bib_data_command(
         let fname = CString::new(name).unwrap();
         let bib_in = peekable_open(&fname, FileFormat::Bib);
         if bib_in.is_null() {
-            write_logs("I couldn't open the database file ");
+            write_logs("I couldn't open database file ");
             rs_print_bib_name(pool, bibs)?;
             aux_err_print(buffers, aux, pool)?;
             return Ok(());

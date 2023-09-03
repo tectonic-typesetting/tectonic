@@ -125,8 +125,6 @@ typedef struct {
   HashPointer s_aux_extension;
 } Bibtex;
 
-typedef uintptr_t BibNumber;
-
 typedef enum {
   CResultBool_Error,
   CResultBool_Recover,
@@ -217,23 +215,7 @@ bool pop_the_aux_stack(void);
 
 CResult last_check_for_aux_errors(Bibtex *ctx);
 
-PeekableInput *cur_bib_file(void);
-
-void set_cur_bib_file(PeekableInput *input);
-
-BibNumber bib_ptr(void);
-
-void set_bib_ptr(BibNumber num);
-
-BibNumber preamble_ptr(void);
-
 int32_t bib_line_num(void);
-
-void set_bib_line_num(int32_t num);
-
-CResult get_bib_command_or_entry_and_process(Bibtex *ctx,
-                                             HashPointer *cur_macro_loc,
-                                             HashPointer *field_name_loc);
 
 CResultBool bad_argument_token(Bibtex *ctx, HashPointer *fn_out);
 
@@ -249,9 +231,7 @@ CResult bst_iterate_command(ExecCtx *ctx);
 
 CResult bst_macro_command(ExecCtx *ctx);
 
-ASCIICode bib_buf(BufTy ty, BufPointer pos);
-
-void bib_set_buf(BufTy ty, BufPointer num, ASCIICode val);
+CResult bst_read_command(ExecCtx *ctx);
 
 ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
 
@@ -302,10 +282,6 @@ CiteNumber all_marker(void);
 void set_all_marker(CiteNumber val);
 
 FindCiteLocs find_cite_locs_for_this_cite_key(StrNumber cite_str);
-
-void init_entry_ints(void);
-
-void init_entry_strs(void);
 
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
@@ -373,15 +349,11 @@ void bst_right_brace_print(void);
 
 void cite_key_disappeared_confusion(void);
 
-CResult bad_cross_reference_print(StrNumber s);
-
 CResult print_missing_entry(StrNumber s);
 
 CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
 
 CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
-
-CResult nonexistent_cross_reference_error(FieldLoc field_ptr);
 
 StrNumber field_info(FieldLoc pos);
 
@@ -398,8 +370,6 @@ FieldLoc num_pre_defined_fields(void);
 FieldLoc crossref_num(void);
 
 int peekable_close(PeekableInput *peekable);
-
-bool tectonic_eof(PeekableInput *peekable);
 
 bool input_ln(PeekableInput *peekable);
 

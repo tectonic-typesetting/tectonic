@@ -2,7 +2,7 @@ use crate::c_api::{
     entries::with_entries,
     hash::{with_hash, HashData},
     other::OtherData,
-    pool::with_pool,
+    pool::{with_pool, StringPool},
     xbuf::XBuf,
     CiteNumber, FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
@@ -53,7 +53,7 @@ impl CiteInfo {
         self.cite_list[offset] = num;
     }
 
-    pub fn get_info(&self, offset: usize) -> StrNumber {
+    pub fn info(&self, offset: usize) -> StrNumber {
         self.cite_info[offset]
     }
 
@@ -69,7 +69,7 @@ impl CiteInfo {
         self.type_list[offset] = ty;
     }
 
-    pub fn get_exists(&self, offset: usize) -> bool {
+    pub fn exists(&self, offset: usize) -> bool {
         self.entry_exists[offset]
     }
 
@@ -103,6 +103,10 @@ impl CiteInfo {
 
     pub fn old_num_cites(&self) -> CiteNumber {
         self.old_num_cites
+    }
+
+    pub fn set_old_num_cites(&mut self, num: CiteNumber) {
+        self.old_num_cites = num;
     }
 
     pub fn len(&self) -> usize {
@@ -152,88 +156,18 @@ pub extern "C" fn quick_sort(left_end: CiteNumber, right_end: CiteNumber) {
 }
 
 #[no_mangle]
-pub extern "C" fn cite_list(num: CiteNumber) -> StrNumber {
-    with_cites(|cites| cites.get_cite(num))
-}
-
-#[no_mangle]
-pub extern "C" fn set_cite_list(num: CiteNumber, str: StrNumber) {
-    with_cites_mut(|cites| cites.set_cite(num, str))
-}
-
-#[no_mangle]
-pub extern "C" fn cite_ptr() -> CiteNumber {
-    with_cites(|cites| cites.ptr())
-}
-
-#[no_mangle]
 pub extern "C" fn set_cite_ptr(num: CiteNumber) {
     with_cites_mut(|cites| cites.set_ptr(num))
 }
 
 #[no_mangle]
-pub extern "C" fn max_cites() -> usize {
-    with_cites(|cites| cites.cite_list.len())
-}
-
-#[no_mangle]
 pub extern "C" fn cite_info(num: CiteNumber) -> StrNumber {
-    with_cites(|cites| cites.get_info(num))
-}
-
-#[no_mangle]
-pub extern "C" fn set_cite_info(num: CiteNumber, info: StrNumber) {
-    with_cites_mut(|cites| cites.set_info(num, info))
-}
-
-#[no_mangle]
-pub extern "C" fn type_list(num: CiteNumber) -> HashPointer {
-    with_cites(|cites| cites.get_type(num))
-}
-
-#[no_mangle]
-pub extern "C" fn set_type_list(num: CiteNumber, ty: HashPointer) {
-    with_cites_mut(|cites| cites.set_type(num, ty))
-}
-
-#[no_mangle]
-pub extern "C" fn entry_exists(num: CiteNumber) -> bool {
-    with_cites(|cites| cites.get_exists(num))
-}
-
-#[no_mangle]
-pub extern "C" fn set_entry_exists(num: CiteNumber, exists: bool) {
-    with_cites_mut(|cites| cites.set_exists(num, exists))
+    with_cites(|cites| cites.info(num))
 }
 
 #[no_mangle]
 pub extern "C" fn num_cites() -> CiteNumber {
     with_cites(|cites| cites.num_cites)
-}
-
-#[no_mangle]
-pub extern "C" fn set_num_cites(val: CiteNumber) {
-    with_cites_mut(|cites| cites.num_cites = val)
-}
-
-#[no_mangle]
-pub extern "C" fn old_num_cites() -> CiteNumber {
-    with_cites(|cites| cites.old_num_cites)
-}
-
-#[no_mangle]
-pub extern "C" fn set_old_num_cites(val: CiteNumber) {
-    with_cites_mut(|cites| cites.old_num_cites = val)
-}
-
-#[no_mangle]
-pub extern "C" fn all_marker() -> CiteNumber {
-    with_cites(|cites| cites.all_marker)
-}
-
-#[no_mangle]
-pub extern "C" fn set_all_marker(val: CiteNumber) {
-    with_cites_mut(|cites| cites.all_marker = val)
 }
 
 pub(crate) fn add_database_cite(
@@ -255,22 +189,25 @@ pub(crate) fn add_database_cite(
     new_cite + 1
 }
 
+pub(crate) fn rs_find_cite_locs_for_this_cite_key(
+    pool: &StringPool,
+    hash: &HashData,
+    cite_str: StrNumber,
+) -> FindCiteLocs {
+    let val = pool.get_str(cite_str);
+
+    let cite_hash = pool.lookup_str(hash, val, StrIlk::Cite);
+    let lc_cite_hash = pool.lookup_str(hash, &val.to_ascii_lowercase(), StrIlk::LcCite);
+
+    FindCiteLocs {
+        cite_loc: cite_hash.loc,
+        cite_found: cite_hash.exists,
+        lc_cite_loc: lc_cite_hash.loc,
+        lc_found: lc_cite_hash.exists,
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn find_cite_locs_for_this_cite_key(cite_str: StrNumber) -> FindCiteLocs {
-    with_pool(|pool| {
-        let val = pool.get_str(cite_str);
-
-        let (cite_hash, lc_cite_hash) = with_hash(|hash| {
-            let cite_hash = pool.lookup_str(hash, val, StrIlk::Cite);
-            let lc_cite_hash = pool.lookup_str(hash, &val.to_ascii_lowercase(), StrIlk::LcCite);
-            (cite_hash, lc_cite_hash)
-        });
-
-        FindCiteLocs {
-            cite_loc: cite_hash.loc,
-            cite_found: cite_hash.exists,
-            lc_cite_loc: lc_cite_hash.loc,
-            lc_found: lc_cite_hash.exists,
-        }
-    })
+    with_pool(|pool| with_hash(|hash| rs_find_cite_locs_for_this_cite_key(pool, hash, cite_str)))
 }

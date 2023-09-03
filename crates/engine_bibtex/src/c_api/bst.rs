@@ -1,19 +1,27 @@
 use crate::{
     c_api::{
+        bibs::get_bib_command_or_entry_and_process,
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        cite::rs_find_cite_locs_for_this_cite_key,
         exec::{rs_check_command_execution, rs_execute_fn, ExecCtx},
         hash::{with_hash, FnClass, HashData},
+        history::mark_warning,
         log::{
-            bst_left_brace_print, bst_right_brace_print, bst_warn_print, eat_bst_print,
-            rs_already_seen_function_print, rs_bst_err_print_and_look_for_blank_line,
-            rs_bst_id_print, rs_print_a_token, rs_print_fn_class, write_logs,
+            bst_left_brace_print, bst_right_brace_print, bst_warn_print,
+            cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion, print_confusion,
+            rs_already_seen_function_print, rs_bad_cross_reference_print,
+            rs_bst_err_print_and_look_for_blank_line, rs_bst_id_print, rs_log_pr_bib_name,
+            rs_nonexistent_cross_reference_error, rs_print_a_token, rs_print_bib_name,
+            rs_print_fn_class, rs_print_missing_entry, write_log_file, write_logs,
         },
+        peekable::{peekable_close, tectonic_eof},
         pool::{with_pool, StringPool},
         scan::{rs_eat_bst_white_space, rs_scan_identifier, scan_fn_def, Scan, ScanRes},
-        Bibtex, CResult, CResultBool, GlobalItems, HashPointer, StrIlk,
+        Bibtex, CResult, CResultBool, CiteNumber, GlobalItems, HashPointer, StrIlk,
     },
     BibtexError,
 };
+use std::ptr::NonNull;
 
 macro_rules! eat_bst_white {
     ($ctx:ident, $globals:ident, $name:literal) => {
@@ -419,7 +427,7 @@ fn rs_bst_iterate_command(
 
     let mut sort_cite_ptr = 0;
     while sort_cite_ptr < globals.cites.num_cites() {
-        globals.cites.set_ptr(globals.cites.get_info(sort_cite_ptr));
+        globals.cites.set_ptr(globals.cites.info(sort_cite_ptr));
         rs_execute_fn(ctx, globals, fn_loc)?;
         rs_check_command_execution(ctx, globals.pool, globals.hash)?;
         sort_cite_ptr += 1;
@@ -527,6 +535,296 @@ fn rs_bst_macro_command(
     Ok(())
 }
 
+fn rs_bst_read_command(
+    ctx: &mut ExecCtx,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
+    if ctx.glbl_ctx().read_seen {
+        write_logs("Illegal, another read command");
+        rs_bst_err_print_and_look_for_blank_line(
+            ctx.glbl_ctx_mut(),
+            globals.buffers,
+            globals.pool,
+        )?;
+        return Ok(());
+    }
+    ctx.glbl_ctx_mut().read_seen = true;
+
+    if !ctx.glbl_ctx().entry_seen {
+        write_logs("Illegal, read command before entry command");
+        rs_bst_err_print_and_look_for_blank_line(
+            ctx.glbl_ctx_mut(),
+            globals.buffers,
+            globals.pool,
+        )?;
+        return Ok(());
+    }
+
+    let start = globals.buffers.offset(BufTy::Base, 2);
+    let to = globals.buffers.init(BufTy::Base);
+    let sv_range = start..to;
+    globals.buffers.copy_within(
+        BufTy::Base,
+        BufTy::Sv,
+        sv_range.start,
+        sv_range.start,
+        sv_range.end,
+    );
+
+    globals
+        .other
+        .check_field_overflow(globals.other.num_fields() * globals.cites.num_cites());
+
+    for idx in 0..globals.other.max_fields() {
+        globals.other.set_field(idx, 0);
+    }
+
+    for idx in 0..globals.cites.len() {
+        globals.cites.set_type(idx, 0);
+        globals.cites.set_info(idx, 0);
+    }
+    globals.cites.set_old_num_cites(globals.cites.num_cites());
+
+    if ctx.glbl_ctx().all_entries {
+        for idx in 0..globals.cites.old_num_cites() {
+            globals.cites.set_info(idx, globals.cites.get_cite(idx));
+            globals.cites.set_exists(idx, false);
+        }
+        globals.cites.set_ptr(globals.cites.all_marker());
+    } else {
+        globals.cites.set_ptr(globals.cites.num_cites());
+        globals.cites.set_all_marker(0);
+    }
+
+    ctx.glbl_ctx_mut().read_performed = true;
+    globals.bibs.set_ptr(0);
+    while globals.bibs.ptr() < ctx.glbl_ctx().num_bib_files {
+        if ctx.glbl_ctx().config.verbose {
+            write_logs(&format!("Database file #{}: ", globals.bibs.ptr() + 1));
+            rs_print_bib_name(globals.pool, globals.bibs)?;
+        } else {
+            write_log_file(&format!("Database file #{}: ", globals.bibs.ptr() + 1));
+            rs_log_pr_bib_name(globals.bibs, globals.pool)?;
+        }
+
+        globals.bibs.set_line_num(0);
+        globals
+            .buffers
+            .set_offset(BufTy::Base, 2, globals.buffers.init(BufTy::Base));
+
+        let mut cur_macro_loc = 0;
+        let mut field_name_loc = 0;
+        while !tectonic_eof(globals.bibs.cur_bib_file()) {
+            get_bib_command_or_entry_and_process(
+                ctx.glbl_ctx_mut(),
+                globals,
+                &mut cur_macro_loc,
+                &mut field_name_loc,
+            )?;
+        }
+        unsafe { peekable_close(globals.bibs.take_cur_bib_file().map(NonNull::from)) };
+        globals.bibs.set_ptr(globals.bibs.ptr() + 1);
+    }
+
+    ctx.glbl_ctx_mut().reading_completed = true;
+    globals.cites.set_num_cites(globals.cites.ptr());
+    ctx.glbl_ctx_mut().num_preamble_strings = globals.bibs.preamble_ptr();
+
+    let cites = match globals.cites.num_cites() {
+        0 => 0,
+        val => val - 1,
+    };
+    if cites * globals.other.num_fields() + globals.other.crossref_num()
+        >= globals.other.max_fields()
+    {
+        write_logs("field_info index is out of range");
+        print_confusion();
+        return Err(BibtexError::Fatal);
+    }
+
+    for cite_ptr in 0..globals.cites.num_cites() {
+        let field_ptr = cite_ptr * globals.other.num_fields() + globals.other.crossref_num();
+        if globals.other.field(field_ptr) != 0 {
+            let find = rs_find_cite_locs_for_this_cite_key(
+                globals.pool,
+                globals.hash,
+                globals.other.field(field_ptr),
+            );
+
+            if find.lc_found {
+                let cite_loc = globals.hash.ilk_info(find.lc_cite_loc) as CiteNumber;
+                globals
+                    .other
+                    .set_field(field_ptr, globals.hash.text(cite_loc));
+
+                let field_start = cite_ptr * globals.other.num_fields();
+                let mut parent = globals.hash.ilk_info(cite_loc) as usize
+                    * globals.other.num_fields()
+                    + globals.other.pre_defined_fields();
+                for idx in (field_start + globals.other.pre_defined_fields())
+                    ..(field_start + globals.other.num_fields())
+                {
+                    if globals.other.field(idx) == 0 {
+                        globals.other.set_field(idx, globals.other.field(parent));
+                    }
+                    parent += 1;
+                }
+            }
+        }
+    }
+
+    for cite_ptr in 0..globals.cites.num_cites() {
+        let field_ptr = cite_ptr * globals.other.num_fields() + globals.other.crossref_num();
+        if globals.other.field(field_ptr) != 0 {
+            let find = rs_find_cite_locs_for_this_cite_key(
+                globals.pool,
+                globals.hash,
+                globals.other.field(field_ptr),
+            );
+
+            if !find.lc_found {
+                if find.cite_found {
+                    hash_cite_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+                rs_nonexistent_cross_reference_error(
+                    globals.pool,
+                    globals.cites,
+                    globals.other,
+                    cite_ptr,
+                    field_ptr,
+                )?;
+                globals.other.set_field(field_ptr, 0);
+            } else {
+                if find.cite_loc != globals.hash.ilk_info(find.lc_cite_loc) as CiteNumber {
+                    hash_cite_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+
+                let cite_parent_ptr = globals.hash.ilk_info(find.cite_loc) as CiteNumber;
+                if globals.cites.get_type(cite_parent_ptr) == 0 {
+                    rs_nonexistent_cross_reference_error(
+                        globals.pool,
+                        globals.cites,
+                        globals.other,
+                        cite_ptr,
+                        field_ptr,
+                    )?;
+                    globals.other.set_field(field_ptr, 0);
+                } else {
+                    let field_parent_ptr =
+                        cite_parent_ptr * globals.other.num_fields() + globals.other.crossref_num();
+                    if globals.other.field(field_parent_ptr) != 0 {
+                        write_logs("Warning--you've nested cross references");
+                        rs_bad_cross_reference_print(
+                            globals.pool,
+                            globals.cites,
+                            cite_ptr,
+                            globals.cites.get_cite(cite_parent_ptr),
+                        )?;
+                        write_logs("\", which also refers to something\n");
+                        mark_warning();
+                    }
+                    if !ctx.glbl_ctx().all_entries
+                        && cite_parent_ptr >= globals.cites.old_num_cites()
+                        && globals.cites.info(cite_parent_ptr)
+                            < ctx.glbl_ctx().config.min_crossrefs as usize
+                    {
+                        globals.other.set_field(field_ptr, 0);
+                    }
+                }
+            }
+        }
+    }
+
+    for cite_ptr in 0..globals.cites.num_cites() {
+        if globals.cites.get_type(cite_ptr) == 0 {
+            rs_print_missing_entry(globals.pool, globals.cites.get_cite(cite_ptr))?;
+        } else if ctx.glbl_ctx().all_entries
+            || cite_ptr < globals.cites.old_num_cites()
+            || globals.cites.info(cite_ptr) >= ctx.glbl_ctx().config.min_crossrefs as usize
+        {
+            if cite_ptr > ctx.glbl_ctx().cite_xptr {
+                if (ctx.glbl_ctx().cite_xptr) + 1 * globals.other.num_fields()
+                    > globals.other.max_fields()
+                {
+                    write_logs("field_info index is out of range");
+                    print_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+
+                globals
+                    .cites
+                    .set_cite(ctx.glbl_ctx().cite_xptr, globals.cites.get_cite(cite_ptr));
+                globals
+                    .cites
+                    .set_type(ctx.glbl_ctx().cite_xptr, globals.cites.get_type(cite_ptr));
+
+                let find = rs_find_cite_locs_for_this_cite_key(
+                    globals.pool,
+                    globals.hash,
+                    globals.cites.get_cite(cite_ptr),
+                );
+                if !find.lc_found {
+                    cite_key_disappeared_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+
+                if !find.cite_found
+                    || find.cite_loc != globals.hash.ilk_info(find.lc_cite_loc) as CiteNumber
+                {
+                    hash_cite_confusion();
+                    return Err(BibtexError::Fatal);
+                }
+
+                globals
+                    .hash
+                    .set_ilk_info(find.cite_loc, ctx.glbl_ctx().cite_xptr as i32);
+
+                let start = ctx.glbl_ctx().cite_xptr * globals.other.num_fields();
+                let end = start + globals.other.num_fields();
+                let tmp = cite_ptr * globals.other.num_fields();
+
+                for idx in start..end {
+                    globals
+                        .other
+                        .set_field(idx, globals.other.field(tmp + idx - start));
+                }
+            }
+            ctx.glbl_ctx_mut().cite_xptr += 1;
+        }
+    }
+
+    globals.cites.set_num_cites(ctx.glbl_ctx().cite_xptr);
+
+    if ctx.glbl_ctx().all_entries {
+        for idx in globals.cites.all_marker()..globals.cites.old_num_cites() {
+            if !globals.cites.exists(idx) {
+                rs_print_missing_entry(globals.pool, globals.cites.info(idx))?;
+            }
+        }
+    }
+
+    globals.entries.init_entries(globals.cites);
+
+    for idx in 0..globals.cites.num_cites() {
+        globals.cites.set_info(idx, idx);
+    }
+    globals.cites.set_ptr(globals.cites.num_cites());
+
+    globals.buffers.copy_within(
+        BufTy::Sv,
+        BufTy::Base,
+        sv_range.start,
+        sv_range.start,
+        sv_range.end,
+    );
+    globals.buffers.set_offset(BufTy::Base, 2, sv_range.start);
+    globals.buffers.set_init(BufTy::Base, sv_range.end);
+
+    Ok(())
+}
+
 fn rs_bad_argument_token(
     ctx: &mut Bibtex,
     fn_out: Option<&mut HashPointer>,
@@ -601,4 +899,9 @@ pub unsafe extern "C" fn bst_iterate_command(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn bst_macro_command(ctx: *mut ExecCtx) -> CResult {
     GlobalItems::with(|globals| rs_bst_macro_command(&mut *ctx, globals)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bst_read_command(ctx: *mut ExecCtx) -> CResult {
+    GlobalItems::with(|globals| rs_bst_read_command(&mut *ctx, globals)).into()
 }

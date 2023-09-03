@@ -227,16 +227,6 @@ pub enum BufTy {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_buf(ty: BufTy, pos: BufPointer) -> ASCIICode {
-    with_buffers(|b| b.at(ty, pos))
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bib_set_buf(ty: BufTy, num: BufPointer, val: ASCIICode) {
-    with_buffers_mut(|b| b.set_at(ty, num, val))
-}
-
-#[no_mangle]
 pub unsafe extern "C" fn bib_buf_at_offset(ty: BufTy, num: usize) -> ASCIICode {
     with_buffers(|b| b.at_offset(ty, num))
 }
@@ -254,11 +244,6 @@ pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) 
 #[no_mangle]
 pub extern "C" fn bib_buf_len(ty: BufTy) -> BufPointer {
     with_buffers(|buffers| buffers.init(ty))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_buf_len(ty: BufTy, len: BufPointer) {
-    with_buffers_mut(|buffers| buffers.set_init(ty, len))
 }
 
 #[no_mangle]

@@ -38,8 +38,7 @@ pub fn set_history(hist: History) {
     HISTORY.with(|h| h.set(hist))
 }
 
-#[no_mangle]
-pub extern "C" fn mark_warning() {
+pub fn mark_warning() {
     let history = get_history();
     if history == History::WarningIssued {
         set_err(|e| e + 1);

@@ -187,11 +187,6 @@ pub extern "C" fn set_fn_type(pos: HashPointer, ty: FnClass) {
 }
 
 #[no_mangle]
-pub extern "C" fn hash_text(pos: HashPointer) -> StrNumber {
-    with_hash(|hash| hash.hash_text[pos])
-}
-
-#[no_mangle]
 pub extern "C" fn ilk_info(pos: HashPointer) -> i32 {
     with_hash(|hash| hash.ilk_info[pos])
 }
