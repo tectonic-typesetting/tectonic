@@ -127,17 +127,6 @@ fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
         let str2 = entries.strs(ptr2);
 
         Ord::cmp(str1, str2)
-        // for (){
-        //     match (char1, char2) {
-        //         (127, 127) => return arg1.cmp(arg2),
-        //         (127, _) => return Ordering::Less,
-        //         (_, 127) => return Ordering::Greater,
-        //         (char1, char2) if char1 != char2 => return char1.cmp(&char2),
-        //         _ => (),
-        //     }
-        //
-        //     char_ptr += 1;
-        // }
     })
 }
 

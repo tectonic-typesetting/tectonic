@@ -69,7 +69,7 @@ pub struct ExecCtx {
     pub(crate) lit_stack: Box<XBuf<ExecVal>>,
     pub lit_stk_ptr: usize,
     pub mess_with_entries: bool,
-    /// Pointer to the current top of the string pool, used to optimized certain string operations
+    /// Pointer to the current top of the string pool, used to optimize certain string operations
     pub bib_str_ptr: StrNumber,
 }
 
@@ -227,8 +227,7 @@ pub fn bst_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexE
     }
 
     write_logs("\nwhile executing-");
-    // SAFETY: The `Bibtex` value pointed to by `ExecCtx` is guaranteed valid
-    bst_ln_num_print(unsafe { &*ctx.glbl_ctx }, pool)?;
+    bst_ln_num_print(ctx.glbl_ctx(), pool)?;
     mark_error();
     Ok(())
 }
