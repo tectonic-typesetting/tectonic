@@ -1,5 +1,5 @@
-// src/bin/tectonic.rs -- Command-line driver for the Tectonic engine.
-// Copyright 2016-2022 the Tectonic Project
+// src/bin/tectonic/main.rs -- Command-line driver for the Tectonic engine.
+// Copyright 2016-2023 the Tectonic Project
 // Licensed under the MIT License.
 
 use std::{env, process, str::FromStr};
@@ -56,14 +56,26 @@ struct CliOptions {
     compile: compile::CompileOptions,
 }
 
+#[derive(StructOpt)]
+struct PeekUnstableOptions {
+    #[structopt(name = "option", short = "Z", number_of_values = 1)]
+    unstable: Vec<unstable_opts::UnstableArg>,
+
+    #[structopt()]
+    _remainder: Vec<std::ffi::OsString>,
+}
+
 fn main() {
     let os_args: Vec<_> = env::args_os().collect();
 
-    // A hack so that you can just run `tectonic -Zhelp` without getting a usage
-    // error. Note that `tectonic -Z help` won't work.
+    // A hack so that you can just run `tectonic -Z help` without getting a
+    // usage error about a missing input file specification. If
+    // `from_unstable_args()` sees a `help` option, it will print the usage and
+    // exit. Otherwise, this will all be a no-op, and we'll re-parse the args
+    // "for real" momentarily.
 
-    if os_args.iter().any(|s| s == "-Zhelp") {
-        unstable_opts::print_unstable_help_and_exit();
+    if let Ok(args) = PeekUnstableOptions::from_args_safe() {
+        unstable_opts::UnstableOptions::from_unstable_args(args.unstable.into_iter());
     }
 
     // Migration to the "cargo-style" command-line interface. If the first
