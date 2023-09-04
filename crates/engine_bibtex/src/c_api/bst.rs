@@ -866,6 +866,20 @@ fn rs_bst_reverse_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> R
     Ok(())
 }
 
+fn rs_bst_sort_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
+    if !ctx.glbl_ctx().read_seen {
+        write_logs("Illegal, sort command before read command");
+        rs_bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
+        return Ok(());
+    }
+    
+    if globals.cites.num_cites() > 1 {
+        globals.cites.sort_info(0..=globals.cites.num_cites() - 1);
+    }
+    
+    Ok(())
+}
+
 fn bad_argument_token(
     ctx: &mut Bibtex,
     fn_out: Option<&mut HashPointer>,
@@ -937,4 +951,9 @@ pub unsafe extern "C" fn bst_read_command(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn bst_reverse_command(ctx: *mut ExecCtx) -> CResult {
     GlobalItems::with(|globals| rs_bst_reverse_command(&mut *ctx, globals)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bst_sort_command(ctx: *mut ExecCtx) -> CResult {
+    GlobalItems::with(|globals| rs_bst_sort_command(&mut *ctx, globals)).into()
 }

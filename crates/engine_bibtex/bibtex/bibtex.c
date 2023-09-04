@@ -74,19 +74,6 @@ printf_log(const char *fmt, ...)
 }
 
 static void
-bst_sort_command(Bibtex* ctx)
-{
-    if (!ctx->read_seen) {
-        puts_log("Illegal, sort command before read command");
-        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-        return;
-    }
-
-    if (num_cites() > 1)
-        quick_sort(0, num_cites() - 1);
-}
-
-static void
 bst_strings_command(Bibtex* ctx)
 {
     if (!eat_bst_white_space(ctx)) {
@@ -196,7 +183,7 @@ get_bst_command_and_process(ExecCtx* ctx)
         unwrap(bst_reverse_command(ctx));
         break;
     case 8:
-        bst_sort_command(ctx->glbl_ctx);
+        unwrap(bst_sort_command(ctx));
         break;
     case 9:
         bst_strings_command(ctx->glbl_ctx);

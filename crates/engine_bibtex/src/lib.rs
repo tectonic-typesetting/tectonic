@@ -138,7 +138,7 @@ pub mod c_api {
     pub mod bst;
     pub mod buffer;
     pub(crate) mod char_info;
-    pub mod cite;
+    pub(crate) mod cite;
     pub(crate) mod entries;
     pub mod exec;
     pub mod global;

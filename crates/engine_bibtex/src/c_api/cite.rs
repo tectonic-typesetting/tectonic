@@ -3,6 +3,7 @@ use crate::c_api::{
     CiteNumber, FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
 use std::{cell::RefCell, cmp::Ordering};
+use std::ops::IndexMut;
 
 pub(crate) const MAX_CITES: usize = 750;
 
@@ -116,6 +117,13 @@ impl CiteInfo {
     pub fn set_all_marker(&mut self, val: CiteNumber) {
         self.all_marker = val;
     }
+    
+    pub fn sort_info<I>(&mut self, r: I)
+    where
+        [usize]: IndexMut<I, Output = [usize]>,
+    {
+        self.cite_info[r].sort_by(less_than)
+    }
 }
 
 thread_local! {
@@ -124,10 +132,6 @@ thread_local! {
 
 pub fn reset() {
     CITE_INFO.with(|ci| *ci.borrow_mut() = CiteInfo::new());
-}
-
-pub(crate) fn with_cites<T>(f: impl FnOnce(&CiteInfo) -> T) -> T {
-    CITE_INFO.with(|ci| f(&ci.borrow()))
 }
 
 pub(crate) fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
@@ -144,16 +148,6 @@ fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
 
         Ord::cmp(str1, str2)
     })
-}
-
-#[no_mangle]
-pub extern "C" fn quick_sort(left_end: CiteNumber, right_end: CiteNumber) {
-    with_cites_mut(|cites| cites.cite_info[left_end..=right_end].sort_by(less_than))
-}
-
-#[no_mangle]
-pub extern "C" fn num_cites() -> CiteNumber {
-    with_cites(|cites| cites.num_cites)
 }
 
 pub(crate) fn add_database_cite(

@@ -209,6 +209,8 @@ CResult bst_read_command(ExecCtx *ctx);
 
 CResult bst_reverse_command(ExecCtx *ctx);
 
+CResult bst_sort_command(ExecCtx *ctx);
+
 ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
 
 BufPointer bib_buf_offset(BufTy ty, uintptr_t num);
@@ -218,8 +220,6 @@ void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
 BufPointer bib_buf_len(BufTy ty);
 
 void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
-
-void quick_sort(CiteNumber left_end, CiteNumber right_end);
 
 CiteNumber num_cites(void);
 
