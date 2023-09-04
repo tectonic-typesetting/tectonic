@@ -98,45 +98,6 @@ pub fn reset() {
     OTHER.with(|other| *other.borrow_mut() = OtherData::new());
 }
 
-pub(crate) fn with_other<T>(f: impl FnOnce(&OtherData) -> T) -> T {
-    OTHER.with(|other| f(&other.borrow()))
-}
-
 pub(crate) fn with_other_mut<T>(f: impl FnOnce(&mut OtherData) -> T) -> T {
     OTHER.with(|other| f(&mut other.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn field_info(pos: FieldLoc) -> StrNumber {
-    with_other(|other| other.field_info[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_field_info(pos: FieldLoc, val: StrNumber) {
-    with_other_mut(|other| other.field_info[pos] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn check_field_overflow(total_fields: usize) {
-    with_other_mut(|other| other.check_field_overflow(total_fields))
-}
-
-#[no_mangle]
-pub extern "C" fn max_fields() -> usize {
-    with_other(|other| other.field_info.len())
-}
-
-#[no_mangle]
-pub extern "C" fn num_fields() -> FieldLoc {
-    with_other(|other| other.num_fields)
-}
-
-#[no_mangle]
-pub extern "C" fn num_pre_defined_fields() -> FieldLoc {
-    with_other(|other| other.num_pre_defined_fields)
-}
-
-#[no_mangle]
-pub extern "C" fn crossref_num() -> FieldLoc {
-    with_other(|other| other.crossref_num)
 }

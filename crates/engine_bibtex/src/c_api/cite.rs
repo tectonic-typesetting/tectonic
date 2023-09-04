@@ -189,7 +189,7 @@ pub(crate) fn add_database_cite(
     new_cite + 1
 }
 
-pub(crate) fn rs_find_cite_locs_for_this_cite_key(
+pub(crate) fn find_cite_locs_for_this_cite_key(
     pool: &StringPool,
     hash: &HashData,
     cite_str: StrNumber,
@@ -205,9 +205,4 @@ pub(crate) fn rs_find_cite_locs_for_this_cite_key(
         lc_cite_loc: lc_cite_hash.loc,
         lc_found: lc_cite_hash.exists,
     }
-}
-
-#[no_mangle]
-pub extern "C" fn find_cite_locs_for_this_cite_key(cite_str: StrNumber) -> FindCiteLocs {
-    with_pool(|pool| with_hash(|hash| rs_find_cite_locs_for_this_cite_key(pool, hash, cite_str)))
 }

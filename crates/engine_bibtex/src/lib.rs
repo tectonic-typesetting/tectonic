@@ -139,13 +139,13 @@ pub mod c_api {
     pub mod buffer;
     pub(crate) mod char_info;
     pub mod cite;
-    pub mod entries;
+    pub(crate) mod entries;
     pub mod exec;
     pub mod global;
     pub mod hash;
     pub mod history;
     pub mod log;
-    pub mod other;
+    pub(crate) mod other;
     pub mod peekable;
     pub mod pool;
     pub mod scan;

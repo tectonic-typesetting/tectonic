@@ -159,15 +159,6 @@ typedef uintptr_t BufPointer;
 typedef uintptr_t CiteNumber;
 
 typedef struct {
-  CiteNumber cite_loc;
-  CiteNumber lc_cite_loc;
-  bool cite_found;
-  bool lc_found;
-} FindCiteLocs;
-
-typedef uintptr_t FieldLoc;
-
-typedef struct {
   /**
    * The location of the string - where it exists, was inserted, of if insert is false,
    * where it *would* have been inserted
@@ -241,47 +232,15 @@ void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
 
 BufPointer bib_buf_len(BufTy ty);
 
-void bib_set_buf_len(BufTy ty, BufPointer len);
-
 void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
 
 void quick_sort(CiteNumber left_end, CiteNumber right_end);
 
-StrNumber cite_list(CiteNumber num);
-
-void set_cite_list(CiteNumber num, StrNumber str);
-
-CiteNumber cite_ptr(void);
-
 void set_cite_ptr(CiteNumber num);
-
-uintptr_t max_cites(void);
 
 StrNumber cite_info(CiteNumber num);
 
-void set_cite_info(CiteNumber num, StrNumber info);
-
-HashPointer type_list(CiteNumber num);
-
-void set_type_list(CiteNumber num, HashPointer ty);
-
-bool entry_exists(CiteNumber num);
-
-void set_entry_exists(CiteNumber num, bool exists);
-
 CiteNumber num_cites(void);
-
-void set_num_cites(CiteNumber val);
-
-CiteNumber old_num_cites(void);
-
-void set_old_num_cites(CiteNumber val);
-
-CiteNumber all_marker(void);
-
-void set_all_marker(CiteNumber val);
-
-FindCiteLocs find_cite_locs_for_this_cite_key(StrNumber cite_str);
 
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
@@ -301,8 +260,6 @@ uintptr_t undefined(void);
 
 void set_fn_type(HashPointer pos, FnClass ty);
 
-StrNumber hash_text(HashPointer pos);
-
 int32_t ilk_info(HashPointer pos);
 
 void set_ilk_info(HashPointer pos, int32_t val);
@@ -312,8 +269,6 @@ int32_t hash_size(void);
 uintptr_t hash_prime(void);
 
 History get_history(void);
-
-void mark_warning(void);
 
 uint32_t err_count(void);
 
@@ -335,10 +290,6 @@ CResult log_pr_aux_name(void);
 
 CResult print_bib_name(void);
 
-CResult log_pr_bib_name(void);
-
-void hash_cite_confusion(void);
-
 void eat_bst_print(void);
 
 CResult bst_id_print(ScanRes scan_result);
@@ -347,27 +298,9 @@ void bst_left_brace_print(void);
 
 void bst_right_brace_print(void);
 
-void cite_key_disappeared_confusion(void);
-
-CResult print_missing_entry(StrNumber s);
-
 CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
 
 CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
-
-StrNumber field_info(FieldLoc pos);
-
-void set_field_info(FieldLoc pos, StrNumber val);
-
-void check_field_overflow(uintptr_t total_fields);
-
-uintptr_t max_fields(void);
-
-FieldLoc num_fields(void);
-
-FieldLoc num_pre_defined_fields(void);
-
-FieldLoc crossref_num(void);
 
 int peekable_close(PeekableInput *peekable);
 

@@ -2,17 +2,17 @@ use crate::{
     c_api::{
         bibs::get_bib_command_or_entry_and_process,
         buffer::{with_buffers_mut, BufTy, GlobalBuffer},
-        cite::rs_find_cite_locs_for_this_cite_key,
+        cite::find_cite_locs_for_this_cite_key,
         exec::{rs_check_command_execution, rs_execute_fn, ExecCtx},
         hash::{with_hash, FnClass, HashData},
         history::mark_warning,
         log::{
             bst_left_brace_print, bst_right_brace_print, bst_warn_print,
-            cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion, print_confusion,
-            rs_already_seen_function_print, rs_bad_cross_reference_print,
-            rs_bst_err_print_and_look_for_blank_line, rs_bst_id_print, rs_log_pr_bib_name,
-            rs_nonexistent_cross_reference_error, rs_print_a_token, rs_print_bib_name,
-            rs_print_fn_class, rs_print_missing_entry, write_log_file, write_logs,
+            cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion, log_pr_bib_name,
+            print_confusion, print_missing_entry, rs_already_seen_function_print,
+            rs_bad_cross_reference_print, rs_bst_err_print_and_look_for_blank_line,
+            rs_bst_id_print, rs_nonexistent_cross_reference_error, rs_print_a_token,
+            rs_print_bib_name, rs_print_fn_class, write_log_file, write_logs,
         },
         peekable::{peekable_close, tectonic_eof},
         pool::{with_pool, StringPool},
@@ -604,7 +604,7 @@ fn rs_bst_read_command(
             rs_print_bib_name(globals.pool, globals.bibs)?;
         } else {
             write_log_file(&format!("Database file #{}: ", globals.bibs.ptr() + 1));
-            rs_log_pr_bib_name(globals.bibs, globals.pool)?;
+            log_pr_bib_name(globals.bibs, globals.pool)?;
         }
 
         globals.bibs.set_line_num(0);
@@ -645,7 +645,7 @@ fn rs_bst_read_command(
     for cite_ptr in 0..globals.cites.num_cites() {
         let field_ptr = cite_ptr * globals.other.num_fields() + globals.other.crossref_num();
         if globals.other.field(field_ptr) != 0 {
-            let find = rs_find_cite_locs_for_this_cite_key(
+            let find = find_cite_locs_for_this_cite_key(
                 globals.pool,
                 globals.hash,
                 globals.other.field(field_ptr),
@@ -676,7 +676,7 @@ fn rs_bst_read_command(
     for cite_ptr in 0..globals.cites.num_cites() {
         let field_ptr = cite_ptr * globals.other.num_fields() + globals.other.crossref_num();
         if globals.other.field(field_ptr) != 0 {
-            let find = rs_find_cite_locs_for_this_cite_key(
+            let find = find_cite_locs_for_this_cite_key(
                 globals.pool,
                 globals.hash,
                 globals.other.field(field_ptr),
@@ -739,7 +739,7 @@ fn rs_bst_read_command(
 
     for cite_ptr in 0..globals.cites.num_cites() {
         if globals.cites.get_type(cite_ptr) == 0 {
-            rs_print_missing_entry(globals.pool, globals.cites.get_cite(cite_ptr))?;
+            print_missing_entry(globals.pool, globals.cites.get_cite(cite_ptr))?;
         } else if ctx.glbl_ctx().all_entries
             || cite_ptr < globals.cites.old_num_cites()
             || globals.cites.info(cite_ptr) >= ctx.glbl_ctx().config.min_crossrefs as usize
@@ -760,7 +760,7 @@ fn rs_bst_read_command(
                     .cites
                     .set_type(ctx.glbl_ctx().cite_xptr, globals.cites.get_type(cite_ptr));
 
-                let find = rs_find_cite_locs_for_this_cite_key(
+                let find = find_cite_locs_for_this_cite_key(
                     globals.pool,
                     globals.hash,
                     globals.cites.get_cite(cite_ptr),
@@ -800,7 +800,7 @@ fn rs_bst_read_command(
     if ctx.glbl_ctx().all_entries {
         for idx in globals.cites.all_marker()..globals.cites.old_num_cites() {
             if !globals.cites.exists(idx) {
-                rs_print_missing_entry(globals.pool, globals.cites.info(idx))?;
+                print_missing_entry(globals.pool, globals.cites.info(idx))?;
             }
         }
     }

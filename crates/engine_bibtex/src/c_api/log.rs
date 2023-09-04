@@ -79,7 +79,7 @@ pub(crate) fn write_log_file<B: ?Sized + AsBytes>(str: &B) {
     with_log(|log| log.write_all(str.as_bytes())).unwrap();
 }
 
-pub fn init_log_file(file: &CStr) -> bool {
+pub(crate) fn init_log_file(file: &CStr) -> bool {
     LOG_FILE.with(|log| {
         let ptr = log.replace(None);
         if ptr.is_none() {
@@ -342,7 +342,7 @@ pub extern "C" fn print_bib_name() -> CResult {
     with_pool(|pool| with_bibs(|bibs| rs_print_bib_name(pool, bibs))).into()
 }
 
-pub(crate) fn rs_log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
         out_pool_str(pool, log, bibs.cur_bib())?;
         let res = pool
@@ -357,11 +357,6 @@ pub(crate) fn rs_log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<()
     })
 }
 
-#[no_mangle]
-pub extern "C" fn log_pr_bib_name() -> CResult {
-    with_bibs(|bibs| with_pool(|pool| rs_log_pr_bib_name(bibs, pool))).into()
-}
-
 pub(crate) fn log_pr_bst_name(ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
         // TODO: This call can panic if bst_str doesn't exist
@@ -371,8 +366,7 @@ pub(crate) fn log_pr_bst_name(ctx: &Bibtex, pool: &StringPool) -> Result<(), Bib
     })
 }
 
-#[no_mangle]
-pub extern "C" fn hash_cite_confusion() {
+pub(crate) fn hash_cite_confusion() {
     write_logs("Cite hash error");
     print_confusion();
 }
@@ -535,8 +529,7 @@ pub(crate) fn bib_cmd_confusion() {
     print_confusion();
 }
 
-#[no_mangle]
-pub extern "C" fn cite_key_disappeared_confusion() {
+pub fn cite_key_disappeared_confusion() {
     write_logs("A cite key disappeared");
     print_confusion();
 }
@@ -555,17 +548,12 @@ pub(crate) fn rs_bad_cross_reference_print(
     Ok(())
 }
 
-pub(crate) fn rs_print_missing_entry(pool: &StringPool, s: StrNumber) -> Result<(), BibtexError> {
+pub(crate) fn print_missing_entry(pool: &StringPool, s: StrNumber) -> Result<(), BibtexError> {
     write_logs("Warning--I didn't find a database entry for \"");
     print_a_pool_str(s, pool)?;
     write_logs("\"\n");
     mark_warning();
     Ok(())
-}
-
-#[no_mangle]
-pub extern "C" fn print_missing_entry(s: StrNumber) -> CResult {
-    with_pool(|pool| rs_print_missing_entry(pool, s)).into()
 }
 
 pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
