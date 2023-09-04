@@ -1,5 +1,5 @@
 # Cargo.toml -- Cargo definition file for Tectonic.
-# Copyright 2016-2021 the Tectonic Project
+# Copyright 2016-2023 the Tectonic Project
 # Licensed under the MIT License.
 
 [package]
@@ -122,7 +122,7 @@ tempfile = "^3.1"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "63366443439398a62afc9a63b34b9a3ba63b1cae"
+rev = "4a600e9fea71bd7872080cbb716797e04d30e6d3"
 overlay-triplets-path = "dist/vcpkg-triplets"
 
 # If other targets start using custom triplets like x86_64-pc-windows-msvc,
