@@ -503,6 +503,8 @@ pub mod c_api {
         pool: &mut StringPool,
         hash: &mut HashData,
         aux: &mut AuxData,
+        other: &mut OtherData,
+        entries: &mut EntryData,
         aux_file_name: &CStr,
     ) -> Result<i32, BibtexError> {
         pool.set_pool_ptr(0);
@@ -521,7 +523,7 @@ pub mod c_api {
         ctx.impl_fn_num = 0;
         buffers.set_init(BufTy::Out, 0);
 
-        pre_def_certain_strings(ctx, pool, hash)?;
+        pre_def_certain_strings(ctx, pool, hash, other, entries)?;
         get_the_top_level_aux_file_name(ctx, pool, hash, aux, aux_file_name)
     }
 
@@ -534,14 +536,20 @@ pub mod c_api {
             with_pool_mut(|pool| {
                 with_hash_mut(|hash| {
                     with_aux_mut(|aux| {
-                        rs_initialize(
-                            &mut *ctx,
-                            buffers,
-                            pool,
-                            hash,
-                            aux,
-                            CStr::from_ptr(aux_file_name),
-                        )
+                        with_other_mut(|other| {
+                            with_entries_mut(|entries| {
+                                rs_initialize(
+                                    &mut *ctx,
+                                    buffers,
+                                    pool,
+                                    hash,
+                                    aux,
+                                    other,
+                                    entries,
+                                    CStr::from_ptr(aux_file_name),
+                                )
+                            })
+                        })
                     })
                 })
             })

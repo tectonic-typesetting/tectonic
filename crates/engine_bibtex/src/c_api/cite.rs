@@ -1,9 +1,5 @@
 use crate::c_api::{
-    entries::with_entries,
-    hash::{with_hash, HashData},
-    other::OtherData,
-    pool::{with_pool, StringPool},
-    xbuf::XBuf,
+    entries::with_entries, hash::HashData, other::OtherData, pool::StringPool, xbuf::XBuf,
     CiteNumber, FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
 use std::{cell::RefCell, cmp::Ordering};

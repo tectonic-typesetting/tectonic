@@ -886,11 +886,12 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
 pub(crate) fn decr_brace_level(
     ctx: &ExecCtx,
     pool: &StringPool,
+    cites: &CiteInfo,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
     if *brace_level == 0 {
-        braces_unbalanced_complaint(ctx, pool, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pool, cites, pop_lit_var)?;
     } else {
         *brace_level -= 1;
     }
@@ -901,11 +902,12 @@ pub(crate) fn decr_brace_level(
 pub(crate) fn check_brace_level(
     ctx: &ExecCtx,
     pool: &StringPool,
+    cites: &CiteInfo,
     pop_lit_var: StrNumber,
     brace_level: i32,
 ) -> Result<(), BibtexError> {
     if brace_level > 0 {
-        braces_unbalanced_complaint(ctx, pool, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pool, cites, pop_lit_var)?;
     }
     Ok(())
 }
@@ -914,6 +916,7 @@ pub(crate) fn name_scan_for_and(
     ctx: &ExecCtx,
     pool: &StringPool,
     buffers: &mut GlobalBuffer,
+    cites: &CiteInfo,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
@@ -953,7 +956,7 @@ pub(crate) fn name_scan_for_and(
                 preceding_white = false;
             }
             b'}' => {
-                decr_brace_level(ctx, pool, pop_lit_var, brace_level)?;
+                decr_brace_level(ctx, pool, cites, pop_lit_var, brace_level)?;
                 buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                 preceding_white = false;
             }
@@ -965,7 +968,7 @@ pub(crate) fn name_scan_for_and(
         }
     }
 
-    check_brace_level(ctx, pool, pop_lit_var, *brace_level)
+    check_brace_level(ctx, pool, cites, pop_lit_var, *brace_level)
 }
 
 pub(crate) fn von_token_found(

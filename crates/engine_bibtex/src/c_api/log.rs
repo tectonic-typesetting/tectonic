@@ -4,7 +4,7 @@ use crate::{
         bibs::{with_bibs, BibData},
         buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
         char_info::LexClass,
-        cite::{with_cites, CiteInfo},
+        cite::CiteInfo,
         exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
         hash::{with_hash, FnClass, HashData},
         history::{mark_error, mark_fatal, mark_warning},
@@ -556,10 +556,14 @@ pub(crate) fn print_missing_entry(pool: &StringPool, s: StrNumber) -> Result<(),
     Ok(())
 }
 
-pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn bst_mild_ex_warn_print(
+    ctx: &ExecCtx,
+    pool: &StringPool,
+    cites: &CiteInfo,
+) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        with_cites(|cites| print_a_pool_str(cites.get_cite(cites.ptr()), pool))?;
+        print_a_pool_str(cites.get_cite(cites.ptr()), pool)?;
     }
     write_logs("\nwhile executing");
     bst_warn_print(ctx.glbl_ctx(), pool)
@@ -568,9 +572,10 @@ pub(crate) fn bst_mild_ex_warn_print(ctx: &ExecCtx, pool: &StringPool) -> Result
 pub(crate) fn bst_cant_mess_with_entries_print(
     ctx: &ExecCtx,
     pool: &StringPool,
+    cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     write_logs("You can't mess with entries here");
-    bst_ex_warn_print(ctx, pool)
+    bst_ex_warn_print(ctx, pool, cites)
 }
 
 pub fn bst_1print_string_size_exceeded() {
@@ -580,9 +585,10 @@ pub fn bst_1print_string_size_exceeded() {
 pub(crate) fn bst_2print_string_size_exceeded(
     ctx: &ExecCtx,
     pool: &StringPool,
+    cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     write_logs("-string-size,");
-    bst_mild_ex_warn_print(ctx, pool)?;
+    bst_mild_ex_warn_print(ctx, pool, cites)?;
     write_logs("*Please notify the bibstyle designer*\n");
     Ok(())
 }
@@ -590,12 +596,13 @@ pub(crate) fn bst_2print_string_size_exceeded(
 pub(crate) fn braces_unbalanced_complaint(
     ctx: &ExecCtx,
     pool: &StringPool,
+    cites: &CiteInfo,
     pop_lit_var: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("Warning--\"");
     print_a_pool_str(pop_lit_var, pool)?;
     write_logs("\" isn't a brace-balanced string");
-    bst_mild_ex_warn_print(ctx, pool)
+    bst_mild_ex_warn_print(ctx, pool, cites)
 }
 
 pub(crate) fn rs_print_fn_class(hash: &HashData, fn_loc: HashPointer) {
@@ -762,11 +769,12 @@ pub(crate) fn skip_illegal_stuff_after_token_print(
 pub(crate) fn brace_lvl_one_letters_complaint(
     ctx: &mut ExecCtx,
     pool: &StringPool,
+    cites: &CiteInfo,
     str: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("The format string \"");
     print_a_pool_str(str, pool)?;
     write_logs("\" has an illegal brace-level-1 letter");
-    bst_ex_warn_print(ctx, pool)?;
+    bst_ex_warn_print(ctx, pool, cites)?;
     Ok(())
 }

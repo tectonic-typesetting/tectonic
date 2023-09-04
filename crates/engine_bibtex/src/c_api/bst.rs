@@ -276,7 +276,7 @@ fn rs_bst_execute_command(
     ctx.mess_with_entries = false;
 
     rs_execute_fn(ctx, globals, fn_loc)?;
-    rs_check_command_execution(ctx, globals.pool, globals.hash)?;
+    rs_check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
 
     Ok(())
 }
@@ -429,7 +429,7 @@ fn rs_bst_iterate_command(
     while sort_cite_ptr < globals.cites.num_cites() {
         globals.cites.set_ptr(globals.cites.info(sort_cite_ptr));
         rs_execute_fn(ctx, globals, fn_loc)?;
-        rs_check_command_execution(ctx, globals.pool, globals.hash)?;
+        rs_check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
         sort_cite_ptr += 1;
     }
 

@@ -154,7 +154,7 @@ pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData
 pub(crate) fn compress_bib_white(
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
-    bibs: &BibData,
+    bibs: &mut BibData,
     at_bib_command: bool,
 ) -> Result<bool, BibtexError> {
     if buffers.offset(BufTy::Ex, 1) == buffers.len() {
@@ -169,18 +169,14 @@ pub(crate) fn compress_bib_white(
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, last)
     {
-        let res = with_bibs_mut(|bibs| {
-            let bib_file = bibs.cur_bib_file();
-            !rs_input_ln(bib_file, buffers)
-        });
+        let bib_file = bibs.cur_bib_file();
+        let res = !rs_input_ln(bib_file, buffers);
 
         if res {
             return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
         }
 
-        with_bibs_mut(|bibs| {
-            bibs.set_line_num(bibs.line_num() + 1);
-        });
+        bibs.set_line_num(bibs.line_num() + 1);
         buffers.set_offset(BufTy::Base, 2, 0);
         last = buffers.init(BufTy::Base);
     }
