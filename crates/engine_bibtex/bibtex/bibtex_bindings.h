@@ -29,30 +29,6 @@ typedef enum {
   HISTORY_ABORTED = 4,
 } History;
 
-enum StrIlk
-#ifdef __cplusplus
-  : uint8_t
-#endif // __cplusplus
- {
-  STR_ILK_TEXT = 0,
-  STR_ILK_INTEGER = 1,
-  STR_ILK_AUX_COMMAND = 2,
-  STR_ILK_AUX_FILE = 3,
-  STR_ILK_BST_COMMAND = 4,
-  STR_ILK_BST_FILE = 5,
-  STR_ILK_BIB_FILE = 6,
-  STR_ILK_FILE_EXT = 7,
-  STR_ILK_CITE = 9,
-  STR_ILK_LC_CITE = 10,
-  STR_ILK_BST_FN = 11,
-  STR_ILK_BIB_COMMAND = 12,
-  STR_ILK_MACRO = 13,
-  STR_ILK_CONTROL_SEQ = 14,
-};
-#ifndef __cplusplus
-typedef uint8_t StrIlk;
-#endif // __cplusplus
-
 typedef struct PeekableInput PeekableInput;
 
 typedef struct XBuf_ExecVal XBuf_ExecVal;
@@ -118,35 +94,7 @@ typedef struct {
   StrNumber bib_str_ptr;
 } ExecCtx;
 
-typedef uint8_t ASCIICode;
-
 typedef uintptr_t BufPointer;
-
-typedef struct {
-  /**
-   * The location of the string - where it exists, was inserted, of if insert is false,
-   * where it *would* have been inserted
-   */
-  uintptr_t loc;
-  /**
-   * Whether the string existed in the hash table already
-   */
-  bool exists;
-} LookupRes;
-
-typedef enum {
-  CResultLookup_Error,
-  CResultLookup_Ok,
-} CResultLookup_Tag;
-
-typedef struct {
-  CResultLookup_Tag tag;
-  union {
-    struct {
-      LookupRes ok;
-    };
-  };
-} CResultLookup;
 
 #ifdef __cplusplus
 extern "C" {
@@ -172,39 +120,13 @@ CResult last_check_for_aux_errors(Bibtex *ctx);
 
 int32_t bib_line_num(void);
 
-CResult bst_entry_command(ExecCtx *ctx);
-
-CResult bst_execute_command(ExecCtx *ctx);
-
-CResult bst_function_command(ExecCtx *ctx);
-
-CResult bst_integers_command(ExecCtx *ctx);
-
-CResult bst_iterate_command(ExecCtx *ctx);
-
-CResult bst_macro_command(ExecCtx *ctx);
-
-CResult bst_read_command(ExecCtx *ctx);
-
-CResult bst_reverse_command(ExecCtx *ctx);
-
-CResult bst_sort_command(ExecCtx *ctx);
-
-CResult bst_strings_command(ExecCtx *ctx);
-
-ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
-
-BufPointer bib_buf_offset(BufTy ty, uintptr_t num);
+CResult get_bst_command_and_process(ExecCtx *ctx);
 
 void bib_set_buf_offset(BufTy ty, uintptr_t num, BufPointer offset);
 
 BufPointer bib_buf_len(BufTy ty);
 
-void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
-
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
-
-int32_t ilk_info(HashPointer pos);
 
 int32_t hash_size(void);
 
@@ -224,25 +146,17 @@ void puts_log(const char *str);
 
 void print_confusion(void);
 
-void print_a_token(void);
-
 CResult print_aux_name(void);
 
 CResult log_pr_aux_name(void);
 
 CResult print_bib_name(void);
 
-CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
-
 int peekable_close(PeekableInput *peekable);
 
 bool input_ln(PeekableInput *peekable);
 
 uintptr_t bib_max_strings(void);
-
-CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
-
-bool scan_alpha(void);
 
 bool eat_bst_white_space(Bibtex *ctx);
 

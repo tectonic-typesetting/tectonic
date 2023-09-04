@@ -2,7 +2,7 @@ use crate::{
     c_api::{
         auxi::{with_aux, AuxData},
         bibs::{with_bibs, BibData},
-        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::CiteInfo,
         exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
@@ -154,14 +154,9 @@ pub(crate) fn out_token(handle: &mut OutputHandle, buffers: &GlobalBuffer) {
     handle.write_all(&bytes[start..end]).unwrap();
 }
 
-pub(crate) fn rs_print_a_token(buffers: &GlobalBuffer) {
+pub(crate) fn print_a_token(buffers: &GlobalBuffer) {
     with_stdout(|stdout| out_token(stdout, buffers));
     with_log(|log| out_token(log, buffers));
-}
-
-#[no_mangle]
-pub extern "C" fn print_a_token() {
-    with_buffers(rs_print_a_token)
 }
 
 pub(crate) fn print_bad_input_line(buffers: &GlobalBuffer) {
@@ -494,7 +489,7 @@ pub(crate) fn bib_unbalanced_braces_print(
 
 pub(crate) fn macro_warn_print(buffers: &GlobalBuffer) {
     write_logs("Warning--string name \"");
-    rs_print_a_token(buffers);
+    print_a_token(buffers);
     write_logs("\" is ");
 }
 
@@ -612,7 +607,7 @@ pub(crate) fn rs_print_fn_class(hash: &HashData, fn_loc: HashPointer) {
     }
 }
 
-pub(crate) fn rs_bst_err_print_and_look_for_blank_line(
+pub(crate) fn bst_err_print_and_look_for_blank_line(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
@@ -633,14 +628,6 @@ pub(crate) fn rs_bst_err_print_and_look_for_blank_line(
     Ok(())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut Bibtex) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_pool(|pool| rs_bst_err_print_and_look_for_blank_line(&mut *ctx, buffers, pool))
-    })
-    .into()
-}
-
 pub(crate) fn already_seen_function_print(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
@@ -652,7 +639,7 @@ pub(crate) fn already_seen_function_print(
     write_logs(" is already a type \"");
     rs_print_fn_class(hash, seen_fn_loc);
     write_logs("\" function name\n");
-    rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool)
+    bst_err_print_and_look_for_blank_line(ctx, buffers, pool)
 }
 
 pub(crate) fn rs_nonexistent_cross_reference_error(
@@ -716,7 +703,7 @@ pub(crate) fn print_recursion_illegal(
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs("Curse you, wizard, before you recurse me:\nfunction ");
-    rs_print_a_token(buffers);
+    print_a_token(buffers);
     write_logs(" is illegal in its own definition\n");
     skip_token_print(ctx, buffers, pool)
 }
@@ -726,7 +713,7 @@ pub(crate) fn skip_token_unknown_function_print(
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
-    rs_print_a_token(buffers);
+    print_a_token(buffers);
     write_logs(" is an unknown function");
     skip_token_print(ctx, buffers, pool)
 }

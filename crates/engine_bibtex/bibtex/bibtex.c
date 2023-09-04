@@ -7,18 +7,11 @@
 
 #include <stdio.h> /* EOF, snprintf */
 
-/* hack: the name eof conflicts with other function declarations under mingw. */
-#define eof tectonic_eof
-
 /* duplicated from xetexd.h: */
 
 #include <setjmp.h>
 
 static jmp_buf error_jmpbuf, recover_jmpbuf;
-
-typedef size_t hash_loc;
-typedef size_t cite_number;
-typedef size_t field_loc;
 
 static void unwrap(CResult res) {
     switch (res) {
@@ -47,17 +40,6 @@ static int32_t unwrap_int(CResultInt res) {
     return res.ok;
 }
 
-static LookupRes unwrap_lookup(CResultLookup res) {
-    switch (res.tag) {
-    case CResultLookup_Error:
-        longjmp(error_jmpbuf, 1);
-        break;
-    case CResultLookup_Ok:
-        break;
-    }
-    return res.ok;
-}
-
 #define FMT_BUF_SIZE 1024
 static char fmt_buf[FMT_BUF_SIZE] = "";
 
@@ -71,129 +53,6 @@ printf_log(const char *fmt, ...)
     va_end (ap);
 
     puts_log(fmt_buf);
-}
-
-//static void
-//bst_strings_command(Bibtex* ctx)
-//{
-//    if (!eat_bst_white_space(ctx)) {
-//        eat_bst_print();
-//        puts_log("strings");
-//        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-//        return;
-//    }
-//
-//    if (bib_buf_at_offset(BUF_TY_BASE, 2) != 123 /*left_brace */ ) {
-//        bst_left_brace_print();
-//        puts_log("strings");
-//        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-//        return;
-//    }
-//
-//    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-//
-//    if (!eat_bst_white_space(ctx)) {
-//        eat_bst_print();
-//        puts_log("strings");
-//        unwrap(bst_err_print_and_look_for_blank_line(ctx));
-//        return;
-//    }
-//
-//    while (bib_buf_at_offset(BUF_TY_BASE, 2) != 125 /*right_brace */ ) {
-//        ScanRes scan_result = scan_identifier(125 /*right_brace */ , 37 /*comment */ , 37 /*comment */);
-//        if (scan_result != SCAN_RES_WHITESPACE_ADJACENT && scan_result != SCAN_RES_SPECIFIED_CHAR_ADJACENT) {
-//            unwrap(bst_id_print(scan_result));
-//            puts_log("strings");
-//            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-//            return;
-//        }
-//
-//        lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1));
-//        LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-//                                                  bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1),
-//                                                  STR_ILK_BST_FN, true));
-//        hash_loc fn_loc = hash.loc;
-//        if (hash.exists) {
-//            unwrap(already_seen_function_print(ctx, fn_loc));
-//            return;
-//        }
-//
-//        set_fn_type(fn_loc, FN_CLASS_STR_GLBL_VAR);
-//        set_ilk_info(fn_loc, num_glb_strs());
-//
-//        check_grow_global_strs();
-//
-//        set_num_glb_strs(num_glb_strs() + 1);
-//
-//        if (!eat_bst_white_space(ctx)) {
-//            eat_bst_print();
-//            puts_log("strings");
-//            unwrap(bst_err_print_and_look_for_blank_line(ctx));
-//            return;
-//        }
-//    }
-//
-//    bib_set_buf_offset(BUF_TY_BASE, 2, bib_buf_offset(BUF_TY_BASE, 2) + 1);
-//}
-
-static void
-get_bst_command_and_process(ExecCtx* ctx)
-{
-    if (!scan_alpha()) {
-        printf_log("\"%c\" can't start a style-file command", bib_buf_at_offset(BUF_TY_BASE, 2));
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-
-    lower_case(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1), (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)));
-    LookupRes hash = unwrap_lookup(str_lookup(BUF_TY_BASE, bib_buf_offset(BUF_TY_BASE, 1),
-                                              (bib_buf_offset(BUF_TY_BASE, 2) - bib_buf_offset(BUF_TY_BASE, 1)),
-                                              STR_ILK_BST_COMMAND, false));
-    int32_t command_num = ilk_info(hash.loc);
-    if (!hash.exists) {
-        print_a_token();
-        puts_log(" is an illegal style-file command");
-        bst_err_print_and_look_for_blank_line(ctx->glbl_ctx);
-        return;
-    }
-
-    switch (command_num) {
-    case 0:
-        unwrap(bst_entry_command(ctx));
-        break;
-    case 1:
-        unwrap(bst_execute_command(ctx));
-        break;
-    case 2:
-        unwrap(bst_function_command(ctx));
-        break;
-    case 3:
-        unwrap(bst_integers_command(ctx));
-        break;
-    case 4:
-        unwrap(bst_iterate_command(ctx));
-        break;
-    case 5:
-        unwrap(bst_macro_command(ctx));
-        break;
-    case 6:
-        unwrap(bst_read_command(ctx));
-        break;
-    case 7:
-        unwrap(bst_reverse_command(ctx));
-        break;
-    case 8:
-        unwrap(bst_sort_command(ctx));
-        break;
-    case 9:
-        unwrap(bst_strings_command(ctx));
-        break;
-    default:
-        puts_log("Unknown style-file command");
-        print_confusion();
-        longjmp(error_jmpbuf, 1);
-        break;
-    }
 }
 
 History
@@ -257,7 +116,7 @@ bibtex_main(Bibtex* glbl_ctx, const char *aux_file_name)
         while(true) {
             if (!eat_bst_white_space(ctx.glbl_ctx))
                 break;
-            get_bst_command_and_process(&ctx);
+            unwrap(get_bst_command_and_process(&ctx));
         }
     }
 

@@ -172,17 +172,8 @@ pub fn reset() {
     HASHES.with(|hash| *hash.borrow_mut() = HashData::new());
 }
 
-pub(crate) fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
-    HASHES.with(|h| f(&h.borrow()))
-}
-
 pub(crate) fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
     HASHES.with(|h| f(&mut h.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn ilk_info(pos: HashPointer) -> i32 {
-    with_hash(|hash| hash.ilk_info[pos])
 }
 
 #[no_mangle]

@@ -10,9 +10,8 @@ use crate::{
             aux_end1_err_print, aux_end2_err_print, aux_err_illegal_another_print,
             aux_err_no_right_brace_print, aux_err_print, aux_err_stuff_after_right_brace_print,
             aux_err_white_space_in_argument_print, hash_cite_confusion, log_pr_bst_name,
-            print_a_pool_str, print_confusion, print_overflow, rs_log_pr_aux_name,
-            rs_print_a_token, rs_print_aux_name, rs_print_bib_name, write_log_file, write_logs,
-            AuxTy,
+            print_a_pool_str, print_a_token, print_confusion, print_overflow, rs_log_pr_aux_name,
+            rs_print_aux_name, rs_print_bib_name, write_log_file, write_logs, AuxTy,
         },
         peekable::{peekable_close, peekable_open, PeekableInput},
         pool::{with_pool, StringPool},
@@ -320,7 +319,7 @@ fn aux_citation_command(
             let uc_res = pool.lookup_str(hash, cite, StrIlk::Cite);
             if !uc_res.exists {
                 write_logs("Case mismatch error between cite keys ");
-                rs_print_a_token(buffers);
+                print_a_token(buffers);
                 write_logs(" and ");
                 print_a_pool_str(
                     cites.get_cite(hash.ilk_info(hash.ilk_info(lc_res.loc) as usize) as usize),
@@ -385,7 +384,7 @@ fn aux_input_command(
 
     aux.set_ptr(aux.ptr() + 1);
     if aux.ptr() == AUX_STACK_SIZE {
-        rs_print_a_token(buffers);
+        print_a_token(buffers);
         write_logs(": ");
         print_overflow();
         write_logs(&format!("auxiliary file depth {}\n", AUX_STACK_SIZE));
@@ -400,7 +399,7 @@ fn aux_input_command(
                 [buffers.offset(BufTy::Base, 2) - aux_ext.len()..buffers.offset(BufTy::Base, 2)]);
 
     if !aux_extension_ok {
-        rs_print_a_token(buffers);
+        print_a_token(buffers);
         write_logs(" has a wrong extension");
         aux.set_ptr(aux.ptr() - 1);
         aux_err_print(buffers, aux, pool)?;

@@ -1,15 +1,14 @@
 use crate::{
     c_api::{
-        buffer::{with_buffers, BufTy, GlobalBuffer},
+        buffer::{BufTy, GlobalBuffer},
         char_info::LexClass,
         entries::ENT_STR_SIZE,
         global::GLOB_STR_SIZE,
         hash,
-        hash::{with_hash, with_hash_mut, FnClass, HashData},
+        hash::{FnClass, HashData},
         log::{output_bbl_line, print_overflow, write_logs},
         xbuf::XBuf,
-        ASCIICode, Bibtex, BufPointer, CResultLookup, GlobalItems, HashPointer, LookupRes,
-        PoolPointer, StrIlk, StrNumber,
+        ASCIICode, Bibtex, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -275,26 +274,6 @@ pub(crate) fn add_buf_pool(pool: &StringPool, buffers: &mut GlobalBuffer, str: S
     buffers.copy_from(BufTy::Ex, start, str);
     buffers.set_offset(BufTy::Ex, 1, start + str.len());
     buffers.set_init(BufTy::Ex, start + str.len());
-}
-
-#[no_mangle]
-pub extern "C" fn str_lookup(
-    buf: BufTy,
-    ptr: BufPointer,
-    len: BufPointer,
-    ilk: StrIlk,
-    insert: bool,
-) -> CResultLookup {
-    with_buffers(|buffers| {
-        let str = &buffers.buffer(buf)[ptr..(ptr + len)];
-        if insert {
-            with_hash_mut(|hash| {
-                with_pool_mut(|pool| pool.lookup_str_insert(hash, str, ilk).into())
-            })
-        } else {
-            with_hash(|hash| with_pool(|pool| CResultLookup::Ok(pool.lookup_str(hash, str, ilk))))
-        }
-    })
 }
 
 pub(crate) fn pre_def_certain_strings(

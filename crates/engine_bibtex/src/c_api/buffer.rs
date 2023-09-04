@@ -227,16 +227,6 @@ pub enum BufTy {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bib_buf_at_offset(ty: BufTy, num: usize) -> ASCIICode {
-    with_buffers(|b| b.at_offset(ty, num))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_buf_offset(ty: BufTy, num: usize) -> BufPointer {
-    with_buffers(|buffers| buffers.offset(ty, num))
-}
-
-#[no_mangle]
 pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) {
     with_buffers_mut(|buffers| buffers.set_offset(ty, num, offset))
 }
@@ -244,9 +234,4 @@ pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) 
 #[no_mangle]
 pub extern "C" fn bib_buf_len(ty: BufTy) -> BufPointer {
     with_buffers(|buffers| buffers.init(ty))
-}
-
-#[no_mangle]
-pub extern "C" fn lower_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
-    with_buffers_mut(|buffers| buffers.buffer_mut(buf)[ptr..(ptr + len)].make_ascii_lowercase())
 }

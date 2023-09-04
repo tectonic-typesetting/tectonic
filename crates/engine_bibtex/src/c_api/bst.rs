@@ -2,16 +2,18 @@ use crate::{
     c_api::{
         bibs::get_bib_command_or_entry_and_process,
         buffer::{BufTy, GlobalBuffer},
+        char_info::LexClass,
         cite::find_cite_locs_for_this_cite_key,
         exec::{check_command_execution, execute_fn, ExecCtx},
         hash::{FnClass, HashData},
         history::mark_warning,
         log::{
-            already_seen_function_print, bst_id_print, bst_left_brace_print, bst_right_brace_print,
-            bst_warn_print, cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion,
-            log_pr_bib_name, print_confusion, print_missing_entry, rs_bad_cross_reference_print,
-            rs_bst_err_print_and_look_for_blank_line, rs_nonexistent_cross_reference_error,
-            rs_print_a_token, rs_print_bib_name, rs_print_fn_class, write_log_file, write_logs,
+            already_seen_function_print, bst_err_print_and_look_for_blank_line, bst_id_print,
+            bst_left_brace_print, bst_right_brace_print, bst_warn_print,
+            cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion, log_pr_bib_name,
+            print_a_token, print_confusion, print_missing_entry, rs_bad_cross_reference_print,
+            rs_nonexistent_cross_reference_error, rs_print_bib_name, rs_print_fn_class,
+            write_log_file, write_logs,
         },
         peekable::{peekable_close, tectonic_eof},
         pool::StringPool,
@@ -27,7 +29,7 @@ macro_rules! eat_bst_white {
         if !rs_eat_bst_white_space($ctx.glbl_ctx_mut(), $globals.buffers) {
             eat_bst_print();
             write_logs($name);
-            rs_bst_err_print_and_look_for_blank_line(
+            bst_err_print_and_look_for_blank_line(
                 $ctx.glbl_ctx_mut(),
                 $globals.buffers,
                 $globals.pool,
@@ -42,7 +44,7 @@ macro_rules! bst_brace {
         if $globals.buffers.at_offset(BufTy::Base, 2) != b'{' {
             bst_left_brace_print();
             write_logs($name);
-            rs_bst_err_print_and_look_for_blank_line(
+            bst_err_print_and_look_for_blank_line(
                 $ctx.glbl_ctx_mut(),
                 $globals.buffers,
                 $globals.pool,
@@ -54,7 +56,7 @@ macro_rules! bst_brace {
         if $globals.buffers.at_offset(BufTy::Base, 2) != b'}' {
             bst_right_brace_print();
             write_logs($name);
-            rs_bst_err_print_and_look_for_blank_line(
+            bst_err_print_and_look_for_blank_line(
                 $ctx.glbl_ctx_mut(),
                 $globals.buffers,
                 $globals.pool,
@@ -72,7 +74,7 @@ macro_rules! bst_ident {
             _ => {
                 bst_id_print($globals.buffers, scan_res)?;
                 write_logs($name);
-                rs_bst_err_print_and_look_for_blank_line(
+                bst_err_print_and_look_for_blank_line(
                     $ctx.glbl_ctx_mut(),
                     $globals.buffers,
                     $globals.pool,
@@ -83,17 +85,10 @@ macro_rules! bst_ident {
     };
 }
 
-fn rs_bst_entry_command(
-    ctx: &mut ExecCtx,
-    globals: &mut GlobalItems<'_>,
-) -> Result<(), BibtexError> {
+fn bst_entry_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().entry_seen {
         write_logs("Illegal, another entry command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
     ctx.glbl_ctx_mut().entry_seen = true;
@@ -230,17 +225,13 @@ fn rs_bst_entry_command(
     Ok(())
 }
 
-fn rs_bst_execute_command(
+fn bst_execute_command(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
         write_logs("Illegal, execute command before read command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
     eat_bst_white!(ctx, globals, "execute");
@@ -280,7 +271,7 @@ fn rs_bst_execute_command(
     Ok(())
 }
 
-fn rs_bst_function_command(
+fn bst_function_command(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
@@ -337,7 +328,7 @@ fn rs_bst_function_command(
     Ok(())
 }
 
-fn rs_bst_integers_command(
+fn bst_integers_command(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
@@ -381,17 +372,13 @@ fn rs_bst_integers_command(
     Ok(())
 }
 
-fn rs_bst_iterate_command(
+fn bst_iterate_command(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
         write_logs("Illegal, iterate command before read command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
 
@@ -435,17 +422,10 @@ fn rs_bst_iterate_command(
     Ok(())
 }
 
-fn rs_bst_macro_command(
-    ctx: &mut ExecCtx,
-    globals: &mut GlobalItems<'_>,
-) -> Result<(), BibtexError> {
+fn bst_macro_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().read_seen {
         write_logs("Illegal, macro command after read command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
 
@@ -465,13 +445,9 @@ fn rs_bst_macro_command(
         .pool
         .lookup_str_insert(globals.hash, bst_fn, StrIlk::Macro)?;
     if res.exists {
-        rs_print_a_token(globals.buffers);
+        print_a_token(globals.buffers);
         write_logs(" is already defined as a macro");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
     globals
@@ -491,11 +467,7 @@ fn rs_bst_macro_command(
     eat_bst_white!(ctx, globals, "macro");
     if globals.buffers.at_offset(BufTy::Base, 2) != b'"' {
         write_logs("A macro definition must be \"-delimited");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
     globals
@@ -504,11 +476,7 @@ fn rs_bst_macro_command(
     let init = globals.buffers.init(BufTy::Base);
     if !Scan::new().chars(&[b'"']).scan_till(globals.buffers, init) {
         write_logs("There's no `\"' to end macro definition");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
 
@@ -534,28 +502,17 @@ fn rs_bst_macro_command(
     Ok(())
 }
 
-fn rs_bst_read_command(
-    ctx: &mut ExecCtx,
-    globals: &mut GlobalItems<'_>,
-) -> Result<(), BibtexError> {
+fn bst_read_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().read_seen {
         write_logs("Illegal, another read command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
     ctx.glbl_ctx_mut().read_seen = true;
 
     if !ctx.glbl_ctx().entry_seen {
         write_logs("Illegal, read command before entry command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
 
@@ -825,17 +782,13 @@ fn rs_bst_read_command(
     Ok(())
 }
 
-fn rs_bst_reverse_command(
+fn bst_reverse_command(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
         write_logs("Illegal, reverse command before read command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
 
@@ -878,17 +831,10 @@ fn rs_bst_reverse_command(
     Ok(())
 }
 
-fn rs_bst_sort_command(
-    ctx: &mut ExecCtx,
-    globals: &mut GlobalItems<'_>,
-) -> Result<(), BibtexError> {
+fn bst_sort_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
         write_logs("Illegal, sort command before read command");
-        rs_bst_err_print_and_look_for_blank_line(
-            ctx.glbl_ctx_mut(),
-            globals.buffers,
-            globals.pool,
-        )?;
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
 
@@ -901,7 +847,7 @@ fn rs_bst_sort_command(
     Ok(())
 }
 
-fn rs_bst_strings_command(
+fn bst_strings_command(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
@@ -975,67 +921,72 @@ fn bad_argument_token(
     }
 
     if !res.exists {
-        rs_print_a_token(buffers);
+        print_a_token(buffers);
         write_logs(" is an unknown function");
-        rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
+        bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         Ok(true)
     } else if hash.ty(res.loc) != FnClass::Builtin && hash.ty(res.loc) != FnClass::Wizard {
-        rs_print_a_token(buffers);
+        print_a_token(buffers);
         write_logs(" has bad function type");
         rs_print_fn_class(hash, res.loc);
-        rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
+        bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         Ok(true)
     } else {
         Ok(false)
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bst_entry_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_entry_command(&mut *ctx, globals)).into()
+fn rs_get_bst_command_and_process(
+    ctx: &mut ExecCtx,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
+    let init = globals.buffers.init(BufTy::Base);
+    if !Scan::new()
+        .not_class(LexClass::Alpha)
+        .scan_till_nonempty(globals.buffers, init)
+    {
+        write_logs(&format!(
+            "\"{}\" can't start a style-file command",
+            globals.buffers.at_offset(BufTy::Base, 2) as char,
+        ));
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
+        return Ok(());
+    }
+
+    let range = globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
+    let bst_cmd = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
+    bst_cmd.make_ascii_lowercase();
+
+    let res = globals
+        .pool
+        .lookup_str(globals.hash, bst_cmd, StrIlk::BstCommand);
+    if !res.exists {
+        print_a_token(globals.buffers);
+        write_logs(" is an illegal style-file command");
+        bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
+        return Ok(());
+    }
+
+    match globals.hash.ilk_info(res.loc) {
+        0 => bst_entry_command(ctx, globals),
+        1 => bst_execute_command(ctx, globals),
+        2 => bst_function_command(ctx, globals),
+        3 => bst_integers_command(ctx, globals),
+        4 => bst_iterate_command(ctx, globals),
+        5 => bst_macro_command(ctx, globals),
+        6 => bst_read_command(ctx, globals),
+        7 => bst_reverse_command(ctx, globals),
+        8 => bst_sort_command(ctx, globals),
+        9 => bst_strings_command(ctx, globals),
+        _ => {
+            write_logs("Unknown style-file command");
+            print_confusion();
+            Err(BibtexError::Fatal)
+        }
+    }
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn bst_execute_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_execute_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_function_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_function_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_integers_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_integers_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_iterate_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_iterate_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_macro_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_macro_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_read_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_read_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_reverse_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_reverse_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_sort_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_sort_command(&mut *ctx, globals)).into()
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bst_strings_command(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_bst_strings_command(&mut *ctx, globals)).into()
+pub unsafe extern "C" fn get_bst_command_and_process(ctx: *mut ExecCtx) -> CResult {
+    GlobalItems::with(|globals| rs_get_bst_command_and_process(&mut *ctx, globals)).into()
 }

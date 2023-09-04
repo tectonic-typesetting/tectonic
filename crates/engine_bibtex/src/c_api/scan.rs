@@ -9,11 +9,10 @@ use crate::{
         hash::{FnClass, HashData},
         log::{
             bib_cmd_confusion, bib_err_print, bib_id_print, bib_unbalanced_braces_print,
-            bib_warn_print, braces_unbalanced_complaint, eat_bib_print, eat_bst_print,
-            hash_cite_confusion, macro_warn_print, print_a_pool_str, print_confusion,
-            print_recursion_illegal, rs_bst_err_print_and_look_for_blank_line,
-            skip_illegal_stuff_after_token_print, skip_token_print,
-            skip_token_unknown_function_print, write_log_file, write_logs,
+            bib_warn_print, braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line,
+            eat_bib_print, eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str,
+            print_confusion, print_recursion_illegal, skip_illegal_stuff_after_token_print,
+            skip_token_print, skip_token_unknown_function_print, write_log_file, write_logs,
         },
         other::OtherData,
         peekable::rs_input_ln,
@@ -86,7 +85,7 @@ impl<'a> Scan<'a> {
         idx < last
     }
 
-    fn scan_till_nonempty(&self, buffers: &mut GlobalBuffer, last: BufPointer) -> bool {
+    pub fn scan_till_nonempty(&self, buffers: &mut GlobalBuffer, last: BufPointer) -> bool {
         let start = buffers.offset(BufTy::Base, 2);
         buffers.set_offset(BufTy::Base, 1, start);
 
@@ -98,16 +97,6 @@ impl<'a> Scan<'a> {
 
         idx - start != 0
     }
-}
-
-#[no_mangle]
-pub extern "C" fn scan_alpha() -> bool {
-    with_buffers_mut(|buffers| {
-        let last = buffers.init(BufTy::Base);
-        Scan::new()
-            .not_class(LexClass::Alpha)
-            .scan_till_nonempty(buffers, last)
-    })
 }
 
 pub(crate) fn scan_identifier(
@@ -360,7 +349,7 @@ pub(crate) fn scan_fn_def(
     if !rs_eat_bst_white_space(ctx, buffers) {
         eat_bst_print();
         write_logs("function");
-        rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
+        bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         return Ok(());
     }
 
@@ -380,7 +369,7 @@ pub(crate) fn scan_fn_def(
         if !rs_eat_bst_white_space(ctx, buffers) {
             eat_bst_print();
             write_logs("function");
-            return rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool);
+            return bst_err_print_and_look_for_blank_line(ctx, buffers, pool);
         }
 
         char = buffers.at_offset(BufTy::Base, 2);

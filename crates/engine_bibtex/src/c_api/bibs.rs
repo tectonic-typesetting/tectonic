@@ -7,7 +7,7 @@ use crate::{
         log::{
             bib_cmd_confusion, bib_equals_sign_print, bib_err_print, bib_id_print,
             bib_one_of_two_print, bib_warn_print, cite_key_disappeared_confusion, eat_bib_print,
-            hash_cite_confusion, print_confusion, rs_print_a_token, write_log_file, write_logs,
+            hash_cite_confusion, print_a_token, print_confusion, write_log_file, write_logs,
         },
         peekable::{rs_input_ln, PeekableInput},
         pool::StringPool,
@@ -648,7 +648,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 .cites
                 .set_type(globals.cites.entry_ptr(), HashData::undefined());
             write_logs("Warning--entry type for \"");
-            rs_print_a_token(globals.buffers);
+            print_a_token(globals.buffers);
             write_logs("\" isn't style-file defined\n");
             bib_warn_print(globals.pool, globals.bibs)?;
         }
