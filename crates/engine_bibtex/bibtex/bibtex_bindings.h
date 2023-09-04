@@ -125,21 +125,6 @@ typedef struct {
   HashPointer s_aux_extension;
 } Bibtex;
 
-typedef enum {
-  CResultBool_Error,
-  CResultBool_Recover,
-  CResultBool_Ok,
-} CResultBool_Tag;
-
-typedef struct {
-  CResultBool_Tag tag;
-  union {
-    struct {
-      bool ok;
-    };
-  };
-} CResultBool;
-
 typedef struct {
   Bibtex *glbl_ctx;
   HashPointer _default;
@@ -147,7 +132,7 @@ typedef struct {
   uintptr_t lit_stk_ptr;
   bool mess_with_entries;
   /**
-   * Pointer to the current top of the string pool, used to optimized certain string operations
+   * Pointer to the current top of the string pool, used to optimize certain string operations
    */
   StrNumber bib_str_ptr;
 } ExecCtx;
@@ -208,8 +193,6 @@ CResult last_check_for_aux_errors(Bibtex *ctx);
 
 int32_t bib_line_num(void);
 
-CResultBool bad_argument_token(Bibtex *ctx, HashPointer *fn_out);
-
 CResult bst_entry_command(ExecCtx *ctx);
 
 CResult bst_execute_command(ExecCtx *ctx);
@@ -224,6 +207,8 @@ CResult bst_macro_command(ExecCtx *ctx);
 
 CResult bst_read_command(ExecCtx *ctx);
 
+CResult bst_reverse_command(ExecCtx *ctx);
+
 ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
 
 BufPointer bib_buf_offset(BufTy ty, uintptr_t num);
@@ -236,27 +221,15 @@ void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
 
 void quick_sort(CiteNumber left_end, CiteNumber right_end);
 
-void set_cite_ptr(CiteNumber num);
-
-StrNumber cite_info(CiteNumber num);
-
 CiteNumber num_cites(void);
 
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
-
-void init_command_execution(ExecCtx *ctx);
-
-CResult check_command_execution(ExecCtx *ctx);
-
-CResult execute_fn(ExecCtx *ctx, HashPointer ex_fn_loc);
 
 int32_t num_glb_strs(void);
 
 void set_num_glb_strs(int32_t val);
 
 void check_grow_global_strs(void);
-
-uintptr_t undefined(void);
 
 void set_fn_type(HashPointer pos, FnClass ty);
 
@@ -295,8 +268,6 @@ void eat_bst_print(void);
 CResult bst_id_print(ScanRes scan_result);
 
 void bst_left_brace_print(void);
-
-void bst_right_brace_print(void);
 
 CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
 

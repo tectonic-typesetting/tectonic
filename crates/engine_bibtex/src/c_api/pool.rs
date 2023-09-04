@@ -264,7 +264,7 @@ pub extern "C" fn bib_max_strings() -> usize {
     MAX_STRINGS
 }
 
-pub(crate) fn add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
+pub(crate) fn add_buf_pool(pool: &StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
     let str = pool.get_str(str);
 
     if buffers.init(BufTy::Ex) + str.len() > buffers.len() {

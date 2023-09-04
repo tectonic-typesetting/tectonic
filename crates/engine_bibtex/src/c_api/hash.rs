@@ -102,8 +102,7 @@ impl HashData {
             hash_used: HASH_MAX + 1,
         }
     }
-
-    #[no_mangle]
+    
     pub extern "C" fn undefined() -> usize {
         HASH_MAX + 1
     }

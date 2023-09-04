@@ -421,8 +421,7 @@ pub extern "C" fn bst_left_brace_print() {
     write_logs("\"{\" is missing in command: ");
 }
 
-#[no_mangle]
-pub extern "C" fn bst_right_brace_print() {
+pub fn bst_right_brace_print() {
     write_logs("\"}\" is missing in command: ");
 }
 
@@ -767,7 +766,7 @@ pub(crate) fn skip_illegal_stuff_after_token_print(
 }
 
 pub(crate) fn brace_lvl_one_letters_complaint(
-    ctx: &mut ExecCtx,
+    ctx: &ExecCtx,
     pool: &StringPool,
     cites: &CiteInfo,
     str: StrNumber,

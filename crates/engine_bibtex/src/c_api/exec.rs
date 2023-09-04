@@ -3,10 +3,10 @@ use crate::{
         bibs::BibData,
         buffer::{BufTy, GlobalBuffer},
         char_info::{LexClass, CHAR_WIDTH},
-        cite::{with_cites, CiteInfo},
+        cite::CiteInfo,
         entries::{EntryData, ENT_STR_SIZE},
         global::{GlobalData, GLOB_STR_SIZE},
-        hash::{with_hash, FnClass, HashData},
+        hash::{FnClass, HashData},
         history::{mark_error, mark_warning},
         log::{
             brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
@@ -14,13 +14,13 @@ use crate::{
             bst_cant_mess_with_entries_print, output_bbl_line, print_a_pool_str, print_confusion,
             rs_print_fn_class, write_logs,
         },
-        pool::{add_buf_pool, add_out_pool, with_pool, with_pool_mut, StringPool},
+        pool::{add_buf_pool, add_out_pool, StringPool},
         scan::{
             check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
             von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
         },
         xbuf::{SafelyZero, XBuf},
-        ASCIICode, Bibtex, BufPointer, CResult, GlobalItems, HashPointer, PoolPointer, StrIlk,
+        ASCIICode, Bibtex, BufPointer, GlobalItems, HashPointer, PoolPointer, StrIlk,
         StrNumber,
     },
     BibtexError,
@@ -198,7 +198,7 @@ pub(crate) fn print_stk_lit(
 }
 
 pub(crate) fn print_wrong_stk_lit(
-    ctx: &mut ExecCtx,
+    ctx: &ExecCtx,
     pool: &StringPool,
     hash: &HashData,
     cites: &CiteInfo,
@@ -285,13 +285,6 @@ fn pop_whole_stack(
     Ok(())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn init_command_execution(ctx: *mut ExecCtx) {
-    let ctx = &mut *ctx;
-    ctx.lit_stk_ptr = 0;
-    ctx.bib_str_ptr = with_pool(|pool| pool.str_ptr());
-}
-
 pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i32) -> PoolPointer {
     let mut pos = 0;
     while *brace_level > 1 && pos < str.len() {
@@ -307,7 +300,7 @@ pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i3
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn figure_out_the_formatted_name(
-    ctx: &mut ExecCtx,
+    ctx: &ExecCtx,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
     cites: &CiteInfo,
@@ -634,7 +627,7 @@ pub(crate) fn figure_out_the_formatted_name(
     Ok(())
 }
 
-pub(crate) fn rs_check_command_execution(
+pub(crate) fn check_command_execution(
     ctx: &mut ExecCtx,
     pool: &mut StringPool,
     hash: &HashData,
@@ -652,16 +645,6 @@ pub(crate) fn rs_check_command_execution(
         return Err(BibtexError::Fatal);
     }
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn check_command_execution(ctx: *mut ExecCtx) -> CResult {
-    with_pool_mut(|pool| {
-        with_hash(|hash| {
-            with_cites(|cites| rs_check_command_execution(&mut *ctx, pool, hash, cites))
-        })
-    })
-    .into()
 }
 
 fn add_pool_buf_and_push(
@@ -1246,7 +1229,7 @@ fn interp_chr_to_int(
 
 fn interp_cite(
     ctx: &mut ExecCtx,
-    pool: &mut StringPool,
+    pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if !ctx.mess_with_entries {
@@ -2220,7 +2203,7 @@ fn interp_write(
     Ok(())
 }
 
-pub(crate) fn rs_execute_fn(
+pub(crate) fn execute_fn(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
     ex_fn_loc: HashPointer,
@@ -2248,9 +2231,9 @@ pub(crate) fn rs_execute_fn(
                     bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)?;
                     Ok(())
                 } else if default == HashData::undefined() {
-                    rs_execute_fn(ctx, globals, ctx._default)
+                    execute_fn(ctx, globals, ctx._default)
                 } else if default != 0 {
-                    rs_execute_fn(ctx, globals, default)
+                    execute_fn(ctx, globals, default)
                 } else {
                     Ok(())
                 }
@@ -2275,9 +2258,9 @@ pub(crate) fn rs_execute_fn(
                 match (pop1, pop2, pop3) {
                     (ExecVal::Function(f1), ExecVal::Function(f2), ExecVal::Integer(i3)) => {
                         if i3 > 0 {
-                            rs_execute_fn(ctx, globals, f2)
+                            execute_fn(ctx, globals, f2)
                         } else {
-                            rs_execute_fn(ctx, globals, f1)
+                            execute_fn(ctx, globals, f1)
                         }
                     }
                     (ExecVal::Function(_), ExecVal::Function(_), _) => print_wrong_stk_lit(
@@ -2340,11 +2323,11 @@ pub(crate) fn rs_execute_fn(
                 match (pop1, pop2) {
                     (ExecVal::Function(f1), ExecVal::Function(f2)) => {
                         loop {
-                            rs_execute_fn(ctx, globals, f2)?;
+                            execute_fn(ctx, globals, f2)?;
                             let res = ctx.pop_stack(globals.pool, globals.cites)?;
                             if let ExecVal::Integer(i1) = res {
                                 if i1 > 0 {
-                                    rs_execute_fn(ctx, globals, f1)?;
+                                    execute_fn(ctx, globals, f1)?;
                                 } else {
                                     break;
                                 }
@@ -2399,7 +2382,7 @@ pub(crate) fn rs_execute_fn(
             let mut cur_fn = globals.other.wiz_function(wiz_ptr);
             while cur_fn != HashData::end_of_def() {
                 if cur_fn != QUOTE_NEXT_FN {
-                    rs_execute_fn(ctx, globals, cur_fn)?;
+                    execute_fn(ctx, globals, cur_fn)?;
                 } else {
                     wiz_ptr += 1;
                     cur_fn = globals.other.wiz_function(wiz_ptr);
@@ -2477,11 +2460,6 @@ pub(crate) fn rs_execute_fn(
             Ok(())
         }
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn execute_fn(ctx: *mut ExecCtx, ex_fn_loc: HashPointer) -> CResult {
-    GlobalItems::with(|globals| rs_execute_fn(&mut *ctx, globals, ex_fn_loc)).into()
 }
 
 #[cfg(test)]

@@ -152,16 +152,6 @@ pub extern "C" fn quick_sort(left_end: CiteNumber, right_end: CiteNumber) {
 }
 
 #[no_mangle]
-pub extern "C" fn set_cite_ptr(num: CiteNumber) {
-    with_cites_mut(|cites| cites.set_ptr(num))
-}
-
-#[no_mangle]
-pub extern "C" fn cite_info(num: CiteNumber) -> StrNumber {
-    with_cites(|cites| cites.info(num))
-}
-
-#[no_mangle]
 pub extern "C" fn num_cites() -> CiteNumber {
     with_cites(|cites| cites.num_cites)
 }

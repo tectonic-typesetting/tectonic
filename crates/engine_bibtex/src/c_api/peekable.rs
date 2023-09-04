@@ -114,7 +114,7 @@ pub fn tectonic_eof(peekable: Option<&mut PeekableInput>) -> bool {
     // Check for EOF following Pascal semantics.
     match peekable {
         Some(peek) => peek.eof(),
-        None => return true,
+        None => true,
     }
 }
 

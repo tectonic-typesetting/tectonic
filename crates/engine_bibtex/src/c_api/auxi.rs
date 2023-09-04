@@ -354,7 +354,7 @@ fn aux_citation_command(
 }
 
 fn aux_input_command(
-    ctx: &mut Bibtex,
+    ctx: &Bibtex,
     buffers: &mut GlobalBuffer,
     aux: &mut AuxData,
     pool: &mut StringPool,
@@ -523,7 +523,7 @@ fn rs_last_check_for_aux_errors(
     aux: &AuxData,
     pool: &StringPool,
     cites: &mut CiteInfo,
-    bibs: &mut BibData,
+    bibs: &BibData,
 ) -> Result<(), BibtexError> {
     cites.set_num_cites(cites.ptr());
     ctx.num_bib_files = bibs.ptr();

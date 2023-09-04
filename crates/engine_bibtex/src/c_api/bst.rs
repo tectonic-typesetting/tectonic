@@ -1,10 +1,10 @@
 use crate::{
     c_api::{
         bibs::get_bib_command_or_entry_and_process,
-        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{BufTy, GlobalBuffer},
         cite::find_cite_locs_for_this_cite_key,
-        exec::{rs_check_command_execution, rs_execute_fn, ExecCtx},
-        hash::{with_hash, FnClass, HashData},
+        exec::{check_command_execution, execute_fn, ExecCtx},
+        hash::{FnClass, HashData},
         history::mark_warning,
         log::{
             bst_left_brace_print, bst_right_brace_print, bst_warn_print,
@@ -15,9 +15,9 @@ use crate::{
             rs_print_bib_name, rs_print_fn_class, write_log_file, write_logs,
         },
         peekable::{peekable_close, tectonic_eof},
-        pool::{with_pool, StringPool},
+        pool::StringPool,
         scan::{rs_eat_bst_white_space, rs_scan_identifier, scan_fn_def, Scan, ScanRes},
-        Bibtex, CResult, CResultBool, CiteNumber, GlobalItems, HashPointer, StrIlk,
+        Bibtex, CResult, CiteNumber, GlobalItems, HashPointer, StrIlk,
     },
     BibtexError,
 };
@@ -253,7 +253,7 @@ fn rs_bst_execute_command(
     bst_ident!(ctx, globals, "execute", b'}', b'#', b'#');
 
     let mut fn_loc = 0;
-    if rs_bad_argument_token(
+    if bad_argument_token(
         ctx.glbl_ctx_mut(),
         Some(&mut fn_loc),
         globals.buffers,
@@ -275,8 +275,8 @@ fn rs_bst_execute_command(
 
     ctx.mess_with_entries = false;
 
-    rs_execute_fn(ctx, globals, fn_loc)?;
-    rs_check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
+    execute_fn(ctx, globals, fn_loc)?;
+    check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
 
     Ok(())
 }
@@ -405,7 +405,7 @@ fn rs_bst_iterate_command(
     bst_ident!(ctx, globals, "iterate", b'}', b'#', b'#');
 
     let mut fn_loc = 0;
-    if rs_bad_argument_token(
+    if bad_argument_token(
         ctx.glbl_ctx_mut(),
         Some(&mut fn_loc),
         globals.buffers,
@@ -428,8 +428,8 @@ fn rs_bst_iterate_command(
     let mut sort_cite_ptr = 0;
     while sort_cite_ptr < globals.cites.num_cites() {
         globals.cites.set_ptr(globals.cites.info(sort_cite_ptr));
-        rs_execute_fn(ctx, globals, fn_loc)?;
-        rs_check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
+        execute_fn(ctx, globals, fn_loc)?;
+        check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
         sort_cite_ptr += 1;
     }
 
@@ -622,6 +622,7 @@ fn rs_bst_read_command(
                 &mut field_name_loc,
             )?;
         }
+        // SAFETY: take_cur_bib_file returns reference to which we're the last owner
         unsafe { peekable_close(globals.bibs.take_cur_bib_file().map(NonNull::from)) };
         globals.bibs.set_ptr(globals.bibs.ptr() + 1);
     }
@@ -745,7 +746,7 @@ fn rs_bst_read_command(
             || globals.cites.info(cite_ptr) >= ctx.glbl_ctx().config.min_crossrefs as usize
         {
             if cite_ptr > ctx.glbl_ctx().cite_xptr {
-                if (ctx.glbl_ctx().cite_xptr) + 1 * globals.other.num_fields()
+                if (ctx.glbl_ctx().cite_xptr + 1) * globals.other.num_fields()
                     > globals.other.max_fields()
                 {
                     write_logs("field_info index is out of range");
@@ -825,7 +826,47 @@ fn rs_bst_read_command(
     Ok(())
 }
 
-fn rs_bad_argument_token(
+fn rs_bst_reverse_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
+    if !ctx.glbl_ctx().read_seen {
+        write_logs("Illegal, reverse command before read command");
+        rs_bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
+        return Ok(());
+    }
+    
+    eat_bst_white!(ctx, globals, "reverse");
+    bst_brace!('{', ctx, globals, "reverse");
+    globals
+        .buffers
+        .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
+    eat_bst_white!(ctx, globals, "reverse");
+    bst_ident!(ctx, globals, "reverse", b'}', b'#', b'#');
+    
+    let mut fn_loc = 0;
+    if bad_argument_token(ctx.glbl_ctx_mut(), Some(&mut fn_loc), globals.buffers, globals.pool, globals.hash)? {
+        return Ok(());
+    }
+    
+    eat_bst_white!(ctx, globals, "reverse");
+    bst_brace!('}', ctx, globals, "reverse");
+    globals
+        .buffers
+        .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
+
+    ctx.lit_stk_ptr = 0;
+    ctx.bib_str_ptr = globals.pool.str_ptr();
+
+    ctx.mess_with_entries = true;
+    
+    for idx in (0..globals.cites.num_cites()).rev() {
+        globals.cites.set_ptr(globals.cites.info(idx));
+        execute_fn(ctx, globals, fn_loc)?;
+        check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
+    }
+    
+    Ok(())
+}
+
+fn bad_argument_token(
     ctx: &mut Bibtex,
     fn_out: Option<&mut HashPointer>,
     buffers: &mut GlobalBuffer,
@@ -856,19 +897,6 @@ fn rs_bad_argument_token(
     } else {
         Ok(false)
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bad_argument_token(
-    ctx: *mut Bibtex,
-    fn_out: *mut HashPointer,
-) -> CResultBool {
-    with_buffers_mut(|buffers| {
-        with_pool(|pool| {
-            with_hash(|hash| rs_bad_argument_token(&mut *ctx, fn_out.as_mut(), buffers, pool, hash))
-        })
-    })
-    .into()
 }
 
 #[no_mangle]
@@ -904,4 +932,9 @@ pub unsafe extern "C" fn bst_macro_command(ctx: *mut ExecCtx) -> CResult {
 #[no_mangle]
 pub unsafe extern "C" fn bst_read_command(ctx: *mut ExecCtx) -> CResult {
     GlobalItems::with(|globals| rs_bst_read_command(&mut *ctx, globals)).into()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn bst_reverse_command(ctx: *mut ExecCtx) -> CResult {
+    GlobalItems::with(|globals| rs_bst_reverse_command(&mut *ctx, globals)).into()
 }

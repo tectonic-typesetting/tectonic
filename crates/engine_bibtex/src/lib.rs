@@ -475,6 +475,7 @@ pub mod c_api {
 
         set_extension(&mut path, b".bbl");
         let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
+        // SAFETY: Function sound if provided a valid path pointer
         ctx.bbl_file = unsafe { ttstub_output_open(bbl_file.as_ptr(), 0) };
         if ctx.bbl_file.is_null() {
             sam_wrong_file_name_print(bbl_file);

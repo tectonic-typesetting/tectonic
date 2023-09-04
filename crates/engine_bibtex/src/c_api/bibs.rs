@@ -61,6 +61,7 @@ impl BibData {
     pub fn take_cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
         self.bib_file[self.bib_ptr]
             .take()
+            // SAFETY: Contained file pointer guaranteed valid
             .map(|mut ptr| unsafe { ptr.as_mut() })
     }
 
@@ -189,7 +190,7 @@ pub(crate) fn compress_bib_white(
 //       - tied to that, command_num is only used when at_bib_command is true
 //       - There's some messed up control flow that's porting weird `goto` style, can probably be simplified
 pub(crate) fn get_bib_command_or_entry_and_process(
-    ctx: &mut Bibtex,
+    ctx: &Bibtex,
     globals: &mut GlobalItems<'_>,
     cur_macro_loc: &mut HashPointer,
     field_name_loc: &mut HashPointer,
@@ -591,9 +592,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         None
     };
 
-    match inner() {
-        Some(ret) => return ret,
-        None => (),
+    if let Some(ret) = inner() {
+        return ret;
     }
 
     let store_entry = if ctx.all_entries {
@@ -634,10 +634,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             globals.cites.set_ptr(num);
         }
         true
-    } else if !res.exists {
-        false
     } else {
-        true
+        res.exists
     };
 
     if store_entry {
@@ -708,10 +706,10 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
             let res = globals.pool.lookup_str(globals.hash, bst_fn, StrIlk::BstFn);
             *field_name_loc = res.loc;
-            if res.exists {
-                if globals.hash.ty(res.loc) == FnClass::Field {
-                    store_field = true;
-                }
+            if res.exists
+                && globals.hash.ty(res.loc) == FnClass::Field
+            {
+                store_field = true;
             }
         }
 

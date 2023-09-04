@@ -1065,7 +1065,7 @@ pub(crate) fn von_name_ends_and_last_name_starts_stuff(
 }
 
 pub(crate) fn enough_text_chars(
-    buffers: &mut GlobalBuffer,
+    buffers: &GlobalBuffer,
     enough_chars: BufPointer,
     buf_start: BufPointer,
     brace_level: &mut i32,
