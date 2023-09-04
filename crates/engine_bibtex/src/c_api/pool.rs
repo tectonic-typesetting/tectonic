@@ -2,15 +2,14 @@ use crate::{
     c_api::{
         buffer::{with_buffers, BufTy, GlobalBuffer},
         char_info::LexClass,
-        entries::{EntryData, ENT_STR_SIZE},
+        entries::ENT_STR_SIZE,
         global::GLOB_STR_SIZE,
         hash,
         hash::{with_hash, with_hash_mut, FnClass, HashData},
         log::{output_bbl_line, print_overflow, write_logs},
-        other::OtherData,
         xbuf::XBuf,
-        ASCIICode, Bibtex, BufPointer, CResultLookup, HashPointer, LookupRes, PoolPointer, StrIlk,
-        StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResultLookup, GlobalItems, HashPointer, LookupRes,
+        PoolPointer, StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -300,10 +299,13 @@ pub extern "C" fn str_lookup(
 
 pub(crate) fn pre_def_certain_strings(
     ctx: &mut Bibtex,
-    pool: &mut StringPool,
-    hash: &mut HashData,
-    other: &mut OtherData,
-    entries: &mut EntryData,
+    GlobalItems {
+        pool,
+        hash,
+        other,
+        entries,
+        ..
+    }: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     let res = pool.lookup_str_insert(hash, b".aux", StrIlk::FileExt)?;
     ctx.s_aux_extension = hash.text(res.loc);
