@@ -92,10 +92,6 @@ pub fn reset() {
     ENTRIES.with(|entries| *entries.borrow_mut() = EntryData::new());
 }
 
-pub(crate) fn with_entries<T>(f: impl FnOnce(&EntryData) -> T) -> T {
-    ENTRIES.with(|entries| f(&entries.borrow()))
-}
-
 pub(crate) fn with_entries_mut<T>(f: impl FnOnce(&mut EntryData) -> T) -> T {
     ENTRIES.with(|entries| f(&mut entries.borrow_mut()))
 }

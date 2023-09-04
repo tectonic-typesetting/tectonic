@@ -11,7 +11,7 @@ use crate::{
         },
         peekable::{rs_input_ln, PeekableInput},
         pool::StringPool,
-        scan::{rs_scan_identifier, scan_and_store_the_field_value_and_eat_white, Scan, ScanRes},
+        scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
         xbuf::XBuf,
         BibNumber, Bibtex, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
     },
@@ -223,7 +223,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         return Ok(());
     }
 
-    let scan_res = rs_scan_identifier(globals.buffers, b'{', b'(', b'(');
+    let scan_res = scan_identifier(globals.buffers, b'{', b'(', b'(');
     match scan_res {
         ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
         _ => {
@@ -351,7 +351,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                     return Ok(());
                 }
 
-                let scan_res = rs_scan_identifier(globals.buffers, b'=', b'=', b'=');
+                let scan_res = scan_identifier(globals.buffers, b'=', b'=', b'=');
                 match scan_res {
                     ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
                     _ => {
@@ -685,7 +685,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             break;
         }
 
-        let scan_res = rs_scan_identifier(globals.buffers, b'=', b'=', b'=');
+        let scan_res = scan_identifier(globals.buffers, b'=', b'=', b'=');
         match scan_res {
             ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
             _ => {
@@ -706,9 +706,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
             let res = globals.pool.lookup_str(globals.hash, bst_fn, StrIlk::BstFn);
             *field_name_loc = res.loc;
-            if res.exists
-                && globals.hash.ty(res.loc) == FnClass::Field
-            {
+            if res.exists && globals.hash.ty(res.loc) == FnClass::Field {
                 store_field = true;
             }
         }

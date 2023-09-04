@@ -22,31 +22,12 @@ typedef enum {
 } CResult;
 
 typedef enum {
-  FN_CLASS_BUILTIN = 0,
-  FN_CLASS_WIZARD = 1,
-  FN_CLASS_INT_LIT = 2,
-  FN_CLASS_STR_LIT = 3,
-  FN_CLASS_FIELD = 4,
-  FN_CLASS_INT_ENTRY_VAR = 5,
-  FN_CLASS_STR_ENTRY_VAR = 6,
-  FN_CLASS_INT_GLBL_VAR = 7,
-  FN_CLASS_STR_GLBL_VAR = 8,
-} FnClass;
-
-typedef enum {
   HISTORY_SPOTLESS = 0,
   HISTORY_WARNING_ISSUED = 1,
   HISTORY_ERROR_ISSUED = 2,
   HISTORY_FATAL_ERROR = 3,
   HISTORY_ABORTED = 4,
 } History;
-
-typedef enum {
-  SCAN_RES_ID_NULL = 0,
-  SCAN_RES_SPECIFIED_CHAR_ADJACENT = 1,
-  SCAN_RES_OTHER_CHAR_ADJACENT = 2,
-  SCAN_RES_WHITESPACE_ADJACENT = 3,
-} ScanRes;
 
 enum StrIlk
 #ifdef __cplusplus
@@ -141,8 +122,6 @@ typedef uint8_t ASCIICode;
 
 typedef uintptr_t BufPointer;
 
-typedef uintptr_t CiteNumber;
-
 typedef struct {
   /**
    * The location of the string - where it exists, was inserted, of if insert is false,
@@ -211,6 +190,8 @@ CResult bst_reverse_command(ExecCtx *ctx);
 
 CResult bst_sort_command(ExecCtx *ctx);
 
+CResult bst_strings_command(ExecCtx *ctx);
+
 ASCIICode bib_buf_at_offset(BufTy ty, uintptr_t num);
 
 BufPointer bib_buf_offset(BufTy ty, uintptr_t num);
@@ -221,21 +202,9 @@ BufPointer bib_buf_len(BufTy ty);
 
 void lower_case(BufTy buf, BufPointer ptr, BufPointer len);
 
-CiteNumber num_cites(void);
-
 ExecCtx init_exec_ctx(Bibtex *glbl_ctx);
 
-int32_t num_glb_strs(void);
-
-void set_num_glb_strs(int32_t val);
-
-void check_grow_global_strs(void);
-
-void set_fn_type(HashPointer pos, FnClass ty);
-
 int32_t ilk_info(HashPointer pos);
-
-void set_ilk_info(HashPointer pos, int32_t val);
 
 int32_t hash_size(void);
 
@@ -263,15 +232,7 @@ CResult log_pr_aux_name(void);
 
 CResult print_bib_name(void);
 
-void eat_bst_print(void);
-
-CResult bst_id_print(ScanRes scan_result);
-
-void bst_left_brace_print(void);
-
 CResult bst_err_print_and_look_for_blank_line(Bibtex *ctx);
-
-CResult already_seen_function_print(Bibtex *ctx, HashPointer seen_fn_loc);
 
 int peekable_close(PeekableInput *peekable);
 
@@ -282,8 +243,6 @@ uintptr_t bib_max_strings(void);
 CResultLookup str_lookup(BufTy buf, BufPointer ptr, BufPointer len, StrIlk ilk, bool insert);
 
 bool scan_alpha(void);
-
-ScanRes scan_identifier(ASCIICode char1, ASCIICode char2, ASCIICode char3);
 
 bool eat_bst_white_space(Bibtex *ctx);
 

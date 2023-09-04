@@ -6,7 +6,7 @@ use crate::{
         char_info::LexClass,
         cite::CiteInfo,
         exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
-        hash::{with_hash, FnClass, HashData},
+        hash::{FnClass, HashData},
         history::{mark_error, mark_fatal, mark_warning},
         other::OtherData,
         peekable::rs_input_ln,
@@ -377,8 +377,7 @@ pub(crate) fn bst_warn_print(ctx: &Bibtex, pool: &StringPool) -> Result<(), Bibt
     Ok(())
 }
 
-#[no_mangle]
-pub extern "C" fn eat_bst_print() {
+pub fn eat_bst_print() {
     write_logs("Illegal end of style file in command: ");
 }
 
@@ -387,7 +386,7 @@ pub fn id_scanning_confusion() {
     print_confusion();
 }
 
-pub(crate) fn rs_bst_id_print(
+pub(crate) fn bst_id_print(
     buffers: &GlobalBuffer,
     scan_result: ScanRes,
 ) -> Result<(), BibtexError> {
@@ -411,13 +410,7 @@ pub(crate) fn rs_bst_id_print(
     }
 }
 
-#[no_mangle]
-pub extern "C" fn bst_id_print(scan_result: ScanRes) -> CResult {
-    with_buffers(|buffers| rs_bst_id_print(buffers, scan_result)).into()
-}
-
-#[no_mangle]
-pub extern "C" fn bst_left_brace_print() {
+pub fn bst_left_brace_print() {
     write_logs("\"{\" is missing in command: ");
 }
 
@@ -648,7 +641,7 @@ pub unsafe extern "C" fn bst_err_print_and_look_for_blank_line(ctx: *mut Bibtex)
     .into()
 }
 
-pub(crate) fn rs_already_seen_function_print(
+pub(crate) fn already_seen_function_print(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
@@ -660,21 +653,6 @@ pub(crate) fn rs_already_seen_function_print(
     rs_print_fn_class(hash, seen_fn_loc);
     write_logs("\" function name\n");
     rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool)
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn already_seen_function_print(
-    ctx: *mut Bibtex,
-    seen_fn_loc: HashPointer,
-) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_hash(|hash| {
-            with_pool(|pool| {
-                rs_already_seen_function_print(&mut *ctx, buffers, pool, hash, seen_fn_loc)
-            })
-        })
-    })
-    .into()
 }
 
 pub(crate) fn rs_nonexistent_cross_reference_error(

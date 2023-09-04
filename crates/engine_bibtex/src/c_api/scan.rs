@@ -110,7 +110,7 @@ pub extern "C" fn scan_alpha() -> bool {
     })
 }
 
-pub(crate) fn rs_scan_identifier(
+pub(crate) fn scan_identifier(
     buffers: &mut GlobalBuffer,
     char1: ASCIICode,
     char2: ASCIICode,
@@ -139,11 +139,6 @@ pub(crate) fn rs_scan_identifier(
     } else {
         ScanRes::OtherCharAdjacent
     }
-}
-
-#[no_mangle]
-pub extern "C" fn scan_identifier(char1: ASCIICode, char2: ASCIICode, char3: ASCIICode) -> ScanRes {
-    with_buffers_mut(|buffers| rs_scan_identifier(buffers, char1, char2, char3))
 }
 
 fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
@@ -638,7 +633,7 @@ fn scan_a_field_token_and_eat_white(
             }
         }
         _ => {
-            let res = rs_scan_identifier(buffers, b',', right_outer_delim, b'#');
+            let res = scan_identifier(buffers, b',', right_outer_delim, b'#');
             if !matches!(
                 res,
                 ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent

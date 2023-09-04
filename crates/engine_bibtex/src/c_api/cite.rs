@@ -1,9 +1,8 @@
 use crate::c_api::{
-    entries::with_entries, hash::HashData, other::OtherData, pool::StringPool, xbuf::XBuf,
-    CiteNumber, FindCiteLocs, HashPointer, StrIlk, StrNumber,
+    entries::EntryData, hash::HashData, other::OtherData, pool::StringPool, xbuf::XBuf, CiteNumber,
+    FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
-use std::{cell::RefCell, cmp::Ordering};
-use std::ops::IndexMut;
+use std::{cell::RefCell, cmp::Ordering, ops::IndexMut};
 
 pub(crate) const MAX_CITES: usize = 750;
 
@@ -117,12 +116,12 @@ impl CiteInfo {
     pub fn set_all_marker(&mut self, val: CiteNumber) {
         self.all_marker = val;
     }
-    
-    pub fn sort_info<I>(&mut self, r: I)
+
+    pub fn sort_info<I>(&mut self, entries: &EntryData, r: I)
     where
         [usize]: IndexMut<I, Output = [usize]>,
     {
-        self.cite_info[r].sort_by(less_than)
+        self.cite_info[r].sort_by(|a, b| less_than(entries, a, b))
     }
 }
 
@@ -138,16 +137,14 @@ pub(crate) fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
     CITE_INFO.with(|ci| f(&mut ci.borrow_mut()))
 }
 
-fn less_than(arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
-    with_entries(|entries| {
-        let ptr1 = arg1 * entries.num_ent_strs() + entries.sort_key_num();
-        let ptr2 = arg2 * entries.num_ent_strs() + entries.sort_key_num();
+fn less_than(entries: &EntryData, arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
+    let ptr1 = arg1 * entries.num_ent_strs() + entries.sort_key_num();
+    let ptr2 = arg2 * entries.num_ent_strs() + entries.sort_key_num();
 
-        let str1 = entries.strs(ptr1);
-        let str2 = entries.strs(ptr2);
+    let str1 = entries.strs(ptr1);
+    let str2 = entries.strs(ptr2);
 
-        Ord::cmp(str1, str2)
-    })
+    Ord::cmp(str1, str2)
 }
 
 pub(crate) fn add_database_cite(

@@ -102,7 +102,7 @@ impl HashData {
             hash_used: HASH_MAX + 1,
         }
     }
-    
+
     pub extern "C" fn undefined() -> usize {
         HASH_MAX + 1
     }
@@ -181,18 +181,8 @@ pub(crate) fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn set_fn_type(pos: HashPointer, ty: FnClass) {
-    with_hash_mut(|hash| hash.fn_type[pos] = ty)
-}
-
-#[no_mangle]
 pub extern "C" fn ilk_info(pos: HashPointer) -> i32 {
     with_hash(|hash| hash.ilk_info[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_ilk_info(pos: HashPointer, val: i32) {
-    with_hash_mut(|hash| hash.ilk_info[pos] = val)
 }
 
 #[no_mangle]

@@ -21,7 +21,7 @@ impl GlobalData {
         }
     }
 
-    fn grow(&mut self) {
+    pub fn grow(&mut self) {
         self.glb_bib_str_ptr.grow(MAX_GLOB_STRS);
         self.global_strs.grow((GLOB_STR_SIZE + 1) * MAX_GLOB_STRS);
         self.glb_str_end.grow(MAX_GLOB_STRS);
@@ -45,6 +45,18 @@ impl GlobalData {
         self.global_strs[spos..spos + val.len()].copy_from_slice(val);
         self.glb_str_end[pos] = val.len();
     }
+
+    pub fn num_glb_strs(&self) -> i32 {
+        self.num_glb_strs
+    }
+
+    pub fn set_num_glb_strs(&mut self, val: i32) {
+        self.num_glb_strs = val;
+    }
+
+    pub fn len(&self) -> usize {
+        self.glb_bib_str_ptr.len()
+    }
 }
 
 thread_local! {
@@ -55,29 +67,6 @@ pub fn reset() {
     GLOBALS.with(|globals| *globals.borrow_mut() = GlobalData::new());
 }
 
-fn with_globals<T>(f: impl FnOnce(&GlobalData) -> T) -> T {
-    GLOBALS.with(|globals| f(&globals.borrow()))
-}
-
 pub(crate) fn with_globals_mut<T>(f: impl FnOnce(&mut GlobalData) -> T) -> T {
     GLOBALS.with(|globals| f(&mut globals.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn num_glb_strs() -> i32 {
-    with_globals(|globals| globals.num_glb_strs)
-}
-
-#[no_mangle]
-pub extern "C" fn set_num_glb_strs(val: i32) {
-    with_globals_mut(|globals| globals.num_glb_strs = val)
-}
-
-#[no_mangle]
-pub extern "C" fn check_grow_global_strs() {
-    with_globals_mut(|globals| {
-        if globals.num_glb_strs as usize == globals.glb_bib_str_ptr.len() {
-            globals.grow();
-        }
-    })
 }
