@@ -20,8 +20,7 @@ use crate::{
             von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
         },
         xbuf::{SafelyZero, XBuf},
-        ASCIICode, Bibtex, BufPointer, GlobalItems, HashPointer, PoolPointer, StrIlk,
-        StrNumber,
+        ASCIICode, Bibtex, BufPointer, GlobalItems, HashPointer, PoolPointer, StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -1227,11 +1226,7 @@ fn interp_chr_to_int(
     Ok(())
 }
 
-fn interp_cite(
-    ctx: &mut ExecCtx,
-    pool: &StringPool,
-    cites: &CiteInfo,
-) -> Result<(), BibtexError> {
+fn interp_cite(ctx: &mut ExecCtx, pool: &StringPool, cites: &CiteInfo) -> Result<(), BibtexError> {
     if !ctx.mess_with_entries {
         bst_cant_mess_with_entries_print(ctx, pool, cites)?;
     } else {
