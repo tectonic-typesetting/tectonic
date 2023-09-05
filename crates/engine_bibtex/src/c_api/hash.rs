@@ -64,7 +64,7 @@ const fn compute_hash_prime() -> usize {
 }
 
 /// cbindgen:rename-all=ScreamingSnakeCase
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 #[repr(C)]
 pub enum FnClass {
     Builtin = 0,
@@ -101,6 +101,15 @@ impl HashData {
             fn_type: XBuf::new(HASH_MAX),
             hash_used: HASH_MAX + 1,
         }
+    }
+
+    #[no_mangle]
+    pub extern "C" fn undefined() -> usize {
+        HASH_MAX + 1
+    }
+
+    pub fn end_of_def() -> usize {
+        HASH_MAX + 1
     }
 
     pub fn text(&self, pos: usize) -> StrNumber {
@@ -170,16 +179,6 @@ pub fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
 
 pub fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
     HASHES.with(|h| f(&mut h.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn end_of_def() -> usize {
-    HASH_MAX + 1
-}
-
-#[no_mangle]
-pub extern "C" fn undefined() -> usize {
-    HASH_MAX + 1
 }
 
 #[no_mangle]

@@ -1,20 +1,20 @@
 use crate::{
     c_api::{
-        buffer::{with_buffers, with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{with_buffers, BufTy, GlobalBuffer},
         char_info::LexClass,
         entries::{with_entries_mut, ENT_STR_SIZE},
         global::GLOB_STR_SIZE,
         hash,
         hash::{with_hash, with_hash_mut, FnClass, HashData},
-        log::{print_overflow, rs_output_bbl_line, write_logs},
+        log::{output_bbl_line, print_overflow, write_logs},
         other::with_other_mut,
         xbuf::XBuf,
-        ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, CResultStr, HashPointer, LookupRes,
-        PoolPointer, StrIlk, StrNumber,
+        ASCIICode, Bibtex, BufPointer, CResult, CResultLookup, HashPointer, LookupRes, PoolPointer,
+        StrIlk, StrNumber,
     },
     BibtexError,
 };
-use std::cell::RefCell;
+use std::{cell::RefCell, ops::Range};
 
 const POOL_SIZE: usize = 65000;
 pub(crate) const MAX_PRINT_LINE: usize = 79;
@@ -37,7 +37,7 @@ pub struct StringPool {
 }
 
 impl StringPool {
-    fn new() -> StringPool {
+    pub(crate) fn new() -> StringPool {
         StringPool {
             strings: XBuf::new(POOL_SIZE),
             offsets: XBuf::new(MAX_STRINGS),
@@ -70,7 +70,7 @@ impl StringPool {
 
     /// Used while defining strings - declare the current `pool_ptr` as the end of the current
     /// string, increment the `str_ptr`, and return the new string's `StrNumber`
-    fn make_string(&mut self) -> Result<StrNumber, BibtexError> {
+    pub fn make_string(&mut self) -> Result<StrNumber, BibtexError> {
         if self.str_ptr == MAX_STRINGS {
             print_overflow();
             write_logs(&format!("number of strings {}\n", MAX_STRINGS));
@@ -185,6 +185,50 @@ impl StringPool {
         self.str_ptr
     }
 
+    pub fn set_str_ptr(&mut self, val: usize) {
+        self.str_ptr = val;
+    }
+
+    pub fn pool_ptr(&self) -> usize {
+        self.pool_ptr
+    }
+
+    pub fn set_pool_ptr(&mut self, val: usize) {
+        self.pool_ptr = val;
+    }
+
+    pub fn str_start(&self, str: StrNumber) -> usize {
+        self.offsets[str]
+    }
+
+    // TODO: Encapsulate better
+    pub fn set_start(&mut self, str: StrNumber, start: usize) {
+        self.offsets[str] = start;
+    }
+
+    pub fn copy_raw(&mut self, str: StrNumber, pos: usize) {
+        let start = self.offsets[str];
+        let end = self.offsets[str + 1];
+
+        while pos + (end - start) > self.strings.len() {
+            self.grow();
+        }
+
+        self.strings.copy_within(start..end, pos);
+    }
+
+    pub fn copy_range_raw(&mut self, range: Range<usize>, pos: usize) {
+        while pos + (range.end - range.start) > self.strings.len() {
+            self.grow();
+        }
+        self.strings.copy_within(range, pos)
+    }
+
+    pub fn append(&mut self, c: ASCIICode) {
+        self.strings[self.pool_ptr] = c;
+        self.pool_ptr += 1;
+    }
+
     pub fn add_string_raw(&mut self, str: &[ASCIICode]) -> Result<PoolPointer, BibtexError> {
         while self.pool_ptr + str.len() > self.strings.len() {
             self.grow();
@@ -192,6 +236,11 @@ impl StringPool {
         self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
         self.pool_ptr += str.len();
         self.make_string()
+    }
+
+    #[allow(clippy::len_without_is_empty)]
+    pub fn len(&self) -> usize {
+        self.strings.len()
     }
 }
 
@@ -212,23 +261,8 @@ pub fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
-    with_pool(|pool| pool.get_str(s1) == pool.get_str(s2))
-}
-
-#[no_mangle]
-pub extern "C" fn pool_overflow() {
-    with_pool_mut(|pool| pool.grow());
-}
-
-#[no_mangle]
 pub extern "C" fn bib_str_pool(idx: PoolPointer) -> ASCIICode {
     with_pool(|pool| pool.strings[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_str_pool(idx: PoolPointer, code: ASCIICode) {
-    with_pool_mut(|pool| pool.strings[idx] = code)
 }
 
 #[no_mangle]
@@ -252,18 +286,8 @@ pub extern "C" fn bib_set_str_start(s: StrNumber, ptr: PoolPointer) {
 }
 
 #[no_mangle]
-pub extern "C" fn bib_pool_size() -> usize {
-    with_pool(|pool| pool.strings.len())
-}
-
-#[no_mangle]
 pub extern "C" fn bib_max_strings() -> usize {
     MAX_STRINGS
-}
-
-#[no_mangle]
-pub extern "C" fn bib_pool_ptr() -> PoolPointer {
-    with_pool(|pool| pool.pool_ptr)
 }
 
 #[no_mangle]
@@ -271,41 +295,17 @@ pub extern "C" fn bib_set_pool_ptr(ptr: PoolPointer) {
     with_pool_mut(|pool| pool.pool_ptr = ptr)
 }
 
-#[no_mangle]
-pub extern "C" fn bib_make_string() -> CResultStr {
-    with_pool_mut(|pool| match pool.make_string() {
-        Ok(str) => CResultStr::Ok(str),
-        Err(BibtexError::Fatal) => CResultStr::Error,
-        Err(BibtexError::Recover) => CResultStr::Recover,
-    })
-}
+pub fn add_buf_pool(pool: &mut StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
+    let str = pool.get_str(str);
 
-#[no_mangle]
-pub unsafe extern "C" fn add_buf_pool(p_str: StrNumber) {
-    with_pool_mut(|pool| {
-        with_buffers_mut(|buffers| {
-            let mut p_ptr1 = pool.offsets[p_str];
-            let p_ptr2 = pool.offsets[p_str + 1];
+    if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
+        buffers.grow_all();
+    }
 
-            if buffers.init(BufTy::Ex) + (p_ptr2 - p_ptr1) > buffers.len() {
-                buffers.grow_all();
-            }
-
-            buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
-
-            while p_ptr1 < p_ptr2 {
-                buffers.set_at(
-                    BufTy::Ex,
-                    buffers.offset(BufTy::Ex, 1),
-                    pool.strings[p_ptr1],
-                );
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
-                p_ptr1 += 1;
-            }
-
-            buffers.set_init(BufTy::Ex, buffers.offset(BufTy::Ex, 1));
-        })
-    })
+    let start = buffers.init(BufTy::Ex);
+    buffers.copy_from(BufTy::Ex, start, str);
+    buffers.set_offset(BufTy::Ex, 1, start + str.len());
+    buffers.set_init(BufTy::Ex, start + str.len());
 }
 
 #[no_mangle]
@@ -487,7 +487,7 @@ pub unsafe extern "C" fn pre_def_certain_strings(ctx: *mut Bibtex) -> CResult {
     res.into()
 }
 
-fn rs_add_out_pool(
+pub fn add_out_pool(
     ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
@@ -500,9 +500,7 @@ fn rs_add_out_pool(
     }
 
     let out_offset = buffers.init(BufTy::Out);
-    for (idx, c) in str.iter().copied().enumerate() {
-        buffers.set_at(BufTy::Out, out_offset + idx, c);
-    }
+    buffers.copy_from(BufTy::Out, out_offset, str);
     buffers.set_init(BufTy::Out, out_offset + str.len());
 
     let mut unbreakable_tail = false;
@@ -547,24 +545,14 @@ fn rs_add_out_pool(
         if break_pt_found {
             buffers.set_init(BufTy::Out, out_offset);
             let break_ptr = buffers.init(BufTy::Out) + 1;
-            rs_output_bbl_line(ctx, buffers);
+            output_bbl_line(ctx, buffers);
             buffers.set_at(BufTy::Out, 0, b' ');
             buffers.set_at(BufTy::Out, 1, b' ');
-            out_offset = 2;
-            let mut tmp_ptr = break_ptr;
-            while tmp_ptr < end_ptr {
-                buffers.set_at(BufTy::Out, out_offset, buffers.at(BufTy::Out, tmp_ptr));
-                out_offset += 1;
-                tmp_ptr += 1;
-            }
-            buffers.set_init(BufTy::Out, end_ptr - break_ptr + 2);
+            let len = end_ptr - break_ptr;
+            buffers.copy_within(BufTy::Out, BufTy::Out, break_ptr, 2, len);
+            buffers.set_init(BufTy::Out, len + 2);
         }
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn add_out_pool(ctx: *mut Bibtex, str: StrNumber) {
-    with_buffers_mut(|buffers| with_pool(|pool| rs_add_out_pool(&mut *ctx, buffers, pool, str)))
 }
 
 #[cfg(test)]

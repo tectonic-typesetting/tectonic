@@ -7,7 +7,7 @@ pub const GLOB_STR_SIZE: usize = 20000;
 pub struct GlobalData {
     glb_bib_str_ptr: XBuf<StrNumber>,
     global_strs: XBuf<ASCIICode>,
-    glb_str_end: XBuf<i32>,
+    glb_str_end: XBuf<usize>,
     num_glb_strs: i32,
 }
 
@@ -26,6 +26,29 @@ impl GlobalData {
         self.global_strs.grow((GLOB_STR_SIZE + 1) * MAX_GLOB_STRS);
         self.glb_str_end.grow(MAX_GLOB_STRS);
     }
+
+    pub fn str(&self, pos: usize) -> &[ASCIICode] {
+        let spos = pos * (GLOB_STR_SIZE + 1);
+        &self.global_strs[spos..spos + self.glb_str_end[pos]]
+    }
+
+    pub fn str_ptr(&self, pos: usize) -> StrNumber {
+        self.glb_bib_str_ptr[pos]
+    }
+
+    pub fn set_str_ptr(&mut self, pos: usize, val: StrNumber) {
+        self.glb_bib_str_ptr[pos] = val;
+    }
+
+    pub fn set_str(&mut self, pos: usize, val: &[ASCIICode]) {
+        let spos = pos * (GLOB_STR_SIZE + 1);
+        self.global_strs[spos..spos + val.len()].copy_from_slice(val);
+        self.glb_str_end[pos] = val.len();
+    }
+
+    pub fn set_str_end(&mut self, pos: usize, val: usize) {
+        self.glb_str_end[pos] = val;
+    }
 }
 
 thread_local! {
@@ -40,7 +63,7 @@ fn with_globals<T>(f: impl FnOnce(&GlobalData) -> T) -> T {
     GLOBALS.with(|globals| f(&globals.borrow()))
 }
 
-fn with_globals_mut<T>(f: impl FnOnce(&mut GlobalData) -> T) -> T {
+pub fn with_globals_mut<T>(f: impl FnOnce(&mut GlobalData) -> T) -> T {
     GLOBALS.with(|globals| f(&mut globals.borrow_mut()))
 }
 
@@ -61,34 +84,4 @@ pub extern "C" fn check_grow_global_strs() {
             globals.grow();
         }
     })
-}
-
-#[no_mangle]
-pub extern "C" fn glb_bib_str_ptr(pos: usize) -> usize {
-    with_globals(|globals| globals.glb_bib_str_ptr[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_glb_bib_str_ptr(pos: usize, val: usize) {
-    with_globals_mut(|globals| globals.glb_bib_str_ptr[pos] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn global_strs(pos: usize) -> ASCIICode {
-    with_globals(|globals| globals.global_strs[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_global_strs(pos: usize, val: ASCIICode) {
-    with_globals_mut(|globals| globals.global_strs[pos] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn glb_str_end(pos: usize) -> i32 {
-    with_globals(|globals| globals.glb_str_end[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_glb_str_end(pos: usize, val: i32) {
-    with_globals_mut(|globals| globals.glb_str_end[pos] = val)
 }

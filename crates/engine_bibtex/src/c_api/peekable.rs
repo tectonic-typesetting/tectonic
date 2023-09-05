@@ -142,8 +142,7 @@ pub fn rs_input_ln(peekable: Option<&mut PeekableInput>, buffers: &mut GlobalBuf
             buffers.grow_all();
         }
 
-        let ptr = &mut buffers.buffer_mut(BufTy::Base)[last];
-        *ptr = peekable.getc() as ASCIICode;
+        buffers.set_at(BufTy::Base, last, peekable.getc() as ASCIICode);
         last += 1;
     }
 

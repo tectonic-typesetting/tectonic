@@ -56,7 +56,7 @@ pub struct GlobalBuffer {
 }
 
 impl GlobalBuffer {
-    fn new() -> GlobalBuffer {
+    pub(crate) fn new() -> GlobalBuffer {
         let buf_len = BUF_SIZE + 1;
         GlobalBuffer {
             buf_len,
@@ -107,6 +107,11 @@ impl GlobalBuffer {
         }
     }
 
+    fn copy_within_same(&mut self, ty: BufTy, from: usize, to: usize, len: usize) {
+        let buf = self.buffer_mut(ty);
+        buf.copy_within(from..from + len, to);
+    }
+
     pub fn copy_within(
         &mut self,
         from: BufTy,
@@ -115,14 +120,21 @@ impl GlobalBuffer {
         to_start: usize,
         len: usize,
     ) {
-        assert_ne!(from, to);
         assert!(to_start + len < self.buf_len);
         assert!(from_start + len < self.buf_len);
-        // SAFETY: Pointer guaranteed valid for up to `len`
-        let to = unsafe { slice::from_raw_parts_mut(self.buffer_raw(to).add(to_start), len) };
-        let from = &self.buffer(from)[from_start..from_start + len];
+        if from == to {
+            self.copy_within_same(from, from_start, to_start, len);
+        } else {
+            // SAFETY: Pointer guaranteed valid for up to `len`
+            let to = unsafe { slice::from_raw_parts_mut(self.buffer_raw(to).add(to_start), len) };
+            let from = &self.buffer(from)[from_start..from_start + len];
 
-        to.copy_from_slice(from);
+            to.copy_from_slice(from);
+        }
+    }
+
+    pub fn copy_from(&mut self, ty: BufTy, pos: usize, val: &[ASCIICode]) {
+        self.buffer_mut(ty)[pos..pos + val.len()].copy_from_slice(val);
     }
 
     pub fn at(&self, ty: BufTy, offset: usize) -> ASCIICode {
@@ -145,6 +157,14 @@ impl GlobalBuffer {
                 unreachable!("Buffer {:?} has no offsets", ty)
             }
         }
+    }
+
+    pub fn name_tok(&self, pos: BufPointer) -> BufPointer {
+        self.name_tok[pos]
+    }
+
+    pub fn set_name_tok(&mut self, pos: BufPointer, val: BufPointer) {
+        self.name_tok[pos] = val;
     }
 
     // pub fn incr_offset(&mut self, ty: BufTy, offset: usize) {
@@ -185,10 +205,6 @@ impl GlobalBuffer {
             BufTy::Out => self.out_buf.init = val,
             BufTy::NameSep => self.name_sep_char.init = val,
         }
-    }
-
-    pub fn name_tok(&self, pos: usize) -> BufPointer {
-        self.name_tok[pos]
     }
 
     pub fn grow_all(&mut self) {
@@ -250,64 +266,6 @@ pub extern "C" fn bib_set_buf_len(ty: BufTy, len: BufPointer) {
 }
 
 #[no_mangle]
-pub extern "C" fn name_tok(pos: BufPointer) -> BufPointer {
-    with_buffers(|buffers| buffers.name_tok[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_name_tok(pos: BufPointer, val: BufPointer) {
-    with_buffers_mut(|buffers| buffers.name_tok[pos] = val)
-}
-
-#[no_mangle]
 pub extern "C" fn lower_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
     with_buffers_mut(|buffers| buffers.buffer_mut(buf)[ptr..(ptr + len)].make_ascii_lowercase())
-}
-
-#[no_mangle]
-pub extern "C" fn upper_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
-    with_buffers_mut(|buffers| buffers.buffer_mut(buf)[ptr..(ptr + len)].make_ascii_uppercase())
-}
-
-#[no_mangle]
-pub extern "C" fn int_to_ascii(
-    mut the_int: i32,
-    int_buf: BufTy,
-    int_begin: BufPointer,
-) -> BufPointer {
-    with_buffers_mut(|buffers| {
-        let mut buf = buffers.buffer_mut(int_buf);
-        let mut int_ptr = int_begin;
-
-        let neg = if the_int < 0 {
-            if int_ptr == buf.len() {
-                buffers.grow_all();
-                buf = buffers.buffer_mut(int_buf);
-            }
-            buf[int_ptr] = 45 /*minus_sign */ ;
-            int_ptr += 1;
-            the_int = -the_int;
-            true
-        } else {
-            false
-        };
-
-        loop {
-            if int_ptr == buf.len() {
-                buffers.grow_all();
-                buf = buffers.buffer_mut(int_buf);
-            }
-            buf[int_ptr] = b'0' + (the_int % 10) as u8;
-            int_ptr += 1;
-            the_int /= 10;
-
-            if the_int == 0 {
-                break;
-            }
-        }
-
-        let begin = if neg { int_begin + 1 } else { int_begin };
-        buf[begin..int_ptr].reverse();
-        int_ptr as BufPointer
-    })
 }
