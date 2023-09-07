@@ -165,6 +165,10 @@ parameters:
 - name: crossBuilds
   type: object
   default:
+  - name: aarch64_unknown_linux_musl
+    vars:
+      TARGET: aarch64-unknown-linux-musl
+
   - name: arm_unknown_linux_musleabihf
     vars:
       TARGET: arm-unknown-linux-musleabihf

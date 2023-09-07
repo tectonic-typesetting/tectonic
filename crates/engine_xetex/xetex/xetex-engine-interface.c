@@ -68,3 +68,45 @@ tt_engine_xetex_main(
     ttbc_global_engine_exit();
     return rv;
 }
+
+
+/* "What is happening here?", you might ask. Good question!
+ *
+ * My first attempt (PKGW, 2023 Sep) to build a static version of Tectonic
+ * for the aarch64 platform using Tectonic's cross-compilation framework
+ * ran into the following error when trying to link the final executable:
+ *
+ *   /home/rust/sysroot-aarch64/usr/lib/libc.a(sigsetjmp.lo): in function `sigsetjmp':
+ *   /home/buildozer/aports/main/musl/src/v1.2.3/src/signal/aarch64/sigsetjmp.s:7:(.text+0x0):
+ *     relocation truncated to fit: R_AARCH64_CONDBR19 against symbol `setjmp'
+ *     defined in .text section in /home/rust/sysroot-aarch64/usr/lib/libc.a(setjmp.lo)
+ *
+ * So, musl libc's implementation of sigsetjmp() invokes setjmp() in some
+ * hand-written assembly. It appears that for whatever reason, when the linker
+ * is trying to build the Tectonic executable on aarch64, it ends up wanting to
+ * locate setjmp() and sigsetjmp() far away from each other in the final file,
+ * and the particular branch instruction used in sigsetjmp() can only specify a
+ * relatively small offset that cannot capture the location of setjmp(). The musl
+ * developers tentatively agree that this seems to be a bug in musl's
+ * implementation.
+ *
+ * I had the idea that maybe if I referenced both functions in my code, that
+ * would encourage the linker to place them closer to each other. And, guess
+ * what, it seems to work! Bananas!
+ *
+ * This hardly costs us anything so we don't bother to try to #ifdef it for the
+ * specific circumstances given above, but Windows doesn't provide sigsetjmp.
+ */
+#ifndef _WIN32
+void  __terrible_aarch64_musl_linker_hack_never_call_me(void);
+
+void
+__terrible_aarch64_musl_linker_hack_never_call_me(void)
+{
+    jmp_buf buf1;
+    sigjmp_buf buf2;
+
+    setjmp(buf1);
+    sigsetjmp(buf2, 0);
+}
+#endif
