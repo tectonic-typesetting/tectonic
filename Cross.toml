@@ -1,3 +1,6 @@
+[target.aarch64-unknown-linux-musl]
+image = "tectonictypesetting/crossbuild:aarch64-unknown-linux-musl"
+
 [target.arm-unknown-linux-musleabihf]
 image = "tectonictypesetting/crossbuild:arm-unknown-linux-musleabihf"
 
