@@ -13,7 +13,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tectonic_cfg_support::target_cfg;
-use tectonic_dep_support::{Backend, Configuration, Dependency, Spec};
+use tectonic_dep_support::{Configuration, Dependency, Spec};
 
 struct FontconfigSpec;
 
@@ -187,16 +187,6 @@ fn main() {
     cppcfg.compile("libtectonic_xetex_layout.a");
 
     deps.emit();
-
-    // vcpkg-rs is not guaranteed to emit libraries in the order required by a
-    // single-pass linker, so we might need to make sure that's done right.
-
-    if dep_cfg.backend == Backend::Vcpkg && target.contains("-linux-") {
-        // add icudata to the end of the list of libs as vcpkg-rs
-        // does not order individual libraries as a single pass
-        // linker requires.
-        println!("cargo:rustc-link-lib=icudata");
-    }
 
     // Copy the static header file for C preprocessing convenience.
 
