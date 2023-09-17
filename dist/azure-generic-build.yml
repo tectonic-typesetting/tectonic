@@ -49,7 +49,7 @@ steps:
 
     # OK, this has nothing to do with features, but if a build script fails, it
     # can be helpful to get a full backtrace.
-    echo "##vso[task.setvariable variable=RUST_BACKTRACE;]1"
+    echo "##vso[task.setvariable variable=RUST_BACKTRACE;]full"
   displayName: Set feature flags
   env:
     DEFAULT_FEATURES_FLAG: ${{ parameters.defaultFeatures }}
