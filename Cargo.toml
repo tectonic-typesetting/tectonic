@@ -138,28 +138,31 @@ overlay-triplets-path = "dist/vcpkg-triplets"
 # add them to crates/dep_support/src/lib.rs:new_from_vcpkg() to give users
 # guidance if they might need to set $VCPKGRS_TRIPLET.
 [package.metadata.vcpkg.target]
-x86_64-apple-darwin = { install = ["freetype", "harfbuzz[icu,graphite2]"] }
+x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
 aarch64-apple-darwin = { triplet = "arm64-osx", install = [
   "freetype",
-  "harfbuzz[icu,graphite2]",
+  "harfbuzz[graphite2]",
+  "icu",
 ] }
 x86_64-unknown-linux-gnu = { install = [
   "fontconfig",
   "freetype",
-  "harfbuzz[icu,graphite2]",
+  "harfbuzz[graphite2]",
+  "icu",
 ] }
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
   "fontconfig",
   "freetype",
-  "harfbuzz[icu,graphite2]",
+  "harfbuzz[graphite2]",
+  "icu",
 ] }
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2023-06-11:PvhF7YB"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_harfbuzz = "thiscommit:2023-09-17:FZwRtUP"
+tectonic_bridge_icu = "thiscommit:2023-09-17:AwTXf3W"
 tectonic_bundles = "thiscommit:2022-03-29:SFnXSaL"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

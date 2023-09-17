@@ -101,5 +101,5 @@ should probably run:
 [vcpkg]: https://vcpkg.readthedocs.io/
 
 ```sh
-vcpkg install fontconfig freetype "harfbuzz[icu,graphite2]"
+vcpkg install fontconfig freetype "harfbuzz[graphite2]" icu
 ```

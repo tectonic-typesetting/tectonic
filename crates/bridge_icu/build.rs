@@ -7,7 +7,7 @@
 //! this crate is needed. Vendoring the ICU library is almost certainly not
 //! something that one should do.
 
-use tectonic_dep_support::{Configuration, Dependency, Spec};
+use tectonic_dep_support::{Backend, Configuration, Dependency, Spec};
 
 struct IcuSpec;
 
@@ -22,6 +22,7 @@ impl Spec for IcuSpec {
 }
 
 fn main() {
+    let target = std::env::var("TARGET").unwrap();
     let cfg = Configuration::default();
     let dep = Dependency::probe(IcuSpec, &cfg);
 
@@ -39,4 +40,14 @@ fn main() {
     println!();
 
     dep.emit();
+
+    // vcpkg-rs is not guaranteed to emit libraries in the order required by a
+    // single-pass linker, so we might need to make sure that's done right.
+
+    if cfg.backend == Backend::Vcpkg && target.contains("-linux-") {
+        // add icudata to the end of the list of libs as vcpkg-rs
+        // does not order individual libraries as a single pass
+        // linker requires.
+        println!("cargo:rustc-link-lib=icudata");
+    }
 }
