@@ -1,4 +1,4 @@
-# Copyright 2016-2020 the Tectonic Project
+# Copyright 2016-2023 the Tectonic Project
 # Licensed under the MIT License.
 #
 # Deployment pipeline, run when all CI tests pass on `master` or `rc`.
@@ -22,7 +22,7 @@ jobs:
 # Things that should happen in either main-dev *or* release mode.
 - job: update_book
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   variables:
     - group: Deployment Credentials
   steps:
@@ -49,7 +49,7 @@ jobs:
 - ${{ if parameters.isMainDev }}:
   - job: recreate_continuous
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-latest
     variables:
     - group: Deployment Credentials
     steps:
@@ -79,7 +79,7 @@ jobs:
 - ${{ if parameters.isRelease }}:
   - job: branch_and_tag
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-latest
     variables:
     - group: Deployment Credentials
     steps:
@@ -98,7 +98,7 @@ jobs:
 
   - job: cargo_publish
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-latest
     variables:
     - group: Deployment Credentials
     steps:
@@ -116,7 +116,7 @@ jobs:
   - job: github_releases
     dependsOn: branch_and_tag # otherwise, GitHub will create the tag itself
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-latest
     variables:
     - group: Deployment Credentials
     steps:
@@ -145,7 +145,7 @@ jobs:
 
   - job: update_website
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-latest
     variables:
       - group: Deployment Credentials
     steps:

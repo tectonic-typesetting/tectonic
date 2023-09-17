@@ -18,7 +18,7 @@ parameters:
   type: object
   default:
   - name: linux_stable_semistatic
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       primaryBuild: true
     vars:
@@ -27,7 +27,7 @@ parameters:
       TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC: true
 
   - name: linux_stable_extdeps
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
       installAllDeps: true
@@ -37,7 +37,7 @@ parameters:
       TOOLCHAIN: stable
 
   - name: linux_stable_intdeps
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
       installAllDeps: false
@@ -46,7 +46,7 @@ parameters:
       TOOLCHAIN: stable
 
   - name: linux_beta
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
     vars:
@@ -54,7 +54,7 @@ parameters:
       TOOLCHAIN: beta
 
   - name: linux_nightly
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
     vars:
@@ -99,7 +99,7 @@ parameters:
       TOOLCHAIN: stable-x86_64-pc-windows-gnu
 
   - name: linux_ftmtx_none
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
       installAllDeps: false
@@ -109,7 +109,7 @@ parameters:
       TOOLCHAIN: stable
 
   - name: linux_ftmtx_all
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
       installAllDeps: true
@@ -119,7 +119,7 @@ parameters:
       TOOLCHAIN: stable
 
   - name: linux_ftmtx_curl
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
       installAllDeps: true
@@ -133,7 +133,7 @@ parameters:
   type: object
   default:
   - name: x86_64_unknown_linux_gnu
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     params:
       canaryBuild: true
     vars:
@@ -186,7 +186,7 @@ jobs:
 # rustfmt check
 - job: rustfmt
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
     - bash: rustup component add rustfmt
       displayName: "Install rustfmt"
@@ -198,7 +198,7 @@ jobs:
 # clippy check
 - job: clippy
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
     - template: azure-generic-build-setup.yml
     - bash: |
@@ -251,7 +251,7 @@ jobs:
 - ${{ each build in parameters.crossBuilds }}:
   - job: ${{ format('cross_{0}', build.name) }}
     pool:
-      vmImage: ubuntu-20.04
+      vmImage: ubuntu-22.04
     steps:
     - template: azure-build-and-test-cross.yml
     variables:
@@ -261,7 +261,7 @@ jobs:
 # coverage analysis check
 - job: coverage
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
     - template: azure-coverage.yml
   variables:
@@ -270,7 +270,7 @@ jobs:
 # book build
 - job: book
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
   - template: azure-generic-build-setup.yml
   - bash: |
