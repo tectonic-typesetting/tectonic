@@ -138,20 +138,23 @@ overlay-triplets-path = "dist/vcpkg-triplets"
 # add them to crates/dep_support/src/lib.rs:new_from_vcpkg() to give users
 # guidance if they might need to set $VCPKGRS_TRIPLET.
 [package.metadata.vcpkg.target]
-x86_64-apple-darwin = { install = ["freetype", "harfbuzz[icu,graphite2]"] }
+x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
 aarch64-apple-darwin = { triplet = "arm64-osx", install = [
   "freetype",
-  "harfbuzz[icu,graphite2]",
+  "harfbuzz[graphite2]",
+  "icu",
 ] }
 x86_64-unknown-linux-gnu = { install = [
   "fontconfig",
   "freetype",
-  "harfbuzz[icu,graphite2]",
+  "harfbuzz[graphite2]",
+  "icu",
 ] }
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
   "fontconfig",
   "freetype",
-  "harfbuzz[icu,graphite2]",
+  "harfbuzz[graphite2]",
+  "icu",
 ] }
 
 [package.metadata.internal_dep_versions]
