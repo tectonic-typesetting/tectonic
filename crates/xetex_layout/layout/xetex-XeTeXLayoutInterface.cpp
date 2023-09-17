@@ -40,6 +40,7 @@ authorization from the copyright holders.
 #include <harfbuzz/hb.h>
 #include <harfbuzz/hb-graphite2.h>
 #if !HB_VERSION_ATLEAST(2,5,0)
+/* Note: this configuration is no longer actively tested */
 #include <harfbuzz/hb-icu.h>
 #endif
 #include <harfbuzz/hb-ot.h>

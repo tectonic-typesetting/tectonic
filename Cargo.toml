@@ -158,7 +158,7 @@ x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
 tectonic_bridge_core = "thiscommit:2023-06-11:PvhF7YB"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_harfbuzz = "thiscommit:2023-09-17:FZwRtUP"
 tectonic_bridge_icu = "thiscommit:2023-09-17:AwTXf3W"
 tectonic_bundles = "thiscommit:2022-03-29:SFnXSaL"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
