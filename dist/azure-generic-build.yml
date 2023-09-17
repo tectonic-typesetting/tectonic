@@ -47,9 +47,10 @@ steps:
     echo "##vso[task.setvariable variable=CARGO_FEATURES_EXPLICIT;]$fts"
     echo "##vso[task.setvariable variable=CARGO_FEATURES_FLAGS;]$ffs"
 
-    # OK, this has nothing to do with features, but if a build script fails, it
+    # OK, these have nothing to do with features, but if a build script fails, it
     # can be helpful to get a full backtrace.
     echo "##vso[task.setvariable variable=RUST_BACKTRACE;]full"
+    echo "##vso[task.setvariable variable=CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG;]true"
   displayName: Set feature flags
   env:
     DEFAULT_FEATURES_FLAG: ${{ parameters.defaultFeatures }}
