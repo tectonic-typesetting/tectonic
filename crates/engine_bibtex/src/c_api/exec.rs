@@ -73,6 +73,17 @@ pub struct ExecCtx {
 }
 
 impl ExecCtx {
+    pub(crate) fn new(glbl_ctx: &mut Bibtex) -> ExecCtx {
+        ExecCtx {
+            glbl_ctx,
+            _default: 0,
+            lit_stack: Box::new(XBuf::new(LIT_STK_SIZE + 1)),
+            lit_stk_ptr: 0,
+            mess_with_entries: false,
+            bib_str_ptr: 0,
+        }
+    }
+
     pub(crate) fn push_stack(&mut self, val: ExecVal) {
         self.lit_stack[self.lit_stk_ptr] = val;
 
@@ -122,18 +133,6 @@ impl ExecCtx {
     pub(crate) fn glbl_ctx_mut(&mut self) -> &mut Bibtex {
         // SAFETY: Contained pointer is always valid
         unsafe { &mut *self.glbl_ctx }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn init_exec_ctx(glbl_ctx: *mut Bibtex) -> ExecCtx {
-    ExecCtx {
-        glbl_ctx,
-        _default: 0,
-        lit_stack: Box::new(XBuf::new(LIT_STK_SIZE + 1)),
-        lit_stk_ptr: 0,
-        mess_with_entries: false,
-        bib_str_ptr: 0,
     }
 }
 

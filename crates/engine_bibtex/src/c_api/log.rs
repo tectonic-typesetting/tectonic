@@ -1,7 +1,7 @@
 use crate::{
     c_api::{
-        auxi::{with_aux, AuxData},
-        bibs::{with_bibs, BibData},
+        auxi::AuxData,
+        bibs::BibData,
         buffer::{BufTy, GlobalBuffer},
         char_info::LexClass,
         cite::CiteInfo,
@@ -9,11 +9,11 @@ use crate::{
         hash::{FnClass, HashData},
         history::{mark_error, mark_fatal, mark_warning},
         other::OtherData,
-        peekable::rs_input_ln,
-        pool::{with_pool, StringPool},
+        peekable::input_ln,
+        pool::StringPool,
         scan::{Scan, ScanRes},
         ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex,
-        CResult, CiteNumber, FieldLoc, HashPointer, StrNumber,
+        CiteNumber, FieldLoc, HashPointer, StrNumber,
     },
     BibtexError,
 };
@@ -95,8 +95,7 @@ pub(crate) fn init_log_file(file: &CStr) -> bool {
     })
 }
 
-#[no_mangle]
-pub extern "C" fn init_standard_output() -> bool {
+pub fn init_standard_output() -> bool {
     STANDARD_OUTPUT.with(|out| {
         let ptr = out.replace(None);
         if ptr.is_none() {
@@ -112,8 +111,7 @@ pub extern "C" fn init_standard_output() -> bool {
     })
 }
 
-#[no_mangle]
-pub extern "C" fn bib_close_log() {
+pub fn bib_close_log() {
     LOG_FILE.with(|log| {
         let log = log.replace(None);
         if let Some(log) = log {
@@ -123,26 +121,12 @@ pub extern "C" fn bib_close_log() {
     })
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn bib_log_prints(str: *const libc::c_char) {
-    let str = CStr::from_ptr(str);
-    let _ = with_log(|log| log.write_all(str.to_bytes()));
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn puts_log(str: *const libc::c_char) {
-    let str = CStr::from_ptr(str);
-    let _ = with_log(|log| log.write_all(str.to_bytes()));
-    let _ = with_stdout(|out| out.write_all(str.to_bytes()));
-}
-
 pub fn print_overflow() {
     write_logs("Sorry---you've exceeded BibTeX's ");
     mark_fatal();
 }
 
-#[no_mangle]
-pub extern "C" fn print_confusion() {
+pub fn print_confusion() {
     write_logs("---this can't happen\n*Please notify the Tectonic maintainer*\n");
     mark_fatal();
 }
@@ -244,28 +228,18 @@ pub fn sam_wrong_file_name_print(file: &CStr) {
     })
 }
 
-pub(crate) fn rs_print_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn print_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
     print_a_pool_str(aux.at_ptr(), pool)?;
     write_logs("\n");
     Ok(())
 }
 
-#[no_mangle]
-pub extern "C" fn print_aux_name() -> CResult {
-    with_aux(|aux| with_pool(|pool| rs_print_aux_name(aux, pool))).into()
-}
-
-pub(crate) fn rs_log_pr_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
         out_pool_str(pool, log, aux.at_ptr())?;
         writeln!(log).unwrap();
         Ok(())
     })
-}
-
-#[no_mangle]
-pub extern "C" fn log_pr_aux_name() -> CResult {
-    with_pool(|pool| with_aux(|aux| rs_log_pr_aux_name(aux, pool))).into()
 }
 
 pub(crate) fn aux_err_print(
@@ -274,7 +248,7 @@ pub(crate) fn aux_err_print(
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs(&format!("---line {} of file ", aux.ln_at_ptr()));
-    rs_print_aux_name(aux, pool)?;
+    print_aux_name(aux, pool)?;
     print_bad_input_line(buffers);
     print_skipping_whatever_remains();
     write_logs("command\n");
@@ -314,12 +288,12 @@ pub fn aux_end1_err_print() {
 
 pub(crate) fn aux_end2_err_print(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
     write_logs("---while reading file ");
-    rs_print_aux_name(aux, pool)?;
+    print_aux_name(aux, pool)?;
     mark_error();
     Ok(())
 }
 
-pub(crate) fn rs_print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
+pub(crate) fn print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
     print_a_pool_str(bibs.cur_bib(), pool)?;
     let res = pool
         .try_get_str(bibs.cur_bib())
@@ -330,11 +304,6 @@ pub(crate) fn rs_print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(),
     }
     write_logs("\n");
     Ok(())
-}
-
-#[no_mangle]
-pub extern "C" fn print_bib_name() -> CResult {
-    with_pool(|pool| with_bibs(|bibs| rs_print_bib_name(pool, bibs))).into()
 }
 
 pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
@@ -415,7 +384,7 @@ pub fn bst_right_brace_print() {
 
 pub(crate) fn bib_ln_num_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", bibs.line_num()));
-    rs_print_bib_name(pool, bibs)
+    print_bib_name(pool, bibs)
 }
 
 pub(crate) fn bib_err_print(
@@ -618,7 +587,7 @@ pub(crate) fn bst_err_print_and_look_for_blank_line(
     while buffers.init(BufTy::Base) != 0 {
         // SAFETY: bst_file guaranteed valid
         let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
-        if !rs_input_ln(bst_file, buffers) {
+        if !input_ln(bst_file, buffers) {
             return Err(BibtexError::Recover);
         } else {
             ctx.bst_line_num += 1;

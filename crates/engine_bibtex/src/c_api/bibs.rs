@@ -9,7 +9,7 @@ use crate::{
             bib_one_of_two_print, bib_warn_print, cite_key_disappeared_confusion, eat_bib_print,
             hash_cite_confusion, print_a_token, print_confusion, write_log_file, write_logs,
         },
-        peekable::{rs_input_ln, PeekableInput},
+        peekable::{input_ln, PeekableInput},
         pool::StringPool,
         scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
         xbuf::XBuf,
@@ -117,21 +117,12 @@ thread_local! {
     static BIBS: RefCell<BibData> = RefCell::new(BibData::new());
 }
 
-pub(crate) fn with_bibs<T>(f: impl FnOnce(&BibData) -> T) -> T {
-    BIBS.with(|bibs| f(&bibs.borrow()))
-}
-
 pub(crate) fn with_bibs_mut<T>(f: impl FnOnce(&mut BibData) -> T) -> T {
     BIBS.with(|bibs| f(&mut bibs.borrow_mut()))
 }
 
 pub fn reset() {
     BIBS.with(|bibs| *bibs.borrow_mut() = BibData::new());
-}
-
-#[no_mangle]
-pub extern "C" fn bib_line_num() -> i32 {
-    with_bibs(|bibs| bibs.bib_line_num)
 }
 
 pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData) -> bool {
@@ -141,7 +132,7 @@ pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData
         .scan_till(buffers, init)
     {
         let bib_file = bibs.cur_bib_file();
-        if !rs_input_ln(bib_file, buffers) {
+        if !input_ln(bib_file, buffers) {
             return false;
         }
 
@@ -171,7 +162,7 @@ pub(crate) fn compress_bib_white(
         .scan_till(buffers, last)
     {
         let bib_file = bibs.cur_bib_file();
-        let res = !rs_input_ln(bib_file, buffers);
+        let res = !input_ln(bib_file, buffers);
 
         if res {
             return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
@@ -199,7 +190,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let mut init = globals.buffers.init(BufTy::Base);
     while !Scan::new().chars(&[b'@']).scan_till(globals.buffers, init) {
-        if !rs_input_ln(globals.bibs.cur_bib_file(), globals.buffers) {
+        if !input_ln(globals.bibs.cur_bib_file(), globals.buffers) {
             return Ok(());
         }
 

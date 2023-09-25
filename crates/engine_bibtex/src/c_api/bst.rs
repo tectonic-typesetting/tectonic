@@ -12,13 +12,13 @@ use crate::{
             bst_left_brace_print, bst_right_brace_print, bst_warn_print,
             cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion, log_pr_bib_name,
             print_a_token, print_confusion, print_missing_entry, rs_bad_cross_reference_print,
-            rs_nonexistent_cross_reference_error, rs_print_bib_name, rs_print_fn_class,
+            rs_nonexistent_cross_reference_error, print_bib_name, rs_print_fn_class,
             write_log_file, write_logs,
         },
         peekable::{peekable_close, tectonic_eof},
         pool::StringPool,
-        scan::{rs_eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
-        Bibtex, CResult, CiteNumber, GlobalItems, HashPointer, StrIlk,
+        scan::{eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
+        Bibtex, CiteNumber, GlobalItems, HashPointer, StrIlk,
     },
     BibtexError,
 };
@@ -26,7 +26,7 @@ use std::ptr::NonNull;
 
 macro_rules! eat_bst_white {
     ($ctx:ident, $globals:ident, $name:literal) => {
-        if !rs_eat_bst_white_space($ctx.glbl_ctx_mut(), $globals.buffers) {
+        if !eat_bst_white_space($ctx.glbl_ctx_mut(), $globals.buffers) {
             eat_bst_print();
             write_logs($name);
             bst_err_print_and_look_for_blank_line(
@@ -557,7 +557,7 @@ fn bst_read_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<
     while globals.bibs.ptr() < ctx.glbl_ctx().num_bib_files {
         if ctx.glbl_ctx().config.verbose {
             write_logs(&format!("Database file #{}: ", globals.bibs.ptr() + 1));
-            rs_print_bib_name(globals.pool, globals.bibs)?;
+            print_bib_name(globals.pool, globals.bibs)?;
         } else {
             write_log_file(&format!("Database file #{}: ", globals.bibs.ptr() + 1));
             log_pr_bib_name(globals.bibs, globals.pool)?;
@@ -936,7 +936,7 @@ fn bad_argument_token(
     }
 }
 
-fn rs_get_bst_command_and_process(
+pub(crate) fn get_bst_command_and_process(
     ctx: &mut ExecCtx,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
@@ -984,9 +984,4 @@ fn rs_get_bst_command_and_process(
             Err(BibtexError::Fatal)
         }
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn get_bst_command_and_process(ctx: *mut ExecCtx) -> CResult {
-    GlobalItems::with(|globals| rs_get_bst_command_and_process(&mut *ctx, globals)).into()
 }

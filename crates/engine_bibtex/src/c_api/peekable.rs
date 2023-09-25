@@ -1,6 +1,6 @@
 use crate::{
     c_api::{
-        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{BufTy, GlobalBuffer},
         char_info::LexClass,
         ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer,
     },
@@ -98,8 +98,7 @@ pub fn peekable_open(path: &CStr, format: FileFormat) -> *mut PeekableInput {
         .unwrap_or(ptr::null_mut())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn peekable_close(peekable: Option<NonNull<PeekableInput>>) -> libc::c_int {
+pub unsafe fn peekable_close(peekable: Option<NonNull<PeekableInput>>) -> libc::c_int {
     match peekable {
         Some(mut peekable) => {
             let rv = ttstub_input_close(peekable.as_mut().handle.as_ptr());
@@ -118,7 +117,7 @@ pub fn tectonic_eof(peekable: Option<&mut PeekableInput>) -> bool {
     }
 }
 
-pub(crate) fn rs_input_ln(
+pub(crate) fn input_ln(
     peekable: Option<&mut PeekableInput>,
     buffers: &mut GlobalBuffer,
 ) -> bool {
@@ -164,9 +163,4 @@ pub(crate) fn rs_input_ln(
     buffers.set_init(BufTy::Base, last);
 
     true
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn input_ln(peekable: Option<NonNull<PeekableInput>>) -> bool {
-    with_buffers_mut(|buffers| rs_input_ln(peekable.map(|mut ptr| ptr.as_mut()), buffers))
 }

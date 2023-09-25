@@ -1,7 +1,7 @@
 use crate::{
     c_api::{
         bibs::{compress_bib_white, eat_bib_white_space, BibData},
-        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
+        buffer::{BufTy, GlobalBuffer},
         char_info::{IdClass, LexClass},
         cite::{add_database_cite, CiteInfo},
         exec::ExecCtx,
@@ -15,7 +15,7 @@ use crate::{
             skip_token_print, skip_token_unknown_function_print, write_log_file, write_logs,
         },
         other::OtherData,
-        peekable::rs_input_ln,
+        peekable::input_ln,
         pool::StringPool,
         ASCIICode, Bibtex, BufPointer, CiteNumber, FnDefLoc, HashPointer, StrIlk, StrNumber,
     },
@@ -159,7 +159,7 @@ fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
     idx - start != if sign { 1 } else { 0 }
 }
 
-pub(crate) fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool {
+pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool {
     loop {
         let init = buffers.init(BufTy::Base);
         if Scan::new()
@@ -172,18 +172,13 @@ pub(crate) fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffe
 
         // SAFETY: bst_file guarantee valid if non-null
         let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
-        if !rs_input_ln(bst_file, buffers) {
+        if !input_ln(bst_file, buffers) {
             return false;
         }
 
         ctx.bst_line_num += 1;
         buffers.set_offset(BufTy::Base, 2, 0);
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn eat_bst_white_space(ctx: *mut Bibtex) -> bool {
-    with_buffers_mut(|buffers| rs_eat_bst_white_space(&mut *ctx, buffers))
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -346,7 +341,7 @@ pub(crate) fn scan_fn_def(
     let ctx = &mut *ctx;
     let mut single_function = Vec::new();
 
-    if !rs_eat_bst_white_space(ctx, buffers) {
+    if !eat_bst_white_space(ctx, buffers) {
         eat_bst_print();
         write_logs("function");
         bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
@@ -366,7 +361,7 @@ pub(crate) fn scan_fn_def(
             char,
         )?;
 
-        if !rs_eat_bst_white_space(ctx, buffers) {
+        if !eat_bst_white_space(ctx, buffers) {
             eat_bst_print();
             write_logs("function");
             return bst_err_print_and_look_for_blank_line(ctx, buffers, pool);

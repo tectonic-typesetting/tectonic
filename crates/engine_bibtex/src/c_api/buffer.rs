@@ -14,10 +14,6 @@ pub(crate) fn reset() {
     GLOBAL_BUFFERS.with(|cell| *cell.borrow_mut() = GlobalBuffer::new());
 }
 
-pub(crate) fn with_buffers<T>(f: impl FnOnce(&GlobalBuffer) -> T) -> T {
-    GLOBAL_BUFFERS.with(|buffers| f(&buffers.borrow()))
-}
-
 pub(crate) fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
     GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
 }
@@ -224,14 +220,4 @@ pub enum BufTy {
     Ex,
     Out,
     NameSep,
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) {
-    with_buffers_mut(|buffers| buffers.set_offset(ty, num, offset))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_buf_len(ty: BufTy) -> BufPointer {
-    with_buffers(|buffers| buffers.init(ty))
 }

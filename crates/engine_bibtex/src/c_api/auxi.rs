@@ -1,22 +1,22 @@
 use crate::{
     c_api::{
-        bibs::{with_bibs_mut, BibData},
+        bibs::BibData,
         buffer::{BufTy, GlobalBuffer},
         char_info::LexClass,
-        cite::{with_cites_mut, CiteInfo},
+        cite::CiteInfo,
         exec::print_bst_name,
         hash::HashData,
         log::{
             aux_end1_err_print, aux_end2_err_print, aux_err_illegal_another_print,
             aux_err_no_right_brace_print, aux_err_print, aux_err_stuff_after_right_brace_print,
             aux_err_white_space_in_argument_print, hash_cite_confusion, log_pr_bst_name,
-            print_a_pool_str, print_a_token, print_confusion, print_overflow, rs_log_pr_aux_name,
-            rs_print_aux_name, rs_print_bib_name, write_log_file, write_logs, AuxTy,
+            print_a_pool_str, print_a_token, print_confusion, print_overflow, log_pr_aux_name,
+            print_aux_name, print_bib_name, write_log_file, write_logs, AuxTy,
         },
         peekable::{peekable_close, peekable_open, PeekableInput},
-        pool::{with_pool, StringPool},
+        pool::StringPool,
         scan::Scan,
-        AuxNumber, Bibtex, CResult, GlobalItems, StrIlk, StrNumber,
+        AuxNumber, Bibtex, GlobalItems, StrIlk, StrNumber,
     },
     BibtexError,
 };
@@ -58,7 +58,7 @@ impl AuxData {
         self.aux_list[self.aux_ptr] = num;
     }
 
-    fn file_at_ptr(&self) -> *mut PeekableInput {
+    pub fn file_at_ptr(&self) -> *mut PeekableInput {
         self.aux_file[self.aux_ptr]
     }
 
@@ -70,7 +70,7 @@ impl AuxData {
         self.aux_ln_stack[self.aux_ptr]
     }
 
-    fn set_ln_at_ptr(&mut self, ln: i32) {
+    pub fn set_ln_at_ptr(&mut self, ln: i32) {
         self.aux_ln_stack[self.aux_ptr] = ln;
     }
 }
@@ -83,27 +83,8 @@ pub fn reset() {
     AUX.with(|aux| *aux.borrow_mut() = AuxData::new());
 }
 
-pub(crate) fn with_aux<T>(f: impl FnOnce(&AuxData) -> T) -> T {
-    AUX.with(|aux| f(&aux.borrow()))
-}
-
 pub(crate) fn with_aux_mut<T>(f: impl FnOnce(&mut AuxData) -> T) -> T {
     AUX.with(|aux| f(&mut aux.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn cur_aux_file() -> *mut PeekableInput {
-    with_aux(|aux| aux.file_at_ptr())
-}
-
-#[no_mangle]
-pub extern "C" fn cur_aux_ln() -> i32 {
-    with_aux(|aux| aux.ln_at_ptr())
-}
-
-#[no_mangle]
-pub extern "C" fn set_cur_aux_ln(ln: i32) {
-    with_aux_mut(|aux| aux.set_ln_at_ptr(ln))
 }
 
 fn aux_bib_data_command(
@@ -158,7 +139,7 @@ fn aux_bib_data_command(
         bibs.set_cur_bib(hash.text(res.loc));
         if res.exists {
             write_logs("This database file appears more than once: ");
-            rs_print_bib_name(pool, bibs)?;
+            print_bib_name(pool, bibs)?;
             aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
@@ -168,7 +149,7 @@ fn aux_bib_data_command(
         let bib_in = peekable_open(&fname, FileFormat::Bib);
         if bib_in.is_null() {
             write_logs("I couldn't open database file ");
-            rs_print_bib_name(pool, bibs)?;
+            print_bib_name(pool, bibs)?;
             aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
@@ -412,7 +393,7 @@ fn aux_input_command(
     aux.set_at_ptr(hash.text(res.loc));
     if res.exists {
         write_logs("Already encountered file ");
-        rs_print_aux_name(aux, pool)?;
+        print_aux_name(aux, pool)?;
         aux.set_ptr(aux.ptr() - 1);
         aux_err_print(buffers, aux, pool)?;
         return Ok(());
@@ -423,7 +404,7 @@ fn aux_input_command(
     let ptr = peekable_open(&fname, FileFormat::Tex);
     if ptr.is_null() {
         write_logs("I couldn't open auxiliary file ");
-        rs_print_aux_name(aux, pool)?;
+        print_aux_name(aux, pool)?;
         aux.set_ptr(aux.ptr() - 1);
         aux_err_print(buffers, aux, pool)?;
         return Ok(());
@@ -431,13 +412,13 @@ fn aux_input_command(
     aux.set_file_at_ptr(ptr);
 
     write_logs(&format!("A level-{} auxiliary file: ", aux.ptr()));
-    rs_log_pr_aux_name(aux, pool)?;
+    log_pr_aux_name(aux, pool)?;
     aux.set_ln_at_ptr(0);
 
     Ok(())
 }
 
-fn rs_get_aux_command_and_process(
+pub(crate) fn get_aux_command_and_process(
     ctx: &mut Bibtex,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
@@ -495,12 +476,7 @@ fn rs_get_aux_command_and_process(
     Ok(())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn get_aux_command_and_process(ctx: *mut Bibtex) -> CResult {
-    GlobalItems::with(|globals| rs_get_aux_command_and_process(&mut *ctx, globals)).into()
-}
-
-fn rs_pop_the_aux_stack(aux: &mut AuxData) -> bool {
+pub(crate) fn pop_the_aux_stack(aux: &mut AuxData) -> bool {
     // SAFETY: Aux file at pointer guaranteed valid at this point
     unsafe { peekable_close(NonNull::new(aux.file_at_ptr())) };
     aux.set_file_at_ptr(ptr::null_mut());
@@ -512,12 +488,7 @@ fn rs_pop_the_aux_stack(aux: &mut AuxData) -> bool {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn pop_the_aux_stack() -> bool {
-    with_aux_mut(rs_pop_the_aux_stack)
-}
-
-fn rs_last_check_for_aux_errors(
+pub(crate) fn last_check_for_aux_errors(
     ctx: &mut Bibtex,
     aux: &AuxData,
     pool: &StringPool,
@@ -557,18 +528,4 @@ fn rs_last_check_for_aux_errors(
     }
 
     Ok(())
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn last_check_for_aux_errors(ctx: *mut Bibtex) -> CResult {
-    with_cites_mut(|cites| {
-        with_aux(|aux| {
-            with_pool(|pool| {
-                with_bibs_mut(|bibs| {
-                    rs_last_check_for_aux_errors(&mut *ctx, aux, pool, cites, bibs)
-                })
-            })
-        })
-    })
-    .into()
 }

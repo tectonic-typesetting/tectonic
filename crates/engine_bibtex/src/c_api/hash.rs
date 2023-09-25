@@ -175,13 +175,3 @@ pub fn reset() {
 pub(crate) fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
     HASHES.with(|h| f(&mut h.borrow_mut()))
 }
-
-#[no_mangle]
-pub extern "C" fn hash_size() -> i32 {
-    HASH_SIZE as i32
-}
-
-#[no_mangle]
-pub extern "C" fn hash_prime() -> usize {
-    HASH_PRIME
-}

@@ -250,17 +250,8 @@ pub(crate) fn reset() {
     STRING_POOL.with(|pool| *pool.borrow_mut() = StringPool::new());
 }
 
-pub(crate) fn with_pool<T>(f: impl FnOnce(&StringPool) -> T) -> T {
-    STRING_POOL.with(|pool| f(&pool.borrow()))
-}
-
 pub(crate) fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
     STRING_POOL.with(|pool| f(&mut pool.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_max_strings() -> usize {
-    MAX_STRINGS
 }
 
 pub(crate) fn add_buf_pool(pool: &StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {

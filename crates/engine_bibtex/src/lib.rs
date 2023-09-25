@@ -29,6 +29,7 @@ use tectonic_errors::prelude::*;
 pub enum BibtexError {
     Fatal,
     Recover,
+    NoBst,
 }
 
 /// A possible outcome from a BibTeX engine invocation.
@@ -153,6 +154,13 @@ pub mod c_api {
 
     use crate::c_api::{buffer::BufTy, other::with_other_mut, pool::pre_def_certain_strings};
     pub use external::*;
+    use crate::c_api::auxi::{get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack};
+    use crate::c_api::bst::get_bst_command_and_process;
+    use crate::c_api::exec::ExecCtx;
+    use crate::c_api::history::{err_count, get_history};
+    use crate::c_api::log::{bib_close_log, init_standard_output, log_pr_aux_name, print_aux_name, write_log_file};
+    use crate::c_api::peekable::{peekable_close, input_ln};
+    use crate::c_api::scan::eat_bst_white_space;
 
     // These used to be 'bad' checks at the start of a program, now we can ensure them at comptime
     const _: () = assert!(hash::HASH_PRIME >= 128);
@@ -287,68 +295,6 @@ pub mod c_api {
         }
     }
 
-    #[repr(C)]
-    #[derive(PartialEq)]
-    pub enum CResult {
-        Error,
-        Recover,
-        Ok,
-    }
-
-    impl From<CResult> for Result<(), BibtexError> {
-        fn from(value: CResult) -> Self {
-            match value {
-                CResult::Error => Err(BibtexError::Fatal),
-                CResult::Recover => Err(BibtexError::Recover),
-                CResult::Ok => Ok(()),
-            }
-        }
-    }
-
-    impl From<Result<(), BibtexError>> for CResult {
-        fn from(value: Result<(), BibtexError>) -> Self {
-            match value {
-                Ok(()) => CResult::Ok,
-                Err(BibtexError::Fatal) => CResult::Error,
-                Err(BibtexError::Recover) => CResult::Recover,
-            }
-        }
-    }
-
-    #[repr(C)]
-    pub enum CResultInt {
-        Error,
-        Recover,
-        Ok(i32),
-    }
-
-    impl From<Result<i32, BibtexError>> for CResultInt {
-        fn from(value: Result<i32, BibtexError>) -> Self {
-            match value {
-                Ok(i) => CResultInt::Ok(i),
-                Err(BibtexError::Fatal) => CResultInt::Error,
-                Err(BibtexError::Recover) => CResultInt::Recover,
-            }
-        }
-    }
-
-    #[repr(C)]
-    pub enum CResultBool {
-        Error,
-        Recover,
-        Ok(bool),
-    }
-
-    impl From<Result<bool, BibtexError>> for CResultBool {
-        fn from(value: Result<bool, BibtexError>) -> Self {
-            match value {
-                Ok(val) => CResultBool::Ok(val),
-                Err(BibtexError::Fatal) => CResultBool::Error,
-                Err(BibtexError::Recover) => CResultBool::Recover,
-            }
-        }
-    }
-
     #[derive(Copy, Clone, Debug)]
     #[repr(C)]
     pub struct LookupRes {
@@ -420,8 +366,7 @@ pub mod c_api {
     type FieldLoc = usize;
     type FnDefLoc = usize;
 
-    #[no_mangle]
-    pub unsafe extern "C" fn reset_all() {
+    pub fn reset_all() {
         log::reset();
         pool::reset();
         history::reset();
@@ -433,6 +378,114 @@ pub mod c_api {
         other::reset();
         entries::reset();
         global::reset();
+    }
+
+    #[no_mangle]
+    pub extern "C" fn bibtex_main(ctx: &mut Bibtex, aux_file_name: *const libc::c_char) -> History {
+        let aux_file_name = unsafe { CStr::from_ptr(aux_file_name) };
+
+        reset_all();
+
+        let res = GlobalItems::with(|globals| inner_bibtex_main(ctx, globals, aux_file_name));
+        match res {
+            Ok(History::Spotless) => (),
+            Ok(hist) => return hist,
+            Err(BibtexError::Recover) => {
+                unsafe { peekable_close(ctx.bst_file) };
+                ctx.bst_file = None;
+                unsafe { ttstub_output_close(ctx.bbl_file) };
+            }
+            Err(BibtexError::NoBst) => {
+                unsafe { ttstub_output_close(ctx.bbl_file) };
+            }
+            Err(BibtexError::Fatal) => (),
+        }
+
+        match get_history() {
+            History::Spotless => (),
+            History::WarningIssued => {
+                if err_count() == 1 {
+                    write_logs("(There was 1 warning)\n")
+                } else {
+                    write_logs(&format!("(There were {} warnings)\n", err_count()))
+                }
+            }
+            History::ErrorIssued => {
+                if err_count() == 1 {
+                    write_logs("(There was 1 error message)\n")
+                } else {
+                    write_logs(&format!("(There were {} error messages)\n", err_count()))
+                }
+            }
+            History::FatalError => {
+                write_logs("(That was a fatal error)\n");
+            }
+            _ => {
+                write_logs("History is bunk");
+                print_confusion();
+            }
+        }
+
+        bib_close_log();
+        return get_history();
+    }
+
+    pub(crate) fn inner_bibtex_main(ctx: &mut Bibtex, globals: &mut GlobalItems<'_>, aux_file_name: &CStr) -> Result<History, BibtexError> {
+        if !init_standard_output() {
+            return Ok(History::FatalError);
+        }
+
+        if initialize(ctx, globals, aux_file_name)? != 0 {
+            return Ok(History::FatalError);
+        }
+
+        if ctx.config.verbose {
+            write_logs("This is BibTeX, Version 0.99d\n");
+        } else {
+            write_log_file("This is BibTeX, Version 0.99d\n");
+        }
+
+        write_log_file(&format!("Capacity: max_strings={}, hash_size={}, hash_prime={}\n", pool::MAX_STRINGS, hash::HASH_SIZE, hash::HASH_PRIME));
+
+        if ctx.config.verbose {
+            write_logs("The top-level auxiliary file: ");
+            print_aux_name(globals.aux, globals.pool)?;
+        } else {
+            write_log_file("The top-level auxiliary file: ");
+            log_pr_aux_name(globals.aux, globals.pool)?;
+        }
+
+        loop {
+            globals.aux.set_ln_at_ptr(globals.aux.ln_at_ptr() + 1);
+
+            if !input_ln(unsafe { globals.aux.file_at_ptr().as_mut() }, globals.buffers) {
+                if pop_the_aux_stack(globals.aux) {
+                    break;
+                }
+            } else {
+                get_aux_command_and_process(ctx, globals)?;
+            }
+        }
+
+        last_check_for_aux_errors(ctx, globals.aux, globals.pool, globals.cites, globals.bibs)?;
+
+        if ctx.bst_str == 0 {
+            return Err(BibtexError::NoBst);
+        }
+
+        ctx.bst_line_num = 0;
+        ctx.bbl_line_num = 1;
+        globals.buffers.set_offset(BufTy::Base, 2, globals.buffers.init(BufTy::Base));
+
+        let mut exec = ExecCtx::new(ctx);
+        loop {
+            if !eat_bst_white_space(exec.glbl_ctx_mut(), globals.buffers) {
+                break;
+            }
+            get_bst_command_and_process(&mut exec, globals)?;
+        }
+
+        Ok(History::Spotless)
     }
 
     pub(crate) fn get_the_top_level_aux_file_name(
@@ -498,7 +551,7 @@ pub mod c_api {
         Ok(0)
     }
 
-    fn rs_initialize(
+    fn initialize(
         ctx: &mut Bibtex,
         globals: &mut GlobalItems<'_>,
         aux_file_name: &CStr,
@@ -521,17 +574,6 @@ pub mod c_api {
 
         pre_def_certain_strings(ctx, globals)?;
         get_the_top_level_aux_file_name(ctx, globals, aux_file_name)
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn initialize(
-        ctx: *mut Bibtex,
-        aux_file_name: *const libc::c_char,
-    ) -> CResultInt {
-        GlobalItems::with(|globals| {
-            rs_initialize(&mut *ctx, globals, CStr::from_ptr(aux_file_name))
-        })
-        .into()
     }
 
     #[allow(improper_ctypes)] // for CoreBridgeState
