@@ -4,7 +4,7 @@ use crate::{
     ttbc_input_close, ttbc_input_open, ASCIICode, Bibtex, BibtexError, BufPointer,
 };
 use libc::EOF;
-use std::{ffi::CStr, io, ptr, ptr::NonNull};
+use std::{ffi::CStr, io, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
 use tectonic_io_base::InputHandle;
 
@@ -78,7 +78,7 @@ impl PeekableInput {
         self.peek_char = c;
     }
 
-    fn eof(&mut self) -> bool {
+    pub fn eof(&mut self) -> bool {
         if self.saw_eof {
             return true;
         }
@@ -99,38 +99,6 @@ impl PeekableInput {
             self.ungetc(c);
         }
         c == b'\n' as libc::c_int || c == '\r' as libc::c_int || c == EOF
-    }
-}
-
-pub(crate) fn peekable_open(
-    ctx: &mut Bibtex<'_, '_>,
-    path: &CStr,
-    format: FileFormat,
-) -> *mut PeekableInput {
-    PeekableInput::open(ctx, path, format)
-        .map(Box::into_raw)
-        .unwrap_or(ptr::null_mut())
-}
-
-pub(crate) unsafe fn peekable_close(
-    ctx: &mut Bibtex<'_, '_>,
-    peekable: Option<NonNull<PeekableInput>>,
-) -> libc::c_int {
-    match peekable {
-        Some(mut peekable) => {
-            let rv = ttbc_input_close(ctx.engine, peekable.as_mut().handle.as_ptr());
-            drop(Box::<PeekableInput>::from_raw(peekable.as_ptr()));
-            rv
-        }
-        None => 0,
-    }
-}
-
-pub(crate) fn tectonic_eof(peekable: Option<&mut PeekableInput>) -> bool {
-    // Check for EOF following Pascal semantics.
-    match peekable {
-        Some(peek) => peek.eof(),
-        None => true,
     }
 }
 

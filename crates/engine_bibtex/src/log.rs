@@ -288,10 +288,10 @@ pub(crate) fn aux_end2_err_print(pool: &StringPool, name: StrNumber) -> Result<(
     Ok(())
 }
 
-pub(crate) fn print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
-    print_a_pool_str(bibs.cur_bib(), pool)?;
+pub(crate) fn print_bib_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
+    print_a_pool_str(name, pool)?;
     let res = pool
-        .try_get_str(bibs.cur_bib())
+        .try_get_str(name)
         .map_err(|_| BibtexError::Fatal)
         .map(|str| str.ends_with(b".bib"))?;
     if !res {
@@ -303,9 +303,9 @@ pub(crate) fn print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), Bi
 
 pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
-        out_pool_str(pool, log, bibs.cur_bib())?;
+        out_pool_str(pool, log, bibs.top_file().name)?;
         let res = pool
-            .try_get_str(bibs.cur_bib())
+            .try_get_str(bibs.top_file().name)
             .map(|str| str.ends_with(b".bib"))
             .map_err(|_| BibtexError::Fatal)?;
         if !res {
@@ -378,8 +378,8 @@ pub fn bst_right_brace_print() {
 }
 
 pub(crate) fn bib_ln_num_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
-    write_logs(&format!("--line {} of file ", bibs.line_num()));
-    print_bib_name(pool, bibs)
+    write_logs(&format!("--line {} of file ", bibs.top_file().line));
+    print_bib_name(pool, bibs.top_file().name)
 }
 
 pub(crate) fn bib_err_print(
