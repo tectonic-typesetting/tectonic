@@ -580,9 +580,7 @@ pub(crate) fn bst_err_print_and_look_for_blank_line(
     bst_ln_num_print(ctx, pool)?;
     print_bad_input_line(buffers);
     while buffers.init(BufTy::Base) != 0 {
-        // SAFETY: bst_file guaranteed valid
-        let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
-        if !input_ln(bst_file, buffers) {
+        if !input_ln(ctx.bst_file.as_deref_mut(), buffers) {
             return Err(BibtexError::Recover);
         } else {
             ctx.bst_line_num += 1;
