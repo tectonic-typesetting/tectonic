@@ -37,13 +37,13 @@ use crate::{
         print_confusion, sam_wrong_file_name_print, write_log_file, write_logs,
     },
     other::OtherData,
-    peekable::{input_ln, peekable_close, PeekableInput},
+    peekable::{input_ln, PeekableInput},
     pool::{pre_def_certain_strings, StringPool},
     scan::eat_bst_white_space,
 };
 use std::{
     ffi::{CStr, CString},
-    ptr::{self, NonNull},
+    ptr,
 };
 use tectonic_bridge_core::{
     ttbc_input_close, ttbc_input_open, ttbc_output_close, ttbc_output_open,
@@ -195,7 +195,7 @@ impl Default for BibtexConfig {
 pub(crate) struct Bibtex<'a, 'cbs> {
     pub engine: &'a mut CoreBridgeState<'cbs>,
     pub config: BibtexConfig,
-    pub bst_file: Option<NonNull<PeekableInput>>,
+    pub bst_file: Option<Box<PeekableInput>>,
     pub bst_str: StrNumber,
     pub bst_line_num: usize,
 
@@ -335,8 +335,7 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
     match res {
         Err(BibtexError::Recover) | Ok(History::Spotless) => {
             // SAFETY: bst_file guaranteed valid at this point
-            unsafe { peekable_close(ctx, ctx.bst_file) };
-            ctx.bst_file = None;
+            ctx.bst_file.take().map(|file| file.close(ctx));
             ttbc_output_close(ctx.engine, ctx.bbl_file);
         }
         Err(BibtexError::NoBst) => {

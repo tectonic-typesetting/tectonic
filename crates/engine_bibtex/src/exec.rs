@@ -1679,10 +1679,8 @@ fn interp_preamble(
     bibs: &mut BibData,
 ) -> Result<(), BibtexError> {
     let mut out = Vec::with_capacity(ctx.glbl_ctx().num_preamble_strings * 32);
-    bibs.set_preamble_ptr(0);
-    while bibs.preamble_ptr() < ctx.glbl_ctx().num_preamble_strings {
-        out.extend(pool.get_str(bibs.cur_preamble()));
-        bibs.set_preamble_ptr(bibs.preamble_ptr() + 1);
+    for s in bibs.preamble() {
+        out.extend(pool.get_str(*s));
     }
     let s = pool.add_string_raw(&out)?;
     ctx.push_stack(ExecVal::String(s));
