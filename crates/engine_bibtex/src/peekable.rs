@@ -37,6 +37,15 @@ impl PeekableInput {
         }
     }
 
+    pub(crate) fn close(self, ctx: &mut Bibtex<'_, '_>) -> Result<(), BibtexError> {
+        let err = unsafe { ttbc_input_close(ctx.engine, self.handle.as_ptr()) };
+        if err == 0 {
+            Ok(())
+        } else {
+            Err(BibtexError::Fatal)
+        }
+    }
+
     fn getc(&mut self) -> libc::c_int {
         if self.peek_char != EOF {
             let rv = self.peek_char;

@@ -439,11 +439,7 @@ pub(crate) fn inner_bibtex_main(
     loop {
         globals.aux.set_ln_at_ptr(globals.aux.ln_at_ptr() + 1);
 
-        if !input_ln(
-            // SAFETY: top of aux stack guaranteed valid
-            unsafe { globals.aux.file_at_ptr().as_mut() },
-            globals.buffers,
-        ) {
+        if !input_ln(Some(globals.aux.file_at_ptr()), globals.buffers) {
             if pop_the_aux_stack(ctx, globals.aux) {
                 break;
             }
@@ -504,7 +500,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
             return Ok(1);
         }
     };
-    aux.set_file_at_ptr(Box::into_raw(aux_file));
+    aux.set_file_at_ptr(aux_file);
 
     set_extension(&mut path, b".blg");
     let log_file = CStr::from_bytes_with_nul(&path).unwrap();

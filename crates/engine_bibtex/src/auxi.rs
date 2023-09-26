@@ -12,19 +12,19 @@ use crate::{
         log_pr_bst_name, print_a_pool_str, print_a_token, print_aux_name, print_bib_name,
         print_confusion, print_overflow, write_log_file, write_logs, AuxTy,
     },
-    peekable::{peekable_close, peekable_open, PeekableInput},
+    peekable::{peekable_open, PeekableInput},
     pool::StringPool,
     scan::Scan,
     AuxNumber, Bibtex, BibtexError, GlobalItems, StrIlk, StrNumber,
 };
-use std::{cell::RefCell, ffi::CString, ptr, ptr::NonNull};
+use std::{cell::RefCell, ffi::CString, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
 
 pub(crate) struct AuxData {
     aux_list: [StrNumber; AUX_STACK_SIZE + 1],
-    aux_file: [*mut PeekableInput; AUX_STACK_SIZE + 1],
+    aux_file: [Option<Box<PeekableInput>>; AUX_STACK_SIZE + 1],
     aux_ln_stack: [i32; AUX_STACK_SIZE + 1],
     aux_ptr: AuxNumber,
 }
@@ -33,7 +33,7 @@ impl AuxData {
     fn new() -> AuxData {
         AuxData {
             aux_list: [0; AUX_STACK_SIZE + 1],
-            aux_file: [ptr::null_mut(); AUX_STACK_SIZE + 1],
+            aux_file: [(); AUX_STACK_SIZE + 1].map(|_| None),
             aux_ln_stack: [0; AUX_STACK_SIZE + 1],
             aux_ptr: 0,
         }
@@ -55,12 +55,19 @@ impl AuxData {
         self.aux_list[self.aux_ptr] = num;
     }
 
-    pub fn file_at_ptr(&self) -> *mut PeekableInput {
-        self.aux_file[self.aux_ptr]
+    pub fn file_at_ptr(&mut self) -> &mut PeekableInput {
+        self.aux_file[self.aux_ptr].as_mut().unwrap()
     }
 
-    pub fn set_file_at_ptr(&mut self, file: *mut PeekableInput) {
-        self.aux_file[self.aux_ptr] = file;
+    pub fn set_file_at_ptr(&mut self, file: Box<PeekableInput>) {
+        self.aux_file[self.aux_ptr] = Some(file);
+    }
+
+    pub fn pop_file(&mut self) -> (Box<PeekableInput>, bool) {
+        let out = self.aux_file[self.aux_ptr].take().unwrap();
+        let last = self.aux_ptr == 0;
+        self.aux_ptr = self.aux_ptr.saturating_sub(1);
+        (out, last)
     }
 
     pub fn ln_at_ptr(&self) -> i32 {
@@ -398,15 +405,19 @@ fn aux_input_command(
 
     let name = pool.get_str(aux.at_ptr());
     let fname = CString::new(name).unwrap();
-    let ptr = peekable_open(ctx, &fname, FileFormat::Tex);
-    if ptr.is_null() {
-        write_logs("I couldn't open auxiliary file ");
-        print_aux_name(aux, pool)?;
-        aux.set_ptr(aux.ptr() - 1);
-        aux_err_print(buffers, aux, pool)?;
-        return Ok(());
+    let file = PeekableInput::open(ctx, &fname, FileFormat::Tex);
+    match file {
+        Err(_) => {
+            write_logs("I couldn't open auxiliary file ");
+            print_aux_name(aux, pool)?;
+            aux.set_ptr(aux.ptr() - 1);
+            aux_err_print(buffers, aux, pool)?;
+            return Ok(());
+        }
+        Ok(file) => {
+            aux.set_file_at_ptr(file);
+        }
     }
-    aux.set_file_at_ptr(ptr);
 
     write_logs(&format!("A level-{} auxiliary file: ", aux.ptr()));
     log_pr_aux_name(aux, pool)?;
@@ -474,15 +485,9 @@ pub(crate) fn get_aux_command_and_process(
 }
 
 pub(crate) fn pop_the_aux_stack(ctx: &mut Bibtex<'_, '_>, aux: &mut AuxData) -> bool {
-    // SAFETY: Aux file at pointer guaranteed valid at this point
-    unsafe { peekable_close(ctx, NonNull::new(aux.file_at_ptr())) };
-    aux.set_file_at_ptr(ptr::null_mut());
-    if aux.ptr() == 0 {
-        true
-    } else {
-        aux.set_ptr(aux.ptr() - 1);
-        false
-    }
+    let (file, last) = aux.pop_file();
+    file.close(ctx).unwrap();
+    last
 }
 
 pub(crate) fn last_check_for_aux_errors(
