@@ -24,7 +24,7 @@ const AUX_STACK_SIZE: usize = 20;
 
 pub(crate) struct AuxFile {
     pub(crate) name: StrNumber,
-    pub(crate) file: Box<PeekableInput>,
+    pub(crate) file: PeekableInput,
     pub(crate) line: i32,
 }
 

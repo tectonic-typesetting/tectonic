@@ -166,7 +166,7 @@ pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut Global
             return true;
         }
 
-        if !input_ln(ctx.bst_file.as_deref_mut(), buffers) {
+        if !input_ln(ctx.bst_file.as_mut(), buffers) {
             return false;
         }
 
