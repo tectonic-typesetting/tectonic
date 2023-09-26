@@ -1,5 +1,5 @@
 use crate::{
-    bibs::BibData,
+    bibs::{BibData, BibFile},
     buffer::{BufTy, GlobalBuffer},
     char_info::LexClass,
     cite::CiteInfo,
@@ -12,12 +12,12 @@ use crate::{
         log_pr_bst_name, print_a_pool_str, print_a_token, print_aux_name, print_bib_name,
         print_confusion, print_overflow, write_log_file, write_logs, AuxTy,
     },
-    peekable::{peekable_open, PeekableInput},
+    peekable::PeekableInput,
     pool::StringPool,
     scan::Scan,
     Bibtex, BibtexError, GlobalItems, StrIlk, StrNumber,
 };
-use std::{ffi::CString, ptr::NonNull};
+use std::ffi::CString;
 use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
@@ -101,32 +101,34 @@ fn aux_bib_data_command(
             return Ok(());
         }
 
-        if bibs.ptr() == bibs.len() {
-            bibs.grow();
-        }
-
         let file = &buffers.buffer(BufTy::Base)
             [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
         let res = pool.lookup_str_insert(hash, file, StrIlk::BibFile)?;
-        bibs.set_cur_bib(hash.text(res.loc));
         if res.exists {
             write_logs("This database file appears more than once: ");
-            print_bib_name(pool, bibs)?;
+            print_bib_name(pool, hash.text(res.loc))?;
             aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
 
-        let name = pool.get_str(bibs.cur_bib());
+        let name = pool.get_str(hash.text(res.loc));
         let fname = CString::new(name).unwrap();
-        let bib_in = peekable_open(ctx, &fname, FileFormat::Bib);
-        if bib_in.is_null() {
-            write_logs("I couldn't open database file ");
-            print_bib_name(pool, bibs)?;
-            aux_err_print(buffers, aux, pool)?;
-            return Ok(());
+        let bib_in = PeekableInput::open(ctx, &fname, FileFormat::Bib);
+        match bib_in {
+            Err(_) => {
+                write_logs("I couldn't open database file ");
+                print_bib_name(pool, hash.text(res.loc))?;
+                aux_err_print(buffers, aux, pool)?;
+                return Ok(());
+            }
+            Ok(file) => {
+                bibs.push_file(BibFile {
+                    name: hash.text(res.loc),
+                    file,
+                    line: 0,
+                });
+            }
         }
-        bibs.set_cur_bib_file(NonNull::new(bib_in));
-        bibs.set_ptr(bibs.ptr() + 1);
     }
 
     Ok(())
@@ -472,7 +474,7 @@ pub(crate) fn last_check_for_aux_errors(
     last_aux: StrNumber,
 ) -> Result<(), BibtexError> {
     cites.set_num_cites(cites.ptr());
-    ctx.num_bib_files = bibs.ptr();
+    ctx.num_bib_files = bibs.len();
     if !ctx.citation_seen {
         aux_end1_err_print();
         write_logs("\\citation commands");
