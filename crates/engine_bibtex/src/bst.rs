@@ -260,7 +260,7 @@ fn bst_execute_command(
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
     // TODO: Associated method on ExecCtx
-    ctx.lit_stk_ptr = 0;
+    ctx.lit_stack.clear();
     ctx.bib_str_ptr = globals.pool.str_ptr();
 
     ctx.mess_with_entries = false;
@@ -406,7 +406,7 @@ fn bst_iterate_command(
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-    ctx.lit_stk_ptr = 0;
+    ctx.lit_stack.clear();
     ctx.bib_str_ptr = globals.pool.str_ptr();
 
     ctx.mess_with_entries = true;
@@ -828,7 +828,7 @@ fn bst_reverse_command(
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-    ctx.lit_stk_ptr = 0;
+    ctx.lit_stack.clear();
     ctx.bib_str_ptr = globals.pool.str_ptr();
 
     ctx.mess_with_entries = true;

@@ -31,7 +31,7 @@ pub(crate) enum LexClass {
 
 impl LexClass {
     /// Get the `LexClass` of a character
-    pub fn of(char: ASCIICode) -> LexClass {
+    pub const fn of(char: ASCIICode) -> LexClass {
         LEX_CLASS[char as usize]
     }
 }
@@ -50,7 +50,7 @@ impl IdClass {
     }
 }
 
-static LEX_CLASS: [LexClass; 256] = {
+const LEX_CLASS: [LexClass; 256] = {
     let mut lex_class = [LexClass::Other; 256];
 
     const_for!(128..=255 => lex_class[..] = LexClass::Alpha);

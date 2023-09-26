@@ -18,13 +18,10 @@ use crate::{
         check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
         von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
     },
-    xbuf::{SafelyZero, XBuf},
     ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, PoolPointer, StrIlk,
     StrNumber,
 };
 use std::ops::Index;
-
-const LIT_STK_SIZE: usize = 100;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub(crate) enum StkType {
@@ -56,14 +53,10 @@ impl ExecVal {
     }
 }
 
-// SAFETY: We require our zero discriminant to be an integer, which is valid for any bit pattern, including 0
-unsafe impl SafelyZero for ExecVal {}
-
 pub(crate) struct ExecCtx<'a, 'bib, 'cbs> {
     pub glbl_ctx: &'a mut Bibtex<'bib, 'cbs>,
     pub _default: HashPointer,
-    pub(crate) lit_stack: Box<XBuf<ExecVal>>,
-    pub lit_stk_ptr: usize,
+    pub(crate) lit_stack: Vec<ExecVal>,
     pub mess_with_entries: bool,
     /// Pointer to the current top of the string pool, used to optimize certain string operations
     pub bib_str_ptr: StrNumber,
@@ -74,21 +67,14 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
         ExecCtx {
             glbl_ctx,
             _default: 0,
-            lit_stack: Box::new(XBuf::new(LIT_STK_SIZE + 1)),
-            lit_stk_ptr: 0,
+            lit_stack: Vec::new(),
             mess_with_entries: false,
             bib_str_ptr: 0,
         }
     }
 
     pub(crate) fn push_stack(&mut self, val: ExecVal) {
-        self.lit_stack[self.lit_stk_ptr] = val;
-
-        if self.lit_stk_ptr >= self.lit_stack.len() {
-            self.grow_stack();
-        }
-
-        self.lit_stk_ptr += 1;
+        self.lit_stack.push(val);
     }
 
     pub(crate) fn pop_stack(
@@ -96,13 +82,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
         pool: &mut StringPool,
         cites: &CiteInfo,
     ) -> Result<ExecVal, BibtexError> {
-        if self.lit_stk_ptr == 0 {
-            write_logs("You can't pop an empty literal stack");
-            bst_ex_warn_print(self, pool, cites)?;
-            Ok(ExecVal::Illegal)
-        } else {
-            self.lit_stk_ptr -= 1;
-            let pop = self.lit_stack[self.lit_stk_ptr];
+        if let Some(pop) = self.lit_stack.pop() {
             if let ExecVal::String(str) = pop {
                 if str >= self.bib_str_ptr {
                     if str != pool.str_ptr() - 1 {
@@ -115,11 +95,11 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
                 }
             }
             Ok(pop)
+        } else {
+            write_logs("You can't pop an empty literal stack");
+            bst_ex_warn_print(self, pool, cites)?;
+            Ok(ExecVal::Illegal)
         }
-    }
-
-    fn grow_stack(&mut self) {
-        self.lit_stack.grow(LIT_STK_SIZE);
     }
 
     pub(crate) fn glbl_ctx(&self) -> &Bibtex<'bib, 'cbs> {
@@ -278,7 +258,7 @@ fn pop_whole_stack(
     hash: &HashData,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
-    while ctx.lit_stk_ptr > 0 {
+    while !ctx.lit_stack.is_empty() {
         pop_top_and_print(ctx, pool, hash, cites)?;
     }
     Ok(())
@@ -632,8 +612,8 @@ pub(crate) fn check_command_execution(
     hash: &HashData,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
-    if ctx.lit_stk_ptr != 0 {
-        write_logs(&format!("ptr={}, stack=\n", ctx.lit_stk_ptr));
+    if !ctx.lit_stack.is_empty() {
+        write_logs(&format!("ptr={}, stack=\n", ctx.lit_stack.len()));
         pop_whole_stack(ctx, pool, hash, cites)?;
         write_logs("---the literal stack isn't empty");
         bst_ex_warn_print(ctx, pool, cites)?;
