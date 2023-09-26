@@ -298,7 +298,6 @@ type BufPointer = usize;
 type PoolPointer = usize;
 type HashPointer = usize;
 type BibNumber = usize;
-type WizFnLoc = usize;
 type FieldLoc = usize;
 type FnDefLoc = usize;
 
