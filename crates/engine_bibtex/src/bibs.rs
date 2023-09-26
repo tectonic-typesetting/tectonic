@@ -23,8 +23,7 @@ pub(crate) struct BibData {
     bib_list: XBuf<StrNumber>,
     bib_ptr: BibNumber,
     bib_line_num: i32,
-    preamble: XBuf<StrNumber>,
-    preamble_ptr: BibNumber,
+    preamble: Vec<StrNumber>,
 }
 
 impl BibData {
@@ -34,8 +33,7 @@ impl BibData {
             bib_list: XBuf::new(MAX_BIB_FILES),
             bib_ptr: 0,
             bib_line_num: 0,
-            preamble: XBuf::new(MAX_BIB_FILES),
-            preamble_ptr: 0,
+            preamble: Vec::new(),
         }
     }
 
@@ -75,20 +73,15 @@ impl BibData {
     }
 
     pub fn add_preamble(&mut self, s: StrNumber) {
-        self.preamble[self.preamble_ptr] = s;
-        self.preamble_ptr += 1;
+        self.preamble.push(s);
     }
 
     pub fn preamble_ptr(&self) -> usize {
-        self.preamble_ptr
+        self.preamble.len()
     }
 
-    pub fn set_preamble_ptr(&mut self, val: usize) {
-        self.preamble_ptr = val;
-    }
-
-    pub fn cur_preamble(&self) -> StrNumber {
-        self.preamble[self.preamble_ptr]
+    pub fn preamble(&self) -> &[StrNumber] {
+        &self.preamble
     }
 
     pub fn ptr(&self) -> BibNumber {
@@ -106,7 +99,6 @@ impl BibData {
     pub fn grow(&mut self) {
         self.bib_list.grow(MAX_BIB_FILES);
         self.bib_file.grow(MAX_BIB_FILES);
-        self.preamble.grow(MAX_BIB_FILES);
     }
 }
 
@@ -225,10 +217,6 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         match globals.hash.ilk_info(res.loc) {
             0 => (),
             1 => {
-                if globals.bibs.preamble_ptr() == globals.bibs.len() {
-                    globals.bibs.grow();
-                }
-
                 if !eat_bib_white_space(globals.buffers, globals.bibs) {
                     eat_bib_print(globals.buffers, globals.pool, globals.bibs, at_bib_command)?;
                     return Ok(());

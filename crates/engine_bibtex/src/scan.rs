@@ -166,9 +166,7 @@ pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut Global
             return true;
         }
 
-        // SAFETY: bst_file guarantee valid if non-null
-        let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
-        if !input_ln(bst_file, buffers) {
+        if !input_ln(ctx.bst_file.as_deref_mut(), buffers) {
             return false;
         }
 

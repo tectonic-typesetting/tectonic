@@ -182,15 +182,19 @@ fn aux_bib_style_command(
 
     let name = pool.get_str(ctx.bst_str);
     let fname = CString::new(name).unwrap();
-    let ptr = peekable_open(ctx, &fname, FileFormat::Bst);
-    if ptr.is_null() {
-        write_logs("I couldn't open style file ");
-        print_bst_name(ctx, pool)?;
-        ctx.bst_str = 0;
-        aux_err_print(buffers, aux, pool)?;
-        return Ok(());
+    let bst_file = PeekableInput::open(ctx, &fname, FileFormat::Bst);
+    match bst_file {
+        Err(_) => {
+            write_logs("I couldn't open style file ");
+            print_bst_name(ctx, pool)?;
+            ctx.bst_str = 0;
+            aux_err_print(buffers, aux, pool)?;
+            return Ok(());
+        }
+        Ok(file) => {
+            ctx.bst_file = Some(file);
+        }
     }
-    ctx.bst_file = NonNull::new(ptr);
 
     if ctx.config.verbose {
         write_logs("The style file: ");
