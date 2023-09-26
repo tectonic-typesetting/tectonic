@@ -319,7 +319,7 @@ pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), B
 pub(crate) fn log_pr_bst_name(ctx: &Bibtex<'_, '_>, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
         // TODO: This call can panic if bst_str doesn't exist
-        out_pool_str(pool, log, ctx.bst_str)?;
+        out_pool_str(pool, log, ctx.bst.as_ref().unwrap().name)?;
         writeln!(log, ".bst").unwrap();
         Ok(())
     })
@@ -580,10 +580,10 @@ pub(crate) fn bst_err_print_and_look_for_blank_line(
     bst_ln_num_print(ctx, pool)?;
     print_bad_input_line(buffers);
     while buffers.init(BufTy::Base) != 0 {
-        if !input_ln(ctx.bst_file.as_mut(), buffers) {
+        if !input_ln(&mut ctx.bst.as_mut().unwrap().file, buffers) {
             return Err(BibtexError::Recover);
         } else {
-            ctx.bst_line_num += 1;
+            ctx.bst.as_mut().unwrap().line += 1;
         }
     }
     buffers.set_offset(BufTy::Base, 2, buffers.init(BufTy::Base));
