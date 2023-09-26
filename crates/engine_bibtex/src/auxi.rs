@@ -15,7 +15,7 @@ use crate::{
     peekable::{peekable_open, PeekableInput},
     pool::StringPool,
     scan::Scan,
-    AuxNumber, Bibtex, BibtexError, GlobalItems, StrIlk, StrNumber,
+    Bibtex, BibtexError, GlobalItems, StrIlk, StrNumber,
 };
 use std::{cell::RefCell, ffi::CString, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
@@ -43,8 +43,7 @@ impl AuxData {
 
     pub fn pop_file(&mut self) -> (AuxFile, bool) {
         let out = self.aux.pop().unwrap();
-        let last = self.aux.len() == 0;
-        (out, last)
+        (out, self.aux.is_empty())
     }
 
     pub fn top_file(&self) -> &AuxFile {
@@ -55,7 +54,7 @@ impl AuxData {
         self.aux.last_mut().unwrap()
     }
 
-    pub fn ptr(&self) -> AuxNumber {
+    pub fn ptr(&self) -> usize {
         self.aux.len()
     }
 }

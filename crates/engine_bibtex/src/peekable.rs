@@ -38,6 +38,7 @@ impl PeekableInput {
     }
 
     pub(crate) fn close(self, ctx: &mut Bibtex<'_, '_>) -> Result<(), BibtexError> {
+        // SAFETY: Contained handle guaranteed valid at this point
         let err = unsafe { ttbc_input_close(ctx.engine, self.handle.as_ptr()) };
         if err == 0 {
             Ok(())

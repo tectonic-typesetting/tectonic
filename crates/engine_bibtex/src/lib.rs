@@ -336,7 +336,6 @@ type ASCIICode = u8;
 type BufPointer = usize;
 type PoolPointer = usize;
 type HashPointer = usize;
-type AuxNumber = usize;
 type BibNumber = usize;
 type WizFnLoc = usize;
 type FieldLoc = usize;
