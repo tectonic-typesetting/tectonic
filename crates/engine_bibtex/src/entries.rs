@@ -1,4 +1,4 @@
-use crate::c_api::{cite::CiteInfo, xbuf::XBuf, ASCIICode};
+use crate::{cite::CiteInfo, xbuf::XBuf, ASCIICode};
 use std::cell::RefCell;
 
 pub(crate) const ENT_STR_SIZE: usize = 250;

@@ -1,4 +1,4 @@
-use crate::c_api::ASCIICode;
+use crate::ASCIICode;
 
 macro_rules! const_for {
     ($start:literal..$end:literal => $arr:ident[..] = $expr:expr) => {
@@ -19,17 +19,14 @@ macro_rules! const_for {
 
 /// The lexer class of a character - this represents whether the parser considers it to be alphabetic,
 /// numeric, etc. Illegal represents tokens that shouldn't show up at all, such as ASCII backspace.
-///
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-#[repr(C)]
-pub enum LexClass {
-    Illegal = 0,
-    Whitespace = 1,
-    Alpha = 2,
-    Numeric = 3,
-    Sep = 4,
-    Other = 5,
+pub(crate) enum LexClass {
+    Illegal,
+    Whitespace,
+    Alpha,
+    Numeric,
+    Sep,
+    Other,
 }
 
 impl LexClass {
@@ -40,13 +37,10 @@ impl LexClass {
 }
 
 /// Whether a token counts as valid in an identifier
-///
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-#[repr(C)]
-pub enum IdClass {
-    IllegalIdChar = 0,
-    LegalIdChar = 1,
+pub(crate) enum IdClass {
+    IllegalIdChar,
+    LegalIdChar,
 }
 
 impl IdClass {

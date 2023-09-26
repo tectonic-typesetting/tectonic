@@ -1,26 +1,23 @@
 use crate::{
-    c_api::{
-        bibs::get_bib_command_or_entry_and_process,
-        buffer::{BufTy, GlobalBuffer},
-        char_info::LexClass,
-        cite::find_cite_locs_for_this_cite_key,
-        exec::{check_command_execution, execute_fn, ExecCtx},
-        hash::{FnClass, HashData},
-        history::mark_warning,
-        log::{
-            already_seen_function_print, bst_err_print_and_look_for_blank_line, bst_id_print,
-            bst_left_brace_print, bst_right_brace_print, bst_warn_print,
-            cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion, log_pr_bib_name,
-            print_a_token, print_confusion, print_missing_entry, rs_bad_cross_reference_print,
-            rs_nonexistent_cross_reference_error, print_bib_name, rs_print_fn_class,
-            write_log_file, write_logs,
-        },
-        peekable::{peekable_close, tectonic_eof},
-        pool::StringPool,
-        scan::{eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
-        Bibtex, CiteNumber, GlobalItems, HashPointer, StrIlk,
+    bibs::get_bib_command_or_entry_and_process,
+    buffer::{BufTy, GlobalBuffer},
+    char_info::LexClass,
+    cite::find_cite_locs_for_this_cite_key,
+    exec::{check_command_execution, execute_fn, ExecCtx},
+    hash::{FnClass, HashData},
+    history::mark_warning,
+    log::{
+        already_seen_function_print, bst_err_print_and_look_for_blank_line, bst_id_print,
+        bst_left_brace_print, bst_right_brace_print, bst_warn_print,
+        cite_key_disappeared_confusion, eat_bst_print, hash_cite_confusion, log_pr_bib_name,
+        print_a_token, print_bib_name, print_confusion, print_missing_entry,
+        rs_bad_cross_reference_print, rs_nonexistent_cross_reference_error, rs_print_fn_class,
+        write_log_file, write_logs,
     },
-    BibtexError,
+    peekable::{peekable_close, tectonic_eof},
+    pool::StringPool,
+    scan::{eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
+    Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk,
 };
 use std::ptr::NonNull;
 
@@ -85,7 +82,10 @@ macro_rules! bst_ident {
     };
 }
 
-fn bst_entry_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
+fn bst_entry_command(
+    ctx: &mut ExecCtx<'_, '_, '_>,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().entry_seen {
         write_logs("Illegal, another entry command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
@@ -226,7 +226,7 @@ fn bst_entry_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result
 }
 
 fn bst_execute_command(
-    ctx: &mut ExecCtx,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
@@ -272,7 +272,7 @@ fn bst_execute_command(
 }
 
 fn bst_function_command(
-    ctx: &mut ExecCtx,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     eat_bst_white!(ctx, globals, "function");
@@ -329,7 +329,7 @@ fn bst_function_command(
 }
 
 fn bst_integers_command(
-    ctx: &mut ExecCtx,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     eat_bst_white!(ctx, globals, "integers");
@@ -373,7 +373,7 @@ fn bst_integers_command(
 }
 
 fn bst_iterate_command(
-    ctx: &mut ExecCtx,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
@@ -422,7 +422,10 @@ fn bst_iterate_command(
     Ok(())
 }
 
-fn bst_macro_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
+fn bst_macro_command(
+    ctx: &mut ExecCtx<'_, '_, '_>,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().read_seen {
         write_logs("Illegal, macro command after read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
@@ -502,7 +505,10 @@ fn bst_macro_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result
     Ok(())
 }
 
-fn bst_read_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
+fn bst_read_command(
+    ctx: &mut ExecCtx<'_, '_, '_>,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().read_seen {
         write_logs("Illegal, another read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
@@ -579,7 +585,12 @@ fn bst_read_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<
             )?;
         }
         // SAFETY: take_cur_bib_file returns reference to which we're the last owner
-        unsafe { peekable_close(ctx.glbl_ctx_mut(), globals.bibs.take_cur_bib_file().map(NonNull::from)) };
+        unsafe {
+            peekable_close(
+                ctx.glbl_ctx_mut(),
+                globals.bibs.take_cur_bib_file().map(NonNull::from),
+            )
+        };
         globals.bibs.set_ptr(globals.bibs.ptr() + 1);
     }
 
@@ -783,7 +794,7 @@ fn bst_read_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<
 }
 
 fn bst_reverse_command(
-    ctx: &mut ExecCtx,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
@@ -831,7 +842,10 @@ fn bst_reverse_command(
     Ok(())
 }
 
-fn bst_sort_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<(), BibtexError> {
+fn bst_sort_command(
+    ctx: &mut ExecCtx<'_, '_, '_>,
+    globals: &mut GlobalItems<'_>,
+) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
         write_logs("Illegal, sort command before read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
@@ -848,7 +862,7 @@ fn bst_sort_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<
 }
 
 fn bst_strings_command(
-    ctx: &mut ExecCtx,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     eat_bst_white!(ctx, globals, "strings");
@@ -904,7 +918,7 @@ fn bst_strings_command(
 }
 
 fn bad_argument_token(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     fn_out: Option<&mut HashPointer>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
@@ -937,7 +951,7 @@ fn bad_argument_token(
 }
 
 pub(crate) fn get_bst_command_and_process(
-    ctx: &mut ExecCtx,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     let init = globals.buffers.init(BufTy::Base);

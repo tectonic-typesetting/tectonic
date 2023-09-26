@@ -1,4 +1,4 @@
-use crate::c_api::{
+use crate::{
     entries::EntryData, hash::HashData, other::OtherData, pool::StringPool, xbuf::XBuf, CiteNumber,
     FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };

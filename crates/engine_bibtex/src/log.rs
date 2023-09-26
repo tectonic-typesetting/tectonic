@@ -1,21 +1,18 @@
 use crate::{
-    c_api::{
-        auxi::AuxData,
-        bibs::BibData,
-        buffer::{BufTy, GlobalBuffer},
-        char_info::LexClass,
-        cite::CiteInfo,
-        exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
-        hash::{FnClass, HashData},
-        history::{mark_error, mark_fatal, mark_warning},
-        other::OtherData,
-        peekable::input_ln,
-        pool::StringPool,
-        scan::{Scan, ScanRes},
-        ttbc_output_close, ttbc_output_open, ttbc_output_open_stdout, ASCIICode, Bibtex,
-        CiteNumber, FieldLoc, HashPointer, StrNumber,
-    },
-    BibtexError,
+    auxi::AuxData,
+    bibs::BibData,
+    buffer::{BufTy, GlobalBuffer},
+    char_info::LexClass,
+    cite::CiteInfo,
+    exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
+    hash::{FnClass, HashData},
+    history::{mark_error, mark_fatal, mark_warning},
+    other::OtherData,
+    peekable::input_ln,
+    pool::StringPool,
+    scan::{Scan, ScanRes},
+    ttbc_output_close, ttbc_output_open, ttbc_output_open_stdout, ASCIICode, Bibtex, BibtexError,
+    CiteNumber, FieldLoc, HashPointer, StrNumber,
 };
 use std::{cell::Cell, ffi::CStr, io::Write, slice};
 use tectonic_io_base::OutputHandle;
@@ -255,7 +252,7 @@ pub(crate) fn aux_err_print(
     Ok(())
 }
 
-pub enum AuxTy {
+pub(crate) enum AuxTy {
     Data,
     Style,
 }
@@ -321,7 +318,7 @@ pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), B
     })
 }
 
-pub(crate) fn log_pr_bst_name(ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_bst_name(ctx: &Bibtex<'_, '_>, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
         // TODO: This call can panic if bst_str doesn't exist
         out_pool_str(pool, log, ctx.bst_str)?;
@@ -335,7 +332,7 @@ pub(crate) fn hash_cite_confusion() {
     print_confusion();
 }
 
-pub(crate) fn bst_warn_print(ctx: &Bibtex, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn bst_warn_print(ctx: &Bibtex<'_, '_>, pool: &StringPool) -> Result<(), BibtexError> {
     bst_ln_num_print(ctx, pool)?;
     mark_warning();
     Ok(())
@@ -513,7 +510,7 @@ pub(crate) fn print_missing_entry(pool: &StringPool, s: StrNumber) -> Result<(),
 }
 
 pub(crate) fn bst_mild_ex_warn_print(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
@@ -526,7 +523,7 @@ pub(crate) fn bst_mild_ex_warn_print(
 }
 
 pub(crate) fn bst_cant_mess_with_entries_print(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
@@ -539,7 +536,7 @@ pub fn bst_1print_string_size_exceeded() {
 }
 
 pub(crate) fn bst_2print_string_size_exceeded(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
@@ -550,7 +547,7 @@ pub(crate) fn bst_2print_string_size_exceeded(
 }
 
 pub(crate) fn braces_unbalanced_complaint(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     pop_lit_var: StrNumber,
@@ -577,7 +574,7 @@ pub(crate) fn rs_print_fn_class(hash: &HashData, fn_loc: HashPointer) {
 }
 
 pub(crate) fn bst_err_print_and_look_for_blank_line(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -598,7 +595,7 @@ pub(crate) fn bst_err_print_and_look_for_blank_line(
 }
 
 pub(crate) fn already_seen_function_print(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
     hash: &HashData,
@@ -625,7 +622,7 @@ pub(crate) fn rs_nonexistent_cross_reference_error(
     Ok(())
 }
 
-pub(crate) fn output_bbl_line(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) {
+pub(crate) fn output_bbl_line(ctx: &mut Bibtex<'_, '_>, buffers: &mut GlobalBuffer) {
     if buffers.init(BufTy::Out) != 0 {
         let mut init = buffers.init(BufTy::Out);
         while init > 0 {
@@ -650,7 +647,7 @@ pub(crate) fn output_bbl_line(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) {
 }
 
 pub(crate) fn skip_token_print(
-    ctx: &Bibtex,
+    ctx: &Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -667,7 +664,7 @@ pub(crate) fn skip_token_print(
 }
 
 pub(crate) fn print_recursion_illegal(
-    ctx: &Bibtex,
+    ctx: &Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -678,7 +675,7 @@ pub(crate) fn print_recursion_illegal(
 }
 
 pub(crate) fn skip_token_unknown_function_print(
-    ctx: &Bibtex,
+    ctx: &Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -688,7 +685,7 @@ pub(crate) fn skip_token_unknown_function_print(
 }
 
 pub(crate) fn skip_illegal_stuff_after_token_print(
-    ctx: &Bibtex,
+    ctx: &Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -700,7 +697,7 @@ pub(crate) fn skip_illegal_stuff_after_token_print(
 }
 
 pub(crate) fn brace_lvl_one_letters_complaint(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     str: StrNumber,

@@ -1,14 +1,11 @@
 use std::cell::Cell;
 
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-#[repr(C)]
 pub enum History {
-    Spotless = 0,
-    WarningIssued = 1,
-    ErrorIssued = 2,
-    FatalError = 3,
-    Aborted = 4,
+    Spotless,
+    WarningIssued,
+    ErrorIssued,
+    FatalError,
 }
 
 thread_local! {
@@ -29,16 +26,15 @@ fn set_err(f: impl FnOnce(u32) -> u32) {
     ERR_COUNT.with(|e| e.set(f(e.get())))
 }
 
-#[no_mangle]
-pub extern "C" fn get_history() -> History {
+pub(crate) fn get_history() -> History {
     HISTORY.with(|h| h.get())
 }
 
-pub fn set_history(hist: History) {
+pub(crate) fn set_history(hist: History) {
     HISTORY.with(|h| h.set(hist))
 }
 
-pub fn mark_warning() {
+pub(crate) fn mark_warning() {
     let history = get_history();
     if history == History::WarningIssued {
         set_err(|e| e + 1);
@@ -48,7 +44,7 @@ pub fn mark_warning() {
     }
 }
 
-pub fn mark_error() {
+pub(crate) fn mark_error() {
     if get_history() < History::ErrorIssued {
         set_history(History::ErrorIssued);
         set_err(|_| 1);
@@ -61,7 +57,6 @@ pub fn mark_fatal() {
     set_history(History::FatalError);
 }
 
-#[no_mangle]
-pub extern "C" fn err_count() -> u32 {
+pub fn err_count() -> u32 {
     get_err()
 }

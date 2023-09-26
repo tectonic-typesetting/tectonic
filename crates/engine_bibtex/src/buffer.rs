@@ -1,4 +1,4 @@
-use crate::c_api::{
+use crate::{
     xbuf::{SafelyZero, XBuf},
     ASCIICode, BufPointer,
 };
@@ -211,10 +211,8 @@ impl GlobalBuffer {
     }
 }
 
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, PartialEq)]
-#[repr(C)]
-pub enum BufTy {
+pub(crate) enum BufTy {
     Base,
     Sv,
     Ex,

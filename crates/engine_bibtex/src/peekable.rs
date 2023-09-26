@@ -1,28 +1,28 @@
 use crate::{
-    c_api::{
-        buffer::{BufTy, GlobalBuffer},
-        char_info::LexClass,
-        ttbc_input_close, ttbc_input_open, ASCIICode, BufPointer,
-    },
-    BibtexError,
+    buffer::{BufTy, GlobalBuffer},
+    char_info::LexClass,
+    ttbc_input_close, ttbc_input_open, ASCIICode, Bibtex, BibtexError, BufPointer,
 };
 use libc::EOF;
 use std::{ffi::CStr, io, ptr, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
 use tectonic_io_base::InputHandle;
-use crate::c_api::Bibtex;
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
  * here's a tiny wrapper that lets us fake it. */
 
-pub struct PeekableInput {
+pub(crate) struct PeekableInput {
     handle: NonNull<InputHandle>,
     peek_char: libc::c_int,
     saw_eof: bool,
 }
 
 impl PeekableInput {
-    pub(crate) fn open(ctx: &mut Bibtex<'_, '_>, path: &CStr, format: FileFormat) -> Result<Box<PeekableInput>, BibtexError> {
+    pub(crate) fn open(
+        ctx: &mut Bibtex<'_, '_>,
+        path: &CStr,
+        format: FileFormat,
+    ) -> Result<Box<PeekableInput>, BibtexError> {
         // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
         let handle = unsafe { ttbc_input_open(ctx.engine, path.as_ptr(), format, 0) };
 
@@ -93,13 +93,20 @@ impl PeekableInput {
     }
 }
 
-pub(crate) fn peekable_open(ctx: &mut Bibtex<'_, '_>, path: &CStr, format: FileFormat) -> *mut PeekableInput {
+pub(crate) fn peekable_open(
+    ctx: &mut Bibtex<'_, '_>,
+    path: &CStr,
+    format: FileFormat,
+) -> *mut PeekableInput {
     PeekableInput::open(ctx, path, format)
         .map(Box::into_raw)
         .unwrap_or(ptr::null_mut())
 }
 
-pub(crate) unsafe fn peekable_close(ctx: &mut Bibtex<'_, '_>, peekable: Option<NonNull<PeekableInput>>) -> libc::c_int {
+pub(crate) unsafe fn peekable_close(
+    ctx: &mut Bibtex<'_, '_>,
+    peekable: Option<NonNull<PeekableInput>>,
+) -> libc::c_int {
     match peekable {
         Some(mut peekable) => {
             let rv = ttbc_input_close(ctx.engine, peekable.as_mut().handle.as_ptr());
@@ -118,10 +125,7 @@ pub fn tectonic_eof(peekable: Option<&mut PeekableInput>) -> bool {
     }
 }
 
-pub(crate) fn input_ln(
-    peekable: Option<&mut PeekableInput>,
-    buffers: &mut GlobalBuffer,
-) -> bool {
+pub(crate) fn input_ln(peekable: Option<&mut PeekableInput>, buffers: &mut GlobalBuffer) -> bool {
     let peekable = match peekable {
         Some(p) => p,
         None => return false,

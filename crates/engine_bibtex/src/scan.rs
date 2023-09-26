@@ -1,36 +1,32 @@
 use crate::{
-    c_api::{
-        bibs::{compress_bib_white, eat_bib_white_space, BibData},
-        buffer::{BufTy, GlobalBuffer},
-        char_info::{IdClass, LexClass},
-        cite::{add_database_cite, CiteInfo},
-        exec::ExecCtx,
-        hash,
-        hash::{FnClass, HashData},
-        log::{
-            bib_cmd_confusion, bib_err_print, bib_id_print, bib_unbalanced_braces_print,
-            bib_warn_print, braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line,
-            eat_bib_print, eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str,
-            print_confusion, print_recursion_illegal, skip_illegal_stuff_after_token_print,
-            skip_token_print, skip_token_unknown_function_print, write_log_file, write_logs,
-        },
-        other::OtherData,
-        peekable::input_ln,
-        pool::StringPool,
-        ASCIICode, Bibtex, BufPointer, CiteNumber, FnDefLoc, HashPointer, StrIlk, StrNumber,
+    bibs::{compress_bib_white, eat_bib_white_space, BibData},
+    buffer::{BufTy, GlobalBuffer},
+    char_info::{IdClass, LexClass},
+    cite::{add_database_cite, CiteInfo},
+    exec::ExecCtx,
+    hash,
+    hash::{FnClass, HashData},
+    log::{
+        bib_cmd_confusion, bib_err_print, bib_id_print, bib_unbalanced_braces_print,
+        bib_warn_print, braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line,
+        eat_bib_print, eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str,
+        print_confusion, print_recursion_illegal, skip_illegal_stuff_after_token_print,
+        skip_token_print, skip_token_unknown_function_print, write_log_file, write_logs,
     },
-    BibtexError,
+    other::OtherData,
+    peekable::input_ln,
+    pool::StringPool,
+    ASCIICode, Bibtex, BibtexError, BufPointer, CiteNumber, FnDefLoc, HashPointer, StrIlk,
+    StrNumber,
 };
 
 pub(crate) const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
 
-/// cbindgen:rename-all=ScreamingSnakeCase
-#[repr(C)]
-pub enum ScanRes {
-    IdNull = 0,
-    SpecifiedCharAdjacent = 1,
-    OtherCharAdjacent = 2,
-    WhitespaceAdjacent = 3,
+pub(crate) enum ScanRes {
+    IdNull,
+    SpecifiedCharAdjacent,
+    OtherCharAdjacent,
+    WhitespaceAdjacent,
 }
 
 #[derive(Default)]
@@ -159,7 +155,7 @@ fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
     idx - start != if sign { 1 } else { 0 }
 }
 
-pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool {
+pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut GlobalBuffer) -> bool {
     loop {
         let init = buffers.init(BufTy::Base);
         if Scan::new()
@@ -183,7 +179,7 @@ pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) 
 
 #[allow(clippy::too_many_arguments)]
 fn handle_char(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
@@ -330,7 +326,7 @@ fn handle_char(
 }
 
 pub(crate) fn scan_fn_def(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
@@ -705,7 +701,7 @@ fn scan_a_field_token_and_eat_white(
 // TODO: Refactor this to bundle up arguments into structs as relevant
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn scan_and_store_the_field_value_and_eat_white(
-    ctx: &Bibtex,
+    ctx: &Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
@@ -863,7 +859,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
 }
 
 pub(crate) fn decr_brace_level(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     pop_lit_var: StrNumber,
@@ -879,7 +875,7 @@ pub(crate) fn decr_brace_level(
 }
 
 pub(crate) fn check_brace_level(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     pop_lit_var: StrNumber,
@@ -892,7 +888,7 @@ pub(crate) fn check_brace_level(
 }
 
 pub(crate) fn name_scan_for_and(
-    ctx: &ExecCtx,
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     buffers: &mut GlobalBuffer,
     cites: &CiteInfo,

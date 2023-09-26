@@ -1,16 +1,14 @@
 use crate::{
-    c_api::{
-        buffer::{BufTy, GlobalBuffer},
-        char_info::LexClass,
-        entries::ENT_STR_SIZE,
-        global::GLOB_STR_SIZE,
-        hash,
-        hash::{FnClass, HashData},
-        log::{output_bbl_line, print_overflow, write_logs},
-        xbuf::XBuf,
-        ASCIICode, Bibtex, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk, StrNumber,
-    },
-    BibtexError,
+    buffer::{BufTy, GlobalBuffer},
+    char_info::LexClass,
+    entries::ENT_STR_SIZE,
+    global::GLOB_STR_SIZE,
+    hash,
+    hash::{FnClass, HashData},
+    log::{output_bbl_line, print_overflow, write_logs},
+    xbuf::XBuf,
+    ASCIICode, Bibtex, BibtexError, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk,
+    StrNumber,
 };
 use std::{cell::RefCell, ops::Range};
 
@@ -20,7 +18,7 @@ pub(crate) const MIN_PRINT_LINE: usize = 3;
 pub(crate) const MAX_STRINGS: usize = 35307;
 
 #[derive(Debug, PartialEq)]
-pub enum LookupErr {
+pub(crate) enum LookupErr {
     Invalid,
     DoesntExist,
 }
@@ -268,7 +266,7 @@ pub(crate) fn add_buf_pool(pool: &StringPool, buffers: &mut GlobalBuffer, str: S
 }
 
 pub(crate) fn pre_def_certain_strings(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     GlobalItems {
         pool,
         hash,
@@ -423,7 +421,7 @@ pub(crate) fn pre_def_certain_strings(
 }
 
 pub(crate) fn add_out_pool(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
     str: StrNumber,

@@ -1,21 +1,18 @@
 use crate::{
-    c_api::{
-        buffer::{BufTy, GlobalBuffer},
-        char_info::LexClass,
-        cite::add_database_cite,
-        hash::{FnClass, HashData},
-        log::{
-            bib_cmd_confusion, bib_equals_sign_print, bib_err_print, bib_id_print,
-            bib_one_of_two_print, bib_warn_print, cite_key_disappeared_confusion, eat_bib_print,
-            hash_cite_confusion, print_a_token, print_confusion, write_log_file, write_logs,
-        },
-        peekable::{input_ln, PeekableInput},
-        pool::StringPool,
-        scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
-        xbuf::XBuf,
-        BibNumber, Bibtex, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
+    buffer::{BufTy, GlobalBuffer},
+    char_info::LexClass,
+    cite::add_database_cite,
+    hash::{FnClass, HashData},
+    log::{
+        bib_cmd_confusion, bib_equals_sign_print, bib_err_print, bib_id_print,
+        bib_one_of_two_print, bib_warn_print, cite_key_disappeared_confusion, eat_bib_print,
+        hash_cite_confusion, print_a_token, print_confusion, write_log_file, write_logs,
     },
-    BibtexError,
+    peekable::{input_ln, PeekableInput},
+    pool::StringPool,
+    scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
+    xbuf::XBuf,
+    BibNumber, Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
 };
 use std::{cell::RefCell, ptr::NonNull};
 
@@ -181,7 +178,7 @@ pub(crate) fn compress_bib_white(
 //       - tied to that, command_num is only used when at_bib_command is true
 //       - There's some messed up control flow that's porting weird `goto` style, can probably be simplified
 pub(crate) fn get_bib_command_or_entry_and_process(
-    ctx: &Bibtex,
+    ctx: &Bibtex<'_, '_>,
     globals: &mut GlobalItems<'_>,
     cur_macro_loc: &mut HashPointer,
     field_name_loc: &mut HashPointer,

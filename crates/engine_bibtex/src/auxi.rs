@@ -1,24 +1,21 @@
 use crate::{
-    c_api::{
-        bibs::BibData,
-        buffer::{BufTy, GlobalBuffer},
-        char_info::LexClass,
-        cite::CiteInfo,
-        exec::print_bst_name,
-        hash::HashData,
-        log::{
-            aux_end1_err_print, aux_end2_err_print, aux_err_illegal_another_print,
-            aux_err_no_right_brace_print, aux_err_print, aux_err_stuff_after_right_brace_print,
-            aux_err_white_space_in_argument_print, hash_cite_confusion, log_pr_bst_name,
-            print_a_pool_str, print_a_token, print_confusion, print_overflow, log_pr_aux_name,
-            print_aux_name, print_bib_name, write_log_file, write_logs, AuxTy,
-        },
-        peekable::{peekable_close, peekable_open, PeekableInput},
-        pool::StringPool,
-        scan::Scan,
-        AuxNumber, Bibtex, GlobalItems, StrIlk, StrNumber,
+    bibs::BibData,
+    buffer::{BufTy, GlobalBuffer},
+    char_info::LexClass,
+    cite::CiteInfo,
+    exec::print_bst_name,
+    hash::HashData,
+    log::{
+        aux_end1_err_print, aux_end2_err_print, aux_err_illegal_another_print,
+        aux_err_no_right_brace_print, aux_err_print, aux_err_stuff_after_right_brace_print,
+        aux_err_white_space_in_argument_print, hash_cite_confusion, log_pr_aux_name,
+        log_pr_bst_name, print_a_pool_str, print_a_token, print_aux_name, print_bib_name,
+        print_confusion, print_overflow, write_log_file, write_logs, AuxTy,
     },
-    BibtexError,
+    peekable::{peekable_close, peekable_open, PeekableInput},
+    pool::StringPool,
+    scan::Scan,
+    AuxNumber, Bibtex, BibtexError, GlobalItems, StrIlk, StrNumber,
 };
 use std::{cell::RefCell, ffi::CString, ptr, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
@@ -88,7 +85,7 @@ pub(crate) fn with_aux_mut<T>(f: impl FnOnce(&mut AuxData) -> T) -> T {
 }
 
 fn aux_bib_data_command(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     bibs: &mut BibData,
     aux: &AuxData,
@@ -161,7 +158,7 @@ fn aux_bib_data_command(
 }
 
 fn aux_bib_style_command(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     aux: &AuxData,
     pool: &mut StringPool,
@@ -232,7 +229,7 @@ fn aux_bib_style_command(
 }
 
 fn aux_citation_command(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     aux: &AuxData,
     pool: &mut StringPool,
@@ -334,7 +331,7 @@ fn aux_citation_command(
 }
 
 fn aux_input_command(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     aux: &mut AuxData,
     pool: &mut StringPool,
@@ -419,7 +416,7 @@ fn aux_input_command(
 }
 
 pub(crate) fn get_aux_command_and_process(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     globals.buffers.set_offset(BufTy::Base, 2, 0);
@@ -489,7 +486,7 @@ pub(crate) fn pop_the_aux_stack(ctx: &mut Bibtex<'_, '_>, aux: &mut AuxData) -> 
 }
 
 pub(crate) fn last_check_for_aux_errors(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     aux: &AuxData,
     pool: &StringPool,
     cites: &mut CiteInfo,

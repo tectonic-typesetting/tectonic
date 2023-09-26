@@ -1,4 +1,4 @@
-use crate::c_api::{xcalloc, xrealloc};
+use crate::{xcalloc, xrealloc};
 use std::{
     mem,
     ops::{Deref, DerefMut},

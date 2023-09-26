@@ -1,4 +1,4 @@
-use crate::c_api::{
+use crate::{
     pool,
     xbuf::{SafelyZero, XBuf},
     HashPointer, StrIlk, StrNumber,
@@ -63,19 +63,17 @@ const fn compute_hash_prime() -> usize {
     hash_prime
 }
 
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, PartialEq)]
-#[repr(C)]
-pub enum FnClass {
-    Builtin = 0,
-    Wizard = 1,
-    IntLit = 2,
-    StrLit = 3,
-    Field = 4,
-    IntEntryVar = 5,
-    StrEntryVar = 6,
-    IntGlblVar = 7,
-    StrGlblVar = 8,
+pub(crate) enum FnClass {
+    Builtin,
+    Wizard,
+    IntLit,
+    StrLit,
+    Field,
+    IntEntryVar,
+    StrEntryVar,
+    IntGlblVar,
+    StrGlblVar,
 }
 
 // SAFETY: The FnClass type is valid at zero as FnClass::Builtin
@@ -103,7 +101,7 @@ impl HashData {
         }
     }
 
-    pub extern "C" fn undefined() -> usize {
+    pub fn undefined() -> usize {
         HASH_MAX + 1
     }
 

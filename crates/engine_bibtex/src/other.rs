@@ -1,4 +1,4 @@
-use crate::c_api::{xbuf::XBuf, FieldLoc, FnDefLoc, HashPointer, StrNumber, WizFnLoc};
+use crate::{xbuf::XBuf, FieldLoc, FnDefLoc, HashPointer, StrNumber, WizFnLoc};
 use std::cell::RefCell;
 
 const WIZ_FN_SPACE: usize = 3000;
