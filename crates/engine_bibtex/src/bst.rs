@@ -585,7 +585,6 @@ fn bst_read_command(
 
     ctx.glbl_ctx_mut().reading_completed = true;
     globals.cites.set_num_cites(globals.cites.ptr());
-    ctx.glbl_ctx_mut().num_preamble_strings = globals.bibs.preamble_ptr();
 
     let cites = match globals.cites.num_cites() {
         0 => 0,

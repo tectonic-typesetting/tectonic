@@ -102,12 +102,7 @@ impl PeekableInput {
     }
 }
 
-pub(crate) fn input_ln(peekable: Option<&mut PeekableInput>, buffers: &mut GlobalBuffer) -> bool {
-    let peekable = match peekable {
-        Some(p) => p,
-        None => return false,
-    };
-
+pub(crate) fn input_ln(peekable: &mut PeekableInput, buffers: &mut GlobalBuffer) -> bool {
     buffers.set_init(BufTy::Base, 0);
     let mut last = 0;
     if peekable.eof() {

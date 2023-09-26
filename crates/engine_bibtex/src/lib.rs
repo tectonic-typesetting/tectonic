@@ -19,9 +19,7 @@
 //! [`tectonic`]: https://docs.rs/tectonic/
 
 use crate::{
-    auxi::{
-        get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxData, AuxFile,
-    },
+    auxi::{get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxData},
     bibs::BibData,
     bst::get_bst_command_and_process,
     buffer::{BufTy, GlobalBuffer},
@@ -165,6 +163,12 @@ const _: () = assert!(hash::HASH_PRIME <= hash::HASH_SIZE);
 const _: () = assert!(pool::MAX_STRINGS <= hash::HASH_SIZE);
 const _: () = assert!(cite::MAX_CITES <= pool::MAX_STRINGS);
 
+pub(crate) struct File {
+    name: StrNumber,
+    file: PeekableInput,
+    line: u32,
+}
+
 pub(crate) struct GlobalItems<'a> {
     buffers: &'a mut GlobalBuffer,
     pool: &'a mut StringPool,
@@ -195,15 +199,12 @@ impl Default for BibtexConfig {
 pub(crate) struct Bibtex<'a, 'cbs> {
     pub engine: &'a mut CoreBridgeState<'cbs>,
     pub config: BibtexConfig,
-    pub bst_file: Option<PeekableInput>,
-    pub bst_str: StrNumber,
-    pub bst_line_num: usize,
+
+    pub bst: Option<File>,
 
     pub bbl_file: *mut OutputHandle,
     pub bbl_line_num: usize,
 
-    pub num_bib_files: usize,
-    pub num_preamble_strings: usize,
     pub impl_fn_num: usize,
     pub cite_xptr: usize,
 
@@ -230,13 +231,9 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
         Bibtex {
             engine,
             config,
-            bst_file: None,
-            bst_str: 0,
-            bst_line_num: 0,
+            bst: None,
             bbl_file: ptr::null_mut(),
             bbl_line_num: 0,
-            num_bib_files: 0,
-            num_preamble_strings: 0,
             impl_fn_num: 0,
             cite_xptr: 0,
             bib_seen: false,
@@ -335,7 +332,7 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
     match res {
         Err(BibtexError::Recover) | Ok(History::Spotless) => {
             // SAFETY: bst_file guaranteed valid at this point
-            ctx.bst_file.take().map(|file| file.close(ctx));
+            ctx.bst.take().map(|file| file.file.close(ctx));
             ttbc_output_close(ctx.engine, ctx.bbl_file);
         }
         Err(BibtexError::NoBst) => {
@@ -407,7 +404,7 @@ pub(crate) fn inner_bibtex_main(
     let last_aux = loop {
         globals.aux.top_file_mut().line += 1;
 
-        if !input_ln(Some(&mut globals.aux.top_file_mut().file), globals.buffers) {
+        if !input_ln(&mut globals.aux.top_file_mut().file, globals.buffers) {
             if let Some(last) = pop_the_aux_stack(ctx, globals.aux) {
                 break last;
             }
@@ -418,11 +415,10 @@ pub(crate) fn inner_bibtex_main(
 
     last_check_for_aux_errors(ctx, globals.pool, globals.cites, globals.bibs, last_aux)?;
 
-    if ctx.bst_str == 0 {
+    if ctx.bst.is_none() {
         return Err(BibtexError::NoBst);
     }
 
-    ctx.bst_line_num = 0;
     ctx.bbl_line_num = 1;
     globals
         .buffers
@@ -489,7 +485,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
         Err(_) => return Err(BibtexError::Fatal),
     };
 
-    aux.push_file(AuxFile {
+    aux.push_file(File {
         name: hash.text(lookup.loc),
         file: aux_file,
         line: 0,

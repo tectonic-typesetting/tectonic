@@ -1,5 +1,5 @@
 use crate::{
-    bibs::{BibData, BibFile},
+    bibs::BibData,
     buffer::{BufTy, GlobalBuffer},
     char_info::LexClass,
     cite::CiteInfo,
@@ -15,21 +15,15 @@ use crate::{
     peekable::PeekableInput,
     pool::StringPool,
     scan::Scan,
-    Bibtex, BibtexError, GlobalItems, StrIlk, StrNumber,
+    Bibtex, BibtexError, File, GlobalItems, StrIlk, StrNumber,
 };
 use std::ffi::CString;
 use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
 
-pub(crate) struct AuxFile {
-    pub(crate) name: StrNumber,
-    pub(crate) file: PeekableInput,
-    pub(crate) line: i32,
-}
-
 pub(crate) struct AuxData {
-    aux: Vec<AuxFile>,
+    aux: Vec<File>,
 }
 
 impl AuxData {
@@ -37,20 +31,20 @@ impl AuxData {
         AuxData { aux: Vec::new() }
     }
 
-    pub fn push_file(&mut self, file: AuxFile) {
+    pub fn push_file(&mut self, file: File) {
         self.aux.push(file);
     }
 
-    pub fn pop_file(&mut self) -> (AuxFile, bool) {
+    pub fn pop_file(&mut self) -> (File, bool) {
         let out = self.aux.pop().unwrap();
         (out, self.aux.is_empty())
     }
 
-    pub fn top_file(&self) -> &AuxFile {
+    pub fn top_file(&self) -> &File {
         self.aux.last().unwrap()
     }
 
-    pub fn top_file_mut(&mut self) -> &mut AuxFile {
+    pub fn top_file_mut(&mut self) -> &mut File {
         self.aux.last_mut().unwrap()
     }
 
@@ -122,7 +116,7 @@ fn aux_bib_data_command(
                 return Ok(());
             }
             Ok(file) => {
-                bibs.push_file(BibFile {
+                bibs.push_file(File {
                     name: hash.text(res.loc),
                     file,
                     line: 0,
@@ -175,32 +169,35 @@ fn aux_bib_style_command(
     let file = &buffers.buffer(BufTy::Base)
         [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
     let res = pool.lookup_str_insert(hash, file, StrIlk::BstFile)?;
-    ctx.bst_str = hash.text(res.loc);
     if res.exists {
         write_logs("Already encountered style file");
         print_confusion();
         return Err(BibtexError::Fatal);
     }
 
-    let name = pool.get_str(ctx.bst_str);
+    let name = pool.get_str(hash.text(res.loc));
     let fname = CString::new(name).unwrap();
     let bst_file = PeekableInput::open(ctx, &fname, FileFormat::Bst);
     match bst_file {
         Err(_) => {
             write_logs("I couldn't open style file ");
-            print_bst_name(ctx, pool)?;
-            ctx.bst_str = 0;
+            print_bst_name(pool, hash.text(res.loc))?;
+            ctx.bst = None;
             aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
         Ok(file) => {
-            ctx.bst_file = Some(file);
+            ctx.bst = Some(File {
+                name: hash.text(res.loc),
+                file,
+                line: 0,
+            });
         }
     }
 
     if ctx.config.verbose {
         write_logs("The style file: ");
-        print_bst_name(ctx, pool)?;
+        print_bst_name(pool, ctx.bst.as_ref().unwrap().name)?;
     } else {
         write_log_file("The style file: ");
         log_pr_bst_name(ctx, pool)?;
@@ -384,7 +381,7 @@ fn aux_input_command(
             return Ok(());
         }
         Ok(file) => {
-            aux.push_file(AuxFile {
+            aux.push_file(File {
                 name: hash.text(res.loc),
                 file,
                 line: 0,
@@ -474,7 +471,6 @@ pub(crate) fn last_check_for_aux_errors(
     last_aux: StrNumber,
 ) -> Result<(), BibtexError> {
     cites.set_num_cites(cites.ptr());
-    ctx.num_bib_files = bibs.len();
     if !ctx.citation_seen {
         aux_end1_err_print();
         write_logs("\\citation commands");
@@ -489,7 +485,7 @@ pub(crate) fn last_check_for_aux_errors(
         aux_end1_err_print();
         write_logs("\\bibdata command");
         aux_end2_err_print(pool, last_aux)?;
-    } else if ctx.num_bib_files == 0 {
+    } else if bibs.len() == 0 {
         aux_end1_err_print();
         write_logs("database files");
         aux_end2_err_print(pool, last_aux)?;
@@ -499,7 +495,7 @@ pub(crate) fn last_check_for_aux_errors(
         aux_end1_err_print();
         write_logs("\\bibstyle command");
         aux_end2_err_print(pool, last_aux)?;
-    } else if ctx.bst_str == 0 {
+    } else if ctx.bst.is_none() {
         aux_end1_err_print();
         write_logs("style file");
         aux_end2_err_print(pool, last_aux)?;
