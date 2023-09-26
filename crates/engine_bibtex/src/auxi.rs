@@ -374,7 +374,7 @@ fn aux_input_command(
     let res = pool.lookup_str_insert(hash, file, StrIlk::AuxFile)?;
     if res.exists {
         write_logs("Already encountered file ");
-        print_aux_name(pool, res.loc)?;
+        print_aux_name(pool, hash.text(res.loc))?;
         aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
@@ -385,7 +385,7 @@ fn aux_input_command(
     match file {
         Err(_) => {
             write_logs("I couldn't open auxiliary file ");
-            print_aux_name(pool, res.loc)?;
+            print_aux_name(pool, hash.text(res.loc))?;
             aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
