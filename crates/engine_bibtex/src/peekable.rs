@@ -22,16 +22,16 @@ impl PeekableInput {
         ctx: &mut Bibtex<'_, '_>,
         path: &CStr,
         format: FileFormat,
-    ) -> Result<Box<PeekableInput>, BibtexError> {
+    ) -> Result<PeekableInput, BibtexError> {
         // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
         let handle = unsafe { ttbc_input_open(ctx.engine, path.as_ptr(), format, 0) };
 
         if let Some(handle) = NonNull::new(handle) {
-            Ok(Box::new(PeekableInput {
+            Ok(PeekableInput {
                 handle,
                 peek_char: EOF,
                 saw_eof: false,
-            }))
+            })
         } else {
             Err(BibtexError::Fatal)
         }

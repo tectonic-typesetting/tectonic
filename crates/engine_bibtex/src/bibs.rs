@@ -16,7 +16,7 @@ use crate::{
 
 pub(crate) struct BibFile {
     pub(crate) name: StrNumber,
-    pub(crate) file: Box<PeekableInput>,
+    pub(crate) file: PeekableInput,
     pub(crate) line: u32,
 }
 
