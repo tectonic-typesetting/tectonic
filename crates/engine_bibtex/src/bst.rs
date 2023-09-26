@@ -14,12 +14,10 @@ use crate::{
         rs_bad_cross_reference_print, rs_nonexistent_cross_reference_error, rs_print_fn_class,
         write_log_file, write_logs,
     },
-    peekable::{peekable_close, tectonic_eof},
     pool::StringPool,
     scan::{eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
     Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk,
 };
-use std::ptr::NonNull;
 
 macro_rules! eat_bst_white {
     ($ctx:ident, $globals:ident, $name:literal) => {
@@ -559,24 +557,22 @@ fn bst_read_command(
     }
 
     ctx.glbl_ctx_mut().read_performed = true;
-    globals.bibs.set_ptr(0);
-    while globals.bibs.ptr() < ctx.glbl_ctx().num_bib_files {
+    while globals.bibs.len() != 0 {
         if ctx.glbl_ctx().config.verbose {
-            write_logs(&format!("Database file #{}: ", globals.bibs.ptr() + 1));
-            print_bib_name(globals.pool, globals.bibs)?;
+            write_logs(&format!("Database file #{}: ", globals.bibs.len()));
+            print_bib_name(globals.pool, globals.bibs.top_file().name)?;
         } else {
-            write_log_file(&format!("Database file #{}: ", globals.bibs.ptr() + 1));
+            write_log_file(&format!("Database file #{}: ", globals.bibs.len()));
             log_pr_bib_name(globals.bibs, globals.pool)?;
         }
 
-        globals.bibs.set_line_num(0);
         globals
             .buffers
             .set_offset(BufTy::Base, 2, globals.buffers.init(BufTy::Base));
 
         let mut cur_macro_loc = 0;
         let mut field_name_loc = 0;
-        while !tectonic_eof(globals.bibs.cur_bib_file()) {
+        while !globals.bibs.top_file_mut().file.eof() {
             get_bib_command_or_entry_and_process(
                 ctx.glbl_ctx_mut(),
                 globals,
@@ -584,14 +580,7 @@ fn bst_read_command(
                 &mut field_name_loc,
             )?;
         }
-        // SAFETY: take_cur_bib_file returns reference to which we're the last owner
-        unsafe {
-            peekable_close(
-                ctx.glbl_ctx_mut(),
-                globals.bibs.take_cur_bib_file().map(NonNull::from),
-            )
-        };
-        globals.bibs.set_ptr(globals.bibs.ptr() + 1);
+        globals.bibs.pop_file().file.close(ctx.glbl_ctx_mut())?;
     }
 
     ctx.glbl_ctx_mut().reading_completed = true;

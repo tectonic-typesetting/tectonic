@@ -11,65 +11,42 @@ use crate::{
     peekable::{input_ln, PeekableInput},
     pool::StringPool,
     scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
-    xbuf::XBuf,
     BibNumber, Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
 };
-use std::ptr::NonNull;
 
-const MAX_BIB_FILES: usize = 20;
+pub(crate) struct BibFile {
+    pub(crate) name: StrNumber,
+    pub(crate) file: Box<PeekableInput>,
+    pub(crate) line: u32,
+}
 
 pub(crate) struct BibData {
-    bib_file: XBuf<Option<NonNull<PeekableInput>>>,
-    bib_list: XBuf<StrNumber>,
-    bib_ptr: BibNumber,
-    bib_line_num: i32,
+    bibs: Vec<BibFile>,
     preamble: Vec<StrNumber>,
 }
 
 impl BibData {
     pub fn new() -> BibData {
         BibData {
-            bib_file: XBuf::new(MAX_BIB_FILES),
-            bib_list: XBuf::new(MAX_BIB_FILES),
-            bib_ptr: 0,
-            bib_line_num: 0,
+            bibs: Vec::new(),
             preamble: Vec::new(),
         }
     }
 
-    pub fn cur_bib(&self) -> StrNumber {
-        self.bib_list[self.bib_ptr]
+    pub fn top_file(&self) -> &BibFile {
+        self.bibs.last().unwrap()
     }
 
-    pub fn set_cur_bib(&mut self, num: StrNumber) {
-        self.bib_list[self.bib_ptr] = num;
+    pub fn top_file_mut(&mut self) -> &mut BibFile {
+        self.bibs.last_mut().unwrap()
     }
 
-    pub fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
-        match &mut self.bib_file[self.bib_ptr] {
-            // SAFETY: If non-null, bib files are guaranteed valid inputs
-            Some(r) => Some(unsafe { r.as_mut() }),
-            None => None,
-        }
+    pub fn push_file(&mut self, file: BibFile) {
+        self.bibs.push(file);
     }
 
-    pub fn take_cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
-        self.bib_file[self.bib_ptr]
-            .take()
-            // SAFETY: Contained file pointer guaranteed valid
-            .map(|mut ptr| unsafe { ptr.as_mut() })
-    }
-
-    pub fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
-        self.bib_file[self.bib_ptr] = input;
-    }
-
-    pub fn line_num(&self) -> i32 {
-        self.bib_line_num
-    }
-
-    pub fn set_line_num(&mut self, val: i32) {
-        self.bib_line_num = val;
+    pub fn pop_file(&mut self) -> BibFile {
+        self.bibs.pop().unwrap()
     }
 
     pub fn add_preamble(&mut self, s: StrNumber) {
@@ -84,21 +61,8 @@ impl BibData {
         &self.preamble
     }
 
-    pub fn ptr(&self) -> BibNumber {
-        self.bib_ptr
-    }
-
-    pub fn set_ptr(&mut self, val: BibNumber) {
-        self.bib_ptr = val;
-    }
-
-    pub fn len(&self) -> usize {
-        self.bib_list.len()
-    }
-
-    pub fn grow(&mut self) {
-        self.bib_list.grow(MAX_BIB_FILES);
-        self.bib_file.grow(MAX_BIB_FILES);
+    pub fn len(&self) -> BibNumber {
+        self.bibs.len()
     }
 }
 
@@ -108,12 +72,11 @@ pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
-        let bib_file = bibs.cur_bib_file();
-        if !input_ln(bib_file, buffers) {
+        if !input_ln(Some(&mut bibs.top_file_mut().file), buffers) {
             return false;
         }
 
-        bibs.set_line_num(bibs.line_num() + 1);
+        bibs.top_file_mut().line += 1;
         buffers.set_offset(BufTy::Base, 2, 0);
         init = buffers.init(BufTy::Base);
     }
@@ -138,14 +101,13 @@ pub(crate) fn compress_bib_white(
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, last)
     {
-        let bib_file = bibs.cur_bib_file();
-        let res = !input_ln(bib_file, buffers);
+        let res = !input_ln(Some(&mut bibs.top_file_mut().file), buffers);
 
         if res {
             return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
         }
 
-        bibs.set_line_num(bibs.line_num() + 1);
+        bibs.top_file_mut().line += 1;
         buffers.set_offset(BufTy::Base, 2, 0);
         last = buffers.init(BufTy::Base);
     }
@@ -167,11 +129,11 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let mut init = globals.buffers.init(BufTy::Base);
     while !Scan::new().chars(&[b'@']).scan_till(globals.buffers, init) {
-        if !input_ln(globals.bibs.cur_bib_file(), globals.buffers) {
+        if !input_ln(Some(&mut globals.bibs.top_file_mut().file), globals.buffers) {
             return Ok(());
         }
 
-        globals.bibs.set_line_num(globals.bibs.line_num() + 1);
+        globals.bibs.top_file_mut().line += 1;
         globals.buffers.set_offset(BufTy::Base, 2, 0);
         init = globals.buffers.init(BufTy::Base);
     }
