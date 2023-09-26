@@ -366,13 +366,10 @@ pub(crate) fn scan_fn_def(
 
     single_function.push(HashData::end_of_def());
 
-    other.check_wiz_overflow(single_function.len());
-    hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i32);
+    hash.set_ilk_info(fn_hash_loc, other.wiz_func_len() as i32);
 
     for ptr in single_function {
-        let wiz_ptr = other.wiz_def_ptr();
-        other.set_wiz_function(wiz_ptr, ptr);
-        other.set_wiz_def_ptr(wiz_ptr + 1);
+        other.push_wiz_func(ptr);
     }
 
     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
