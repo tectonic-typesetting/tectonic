@@ -1,5 +1,4 @@
 use crate::{cite::CiteInfo, xbuf::XBuf, ASCIICode};
-use std::cell::RefCell;
 
 pub(crate) const ENT_STR_SIZE: usize = 250;
 
@@ -12,7 +11,7 @@ pub(crate) struct EntryData {
 }
 
 impl EntryData {
-    fn new() -> EntryData {
+    pub fn new() -> EntryData {
         EntryData {
             num_entry_ints: 0,
             num_entry_strs: 0,
@@ -82,16 +81,4 @@ impl EntryData {
         new_buf.fill(127);
         self.entry_strs = Some(new_buf);
     }
-}
-
-thread_local! {
-    static ENTRIES: RefCell<EntryData> = RefCell::new(EntryData::new());
-}
-
-pub fn reset() {
-    ENTRIES.with(|entries| *entries.borrow_mut() = EntryData::new());
-}
-
-pub(crate) fn with_entries_mut<T>(f: impl FnOnce(&mut EntryData) -> T) -> T {
-    ENTRIES.with(|entries| f(&mut entries.borrow_mut()))
 }

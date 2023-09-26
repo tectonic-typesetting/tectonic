@@ -3,27 +3,17 @@ use std::cell::Cell;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum History {
     Spotless,
-    WarningIssued,
-    ErrorIssued,
+    WarningIssued(u32),
+    ErrorIssued(u32),
     FatalError,
 }
 
 thread_local! {
     static HISTORY: Cell<History> = Cell::new(History::Spotless);
-    static ERR_COUNT: Cell<u32> = Cell::new(0);
 }
 
 pub(crate) fn reset() {
     HISTORY.with(|cell| cell.set(History::Spotless));
-    ERR_COUNT.with(|cell| cell.set(0));
-}
-
-fn get_err() -> u32 {
-    ERR_COUNT.with(|e| e.get())
-}
-
-fn set_err(f: impl FnOnce(u32) -> u32) {
-    ERR_COUNT.with(|e| e.set(f(e.get())))
 }
 
 pub(crate) fn get_history() -> History {
@@ -35,28 +25,21 @@ pub(crate) fn set_history(hist: History) {
 }
 
 pub(crate) fn mark_warning() {
-    let history = get_history();
-    if history == History::WarningIssued {
-        set_err(|e| e + 1);
-    } else if history == History::Spotless {
-        set_history(History::WarningIssued);
-        set_err(|_| 1);
+    match get_history() {
+        History::WarningIssued(cur) => set_history(History::WarningIssued(cur + 1)),
+        History::Spotless => set_history(History::WarningIssued(1)),
+        _ => (),
     }
 }
 
 pub(crate) fn mark_error() {
-    if get_history() < History::ErrorIssued {
-        set_history(History::ErrorIssued);
-        set_err(|_| 1);
-    } else {
-        set_err(|e| e + 1);
+    match get_history() {
+        History::Spotless | History::WarningIssued(_) => set_history(History::ErrorIssued(1)),
+        History::ErrorIssued(cur) => set_history(History::ErrorIssued(cur + 1)),
+        _ => (),
     }
 }
 
 pub fn mark_fatal() {
     set_history(History::FatalError);
-}
-
-pub fn err_count() -> u32 {
-    get_err()
 }

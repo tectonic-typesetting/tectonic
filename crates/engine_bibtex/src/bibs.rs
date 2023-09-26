@@ -14,7 +14,7 @@ use crate::{
     xbuf::XBuf,
     BibNumber, Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
 };
-use std::{cell::RefCell, ptr::NonNull};
+use std::ptr::NonNull;
 
 const MAX_BIB_FILES: usize = 20;
 
@@ -28,7 +28,7 @@ pub(crate) struct BibData {
 }
 
 impl BibData {
-    fn new() -> BibData {
+    pub fn new() -> BibData {
         BibData {
             bib_file: XBuf::new(MAX_BIB_FILES),
             bib_list: XBuf::new(MAX_BIB_FILES),
@@ -108,18 +108,6 @@ impl BibData {
         self.bib_file.grow(MAX_BIB_FILES);
         self.preamble.grow(MAX_BIB_FILES);
     }
-}
-
-thread_local! {
-    static BIBS: RefCell<BibData> = RefCell::new(BibData::new());
-}
-
-pub(crate) fn with_bibs_mut<T>(f: impl FnOnce(&mut BibData) -> T) -> T {
-    BIBS.with(|bibs| f(&mut bibs.borrow_mut()))
-}
-
-pub fn reset() {
-    BIBS.with(|bibs| *bibs.borrow_mut() = BibData::new());
 }
 
 pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData) -> bool {

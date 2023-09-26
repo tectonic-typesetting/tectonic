@@ -3,7 +3,6 @@ use crate::{
     xbuf::{SafelyZero, XBuf},
     HashPointer, StrIlk, StrNumber,
 };
-use std::cell::RefCell;
 
 pub(crate) const HASH_BASE: usize = 1;
 pub(crate) const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
@@ -160,16 +159,4 @@ impl HashData {
     pub fn set_ilk_info(&mut self, pos: usize, info: i32) {
         self.ilk_info[pos] = info;
     }
-}
-
-thread_local! {
-    static HASHES: RefCell<HashData> = RefCell::new(HashData::new());
-}
-
-pub fn reset() {
-    HASHES.with(|hash| *hash.borrow_mut() = HashData::new());
-}
-
-pub(crate) fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
-    HASHES.with(|h| f(&mut h.borrow_mut()))
 }

@@ -2,21 +2,9 @@ use crate::{
     xbuf::{SafelyZero, XBuf},
     ASCIICode, BufPointer,
 };
-use std::{cell::RefCell, slice};
+use std::slice;
 
 pub(crate) const BUF_SIZE: usize = 20000;
-
-thread_local! {
-    static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = RefCell::new(GlobalBuffer::new());
-}
-
-pub(crate) fn reset() {
-    GLOBAL_BUFFERS.with(|cell| *cell.borrow_mut() = GlobalBuffer::new());
-}
-
-pub(crate) fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
-    GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
-}
 
 struct Buffer<T: SafelyZero + 'static, const N: usize> {
     ptr: XBuf<T>,

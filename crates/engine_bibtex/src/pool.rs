@@ -10,7 +10,7 @@ use crate::{
     ASCIICode, Bibtex, BibtexError, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk,
     StrNumber,
 };
-use std::{cell::RefCell, ops::Range};
+use std::ops::Range;
 
 const POOL_SIZE: usize = 65000;
 pub(crate) const MAX_PRINT_LINE: usize = 79;
@@ -238,18 +238,6 @@ impl StringPool {
     pub fn len(&self) -> usize {
         self.strings.len()
     }
-}
-
-thread_local! {
-    static STRING_POOL: RefCell<StringPool> = RefCell::new(StringPool::new());
-}
-
-pub(crate) fn reset() {
-    STRING_POOL.with(|pool| *pool.borrow_mut() = StringPool::new());
-}
-
-pub(crate) fn with_pool_mut<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
-    STRING_POOL.with(|pool| f(&mut pool.borrow_mut()))
 }
 
 pub(crate) fn add_buf_pool(pool: &StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {

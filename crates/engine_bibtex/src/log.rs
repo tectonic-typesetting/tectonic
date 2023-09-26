@@ -96,8 +96,7 @@ pub(crate) fn init_standard_output(ctx: &mut Bibtex<'_, '_>) -> bool {
     STANDARD_OUTPUT.with(|out| {
         let ptr = out.replace(None);
         if ptr.is_none() {
-            // SAFETY: This is actually fine to call, just extern
-            let stdout = unsafe { ttbc_output_open_stdout(ctx.engine) };
+            let stdout = ttbc_output_open_stdout(ctx.engine);
             // SAFETY: Pointer from ttstub_output_open_stdout is valid if non-null
             out.set(unsafe { stdout.as_mut() });
             !stdout.is_null()
@@ -112,8 +111,7 @@ pub(crate) fn bib_close_log(ctx: &mut Bibtex<'_, '_>) {
     LOG_FILE.with(|log| {
         let log = log.replace(None);
         if let Some(log) = log {
-            // SAFETY: Log is valid due to being a mut ref
-            unsafe { ttbc_output_close(ctx.engine, log) };
+            ttbc_output_close(ctx.engine, log);
         }
     })
 }

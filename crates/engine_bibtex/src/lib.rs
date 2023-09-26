@@ -18,40 +18,40 @@
 //! [Tectonic]: https://tectonic-typesetting.github.io/
 //! [`tectonic`]: https://docs.rs/tectonic/
 
-use auxi::{with_aux_mut, AuxData};
-use bibs::{with_bibs_mut, BibData};
-use buffer::{with_buffers_mut, GlobalBuffer};
-use cite::{with_cites_mut, CiteInfo};
-use entries::{with_entries_mut, EntryData};
-use external::*;
-use global::{with_globals_mut, GlobalData};
-use hash::{with_hash_mut, HashData};
-use history::History;
-use log::{init_log_file, print_confusion, sam_wrong_file_name_print, write_logs};
-use other::OtherData;
-use peekable::PeekableInput;
-use pool::{with_pool_mut, StringPool};
+use crate::{
+    auxi::{
+        get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxData, AuxFile,
+    },
+    bibs::BibData,
+    bst::get_bst_command_and_process,
+    buffer::{BufTy, GlobalBuffer},
+    cite::CiteInfo,
+    entries::EntryData,
+    exec::ExecCtx,
+    external::*,
+    global::GlobalData,
+    hash::HashData,
+    history::{get_history, History},
+    log::{
+        bib_close_log, init_log_file, init_standard_output, log_pr_aux_name, print_aux_name,
+        print_confusion, sam_wrong_file_name_print, write_log_file, write_logs,
+    },
+    other::OtherData,
+    peekable::{input_ln, peekable_close, PeekableInput},
+    pool::{pre_def_certain_strings, StringPool},
+    scan::eat_bst_white_space,
+};
 use std::{
     ffi::{CStr, CString},
     ptr::{self, NonNull},
 };
-use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, FileFormat};
-use tectonic_errors::prelude::*;
-use tectonic_io_base::{InputHandle, OutputHandle};
-use xbuf::SafelyZero;
-
-use crate::{
-    auxi::{get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxFile},
-    bst::get_bst_command_and_process,
-    buffer::BufTy,
-    exec::ExecCtx,
-    history::{err_count, get_history},
-    log::{bib_close_log, init_standard_output, log_pr_aux_name, print_aux_name, write_log_file},
-    other::with_other_mut,
-    peekable::{input_ln, peekable_close},
-    pool::pre_def_certain_strings,
-    scan::eat_bst_white_space,
+use tectonic_bridge_core::{
+    ttbc_input_close, ttbc_input_open, ttbc_output_close, ttbc_output_open,
+    ttbc_output_open_stdout, CoreBridgeLauncher, CoreBridgeState, FileFormat,
 };
+use tectonic_errors::prelude::*;
+use tectonic_io_base::OutputHandle;
+use xbuf::SafelyZero;
 
 pub(crate) mod auxi;
 pub(crate) mod bibs;
@@ -148,8 +148,8 @@ impl BibtexEngine {
 
             match hist {
                 History::Spotless => Ok(BibtexOutcome::Spotless),
-                History::WarningIssued => Ok(BibtexOutcome::Warnings),
-                History::ErrorIssued => Ok(BibtexOutcome::Errors),
+                History::WarningIssued(_) => Ok(BibtexOutcome::Warnings),
+                History::ErrorIssued(_) => Ok(BibtexOutcome::Errors),
                 History::FatalError => Err(anyhow!("unspecified fatal bibtex error")),
             }
         })
@@ -175,42 +175,6 @@ pub(crate) struct GlobalItems<'a> {
     aux: &'a mut AuxData,
     cites: &'a mut CiteInfo,
     other: &'a mut OtherData,
-}
-
-impl GlobalItems<'_> {
-    fn with<T>(f: impl FnOnce(&mut GlobalItems<'_>) -> T) -> T {
-        with_buffers_mut(|buffers| {
-            with_pool_mut(|pool| {
-                with_hash_mut(|hash| {
-                    with_entries_mut(|entries| {
-                        with_globals_mut(|globals| {
-                            with_bibs_mut(|bibs| {
-                                with_aux_mut(|aux| {
-                                    with_cites_mut(|cites| {
-                                        with_other_mut(|other| {
-                                            let mut globals = GlobalItems {
-                                                buffers,
-                                                pool,
-                                                hash,
-                                                entries,
-                                                globals,
-                                                bibs,
-                                                aux,
-                                                cites,
-                                                other,
-                                            };
-
-                                            f(&mut globals)
-                                        })
-                                    })
-                                })
-                            })
-                        })
-                    })
-                })
-            })
-        })
-    }
 }
 
 #[derive(Clone, Debug)]
@@ -341,24 +305,33 @@ type WizFnLoc = usize;
 type FieldLoc = usize;
 type FnDefLoc = usize;
 
-pub(crate) fn reset_all() {
-    log::reset();
-    pool::reset();
-    history::reset();
-    buffer::reset();
-    cite::reset();
-    auxi::reset();
-    bibs::reset();
-    hash::reset();
-    other::reset();
-    entries::reset();
-    global::reset();
-}
-
 pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> History {
-    reset_all();
+    history::reset();
+    log::reset();
 
-    let res = GlobalItems::with(|globals| inner_bibtex_main(ctx, globals, aux_file_name));
+    let mut buffers = GlobalBuffer::new();
+    let mut pool = StringPool::new();
+    let mut hash = HashData::new();
+    let mut entries = EntryData::new();
+    let mut globals = GlobalData::new();
+    let mut bibs = BibData::new();
+    let mut aux = AuxData::new();
+    let mut cites = CiteInfo::new();
+    let mut other = OtherData::new();
+
+    let mut globals = GlobalItems {
+        buffers: &mut buffers,
+        pool: &mut pool,
+        hash: &mut hash,
+        entries: &mut entries,
+        globals: &mut globals,
+        bibs: &mut bibs,
+        aux: &mut aux,
+        cites: &mut cites,
+        other: &mut other,
+    };
+
+    let res = inner_bibtex_main(ctx, &mut globals, aux_file_name);
     match res {
         Ok(History::Spotless) => (),
         Ok(hist) => return hist,
@@ -366,30 +339,28 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
             // SAFETY: bst_file guaranteed valid at this point
             unsafe { peekable_close(ctx, ctx.bst_file) };
             ctx.bst_file = None;
-            // SAFETY: bbl_file guaranteed valid at this point
-            unsafe { ttbc_output_close(ctx.engine, ctx.bbl_file) };
+            ttbc_output_close(ctx.engine, ctx.bbl_file);
         }
         Err(BibtexError::NoBst) => {
-            // SAFETY: bbl_file guaranteed valid at this point
-            unsafe { ttbc_output_close(ctx.engine, ctx.bbl_file) };
+            ttbc_output_close(ctx.engine, ctx.bbl_file);
         }
         Err(BibtexError::Fatal) => (),
     }
 
     match get_history() {
         History::Spotless => (),
-        History::WarningIssued => {
-            if err_count() == 1 {
+        History::WarningIssued(warns) => {
+            if warns == 1 {
                 write_logs("(There was 1 warning)\n")
             } else {
-                write_logs(&format!("(There were {} warnings)\n", err_count()))
+                write_logs(&format!("(There were {} warnings)\n", warns))
             }
         }
-        History::ErrorIssued => {
-            if err_count() == 1 {
+        History::ErrorIssued(errs) => {
+            if errs == 1 {
                 write_logs("(There was 1 error message)\n")
             } else {
-                write_logs(&format!("(There were {} error messages)\n", err_count()))
+                write_logs(&format!("(There were {} error messages)\n", errs))
             }
         }
         History::FatalError => {
@@ -561,33 +532,8 @@ fn initialize(
 }
 
 mod external {
-    use super::*;
-
     #[allow(improper_ctypes)]
     extern "C" {
-        pub(crate) fn ttbc_input_open(
-            engine: *mut CoreBridgeState<'_>,
-            path: *const libc::c_char,
-            format: FileFormat,
-            is_gz: libc::c_int,
-        ) -> *mut InputHandle;
-        pub(crate) fn ttbc_input_close(
-            engine: *mut CoreBridgeState<'_>,
-            input: *mut InputHandle,
-        ) -> libc::c_int;
-        pub(crate) fn ttbc_output_open_stdout(
-            engine: *mut CoreBridgeState<'_>,
-        ) -> *mut OutputHandle;
-        pub(crate) fn ttbc_output_open(
-            engine: *mut CoreBridgeState<'_>,
-            path: *const libc::c_char,
-            is_gz: libc::c_int,
-        ) -> *mut OutputHandle;
-        pub(crate) fn ttbc_output_close(
-            engine: *mut CoreBridgeState<'_>,
-            handle: *mut OutputHandle,
-        ) -> libc::c_int;
-
         pub(crate) fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
 
         pub(crate) fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;

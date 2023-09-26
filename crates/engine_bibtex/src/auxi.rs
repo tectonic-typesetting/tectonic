@@ -17,7 +17,7 @@ use crate::{
     scan::Scan,
     Bibtex, BibtexError, GlobalItems, StrIlk, StrNumber,
 };
-use std::{cell::RefCell, ffi::CString, ptr::NonNull};
+use std::{ffi::CString, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
@@ -33,7 +33,7 @@ pub(crate) struct AuxData {
 }
 
 impl AuxData {
-    fn new() -> AuxData {
+    pub fn new() -> AuxData {
         AuxData { aux: Vec::new() }
     }
 
@@ -57,18 +57,6 @@ impl AuxData {
     pub fn ptr(&self) -> usize {
         self.aux.len()
     }
-}
-
-thread_local! {
-    static AUX: RefCell<AuxData> = RefCell::new(AuxData::new());
-}
-
-pub fn reset() {
-    AUX.with(|aux| *aux.borrow_mut() = AuxData::new());
-}
-
-pub(crate) fn with_aux_mut<T>(f: impl FnOnce(&mut AuxData) -> T) -> T {
-    AUX.with(|aux| f(&mut aux.borrow_mut()))
 }
 
 fn aux_bib_data_command(

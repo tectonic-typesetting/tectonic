@@ -1,5 +1,4 @@
 use crate::{xbuf::XBuf, ASCIICode, StrNumber};
-use std::cell::RefCell;
 
 const MAX_GLOB_STRS: usize = 10;
 pub(crate) const GLOB_STR_SIZE: usize = 20000;
@@ -12,7 +11,7 @@ pub(crate) struct GlobalData {
 }
 
 impl GlobalData {
-    fn new() -> GlobalData {
+    pub fn new() -> GlobalData {
         GlobalData {
             glb_bib_str_ptr: XBuf::new(MAX_GLOB_STRS),
             global_strs: XBuf::new((GLOB_STR_SIZE + 1) * MAX_GLOB_STRS),
@@ -57,16 +56,4 @@ impl GlobalData {
     pub fn len(&self) -> usize {
         self.glb_bib_str_ptr.len()
     }
-}
-
-thread_local! {
-    static GLOBALS: RefCell<GlobalData> = RefCell::new(GlobalData::new());
-}
-
-pub fn reset() {
-    GLOBALS.with(|globals| *globals.borrow_mut() = GlobalData::new());
-}
-
-pub(crate) fn with_globals_mut<T>(f: impl FnOnce(&mut GlobalData) -> T) -> T {
-    GLOBALS.with(|globals| f(&mut globals.borrow_mut()))
 }

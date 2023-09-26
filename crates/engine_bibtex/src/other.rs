@@ -1,5 +1,4 @@
 use crate::{xbuf::XBuf, FieldLoc, FnDefLoc, HashPointer, StrNumber, WizFnLoc};
-use std::cell::RefCell;
 
 const WIZ_FN_SPACE: usize = 3000;
 const MAX_FIELDS: usize = 17250;
@@ -14,7 +13,7 @@ pub(crate) struct OtherData {
 }
 
 impl OtherData {
-    fn new() -> OtherData {
+    pub fn new() -> OtherData {
         OtherData {
             wiz_functions: XBuf::new(WIZ_FN_SPACE),
             wiz_def_ptr: 0,
@@ -88,16 +87,4 @@ impl OtherData {
             self.wiz_functions.grow(WIZ_FN_SPACE)
         }
     }
-}
-
-thread_local! {
-    static OTHER: RefCell<OtherData> = RefCell::new(OtherData::new());
-}
-
-pub fn reset() {
-    OTHER.with(|other| *other.borrow_mut() = OtherData::new());
-}
-
-pub(crate) fn with_other_mut<T>(f: impl FnOnce(&mut OtherData) -> T) -> T {
-    OTHER.with(|other| f(&mut other.borrow_mut()))
 }

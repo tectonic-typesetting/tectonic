@@ -2,7 +2,7 @@ use crate::{
     entries::EntryData, hash::HashData, other::OtherData, pool::StringPool, xbuf::XBuf, CiteNumber,
     FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
-use std::{cell::RefCell, cmp::Ordering, ops::IndexMut};
+use std::{cmp::Ordering, ops::IndexMut};
 
 pub(crate) const MAX_CITES: usize = 750;
 
@@ -20,7 +20,7 @@ pub(crate) struct CiteInfo {
 }
 
 impl CiteInfo {
-    fn new() -> CiteInfo {
+    pub fn new() -> CiteInfo {
         CiteInfo {
             cite_list: XBuf::new(MAX_CITES),
             cite_info: XBuf::new(MAX_CITES),
@@ -123,18 +123,6 @@ impl CiteInfo {
     {
         self.cite_info[r].sort_by(|a, b| less_than(entries, a, b))
     }
-}
-
-thread_local! {
-    static CITE_INFO: RefCell<CiteInfo> = RefCell::new(CiteInfo::new());
-}
-
-pub fn reset() {
-    CITE_INFO.with(|ci| *ci.borrow_mut() = CiteInfo::new());
-}
-
-pub(crate) fn with_cites_mut<T>(f: impl FnOnce(&mut CiteInfo) -> T) -> T {
-    CITE_INFO.with(|ci| f(&mut ci.borrow_mut()))
 }
 
 fn less_than(entries: &EntryData, arg1: &CiteNumber, arg2: &CiteNumber) -> Ordering {
