@@ -1,11 +1,9 @@
-use crate::{xbuf::XBuf, FieldLoc, FnDefLoc, HashPointer, StrNumber, WizFnLoc};
+use crate::{xbuf::XBuf, FieldLoc, HashPointer, StrNumber};
 
-const WIZ_FN_SPACE: usize = 3000;
 const MAX_FIELDS: usize = 17250;
 
 pub(crate) struct OtherData {
-    wiz_functions: XBuf<HashPointer>,
-    wiz_def_ptr: WizFnLoc,
+    wiz_functions: Vec<HashPointer>,
     field_info: XBuf<StrNumber>,
     num_fields: FieldLoc,
     num_pre_defined_fields: FieldLoc,
@@ -15,8 +13,7 @@ pub(crate) struct OtherData {
 impl OtherData {
     pub fn new() -> OtherData {
         OtherData {
-            wiz_functions: XBuf::new(WIZ_FN_SPACE),
-            wiz_def_ptr: 0,
+            wiz_functions: Vec::new(),
             field_info: XBuf::new(MAX_FIELDS),
             num_fields: 0,
             num_pre_defined_fields: 0,
@@ -70,21 +67,11 @@ impl OtherData {
         self.wiz_functions[pos]
     }
 
-    pub fn set_wiz_function(&mut self, pos: usize, val: HashPointer) {
-        self.wiz_functions[pos] = val
+    pub fn push_wiz_func(&mut self, val: HashPointer) {
+        self.wiz_functions.push(val)
     }
 
-    pub fn wiz_def_ptr(&self) -> WizFnLoc {
-        self.wiz_def_ptr
-    }
-
-    pub fn set_wiz_def_ptr(&mut self, ptr: WizFnLoc) {
-        self.wiz_def_ptr = ptr;
-    }
-
-    pub fn check_wiz_overflow(&mut self, ptr: FnDefLoc) {
-        while ptr + self.wiz_def_ptr > self.wiz_functions.len() {
-            self.wiz_functions.grow(WIZ_FN_SPACE)
-        }
+    pub fn wiz_func_len(&self) -> usize {
+        self.wiz_functions.len()
     }
 }
