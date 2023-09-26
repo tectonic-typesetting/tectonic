@@ -146,7 +146,7 @@ fn aux_bib_data_command(
 
         let name = pool.get_str(bibs.cur_bib());
         let fname = CString::new(name).unwrap();
-        let bib_in = peekable_open(&fname, FileFormat::Bib);
+        let bib_in = peekable_open(ctx, &fname, FileFormat::Bib);
         if bib_in.is_null() {
             write_logs("I couldn't open database file ");
             print_bib_name(pool, bibs)?;
@@ -210,7 +210,7 @@ fn aux_bib_style_command(
 
     let name = pool.get_str(ctx.bst_str);
     let fname = CString::new(name).unwrap();
-    let ptr = peekable_open(&fname, FileFormat::Bst);
+    let ptr = peekable_open(ctx, &fname, FileFormat::Bst);
     if ptr.is_null() {
         write_logs("I couldn't open style file ");
         print_bst_name(ctx, pool)?;
@@ -334,7 +334,7 @@ fn aux_citation_command(
 }
 
 fn aux_input_command(
-    ctx: &Bibtex,
+    ctx: &mut Bibtex,
     buffers: &mut GlobalBuffer,
     aux: &mut AuxData,
     pool: &mut StringPool,
@@ -401,7 +401,7 @@ fn aux_input_command(
 
     let name = pool.get_str(aux.at_ptr());
     let fname = CString::new(name).unwrap();
-    let ptr = peekable_open(&fname, FileFormat::Tex);
+    let ptr = peekable_open(ctx, &fname, FileFormat::Tex);
     if ptr.is_null() {
         write_logs("I couldn't open auxiliary file ");
         print_aux_name(aux, pool)?;
@@ -476,9 +476,9 @@ pub(crate) fn get_aux_command_and_process(
     Ok(())
 }
 
-pub(crate) fn pop_the_aux_stack(aux: &mut AuxData) -> bool {
+pub(crate) fn pop_the_aux_stack(ctx: &mut Bibtex<'_, '_>, aux: &mut AuxData) -> bool {
     // SAFETY: Aux file at pointer guaranteed valid at this point
-    unsafe { peekable_close(NonNull::new(aux.file_at_ptr())) };
+    unsafe { peekable_close(ctx, NonNull::new(aux.file_at_ptr())) };
     aux.set_file_at_ptr(ptr::null_mut());
     if aux.ptr() == 0 {
         true

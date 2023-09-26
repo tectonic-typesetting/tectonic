@@ -65,7 +65,7 @@ pub enum BibtexOutcome {
 /// the same time.
 #[derive(Debug, Default)]
 pub struct BibtexEngine {
-    ctx: c_api::Bibtex,
+    config: c_api::BibtexConfig,
 }
 
 impl BibtexEngine {
@@ -77,7 +77,7 @@ impl BibtexEngine {
     /// times an item needs to be referenced in directly-referenced BibTeX
     /// entries before it gets its own standalone entry.
     pub fn min_crossrefs(&mut self, value: u32) -> &mut Self {
-        self.ctx.config.min_crossrefs = value;
+        self.config.min_crossrefs = value;
         self
     }
 
@@ -96,8 +96,8 @@ impl BibtexEngine {
         let caux = CString::new(aux)?;
 
         launcher.with_global_lock(|state| {
-            // SAFETY: We're in the global lock, so this is unique access
-            let hist = unsafe { c_api::tt_engine_bibtex_main(state, &mut self.ctx, caux.as_ptr()) };
+            let mut ctx = c_api::Bibtex::new(state, self.config.clone());
+            let hist = c_api::bibtex_main(&mut ctx, &caux);
 
             match hist {
                 History::Spotless => Ok(BibtexOutcome::Spotless),
@@ -235,9 +235,9 @@ pub mod c_api {
         }
     }
 
-    #[derive(Debug)]
     #[repr(C)]
-    pub struct Bibtex {
+    pub(crate) struct Bibtex<'a, 'cbs> {
+        pub engine: &'a mut CoreBridgeState<'cbs>,
         pub config: BibtexConfig,
         pub bst_file: Option<NonNull<PeekableInput>>,
         pub bst_str: StrNumber,
@@ -266,10 +266,11 @@ pub mod c_api {
         pub s_aux_extension: HashPointer,
     }
 
-    impl Default for Bibtex {
-        fn default() -> Self {
+    impl<'a, 'cbs> Bibtex<'a, 'cbs> {
+        pub(crate) fn new(engine: &'a mut CoreBridgeState<'cbs>, config: BibtexConfig) -> Bibtex<'a, 'cbs> {
             Bibtex {
-                config: Default::default(),
+                engine,
+                config,
                 bst_file: None,
                 bst_str: 0,
                 bst_line_num: 0,
@@ -380,10 +381,7 @@ pub mod c_api {
         global::reset();
     }
 
-    #[no_mangle]
-    pub extern "C" fn bibtex_main(ctx: &mut Bibtex, aux_file_name: *const libc::c_char) -> History {
-        let aux_file_name = unsafe { CStr::from_ptr(aux_file_name) };
-
+    pub(crate) fn bibtex_main(ctx: &mut Bibtex, aux_file_name: &CStr) -> History {
         reset_all();
 
         let res = GlobalItems::with(|globals| inner_bibtex_main(ctx, globals, aux_file_name));
@@ -391,12 +389,12 @@ pub mod c_api {
             Ok(History::Spotless) => (),
             Ok(hist) => return hist,
             Err(BibtexError::Recover) => {
-                unsafe { peekable_close(ctx.bst_file) };
+                unsafe { peekable_close(ctx, ctx.bst_file) };
                 ctx.bst_file = None;
-                unsafe { ttstub_output_close(ctx.bbl_file) };
+                unsafe { ttbc_output_close(ctx.engine, ctx.bbl_file) };
             }
             Err(BibtexError::NoBst) => {
-                unsafe { ttstub_output_close(ctx.bbl_file) };
+                unsafe { ttbc_output_close(ctx.engine, ctx.bbl_file) };
             }
             Err(BibtexError::Fatal) => (),
         }
@@ -426,12 +424,12 @@ pub mod c_api {
             }
         }
 
-        bib_close_log();
+        bib_close_log(ctx);
         return get_history();
     }
 
     pub(crate) fn inner_bibtex_main(ctx: &mut Bibtex, globals: &mut GlobalItems<'_>, aux_file_name: &CStr) -> Result<History, BibtexError> {
-        if !init_standard_output() {
+        if !init_standard_output(ctx) {
             return Ok(History::FatalError);
         }
 
@@ -459,7 +457,7 @@ pub mod c_api {
             globals.aux.set_ln_at_ptr(globals.aux.ln_at_ptr() + 1);
 
             if !input_ln(unsafe { globals.aux.file_at_ptr().as_mut() }, globals.buffers) {
-                if pop_the_aux_stack(globals.aux) {
+                if pop_the_aux_stack(ctx, globals.aux) {
                     break;
                 }
             } else {
@@ -510,7 +508,7 @@ pub mod c_api {
 
         aux.set_ptr(0);
 
-        let aux_file = match PeekableInput::open(aux_file_name, FileFormat::Tex) {
+        let aux_file = match PeekableInput::open(ctx, aux_file_name, FileFormat::Tex) {
             Ok(file) => file,
             Err(_) => {
                 sam_wrong_file_name_print(aux_file_name);
@@ -521,7 +519,7 @@ pub mod c_api {
 
         set_extension(&mut path, b".blg");
         let log_file = CStr::from_bytes_with_nul(&path).unwrap();
-        if !init_log_file(log_file) {
+        if !init_log_file(ctx, log_file) {
             sam_wrong_file_name_print(log_file);
             return Ok(1);
         }
@@ -529,7 +527,7 @@ pub mod c_api {
         set_extension(&mut path, b".bbl");
         let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
         // SAFETY: Function sound if provided a valid path pointer
-        ctx.bbl_file = unsafe { ttstub_output_open(bbl_file.as_ptr(), 0) };
+        ctx.bbl_file = unsafe { ttbc_output_open(ctx.engine, bbl_file.as_ptr(), 0) };
         if ctx.bbl_file.is_null() {
             sam_wrong_file_name_print(bbl_file);
             return Ok(1);
@@ -576,33 +574,25 @@ pub mod c_api {
         get_the_top_level_aux_file_name(ctx, globals, aux_file_name)
     }
 
-    #[allow(improper_ctypes)] // for CoreBridgeState
-    extern "C" {
-        pub fn tt_engine_bibtex_main(
-            api: &mut CoreBridgeState<'_>,
-            ctx: &mut Bibtex,
-            aux_name: *const libc::c_char,
-        ) -> History;
-    }
-
-    /// cbindgen:ignore
     mod external {
         use super::*;
 
         #[allow(improper_ctypes)]
         extern "C" {
-            pub fn ttstub_input_open(
+            pub fn ttbc_input_open(
+                engine: *mut CoreBridgeState<'_>,
                 path: *const libc::c_char,
                 format: FileFormat,
                 is_gz: libc::c_int,
             ) -> *mut InputHandle;
-            pub fn ttstub_input_close(input: *mut InputHandle) -> libc::c_int;
-            pub fn ttstub_output_open_stdout() -> *mut OutputHandle;
-            pub fn ttstub_output_open(
+            pub fn ttbc_input_close(engine: *mut CoreBridgeState<'_>, input: *mut InputHandle) -> libc::c_int;
+            pub fn ttbc_output_open_stdout(engine: *mut CoreBridgeState<'_>) -> *mut OutputHandle;
+            pub fn ttbc_output_open(
+                engine: *mut CoreBridgeState<'_>,
                 path: *const libc::c_char,
                 is_gz: libc::c_int,
             ) -> *mut OutputHandle;
-            pub fn ttstub_output_close(handle: *mut OutputHandle) -> libc::c_int;
+            pub fn ttbc_output_close(engine: *mut CoreBridgeState<'_>, handle: *mut OutputHandle) -> libc::c_int;
 
             pub fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
 

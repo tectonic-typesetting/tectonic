@@ -61,9 +61,8 @@ impl ExecVal {
 // SAFETY: We require our zero discriminant to be an integer, which is valid for any bit pattern, including 0
 unsafe impl SafelyZero for ExecVal {}
 
-#[repr(C)]
-pub struct ExecCtx {
-    pub glbl_ctx: *mut Bibtex,
+pub(crate) struct ExecCtx<'a, 'bib, 'cbs> {
+    pub glbl_ctx: &'a mut Bibtex<'bib, 'cbs>,
     pub _default: HashPointer,
     pub(crate) lit_stack: Box<XBuf<ExecVal>>,
     pub lit_stk_ptr: usize,
@@ -72,8 +71,8 @@ pub struct ExecCtx {
     pub bib_str_ptr: StrNumber,
 }
 
-impl ExecCtx {
-    pub(crate) fn new(glbl_ctx: &mut Bibtex) -> ExecCtx {
+impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
+    pub(crate) fn new(glbl_ctx: &'a mut Bibtex<'bib, 'cbs>) -> ExecCtx<'a, 'bib, 'cbs> {
         ExecCtx {
             glbl_ctx,
             _default: 0,
@@ -125,14 +124,12 @@ impl ExecCtx {
         self.lit_stack.grow(LIT_STK_SIZE);
     }
 
-    pub(crate) fn glbl_ctx(&self) -> &Bibtex {
-        // SAFETY: Contained pointer is always valid
-        unsafe { &*self.glbl_ctx }
+    pub(crate) fn glbl_ctx(&self) -> &Bibtex<'bib, 'cbs> {
+        &*self.glbl_ctx
     }
 
-    pub(crate) fn glbl_ctx_mut(&mut self) -> &mut Bibtex {
-        // SAFETY: Contained pointer is always valid
-        unsafe { &mut *self.glbl_ctx }
+    pub(crate) fn glbl_ctx_mut(&mut self) -> &mut Bibtex<'bib, 'cbs> {
+        &mut *self.glbl_ctx
     }
 }
 

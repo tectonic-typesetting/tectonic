@@ -579,7 +579,7 @@ fn bst_read_command(ctx: &mut ExecCtx, globals: &mut GlobalItems<'_>) -> Result<
             )?;
         }
         // SAFETY: take_cur_bib_file returns reference to which we're the last owner
-        unsafe { peekable_close(globals.bibs.take_cur_bib_file().map(NonNull::from)) };
+        unsafe { peekable_close(ctx.glbl_ctx_mut(), globals.bibs.take_cur_bib_file().map(NonNull::from)) };
         globals.bibs.set_ptr(globals.bibs.ptr() + 1);
     }
 

@@ -12,7 +12,7 @@ use crate::{
         peekable::input_ln,
         pool::StringPool,
         scan::{Scan, ScanRes},
-        ttstub_output_close, ttstub_output_open, ttstub_output_open_stdout, ASCIICode, Bibtex,
+        ttbc_output_close, ttbc_output_open, ttbc_output_open_stdout, ASCIICode, Bibtex,
         CiteNumber, FieldLoc, HashPointer, StrNumber,
     },
     BibtexError,
@@ -79,12 +79,12 @@ pub(crate) fn write_log_file<B: ?Sized + AsBytes>(str: &B) {
     with_log(|log| log.write_all(str.as_bytes())).unwrap();
 }
 
-pub(crate) fn init_log_file(file: &CStr) -> bool {
+pub(crate) fn init_log_file(ctx: &mut Bibtex<'_, '_>, file: &CStr) -> bool {
     LOG_FILE.with(|log| {
         let ptr = log.replace(None);
         if ptr.is_none() {
             // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
-            let new = unsafe { ttstub_output_open(file.as_ptr(), 0) };
+            let new = unsafe { ttbc_output_open(ctx.engine, file.as_ptr(), 0) };
             // SAFETY: Return of ttstub_output_open should be valid if non-null
             log.set(unsafe { new.as_mut() });
             !new.is_null()
@@ -95,12 +95,12 @@ pub(crate) fn init_log_file(file: &CStr) -> bool {
     })
 }
 
-pub fn init_standard_output() -> bool {
+pub(crate) fn init_standard_output(ctx: &mut Bibtex<'_, '_>) -> bool {
     STANDARD_OUTPUT.with(|out| {
         let ptr = out.replace(None);
         if ptr.is_none() {
             // SAFETY: This is actually fine to call, just extern
-            let stdout = unsafe { ttstub_output_open_stdout() };
+            let stdout = unsafe { ttbc_output_open_stdout(ctx.engine) };
             // SAFETY: Pointer from ttstub_output_open_stdout is valid if non-null
             out.set(unsafe { stdout.as_mut() });
             !stdout.is_null()
@@ -111,12 +111,12 @@ pub fn init_standard_output() -> bool {
     })
 }
 
-pub fn bib_close_log() {
+pub(crate) fn bib_close_log(ctx: &mut Bibtex<'_, '_>) {
     LOG_FILE.with(|log| {
         let log = log.replace(None);
         if let Some(log) = log {
             // SAFETY: Log is valid due to being a mut ref
-            unsafe { ttstub_output_close(log) };
+            unsafe { ttbc_output_close(ctx.engine, log) };
         }
     })
 }

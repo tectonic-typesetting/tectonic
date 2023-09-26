@@ -2,7 +2,7 @@ use crate::{
     c_api::{
         buffer::{BufTy, GlobalBuffer},
         char_info::LexClass,
-        ttstub_input_close, ttstub_input_open, ASCIICode, BufPointer,
+        ttbc_input_close, ttbc_input_open, ASCIICode, BufPointer,
     },
     BibtexError,
 };
@@ -10,6 +10,7 @@ use libc::EOF;
 use std::{ffi::CStr, io, ptr, ptr::NonNull};
 use tectonic_bridge_core::FileFormat;
 use tectonic_io_base::InputHandle;
+use crate::c_api::Bibtex;
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
  * here's a tiny wrapper that lets us fake it. */
@@ -21,9 +22,9 @@ pub struct PeekableInput {
 }
 
 impl PeekableInput {
-    pub(crate) fn open(path: &CStr, format: FileFormat) -> Result<Box<PeekableInput>, BibtexError> {
+    pub(crate) fn open(ctx: &mut Bibtex<'_, '_>, path: &CStr, format: FileFormat) -> Result<Box<PeekableInput>, BibtexError> {
         // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
-        let handle = unsafe { ttstub_input_open(path.as_ptr(), format, 0) };
+        let handle = unsafe { ttbc_input_open(ctx.engine, path.as_ptr(), format, 0) };
 
         if let Some(handle) = NonNull::new(handle) {
             Ok(Box::new(PeekableInput {
@@ -92,16 +93,16 @@ impl PeekableInput {
     }
 }
 
-pub fn peekable_open(path: &CStr, format: FileFormat) -> *mut PeekableInput {
-    PeekableInput::open(path, format)
+pub(crate) fn peekable_open(ctx: &mut Bibtex<'_, '_>, path: &CStr, format: FileFormat) -> *mut PeekableInput {
+    PeekableInput::open(ctx, path, format)
         .map(Box::into_raw)
         .unwrap_or(ptr::null_mut())
 }
 
-pub unsafe fn peekable_close(peekable: Option<NonNull<PeekableInput>>) -> libc::c_int {
+pub(crate) unsafe fn peekable_close(ctx: &mut Bibtex<'_, '_>, peekable: Option<NonNull<PeekableInput>>) -> libc::c_int {
     match peekable {
         Some(mut peekable) => {
-            let rv = ttstub_input_close(peekable.as_mut().handle.as_ptr());
+            let rv = ttbc_input_close(ctx.engine, peekable.as_mut().handle.as_ptr());
             drop(Box::<PeekableInput>::from_raw(peekable.as_ptr()));
             rv
         }
