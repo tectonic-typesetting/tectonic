@@ -166,11 +166,11 @@ pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut Global
             return true;
         }
 
-        if !input_ln(ctx.bst_file.as_mut(), buffers) {
+        if !input_ln(&mut ctx.bst.as_mut().unwrap().file, buffers) {
             return false;
         }
 
-        ctx.bst_line_num += 1;
+        ctx.bst.as_mut().unwrap().line += 1;
         buffers.set_offset(BufTy::Base, 2, 0);
     }
 }

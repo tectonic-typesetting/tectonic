@@ -8,20 +8,14 @@ use crate::{
         bib_one_of_two_print, bib_warn_print, cite_key_disappeared_confusion, eat_bib_print,
         hash_cite_confusion, print_a_token, print_confusion, write_log_file, write_logs,
     },
-    peekable::{input_ln, PeekableInput},
+    peekable::input_ln,
     pool::StringPool,
     scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
-    BibNumber, Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
+    BibNumber, Bibtex, BibtexError, CiteNumber, File, GlobalItems, HashPointer, StrIlk, StrNumber,
 };
 
-pub(crate) struct BibFile {
-    pub(crate) name: StrNumber,
-    pub(crate) file: PeekableInput,
-    pub(crate) line: u32,
-}
-
 pub(crate) struct BibData {
-    bibs: Vec<BibFile>,
+    bibs: Vec<File>,
     preamble: Vec<StrNumber>,
 }
 
@@ -33,19 +27,19 @@ impl BibData {
         }
     }
 
-    pub fn top_file(&self) -> &BibFile {
+    pub fn top_file(&self) -> &File {
         self.bibs.last().unwrap()
     }
 
-    pub fn top_file_mut(&mut self) -> &mut BibFile {
+    pub fn top_file_mut(&mut self) -> &mut File {
         self.bibs.last_mut().unwrap()
     }
 
-    pub fn push_file(&mut self, file: BibFile) {
+    pub fn push_file(&mut self, file: File) {
         self.bibs.push(file);
     }
 
-    pub fn pop_file(&mut self) -> BibFile {
+    pub fn pop_file(&mut self) -> File {
         self.bibs.pop().unwrap()
     }
 
@@ -53,7 +47,7 @@ impl BibData {
         self.preamble.push(s);
     }
 
-    pub fn preamble_ptr(&self) -> usize {
+    pub fn preamble_len(&self) -> usize {
         self.preamble.len()
     }
 
@@ -72,7 +66,7 @@ pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
-        if !input_ln(Some(&mut bibs.top_file_mut().file), buffers) {
+        if !input_ln(&mut bibs.top_file_mut().file, buffers) {
             return false;
         }
 
@@ -101,7 +95,7 @@ pub(crate) fn compress_bib_white(
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, last)
     {
-        let res = !input_ln(Some(&mut bibs.top_file_mut().file), buffers);
+        let res = !input_ln(&mut bibs.top_file_mut().file, buffers);
 
         if res {
             return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
@@ -129,7 +123,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let mut init = globals.buffers.init(BufTy::Base);
     while !Scan::new().chars(&[b'@']).scan_till(globals.buffers, init) {
-        if !input_ln(Some(&mut globals.bibs.top_file_mut().file), globals.buffers) {
+        if !input_ln(&mut globals.bibs.top_file_mut().file, globals.buffers) {
             return Ok(());
         }
 
