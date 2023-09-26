@@ -195,7 +195,7 @@ impl Default for BibtexConfig {
 pub(crate) struct Bibtex<'a, 'cbs> {
     pub engine: &'a mut CoreBridgeState<'cbs>,
     pub config: BibtexConfig,
-    pub bst_file: Option<Box<PeekableInput>>,
+    pub bst_file: Option<PeekableInput>,
     pub bst_str: StrNumber,
     pub bst_line_num: usize,
 
