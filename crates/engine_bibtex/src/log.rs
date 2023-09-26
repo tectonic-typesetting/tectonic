@@ -225,15 +225,15 @@ pub fn sam_wrong_file_name_print(file: &CStr) {
     })
 }
 
-pub(crate) fn print_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
-    print_a_pool_str(aux.at_ptr(), pool)?;
+pub(crate) fn print_aux_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
+    print_a_pool_str(name, pool)?;
     write_logs("\n");
     Ok(())
 }
 
 pub(crate) fn log_pr_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
-        out_pool_str(pool, log, aux.at_ptr())?;
+        out_pool_str(pool, log, aux.top_file().name)?;
         writeln!(log).unwrap();
         Ok(())
     })
@@ -244,8 +244,8 @@ pub(crate) fn aux_err_print(
     aux: &AuxData,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
-    write_logs(&format!("---line {} of file ", aux.ln_at_ptr()));
-    print_aux_name(aux, pool)?;
+    write_logs(&format!("---line {} of file ", aux.top_file().line));
+    print_aux_name(pool, aux.top_file().name)?;
     print_bad_input_line(buffers);
     print_skipping_whatever_remains();
     write_logs("command\n");
@@ -257,7 +257,7 @@ pub(crate) enum AuxTy {
     Style,
 }
 
-pub fn aux_err_illegal_another_print(cmd: AuxTy) -> Result<(), BibtexError> {
+pub(crate) fn aux_err_illegal_another_print(cmd: AuxTy) -> Result<(), BibtexError> {
     write_logs("Illegal, another \\bib");
     match cmd {
         AuxTy::Data => write_logs("data"),
@@ -283,9 +283,9 @@ pub fn aux_end1_err_print() {
     write_logs("I found no ");
 }
 
-pub(crate) fn aux_end2_err_print(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn aux_end2_err_print(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
     write_logs("---while reading file ");
-    print_aux_name(aux, pool)?;
+    print_aux_name(pool, name)?;
     mark_error();
     Ok(())
 }

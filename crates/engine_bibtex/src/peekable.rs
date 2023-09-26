@@ -126,7 +126,7 @@ pub(crate) unsafe fn peekable_close(
     }
 }
 
-pub fn tectonic_eof(peekable: Option<&mut PeekableInput>) -> bool {
+pub(crate) fn tectonic_eof(peekable: Option<&mut PeekableInput>) -> bool {
     // Check for EOF following Pascal semantics.
     match peekable {
         Some(peek) => peek.eof(),

@@ -41,7 +41,7 @@ use tectonic_io_base::{InputHandle, OutputHandle};
 use xbuf::SafelyZero;
 
 use crate::{
-    auxi::{get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack},
+    auxi::{get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxFile},
     bst::get_bst_command_and_process,
     buffer::BufTy,
     exec::ExecCtx,
@@ -430,25 +430,25 @@ pub(crate) fn inner_bibtex_main(
 
     if ctx.config.verbose {
         write_logs("The top-level auxiliary file: ");
-        print_aux_name(globals.aux, globals.pool)?;
+        print_aux_name(globals.pool, globals.aux.top_file().name)?;
     } else {
         write_log_file("The top-level auxiliary file: ");
         log_pr_aux_name(globals.aux, globals.pool)?;
     }
 
-    loop {
-        globals.aux.set_ln_at_ptr(globals.aux.ln_at_ptr() + 1);
+    let last_aux = loop {
+        globals.aux.top_file_mut().line += 1;
 
-        if !input_ln(Some(globals.aux.file_at_ptr()), globals.buffers) {
-            if pop_the_aux_stack(ctx, globals.aux) {
-                break;
+        if !input_ln(Some(&mut globals.aux.top_file_mut().file), globals.buffers) {
+            if let Some(last) = pop_the_aux_stack(ctx, globals.aux) {
+                break last;
             }
         } else {
             get_aux_command_and_process(ctx, globals)?;
         }
-    }
+    };
 
-    last_check_for_aux_errors(ctx, globals.aux, globals.pool, globals.cites, globals.bibs)?;
+    last_check_for_aux_errors(ctx, globals.pool, globals.cites, globals.bibs, last_aux)?;
 
     if ctx.bst_str == 0 {
         return Err(BibtexError::NoBst);
@@ -491,8 +491,6 @@ pub(crate) fn get_the_top_level_aux_file_name(
         path[range].copy_from_slice(extension);
     };
 
-    aux.set_ptr(0);
-
     let aux_file = match PeekableInput::open(ctx, aux_file_name, FileFormat::Tex) {
         Ok(file) => file,
         Err(_) => {
@@ -500,7 +498,6 @@ pub(crate) fn get_the_top_level_aux_file_name(
             return Ok(1);
         }
     };
-    aux.set_file_at_ptr(aux_file);
 
     set_extension(&mut path, b".blg");
     let log_file = CStr::from_bytes_with_nul(&path).unwrap();
@@ -523,7 +520,12 @@ pub(crate) fn get_the_top_level_aux_file_name(
         Ok(res) => res,
         Err(_) => return Err(BibtexError::Fatal),
     };
-    aux.set_at_ptr(hash.text(lookup.loc));
+
+    aux.push_file(AuxFile {
+        name: hash.text(lookup.loc),
+        file: aux_file,
+        line: 0,
+    });
 
     if lookup.exists {
         write_logs("Already encountered auxiliary file");

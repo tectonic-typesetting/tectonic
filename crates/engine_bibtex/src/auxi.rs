@@ -22,60 +22,41 @@ use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
 
+pub(crate) struct AuxFile {
+    pub(crate) name: StrNumber,
+    pub(crate) file: Box<PeekableInput>,
+    pub(crate) line: i32,
+}
+
 pub(crate) struct AuxData {
-    aux_list: [StrNumber; AUX_STACK_SIZE + 1],
-    aux_file: [Option<Box<PeekableInput>>; AUX_STACK_SIZE + 1],
-    aux_ln_stack: [i32; AUX_STACK_SIZE + 1],
-    aux_ptr: AuxNumber,
+    aux: Vec<AuxFile>,
 }
 
 impl AuxData {
     fn new() -> AuxData {
-        AuxData {
-            aux_list: [0; AUX_STACK_SIZE + 1],
-            aux_file: [(); AUX_STACK_SIZE + 1].map(|_| None),
-            aux_ln_stack: [0; AUX_STACK_SIZE + 1],
-            aux_ptr: 0,
-        }
+        AuxData { aux: Vec::new() }
     }
 
-    pub fn ptr(&self) -> AuxNumber {
-        self.aux_ptr
+    pub fn push_file(&mut self, file: AuxFile) {
+        self.aux.push(file);
     }
 
-    pub fn set_ptr(&mut self, ptr: AuxNumber) {
-        self.aux_ptr = ptr;
-    }
-
-    pub fn at_ptr(&self) -> StrNumber {
-        self.aux_list[self.aux_ptr]
-    }
-
-    pub fn set_at_ptr(&mut self, num: StrNumber) {
-        self.aux_list[self.aux_ptr] = num;
-    }
-
-    pub fn file_at_ptr(&mut self) -> &mut PeekableInput {
-        self.aux_file[self.aux_ptr].as_mut().unwrap()
-    }
-
-    pub fn set_file_at_ptr(&mut self, file: Box<PeekableInput>) {
-        self.aux_file[self.aux_ptr] = Some(file);
-    }
-
-    pub fn pop_file(&mut self) -> (Box<PeekableInput>, bool) {
-        let out = self.aux_file[self.aux_ptr].take().unwrap();
-        let last = self.aux_ptr == 0;
-        self.aux_ptr = self.aux_ptr.saturating_sub(1);
+    pub fn pop_file(&mut self) -> (AuxFile, bool) {
+        let out = self.aux.pop().unwrap();
+        let last = self.aux.len() == 0;
         (out, last)
     }
 
-    pub fn ln_at_ptr(&self) -> i32 {
-        self.aux_ln_stack[self.aux_ptr]
+    pub fn top_file(&self) -> &AuxFile {
+        self.aux.last().unwrap()
     }
 
-    pub fn set_ln_at_ptr(&mut self, ln: i32) {
-        self.aux_ln_stack[self.aux_ptr] = ln;
+    pub fn top_file_mut(&mut self) -> &mut AuxFile {
+        self.aux.last_mut().unwrap()
+    }
+
+    pub fn ptr(&self) -> AuxNumber {
+        self.aux.len()
     }
 }
 
@@ -367,7 +348,6 @@ fn aux_input_command(
         return Ok(());
     }
 
-    aux.set_ptr(aux.ptr() + 1);
     if aux.ptr() == AUX_STACK_SIZE {
         print_a_token(buffers);
         write_logs(": ");
@@ -386,7 +366,6 @@ fn aux_input_command(
     if !aux_extension_ok {
         print_a_token(buffers);
         write_logs(" has a wrong extension");
-        aux.set_ptr(aux.ptr() - 1);
         aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
@@ -394,34 +373,34 @@ fn aux_input_command(
     let file = &buffers.buffer(BufTy::Base)
         [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
     let res = pool.lookup_str_insert(hash, file, StrIlk::AuxFile)?;
-    aux.set_at_ptr(hash.text(res.loc));
     if res.exists {
         write_logs("Already encountered file ");
-        print_aux_name(aux, pool)?;
-        aux.set_ptr(aux.ptr() - 1);
+        print_aux_name(pool, res.loc)?;
         aux_err_print(buffers, aux, pool)?;
         return Ok(());
     }
 
-    let name = pool.get_str(aux.at_ptr());
+    let name = pool.get_str(hash.text(res.loc));
     let fname = CString::new(name).unwrap();
     let file = PeekableInput::open(ctx, &fname, FileFormat::Tex);
     match file {
         Err(_) => {
             write_logs("I couldn't open auxiliary file ");
-            print_aux_name(aux, pool)?;
-            aux.set_ptr(aux.ptr() - 1);
+            print_aux_name(pool, res.loc)?;
             aux_err_print(buffers, aux, pool)?;
             return Ok(());
         }
         Ok(file) => {
-            aux.set_file_at_ptr(file);
+            aux.push_file(AuxFile {
+                name: hash.text(res.loc),
+                file,
+                line: 0,
+            });
         }
     }
 
-    write_logs(&format!("A level-{} auxiliary file: ", aux.ptr()));
+    write_logs(&format!("A level-{} auxiliary file: ", aux.ptr() - 1));
     log_pr_aux_name(aux, pool)?;
-    aux.set_ln_at_ptr(0);
 
     Ok(())
 }
@@ -484,49 +463,53 @@ pub(crate) fn get_aux_command_and_process(
     Ok(())
 }
 
-pub(crate) fn pop_the_aux_stack(ctx: &mut Bibtex<'_, '_>, aux: &mut AuxData) -> bool {
+pub(crate) fn pop_the_aux_stack(ctx: &mut Bibtex<'_, '_>, aux: &mut AuxData) -> Option<StrNumber> {
     let (file, last) = aux.pop_file();
-    file.close(ctx).unwrap();
-    last
+    file.file.close(ctx).unwrap();
+    if last {
+        Some(file.name)
+    } else {
+        None
+    }
 }
 
 pub(crate) fn last_check_for_aux_errors(
     ctx: &mut Bibtex<'_, '_>,
-    aux: &AuxData,
     pool: &StringPool,
     cites: &mut CiteInfo,
     bibs: &BibData,
+    last_aux: StrNumber,
 ) -> Result<(), BibtexError> {
     cites.set_num_cites(cites.ptr());
     ctx.num_bib_files = bibs.ptr();
     if !ctx.citation_seen {
         aux_end1_err_print();
         write_logs("\\citation commands");
-        aux_end2_err_print(aux, pool)?;
+        aux_end2_err_print(pool, last_aux)?;
     } else if cites.num_cites() == 0 && !ctx.all_entries {
         aux_end1_err_print();
         write_logs("cite keys");
-        aux_end2_err_print(aux, pool)?;
+        aux_end2_err_print(pool, last_aux)?;
     }
 
     if !ctx.bib_seen {
         aux_end1_err_print();
         write_logs("\\bibdata command");
-        aux_end2_err_print(aux, pool)?;
+        aux_end2_err_print(pool, last_aux)?;
     } else if ctx.num_bib_files == 0 {
         aux_end1_err_print();
         write_logs("database files");
-        aux_end2_err_print(aux, pool)?;
+        aux_end2_err_print(pool, last_aux)?;
     }
 
     if !ctx.bst_seen {
         aux_end1_err_print();
         write_logs("\\bibstyle command");
-        aux_end2_err_print(aux, pool)?;
+        aux_end2_err_print(pool, last_aux)?;
     } else if ctx.bst_str == 0 {
         aux_end1_err_print();
         write_logs("style file");
-        aux_end2_err_print(aux, pool)?;
+        aux_end2_err_print(pool, last_aux)?;
     }
 
     Ok(())
