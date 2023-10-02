@@ -52,19 +52,6 @@ authorization from the copyright holders.
 
 #include <unicode/umachine.h>
 
-static inline double
-Fix2D(Fixed f)
-{
-    return f / 65536.0;
-}
-
-static inline Fixed
-D2Fix(double d)
-{
-    return (int) (d * 65536.0 + 0.5);
-}
-
-
 // create specific subclasses for each supported platform
 
 class XeTeXFontInst

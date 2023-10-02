@@ -37,6 +37,7 @@ authorization from the copyright holders.
 #define XETEX_LAYOUT_INTERFACE_H 1
 
 #include "tectonic_bridge_core.h"
+#include "layout_bindings.h"
 
 /* harfbuzz: hb_tag_t and hb_font_t used below */
 #include <harfbuzz/hb.h>
@@ -62,13 +63,6 @@ typedef struct {
     float y;
 } FloatPoint;
 
-typedef struct {
-    float xMin;
-    float yMin;
-    float xMax;
-    float yMax;
-} GlyphBBox;
-
 typedef uint32_t OTTag;
 typedef uint16_t GlyphID;
 
@@ -80,15 +74,6 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 BEGIN_EXTERN_C
 
 extern Fixed loaded_font_design_size;
-
-#define LEFT_SIDE 0
-#define RIGHT_SIDE 1
-
-void set_cp_code(int fontNum, unsigned int code, int side, int value);
-int get_cp_code(int fontNum, unsigned int code, int side);
-
-int getCachedGlyphBBox(uint16_t fontID, uint16_t glyphID, GlyphBBox* bbox);
-void cacheGlyphBBox(uint16_t fontID, uint16_t glyphID, const GlyphBBox* bbox);
 
 void terminate_font_manager(void);
 void destroy_font_manager(void);
