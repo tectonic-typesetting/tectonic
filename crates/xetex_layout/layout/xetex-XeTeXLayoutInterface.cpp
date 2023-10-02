@@ -74,83 +74,6 @@ struct XeTeXLayoutEngine_rec
 /*******************************************************************/
 /* Glyph bounding box cache to speed up \XeTeXuseglyphmetrics mode */
 /*******************************************************************/
-#include <map>
-
-// key is combined value representing (font_id << 16) + glyph
-// value is glyph bounding box in TeX points
-static std::map<uint32_t,GlyphBBox> sGlyphBoxes;
-
-int
-getCachedGlyphBBox(uint16_t fontID, uint16_t glyphID, GlyphBBox* bbox)
-{
-    uint32_t key = ((uint32_t)fontID << 16) + glyphID;
-    std::map<uint32_t,GlyphBBox>::const_iterator i = sGlyphBoxes.find(key);
-    if (i == sGlyphBoxes.end()) {
-        return 0;
-    }
-    *bbox = i->second;
-    return 1;
-}
-
-void
-cacheGlyphBBox(uint16_t fontID, uint16_t glyphID, const GlyphBBox* bbox)
-{
-    uint32_t key = ((uint32_t)fontID << 16) + glyphID;
-    sGlyphBoxes[key] = *bbox;
-}
-
-/* The following code used to be in a file called "hz.cpp" and there's no
- * particular reason for it to be here, but it was a tiny file with a weird
- * name so I wanted to get rid of it. The functions are invoked from the C
- * code. */
-
-typedef std::pair<int, unsigned int> GlyphId;
-typedef std::map<GlyphId, int>  ProtrusionFactor;
-ProtrusionFactor leftProt, rightProt;
-
-void
-set_cp_code(int fontNum, unsigned int code, int side, int value)
-{
-    GlyphId id(fontNum, code);
-
-    switch (side) {
-    case LEFT_SIDE:
-        leftProt[id] = value;
-        break;
-    case RIGHT_SIDE:
-        rightProt[id] = value;
-        break;
-    default:
-        assert(0); // we should not reach here
-    }
-}
-
-
-int
-get_cp_code(int fontNum, unsigned int code, int side)
-{
-    GlyphId id(fontNum, code);
-    ProtrusionFactor *container;
-
-    switch (side) {
-    case LEFT_SIDE:
-        container = &leftProt;
-        break;
-    case RIGHT_SIDE:
-        container = &rightProt;
-        break;
-    default:
-        assert(0); // we should not reach here
-    }
-
-    ProtrusionFactor::iterator it = container->find(id);
-    if (it == container->end())
-        return 0;
-
-    return it->second;
-}
-
-
 
 /*******************************************************************/
 
@@ -171,13 +94,13 @@ createFont(PlatformFontRef fontRef, Fixed pointSize)
 {
     int status = 0;
 #ifdef XETEX_MAC
-    XeTeXFontInst* font = new XeTeXFontInst_Mac(fontRef, Fix2D(pointSize), status);
+    XeTeXFontInst* font = new XeTeXFontInst_Mac(fontRef, RsFix2D(pointSize), status);
 #else
     FcChar8* pathname = 0;
     FcPatternGetString(fontRef, FC_FILE, 0, &pathname);
     int index;
     FcPatternGetInteger(fontRef, FC_INDEX, 0, &index);
-    XeTeXFontInst* font = new XeTeXFontInst((const char*)pathname, index, Fix2D(pointSize), status);
+    XeTeXFontInst* font = new XeTeXFontInst((const char*)pathname, index, RsFix2D(pointSize), status);
 #endif
     if (status != 0) {
         delete font;
@@ -190,7 +113,7 @@ XeTeXFont
 createFontFromFile(const char* filename, int index, Fixed pointSize)
 {
     int status = 0;
-    XeTeXFontInst* font = new XeTeXFontInst(filename, index, Fix2D(pointSize), status);
+    XeTeXFontInst* font = new XeTeXFontInst(filename, index, RsFix2D(pointSize), status);
     if (status != 0) {
         delete font;
         return NULL;
@@ -262,7 +185,7 @@ Fixed
 getSlant(XeTeXFont font)
 {
     float italAngle = ((XeTeXFontInst*)font)->getItalicAngle();
-    return D2Fix(tan(-italAngle * M_PI / 180.0));
+    return RsD2Fix(tan(-italAngle * M_PI / 180.0));
 }
 
 static unsigned int
