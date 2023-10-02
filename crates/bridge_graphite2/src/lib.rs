@@ -5,3 +5,6 @@
 //! *C* API into the Cargo build framework used by [Tectonic].
 //!
 //! [Tectonic]: https://tectonic-typesetting.github.io/
+
+#[test]
+fn linkage() {}
