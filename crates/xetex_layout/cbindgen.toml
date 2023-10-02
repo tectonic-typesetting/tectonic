@@ -1,0 +1,10 @@
+language = "C"
+cpp_compat = true
+style = "type"
+include_guard = "XETEX_LAYOUT_BINDINGS_H"
+includes = ["harfbuzz/hb.h", "freetype/freetype.h"]
+
+[export.rename]
+
+[enum]
+prefix_with_name = true
