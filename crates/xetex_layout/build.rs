@@ -190,7 +190,7 @@ fn main() {
 
     // Copy the static header file for C preprocessing convenience.
 
-    let mut main_header_src = manifest_dir;
+    let mut main_header_src = manifest_dir.clone();
     main_header_src.push("layout");
     main_header_src.push("tectonic_xetex_layout.h");
 
@@ -198,6 +198,15 @@ fn main() {
     main_header_dest.push("tectonic_xetex_layout.h");
 
     std::fs::copy(&main_header_src, &main_header_dest).expect("failed to copy main header");
+
+    let mut gen_header_src = manifest_dir;
+    gen_header_src.push("layout");
+    gen_header_src.push("layout_bindings.h");
+
+    let mut gen_header_dest = PathBuf::from(out_dir.clone());
+    gen_header_dest.push("layout_bindings.h");
+
+    std::fs::copy(&gen_header_src, &gen_header_dest).expect("failed to copy bindgen header");
 
     // Cargo exposes this as the environment variable DEP_XXX_INCLUDE_PATH,
     // where XXX is the "links" setting in Cargo.toml. This is the key element
