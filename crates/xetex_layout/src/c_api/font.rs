@@ -1,6 +1,6 @@
 use crate::c_api::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xbasename,
-    xmalloc, xstrdup, RsFix2D, SyncPtr,
+    xmalloc, xstrdup, Fixed, RsFix2D, SyncPtr,
 };
 use libc::{strcpy, strlen, strrchr};
 use std::alloc::{alloc, dealloc, Layout};
@@ -35,7 +35,7 @@ pub unsafe extern "C" fn _get_nominal_glyph(
     _: *mut (),
 ) -> hb_bool_t {
     let face = font_data as FT_Face;
-    *gid = FT_Get_Char_Index(face, ch);
+    *gid = FT_Get_Char_Index(face, ch as libc::c_ulong);
     return (*gid != 0) as hb_bool_t;
 }
 
@@ -48,7 +48,7 @@ pub unsafe extern "C" fn _get_variation_glyph(
     _: *mut (),
 ) -> hb_bool_t {
     let face = font_data as FT_Face;
-    *gid = FT_Face_GetCharVariantIndex(face, ch, vs);
+    *gid = FT_Face_GetCharVariantIndex(face, ch as libc::c_ulong, vs as libc::c_ulong);
     return (*gid != 0) as hb_bool_t;
 }
 
@@ -82,7 +82,7 @@ pub unsafe extern "C" fn _get_glyph_h_advance(
     gid: hb_codepoint_t,
     _: *mut (),
 ) -> hb_position_t {
-    _get_glyph_advance(font_data as FT_Face, gid, false)
+    _get_glyph_advance(font_data as FT_Face, gid, false) as hb_position_t
 }
 
 pub unsafe extern "C" fn _get_glyph_v_advance(
@@ -91,7 +91,7 @@ pub unsafe extern "C" fn _get_glyph_v_advance(
     gid: hb_codepoint_t,
     _: *mut (),
 ) -> hb_position_t {
-    _get_glyph_advance(font_data as FT_Face, gid, true)
+    _get_glyph_advance(font_data as FT_Face, gid, true) as hb_position_t
 }
 
 pub unsafe extern "C" fn _get_glyph_h_origin(
@@ -149,7 +149,7 @@ pub unsafe extern "C" fn _get_glyph_h_kerning(
     if error != 0 {
         0
     } else {
-        kerning.x
+        kerning.x as hb_position_t
     }
 }
 
@@ -174,10 +174,10 @@ pub unsafe extern "C" fn _get_glyph_extents(
 
     let error = FT_Load_Glyph(face, gid, FT_LOAD_NO_SCALE) != 0;
     if !error {
-        (*extents).x_bearing = (*(*face).glyph).metrics.horiBearingX;
-        (*extents).y_bearing = (*(*face).glyph).metrics.horiBearingY;
-        (*extents).width = (*(*face).glyph).metrics.width;
-        (*extents).height = -(*(*face).glyph).metrics.height;
+        (*extents).x_bearing = (*(*face).glyph).metrics.horiBearingX as hb_position_t;
+        (*extents).y_bearing = (*(*face).glyph).metrics.horiBearingY as hb_position_t;
+        (*extents).width = (*(*face).glyph).metrics.width as hb_position_t;
+        (*extents).height = -(*(*face).glyph).metrics.height as hb_position_t;
     }
 
     (!error) as hb_bool_t
@@ -199,8 +199,8 @@ pub unsafe extern "C" fn _get_glyph_contour_point(
         && (*(*face).glyph).format == FT_Glyph_Format::Outline
         && point_index < ((*(*face).glyph).outline.n_points as u32)
     {
-        *x = (*(*(*face).glyph).outline.points.add(point_index as usize)).x;
-        *y = (*(*(*face).glyph).outline.points.add(point_index as usize)).y;
+        *x = (*(*(*face).glyph).outline.points.add(point_index as usize)).x as hb_position_t;
+        *y = (*(*(*face).glyph).outline.points.add(point_index as usize)).y as hb_position_t;
         true
     } else {
         false
@@ -304,17 +304,18 @@ pub unsafe extern "C" fn _get_table(
     let face = user_data as FT_Face;
 
     let mut length = 0;
-    let error = FT_Load_Sfnt_Table(face, tag, 0, ptr::null_mut(), &mut length) != 0;
+    let error =
+        FT_Load_Sfnt_Table(face, tag as libc::c_ulong, 0, ptr::null_mut(), &mut length) != 0;
 
     let mut blob = ptr::null_mut();
     if !error {
         let table = alloc(Layout::array::<libc::c_char>(length as usize).unwrap());
         if !table.is_null() {
-            let error = FT_Load_Sfnt_Table(face, tag, 0, table, &mut length) != 0;
+            let error = FT_Load_Sfnt_Table(face, tag as libc::c_ulong, 0, table, &mut length) != 0;
             if !error {
                 blob = hb_blob_create(
                     table.cast(),
-                    length,
+                    length as libc::c_uint,
                     hb_memory_mode_t::Writable,
                     Box::into_raw(Box::new((length as usize, table))).cast(),
                     Some(table_free),
@@ -398,7 +399,7 @@ impl XeTeXFontBase {
             ft_lib,
             self.backing_data,
             sz as libc::c_long,
-            index,
+            index as libc::c_long,
             &mut self.ft_face,
         ) != 0;
         if error || !FT_IS_SCALABLE(self.ft_face) {
@@ -448,7 +449,7 @@ impl XeTeXFontBase {
             .get_font_table(FT_Sfnt_Tag::Post)
             .cast::<TT_Postscript>();
         if !post_table.is_null() {
-            self.italic_angle = RsFix2D((*post_table).italic_angle) as f32;
+            self.italic_angle = RsFix2D((*post_table).italic_angle as Fixed) as f32;
         }
 
         let os2_table = self.get_font_table(FT_Sfnt_Tag::Os2).cast::<TT_OS2>();
