@@ -140,6 +140,7 @@ mod c_api {
         name.add(pos)
     }
 
+    /// cbindgen:ignore
     extern "C" {
         fn ttstub_input_open(
             path: *const libc::c_char,
