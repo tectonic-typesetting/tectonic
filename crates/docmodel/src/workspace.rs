@@ -125,8 +125,8 @@ impl WorkspaceCreator {
     }
 
     /// Consume this object and attempt to create the new workspace.
-    pub fn create(self, bundle_loc: String) -> Result<Workspace> {
-        let doc = Document::create_for(&self, bundle_loc)?;
+    pub fn create(self, bundle_loc: String, extra_paths: Vec<PathBuf>) -> Result<Workspace> {
+        let doc = Document::create_for(&self, bundle_loc, extra_paths)?;
 
         let mut tex_dir = self.root_dir.clone();
         tex_dir.push("src");

@@ -17,11 +17,30 @@ the file are detailed below.
 name = <string>  # the document name
 bundle = <url or filesystem path>  # the source of the TeX bundle
 
+# Extra search paths for TeX sources, images, etc.
+#
+# This is particularly useful if you have files used
+# by multiple Tectonic documents. For example:
+#
+# repo-root/
+#  ├── resources/
+#  │   └── classes, images, other shared resources
+#  ├── doc1/
+#  │   ├── src/
+#  │   └── Tectonic.toml  <-- Contains `extra_paths = ["../resources"]`
+#  └── doc2/
+#      ├── src/
+#      └── Tectonic.toml  <-- Contains `extra_paths = ["../resources"]`
+extra_paths = ["", ""]
+
+
+
 # The doc.metadata table may contain arbitrary data.
 # It does not affect Tectonic in any way.
 [doc.metadata]
 pubish = false
 arr = [1, 2, [6, 7]]
+
 
 
 # One (of possibly many) output specifications.
