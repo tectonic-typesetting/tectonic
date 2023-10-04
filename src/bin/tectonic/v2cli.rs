@@ -5,8 +5,8 @@
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
 use std::{
-    convert::Infallible, env, ffi::OsString, io::Write, path::PathBuf, process, str::FromStr,
-    sync::Arc,
+    convert::Infallible, env, ffi::OsString, fs, io::Write, path::Path, path::PathBuf, process,
+    str::FromStr, sync::Arc,
 };
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
@@ -22,6 +22,7 @@ use tectonic::{
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
+use tectonic_errors::prelude::anyhow;
 use tectonic_status_base::plain::PlainStatusBackend;
 use tokio::runtime;
 use watchexec::event::ProcessEnd;
@@ -171,8 +172,8 @@ enum Commands {
     /// Create a new document project
     New(NewCommand),
 
-    /// Initializes a new document in the current directory
     #[structopt(name = "init")]
+    /// Initializes a new document in the current directory
     Init(InitCommand),
 
     #[structopt(name = "show")]
@@ -182,6 +183,10 @@ enum Commands {
     #[structopt(name = "watch")]
     /// Watch input files and execute commands on change
     Watch(WatchCommand),
+
+    #[structopt(external_subcommand)]
+    /// Runs the external command `tectonic-[command]` if one exists.
+    External(Vec<String>),
 }
 
 impl Commands {
@@ -195,6 +200,7 @@ impl Commands {
             Commands::Init(o) => o.customize(cc),
             Commands::Show(o) => o.customize(cc),
             Commands::Watch(o) => o.customize(cc),
+            Commands::External(_) => {}
         }
     }
 
@@ -208,6 +214,7 @@ impl Commands {
             Commands::Init(o) => o.execute(config, status),
             Commands::Show(o) => o.execute(config, status),
             Commands::Watch(o) => o.execute(config, status),
+            Commands::External(args) => do_external(args),
         }
     }
 }
@@ -756,4 +763,70 @@ impl ShowUserCacheDirCommand {
         println!("{}", cache.root().display());
         Ok(0)
     }
+}
+
+#[cfg(unix)]
+/// On Unix, exec() to replace ourselves with the child process. This function
+/// *should* never return.
+fn exec_or_spawn(cmd: &mut process::Command) -> Result<i32> {
+    use std::os::unix::process::CommandExt;
+
+    // exec() only returns an io::Error directly, since on success it never
+    // returns; the following tomfoolery transforms it into our Result
+    // machinery as desired.
+    Err(cmd.exec().into())
+}
+
+#[cfg(not(unix))]
+/// On other platforms, just run the process and wait for it.
+fn exec_or_spawn(cmd: &mut process::Command) -> Result<i32> {
+    // code() can only return None on Unix when the subprocess was killed by a
+    // signal. This function only runs if we're not on Unix, so we'll always
+    // get Some.
+    Ok(cmd.status()?.code().unwrap())
+}
+
+#[cfg(unix)]
+fn is_executable<P: AsRef<Path>>(path: P) -> bool {
+    use std::os::unix::prelude::*;
+    fs::metadata(path)
+        .map(|metadata| metadata.is_file() && metadata.permissions().mode() & 0o111 != 0)
+        .unwrap_or(false)
+}
+
+#[cfg(windows)]
+fn is_executable<P: AsRef<Path>>(path: P) -> bool {
+    fs::metadata(path)
+        .map(|metadata| metadata.is_file())
+        .unwrap_or(false)
+}
+
+fn search_directories() -> Vec<PathBuf> {
+    let mut dirs = Vec::new();
+
+    if let Some(val) = env::var_os("PATH") {
+        dirs.extend(env::split_paths(&val));
+    }
+    dirs
+}
+
+#[allow(clippy::redundant_closure)]
+/// Run an external command by executing a subprocess.
+fn do_external(all_args: Vec<String>) -> Result<i32> {
+    let (cmd, args) = all_args.split_first().unwrap();
+
+    let command_exe = format!("tectonic-{}{}", cmd, env::consts::EXE_SUFFIX);
+    let path = search_directories()
+        .iter()
+        .map(|dir| dir.join(&command_exe))
+        .find(|file| is_executable(file));
+
+    let command = path.ok_or_else(|| {
+        anyhow!(
+            "no internal or external subcommand `{0}` is available (install `tectonic-{0}`?)",
+            cmd
+        )
+    })?;
+
+    exec_or_spawn(process::Command::new(command).args(args))
 }
