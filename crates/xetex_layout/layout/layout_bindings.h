@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include "harfbuzz/hb.h"
 #include "harfbuzz/hb-ft.h"
+#include "fontconfig/fontconfig.h"
+typedef struct XeTeXFont_rec* XeTeXFont;
 
 #define LEFT_SIDE 0
 
@@ -21,7 +23,12 @@ typedef struct {
   float yMax;
 } GlyphBBox;
 
+typedef uint32_t OTTag;
+
+typedef FcPattern *PlatformFontRef;
+
 typedef struct {
+  void *vtable;
   unsigned short unitsPerEm;
   float pointSize;
   float ascent;
@@ -61,11 +68,35 @@ int32_t get_cp_code(int32_t font_num, uint32_t code, int32_t side);
  */
 const char *xbasename(const char *name);
 
+void *getFontTablePtr(XeTeXFont font, OTTag table_tag);
+
+Fixed getSlant(XeTeXFont font);
+
+unsigned int countGlyphs(XeTeXFont font);
+
+float getGlyphWidth(XeTeXFont font, uint32_t gid);
+
+void setFontLayoutDir(XeTeXFont font, int vertical);
+
 FT_Fixed _get_glyph_advance(FT_Face face, unsigned int gid, bool vertical);
 
 hb_font_funcs_t *_get_font_funcs(void);
 
 hb_blob_t *_get_table(hb_face_t*, hb_tag_t tag, void *user_data);
+
+XeTeXFont createFont(PlatformFontRef font_ref, Fixed point_size);
+
+XeTeXFont createFontFromFile(const char *filename, int index, Fixed point_size);
+
+void deleteFont(XeTeXFont font);
+
+unsigned int getLargerScriptListTable(XeTeXFont font, hb_tag_t **script_list);
+
+unsigned int countScripts(XeTeXFont font);
+
+unsigned int countLanguages(XeTeXFont font, hb_tag_t script);
+
+unsigned int countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language);
 
 void initializeFont(XeTeXFontBase *self, const char *pathname, int index, int *status);
 

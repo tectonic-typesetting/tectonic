@@ -63,7 +63,6 @@ typedef struct {
     float y;
 } FloatPoint;
 
-typedef uint32_t OTTag;
 typedef uint16_t GlyphID;
 
 typedef struct XeTeXFont_rec* XeTeXFont;
@@ -78,11 +77,6 @@ extern Fixed loaded_font_design_size;
 void terminate_font_manager(void);
 void destroy_font_manager(void);
 
-XeTeXFont createFont(PlatformFontRef fontRef, Fixed pointSize);
-XeTeXFont createFontFromFile(const char* filename, int index, Fixed pointSize);
-
-void setFontLayoutDir(XeTeXFont font, int vertical);
-
 PlatformFontRef findFontByName(const char* name, char* var, double size);
 
 char getReqEngine(void);
@@ -93,22 +87,9 @@ char* getFontFilename(XeTeXLayoutEngine engine, uint32_t* index);
 
 double getDesignSize(XeTeXFont font);
 
-void deleteFont(XeTeXFont font);
-
-void* getFontTablePtr(XeTeXFont font, uint32_t tableTag);
-
-Fixed getSlant(XeTeXFont font);
-
-unsigned int countScripts(XeTeXFont font);
-unsigned int countLanguages(XeTeXFont font, hb_tag_t script);
-unsigned int countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language);
-unsigned int countGlyphs(XeTeXFont font);
-
 hb_tag_t getIndScript(XeTeXFont font, unsigned int index);
 hb_tag_t getIndLanguage(XeTeXFont font, hb_tag_t script, unsigned int index);
 hb_tag_t getIndFeature(XeTeXFont font, hb_tag_t script, hb_tag_t language, unsigned int index);
-
-float getGlyphWidth(XeTeXFont font, uint32_t gid);
 
 XeTeXLayoutEngine createLayoutEngine(PlatformFontRef fontRef, XeTeXFont font, hb_tag_t script, char *language,
                         hb_feature_t* features, int nFeatures, char **shapers, uint32_t rgbValue,
