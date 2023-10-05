@@ -89,44 +89,6 @@ destroy_font_manager()
     XeTeXFontMgr::Destroy();
 }
 
-XeTeXFont
-createFont(PlatformFontRef fontRef, Fixed pointSize)
-{
-    int status = 0;
-#ifdef XETEX_MAC
-    XeTeXFontInst* font = new XeTeXFontInst_Mac(fontRef, RsFix2D(pointSize), status);
-#else
-    FcChar8* pathname = 0;
-    FcPatternGetString(fontRef, FC_FILE, 0, &pathname);
-    int index;
-    FcPatternGetInteger(fontRef, FC_INDEX, 0, &index);
-    XeTeXFontInst* font = new XeTeXFontInst((const char*)pathname, index, RsFix2D(pointSize), status);
-#endif
-    if (status != 0) {
-        delete font;
-        return NULL;
-    }
-    return (XeTeXFont)font;
-}
-
-XeTeXFont
-createFontFromFile(const char* filename, int index, Fixed pointSize)
-{
-    int status = 0;
-    XeTeXFontInst* font = new XeTeXFontInst(filename, index, RsFix2D(pointSize), status);
-    if (status != 0) {
-        delete font;
-        return NULL;
-    }
-    return (XeTeXFont)font;
-}
-
-void
-setFontLayoutDir(XeTeXFont font, int vertical)
-{
-    ((XeTeXFontInst*)font)->setLayoutDirVertical(vertical != 0);
-}
-
 PlatformFontRef
 findFontByName(const char* name, char* var, double size)
 {
@@ -169,62 +131,6 @@ getFontRef(XeTeXLayoutEngine engine)
     return engine->fontRef;
 }
 
-void
-deleteFont(XeTeXFont font)
-{
-    delete (XeTeXFontInst*)font;
-}
-
-void*
-getFontTablePtr(XeTeXFont font, uint32_t tableTag)
-{
-    return const_cast<void*>(((XeTeXFontInst*)font)->getFontTable(tableTag));
-}
-
-Fixed
-getSlant(XeTeXFont font)
-{
-    float italAngle = ((XeTeXFontInst*)font)->getItalicAngle();
-    return RsD2Fix(tan(-italAngle * M_PI / 180.0));
-}
-
-static unsigned int
-getLargerScriptListTable(XeTeXFont font, hb_tag_t** scriptList)
-{
-    unsigned int rval = 0;
-
-    hb_face_t* face = hb_font_get_face(((XeTeXFontInst*)font)->getHbFont());
-
-    hb_tag_t* scriptListSub = NULL;
-    hb_tag_t* scriptListPos = NULL;
-
-    unsigned int scriptCountSub = hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, 0, NULL, NULL);
-    scriptListSub = (hb_tag_t*) xcalloc(scriptCountSub, sizeof(hb_tag_t*));
-    hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, 0, &scriptCountSub, scriptListSub);
-
-    unsigned int scriptCountPos = hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GPOS, 0, NULL, NULL);
-    scriptListPos = (hb_tag_t*) xcalloc(scriptCountPos, sizeof(hb_tag_t*));
-    hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, 0, &scriptCountPos, scriptListPos);
-
-    if (scriptCountSub > scriptCountPos) {
-        if (scriptList != NULL)
-            *scriptList = scriptListSub;
-        rval = scriptCountSub;
-    } else {
-        if (scriptList != NULL)
-            *scriptList = scriptListPos;
-        rval = scriptCountPos;
-    }
-
-    return rval;
-}
-
-unsigned int
-countScripts(XeTeXFont font)
-{
-    return getLargerScriptListTable(font, NULL);
-}
-
 hb_tag_t
 getIndScript(XeTeXFont font, unsigned int index)
 {
@@ -236,28 +142,6 @@ getIndScript(XeTeXFont font, unsigned int index)
     if (scriptList != NULL) {
         if (index < scriptCount)
             rval = scriptList[index];
-    }
-
-    return rval;
-}
-
-unsigned int
-countLanguages(XeTeXFont font, hb_tag_t script)
-{
-    unsigned int rval = 0;
-
-    hb_face_t* face = hb_font_get_face(((XeTeXFontInst*)font)->getHbFont());
-    hb_tag_t* scriptList;
-
-    unsigned int scriptCount = getLargerScriptListTable(font, &scriptList);
-    if (scriptList != NULL) {
-        for (unsigned int i = 0; i < scriptCount; i++) {
-            if (scriptList[i] == script) {
-                rval += hb_ot_layout_script_get_language_tags (face, HB_OT_TAG_GSUB, i, 0, NULL, NULL);
-                rval += hb_ot_layout_script_get_language_tags (face, HB_OT_TAG_GPOS, i, 0, NULL, NULL);
-                break;
-            }
-        }
     }
 
     return rval;
@@ -299,26 +183,6 @@ getIndLanguage(XeTeXFont font, hb_tag_t script, unsigned int index)
                 }
 
                 free(langList);
-            }
-        }
-    }
-
-    return rval;
-}
-
-unsigned int
-countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language)
-{
-    unsigned int rval = 0;
-
-    hb_face_t* face = hb_font_get_face(((XeTeXFontInst*)font)->getHbFont());
-
-    for (int i = 0; i < 2; ++i) {
-        unsigned int scriptIndex, langIndex = 0;
-        hb_tag_t tableTag = i == 0 ? HB_OT_TAG_GSUB : HB_OT_TAG_GPOS;
-        if (hb_ot_layout_table_find_script(face, tableTag, script, &scriptIndex)) {
-            if (hb_ot_layout_script_select_language(face, tableTag, scriptIndex, 1, &language, &langIndex) || language == 0) {
-                rval += hb_ot_layout_language_get_feature_tags(face, tableTag, scriptIndex, langIndex, 0, NULL, NULL);
             }
         }
     }
@@ -576,18 +440,6 @@ findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine, uint32_t id, const cha
     return rval;
 }
 
-float
-getGlyphWidth(XeTeXFont font, uint32_t gid)
-{
-    return ((XeTeXFontInst*)font)->getGlyphWidth(gid);
-}
-
-unsigned int
-countGlyphs(XeTeXFont font)
-{
-    return ((XeTeXFontInst*)font)->getNumGlyphs();
-}
-
 XeTeXFont
 getFont(XeTeXLayoutEngine engine)
 {
@@ -649,7 +501,7 @@ void
 deleteLayoutEngine(XeTeXLayoutEngine engine)
 {
     hb_buffer_destroy(engine->hbBuffer);
-    delete engine->font;
+    deleteFont((XeTeXFont)engine->font);
     free(engine->shaper);
     if(engine->shaperListToFree) {
       free(engine->ShaperList);
@@ -879,7 +731,7 @@ getGlyphBounds(XeTeXLayoutEngine engine, uint32_t glyphID, GlyphBBox* bbox)
 float
 getGlyphWidthFromEngine(XeTeXLayoutEngine engine, uint32_t glyphID)
 {
-    return engine->extend * engine->font->getGlyphWidth(glyphID);
+    return engine->extend * getGlyphWidth((XeTeXFont)engine->font, glyphID);
 }
 
 void
