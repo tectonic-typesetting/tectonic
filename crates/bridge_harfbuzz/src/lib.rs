@@ -13,6 +13,13 @@ mod linkage {
     use tectonic_bridge_graphite2 as clippyrenamehack1;
 }
 
+const fn hb_tag(text: &[u8; 4]) -> u32 {
+    u32::from_be_bytes(*text)
+}
+
+pub const HB_OT_TAG_GSUB: u32 = hb_tag(b"GSUB");
+pub const HB_OT_TAG_GPOS: u32 = hb_tag(b"GPOS");
+
 pub type hb_bool_t = libc::c_int;
 pub type hb_codepoint_t = u32;
 pub type hb_position_t = i32;
@@ -209,6 +216,46 @@ extern "C" {
     );
     pub fn hb_font_set_scale(font: *mut hb_font_t, x_scale: libc::c_int, y_scale: libc::c_int);
     pub fn hb_font_set_ppem(font: *mut hb_font_t, x_ppem: libc::c_uint, y_ppem: libc::c_uint);
+    pub fn hb_font_destroy(font: *mut hb_font_t);
+    pub fn hb_font_get_face(font: *mut hb_font_t) -> *mut hb_face_t;
+    pub fn hb_ot_layout_table_get_script_tags(
+        face: *mut hb_face_t,
+        table_tag: hb_tag_t,
+        start_offset: libc::c_uint,
+        script_count: *mut libc::c_uint,
+        script_tags: *mut hb_tag_t,
+    ) -> libc::c_uint;
+    pub fn hb_ot_layout_script_get_language_tags(
+        face: *mut hb_face_t,
+        table_tag: hb_tag_t,
+        script_index: libc::c_uint,
+        start_offset: libc::c_uint,
+        language_count: *mut libc::c_uint,
+        script_tags: *mut hb_tag_t,
+    ) -> libc::c_uint;
+    pub fn hb_ot_layout_table_find_script(
+        face: *mut hb_face_t,
+        table_tag: hb_tag_t,
+        script_tag: hb_tag_t,
+        script_index: *mut libc::c_uint,
+    ) -> hb_bool_t;
+    pub fn hb_ot_layout_script_select_language(
+        face: *mut hb_face_t,
+        table_tag: hb_tag_t,
+        script_index: libc::c_uint,
+        language_count: libc::c_uint,
+        language_tags: *const hb_tag_t,
+        language_index: *mut libc::c_uint,
+    ) -> hb_bool_t;
+    pub fn hb_ot_layout_language_get_feature_tags(
+        face: *mut hb_face_t,
+        table_tag: hb_tag_t,
+        script_index: libc::c_uint,
+        language_index: libc::c_uint,
+        start_offset: libc::c_uint,
+        feature_count: *mut libc::c_uint,
+        feature_tags: *mut hb_tag_t,
+    ) -> libc::c_uint;
 }
 
 #[test]

@@ -28,12 +28,15 @@ mod linkage {
 }
 
 mod c_api {
+    use crate::c_api::font::XeTeXFontBase;
     use std::collections::BTreeMap;
     use std::ffi::CStr;
     use std::sync::Mutex;
     use tectonic_bridge_core::FileFormat;
     use tectonic_io_base::InputHandle;
 
+    /// cbindgen:ignore
+    mod fc;
     mod font;
 
     pub(crate) struct SyncPtr<T>(*mut T);
@@ -58,6 +61,10 @@ mod c_api {
     }
 
     pub type Fixed = i32;
+    pub type OTTag = u32;
+    /// cbindgen:ignore
+    pub type XeTeXFont = *mut XeTeXFontBase;
+    type PlatformFontRef = *mut fc::FcPattern;
 
     #[no_mangle]
     pub extern "C" fn RsFix2D(f: Fixed) -> f64 {
@@ -136,6 +143,32 @@ mod c_api {
         name.add(pos)
     }
 
+    #[no_mangle]
+    pub unsafe extern "C" fn getFontTablePtr(font: XeTeXFont, table_tag: OTTag) -> *mut () {
+        (*font).get_font_table_ot(table_tag)
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn getSlant(font: XeTeXFont) -> Fixed {
+        let angle = (*font).italic_angle();
+        RsD2Fix(f32::tan(-angle * std::f32::consts::PI / 180.0) as f64)
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn countGlyphs(font: XeTeXFont) -> libc::c_uint {
+        (*font).get_num_glyphs() as libc::c_uint
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn getGlyphWidth(font: XeTeXFont, gid: u32) -> f32 {
+        (*font).get_glyph_width(gid)
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn setFontLayoutDir(font: XeTeXFont, vertical: libc::c_int) {
+        (*font).set_layout_dir_vertical(vertical != 0)
+    }
+
     /// cbindgen:ignore
     extern "C" {
         fn ttstub_input_open(
@@ -152,6 +185,7 @@ mod c_api {
         fn ttstub_input_close(handle: *mut InputHandle) -> libc::c_int;
         fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
         fn xmalloc(s: usize) -> *mut libc::c_char;
+        fn xcalloc(elems: usize, s: usize) -> *mut libc::c_char;
     }
 }
 

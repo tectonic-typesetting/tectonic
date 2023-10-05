@@ -54,9 +54,8 @@ authorization from the copyright holders.
 
 // create specific subclasses for each supported platform
 
-class XeTeXFontInst
+struct XeTeXFontInst
 {
-protected:
     unsigned short m_unitsPerEM;
     float m_pointSize;
     float m_ascent;
@@ -74,15 +73,10 @@ protected:
     FT_Byte *m_backingData, *m_backingData2;
     hb_font_t* m_hbFont;
 
-public:
-    XeTeXFontInst(float pointSize, int &status);
     XeTeXFontInst(const char* filename, int index, float pointSize, int &status);
 
     virtual ~XeTeXFontInst();
 
-    void initialize(const char* pathname, int index, int &status);
-
-    void *getFontTable(OTTag tableTag) const;
     void *getFontTable(FT_Sfnt_Tag tableTag) const;
 
     const char *getFilename(uint32_t* index) const
@@ -91,7 +85,6 @@ public:
         return m_filename;
     }
     hb_font_t *getHbFont() const { return m_hbFont; }
-    void setLayoutDirVertical(bool vertical);
     bool getLayoutDirVertical() const { return m_vertical; }
 
     float getPointSize() const { return m_pointSize; }
@@ -99,16 +92,12 @@ public:
     float getDescent() const { return m_descent; }
     float getCapHeight() const { return m_capHeight; }
     float getXHeight() const { return m_xHeight; }
-    float getItalicAngle() const { return m_italicAngle; }
 
     GlyphID mapCharToGlyph(UChar32 ch) const;
     GlyphID mapGlyphToIndex(const char* glyphName) const;
 
-    uint16_t getNumGlyphs() const;
-
     void getGlyphBounds(GlyphID glyph, GlyphBBox* bbox);
 
-    float getGlyphWidth(GlyphID glyph);
     void getGlyphHeightDepth(GlyphID glyph, float *ht, float* dp);
     void getGlyphSidebearings(GlyphID glyph, float* lsb, float* rsb);
     float getGlyphItalCorr(GlyphID glyph);

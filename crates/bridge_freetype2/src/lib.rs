@@ -382,4 +382,5 @@ extern "C" {
     ) -> FT_Error;
     pub fn FT_Attach_Stream(face: FT_Face, parameters: *mut FT_Open_Args) -> FT_Error;
     pub fn FT_Get_Sfnt_Table(face: FT_Face, tag: FT_Sfnt_Tag) -> *mut ();
+    pub fn FT_Done_Face(face: FT_Face) -> FT_Error;
 }
