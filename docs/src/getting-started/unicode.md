@@ -100,8 +100,8 @@ text.
 ## Unicode Input Text
 
 Tectonic’s support for Unicode broadens its *output* capabilities through the
-use of modern fonts. But that’s not all: Unicode also broadens Tectonic’s the
-*inputs* that Tectonic accepts.
+use of modern fonts. But that’s not all: Unicode also broadens the *inputs* 
+that Tectonic accepts.
 
 With Tectonic, you can type non-English characters directly into your input TeX
 files, which are parsed assuming the virtually-universal [UTF-8 Unicode text
