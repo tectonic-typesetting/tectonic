@@ -16,7 +16,11 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 use tectonic_bundles::{
-    cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
+    cache::{BundleCache, Cache},
+    dir::DirBundle,
+    itar::ItarBundle,
+    zip::ZipBundle,
+    Bundle,
 };
 use tectonic_io_base::app_dirs;
 use url::Url;
@@ -122,13 +126,19 @@ impl PersistentConfig {
         custom_cache_root: Option<&Path>,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        let mut cache = if let Some(root) = custom_cache_root {
+        let cache = if let Some(root) = custom_cache_root {
             Cache::get_for_custom_directory(root)
         } else {
             Cache::get_user_default()?
         };
 
-        let bundle = cache.open::<IndexedTarBackend>(url, only_cached, status)?;
+        let bundle = BundleCache::new(
+            Box::new(ItarBundle::new(url.to_string(), status)?),
+            only_cached,
+            status,
+            cache.root().to_path_buf(),
+        )?;
+
         Ok(Box::new(bundle) as _)
     }
 

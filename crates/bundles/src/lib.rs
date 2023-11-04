@@ -11,16 +11,18 @@
 //!
 //! This crate provides the following bundle implementations:
 //!
-//! - [`cache::CachingBundle`] for access to remote bundles with local
-//!   filesystem caching.
+//! - [`cache::BundleCache`] provides filesystem-backed caching for any bundle
+//! - [`itar::ItarBundle`] provides filesystem-backed caching for any bundle
 //! - [`dir::DirBundle`] turns a directory full of files into a bundle; it is
 //!   useful for testing and lightweight usage.
 //! - [`zip::ZipBundle`] for a ZIP-format bundle.
 
+use cache::BundleCache;
+use itar::ItarBundle;
 use std::{io::Read, str::FromStr};
 use tectonic_errors::{anyhow::bail, atry, Result};
 use tectonic_io_base::{digest, digest::DigestData, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
+use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 
 pub mod cache;
 pub mod dir;
@@ -83,6 +85,18 @@ pub trait Bundle: IoProvider {
     /// might be fairly substantial (although we are talking megabytes, not
     /// gigabytes).
     fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>>;
+
+    /// Return a string that corresponds to this bundle's "location"
+    ///
+    /// The meaning of this depends on the bundle:
+    /// For web bundles, location should be a link.
+    /// For local files, use the bundle's digest since it's easy to get.
+    ///
+    /// This allows us to identify web bundles without an internet connection
+    fn get_location(&mut self) -> String {
+        let mut nop = NoopStatusBackend {};
+        return self.get_digest(&mut nop).unwrap().to_string();
+    }
 }
 
 impl<B: Bundle + ?Sized> Bundle for Box<B> {
@@ -92,6 +106,10 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 
     fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
         (**self).all_files(status)
+    }
+
+    fn get_location(&mut self) -> String {
+        (**self).get_location()
     }
 }
 
@@ -131,8 +149,14 @@ pub fn get_fallback_bundle(
     format_version: u32,
     only_cached: bool,
     status: &mut dyn StatusBackend,
-) -> Result<cache::CachingBundle<itar::IndexedTarBackend>> {
+) -> Result<Box<dyn Bundle>> {
     let url = get_fallback_bundle_url(format_version);
-    let mut cache = cache::Cache::get_user_default()?;
-    cache.open(&url, only_cached, status)
+    let cache = cache::Cache::get_user_default()?;
+
+    Ok(Box::new(BundleCache::new(
+        Box::new(ItarBundle::new(url, status)?),
+        only_cached,
+        status,
+        cache.root().to_path_buf(),
+    )?))
 }
