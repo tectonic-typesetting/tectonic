@@ -751,9 +751,8 @@ impl ShowUserCacheDirCommand {
     }
 
     fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
-        use tectonic_bundles::cache::Cache;
-        let cache = Cache::get_user_default()?;
-        println!("{}", cache.root().display());
+        use tectonic_bundles::cache::BundleCache;
+        println!("{}", BundleCache::default_dir()?.display());
         Ok(0)
     }
 }

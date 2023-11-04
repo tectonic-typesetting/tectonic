@@ -4,17 +4,8 @@
 //! Local caching of bundle data.
 //!
 //! This module implements Tectonic’s local filesystem caching mechanism for TeX
-//! support files. To enable efficient caching with proper invalidation
-//! semantics, the caching layer does *not* merely wrap [`IoProvider`]
-//! implementations. Instead, a cacheable bundle must implement the
-//! [`CacheBackend`] trait defined in this module. An example of such a bundle
-//! is the [`crate::itar::IndexedTarBundle`] for bundles served over HTTP.
-//!
-//! In order to access a cacheable bundle, you need a handle to a local
-//! [`Cache`], probably obtained with [`Cache::get_user_default()`], and a URL,
-//! which you’ll pass to [`Cache::open()`]. When using this function, you must
-//! explicitly specify the concrete [`CacheBackend`] type that will service
-//! backend requests.
+//! support files. To make a cachable bundle, wrap any [`Bundle`] with a
+//! [`BundleCache`]. Make sure [`Bundle::get_location()`] is properly implemented!
 
 use fs2::FileExt;
 use std::{
@@ -35,48 +26,6 @@ use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
 
 use crate::Bundle;
 
-/// A cache of data from one or more bundles using the local filesystem.
-#[derive(Debug)]
-pub struct Cache {
-    root: PathBuf,
-}
-
-impl Cache {
-    /// Get a handle to a bundle cache, using default per-user settings.
-    ///
-    /// The cache location defaults to the `AppDataType::UserCache`
-    /// provided by `app_dirs2` but can be overwritten using the
-    /// `TECTONIC_CACHE_DIR` environment variable.
-    ///
-    /// This method may perform I/O to create the user cache directory, so it is
-    /// fallible. (Due to its `app_dirs2` implementation, it would have to be
-    /// fallible even if it didn't perform I/O.)
-    pub fn get_user_default() -> Result<Self> {
-        let env_cache_path = env::var_os("TECTONIC_CACHE_DIR");
-
-        let cache_path = match env_cache_path {
-            Some(env_cache_path) => {
-                let env_cache_path = env_cache_path.into();
-                fs::create_dir_all(&env_cache_path)?;
-                env_cache_path
-            }
-            None => app_dirs::ensure_user_cache_dir("")?,
-        };
-
-        Ok(Cache { root: cache_path })
-    }
-
-    /// Get a handle to a bundle cache, using a custom cache directory.
-    pub fn get_for_custom_directory<P: Into<PathBuf>>(root: P) -> Self {
-        Cache { root: root.into() }
-    }
-
-    /// Get the root directory of this cache.
-    pub fn root(&self) -> &Path {
-        &self.root
-    }
-}
-
 /// Information about a cached file.
 #[derive(Clone, Copy, Debug)]
 struct CachedFileInfo {
@@ -91,14 +40,14 @@ struct CachedFileInfo {
     digest: DigestData,
 }
 
-/// A caching bundle that obtains files from some a backend.
+/// A cache wrapper for another bundle.
 ///
 /// This bundle implementation is the key to Tectonic’s ability to download TeX
-/// support files on the fly. The cache backend is generally expected to be some
-/// kind of network-based resource, and the caching scheme is designed so that a
-/// document build can avoid touching the network altogether if no new files
-/// need to be downloaded.
-//#[derive(Debug)]
+/// support files on the fly. This is usually used to wrap some kind of network-
+/// based bundle, but can be used with any struct that implements [`Bundle`].
+///
+/// The caching scheme here is designed so that a document build may avoid
+/// touching the network altogether if no new files need to be downloaded.
 pub struct BundleCache {
     /// The cached value of the backend’s content digest.
     ///
@@ -159,6 +108,30 @@ pub struct BundleCache {
 }
 
 impl BundleCache {
+    /// Returns default location of a user cache.
+    ///
+    /// The cache location defaults to the `AppDataType::UserCache`
+    /// provided by `app_dirs2` but can be overwritten using the
+    /// `TECTONIC_CACHE_DIR` environment variable.
+    ///
+    /// This method may perform I/O to create the user cache directory, so it is
+    /// fallible. (Due to its `app_dirs2` implementation, it would have to be
+    /// fallible even if it didn't perform I/O.)
+    pub fn default_dir() -> Result<PathBuf> {
+        let env_cache_path = env::var_os("TECTONIC_CACHE_DIR");
+
+        let cache_path = match env_cache_path {
+            Some(env_cache_path) => {
+                let env_cache_path = env_cache_path.into();
+                fs::create_dir_all(&env_cache_path)?;
+                env_cache_path
+            }
+            None => app_dirs::ensure_user_cache_dir("")?,
+        };
+
+        Ok(cache_path)
+    }
+
     /// Make a new filesystem-backed cache from `bundle`.
     pub fn new(
         mut bundle: Box<dyn Bundle>,
@@ -227,7 +200,10 @@ impl BundleCache {
 
         // Now that we have the backend content digest, we know which manifest
         // to use. Read it in, if it exists.
-        let manifest_path = make_txt_path(&manifest_base, &cached_digest.to_string());
+
+        let manifest_path = manifest_base
+            .join(cached_digest.to_string())
+            .with_extension("txt");
         let manifest = Self::parse_manifest(&manifest_path, status)?;
 
         Ok(BundleCache {
@@ -508,6 +484,10 @@ impl Bundle for BundleCache {
             }
         });
     }
+
+    fn get_location(&mut self) -> String {
+        self.bundle.get_location()
+    }
 }
 
 /// A convenience method to provide a better error message when writing to a created file.
@@ -537,9 +517,4 @@ fn ensure_cache_dir(root: &Path, path: &str) -> Result<PathBuf> {
         ["failed to create directory `{}` or one of its parents", full_path.display()]
     );
     Ok(full_path)
-}
-
-/// Convenience to generate a text filename
-fn make_txt_path(base: &Path, name: &str) -> PathBuf {
-    base.join(name).with_extension("txt")
 }

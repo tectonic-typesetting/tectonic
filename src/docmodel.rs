@@ -14,11 +14,7 @@ use std::{
 };
 use tectonic_bridge_core::SecuritySettings;
 use tectonic_bundles::{
-    cache::{BundleCache, Cache},
-    dir::DirBundle,
-    itar::ItarBundle,
-    zip::ZipBundle,
-    Bundle,
+    cache::BundleCache, dir::DirBundle, itar::ItarBundle, zip::ZipBundle, Bundle,
 };
 use tectonic_docmodel::{
     document::{BuildTargetType, Document},
@@ -120,13 +116,11 @@ impl DocumentExt for Document {
             Ok(Box::new(bundle))
         } else if let Ok(url) = Url::parse(&self.bundle_loc) {
             if url.scheme() != "file" {
-                let cache = Cache::get_user_default()?;
-
                 let bundle = BundleCache::new(
                     Box::new(ItarBundle::new(self.bundle_loc.clone(), status)?),
                     setup_options.only_cached,
                     status,
-                    cache.root().to_path_buf(),
+                    BundleCache::default_dir()?,
                 )?;
 
                 Ok(Box::new(bundle))

@@ -151,12 +151,11 @@ pub fn get_fallback_bundle(
     status: &mut dyn StatusBackend,
 ) -> Result<Box<dyn Bundle>> {
     let url = get_fallback_bundle_url(format_version);
-    let cache = cache::Cache::get_user_default()?;
 
     Ok(Box::new(BundleCache::new(
         Box::new(ItarBundle::new(url, status)?),
         only_cached,
         status,
-        cache.root().to_path_buf(),
+        BundleCache::default_dir()?,
     )?))
 }
