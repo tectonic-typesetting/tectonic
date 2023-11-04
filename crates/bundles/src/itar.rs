@@ -21,11 +21,15 @@ use std::io::BufRead;
 use std::io::Cursor;
 use std::io::Read;
 use std::{collections::HashMap, io::BufReader};
+use std::{thread, time};
 use tectonic_errors::prelude::*;
 use tectonic_geturl::{DefaultBackend, DefaultRangeReader, GetUrlBackend, RangeReader};
 use tectonic_io_base::OpenResult;
 use tectonic_io_base::{InputHandle, InputOrigin, IoProvider};
 use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
+
+const MAX_HTTP_ATTEMPTS: usize = 4;
+const RETRY_SLEEP_MS: u64 = 250;
 
 /// The internal file-information struct used by the [`ItarBundle`].
 #[derive(Clone, Copy, Debug)]
@@ -122,19 +126,50 @@ impl IoProvider for ItarBundle {
             None => return OpenResult::NotAvailable,
         };
 
-        let mut stream = match self.reader.read_range(info.offset, info.length) {
-            Ok(r) => r,
-            Err(e) => {
-                tt_warning!(status, "failure requesting \"{}\" from network", name; e);
-                return OpenResult::Err(e);
-            }
-        };
-
         let mut buf = Vec::with_capacity(info.length);
-        match stream.read_to_end(&mut buf) {
-            Err(e) => return OpenResult::Err(e.into()),
-            _ => {}
-        };
+
+        // Our HTTP implementation actually has problems with zero-sized ranged
+        // reads (Azure gives us a 200 response, which we don't properly
+        // handle), but when the file is 0-sized we're all set anyway!
+        if info.length == 0 {
+            return OpenResult::Ok(InputHandle::new_read_only(
+                name,
+                Cursor::new(buf),
+                InputOrigin::Other,
+            ));
+        }
+
+        // Get file with retries
+        for n in 0..MAX_HTTP_ATTEMPTS {
+            let mut stream = match self.reader.read_range(info.offset, info.length) {
+                Ok(r) => r,
+                Err(e) => {
+                    tt_warning!(status, "failure requesting \"{}\" from network", name; e);
+                    thread::sleep(time::Duration::from_millis(RETRY_SLEEP_MS));
+                    continue;
+                }
+            };
+
+            if let Err(e) = stream.read_to_end(&mut buf) {
+                tt_warning!(status, "failure downloading \"{}\" from network", name; e.into());
+                thread::sleep(time::Duration::from_millis(RETRY_SLEEP_MS));
+                continue;
+            }
+
+            if n == MAX_HTTP_ATTEMPTS - 1 {
+                // All attempts failed
+                return OpenResult::Err(anyhow!(
+                    "failed to retrieve \"{}\" from the network;
+                    this most probably is not Tectonic's fault \
+                    -- please check your network connection.",
+                    name
+                ));
+            } else if n != 0 {
+                // At least one attempt failed
+                tt_note!(status, "download succeeded after retry");
+            }
+            break;
+        }
 
         return OpenResult::Ok(InputHandle::new_read_only(
             name,
