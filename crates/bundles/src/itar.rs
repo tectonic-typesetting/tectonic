@@ -70,8 +70,9 @@ impl ItarBundle {
     /// Fill self.index
     fn get_index(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
         let mut geturl_backend = DefaultBackend::default();
+        let resolved_url = geturl_backend.resolve_url(&self.url, status)?;
 
-        let index_url = format!("{}.index.gz", &self.url);
+        let index_url = format!("{}.index.gz", &resolved_url);
         let reader =
             bufread::GzDecoder::new(BufReader::new(geturl_backend.get_url(&index_url, status)?));
 
