@@ -9,7 +9,7 @@
 
 use fs2::FileExt;
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     env,
     fs::{self, File},
     io::{BufRead, BufReader, Error as IoError, ErrorKind as IoErrorKind, Read, Write},
@@ -62,7 +62,10 @@ pub struct BundleCache {
     /// This maps filenames to summary information that can then be used to
     /// retrieve file data from [`Self::data_base`]. The contents are loaded
     /// from the manifest file if the cache is non-empty.
-    contents: HashMap<String, CachedFileInfo>,
+    manifest: HashMap<String, CachedFileInfo>,
+
+    /// A list of all the files in this bundle
+    index: HashSet<String>,
 
     /// If true, only use cached files -- never connect to the backend.
     ///
@@ -99,6 +102,11 @@ pub struct BundleCache {
     /// actually been fetched from the backend and saved locally. The actual
     /// manifest file path is based on the backend’s content digest.
     manifest_path: PathBuf,
+
+    /// A directory where we save indices
+    ///
+    /// This is a list of the files this bundle contains
+    index_path: PathBuf,
 
     /// A directory where we will save cached file data.
     ///
@@ -142,66 +150,80 @@ impl BundleCache {
         // Set up our paths.
         let digest_path = ensure_cache_dir(&root_path, "digests")?
             .join(app_dirs::app_dirs2::sanitized(&bundle.get_location()));
-        let manifest_base = ensure_cache_dir(&root_path, "manifests")?;
+        let manifest_path = ensure_cache_dir(&root_path, "manifests")?;
+        let index_path = ensure_cache_dir(&root_path, "indexes")?
+            .join(app_dirs::app_dirs2::sanitized(&bundle.get_location()));
         let data_path = ensure_cache_dir(&root_path, "files")?;
 
         // The whole point of this cache is to avoid connecting to the backend
         // if at all possible. So we first see if we have cached the "pull data"
         // that describe the overall backend contents.
 
-        let cached_metadata = match Self::load_cached_metadata(&digest_path)? {
+        // If we download a new digest, don't check it.
+        let mut should_check_digest = true;
+
+        let cached_metadata = match Self::load_cached_metadata(&digest_path, &index_path, status)? {
             Some(c) => c,
             None => {
                 // Some portion of the required cached data is missing. We need to
                 // do a complete pull and then cache the results.
-
                 let digest = bundle.get_digest(status)?;
                 file_create_write(&digest_path, |f| writeln!(f, "{}", &digest.to_string()))?;
+                should_check_digest = false;
+
+                Self::write_index(bundle.all_files(status).unwrap(), &index_path)?;
 
                 // Now that we've done that, load_cached_pull_data() really ought to succeed ...
                 atry!(
-                    Self::load_cached_metadata(&digest_path)?;
+                    Self::load_cached_metadata(&digest_path, &index_path, status)?;
                     ["cache files missing even after they were created"]
                 )
             }
         };
 
-        let cached_digest = cached_metadata;
+        let cached_digest = cached_metadata.0;
+        let cached_index = cached_metadata.1;
 
-        // Make sure the source bundle's digest is what we expect it to be.
-        // This is expensive, since we need to download a fresh digest from web bundles.
-        // We only check this once, and assume that connection status will not change during a build.
-        //
-        // Update cached_digest if bundle digest changes.
-        let cached_digest = match bundle.get_digest(status) {
-            // If we can't connect to the bundle, we can't cache any
-            // bad files. Continue.
-            Err(_) => {
-                tt_note!(
-                    status,
-                    "Could not connect to bundle, skipping digest check."
-                );
+        let cached_digest = {
+            if !should_check_digest {
                 cached_digest
-            }
-            Ok(bundle_digest) => {
-                // The backend isn't what we thought it was.
-                // Rewrite the digest file (and variable) so our cache stays correct.
-                if cached_digest != bundle_digest {
-                    file_create_write(&digest_path, |f| {
-                        writeln!(f, "{}", bundle_digest.to_string())
-                    })?;
-                    tt_warning!(status, "Bundle digest changed; adjusting cache.");
-                    bundle_digest
-                } else {
-                    cached_digest
+            } else {
+                // Make sure the source bundle's digest is what we expect it to be.
+                // This is expensive, since we need to download a fresh digest from web bundles.
+                // We only check this once, and assume that connection status will not change during a build.
+                //
+                // Update cached_digest if bundle digest changes.
+                match bundle.get_digest(status) {
+                    // If we can't connect to the bundle, we can't cache any
+                    // bad files. Continue.
+                    Err(_) => {
+                        tt_note!(
+                            status,
+                            "Could not connect to bundle, skipping digest check."
+                        );
+                        cached_digest
+                    }
+                    Ok(bundle_digest) => {
+                        // The backend isn't what we thought it was.
+                        // Rewrite the digest file (and variable) so our cache stays correct.
+                        if cached_digest != bundle_digest {
+                            file_create_write(&digest_path, |f| {
+                                writeln!(f, "{}", bundle_digest.to_string())
+                            })?;
+                            tt_warning!(status, "Bundle digest changed; adjusting cache.");
+                            bundle_digest
+                        } else {
+                            cached_digest
+                        }
+                    }
                 }
             }
         };
 
         // Now that we have the backend content digest, we know which manifest
-        // to use. Read it in, if it exists.
+        // to use. Read it if it exists.
 
-        let manifest_path = manifest_base
+        let manifest_path = manifest_path
             .join(cached_digest.to_string())
             .with_extension("txt");
         let manifest = Self::parse_manifest(&manifest_path, status)?;
@@ -209,11 +231,13 @@ impl BundleCache {
         Ok(BundleCache {
             cached_digest,
 
-            contents: manifest,
+            manifest,
+            index: cached_index,
             only_cached,
             bundle,
 
             manifest_path,
+            index_path,
             //digest_path,
             data_path,
             //root_path,
@@ -221,9 +245,13 @@ impl BundleCache {
     }
 
     /// Load all cached metadata. If any files are missing or wrong, return None.
-    fn load_cached_metadata(digest_path: &Path) -> Result<Option<DigestData>> {
+    fn load_cached_metadata(
+        digest_path: &Path,
+        index_path: &Path,
+        status: &mut dyn StatusBackend,
+    ) -> Result<Option<(DigestData, HashSet<String>)>> {
         // Convert file-not-found errors into None.
-        return match inner(digest_path) {
+        return match Self::load_cached_metadata_inner(digest_path, index_path, status) {
             Ok(r) => Ok(Some(r)),
             Err(e) => {
                 if let Some(ioe) = e.downcast_ref::<IoError>() {
@@ -235,18 +263,24 @@ impl BundleCache {
                 Err(e)
             }
         };
+    }
 
-        fn inner(digest_path: &Path) -> Result<DigestData> {
-            let digest_text = {
-                let f = File::open(digest_path)?;
-                let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
-                f.take(digest::DIGEST_LEN as u64)
-                    .read_to_string(&mut digest_text)?;
-                digest_text
-            };
+    fn load_cached_metadata_inner(
+        digest_path: &Path,
+        index_path: &Path,
+        status: &mut dyn StatusBackend,
+    ) -> Result<(DigestData, HashSet<String>)> {
+        let digest_text = {
+            let f = File::open(digest_path)?;
+            let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
+            f.take(digest::DIGEST_LEN as u64)
+                .read_to_string(&mut digest_text)?;
+            digest_text
+        };
 
-            Ok(DigestData::from_str(&digest_text)?)
-        }
+        let index = Self::parse_index(index_path, status)?;
+
+        Ok((DigestData::from_str(&digest_text)?, index))
     }
 
     /// Parse a cache manifest
@@ -317,6 +351,38 @@ impl BundleCache {
         return Ok(contents);
     }
 
+    /// Parse a cache manifest
+    fn parse_index(index_path: &Path, status: &mut dyn StatusBackend) -> Result<HashSet<String>> {
+        let mut contents = HashSet::new(); // Read index into here
+        let file = match try_open_file(index_path) {
+            OpenResult::NotAvailable => {
+                return Ok(contents);
+            }
+            OpenResult::Err(e) => {
+                return Err(e);
+            }
+            OpenResult::Ok(file) => file,
+        };
+
+        // Note that the lock is released when the file is closed,
+        // which is good since BufReader::new() and BufReader::lines()
+        // consume their objects.
+        if let Err(e) = file.lock_shared() {
+            tt_warning!(status, "failed to lock index file \"{}\" for reading; this might be fine",
+                        index_path.display(); e.into());
+        }
+
+        let f = BufReader::new(file);
+
+        for res in f.lines() {
+            let line = res?;
+            let name = line.to_owned();
+            contents.insert(name);
+        }
+
+        return Ok(contents);
+    }
+
     /// Save data about a file to our local cache manifest.
     fn save_to_manifest(&mut self, name: &str, length: u64, digest: DigestData) -> Result<()> {
         let digest_text = digest.to_string();
@@ -343,13 +409,42 @@ impl BundleCache {
             writeln!(man, "{name} {length} {digest_text}")?;
         }
 
-        self.contents.insert(
+        self.manifest.insert(
             name.to_owned(),
             CachedFileInfo {
                 _length: length,
                 digest,
             },
         );
+
+        Ok(())
+    }
+
+    /// Save data about a file to our local cache manifest.
+    fn write_index(files: Vec<String>, index_path: &PathBuf) -> Result<()> {
+        // Due to a quirk about permissions for file locking on Windows, we
+        // need to add `.read(true)` to be able to lock a file opened in
+        // append mode.
+        let mut man = fs::OpenOptions::new()
+            .append(true)
+            .create(true)
+            .read(true)
+            .open(index_path)?;
+
+        // Lock will be released when file is closed at the end of this function.
+        atry!(
+            man.lock_exclusive();
+            ["failed to lock index file \"{}\" for writing", index_path.display()]
+        );
+
+        for name in files {
+            // If a filename contains newline characters, it will mess up our
+            // line-based manifest format. Be paranoid and refuse to record such
+            // filenames.
+            if !name.contains(|c| c == '\n' || c == '\r') {
+                writeln!(man, "{name}")?;
+            }
+        }
 
         Ok(())
     }
@@ -363,8 +458,13 @@ impl BundleCache {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<PathBuf> {
+        // Is this file in the bundle at all?
+        if self.index.get(name).is_none() {
+            return OpenResult::NotAvailable;
+        }
+
         // Already in the cache?
-        if let Some(info) = self.contents.get(name) {
+        if let Some(info) = self.manifest.get(name) {
             return match info.digest.create_two_part_path(&self.data_path) {
                 Ok(p) => OpenResult::Ok(p),
                 Err(e) => OpenResult::Err(e),
@@ -477,7 +577,7 @@ impl Bundle for BundleCache {
             Err(e) => return Err(e),
             Ok(a) => {
                 if a.len() == 0 {
-                    self.contents.keys().cloned().collect()
+                    self.manifest.keys().cloned().collect()
                 } else {
                     a
                 }
