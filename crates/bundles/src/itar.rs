@@ -72,9 +72,10 @@ impl ItarBundle {
         let mut geturl_backend = DefaultBackend::default();
 
         let index_url = format!("{}.index.gz", &self.url);
-        tt_note!(status, "downloading index {}", index_url);
         let reader =
             bufread::GzDecoder::new(BufReader::new(geturl_backend.get_url(&index_url, status)?));
+
+        tt_note!(status, "downloading index {}", index_url);
 
         self.index.clear();
         for line in BufReader::new(reader).lines() {
