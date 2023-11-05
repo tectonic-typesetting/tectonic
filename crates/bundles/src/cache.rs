@@ -106,7 +106,7 @@ pub struct BundleCache {
     /// A directory where we save indices
     ///
     /// This is a list of the files this bundle contains
-    index_path: PathBuf,
+    //index_path: PathBuf,
 
     /// A directory where we will save cached file data.
     ///
@@ -236,10 +236,10 @@ impl BundleCache {
             only_cached,
             bundle,
 
-            manifest_path,
-            index_path,
-            //digest_path,
             data_path,
+            manifest_path,
+            //index_path,
+            //digest_path,
             //root_path,
         })
     }
