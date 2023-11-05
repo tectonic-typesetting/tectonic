@@ -572,17 +572,8 @@ impl Bundle for BundleCache {
     // If we're offline, this is every file in the cache.
     //
     // TODO: Maybe we want different errors for "offline" and "actually doesn't exist"?
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        return Ok(match self.bundle.all_files(status) {
-            Err(e) => return Err(e),
-            Ok(a) => {
-                if a.len() == 0 {
-                    self.manifest.keys().cloned().collect()
-                } else {
-                    a
-                }
-            }
-        });
+    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+        return Ok(self.index.iter().cloned().collect());
     }
 
     fn get_location(&mut self) -> String {
