@@ -23,6 +23,7 @@ use std::io::Read;
 use std::{collections::HashMap, io::BufReader};
 use std::{thread, time};
 use tectonic_errors::prelude::*;
+use tectonic_geturl::DefaultRangeReader;
 use tectonic_geturl::{DefaultBackend, GetUrlBackend, RangeReader};
 use tectonic_io_base::OpenResult;
 use tectonic_io_base::{InputHandle, InputOrigin, IoProvider};
@@ -49,6 +50,11 @@ pub struct ItarBundle {
     /// This is empty after we create this bundle, so we don't need network
     /// to make an object. It is automatically filled by get_index when we need it.
     index: HashMap<String, FileInfo>,
+
+    /// RangeReader object, responsible for sending queries.
+    /// Will be None when the object is created, automatically
+    /// replaced with Some(...) once needed.
+    reader: Option<DefaultRangeReader>,
 }
 
 impl ItarBundle {
@@ -56,6 +62,7 @@ impl ItarBundle {
     pub fn new(url: String, _status: &mut dyn StatusBackend) -> Result<ItarBundle> {
         Ok(ItarBundle {
             index: HashMap::new(),
+            reader: None,
             url,
         })
     }
@@ -121,9 +128,15 @@ impl IoProvider for ItarBundle {
 
         tt_note!(status, "downloading {}", name);
 
-        let mut geturl_backend = DefaultBackend::default();
-        let resolved_url = geturl_backend.resolve_url(&self.url, status).unwrap();
-        let mut reader = geturl_backend.open_range_reader(&resolved_url);
+        // Connect reader if it is not already connected
+        if self.reader.is_none() {
+            let mut geturl_backend = DefaultBackend::default();
+            let resolved_url = match geturl_backend.resolve_url(&self.url, status) {
+                Ok(a) => a,
+                Err(e) => return OpenResult::Err(e),
+            };
+            self.reader = Some(geturl_backend.open_range_reader(&resolved_url));
+        }
 
         // Our HTTP implementation actually has problems with zero-sized ranged
         // reads (Azure gives us a 200 response, which we don't properly
@@ -138,7 +151,12 @@ impl IoProvider for ItarBundle {
 
         // Get file with retries
         for n in 0..MAX_HTTP_ATTEMPTS {
-            let mut stream = match reader.read_range(info.offset, info.length) {
+            let mut stream = match self
+                .reader
+                .as_mut()
+                .unwrap()
+                .read_range(info.offset, info.length)
+            {
                 Ok(r) => r,
                 Err(e) => {
                     tt_warning!(status, "failure requesting \"{}\" from network", name; e);
