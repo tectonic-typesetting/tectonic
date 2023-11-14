@@ -1,9 +1,8 @@
-use crate::c_api::{cite::with_cites, xbuf::XBuf, ASCIICode};
-use std::cell::RefCell;
+use crate::{cite::CiteInfo, xbuf::XBuf, ASCIICode};
 
-pub const ENT_STR_SIZE: usize = 250;
+pub(crate) const ENT_STR_SIZE: usize = 250;
 
-pub struct EntryData {
+pub(crate) struct EntryData {
     num_entry_ints: usize,
     num_entry_strs: usize,
     sort_key_num: usize,
@@ -12,7 +11,7 @@ pub struct EntryData {
 }
 
 impl EntryData {
-    fn new() -> EntryData {
+    pub fn new() -> EntryData {
         EntryData {
             num_entry_ints: 0,
             num_entry_strs: 0,
@@ -53,6 +52,10 @@ impl EntryData {
         self.num_entry_ints
     }
 
+    pub fn set_num_ent_ints(&mut self, val: usize) {
+        self.num_entry_ints = val;
+    }
+
     pub fn num_ent_strs(&self) -> usize {
         self.num_entry_strs
     }
@@ -68,59 +71,14 @@ impl EntryData {
     pub fn set_sort_key_num(&mut self, val: usize) {
         self.sort_key_num = val;
     }
-}
 
-thread_local! {
-    pub static ENTRIES: RefCell<EntryData> = RefCell::new(EntryData::new());
-}
+    pub fn init_entries(&mut self, cites: &CiteInfo) {
+        let num_cites = cites.num_cites();
+        self.entry_ints = Some(XBuf::new((self.num_entry_ints + 1) * (num_cites + 1)));
 
-pub fn reset() {
-    ENTRIES.with(|entries| *entries.borrow_mut() = EntryData::new());
-}
-
-pub fn with_entries<T>(f: impl FnOnce(&EntryData) -> T) -> T {
-    ENTRIES.with(|entries| f(&entries.borrow()))
-}
-
-pub fn with_entries_mut<T>(f: impl FnOnce(&mut EntryData) -> T) -> T {
-    ENTRIES.with(|entries| f(&mut entries.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn init_entry_ints() {
-    with_entries_mut(|entries| {
-        let num_cites = with_cites(|cites| cites.num_cites());
-        entries.entry_ints = Some(XBuf::new((entries.num_entry_ints + 1) * (num_cites + 1)));
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn init_entry_strs() {
-    with_entries_mut(|entries| {
-        let num_cites = with_cites(|cites| cites.num_cites());
         let mut new_buf =
-            XBuf::new((entries.num_entry_strs + 1) * (num_cites + 1) * (ENT_STR_SIZE + 1));
+            XBuf::new((self.num_entry_strs + 1) * (num_cites + 1) * (ENT_STR_SIZE + 1));
         new_buf.fill(127);
-        entries.entry_strs = Some(new_buf);
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn num_ent_ints() -> usize {
-    with_entries(|entries| entries.num_entry_ints)
-}
-
-#[no_mangle]
-pub extern "C" fn set_num_ent_ints(val: usize) {
-    with_entries_mut(|entries| entries.num_entry_ints = val)
-}
-
-#[no_mangle]
-pub extern "C" fn num_ent_strs() -> usize {
-    with_entries(|entries| entries.num_entry_strs)
-}
-
-#[no_mangle]
-pub extern "C" fn set_num_ent_strs(val: usize) {
-    with_entries_mut(|entries| entries.num_entry_strs = val)
+        self.entry_strs = Some(new_buf);
+    }
 }
