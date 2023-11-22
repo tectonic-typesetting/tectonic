@@ -726,18 +726,23 @@ enum ShowCommands {
     #[structopt(name = "user-cache-dir")]
     /// Print the location of the default per-user cache directory
     UserCacheDir(ShowUserCacheDirCommand),
+
+    /// Show metadata from the current environment
+    Metadata(ShowMetadataCommand),
 }
 
 impl ShowCommand {
     fn customize(&self, cc: &mut CommandCustomizations) {
         match &self.command {
             ShowCommands::UserCacheDir(c) => c.customize(cc),
+            ShowCommands::Metadata(c) => c.customize(cc),
         }
     }
 
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         match self.command {
             ShowCommands::UserCacheDir(c) => c.execute(config, status),
+            ShowCommands::Metadata(c) => c.execute(config, status),
         }
     }
 }
@@ -754,6 +759,144 @@ impl ShowUserCacheDirCommand {
         use tectonic_bundles::cache::Cache;
         let cache = Cache::get_user_default()?;
         println!("{}", cache.root().display());
+        Ok(0)
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, StructOpt)]
+struct ShowMetadataCommand {
+    #[structopt(help = "The metadata key to get")]
+    key: Option<String>,
+}
+
+
+// If parts is none, print this value as a string.
+// This is used to recursively stringify arrays and tables.
+fn get_metadata(meta: &toml::Value, mut parts: Option<core::str::Split<&str>>) -> Option<String> {
+    match meta {
+        toml::Value::String(_)
+        | toml::Value::Boolean(_)
+        | toml::Value::Integer(_)
+        | toml::Value::Float(_)
+        | toml::Value::Datetime(_) => {
+            if parts.is_some() && parts.unwrap().next().is_some() {
+                // None of these types may be indexed further
+                return None;
+            }
+
+            return Some(match meta {
+                toml::Value::String(s) => s.clone(),
+                toml::Value::Datetime(d) => format!("{}", d),
+                _ => format!("{}", meta),
+            });
+        }
+
+        toml::Value::Array(a) => {
+            let idx = {
+                if parts.is_some() {
+                    parts.as_mut().unwrap().next()
+                } else {
+                    None
+                }
+            };
+
+            match idx {
+                None => {
+                    // Print the whole array
+                    let s = a
+                        .iter()
+                        .map(|x| get_metadata(x, None).unwrap())
+                        .collect::<Vec<String>>()
+                        .join(", ");
+                    return Some(format!("[{}]", s));
+                }
+                Some(s) => {
+                    if s == "len" {
+                        // Magic key to get array length
+                        return Some(format!("{}", a.len()));
+                    } else {
+                        let i: usize = match s.parse() {
+                            Ok(i) => i,
+                            Err(_) => return None,
+                        };
+
+                        let meta = match a.get(i) {
+                            Some(v) => v,
+                            None => return None,
+                        };
+
+                        return get_metadata(meta, parts);
+                    }
+                }
+            }
+        }
+
+        toml::Value::Table(t) => {
+            let idx = {
+                if parts.is_some() {
+                    parts.as_mut().unwrap().next()
+                } else {
+                    None
+                }
+            };
+
+            match idx {
+                None => return None,
+                Some(s) => {
+                    let meta = match t.get(s) {
+                        Some(v) => v,
+                        None => return None,
+                    };
+
+                    return get_metadata(meta, parts);
+                }
+            }
+        }
+    };
+}
+
+
+
+impl ShowMetadataCommand {
+    fn customize(&self, cc: &mut CommandCustomizations) {
+        cc.always_stderr = true;
+    }
+
+    fn execute(mut self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+        // `tectonic show metadata` should be shell-script-friendly.
+        // Namely,it should either print a metadata value or return error code 1,
+        // with NO OTHER OUTPUT.
+
+        let meta = match Workspace::open_from_environment() {
+            Ok(ws) => {
+                let doc = ws.first_document();
+                let meta = doc.metadata.clone();
+                if meta.is_none() {
+                    // This workspace has no metadata.
+                    return Ok(1);
+                }
+                meta.unwrap()
+            }
+
+            Err(_) => {
+                //tt_error!(status, "could not load metadata. Are you in a workspace?");
+                return Ok(1);
+            }
+        };
+
+        let parts;
+        if self.key.is_none() {
+            parts = None;
+        } else {
+            parts = Some(self.key.as_mut().unwrap().split("."));
+        }
+
+        let meta = get_metadata(&meta, parts);
+        if meta.is_none() {
+            return Ok(1);
+        }
+
+        println!("{}", meta.unwrap());
         Ok(0)
     }
 }
