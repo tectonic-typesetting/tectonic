@@ -766,20 +766,18 @@ impl ShowUserCacheDirCommand {
 #[derive(Debug, Eq, PartialEq, StructOpt)]
 struct ShowMetadataCommand {
     #[structopt(help = "The metadata key to get")]
-    key: Option<String>,
+    key: String,
 }
 
 
-// If parts is none, print this value as a string.
-// This is used to recursively stringify arrays and tables.
-fn get_metadata(meta: &toml::Value, mut parts: Option<core::str::Split<&str>>) -> Option<String> {
+fn get_metadata(meta: &toml::Value, mut parts: core::str::Split<&str>) -> Option<String> {
     match meta {
         toml::Value::String(_)
         | toml::Value::Boolean(_)
         | toml::Value::Integer(_)
         | toml::Value::Float(_)
         | toml::Value::Datetime(_) => {
-            if parts.is_some() && parts.unwrap().next().is_some() {
+            if parts.next().is_some() {
                 // None of these types may be indexed further
                 return None;
             }
@@ -792,27 +790,12 @@ fn get_metadata(meta: &toml::Value, mut parts: Option<core::str::Split<&str>>) -
         }
 
         toml::Value::Array(a) => {
-            let idx = {
-                if parts.is_some() {
-                    parts.as_mut().unwrap().next()
-                } else {
-                    None
-                }
-            };
-
-            match idx {
-                None => {
-                    // Print the whole array
-                    let s = a
-                        .iter()
-                        .map(|x| get_metadata(x, None).unwrap())
-                        .collect::<Vec<String>>()
-                        .join(", ");
-                    return Some(format!("[{}]", s));
-                }
+            match parts.next() {
+                None => return None,
                 Some(s) => {
                     if s == "len" {
-                        // Magic key to get array length
+                        // Magic key to get array length.
+                        // Allows easy iteration.
                         return Some(format!("{}", a.len()));
                     } else {
                         let i: usize = match s.parse() {
@@ -832,15 +815,7 @@ fn get_metadata(meta: &toml::Value, mut parts: Option<core::str::Split<&str>>) -
         }
 
         toml::Value::Table(t) => {
-            let idx = {
-                if parts.is_some() {
-                    parts.as_mut().unwrap().next()
-                } else {
-                    None
-                }
-            };
-
-            match idx {
+            match parts.next() {
                 None => return None,
                 Some(s) => {
                     let meta = match t.get(s) {
@@ -862,34 +837,29 @@ impl ShowMetadataCommand {
         cc.always_stderr = true;
     }
 
-    fn execute(mut self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        // `tectonic show metadata` should be shell-script-friendly.
-        // Namely,it should either print a metadata value or return error code 1,
-        // with NO OTHER OUTPUT.
+    fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
+        // `tectonic show metadata` should be as shell-script-friendly as possible.
+        // It should either print a value or return an error code, and produce NO OTHER OUTPUT.
+        //
+        // We return code 1 if `key` doesn't exist
+        // We return code 2 if we can't open a workspace.
 
         let meta = match Workspace::open_from_environment() {
             Ok(ws) => {
                 let doc = ws.first_document();
                 let meta = doc.metadata.clone();
                 if meta.is_none() {
-                    // This workspace has no metadata.
                     return Ok(1);
                 }
                 meta.unwrap()
             }
 
             Err(_) => {
-                //tt_error!(status, "could not load metadata. Are you in a workspace?");
-                return Ok(1);
+                return Ok(2);
             }
         };
 
-        let parts;
-        if self.key.is_none() {
-            parts = None;
-        } else {
-            parts = Some(self.key.as_mut().unwrap().split("."));
-        }
+        let parts = self.key.split(".");
 
         let meta = get_metadata(&meta, parts);
         if meta.is_none() {
