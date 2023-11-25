@@ -416,15 +416,12 @@ impl BundleSearchCommand {
         let mut bundle = get_a_bundle(config, self.only_cached, status)?;
         let files = bundle.all_files(status)?;
 
-        // Is there a better way to do this?
-        let filter: Box<dyn Fn(&str) -> bool> = if let Some(t) = self.term {
-            Box::new(move |s: &str| s.contains(&t))
+        if let Some(t) = &self.term {
+            for filename in files.iter().filter(|x| x.contains(t)) {
+                println!("{filename}");
+            }
         } else {
-            Box::new(|_: &str| true)
-        };
-
-        for filename in &files {
-            if filter(filename) {
+            for filename in files {
                 println!("{filename}");
             }
         }
