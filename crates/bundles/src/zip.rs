@@ -73,7 +73,7 @@ impl<R: Read + Seek> ZipBundle<R> {
         return Ok(());
     }
 
-    /// Parse one line of an index file
+    /// Parse one line of a search file
     fn add_search_line(line: &str, search: &mut Vec<String>) -> Result<()> {
         let mut bits = line.split_whitespace();
 
@@ -107,10 +107,7 @@ impl<R: Read + Seek> ZipBundle<R> {
         // Make sure the bundle script adds ALL files to the index!
         //
         // The code below takes care to clone these strings only if it needs to.
-        let paths: &Vec<String> = match self.index.get(n) {
-            Some(s) => s,
-            None => return None,
-        };
+        let paths: &Vec<String> = self.index.get(n)?;
 
         if relative_parent {
             let mut matching: Option<String> = None;
