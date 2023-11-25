@@ -2012,7 +2012,7 @@ impl ProcessingSession {
             .borrow()
             .get(self.bs.mem.stdout_key())
             .map(|mfi| mfi.data.clone())
-            .unwrap_or_else(Vec::new)
+            .unwrap_or_default()
     }
 
     /// Consume this session and return the current set of files in memory.
