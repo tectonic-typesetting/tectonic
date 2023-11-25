@@ -1,26 +1,10 @@
-use crate::c_api::{
+use crate::{
     xbuf::{SafelyZero, XBuf},
     ASCIICode, BufPointer,
 };
-use std::{cell::RefCell, slice};
+use std::slice;
 
 pub(crate) const BUF_SIZE: usize = 20000;
-
-thread_local! {
-    static GLOBAL_BUFFERS: RefCell<GlobalBuffer> = RefCell::new(GlobalBuffer::new());
-}
-
-pub(crate) fn reset() {
-    GLOBAL_BUFFERS.with(|cell| *cell.borrow_mut() = GlobalBuffer::new());
-}
-
-pub fn with_buffers<T>(f: impl FnOnce(&GlobalBuffer) -> T) -> T {
-    GLOBAL_BUFFERS.with(|buffers| f(&buffers.borrow()))
-}
-
-pub fn with_buffers_mut<T>(f: impl FnOnce(&mut GlobalBuffer) -> T) -> T {
-    GLOBAL_BUFFERS.with(|buffers| f(&mut buffers.borrow_mut()))
-}
 
 struct Buffer<T: SafelyZero + 'static, const N: usize> {
     ptr: XBuf<T>,
@@ -44,7 +28,7 @@ impl<T: SafelyZero + Copy + 'static, const N: usize> Buffer<T, N> {
     }
 }
 
-pub struct GlobalBuffer {
+pub(crate) struct GlobalBuffer {
     /// Allocated length of all buffers
     buf_len: usize,
     buffer: Buffer<ASCIICode, 2>,
@@ -71,10 +55,6 @@ impl GlobalBuffer {
 
     pub fn len(&self) -> usize {
         self.buf_len
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.buf_len == 0
     }
 
     fn buffer_raw(&mut self, ty: BufTy) -> *mut ASCIICode {
@@ -219,53 +199,11 @@ impl GlobalBuffer {
     }
 }
 
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, PartialEq)]
-#[repr(C)]
-pub enum BufTy {
+pub(crate) enum BufTy {
     Base,
     Sv,
     Ex,
     Out,
     NameSep,
-}
-
-#[no_mangle]
-pub extern "C" fn bib_buf(ty: BufTy, pos: BufPointer) -> ASCIICode {
-    with_buffers(|b| b.at(ty, pos))
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bib_set_buf(ty: BufTy, num: BufPointer, val: ASCIICode) {
-    with_buffers_mut(|b| b.set_at(ty, num, val))
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn bib_buf_at_offset(ty: BufTy, num: usize) -> ASCIICode {
-    with_buffers(|b| b.at_offset(ty, num))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_buf_offset(ty: BufTy, num: usize) -> BufPointer {
-    with_buffers(|buffers| buffers.offset(ty, num))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_buf_offset(ty: BufTy, num: usize, offset: BufPointer) {
-    with_buffers_mut(|buffers| buffers.set_offset(ty, num, offset))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_buf_len(ty: BufTy) -> BufPointer {
-    with_buffers(|buffers| buffers.init(ty))
-}
-
-#[no_mangle]
-pub extern "C" fn bib_set_buf_len(ty: BufTy, len: BufPointer) {
-    with_buffers_mut(|buffers| buffers.set_init(ty, len))
-}
-
-#[no_mangle]
-pub extern "C" fn lower_case(buf: BufTy, ptr: BufPointer, len: BufPointer) {
-    with_buffers_mut(|buffers| buffers.buffer_mut(buf)[ptr..(ptr + len)].make_ascii_lowercase())
 }

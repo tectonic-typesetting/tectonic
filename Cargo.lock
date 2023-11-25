@@ -2442,7 +2442,6 @@ dependencies = [
 name = "tectonic_engine_bibtex"
 version = "0.0.0-dev.0"
 dependencies = [
- "cc",
  "libc",
  "tectonic_bridge_core",
  "tectonic_errors",

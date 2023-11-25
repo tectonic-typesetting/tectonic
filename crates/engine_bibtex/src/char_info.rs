@@ -1,4 +1,4 @@
-use crate::c_api::ASCIICode;
+use crate::ASCIICode;
 
 macro_rules! const_for {
     ($start:literal..$end:literal => $arr:ident[..] = $expr:expr) => {
@@ -19,34 +19,28 @@ macro_rules! const_for {
 
 /// The lexer class of a character - this represents whether the parser considers it to be alphabetic,
 /// numeric, etc. Illegal represents tokens that shouldn't show up at all, such as ASCII backspace.
-///
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-#[repr(C)]
-pub enum LexClass {
-    Illegal = 0,
-    Whitespace = 1,
-    Alpha = 2,
-    Numeric = 3,
-    Sep = 4,
-    Other = 5,
+pub(crate) enum LexClass {
+    Illegal,
+    Whitespace,
+    Alpha,
+    Numeric,
+    Sep,
+    Other,
 }
 
 impl LexClass {
     /// Get the `LexClass` of a character
-    pub fn of(char: ASCIICode) -> LexClass {
+    pub const fn of(char: ASCIICode) -> LexClass {
         LEX_CLASS[char as usize]
     }
 }
 
 /// Whether a token counts as valid in an identifier
-///
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
-#[repr(C)]
-pub enum IdClass {
-    IllegalIdChar = 0,
-    LegalIdChar = 1,
+pub(crate) enum IdClass {
+    IllegalIdChar,
+    LegalIdChar,
 }
 
 impl IdClass {
@@ -56,8 +50,7 @@ impl IdClass {
     }
 }
 
-#[no_mangle]
-pub static LEX_CLASS: [LexClass; 256] = {
+const LEX_CLASS: [LexClass; 256] = {
     let mut lex_class = [LexClass::Other; 256];
 
     const_for!(128..=255 => lex_class[..] = LexClass::Alpha);
@@ -79,7 +72,7 @@ pub static LEX_CLASS: [LexClass; 256] = {
     lex_class
 };
 
-pub const ID_CLASS: [IdClass; 256] = {
+const ID_CLASS: [IdClass; 256] = {
     let mut id_class = [IdClass::LegalIdChar; 256];
 
     // NUL..=US

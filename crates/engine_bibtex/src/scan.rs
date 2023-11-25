@@ -1,42 +1,36 @@
 use crate::{
-    c_api::{
-        bibs::{compress_bib_white, rs_eat_bib_white_space, with_bibs_mut},
-        buffer::{with_buffers_mut, BufTy, GlobalBuffer},
-        char_info::{IdClass, LexClass},
-        cite::{rs_add_database_cite, with_cites_mut},
-        exec::ExecCtx,
-        hash,
-        hash::{with_hash_mut, FnClass, HashData},
-        log::{
-            bib_cmd_confusion, bib_unbalanced_braces_print, braces_unbalanced_complaint,
-            eat_bst_print, hash_cite_confusion, macro_warn_print, print_confusion,
-            print_recursion_illegal, rs_bib_err_print, rs_bib_id_print, rs_bib_warn_print,
-            rs_bst_err_print_and_look_for_blank_line, rs_eat_bib_print, rs_print_a_pool_str,
-            skip_illegal_stuff_after_token_print, skip_token_print,
-            skip_token_unknown_function_print, write_log_file, write_logs,
-        },
-        other::with_other_mut,
-        peekable::rs_input_ln,
-        pool::{with_pool_mut, StringPool},
-        ASCIICode, Bibtex, BufPointer, CResult, CResultBool, CiteNumber, FnDefLoc, HashPointer,
-        StrIlk, StrNumber,
+    bibs::{compress_bib_white, eat_bib_white_space, BibData},
+    buffer::{BufTy, GlobalBuffer},
+    char_info::{IdClass, LexClass},
+    cite::{add_database_cite, CiteInfo},
+    exec::ExecCtx,
+    hash,
+    hash::{FnClass, HashData},
+    log::{
+        bib_cmd_confusion, bib_err_print, bib_id_print, bib_unbalanced_braces_print,
+        bib_warn_print, braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line,
+        eat_bib_print, eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str,
+        print_confusion, print_recursion_illegal, skip_illegal_stuff_after_token_print,
+        skip_token_print, skip_token_unknown_function_print, write_log_file, write_logs,
     },
-    BibtexError,
+    other::OtherData,
+    peekable::input_ln,
+    pool::StringPool,
+    ASCIICode, Bibtex, BibtexError, BufPointer, CiteNumber, FnDefLoc, HashPointer, StrIlk,
+    StrNumber,
 };
 
-pub const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
+pub(crate) const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
 
-/// cbindgen:rename-all=ScreamingSnakeCase
-#[repr(C)]
-pub enum ScanRes {
-    IdNull = 0,
-    SpecifiedCharAdjacent = 1,
-    OtherCharAdjacent = 2,
-    WhitespaceAdjacent = 3,
+pub(crate) enum ScanRes {
+    IdNull,
+    SpecifiedCharAdjacent,
+    OtherCharAdjacent,
+    WhitespaceAdjacent,
 }
 
 #[derive(Default)]
-pub struct Scan<'a> {
+pub(crate) struct Scan<'a> {
     chars: &'a [ASCIICode],
     not_class: Option<LexClass>,
     class: Option<LexClass>,
@@ -87,7 +81,7 @@ impl<'a> Scan<'a> {
         idx < last
     }
 
-    fn scan_till_nonempty(&self, buffers: &mut GlobalBuffer, last: BufPointer) -> bool {
+    pub fn scan_till_nonempty(&self, buffers: &mut GlobalBuffer, last: BufPointer) -> bool {
         let start = buffers.offset(BufTy::Base, 2);
         buffers.set_offset(BufTy::Base, 1, start);
 
@@ -101,47 +95,7 @@ impl<'a> Scan<'a> {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn scan1(char1: ASCIICode) -> bool {
-    with_buffers_mut(|buffers| {
-        let last = buffers.init(BufTy::Base);
-        Scan::new().chars(&[char1]).scan_till(buffers, last)
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn scan1_white(char1: ASCIICode) -> bool {
-    with_buffers_mut(|buffers| {
-        let last = buffers.init(BufTy::Base);
-        Scan::new()
-            .chars(&[char1])
-            .class(LexClass::Whitespace)
-            .scan_till(buffers, last)
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn scan2_white(char1: ASCIICode, char2: ASCIICode) -> bool {
-    with_buffers_mut(|buffers| {
-        let last = buffers.init(BufTy::Base);
-        Scan::new()
-            .chars(&[char1, char2])
-            .class(LexClass::Whitespace)
-            .scan_till(buffers, last)
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn scan_alpha() -> bool {
-    with_buffers_mut(|buffers| {
-        let last = buffers.init(BufTy::Base);
-        Scan::new()
-            .not_class(LexClass::Alpha)
-            .scan_till_nonempty(buffers, last)
-    })
-}
-
-fn rs_scan_identifier(
+pub(crate) fn scan_identifier(
     buffers: &mut GlobalBuffer,
     char1: ASCIICode,
     char2: ASCIICode,
@@ -170,11 +124,6 @@ fn rs_scan_identifier(
     } else {
         ScanRes::OtherCharAdjacent
     }
-}
-
-#[no_mangle]
-pub extern "C" fn scan_identifier(char1: ASCIICode, char2: ASCIICode, char3: ASCIICode) -> ScanRes {
-    with_buffers_mut(|buffers| rs_scan_identifier(buffers, char1, char2, char3))
 }
 
 fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
@@ -206,7 +155,7 @@ fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
     idx - start != if sign { 1 } else { 0 }
 }
 
-fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool {
+pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut GlobalBuffer) -> bool {
     loop {
         let init = buffers.init(BufTy::Base);
         if Scan::new()
@@ -219,7 +168,7 @@ fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool 
 
         // SAFETY: bst_file guarantee valid if non-null
         let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
-        if !rs_input_ln(bst_file, buffers) {
+        if !input_ln(bst_file, buffers) {
             return false;
         }
 
@@ -228,16 +177,13 @@ fn rs_eat_bst_white_space(ctx: &mut Bibtex, buffers: &mut GlobalBuffer) -> bool 
     }
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn eat_bst_white_space(ctx: *mut Bibtex) -> bool {
-    with_buffers_mut(|buffers| rs_eat_bst_white_space(&mut *ctx, buffers))
-}
-
+#[allow(clippy::too_many_arguments)]
 fn handle_char(
-    ctx: &mut Bibtex,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
+    other: &mut OtherData,
     single_function: &mut Vec<FnDefLoc>,
     wiz_loc: HashPointer,
     char: ASCIICode,
@@ -352,7 +298,7 @@ fn handle_char(
             single_function.push(QUOTE_NEXT_FN);
             single_function.push(res.loc);
 
-            inner_scan_fn_def(ctx, buffers, hash, pool, res.loc, wiz_loc)?;
+            scan_fn_def(ctx, buffers, hash, pool, other, res.loc, wiz_loc)?;
         }
         _ => {
             let init = buffers.init(BufTy::Base);
@@ -379,21 +325,22 @@ fn handle_char(
     Ok(())
 }
 
-fn inner_scan_fn_def(
-    ctx: &mut Bibtex,
+pub(crate) fn scan_fn_def(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
+    other: &mut OtherData,
     fn_hash_loc: HashPointer,
     wiz_loc: HashPointer,
 ) -> Result<(), BibtexError> {
     let ctx = &mut *ctx;
     let mut single_function = Vec::new();
 
-    if !rs_eat_bst_white_space(ctx, buffers) {
+    if !eat_bst_white_space(ctx, buffers) {
         eat_bst_print();
         write_logs("function");
-        rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
+        bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         return Ok(());
     }
 
@@ -404,15 +351,16 @@ fn inner_scan_fn_def(
             buffers,
             hash,
             pool,
+            other,
             &mut single_function,
             wiz_loc,
             char,
         )?;
 
-        if !rs_eat_bst_white_space(ctx, buffers) {
+        if !eat_bst_white_space(ctx, buffers) {
             eat_bst_print();
             write_logs("function");
-            return rs_bst_err_print_and_look_for_blank_line(ctx, buffers, pool);
+            return bst_err_print_and_look_for_blank_line(ctx, buffers, pool);
         }
 
         char = buffers.at_offset(BufTy::Base, 2);
@@ -420,41 +368,24 @@ fn inner_scan_fn_def(
 
     single_function.push(HashData::end_of_def());
 
-    with_other_mut(|other| {
-        other.check_wiz_overflow(single_function.len());
-        hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i32);
+    other.check_wiz_overflow(single_function.len());
+    hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i32);
 
-        for ptr in single_function {
-            let wiz_ptr = other.wiz_def_ptr();
-            other.set_wiz_function(wiz_ptr, ptr);
-            other.set_wiz_def_ptr(wiz_ptr + 1);
-        }
-    });
+    for ptr in single_function {
+        let wiz_ptr = other.wiz_def_ptr();
+        other.set_wiz_function(wiz_ptr, ptr);
+        other.set_wiz_def_ptr(wiz_ptr + 1);
+    }
 
     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
     Ok(())
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn scan_fn_def(
-    ctx: *mut Bibtex,
-    fn_hash_loc: HashPointer,
-    wiz_loc: HashPointer,
-) -> CResult {
-    with_buffers_mut(|buffers| {
-        with_hash_mut(|hash| {
-            with_pool_mut(|pool| {
-                inner_scan_fn_def(&mut *ctx, buffers, hash, pool, fn_hash_loc, wiz_loc)
-            })
-        })
-    })
-    .into()
-}
-
 fn scan_balanced_braces(
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
+    bibs: &mut BibData,
     store_field: bool,
     at_bib_command: bool,
     right_str_delim: ASCIICode,
@@ -463,7 +394,7 @@ fn scan_balanced_braces(
 
     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-        && !compress_bib_white(buffers, pool, at_bib_command)?
+        && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
     {
         return Ok(false);
     }
@@ -494,7 +425,7 @@ fn scan_balanced_braces(
 
                     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                        && !compress_bib_white(buffers, pool, at_bib_command)?
+                        && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
                     {
                         return Ok(false);
                     }
@@ -533,7 +464,7 @@ fn scan_balanced_braces(
 
                         if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                             || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                            && !compress_bib_white(buffers, pool, at_bib_command)?
+                            && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
                         {
                             return Ok(false);
                         }
@@ -544,7 +475,7 @@ fn scan_balanced_braces(
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(buffers, pool, at_bib_command)
+                    return bib_unbalanced_braces_print(buffers, pool, bibs, at_bib_command)
                         .map(|_| false);
                 }
                 c => {
@@ -563,7 +494,7 @@ fn scan_balanced_braces(
 
                     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                        && !compress_bib_white(buffers, pool, at_bib_command)?
+                        && !compress_bib_white(buffers, pool, bibs, at_bib_command)?
                     {
                         return Ok(false);
                     }
@@ -576,8 +507,8 @@ fn scan_balanced_braces(
                 b'{' => {
                     brace_level += 1;
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
-                    if !rs_eat_bib_white_space(buffers) {
-                        return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+                    if !eat_bib_white_space(buffers, bibs) {
+                        return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
                     }
                     while brace_level > 0 {
                         let c = buffers.at_offset(BufTy::Base, 2);
@@ -593,14 +524,15 @@ fn scan_balanced_braces(
                         if (c == b'{'
                             || c == b'}'
                             || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
-                            && !rs_eat_bib_white_space(buffers)
+                            && !eat_bib_white_space(buffers, bibs)
                         {
-                            return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+                            return eat_bib_print(buffers, pool, bibs, at_bib_command)
+                                .map(|_| false);
                         }
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(buffers, pool, at_bib_command)
+                    return bib_unbalanced_braces_print(buffers, pool, bibs, at_bib_command)
                         .map(|_| false);
                 }
                 _ => {
@@ -609,9 +541,9 @@ fn scan_balanced_braces(
                     if !Scan::new()
                         .chars(&[right_str_delim, b'{', b'}'])
                         .scan_till(buffers, init)
-                        && !rs_eat_bib_white_space(buffers)
+                        && !eat_bib_white_space(buffers, bibs)
                     {
-                        return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+                        return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
                     }
                 }
             }
@@ -627,6 +559,7 @@ fn scan_a_field_token_and_eat_white(
     buffers: &mut GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
+    bibs: &mut BibData,
     store_field: bool,
     at_bib_command: bool,
     command_num: i32,
@@ -635,12 +568,12 @@ fn scan_a_field_token_and_eat_white(
 ) -> Result<bool, BibtexError> {
     match buffers.at_offset(BufTy::Base, 2) {
         b'{' => {
-            if !scan_balanced_braces(buffers, pool, store_field, at_bib_command, b'}')? {
+            if !scan_balanced_braces(buffers, pool, bibs, store_field, at_bib_command, b'}')? {
                 return Ok(false);
             }
         }
         b'"' => {
-            if !scan_balanced_braces(buffers, pool, store_field, at_bib_command, b'"')? {
+            if !scan_balanced_braces(buffers, pool, bibs, store_field, at_bib_command, b'"')? {
                 return Ok(false);
             }
         }
@@ -680,14 +613,14 @@ fn scan_a_field_token_and_eat_white(
             }
         }
         _ => {
-            let res = rs_scan_identifier(buffers, b',', right_outer_delim, b'#');
+            let res = scan_identifier(buffers, b',', right_outer_delim, b'#');
             if !matches!(
                 res,
                 ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent
             ) {
-                rs_bib_id_print(buffers, res)?;
+                bib_id_print(buffers, res)?;
                 write_logs("a field part");
-                rs_bib_err_print(buffers, pool, at_bib_command)?;
+                bib_err_print(buffers, pool, bibs, at_bib_command)?;
                 return Ok(false);
             }
 
@@ -704,14 +637,14 @@ fn scan_a_field_token_and_eat_white(
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("used in its own definition\n");
-                    rs_bib_warn_print(pool)?;
+                    bib_warn_print(pool, bibs)?;
                 }
 
                 if !res.exists {
                     store_token = false;
                     macro_warn_print(buffers);
                     write_logs("undefined\n");
-                    rs_bib_warn_print(pool)?;
+                    bib_warn_print(pool, bibs)?;
                 }
 
                 if store_token {
@@ -759,19 +692,22 @@ fn scan_a_field_token_and_eat_white(
         }
     }
 
-    if !rs_eat_bib_white_space(buffers) {
-        return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+    if !eat_bib_white_space(buffers, bibs) {
+        return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
     }
     Ok(true)
 }
 
 // TODO: Refactor this to bundle up arguments into structs as relevant
 #[allow(clippy::too_many_arguments)]
-fn rs_scan_and_store_the_field_value_and_eat_white(
-    ctx: &Bibtex,
+pub(crate) fn scan_and_store_the_field_value_and_eat_white(
+    ctx: &Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     hash: &mut HashData,
     pool: &mut StringPool,
+    bibs: &mut BibData,
+    other: &mut OtherData,
+    cites: &mut CiteInfo,
     store_field: bool,
     at_bib_command: bool,
     command_num: i32,
@@ -786,6 +722,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
         buffers,
         hash,
         pool,
+        bibs,
         store_field,
         at_bib_command,
         command_num,
@@ -796,13 +733,14 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
     }
     while buffers.at_offset(BufTy::Base, 2) == b'#' {
         buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
-        if !rs_eat_bib_white_space(buffers) {
-            return rs_eat_bib_print(buffers, pool, at_bib_command).map(|_| false);
+        if !eat_bib_white_space(buffers, bibs) {
+            return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
         }
         if !scan_a_field_token_and_eat_white(
             buffers,
             hash,
             pool,
+            bibs,
             store_field,
             at_bib_command,
             command_num,
@@ -841,7 +779,7 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
 
         if at_bib_command {
             match command_num {
-                1 => with_bibs_mut(|bibs| bibs.add_preamble(hash.text(res.loc))),
+                1 => bibs.add_preamble(hash.text(res.loc)),
                 2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i32),
                 _ => {
                     // TODO: Replace command_num with an enum
@@ -850,124 +788,85 @@ fn rs_scan_and_store_the_field_value_and_eat_white(
                 }
             }
         } else {
-            with_other_mut(|other| {
-                with_cites_mut(|cites| {
-                    let field_ptr = cites.entry_ptr() * other.num_fields()
-                        + hash.ilk_info(field_name_loc) as usize;
-                    if field_ptr > other.max_fields() {
-                        write_logs("field_info index is out of range");
-                        print_confusion();
-                        return Err(BibtexError::Fatal);
-                    }
+            let field_ptr =
+                cites.entry_ptr() * other.num_fields() + hash.ilk_info(field_name_loc) as usize;
+            if field_ptr > other.max_fields() {
+                write_logs("field_info index is out of range");
+                print_confusion();
+                return Err(BibtexError::Fatal);
+            }
 
-                    if other.field(field_ptr) != 0
-                    /* missing */
-                    {
-                        write_logs("Warning--I'm ignoring ");
-                        rs_print_a_pool_str(cites.get_cite(cites.entry_ptr()), pool)?;
-                        write_logs("'s extra \"");
-                        rs_print_a_pool_str(hash.text(field_name_loc), pool)?;
-                        write_logs("\" field\n");
-                        rs_bib_warn_print(pool)?;
-                    } else {
-                        other.set_field(field_ptr, hash.text(res.loc));
-                        if hash.ilk_info(field_name_loc) as usize == other.crossref_num()
-                            && !ctx.all_entries
-                        {
-                            let end = buffers.offset(BufTy::Ex, 1);
-                            // Move Ex to Out, at the same position
-                            buffers.copy_within(
-                                BufTy::Ex,
-                                BufTy::Out,
-                                ex_buf_xptr,
-                                ex_buf_xptr,
-                                end - ex_buf_xptr,
-                            );
-                            buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
-                            let str = &buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
-                            let lc_res = pool.lookup_str_insert(hash, str, StrIlk::LcCite)?;
-                            if let Some(cite_out) = cite_out {
-                                *cite_out = lc_res.loc;
-                            }
-                            let cite_loc = hash.ilk_info(lc_res.loc) as usize;
-                            if lc_res.exists {
-                                if hash.ilk_info(cite_loc) as usize >= cites.old_num_cites() {
-                                    let old_info = hash.ilk_info(cite_loc) as usize;
-                                    cites.set_info(old_info, old_info + 1);
-                                }
-                            } else {
-                                let str = &buffers.buffer(BufTy::Ex)
-                                    [ex_buf_xptr..buffers.offset(BufTy::Ex, 1)];
-                                let c_res = pool.lookup_str_insert(hash, str, StrIlk::Cite)?;
-                                if c_res.exists {
-                                    hash_cite_confusion();
-                                    return Err(BibtexError::Fatal);
-                                }
-                                let new_ptr = rs_add_database_cite(
-                                    cites,
-                                    other,
-                                    hash,
-                                    cites.ptr(),
-                                    c_res.loc,
-                                    lc_res.loc,
-                                );
-                                cites.set_ptr(new_ptr);
-                                cites.set_info(hash.ilk_info(c_res.loc) as usize, 1);
-                            }
+            if other.field(field_ptr) != 0
+            /* missing */
+            {
+                write_logs("Warning--I'm ignoring ");
+                print_a_pool_str(cites.get_cite(cites.entry_ptr()), pool)?;
+                write_logs("'s extra \"");
+                print_a_pool_str(hash.text(field_name_loc), pool)?;
+                write_logs("\" field\n");
+                bib_warn_print(pool, bibs)?;
+            } else {
+                other.set_field(field_ptr, hash.text(res.loc));
+                if hash.ilk_info(field_name_loc) as usize == other.crossref_num()
+                    && !ctx.all_entries
+                {
+                    let end = buffers.offset(BufTy::Ex, 1);
+                    // Move Ex to Out, at the same position
+                    buffers.copy_within(
+                        BufTy::Ex,
+                        BufTy::Out,
+                        ex_buf_xptr,
+                        ex_buf_xptr,
+                        end - ex_buf_xptr,
+                    );
+                    buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
+                    let str = &buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
+                    let lc_res = pool.lookup_str_insert(hash, str, StrIlk::LcCite)?;
+                    if let Some(cite_out) = cite_out {
+                        *cite_out = lc_res.loc;
+                    }
+                    let cite_loc = hash.ilk_info(lc_res.loc) as usize;
+                    if lc_res.exists {
+                        if hash.ilk_info(cite_loc) as usize >= cites.old_num_cites() {
+                            let old_info = hash.ilk_info(cite_loc) as usize;
+                            cites.set_info(old_info, old_info + 1);
                         }
+                    } else {
+                        let str =
+                            &buffers.buffer(BufTy::Ex)[ex_buf_xptr..buffers.offset(BufTy::Ex, 1)];
+                        let c_res = pool.lookup_str_insert(hash, str, StrIlk::Cite)?;
+                        if c_res.exists {
+                            hash_cite_confusion();
+                            return Err(BibtexError::Fatal);
+                        }
+                        let new_ptr = add_database_cite(
+                            cites,
+                            other,
+                            hash,
+                            cites.ptr(),
+                            c_res.loc,
+                            lc_res.loc,
+                        );
+                        cites.set_ptr(new_ptr);
+                        cites.set_info(hash.ilk_info(c_res.loc) as usize, 1);
                     }
-
-                    Ok(())
-                })
-            })?;
+                }
+            }
         }
     }
 
     Ok(true)
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn scan_and_store_the_field_value_and_eat_white(
-    ctx: *mut Bibtex,
-    store_field: bool,
-    at_bib_command: bool,
-    command_num: i32,
-    cite_out: *mut CiteNumber,
-    cur_macro_loc: HashPointer,
-    right_outer_delim: ASCIICode,
-    field_name_loc: HashPointer,
-) -> CResultBool {
-    let res = with_buffers_mut(|buffers| {
-        with_hash_mut(|hash| {
-            with_pool_mut(|pool| {
-                rs_scan_and_store_the_field_value_and_eat_white(
-                    &*ctx,
-                    buffers,
-                    hash,
-                    pool,
-                    store_field,
-                    at_bib_command,
-                    command_num,
-                    cite_out.as_mut(),
-                    cur_macro_loc,
-                    right_outer_delim,
-                    field_name_loc,
-                )
-            })
-        })
-    });
-
-    res.into()
-}
-
-pub fn decr_brace_level(
-    ctx: &ExecCtx,
+pub(crate) fn decr_brace_level(
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
+    cites: &CiteInfo,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
     if *brace_level == 0 {
-        braces_unbalanced_complaint(ctx, pool, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pool, cites, pop_lit_var)?;
     } else {
         *brace_level -= 1;
     }
@@ -975,22 +874,24 @@ pub fn decr_brace_level(
     Ok(())
 }
 
-pub fn check_brace_level(
-    ctx: &ExecCtx,
+pub(crate) fn check_brace_level(
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
+    cites: &CiteInfo,
     pop_lit_var: StrNumber,
     brace_level: i32,
 ) -> Result<(), BibtexError> {
     if brace_level > 0 {
-        braces_unbalanced_complaint(ctx, pool, pop_lit_var)?;
+        braces_unbalanced_complaint(ctx, pool, cites, pop_lit_var)?;
     }
     Ok(())
 }
 
-pub fn name_scan_for_and(
-    ctx: &ExecCtx,
+pub(crate) fn name_scan_for_and(
+    ctx: &ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     buffers: &mut GlobalBuffer,
+    cites: &CiteInfo,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
@@ -1030,7 +931,7 @@ pub fn name_scan_for_and(
                 preceding_white = false;
             }
             b'}' => {
-                decr_brace_level(ctx, pool, pop_lit_var, brace_level)?;
+                decr_brace_level(ctx, pool, cites, pop_lit_var, brace_level)?;
                 buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                 preceding_white = false;
             }
@@ -1042,10 +943,10 @@ pub fn name_scan_for_and(
         }
     }
 
-    check_brace_level(ctx, pool, pop_lit_var, *brace_level)
+    check_brace_level(ctx, pool, cites, pop_lit_var, *brace_level)
 }
 
-pub fn von_token_found(
+pub(crate) fn von_token_found(
     buffers: &GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
@@ -1116,7 +1017,7 @@ pub fn von_token_found(
 }
 
 #[allow(clippy::too_many_arguments)]
-pub fn von_name_ends_and_last_name_starts_stuff(
+pub(crate) fn von_name_ends_and_last_name_starts_stuff(
     buffers: &GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
@@ -1138,8 +1039,8 @@ pub fn von_name_ends_and_last_name_starts_stuff(
     Ok(())
 }
 
-pub fn enough_text_chars(
-    buffers: &mut GlobalBuffer,
+pub(crate) fn enough_text_chars(
+    buffers: &GlobalBuffer,
     enough_chars: BufPointer,
     buf_start: BufPointer,
     brace_level: &mut i32,

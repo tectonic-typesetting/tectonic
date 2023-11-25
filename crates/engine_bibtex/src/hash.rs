@@ -1,18 +1,17 @@
-use crate::c_api::{
+use crate::{
     pool,
     xbuf::{SafelyZero, XBuf},
     HashPointer, StrIlk, StrNumber,
 };
-use std::cell::RefCell;
 
-pub const HASH_BASE: usize = 1;
-pub const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
+pub(crate) const HASH_BASE: usize = 1;
+pub(crate) const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
     pool::MAX_STRINGS
 } else {
     5000
 };
 const HASH_MAX: usize = HASH_SIZE + HASH_BASE - 1;
-pub const HASH_PRIME: usize = compute_hash_prime();
+pub(crate) const HASH_PRIME: usize = compute_hash_prime();
 
 /// Calculate a prime number for use in hashing that's at least 17/20 of `HASH_SIZE`
 const fn compute_hash_prime() -> usize {
@@ -63,26 +62,24 @@ const fn compute_hash_prime() -> usize {
     hash_prime
 }
 
-/// cbindgen:rename-all=ScreamingSnakeCase
 #[derive(Copy, Clone, PartialEq)]
-#[repr(C)]
-pub enum FnClass {
-    Builtin = 0,
-    Wizard = 1,
-    IntLit = 2,
-    StrLit = 3,
-    Field = 4,
-    IntEntryVar = 5,
-    StrEntryVar = 6,
-    IntGlblVar = 7,
-    StrGlblVar = 8,
+pub(crate) enum FnClass {
+    Builtin,
+    Wizard,
+    IntLit,
+    StrLit,
+    Field,
+    IntEntryVar,
+    StrEntryVar,
+    IntGlblVar,
+    StrGlblVar,
 }
 
 // SAFETY: The FnClass type is valid at zero as FnClass::Builtin
 unsafe impl SafelyZero for FnClass {}
 
 // TODO: Split string-pool stuff into string pool, executor stuff into execution context
-pub struct HashData {
+pub(crate) struct HashData {
     hash_next: XBuf<HashPointer>,
     hash_text: XBuf<StrNumber>,
     hash_ilk: XBuf<StrIlk>,
@@ -103,8 +100,7 @@ impl HashData {
         }
     }
 
-    #[no_mangle]
-    pub extern "C" fn undefined() -> usize {
+    pub fn undefined() -> usize {
         HASH_MAX + 1
     }
 
@@ -163,55 +159,4 @@ impl HashData {
     pub fn set_ilk_info(&mut self, pos: usize, info: i32) {
         self.ilk_info[pos] = info;
     }
-}
-
-thread_local! {
-    pub static HASHES: RefCell<HashData> = RefCell::new(HashData::new());
-}
-
-pub fn reset() {
-    HASHES.with(|hash| *hash.borrow_mut() = HashData::new());
-}
-
-pub fn with_hash<T>(f: impl FnOnce(&HashData) -> T) -> T {
-    HASHES.with(|h| f(&h.borrow()))
-}
-
-pub fn with_hash_mut<T>(f: impl FnOnce(&mut HashData) -> T) -> T {
-    HASHES.with(|h| f(&mut h.borrow_mut()))
-}
-
-#[no_mangle]
-pub extern "C" fn fn_type(pos: HashPointer) -> FnClass {
-    with_hash(|hash| hash.fn_type[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_fn_type(pos: HashPointer, ty: FnClass) {
-    with_hash_mut(|hash| hash.fn_type[pos] = ty)
-}
-
-#[no_mangle]
-pub extern "C" fn hash_text(pos: HashPointer) -> StrNumber {
-    with_hash(|hash| hash.hash_text[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn ilk_info(pos: HashPointer) -> i32 {
-    with_hash(|hash| hash.ilk_info[pos])
-}
-
-#[no_mangle]
-pub extern "C" fn set_ilk_info(pos: HashPointer, val: i32) {
-    with_hash_mut(|hash| hash.ilk_info[pos] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn hash_size() -> i32 {
-    HASH_SIZE as i32
-}
-
-#[no_mangle]
-pub extern "C" fn hash_prime() -> usize {
-    HASH_PRIME
 }
