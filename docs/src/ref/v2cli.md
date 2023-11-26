@@ -40,6 +40,14 @@ nextonic build
 You can use various Unix `argv[0]` hacks to achieve this, or you can just rename
 or symlink the `tectonic` binary to `nextonic` manually.
 
+
+## External tools
+
+The V2 interface also supports external commands. If you run `tectonic -X cmd`, where `cmd` is NOT built into Tectonic, Tectonic will search for a binary called `tectonic-cmd` and run it if it exists.
+
+
+
+
 ## Migration plan
 
 The plan is to eventually migrate to make the V2 interface the default. This
