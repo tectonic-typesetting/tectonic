@@ -51,9 +51,8 @@ pub struct Document {
 
     /// Arbitrary document metadata.
     /// This has no effect on tectonic's build process.
-    /// Rather, allows users to add easily-accessible information to their documents.
-    ///
-    /// Tectonic's `show metadata` command displays this information.
+    /// Rather, allows users to add easily-accessible information to their documents,
+    /// which may be read by external tools.
     pub metadata: Option<toml::Value>,
 
     /// The document name. This will be used to name build artifacts and the
