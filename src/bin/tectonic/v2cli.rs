@@ -726,23 +726,18 @@ enum ShowCommands {
     #[structopt(name = "user-cache-dir")]
     /// Print the location of the default per-user cache directory
     UserCacheDir(ShowUserCacheDirCommand),
-
-    /// Show metadata from the current environment
-    Metadata(ShowMetadataCommand),
 }
 
 impl ShowCommand {
     fn customize(&self, cc: &mut CommandCustomizations) {
         match &self.command {
             ShowCommands::UserCacheDir(c) => c.customize(cc),
-            ShowCommands::Metadata(c) => c.customize(cc),
         }
     }
 
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         match self.command {
             ShowCommands::UserCacheDir(c) => c.execute(config, status),
-            ShowCommands::Metadata(c) => c.execute(config, status),
         }
     }
 }
@@ -759,114 +754,6 @@ impl ShowUserCacheDirCommand {
         use tectonic_bundles::cache::Cache;
         let cache = Cache::get_user_default()?;
         println!("{}", cache.root().display());
-        Ok(0)
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, StructOpt)]
-struct ShowMetadataCommand {
-    #[structopt(help = "The metadata key to get")]
-    key: String,
-}
-
-
-fn get_metadata(meta: &toml::Value, mut parts: core::str::Split<&str>) -> Option<String> {
-    match meta {
-        toml::Value::String(_)
-        | toml::Value::Boolean(_)
-        | toml::Value::Integer(_)
-        | toml::Value::Float(_)
-        | toml::Value::Datetime(_) => {
-            if parts.next().is_some() {
-                // None of these types may be indexed further
-                return None;
-            }
-
-            return Some(match meta {
-                toml::Value::String(s) => s.clone(),
-                toml::Value::Datetime(d) => format!("{}", d),
-                _ => format!("{}", meta),
-            });
-        }
-
-        toml::Value::Array(a) => {
-            match parts.next() {
-                None => return None,
-                Some(s) => {
-                    if s == "len" {
-                        // Magic key to get array length.
-                        // Allows easy iteration.
-                        return Some(format!("{}", a.len()));
-                    } else {
-                        let i: usize = match s.parse() {
-                            Ok(i) => i,
-                            Err(_) => return None,
-                        };
-
-                        let meta = match a.get(i) {
-                            Some(v) => v,
-                            None => return None,
-                        };
-
-                        return get_metadata(meta, parts);
-                    }
-                }
-            }
-        }
-
-        toml::Value::Table(t) => {
-            match parts.next() {
-                None => return None,
-                Some(s) => {
-                    let meta = match t.get(s) {
-                        Some(v) => v,
-                        None => return None,
-                    };
-
-                    return get_metadata(meta, parts);
-                }
-            }
-        }
-    };
-}
-
-
-
-impl ShowMetadataCommand {
-    fn customize(&self, cc: &mut CommandCustomizations) {
-        cc.always_stderr = true;
-    }
-
-    fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
-        // `tectonic show metadata` should be as shell-script-friendly as possible.
-        // It should either print a value or return an error code, and produce NO OTHER OUTPUT.
-        //
-        // We return code 1 if `key` doesn't exist
-        // We return code 2 if we can't open a workspace.
-
-        let meta = match Workspace::open_from_environment() {
-            Ok(ws) => {
-                let doc = ws.first_document();
-                let meta = doc.metadata.clone();
-                if meta.is_none() {
-                    return Ok(1);
-                }
-                meta.unwrap()
-            }
-
-            Err(_) => {
-                return Ok(2);
-            }
-        };
-
-        let parts = self.key.split(".");
-
-        let meta = get_metadata(&meta, parts);
-        if meta.is_none() {
-            return Ok(1);
-        }
-
-        println!("{}", meta.unwrap());
         Ok(0)
     }
 }
