@@ -49,6 +49,13 @@ pub struct Document {
     /// this will be a subdirectory of `src_dir` named `build`.
     build_dir: PathBuf,
 
+    /// Arbitrary document metadata.
+    /// This has no effect on tectonic's build process.
+    /// Rather, allows users to add easily-accessible information to their documents.
+    ///
+    /// Tectonic's `show metadata` command displays this information.
+    pub metadata: Option<toml::Value>,
+
     /// The document name. This will be used to name build artifacts and the
     /// like, and so should be relatively filesystem-friendly. It does not
     /// need to be the same as the document title.
@@ -103,6 +110,7 @@ impl Document {
             build_dir: build_dir.into(),
             name: doc.doc.name,
             bundle_loc: doc.doc.bundle,
+            metadata: doc.doc.metadata,
             outputs,
         })
     }
@@ -124,7 +132,7 @@ impl Document {
             doc: syntax::DocSection {
                 name: self.name.clone(),
                 bundle: self.bundle_loc.clone(),
-                metadata: serde::de::IgnoredAny{},
+                metadata: None,
             },
             outputs,
         };
@@ -289,6 +297,7 @@ impl Document {
             name,
             bundle_loc,
             outputs: crate::document::default_outputs(),
+            metadata: None,
         })
     }
 }
@@ -330,9 +339,7 @@ mod syntax {
     pub struct DocSection {
         pub name: String,
         pub bundle: String,
-
-        #[serde(skip_serializing)]
-        pub metadata: serde::de::IgnoredAny,
+        pub metadata: Option<toml::Value>,
     }
 
     #[derive(Debug, Deserialize, Serialize)]
