@@ -87,7 +87,7 @@ impl<R: Read + Seek> ZipBundle<R> {
     }
 
     // Turn a name into a path
-    fn find_name(&self, name: &str, status: &mut dyn StatusBackend) -> Option<String> {
+    fn search_for_file(&self, name: &str, status: &mut dyn StatusBackend) -> Option<String> {
         // Get last element of path, since
         // some packages reference a path to a file.
         // `fithesis4` is one example.
@@ -104,12 +104,10 @@ impl<R: Read + Seek> ZipBundle<R> {
         };
 
         // If we don't have this path in the index, this file doesn't exist.
-        // Make sure the bundle script adds ALL files to the index!
-        //
-        // The code below takes care to clone these strings only if it needs to.
+        // The code below will clone these strings iff it has to.
         let paths: &Vec<String> = self.index.get(n)?;
 
-        if relative_parent {
+        if relative_parent { // TODO: REWORK
             let mut matching: Option<String> = None;
             for p in paths {
                 if p.ends_with(&name) {
@@ -127,9 +125,10 @@ impl<R: Read + Seek> ZipBundle<R> {
             }
             return matching;
         } else {
-            if paths.len() == 1 {
-                return Some(paths[0].to_string());
-            }
+
+            // Even if paths.len() is 1, we don't return here.
+            // We need to make sure this file matches a search path:
+            // if it's in a directory we don't search, we shouldn't find it!
 
             let mut picked: Vec<String> = Vec::new();
             for rule in &self.search {
@@ -153,15 +152,22 @@ impl<R: Read + Seek> ZipBundle<R> {
             }
 
             if picked.len() == 0 {
-                // We didn't match any lines in the search file
-                picked = paths.clone()
+                // No file in our search dirs had this name.
+                return None
             } else if picked.len() == 1 {
+                // We found exactly one file with this name.
+                //
+                // This chain of functions is essentially picked[0],
+                // but takes ownership of the string without requiring
+                // a .clone().
+                return Some(picked.into_iter().next().unwrap());
+            } else {
+                // We found multiple files with this name, all of which
+                // have the same priority. Pick alphabetically to emulate
+                // an "alphabetic DFS" search order.
+                picked.sort();
                 return Some(picked.into_iter().next().unwrap());
             }
-
-            // If we haven't resolved the conflict yet, choose alphabetically.
-            picked.sort();
-            return Some(picked.into_iter().next().unwrap());
         }
     }
 }
@@ -179,7 +185,7 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
-        let path = match self.find_name(name, status) {
+        let path = match self.search_for_file(name, status) {
             Some(s) => s,
             None => return OpenResult::NotAvailable,
         };
