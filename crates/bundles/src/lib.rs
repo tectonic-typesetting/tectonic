@@ -156,6 +156,6 @@ pub fn get_fallback_bundle(
         Box::new(ItarBundle::new(url, status)?),
         only_cached,
         status,
-        BundleCache::default_dir()?,
+        None,
     )?))
 }

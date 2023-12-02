@@ -119,21 +119,14 @@ impl PersistentConfig {
         &self,
         url: &str,
         only_cached: bool,
-        custom_cache_root: Option<&Path>,
+        custom_cache_dir: Option<&Path>,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
         let bundle = BundleCache::new(
             Box::new(ItarBundle::new(url.to_string(), status)?),
             only_cached,
             status,
-            {
-                // Select cache root dir
-                if let Some(root) = custom_cache_root {
-                    root.to_path_buf()
-                } else {
-                    BundleCache::default_dir()?
-                }
-            },
+            custom_cache_dir.map(|x| x.to_owned()),
         )?;
 
         Ok(Box::new(bundle) as _)
@@ -193,7 +186,7 @@ impl PersistentConfig {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             Ok(crate::test_util::test_path(&[]))
         } else {
-            Ok(app_dirs::ensure_user_cache_dir("formats")?)
+            Ok(app_dirs::get_user_cache_dir("formats")?)
         }
     }
 }

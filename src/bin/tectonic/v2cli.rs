@@ -22,6 +22,7 @@ use tectonic::{
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
+use tectonic_io_base::app_dirs;
 use tectonic_status_base::plain::PlainStatusBackend;
 use tokio::runtime;
 use watchexec::event::ProcessEnd;
@@ -748,8 +749,7 @@ impl ShowUserCacheDirCommand {
     }
 
     fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
-        use tectonic_bundles::cache::BundleCache;
-        println!("{}", BundleCache::default_dir()?.display());
+        println!("{}", app_dirs::get_user_cache_dir("")?.display());
         Ok(0)
     }
 }

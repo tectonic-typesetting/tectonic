@@ -135,7 +135,7 @@ impl DocumentExt for Document {
                     Box::new(ItarBundle::new(self.bundle_loc.clone(), status)?),
                     setup_options.only_cached,
                     status,
-                    BundleCache::default_dir()?,
+                    None,
                 )?;
                 return Ok(Box::new(bundle));
             } else if url.scheme() == "file" {
