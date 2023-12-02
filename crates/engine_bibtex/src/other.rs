@@ -53,7 +53,7 @@ impl OtherData {
     }
 
     pub fn check_field_overflow(&mut self, fields: usize) {
-        if fields > self.field_info.len() {
+        while fields > self.field_info.len() {
             self.field_info.grow(MAX_FIELDS);
         }
     }

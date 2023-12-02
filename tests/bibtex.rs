@@ -61,9 +61,7 @@ impl TestCase {
         let mut status = NoopStatusBackend::default();
         let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
-        BibtexEngine::new()
-            .process(&mut launcher, &auxname, &Default::default())
-            .unwrap();
+        let res = BibtexEngine::new().process(&mut launcher, &auxname, &Default::default());
 
         // Check that outputs match expectations.
 
@@ -81,6 +79,8 @@ impl TestCase {
         expect
             .file(ExpectedFile::read_with_extension(&mut p, "blg").collection(&files))
             .finish();
+
+        res.unwrap();
     }
 }
 
@@ -174,4 +174,14 @@ fn test_many_preamble() {
 #[test]
 fn test_nested_aux() {
     TestCase::new("nested", Some("aux_files")).go();
+}
+
+/// Test for [#1105](https://github.com/tectonic-typesetting/tectonic/issues/1105), with enough
+/// citations in the aux and fields in the bst to require more than one allocation of field space
+/// at once.
+#[test]
+fn test_lots_of_cites() {
+    TestCase::new("lots_of_cites", Some("aux_files"))
+        .test_bbl(false)
+        .go();
 }
