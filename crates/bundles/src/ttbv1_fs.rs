@@ -72,6 +72,7 @@ impl<R: Read + Seek> Ttbv1FsBundle<R> {
         })
     }
 
+    // Fill this bundle's search rules, fetching files from our backend.
     fn fill_index(&mut self) -> Result<()> {
         self.reader.seek(SeekFrom::Start(0))?;
         let mut header = vec![0u8; 24];
@@ -94,6 +95,7 @@ impl<R: Read + Seek> Ttbv1FsBundle<R> {
         return Ok(());
     }
 
+    // Fill this bundle's search rules, fetching files from our backend.
     fn fill_search(&mut self) -> Result<()> {
         let info: Vec<&FileInfo> = self.index.iter().filter(|x| x.name == "SEARCH").collect();
         if info.len() != 1 {
@@ -186,6 +188,22 @@ impl<R: Read + Seek> IoProvider for Ttbv1FsBundle<R> {
 impl<R: Read + Seek> Bundle for Ttbv1FsBundle<R> {
     fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
         Ok(self.index.iter().map(|x| x.path.clone()).collect())
+    }
+
+    fn fill_index_external(&mut self, source: Box<dyn Read>) -> Result<()> {
+        for line in BufReader::new(source).lines() {
+            if let Ok(info) = Self::parse_index_line(&line?) {
+                self.index.push(info);
+            }
+        }
+        return Ok(());
+    }
+
+    fn fill_search_external(&mut self, source: Box<dyn Read>) -> Result<()> {
+        self.search = BufReader::new(source)
+            .lines()
+            .collect::<Result<Vec<String>, std::io::Error>>()?;
+        return Ok(());
     }
 }
 

@@ -16,7 +16,6 @@
 //! then used to construct an HTTP Range request to obtain the file as needed.
 
 use crate::Bundle;
-use flate2::bufread;
 use std::io::BufRead;
 use std::io::Cursor;
 use std::io::Read;
@@ -27,7 +26,7 @@ use tectonic_geturl::DefaultRangeReader;
 use tectonic_geturl::{DefaultBackend, GetUrlBackend, RangeReader};
 use tectonic_io_base::OpenResult;
 use tectonic_io_base::{InputHandle, InputOrigin, IoProvider};
-use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
+use tectonic_status_base::{tt_note, tt_warning, NoopStatusBackend, StatusBackend};
 
 const MAX_HTTP_ATTEMPTS: usize = 4;
 const RETRY_SLEEP_MS: u64 = 250;
@@ -67,15 +66,15 @@ impl ItarBundle {
         })
     }
 
-    /// Fill self.index
-    fn get_index(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
+    // Fill this bundle's search rules, fetching files from our backend.
+    fn fill_index(&mut self) -> Result<()> {
         let mut geturl_backend = DefaultBackend::default();
-        let resolved_url = geturl_backend.resolve_url(&self.url, status)?;
+        //let resolved_url = geturl_backend.resolve_url(&self.url, status)?;
 
-        let index_url = format!("{}.index.gz", &resolved_url);
-        tt_note!(status, "downloading index {}", index_url);
-        let reader =
-            bufread::GzDecoder::new(BufReader::new(geturl_backend.get_url(&index_url, status)?));
+        let index_url = format!("{}.index.gz", &self.url);
+        let reader = geturl_backend
+            .get_url(&index_url, &mut NoopStatusBackend {})
+            .unwrap();
 
         self.index.clear();
         for line in BufReader::new(reader).lines() {
@@ -83,7 +82,6 @@ impl ItarBundle {
                 self.index.insert(name, info);
             }
         }
-
         return Ok(());
     }
 
@@ -114,10 +112,14 @@ impl IoProvider for ItarBundle {
     ) -> OpenResult<InputHandle> {
         // Fetch index if it is empty
         if self.index.len() == 0 {
-            match self.get_index(status) {
-                Err(e) => return OpenResult::Err(e),
-                _ => {}
-            };
+            let geturl_backend = DefaultBackend::default();
+
+            // Connect reader if it is not already connected
+            if self.reader.is_none() {
+                self.reader = Some(geturl_backend.open_range_reader(&self.url));
+            }
+
+            self.fill_index().unwrap();
         }
 
         let info = match self.index.get(name) {
@@ -196,10 +198,17 @@ impl IoProvider for ItarBundle {
 }
 
 impl Bundle for ItarBundle {
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+        // Fetch index if it is empty
         if self.index.len() == 0 {
-            // Try to fetch index if it is empty
-            let _ = self.get_index(status);
+            let geturl_backend = DefaultBackend::default();
+
+            // Connect reader if it is not already connected
+            if self.reader.is_none() {
+                self.reader = Some(geturl_backend.open_range_reader(&self.url));
+            }
+
+            self.fill_index().unwrap();
         }
 
         Ok(self.index.keys().cloned().collect())
@@ -207,5 +216,15 @@ impl Bundle for ItarBundle {
 
     fn get_location(&mut self) -> String {
         return self.url.clone();
+    }
+
+    fn fill_index_external(&mut self, source: Box<dyn Read>) -> Result<()> {
+        self.index.clear();
+        for line in BufReader::new(source).lines() {
+            if let Ok((name, info)) = Self::parse_index_line(&line?) {
+                self.index.insert(name, info);
+            }
+        }
+        return Ok(());
     }
 }

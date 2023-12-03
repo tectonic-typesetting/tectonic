@@ -60,6 +60,7 @@ impl Ttbv1NetBundle {
         })
     }
 
+    // Fill this bundle's search rules, fetching files from our backend.
     fn fill_index(&mut self) -> Result<()> {
         let mut header = vec![0u8; 24];
         let mut stream = self.reader.as_mut().unwrap().read_range(0, 24).unwrap();
@@ -82,6 +83,7 @@ impl Ttbv1NetBundle {
         return Ok(());
     }
 
+    // Fill this bundle's search rules, fetching files from our backend.
     fn fill_search(&mut self) -> Result<()> {
         let info: Vec<&FileInfo> = self.index.iter().filter(|x| x.name == "SEARCH").collect();
         if info.len() != 1 {
@@ -169,6 +171,22 @@ impl Bundle for Ttbv1NetBundle {
 
     fn get_location(&mut self) -> String {
         return self.url.clone();
+    }
+
+    fn fill_index_external(&mut self, source: Box<dyn Read>) -> Result<()> {
+        for line in BufReader::new(source).lines() {
+            if let Ok(info) = Self::parse_index_line(&line?) {
+                self.index.push(info);
+            }
+        }
+        return Ok(());
+    }
+
+    fn fill_search_external(&mut self, source: Box<dyn Read>) -> Result<()> {
+        self.search = BufReader::new(source)
+            .lines()
+            .collect::<Result<Vec<String>, std::io::Error>>()?;
+        return Ok(());
     }
 }
 

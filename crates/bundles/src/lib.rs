@@ -93,6 +93,16 @@ pub trait Bundle: IoProvider {
     /// gigabytes).
     fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>>;
 
+    /// Fill this bundle's file index from an external reader
+    fn fill_index_external(&mut self, _source: Box<dyn Read>) -> Result<()> {
+        Ok(())
+    }
+
+    /// Fill this bundle's search rules from an external index
+    fn fill_search_external(&mut self, _source: Box<dyn Read>) -> Result<()> {
+        Ok(())
+    }
+
     /// Return a string that corresponds to this bundle's "location"
     ///
     /// The meaning of this depends on the bundle:
@@ -113,6 +123,14 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 
     fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
         (**self).all_files(status)
+    }
+
+    fn fill_index_external(&mut self, source: Box<dyn Read>) -> Result<()> {
+        (**self).fill_index_external(source)
+    }
+
+    fn fill_search_external(&mut self, source: Box<dyn Read>) -> Result<()> {
+        (**self).fill_search_external(source)
     }
 
     fn get_location(&mut self) -> String {
