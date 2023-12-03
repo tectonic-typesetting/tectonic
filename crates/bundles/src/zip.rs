@@ -37,24 +37,14 @@ impl<R: Read + Seek> ZipBundle<R> {
         let mut search = Vec::new();
 
         // Extract and read index
-        match zip.by_name("INDEX") {
-            Ok(f) => {
-                for line in BufReader::new(f).lines() {
-                    Self::add_index_line(&line?, &mut index)?;
-                }
-            }
-            Err(e) => return Err(e.into()),
-        };
+        for line in BufReader::new(zip.by_name("INDEX")?).lines() {
+            Self::add_index_line(&line?, &mut index)?;
+        }
 
-        // Extract and read index
-        match zip.by_name("SEARCH") {
-            Ok(f) => {
-                for line in BufReader::new(f).lines() {
-                    Self::add_search_line(&line?, &mut search)?;
-                }
-            }
-            Err(e) => return Err(e.into()),
-        };
+        // Extract and read search
+        for line in BufReader::new(zip.by_name("SEARCH")?).lines() {
+            Self::add_search_line(&line?, &mut search)?;
+        }
 
         Ok(ZipBundle { zip, index, search })
     }
@@ -107,7 +97,8 @@ impl<R: Read + Seek> ZipBundle<R> {
         // The code below will clone these strings iff it has to.
         let paths: &Vec<String> = self.index.get(n)?;
 
-        if relative_parent { // TODO: REWORK
+        if relative_parent {
+            // TODO: REWORK
             let mut matching: Option<String> = None;
             for p in paths {
                 if p.ends_with(&name) {
@@ -125,7 +116,6 @@ impl<R: Read + Seek> ZipBundle<R> {
             }
             return matching;
         } else {
-
             // Even if paths.len() is 1, we don't return here.
             // We need to make sure this file matches a search path:
             // if it's in a directory we don't search, we shouldn't find it!
@@ -153,7 +143,7 @@ impl<R: Read + Seek> ZipBundle<R> {
 
             if picked.len() == 0 {
                 // No file in our search dirs had this name.
-                return None
+                return None;
             } else if picked.len() == 1 {
                 // We found exactly one file with this name.
                 //
