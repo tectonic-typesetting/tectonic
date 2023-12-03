@@ -22,6 +22,8 @@ use tectonic::{
     unstable_opts::{UnstableArg, UnstableOptions},
 };
 
+use tectonic_bundles::detect_bundle;
+
 #[derive(Debug, StructOpt)]
 pub struct CompileOptions {
     /// The file to process, or "-" to process the standard input stream
@@ -32,14 +34,9 @@ pub struct CompileOptions {
     #[structopt(long, short, name = "path", default_value = "latex")]
     format: String,
 
-    /// Use this directory or Zip-format bundle file to find resource files instead of the default
-    #[structopt(takes_value(true), parse(from_os_str), long, short, name = "file_path")]
-    bundle: Option<PathBuf>,
-
-    /// Use this URL to find resource files instead of the default
-    #[structopt(takes_value(true), long, short, name = "url")]
-    // TODO add URL validation
-    web_bundle: Option<String>,
+    /// Use this URL or path to find resource files instead of the default
+    #[structopt(takes_value(true), long, short, name = "file_path")]
+    bundle: Option<String>,
 
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
@@ -187,17 +184,20 @@ impl CompileOptions {
             }
         }
 
-        let only_cached = self.only_cached;
-        if only_cached {
+        if self.only_cached {
             tt_note!(status, "using only cached resource files");
         }
-        if let Some(path) = self.bundle {
-            sess_builder.bundle(config.make_local_file_provider(path, status)?);
-        } else if let Some(u) = self.web_bundle {
-            sess_builder.bundle(config.make_cached_url_provider(&u, only_cached, None, status)?);
+
+        if let Some(source) = self.bundle {
+            if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, status)? {
+                sess_builder.bundle(bundle);
+            } else {
+                return Err(errmsg!("\"{source}\" doesn't specify a valid bundle."));
+            }
         } else {
-            sess_builder.bundle(config.default_bundle(only_cached, status)?);
+            sess_builder.bundle(config.default_bundle(self.only_cached, status)?);
         }
+
         sess_builder.build_date_from_env(deterministic_mode);
         run_and_report(sess_builder, status).map(|_| 0)
     }

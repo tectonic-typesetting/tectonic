@@ -12,14 +12,11 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::atomic::{AtomicBool, Ordering},
 };
-use tectonic_bundles::{
-    cache::BundleCache, dir::DirBundle, itar::ItarBundle, zip::ZipBundle, Bundle,
-};
+use tectonic_bundles::{detect_bundle, Bundle};
 use tectonic_io_base::app_dirs;
-use url::Url;
 
 use crate::{
     errors::{ErrorKind, Result},
@@ -115,36 +112,6 @@ impl PersistentConfig {
         Ok(PersistentConfig::default())
     }
 
-    pub fn make_cached_url_provider(
-        &self,
-        url: &str,
-        only_cached: bool,
-        custom_cache_dir: Option<&Path>,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
-        let bundle = BundleCache::new(
-            Box::new(ItarBundle::new(url.to_string(), status)?),
-            only_cached,
-            status,
-            custom_cache_dir.map(|x| x.to_owned()),
-        )?;
-
-        Ok(Box::new(bundle) as _)
-    }
-
-    pub fn make_local_file_provider(
-        &self,
-        file_path: PathBuf,
-        _status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
-        let bundle: Box<dyn Bundle> = if file_path.is_dir() {
-            Box::new(DirBundle::new(file_path))
-        } else {
-            Box::new(ZipBundle::open(file_path)?)
-        };
-        Ok(bundle)
-    }
-
     pub fn default_bundle_loc(&self) -> &str {
         &self.default_bundles[0].url
     }
@@ -154,8 +121,6 @@ impl PersistentConfig {
         only_cached: bool,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        use std::io;
-
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             let bundle = crate::test_util::TestBundle::default();
             return Ok(Box::new(bundle));
@@ -168,18 +133,14 @@ impl PersistentConfig {
             .into());
         }
 
-        let url = Url::parse(&self.default_bundles[0].url)
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "failed to parse url"))?;
-        if url.scheme() == "file" {
-            // load the local zip file.
-            let file_path = url.to_file_path().map_err(|_| {
-                io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path")
-            })?;
-            return self.make_local_file_provider(file_path, status);
-        }
-        let bundle =
-            self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, None, status)?;
-        Ok(Box::new(bundle) as _)
+        Ok(detect_bundle(
+            self.default_bundles[0].url.to_owned(),
+            only_cached,
+            None,
+            status,
+        )
+        .unwrap()
+        .unwrap())
     }
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {

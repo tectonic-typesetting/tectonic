@@ -7,21 +7,14 @@
 //! `tectonic_docmodel` crate with the actual document-processing capabilities
 //! provided by the processing engines.
 
-use std::{
-    fmt::Write as FmtWrite,
-    fs, io,
-    path::{Path, PathBuf},
-};
+use std::{fmt::Write as FmtWrite, fs, io};
 use tectonic_bridge_core::SecuritySettings;
-use tectonic_bundles::{
-    cache::BundleCache, dir::DirBundle, itar::ItarBundle, zip::ZipBundle, Bundle,
-};
+use tectonic_bundles::{detect_bundle, Bundle};
 use tectonic_docmodel::{
     document::{BuildTargetType, Document},
     workspace::{Workspace, WorkspaceCreator},
 };
 use tectonic_geturl::{DefaultBackend, GetUrlBackend};
-use url::Url;
 
 use crate::{
     config, ctry,
@@ -103,56 +96,22 @@ impl DocumentExt for Document {
         setup_options: &DocumentSetupOptions,
         status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
-        // Helper function, tries to load a bundle from a pathbuf.
-        // Does its best to auto-detect bundle type.
-        fn bundle_from_path(p: PathBuf) -> Result<Box<dyn Bundle>> {
-            let ext = p.extension().map_or("", |x| x.to_str().unwrap_or(""));
-
-            if p.is_dir() {
-                Ok(Box::new(DirBundle::new(p)))
-            } else if ext == "zip" {
-                Ok(Box::new(ZipBundle::open(p)?))
-            } else {
-                // This isn't something we know how to handle
-                Err(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    format!("invalid local bundle type \"{}\"", ext),
-                )
-                .into())
-            }
-        }
-
         // Load test bundle
         if config::is_config_test_mode_activated() {
             let bundle = test_util::TestBundle::default();
             return Ok(Box::new(bundle));
         }
 
-        // Parse URL and detect bundle type
-        if let Ok(url) = Url::parse(&self.bundle_loc) {
-            if url.scheme() == "https" || url.scheme() == "http" {
-                let bundle = BundleCache::new(
-                    Box::new(ItarBundle::new(self.bundle_loc.clone(), status)?),
-                    setup_options.only_cached,
-                    status,
-                    None,
-                )?;
-                return Ok(Box::new(bundle));
-            } else if url.scheme() == "file" {
-                let file_path = url.to_file_path().map_err(|_| {
-                    io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path")
-                })?;
-                return bundle_from_path(file_path);
-            } else {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    format!("bundle url scheme \"{}\" isn't supported", url.scheme()),
-                )
-                .into());
-            }
-        } else {
-            // If we couldn't parse the URL, this is probably a local path.
-            return bundle_from_path(Path::new(&self.bundle_loc).to_owned());
+        let d = detect_bundle(
+            self.bundle_loc.clone(),
+            setup_options.only_cached,
+            None,
+            status,
+        )?;
+
+        match d {
+            Some(b) => Ok(b),
+            None => Err(io::Error::new(io::ErrorKind::InvalidInput, "Could not get bundle").into()),
         }
     }
 

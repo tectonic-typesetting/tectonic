@@ -17,9 +17,7 @@
 //!   useful for testing and lightweight usage.
 //! - [`zip::ZipBundle`] for a ZIP-format bundle.
 
-use cache::BundleCache;
-use itar::ItarBundle;
-use std::{io::Read, str::FromStr};
+use std::{io::Read, path::PathBuf, str::FromStr};
 use tectonic_errors::{anyhow::bail, atry, Result};
 use tectonic_io_base::{digest, digest::DigestData, IoProvider, OpenResult};
 use tectonic_status_base::{NoopStatusBackend, StatusBackend};
@@ -28,6 +26,11 @@ pub mod cache;
 pub mod dir;
 pub mod itar;
 pub mod zip;
+
+use cache::BundleCache;
+use dir::DirBundle;
+use itar::ItarBundle;
+use zip::ZipBundle;
 
 /// A trait for bundles of Tectonic support files.
 ///
@@ -110,6 +113,56 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 
     fn get_location(&mut self) -> String {
         (**self).get_location()
+    }
+}
+
+/// Try to open a bundle from a string,
+/// detecting its type.
+///
+/// Returns None if auto-detection fails.
+pub fn detect_bundle(
+    source: String,
+    only_cached: bool,
+    status: &mut dyn StatusBackend,
+) -> Result<Option<Box<dyn Bundle>>> {
+    use url::Url;
+
+    // Parse URL and detect bundle type
+    if let Ok(url) = Url::parse(&source) {
+        if url.scheme() == "https" || url.scheme() == "http" {
+            let bundle = BundleCache::new(
+                Box::new(ItarBundle::new(source, status)?),
+                only_cached,
+                status,
+                None,
+            )?;
+            return Ok(Some(Box::new(bundle)));
+        } else if url.scheme() == "file" {
+            let file_path = url.to_file_path().map_err(|_| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "failed to parse local path",
+                )
+            })?; //TODO: handle
+            return bundle_from_path(file_path);
+        } else {
+            return Ok(None);
+        }
+    } else {
+        // If we couldn't parse the URL, this is probably a local path.
+        return bundle_from_path(PathBuf::from(source));
+    }
+
+    fn bundle_from_path(p: PathBuf) -> Result<Option<Box<dyn Bundle>>> {
+        let ext = p.extension().map_or("", |x| x.to_str().unwrap_or(""));
+
+        if p.is_dir() {
+            Ok(Some(Box::new(DirBundle::new(p))))
+        } else if ext == "zip" {
+            Ok(Some(Box::new(ZipBundle::open(p)?)))
+        } else {
+            Ok(None)
+        }
     }
 }
 
