@@ -189,7 +189,7 @@ impl CompileOptions {
         }
 
         if let Some(source) = self.bundle {
-            if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, status)? {
+            if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, None, status)? {
                 sess_builder.bundle(bundle);
             } else {
                 return Err(errmsg!("\"{source}\" doesn't specify a valid bundle."));
