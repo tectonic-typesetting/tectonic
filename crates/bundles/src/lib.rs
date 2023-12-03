@@ -123,6 +123,7 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 pub fn detect_bundle(
     source: String,
     only_cached: bool,
+    custom_cache_dir: Option<PathBuf>,
     status: &mut dyn StatusBackend,
 ) -> Result<Option<Box<dyn Bundle>>> {
     use url::Url;
@@ -134,7 +135,7 @@ pub fn detect_bundle(
                 Box::new(ItarBundle::new(source, status)?),
                 only_cached,
                 status,
-                None,
+                custom_cache_dir,
             )?;
             return Ok(Some(Box::new(bundle)));
         } else if url.scheme() == "file" {
