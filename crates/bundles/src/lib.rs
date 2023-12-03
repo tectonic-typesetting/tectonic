@@ -22,14 +22,18 @@ use tectonic_errors::{anyhow::bail, atry, Result};
 use tectonic_io_base::{digest, digest::DigestData, IoProvider, OpenResult};
 use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 
-pub mod cache;
+mod cache;
 pub mod dir;
-pub mod itar;
-pub mod zip;
+mod itar;
+mod ttbv1_fs;
+mod ttbv1_net;
+mod zip;
 
 use cache::BundleCache;
 use dir::DirBundle;
 use itar::ItarBundle;
+use ttbv1_fs::Ttbv1FsBundle;
+use ttbv1_net::Ttbv1NetBundle;
 use zip::ZipBundle;
 
 /// A trait for bundles of Tectonic support files.
@@ -131,20 +135,26 @@ pub fn detect_bundle(
     // Parse URL and detect bundle type
     if let Ok(url) = Url::parse(&source) {
         if url.scheme() == "https" || url.scheme() == "http" {
-            let bundle = BundleCache::new(
-                Box::new(ItarBundle::new(source, status)?),
-                only_cached,
-                status,
-                custom_cache_dir,
-            )?;
-            return Ok(Some(Box::new(bundle)));
+            if source.ends_with("ttb") {
+                // TODO: add caching
+                let bundle = Ttbv1NetBundle::new(source)?;
+                return Ok(Some(Box::new(bundle)));
+            } else {
+                let bundle = BundleCache::new(
+                    Box::new(ItarBundle::new(source, status)?),
+                    only_cached,
+                    status,
+                    custom_cache_dir,
+                )?;
+                return Ok(Some(Box::new(bundle)));
+            }
         } else if url.scheme() == "file" {
             let file_path = url.to_file_path().map_err(|_| {
                 std::io::Error::new(
                     std::io::ErrorKind::InvalidInput,
                     "failed to parse local path",
                 )
-            })?; //TODO: handle
+            })?;
             return bundle_from_path(file_path);
         } else {
             return Ok(None);
@@ -161,6 +171,8 @@ pub fn detect_bundle(
             Ok(Some(Box::new(DirBundle::new(p))))
         } else if ext == "zip" {
             Ok(Some(Box::new(ZipBundle::open(p)?)))
+        } else if ext == "ttb" {
+            Ok(Some(Box::new(Ttbv1FsBundle::open(p)?)))
         } else {
             Ok(None)
         }
