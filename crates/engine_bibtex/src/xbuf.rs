@@ -45,14 +45,17 @@ pub fn xcalloc_zeroed<T: SafelyZero>(len: usize) -> Option<&'static mut [T]> {
     }
 }
 
-pub fn xrealloc_zeroed<T: SafelyZero>(
-    old: &'static mut [T],
+/// # Safety
+///
+/// The provided `old` buffer must be valid, and allocated by `xalloc`/`xcalloc`
+pub unsafe fn xrealloc_zeroed<T: SafelyZero>(
+    old: *mut [T],
     new_len: usize,
 ) -> Option<&'static mut [T]> {
-    let old_len = old.len();
+    let old_len = (*old).len();
     let new_size = new_len * mem::size_of::<T>();
     // SAFETY: realloc can be called with any size, even 0, that will just deallocate and return null
-    let ptr = unsafe { xrealloc((old as *mut [_]).cast(), new_size) }.cast::<T>();
+    let ptr = unsafe { xrealloc(old.cast(), new_size) }.cast::<T>();
     if ptr.is_null() {
         None
     } else {
@@ -63,7 +66,7 @@ pub fn xrealloc_zeroed<T: SafelyZero>(
         }
         // SAFETY: realloc guarantees `new_size` bytes valid, plus `SafelyZero` means it's sound to
         //         return a reference to all-zero T
-        Some(unsafe { slice::from_raw_parts_mut(ptr.cast(), new_len) })
+        Some(unsafe { slice::from_raw_parts_mut(ptr, new_len) })
     }
 }
 
@@ -78,7 +81,8 @@ impl<T: SafelyZero + 'static> XBuf<T> {
     pub fn grow(&mut self, grow_by: usize) {
         let slice = mem::take(&mut self.0);
         let old_len = slice.len();
-        self.0 = xrealloc_zeroed(slice, grow_by + old_len).unwrap();
+        // TODO: Just use system allocator?
+        self.0 = unsafe { xrealloc_zeroed(slice, grow_by + old_len) }.unwrap();
     }
 }
 
