@@ -57,7 +57,11 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
             }
         };
 
-        let mut buf = Vec::with_capacity(zipitem.size() as usize);
+        let s = zipitem.size();
+        if s >= u32::MAX as u64 {
+            return OpenResult::Err(anyhow!("Zip item too large."));
+        }
+        let mut buf = Vec::with_capacity(s as usize);
 
         if let Err(e) = zipitem.read_to_end(&mut buf) {
             return OpenResult::Err(e.into());
