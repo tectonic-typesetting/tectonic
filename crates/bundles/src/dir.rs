@@ -5,10 +5,12 @@
 
 use std::{
     fs,
+    io::Read,
     path::{Path, PathBuf},
+    str::FromStr,
 };
 use tectonic_errors::prelude::*;
-use tectonic_io_base::{filesystem::FilesystemIo, InputHandle, IoProvider, OpenResult};
+use tectonic_io_base::{digest, filesystem::FilesystemIo, InputHandle, IoProvider, OpenResult};
 use tectonic_status_base::StatusBackend;
 
 use super::Bundle;
@@ -72,5 +74,28 @@ impl Bundle for DirBundle {
         }
 
         Ok(files)
+    }
+
+    fn get_digest(
+        &mut self,
+        status: &mut dyn StatusBackend,
+    ) -> Result<tectonic_io_base::digest::DigestData> {
+        let digest_text = match self.input_open_name(digest::DIGEST_NAME, status) {
+            OpenResult::Ok(h) => {
+                let mut text = String::new();
+                h.take(64).read_to_string(&mut text)?;
+                text
+            }
+
+            OpenResult::NotAvailable => {
+                bail!("bundle does not provide needed SHA256SUM file");
+            }
+
+            OpenResult::Err(e) => {
+                return Err(e);
+            }
+        };
+
+        Ok(atry!(digest::DigestData::from_str(&digest_text); ["corrupted SHA256 digest data"]))
     }
 }
