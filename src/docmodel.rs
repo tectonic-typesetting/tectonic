@@ -14,7 +14,6 @@ use tectonic_docmodel::{
     document::{BuildTargetType, Document},
     workspace::{Workspace, WorkspaceCreator},
 };
-use tectonic_geturl::{DefaultBackend, GetUrlBackend};
 
 use crate::{
     config, ctry,
@@ -206,13 +205,12 @@ impl WorkspaceCreatorExt for WorkspaceCreator {
     fn create_defaulted(
         self,
         config: &config::PersistentConfig,
-        status: &mut dyn StatusBackend,
+        _status: &mut dyn StatusBackend,
     ) -> Result<Workspace> {
         let bundle_loc = if config::is_config_test_mode_activated() {
             "test-bundle://".to_owned()
         } else {
-            let mut gub = DefaultBackend::default();
-            gub.resolve_url(config.default_bundle_loc(), status)?
+            config.default_bundle_loc().to_string()
         };
 
         Ok(self.create(bundle_loc)?)

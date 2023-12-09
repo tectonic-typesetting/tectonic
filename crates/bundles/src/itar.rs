@@ -218,8 +218,6 @@ impl<'this> CachableBundle<'this, ItarFileInfo, ItarFileIndex> for ItarBundle {
 
     fn get_index_reader(&mut self) -> Result<Box<dyn Read>> {
         let mut geturl_backend = DefaultBackend::default();
-        //let resolved_url = geturl_backend.resolve_url(&self.url, status)?;
-
         let index_url = format!("{}.index.gz", &self.url);
         let reader = GzDecoder::new(geturl_backend.get_url(&index_url, &mut NoopStatusBackend {})?);
         return Ok(Box::new(reader));
@@ -232,13 +230,8 @@ impl<'this> CachableBundle<'this, ItarFileInfo, ItarFileIndex> for ItarBundle {
 
         // Connect reader if it is not already connected
         if self.reader.is_none() {
-            let mut geturl_backend = DefaultBackend::default();
-            let resolved_url =
-                match geturl_backend.resolve_url(&self.url, &mut NoopStatusBackend {}) {
-                    Ok(a) => a,
-                    Err(e) => return OpenResult::Err(e),
-                };
-            self.reader = Some(geturl_backend.open_range_reader(&resolved_url));
+            let geturl_backend = DefaultBackend::default();
+            self.reader = Some(geturl_backend.open_range_reader(&self.url));
         }
 
         // Our HTTP implementation actually has problems with zero-sized ranged
