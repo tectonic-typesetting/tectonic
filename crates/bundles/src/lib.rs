@@ -17,17 +17,18 @@
 //!   useful for testing and lightweight usage.
 //! - [`zip::ZipBundle`] for a ZIP-format bundle.
 
-use std::{io::Read, path::PathBuf, str::FromStr};
-use tectonic_errors::{anyhow::bail, atry, Result};
-use tectonic_io_base::{digest, digest::DigestData, IoProvider, OpenResult};
-use tectonic_status_base::{NoopStatusBackend, StatusBackend};
+use std::{io::Read, path::PathBuf};
+use tectonic_errors::Result;
+use tectonic_io_base::{digest::DigestData, InputHandle, IoProvider, OpenResult};
+use tectonic_status_base::StatusBackend;
 
-mod cache;
+pub mod cache;
 pub mod dir;
-mod itar;
-mod ttbv1_fs;
-mod ttbv1_net;
-mod zip;
+pub mod itar;
+mod ttbv1;
+pub mod ttbv1_fs;
+pub mod ttbv1_net;
+pub mod zip;
 
 use cache::BundleCache;
 use dir::DirBundle;
@@ -35,6 +36,43 @@ use itar::ItarBundle;
 use ttbv1_fs::Ttbv1FsBundle;
 use ttbv1_net::Ttbv1NetBundle;
 use zip::ZipBundle;
+
+/// Uniquely identifies a file in a bundle.
+pub trait FileInfo: Clone {
+    /// Return a path to this file, relative to the bundle.
+    fn path(&self) -> &str;
+
+    /// Return the name of this file
+    fn name(&self) -> &str;
+}
+
+/// Keeps track of
+pub trait FileIndex<'this, T>
+where
+    Self: Sized + 'this,
+    T: FileInfo + 'this,
+{
+    /// Iterate over all [`FileInfo`]s in this index
+    fn iter(&'this self) -> Box<dyn Iterator<Item = &'this T> + 'this>;
+
+    /// Get the number of [`FileInfo`]s in this index
+    fn len(&self) -> usize;
+
+    /// Has this index been filled with bundle data?
+    /// This is always false until we call [`self.initialize()`],
+    /// and is always true afterwards.
+    fn is_initialized(&self) -> bool {
+        return self.len() == 0;
+    }
+
+    /// Fill this index from a file
+    fn initialize(&mut self, reader: &mut dyn Read) -> Result<()>;
+
+    /// Search for a file in this index, obeying search order.
+    ///
+    /// Returns a `Some(FileInfo)` if a file was found, and `None` otherwise.
+    fn search(&'this mut self, name: &str) -> Option<T>;
+}
 
 /// A trait for bundles of Tectonic support files.
 ///
@@ -48,37 +86,9 @@ use zip::ZipBundle;
 /// of TeX support files, and that you can generate one or more TeX format files
 /// using only the files contained in a bundle.
 pub trait Bundle: IoProvider {
-    /// Get a cryptographic digest summarizing this bundle’s contents.
-    ///
-    /// The digest summarizes the exact contents of every file in the bundle. It
-    /// is computed from the sorted names and SHA256 digests of the component
-    /// files [as implemented in the TeXLive bundle builder][x].
-    ///
-    /// [x]: https://github.com/tectonic-typesetting/tectonic-texlive-bundles/blob/master/scripts/ttb_utils.py#L321
-    ///
-    /// The default implementation gets the digest from a file named
-    /// `SHA256SUM`, which is expected to contain the digest in hex-encoded
-    /// format.
-    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData> {
-        let digest_text = match self.input_open_name(digest::DIGEST_NAME, status) {
-            OpenResult::Ok(h) => {
-                let mut text = String::new();
-                h.take(64).read_to_string(&mut text)?;
-                text
-            }
-
-            OpenResult::NotAvailable => {
-                // Broken or un-cacheable backend.
-                bail!("bundle does not provide needed SHA256SUM file");
-            }
-
-            OpenResult::Err(e) => {
-                return Err(e);
-            }
-        };
-
-        Ok(atry!(DigestData::from_str(&digest_text); ["corrupted SHA256 digest data"]))
-    }
+    /// Get a cryptographic digest summarizing this bundle’s contents,
+    /// which summarizes the exact contents of every file in the bundle.
+    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData>;
 
     /// Enumerate the files in this bundle.
     ///
@@ -92,28 +102,6 @@ pub trait Bundle: IoProvider {
     /// might be fairly substantial (although we are talking megabytes, not
     /// gigabytes).
     fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>>;
-
-    /// Fill this bundle's file index from an external reader
-    fn fill_index_external(&mut self, _source: Box<dyn Read>) -> Result<()> {
-        Ok(())
-    }
-
-    /// Fill this bundle's search rules from an external index
-    fn fill_search_external(&mut self, _source: Box<dyn Read>) -> Result<()> {
-        Ok(())
-    }
-
-    /// Return a string that corresponds to this bundle's "location"
-    ///
-    /// The meaning of this depends on the bundle:
-    /// For web bundles, location should be a link.
-    /// For local files, use the bundle's digest since it's easy to get.
-    ///
-    /// This allows us to identify web bundles without an internet connection
-    fn get_location(&mut self) -> String {
-        let mut nop = NoopStatusBackend {};
-        return self.get_digest(&mut nop).unwrap().to_string();
-    }
 }
 
 impl<B: Bundle + ?Sized> Bundle for Box<B> {
@@ -124,17 +112,76 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
     fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
         (**self).all_files(status)
     }
+}
 
-    fn fill_index_external(&mut self, source: Box<dyn Read>) -> Result<()> {
-        (**self).fill_index_external(source)
+/// A bundle that may be cached.
+///
+/// These methods do not implement any new features.
+/// Instead, they give the [`cache::BundleCache`] wrapper
+/// more granular access to existing bundle functionality.
+pub trait CachableBundle<'this, F, T>
+where
+    Self: Bundle + 'this,
+    F: FileInfo + 'this,
+    T: FileIndex<'this, F>,
+{
+    /// Initialize this bundle's file index from an external reader
+    /// This allows us to retrieve the FileIndex from the cache WITHOUT
+    /// touching the network.
+    fn initialize_index(&mut self, _source: &mut dyn Read) -> Result<()> {
+        Ok(())
     }
 
-    fn fill_search_external(&mut self, source: Box<dyn Read>) -> Result<()> {
-        (**self).fill_search_external(source)
+    /// Get a `Read` instance to this bundle's index,
+    /// reading directly from the backend.
+    fn get_index_reader(&mut self) -> Result<Box<dyn Read>>;
+
+    /// Return a reference to this bundle's FileIndex.
+    fn index(&mut self) -> &mut T;
+
+    /// Open the file that `info` points to.
+    fn open_fileinfo(&mut self, info: &F) -> OpenResult<InputHandle>;
+
+    /// Search for a file in this bundle.
+    /// This should foward the call to `self.index`
+    fn search(&mut self, name: &str) -> Option<F>;
+
+    /// Return a string that corresponds to this bundle's location,
+    /// probably a URL.
+    ///
+    /// We should NOT need to do any IO to get this value.
+    fn get_location(&mut self) -> String;
+}
+
+impl<
+        'this,
+        F: FileInfo + 'this,
+        T: FileIndex<'this, F>,
+        B: CachableBundle<'this, F, T> + ?Sized,
+    > CachableBundle<'this, F, T> for Box<B>
+{
+    fn initialize_index(&mut self, source: &mut dyn Read) -> Result<()> {
+        (**self).initialize_index(source)
     }
 
     fn get_location(&mut self) -> String {
         (**self).get_location()
+    }
+
+    fn get_index_reader(&mut self) -> Result<Box<dyn Read>> {
+        (**self).get_index_reader()
+    }
+
+    fn index(&mut self) -> &mut T {
+        (**self).index()
+    }
+
+    fn open_fileinfo(&mut self, info: &F) -> OpenResult<InputHandle> {
+        (**self).open_fileinfo(info)
+    }
+
+    fn search(&mut self, name: &str) -> Option<F> {
+        (**self).search(name)
     }
 }
 
@@ -154,8 +201,12 @@ pub fn detect_bundle(
     if let Ok(url) = Url::parse(&source) {
         if url.scheme() == "https" || url.scheme() == "http" {
             if source.ends_with("ttb") {
-                // TODO: add caching
-                let bundle = Ttbv1NetBundle::new(source)?;
+                let bundle = BundleCache::new(
+                    Box::new(Ttbv1NetBundle::new(source)?),
+                    only_cached,
+                    status,
+                    custom_cache_dir,
+                )?;
                 return Ok(Some(Box::new(bundle)));
             } else {
                 let bundle = BundleCache::new(
