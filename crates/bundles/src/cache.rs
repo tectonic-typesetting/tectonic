@@ -42,16 +42,6 @@ where
     Ok(())
 }
 
-/// Ensure that a directory exists.
-fn ensure_cache_dir(root: &Path, path: &str) -> Result<PathBuf> {
-    let full_path = root.join(path);
-    atry!(
-        fs::create_dir_all(&full_path);
-        ["failed to create directory `{}` or one of its parents", full_path.display()]
-    );
-    Ok(full_path)
-}
-
 /// A cache wrapper for another bundle.
 ///
 /// This bundle implementation is the key to Tectonic’s ability to download TeX
@@ -84,10 +74,6 @@ pub struct BundleCache<'this, F, T> {
     /// All other paths are subdirectories of this path.
     cache_root: PathBuf,
 
-    // Absolute path, child of cache_root.
-    // Where this we store files from this bundle.
-    data_path: PathBuf,
-
     // The hash of the bundle we're caching.
     bundle_hash: DigestData,
 }
@@ -105,7 +91,8 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
             Some(p) => p,
         };
 
-        let hash_file = ensure_cache_dir(&cache_root, "hashes")?
+        let hash_file = &cache_root
+            .join("hashes")
             .join(app_dirs::app_dirs2::sanitized(&bundle.get_location()));
 
         let saved_hash = {
@@ -141,16 +128,31 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
             (Some(h), None) => h, // No internet connection, but we're ok.
         };
 
-        let data_path =
-            ensure_cache_dir(&cache_root, &format!("data/{}", bundle_hash.to_string()))?;
-
-        Ok(BundleCache {
+        let bundle = BundleCache {
             only_cached,
             bundle,
             cache_root,
             bundle_hash,
-            data_path,
-        })
+        };
+
+        // Make sure directories exists
+        atry!(
+            fs::create_dir_all(&bundle.cache_root);
+            ["failed to create directory `{}` or one of its parents", bundle.cache_root.display()]
+        );
+        atry!(
+            fs::create_dir_all(&bundle.get_data_path());
+            ["failed to create directory `{}` or one of its parents", bundle.get_data_path().display()]
+        );
+
+        return Ok(bundle);
+    }
+
+    // Build path for bundle data
+    fn get_data_path(&self) -> PathBuf {
+        return self
+            .cache_root
+            .join(&format!("data/{}", self.bundle_hash.to_string()));
     }
 
     fn ensure_index(&mut self) -> Result<()> {
@@ -193,7 +195,8 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
             Some(i) => i,
             None => return OpenResult::NotAvailable,
         };
-        let target = self.data_path.join(&info.path()[1..]);
+
+        let target = self.get_data_path().join(&info.path()[1..]);
         fs::create_dir_all(&target.parent().unwrap()).unwrap();
 
         // Already in the cache?
