@@ -16,10 +16,10 @@ use std::{
 use tectonic_errors::prelude::*;
 use tectonic_io_base::{
     app_dirs,
-    digest::{self, Digest, DigestData},
+    digest::{self, DigestData},
     InputHandle, InputOrigin, IoProvider, OpenResult,
 };
-use tectonic_status_base::StatusBackend;
+use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
 
 use crate::{Bundle, CachableBundle, FileIndex, FileInfo};
 
@@ -40,6 +40,27 @@ where
         ["couldn't write to {}", path.display()]
     );
     Ok(())
+}
+
+// Make sure a directory exists.
+// "inline" version is for convenience.
+macro_rules! ensure_dir {
+    (inline, $path:expr) => {
+        {
+            atry!(
+                fs::create_dir_all(&$path);
+                ["failed to create directory `{}` or one of its parents", $path.display()]
+            );
+            $path
+        }
+    };
+
+    ($path:expr) => {
+        atry!(
+            fs::create_dir_all(&$path);
+            ["failed to create directory `{}` or one of its parents", $path.display()]
+        );
+    };
 }
 
 /// A cache wrapper for another bundle.
@@ -88,21 +109,24 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
         // If cache_root is none, use default location.
         let cache_root = match cache_root {
             None => app_dirs::get_user_cache_dir("bundles")?,
-            Some(p) => p,
+            Some(p) => ensure_dir!(inline, p),
         };
 
-        let hash_file = &cache_root
-            .join("hashes")
-            .join(app_dirs::app_dirs2::sanitized(&bundle.get_location()));
+        let hash_dir = ensure_dir!(inline, &cache_root.join("hashes"));
+        let hash_file = hash_dir.join(app_dirs::app_dirs2::sanitized(&bundle.get_location()));
 
         let saved_hash = {
-            match File::open(&hash_file) {
-                Err(_) => None, // TODO: error on actual errors
-                Ok(f) => {
-                    let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
-                    f.take(digest::DIGEST_LEN as u64)
-                        .read_to_string(&mut digest_text)?;
-                    Some(DigestData::from_str(&digest_text)?)
+            if !hash_file.exists() {
+                None
+            } else {
+                match File::open(&hash_file) {
+                    Err(e) => return Err(e.into()),
+                    Ok(f) => {
+                        let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
+                        f.take(digest::DIGEST_LEN as u64)
+                            .read_to_string(&mut digest_text)?;
+                        Some(DigestData::from_str(&digest_text)?)
+                    }
                 }
             }
         };
@@ -114,18 +138,20 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
             (None, None) => {
                 bail!("Couldn't get bundle");
             }
-            (Some(h), Some(l)) => {
-                if h != l {
-                    bail!("Bundle changed!")
+            (Some(s), Some(l)) => {
+                if s != l {
+                    //tt_warning!(status "Bundle hash changed, updating cache...");
+                    file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))?;
+                    l
                 } else {
-                    h
+                    l
                 }
             }
             (None, Some(l)) => {
                 file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))?;
                 l
             }
-            (Some(h), None) => h, // No internet connection, but we're ok.
+            (Some(h), None) => h, // Bundle is offline, but we're ok.
         };
 
         let bundle = BundleCache {
@@ -135,24 +161,19 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
             bundle_hash,
         };
 
-        // Make sure directories exists
-        atry!(
-            fs::create_dir_all(&bundle.cache_root);
-            ["failed to create directory `{}` or one of its parents", bundle.cache_root.display()]
-        );
-        atry!(
-            fs::create_dir_all(&bundle.get_data_path());
-            ["failed to create directory `{}` or one of its parents", bundle.get_data_path().display()]
-        );
+        ensure_dir!(&bundle
+            .cache_root
+            .join(&format!("data/{}", bundle.bundle_hash.to_string())));
 
         return Ok(bundle);
     }
 
-    // Build path for bundle data
-    fn get_data_path(&self) -> PathBuf {
+    // Build path for a bundle file
+    fn get_file_path(&self, info: &F) -> PathBuf {
         return self
             .cache_root
-            .join(&format!("data/{}", self.bundle_hash.to_string()));
+            .join(&format!("data/{}", self.bundle_hash.to_string()))
+            .join(&info.path()[1..]);
     }
 
     fn ensure_index(&mut self) -> Result<()> {
@@ -181,11 +202,11 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
         return Ok(());
     }
 
-    /// Make sure that a file is available, and return its filesystem path.
-    ///
-    /// If the file is already cached, just pull it out. Otherwise, fetch it
-    /// from the backend.
-    fn ensure_file_availability(&mut self, name: &str) -> OpenResult<PathBuf> {
+    /// Get a FileInfo from a name.
+    /// This returns (in_cache, info), where in_cache is true
+    /// if this file is already in our cache and can be retrieved
+    /// without touching the backing bundle.
+    fn get_fileinfo(&mut self, name: &str) -> OpenResult<(bool, F)> {
         match self.ensure_index() {
             Ok(_) => {}
             Err(e) => return OpenResult::Err(e),
@@ -196,7 +217,14 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
             None => return OpenResult::NotAvailable,
         };
 
-        let target = self.get_data_path().join(&info.path()[1..]);
+        let target = self.get_file_path(&info);
+        return OpenResult::Ok((target.exists(), info));
+    }
+
+    /// Fetch a file from the bundle backing this cache.
+    /// Returns a path to the file that was created.
+    fn fetch_file(&mut self, info: F) -> OpenResult<PathBuf> {
+        let target = self.get_file_path(&info);
         fs::create_dir_all(&target.parent().unwrap()).unwrap();
 
         // Already in the cache?
@@ -210,55 +238,15 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
         }
 
         // Get the file.
-        let mut content = match self.bundle.open_fileinfo(&info) {
+        let mut handle = match self.bundle.open_fileinfo(&info) {
             OpenResult::Ok(c) => c,
             OpenResult::Err(e) => return OpenResult::Err(e),
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
         };
-        let mut buf: Vec<u8> = Vec::new();
-        if let Err(e) = content.read_to_end(&mut buf) {
-            return OpenResult::Err(e.into());
-        };
-        //let length = buf.len();
 
-        let mut digest_builder = digest::create();
-        digest_builder.update(&buf);
-
-        // Perform a racy check for the destination existing, because this
-        // matters on Windows: if the destination is already there, we'll get
-        // an error because the destination is marked read-only. Assuming
-        // non-pathological filesystem manipulation, though, we'll only be
-        // subject to the race once.
-
-        if !target.exists() {
-            if let Err(e) = file_create_write(&target, |f| f.write_all(&buf)) {
-                return OpenResult::Err(e);
-            }
-
-            // Now we can make the file readonly. It would be nice to set the
-            // permissions using the already-open file handle owned by the
-            // tempfile, but mkstemp doesn't give us access.
-            let mut perms = match fs::metadata(&target) {
-                Ok(p) => p,
-                Err(e) => {
-                    return OpenResult::Err(e.into());
-                }
-            }
-            .permissions();
-            perms.set_readonly(true);
-
-            if let Err(e) = fs::set_permissions(&target, perms) {
-                return OpenResult::Err(e.into());
-            }
+        if let Err(e) = file_create_write(&target, |f| io::copy(&mut handle, f).map(|_| ())) {
+            return OpenResult::Err(e);
         }
-
-        // And finally add a record of this file to our manifest. Note that
-        // we're opening and closing the manifest every time we cache a new
-        // file; not so efficient, but whatever.
-
-        //if let Err(e) = self.save_to_manifest(name, length as u64, digest) {
-        //    return OpenResult::Err(e);
-        //}
 
         OpenResult::Ok(target)
     }
@@ -268,12 +256,20 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> IoProvider for BundleCa
     fn input_open_name(
         &mut self,
         name: &str,
-        _status: &mut dyn StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
-        let path = match self.ensure_file_availability(name) {
-            OpenResult::Ok(p) => p,
+        let path = match self.get_fileinfo(name) {
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
+            OpenResult::Ok((true, f)) => self.get_file_path(&f),
+            OpenResult::Ok((false, f)) => {
+                tt_note!(status, "downloading {}", name);
+                match self.fetch_file(f) {
+                    OpenResult::Ok(p) => p,
+                    OpenResult::NotAvailable => return OpenResult::NotAvailable,
+                    OpenResult::Err(e) => return OpenResult::Err(e),
+                }
+            }
         };
 
         let f = match File::open(path) {
