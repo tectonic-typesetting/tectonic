@@ -160,9 +160,7 @@ impl InitializationState {
         self.templates.insert(texpath.to_owned(), contents);
 
         let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name, digest_opt, common.status);
+        common.hooks.event_input_closed(name, digest_opt);
         Ok(())
     }
 

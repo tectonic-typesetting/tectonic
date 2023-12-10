@@ -106,26 +106,14 @@ pub trait DriverHooks {
     /// argument specifies the cryptographic digest of the data that were
     /// written. Note that this function takes ownership of the name and
     /// digest.
-    fn event_output_closed(
-        &mut self,
-        _name: String,
-        _digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
-    }
+    fn event_output_closed(&mut self, _name: String, _digest: DigestData) {}
 
     /// This function is called when an input file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
     /// read, if available. This digest is not always available, if the engine
     /// used seeks while reading the file. Note that this function takes
     /// ownership of the name and digest.
-    fn event_input_closed(
-        &mut self,
-        _name: String,
-        _digest: Option<DigestData>,
-        _status: &mut dyn StatusBackend,
-    ) {
-    }
+    fn event_input_closed(&mut self, _name: String, _digest: Option<DigestData>) {}
 
     /// The engine is requesting a “shell escape” evaluation.
     ///
@@ -469,7 +457,7 @@ impl<'a> CoreBridgeState<'a> {
         // Clean up.
 
         let (name, digest_opt) = ih.into_name_digest();
-        self.hooks.event_input_closed(name, digest_opt, self.status);
+        self.hooks.event_input_closed(name, digest_opt);
 
         if !error_occurred {
             let result = hash.finalize();
@@ -560,7 +548,7 @@ impl<'a> CoreBridgeState<'a> {
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
-                self.hooks.event_output_closed(name, digest, self.status);
+                self.hooks.event_output_closed(name, digest);
                 break;
             }
         }
@@ -676,7 +664,7 @@ impl<'a> CoreBridgeState<'a> {
                 }
 
                 let (name, digest_opt) = ih.into_name_digest();
-                self.hooks.event_input_closed(name, digest_opt, self.status);
+                self.hooks.event_input_closed(name, digest_opt);
                 return rv;
             }
         }

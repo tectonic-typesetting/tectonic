@@ -641,12 +641,7 @@ impl DriverHooks for BridgeState {
         self
     }
 
-    fn event_output_closed(
-        &mut self,
-        name: String,
-        digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .events
             .get_mut(&name)
@@ -654,12 +649,7 @@ impl DriverHooks for BridgeState {
         summ.write_digest = Some(digest);
     }
 
-    fn event_input_closed(
-        &mut self,
-        name: String,
-        digest: Option<DigestData>,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_input_closed(&mut self, name: String, digest: Option<DigestData>) {
         let summ = self
             .events
             .get_mut(&name)
