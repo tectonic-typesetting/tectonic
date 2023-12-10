@@ -71,11 +71,7 @@ pub trait DocumentExt {
     ///
     /// This parses [`Document::bundle_loc`] and turns it into the appropriate
     /// bundle backend.
-    fn bundle(
-        &self,
-        setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>>;
+    fn bundle(&self, setup_options: &DocumentSetupOptions) -> Result<Box<dyn Bundle>>;
 
     /// Set up a [`ProcessingSessionBuilder`] for one of the outputs.
     ///
@@ -90,23 +86,14 @@ pub trait DocumentExt {
 }
 
 impl DocumentExt for Document {
-    fn bundle(
-        &self,
-        setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
+    fn bundle(&self, setup_options: &DocumentSetupOptions) -> Result<Box<dyn Bundle>> {
         // Load test bundle
         if config::is_config_test_mode_activated() {
             let bundle = test_util::TestBundle::default();
             return Ok(Box::new(bundle));
         }
 
-        let d = detect_bundle(
-            self.bundle_loc.clone(),
-            setup_options.only_cached,
-            None,
-            status,
-        )?;
+        let d = detect_bundle(self.bundle_loc.clone(), setup_options.only_cached, None)?;
 
         match d {
             Some(b) => Ok(b),
@@ -169,7 +156,7 @@ impl DocumentExt for Document {
         if setup_options.only_cached {
             tt_note!(status, "using only cached resource files");
         }
-        sess_builder.bundle(self.bundle(setup_options, status)?);
+        sess_builder.bundle(self.bundle(setup_options)?);
 
         let mut tex_dir = self.src_dir().to_owned();
         tex_dir.push("src");
@@ -194,19 +181,11 @@ pub trait WorkspaceCreatorExt {
     /// This method is a thin wrapper on [`WorkspaceCreator::create`] that uses
     /// the current configuration to determine a good default bundle location
     /// for the main document.
-    fn create_defaulted(
-        self,
-        config: &config::PersistentConfig,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Workspace>;
+    fn create_defaulted(self, config: &config::PersistentConfig) -> Result<Workspace>;
 }
 
 impl WorkspaceCreatorExt for WorkspaceCreator {
-    fn create_defaulted(
-        self,
-        config: &config::PersistentConfig,
-        _status: &mut dyn StatusBackend,
-    ) -> Result<Workspace> {
+    fn create_defaulted(self, config: &config::PersistentConfig) -> Result<Workspace> {
         let bundle_loc = if config::is_config_test_mode_activated() {
             "test-bundle://".to_owned()
         } else {

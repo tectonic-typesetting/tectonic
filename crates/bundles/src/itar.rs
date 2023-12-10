@@ -21,16 +21,12 @@ use std::{
     collections::HashMap,
     io::{BufRead, BufReader, Cursor, Read},
     str::FromStr,
-    thread, time,
 };
 use tectonic_errors::prelude::*;
 use tectonic_geturl::DefaultRangeReader;
 use tectonic_geturl::{DefaultBackend, GetUrlBackend, RangeReader};
 use tectonic_io_base::{digest, InputHandle, InputOrigin, IoProvider, OpenResult};
 use tectonic_status_base::{NoopStatusBackend, StatusBackend};
-
-const MAX_HTTP_ATTEMPTS: usize = 4;
-const RETRY_SLEEP_MS: u64 = 250;
 
 /// The internal file-information struct used by the [`ItarBundle`].
 #[derive(Clone, Debug)]
@@ -119,7 +115,7 @@ pub struct ItarBundle {
 
 impl ItarBundle {
     /// Make a new ItarBundle
-    pub fn new(url: String, _status: &mut dyn StatusBackend) -> Result<ItarBundle> {
+    pub fn new(url: String) -> Result<ItarBundle> {
         Ok(ItarBundle {
             index: ItarFileIndex::new(),
             reader: None,
@@ -163,21 +159,20 @@ impl IoProvider for ItarBundle {
             None => return OpenResult::NotAvailable,
         };
 
+        // TODO: handle retries and logging here
         return self.open_fileinfo(&info);
     }
 }
 
 impl Bundle for ItarBundle {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self) -> Result<Vec<String>> {
         self.ensure_index()?;
         Ok(self.index.iter().map(|x| x.name().to_owned()).collect())
     }
 
-    fn get_digest(
-        &mut self,
-        status: &mut dyn StatusBackend,
-    ) -> Result<tectonic_io_base::digest::DigestData> {
-        let digest_text = match self.input_open_name(digest::DIGEST_NAME, status) {
+    fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {
+        let digest_text = match self.input_open_name(digest::DIGEST_NAME, &mut NoopStatusBackend {})
+        {
             OpenResult::Ok(h) => {
                 let mut text = String::new();
                 h.take(64).read_to_string(&mut text)?;
@@ -219,7 +214,7 @@ impl<'this> CachableBundle<'this, ItarFileInfo, ItarFileIndex> for ItarBundle {
     fn get_index_reader(&mut self) -> Result<Box<dyn Read>> {
         let mut geturl_backend = DefaultBackend::default();
         let index_url = format!("{}.index.gz", &self.url);
-        let reader = GzDecoder::new(geturl_backend.get_url(&index_url, &mut NoopStatusBackend {})?);
+        let reader = GzDecoder::new(geturl_backend.get_url(&index_url)?);
         return Ok(Box::new(reader));
     }
 
@@ -245,42 +240,20 @@ impl<'this> CachableBundle<'this, ItarFileInfo, ItarFileIndex> for ItarBundle {
             ));
         }
 
-        // Get file with retries
-        for n in 0..MAX_HTTP_ATTEMPTS {
-            let mut stream = match self
-                .reader
-                .as_mut()
-                .unwrap()
-                .read_range(info.offset, info.length)
-            {
-                Ok(r) => r,
-                Err(e) => {
-                    //tt_warning!(status, "failure requesting \"{}\" from network", name; e);
-                    thread::sleep(time::Duration::from_millis(RETRY_SLEEP_MS));
-                    continue;
-                }
-            };
+        let mut stream = match self
+            .reader
+            .as_mut()
+            .unwrap()
+            .read_range(info.offset, info.length)
+        {
+            Ok(r) => r,
+            Err(e) => return OpenResult::Err(e),
+        };
 
-            if let Err(e) = stream.read_to_end(&mut buf) {
-                //tt_warning!(status, "failure downloading \"{}\" from network", name; e.into());
-                thread::sleep(time::Duration::from_millis(RETRY_SLEEP_MS));
-                continue;
-            }
-
-            if n == MAX_HTTP_ATTEMPTS - 1 {
-                // All attempts failed
-                return OpenResult::Err(anyhow!(
-                    "failed to retrieve \"{}\" from the network;
-                    this most probably is not Tectonic's fault \
-                    -- please check your network connection.",
-                    info.name
-                ));
-            } else if n != 0 {
-                // At least one attempt failed
-                //tt_note!(status, "download succeeded after retry");
-            }
-            break;
-        }
+        match stream.read_to_end(&mut buf) {
+            Ok(_) => {}
+            Err(e) => return OpenResult::Err(e.into()),
+        };
 
         return OpenResult::Ok(InputHandle::new_read_only(
             info.name.to_owned(),

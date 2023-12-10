@@ -352,7 +352,7 @@ fn get_a_bundle(
             let doc = ws.first_document();
             let mut options: DocumentSetupOptions = Default::default();
             options.only_cached(only_cached);
-            doc.bundle(&options, status)
+            doc.bundle(&options)
         }
 
         Err(e) => {
@@ -366,7 +366,6 @@ fn get_a_bundle(
                 Ok(Box::new(tectonic_bundles::get_fallback_bundle(
                     tectonic_engine_xetex::FORMAT_SERIAL,
                     only_cached,
-                    status,
                 )?))
             }
         }
@@ -415,7 +414,7 @@ impl BundleSearchCommand {
 
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let mut bundle = get_a_bundle(config, self.only_cached, status)?;
-        let files = bundle.all_files(status)?;
+        let files = bundle.all_files()?;
 
         if let Some(t) = &self.term {
             for filename in files.iter().filter(|x| x.contains(t)) {
@@ -681,7 +680,7 @@ impl NewCommand {
 
         let wc = WorkspaceCreator::new(self.path);
         ctry!(
-            wc.create_defaulted(&config, status);
+            wc.create_defaulted(&config);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)
@@ -705,7 +704,7 @@ impl InitCommand {
 
         let wc = WorkspaceCreator::new(path);
         ctry!(
-            wc.create_defaulted(&config, status);
+            wc.create_defaulted(&config);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)

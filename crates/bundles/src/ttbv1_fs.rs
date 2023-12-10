@@ -117,11 +117,11 @@ impl IoProvider for Ttbv1FsBundle {
 }
 
 impl Bundle for Ttbv1FsBundle {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self) -> Result<Vec<String>> {
         Ok(self.index.iter().map(|x| x.path.clone()).collect())
     }
 
-    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self) -> Result<DigestData> {
         return Ok(self.header.digest.clone());
     }
 }

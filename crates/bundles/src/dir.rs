@@ -11,7 +11,7 @@ use std::{
 };
 use tectonic_errors::prelude::*;
 use tectonic_io_base::{digest, filesystem::FilesystemIo, InputHandle, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
+use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 
 use super::Bundle;
 
@@ -58,7 +58,7 @@ impl IoProvider for DirBundle {
 }
 
 impl Bundle for DirBundle {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self) -> Result<Vec<String>> {
         let mut files = Vec::new();
 
         // We intentionally do not explore the directory recursively.
@@ -76,11 +76,9 @@ impl Bundle for DirBundle {
         Ok(files)
     }
 
-    fn get_digest(
-        &mut self,
-        status: &mut dyn StatusBackend,
-    ) -> Result<tectonic_io_base::digest::DigestData> {
-        let digest_text = match self.input_open_name(digest::DIGEST_NAME, status) {
+    fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {
+        let digest_text = match self.input_open_name(digest::DIGEST_NAME, &mut NoopStatusBackend {})
+        {
             OpenResult::Ok(h) => {
                 let mut text = String::new();
                 h.take(64).read_to_string(&mut text)?;

@@ -9,7 +9,6 @@ use reqwest::{
     StatusCode,
 };
 use tectonic_errors::{anyhow::bail, Result};
-use tectonic_status_base::StatusBackend;
 
 use crate::{GetUrlBackend, RangeReader};
 
@@ -21,7 +20,7 @@ impl GetUrlBackend for ReqwestBackend {
     type Response = Response;
     type RangeReader = ReqwestRangeReader;
 
-    fn get_url(&mut self, url: &str, _status: &mut dyn StatusBackend) -> Result<Response> {
+    fn get_url(&mut self, url: &str) -> Result<Response> {
         let res = Client::new().get(url).send()?;
         if !res.status().is_success() {
             bail!(

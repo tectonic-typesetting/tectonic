@@ -20,7 +20,6 @@
 use std::{io::Read, path::PathBuf};
 use tectonic_errors::Result;
 use tectonic_io_base::{digest::DigestData, InputHandle, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
 
 pub mod cache;
 pub mod dir;
@@ -88,7 +87,7 @@ where
 pub trait Bundle: IoProvider {
     /// Get a cryptographic digest summarizing this bundle’s contents,
     /// which summarizes the exact contents of every file in the bundle.
-    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData>;
+    fn get_digest(&mut self) -> Result<DigestData>;
 
     /// Enumerate the files in this bundle.
     ///
@@ -101,16 +100,16 @@ pub trait Bundle: IoProvider {
     /// owned strings. For a large bundle, the memory consumed by this operation
     /// might be fairly substantial (although we are talking megabytes, not
     /// gigabytes).
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>>;
+    fn all_files(&mut self) -> Result<Vec<String>>;
 }
 
 impl<B: Bundle + ?Sized> Bundle for Box<B> {
-    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData> {
-        (**self).get_digest(status)
+    fn get_digest(&mut self) -> Result<DigestData> {
+        (**self).get_digest()
     }
 
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        (**self).all_files(status)
+    fn all_files(&mut self) -> Result<Vec<String>> {
+        (**self).all_files()
     }
 }
 
@@ -193,7 +192,6 @@ pub fn detect_bundle(
     source: String,
     only_cached: bool,
     custom_cache_dir: Option<PathBuf>,
-    status: &mut dyn StatusBackend,
 ) -> Result<Option<Box<dyn Bundle>>> {
     use url::Url;
 
@@ -204,15 +202,13 @@ pub fn detect_bundle(
                 let bundle = BundleCache::new(
                     Box::new(Ttbv1NetBundle::new(source)?),
                     only_cached,
-                    status,
                     custom_cache_dir,
                 )?;
                 return Ok(Some(Box::new(bundle)));
             } else {
                 let bundle = BundleCache::new(
-                    Box::new(ItarBundle::new(source, status)?),
+                    Box::new(ItarBundle::new(source)?),
                     only_cached,
-                    status,
                     custom_cache_dir,
                 )?;
                 return Ok(Some(Box::new(bundle)));
@@ -280,17 +276,12 @@ pub fn get_fallback_bundle_url(format_version: u32) -> String {
 /// `tectonic` crate provides a configuration mechanism to allow the user to
 /// override the bundle URL setting, and that should be preferred if you’re in a
 /// position to use it.
-pub fn get_fallback_bundle(
-    format_version: u32,
-    only_cached: bool,
-    status: &mut dyn StatusBackend,
-) -> Result<Box<dyn Bundle>> {
+pub fn get_fallback_bundle(format_version: u32, only_cached: bool) -> Result<Box<dyn Bundle>> {
     let url = get_fallback_bundle_url(format_version);
 
     Ok(Box::new(BundleCache::new(
-        Box::new(ItarBundle::new(url, status)?),
+        Box::new(ItarBundle::new(url)?),
         only_cached,
-        status,
         None,
     )?))
 }

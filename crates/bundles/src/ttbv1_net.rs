@@ -108,19 +108,17 @@ impl IoProvider for Ttbv1NetBundle {
             Some(s) => s,
         };
 
+        // TODO: handle retries and logging here
         return self.open_fileinfo(&info);
     }
 }
 
 impl Bundle for Ttbv1NetBundle {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self) -> Result<Vec<String>> {
         Ok(self.index.iter().map(|x| x.path.clone()).collect())
     }
 
-    fn get_digest(
-        &mut self,
-        _status: &mut dyn StatusBackend,
-    ) -> Result<tectonic_io_base::digest::DigestData> {
+    fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {
         let header = self.get_header()?;
         return Ok(header.digest);
     }

@@ -18,10 +18,7 @@ use std::{
 use tectonic_bundles::{detect_bundle, Bundle};
 use tectonic_io_base::app_dirs;
 
-use crate::{
-    errors::{ErrorKind, Result},
-    status::StatusBackend,
-};
+use crate::errors::{ErrorKind, Result};
 
 /// Awesome hack time!!!
 ///
@@ -116,11 +113,7 @@ impl PersistentConfig {
         &self.default_bundles[0].url
     }
 
-    pub fn default_bundle(
-        &self,
-        only_cached: bool,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
+    pub fn default_bundle(&self, only_cached: bool) -> Result<Box<dyn Bundle>> {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             let bundle = crate::test_util::TestBundle::default();
             return Ok(Box::new(bundle));
@@ -133,14 +126,11 @@ impl PersistentConfig {
             .into());
         }
 
-        Ok(detect_bundle(
-            self.default_bundles[0].url.to_owned(),
-            only_cached,
-            None,
-            status,
+        Ok(
+            detect_bundle(self.default_bundles[0].url.to_owned(), only_cached, None)
+                .unwrap()
+                .unwrap(),
         )
-        .unwrap()
-        .unwrap())
     }
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {

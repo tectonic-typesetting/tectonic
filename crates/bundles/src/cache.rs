@@ -97,7 +97,6 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
     pub fn new(
         mut bundle: Box<dyn CachableBundle<'this, F, T>>,
         only_cached: bool,
-        status: &mut dyn StatusBackend,
         cache_root: Option<PathBuf>,
     ) -> Result<Self> {
         // If cache_root is none, use default location.
@@ -121,7 +120,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
             }
         };
 
-        let live_hash = bundle.get_digest(status).ok();
+        let live_hash = bundle.get_digest().ok();
 
         // Check remote bundle digest
         let bundle_hash: DigestData = match (saved_hash, live_hash) {
@@ -288,7 +287,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> IoProvider for BundleCa
 }
 
 impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> Bundle for BundleCache<'this, F, T> {
-    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self) -> Result<DigestData> {
         Ok(self.bundle_hash)
     }
 
@@ -297,7 +296,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> Bundle for BundleCache<
     // If we're offline, this is every file in the cache.
     //
     // TODO: Maybe we want different errors for "offline" and "actually doesn't exist"?
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        return self.bundle.all_files(status);
+    fn all_files(&mut self) -> Result<Vec<String>> {
+        return self.bundle.all_files();
     }
 }

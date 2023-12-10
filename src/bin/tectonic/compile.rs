@@ -189,13 +189,13 @@ impl CompileOptions {
         }
 
         if let Some(source) = self.bundle {
-            if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, None, status)? {
+            if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, None)? {
                 sess_builder.bundle(bundle);
             } else {
                 return Err(errmsg!("\"{source}\" doesn't specify a valid bundle."));
             }
         } else {
-            sess_builder.bundle(config.default_bundle(self.only_cached, status)?);
+            sess_builder.bundle(config.default_bundle(self.only_cached)?);
         }
 
         sess_builder.build_date_from_env(deterministic_mode);

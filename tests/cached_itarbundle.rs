@@ -273,14 +273,9 @@ fn test_full_session() {
             let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
             let mut sess_builder = ProcessingSessionBuilder::default();
             sess_builder.bundle(Box::new(
-                detect_bundle(
-                    url.to_owned(),
-                    false,
-                    Some(tempdir.path().to_owned()),
-                    &mut status,
-                )
-                .unwrap()
-                .unwrap(),
+                detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                    .unwrap()
+                    .unwrap(),
             ));
             let input_path = Path::new(path);
             sess_builder.primary_input_path(input_path);
@@ -330,14 +325,9 @@ fn test_cached_url_provider() {
         let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
 
         {
-            let mut cache = detect_bundle(
-                url.to_owned(),
-                false,
-                Some(tempdir.path().to_owned()),
-                &mut status,
-            )
-            .unwrap()
-            .unwrap();
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
+                .unwrap();
 
             match cache.input_open_name("plain.tex", &mut status) {
                 OpenResult::Ok(_) => {}
@@ -349,14 +339,9 @@ fn test_cached_url_provider() {
             }
         }
         {
-            let mut cache = detect_bundle(
-                url.to_owned(),
-                false,
-                Some(tempdir.path().to_owned()),
-                &mut status,
-            )
-            .unwrap()
-            .unwrap();
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
+                .unwrap();
 
             // should be cached
             match cache.input_open_name("plain.tex", &mut status) {
@@ -365,14 +350,9 @@ fn test_cached_url_provider() {
             }
         }
         {
-            let mut cache = detect_bundle(
-                url.to_owned(),
-                false,
-                Some(tempdir.path().to_owned()),
-                &mut status,
-            )
-            .unwrap()
-            .unwrap();
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
+                .unwrap();
 
             // should be cached
             match cache.input_open_name("plain.tex", &mut status) {
@@ -386,14 +366,9 @@ fn test_cached_url_provider() {
             }
         }
         {
-            let mut cache = detect_bundle(
-                url.to_owned(),
-                false,
-                Some(tempdir.path().to_owned()),
-                &mut status,
-            )
-            .unwrap()
-            .unwrap();
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
+                .unwrap();
 
             // not in index
             match cache.input_open_name("my-favourite-file.tex", &mut status) {
@@ -435,14 +410,10 @@ fn test_bundle_update() {
         {
             // Run with first tar index.
             {
-                let mut cache = detect_bundle(
-                    url.to_owned(),
-                    false,
-                    Some(tempdir.path().to_owned()),
-                    &mut status,
-                )
-                .unwrap()
-                .unwrap();
+                let mut cache =
+                    detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                        .unwrap()
+                        .unwrap();
 
                 match cache.input_open_name("only-first.tex", &mut status) {
                     OpenResult::Ok(_) => {}
@@ -466,17 +437,11 @@ fn test_bundle_update() {
 
             // Run with the new tar index.
             {
-                let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
-
                 {
-                    let mut cache = detect_bundle(
-                        url.to_owned(),
-                        false,
-                        Some(tempdir.path().to_owned()),
-                        &mut status,
-                    )
-                    .unwrap()
-                    .unwrap();
+                    let mut cache =
+                        detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                            .unwrap()
+                            .unwrap();
 
                     // This should be cached even thought the bundle does not contain it.
                     match cache.input_open_name("only-first.tex", &mut status) {
@@ -523,14 +488,9 @@ fn test_cache_location_redirect() {
     run_test(Some(tar_index), |_, url| {
         let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
 
-        let mut cache = detect_bundle(
-            url.to_owned(),
-            false,
-            Some(tempdir.path().to_owned()),
-            &mut status,
-        )
-        .unwrap()
-        .unwrap();
+        let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+            .unwrap()
+            .unwrap();
 
         match cache.input_open_name("plain.tex", &mut status) {
             OpenResult::Ok(_) => {}
