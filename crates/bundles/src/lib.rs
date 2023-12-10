@@ -61,7 +61,7 @@ where
     /// This is always false until we call [`self.initialize()`],
     /// and is always true afterwards.
     fn is_initialized(&self) -> bool {
-        return self.len() == 0;
+        return self.len() != 0;
     }
 
     /// Fill this index from a file
