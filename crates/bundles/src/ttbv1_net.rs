@@ -53,6 +53,8 @@ where
 
 impl Ttbv1NetBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
+    /// This method does not require network access.
+    /// It will succeed even in we can't connect to the bundle, or if we're given a bad url.
     pub fn new(url: String) -> Result<Self> {
         Ok(Ttbv1NetBundle {
             reader: None,

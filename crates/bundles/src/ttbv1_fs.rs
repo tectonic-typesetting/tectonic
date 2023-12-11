@@ -36,34 +36,35 @@ where
 {
     file: File,
     index: T,
-    header: TTBv1Header,
 }
 
 /// The internal file-information struct used by the [`Ttbv1FsBundle`].
 
 impl Ttbv1FsBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
-    pub fn new(mut file: File) -> Result<Self> {
-        // Parse header
-        file.seek(SeekFrom::Start(0))?;
-        let mut header: [u8; 70] = [0u8; 70];
-        file.read_exact(&mut header)?;
-        file.seek(SeekFrom::Start(0))?;
-        let header = TTBv1Header::try_from(header)?;
-
+    pub fn new(file: File) -> Result<Self> {
         Ok(Ttbv1FsBundle {
             file,
             index: TTBFileIndex::new(),
-            header,
         })
+    }
+
+    fn get_header(&mut self) -> Result<TTBv1Header> {
+        self.file.seek(SeekFrom::Start(0))?;
+        let mut header: [u8; 70] = [0u8; 70];
+        self.file.read_exact(&mut header)?;
+        self.file.seek(SeekFrom::Start(0))?;
+        let header = TTBv1Header::try_from(header)?;
+        return Ok(header);
     }
 
     // Fill this bundle's search rules, fetching files from our backend.
     fn fill_index(&mut self) -> Result<()> {
+        let header = self.get_header()?;
         let info = TTBFileInfo {
-            start: self.header.index_start,
-            gzip_len: self.header.index_real_len,
-            real_len: self.header.index_gzip_len,
+            start: header.index_start,
+            gzip_len: header.index_real_len,
+            real_len: header.index_gzip_len,
             path: "/INDEX".to_owned(),
             name: "INDEX".to_owned(),
             hash: None,
@@ -124,6 +125,7 @@ impl Bundle for Ttbv1FsBundle<TTBFileIndex> {
     }
 
     fn get_digest(&mut self) -> Result<DigestData> {
-        return Ok(self.header.digest.clone());
+        let header = self.get_header()?;
+        return Ok(header.digest.clone());
     }
 }

@@ -81,13 +81,8 @@ pub struct BundleCache<'this, T> {
     /// bundle is not going to contain these files.
     only_cached: bool,
 
-    /// The connection to the cache backend, maybe.
-    ///
-    /// This field will be `None` if there are locally cached data present and
-    /// there has not yet been a need to connect to the backend. If it becomes
-    /// necessary to "pull" and/or download a new file from the backend, this
-    /// value will become `Some` — it represents something like an open network
-    /// connection.
+    /// The bundle we're wrapping. When files don't exist in the cache,
+    /// we'll get them from here.
     bundle: Box<dyn CachableBundle<'this, T>>,
 
     /// The root directory of this cache.
@@ -100,6 +95,10 @@ pub struct BundleCache<'this, T> {
 
 impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
     /// Make a new filesystem-backed cache from `bundle`.
+    ///
+    /// This method will fail if we can't connect to the bundle AND
+    /// we don't already have it in our cache.
+    /// Other than that, this method does not require network access.
     pub fn new(
         mut bundle: Box<dyn CachableBundle<'this, T>>,
         only_cached: bool,

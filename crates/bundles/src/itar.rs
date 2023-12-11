@@ -117,7 +117,9 @@ pub struct ItarBundle {
 }
 
 impl ItarBundle {
-    /// Make a new ItarBundle
+    /// Make a new ItarBundle.
+    /// This method does not require network access.
+    /// It will succeed even in we can't connect to the bundle, or if we're given a bad url.
     pub fn new(url: String) -> Result<ItarBundle> {
         Ok(ItarBundle {
             index: ItarFileIndex::new(),
@@ -126,19 +128,22 @@ impl ItarBundle {
         })
     }
 
+    fn connect_reader(&mut self) {
+        let geturl_backend = DefaultBackend::default();
+        // Connect reader if it is not already connected
+        if self.reader.is_none() {
+            self.reader = Some(geturl_backend.open_range_reader(&self.url));
+        }
+    }
+
     /// Fill this bundle's index, if it is empty.
     fn ensure_index(&mut self) -> Result<()> {
         // Fetch index if it is empty
         if self.index.is_initialized() {
             return Ok(());
         }
+        self.connect_reader();
 
-        let geturl_backend = DefaultBackend::default();
-
-        // Connect reader if it is not already connected
-        if self.reader.is_none() {
-            self.reader = Some(geturl_backend.open_range_reader(&self.url));
-        }
         let mut reader = self.get_index_reader().unwrap();
         self.index.initialize(&mut reader).unwrap();
 
@@ -229,12 +234,7 @@ impl<'this> CachableBundle<'this, ItarFileIndex> for ItarBundle {
     ) -> OpenResult<InputHandle> {
         let mut v = Vec::with_capacity(info.length);
         tt_note!(status, "downloading {}", info.name);
-
-        // Connect reader if it is not already connected
-        if self.reader.is_none() {
-            let geturl_backend = DefaultBackend::default();
-            self.reader = Some(geturl_backend.open_range_reader(&self.url));
-        }
+        self.connect_reader();
 
         // Edge case for zero-sized reads
         // (these cause errors on some web hosts)
