@@ -138,7 +138,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             }
             (Some(s), Some(l)) => {
                 if s != l {
-                    //tt_warning!(status "Bundle hash changed, updating cache...");
+                    // Silently update hash in cache.
                     file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))?;
                     l
                 } else {
