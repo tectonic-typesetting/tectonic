@@ -175,27 +175,37 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
     }
 
     fn ensure_index(&mut self) -> Result<()> {
-        if self.bundle.index().is_initialized() {
-            return Ok(());
-        }
-
         let target = self
             .cache_root
-            .join(format!("{}.index", self.bundle_hash.to_string()));
+            .join(format!("data/{}.index", self.bundle_hash.to_string()));
 
+        // We check for two things here:
+        // - that the bundle index is initialized
+        // - that the bundle index is cached.
+        //
+        // It would be nice to assume that the bundle index is never initialized
+        // before this function is called, but we can't do that. Unlike ttb,
+        // itar bundles cannot retrieve the bundle hash without loading the index.
         if target.exists() {
-            let mut file = File::open(target)?;
-            self.bundle.initialize_index(&mut file)?;
-            return Ok(());
+            if self.bundle.index().is_initialized() {
+                return Ok(());
+            } else {
+                let mut file = File::open(&target)?;
+                self.bundle.initialize_index(&mut file)?;
+            }
+        } else {
+            let mut reader = self.bundle.get_index_reader()?;
+            let mut file = File::create(&target)?;
+            io::copy(&mut reader, &mut file)?;
+            drop(file);
+
+            if self.bundle.index().is_initialized() {
+                return Ok(());
+            } else {
+                let mut file = File::open(&target)?;
+                self.bundle.initialize_index(&mut file)?;
+            }
         }
-
-        let mut reader = self.bundle.get_index_reader()?;
-        let mut file = File::create(&target)?;
-        io::copy(&mut reader, &mut file)?;
-        drop(file);
-
-        let mut file = File::open(&target)?;
-        self.bundle.initialize_index(&mut file)?;
 
         return Ok(());
     }
