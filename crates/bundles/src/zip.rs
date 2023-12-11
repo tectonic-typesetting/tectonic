@@ -3,6 +3,7 @@
 
 //! ZIP files as Tectonic bundles.
 
+use crate::Bundle;
 use std::{
     fs::File,
     io::{Cursor, Read, Seek},
@@ -13,8 +14,6 @@ use tectonic_errors::prelude::*;
 use tectonic_io_base::{digest, InputHandle, InputOrigin, IoProvider, OpenResult};
 use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 use zip::{result::ZipError, ZipArchive};
-
-use crate::Bundle;
 
 /// A bundle backed by a ZIP file.
 pub struct ZipBundle<R: Read + Seek> {

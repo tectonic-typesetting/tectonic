@@ -7,6 +7,7 @@
 //! support files. To make a cachable bundle, wrap any [`CachableBundle`] with a
 //! [`BundleCache`].
 
+use crate::{Bundle, CachableBundle, FileIndex, FileInfo};
 use std::{
     fs::{self, File},
     io::{self, BufReader, Read, Write},
