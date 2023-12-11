@@ -15,7 +15,7 @@ the file are detailed below.
 ```toml
 [doc]
 name = <string>  # the document name
-bundle = <url or filesystem path>  # the source of the TeX bundle
+bundle = <url or filesystem path> # the TeX bundle to use to build this document
 
 [[output]]  # one or more output specifications
 name = <string>  # the output's name
@@ -40,15 +40,11 @@ filesystem-friendly.
 ### `doc.bundle`
 
 A string identifying the location of the “bundle” of TeX support files
-underlying the processing of the document.
-
-In most circumstances this value should be a URL. The `tectonic -X new` command
+underlying the processing of the document. The `tectonic -X new` command
 will populate this field with the current recommended default.
 
-This field can also be a filesystem path, pointing to either a Zip-format bundle
-or a directory of support files. This mode of operation is discouraged because
-it limits reproducibility. URLs with a `file:` protocol are also treated
-identically to filesystem paths.
+This field should be a URL (a `.ttb` on the web, or a legacy indexed tar bundle),
+or a file on your computer (a `.ttb` or a legacy `.zip` bundle).
 
 ### `output`
 
