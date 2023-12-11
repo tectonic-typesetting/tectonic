@@ -1,6 +1,9 @@
 // Copyright 2023-2024 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Common tools for the ttbv1 format, used in both
+//! network and filesystem bundles.
+
 use crate::{FileIndex, FileInfo};
 use std::{
     collections::HashMap,
@@ -71,7 +74,8 @@ pub struct TTBFileIndex {
     // This MUST be sorted by path for search() to work properly!
     pub content: Vec<TTBFileInfo>,
 
-    search: Vec<String>,
+    search_orders: HashMap<String, Vec<String>>,
+    default_search_order: String,
 
     // Remember previous searches so we don't have to iterate over content again.
     search_cache: HashMap<String, Option<TTBFileInfo>>,
@@ -81,14 +85,15 @@ impl TTBFileIndex {
     pub fn new() -> Self {
         return Self {
             content: Vec::new(),
-            search: Vec::new(),
+            search_orders: HashMap::new(),
+            default_search_order: String::new(),
             search_cache: HashMap::new(),
         };
     }
 }
 
 impl TTBFileIndex {
-    fn read_filelist_line(&mut self, line: &str) -> Result<()> {
+    fn read_filelist_line(&mut self, line: String) -> Result<()> {
         let mut bits = line.split_whitespace();
 
         if let (Some(start), Some(gzip_len), Some(real_len), Some(path), Some(hash)) = (
@@ -119,8 +124,14 @@ impl TTBFileIndex {
         return Ok(());
     }
 
-    fn read_search_line(&mut self, line: String) -> Result<()> {
-        self.search.push(line);
+    fn read_search_line(&mut self, name: String, line: String) -> Result<()> {
+        let stat = self.search_orders.entry(name).or_insert(Vec::new());
+        stat.push(line);
+        return Ok(());
+    }
+
+    fn read_defaultsearch_line(&mut self, line: String) -> Result<()> {
+        self.default_search_order = line;
         return Ok(());
     }
 }
@@ -136,25 +147,29 @@ impl<'this> FileIndex<'this, TTBFileInfo> for TTBFileIndex {
 
     fn initialize(&mut self, reader: &mut dyn Read) -> Result<()> {
         self.content.clear();
-        self.search.clear();
+        self.search_orders.clear();
         self.search_cache.clear();
+        self.default_search_order.clear();
 
-        let mut mode: Option<String> = None;
+        let mut mode: String = String::new();
         for line in BufReader::new(reader).lines() {
             let line = line?;
 
             if line.starts_with("[") {
-                mode = Some(line[1..line.len() - 1].to_owned());
+                mode = line[1..line.len() - 1].to_owned();
                 continue;
             }
 
-            if mode.is_none() {
+            if mode.is_empty() {
                 continue;
             }
 
-            match &mode.as_ref().unwrap()[..] {
-                "FILELIST" => self.read_filelist_line(&line)?,
-                "SEARCH:MAIN" => self.read_search_line(line)?,
+            let (cmd, arg) = mode.rsplit_once(":").unwrap_or((&mode[..], ""));
+
+            match cmd {
+                "DEFAULTSEARCH" => self.read_defaultsearch_line(line)?,
+                "FILELIST" => self.read_filelist_line(line)?,
+                "SEARCH" => self.read_search_line(arg.to_owned(), line)?,
                 _ => continue,
             }
         }
@@ -167,6 +182,8 @@ impl<'this> FileIndex<'this, TTBFileInfo> for TTBFileIndex {
             None => {}
             Some(r) => return r.clone(),
         }
+
+        let search = self.search_orders.get(&self.default_search_order).unwrap();
 
         // Get last element of path, since
         // some packages reference a path to a file.
@@ -216,7 +233,7 @@ impl<'this> FileIndex<'this, TTBFileInfo> for TTBFileIndex {
             // if it's in a directory we don't search, we shouldn't find it!
 
             let mut picked: Vec<&TTBFileInfo> = Vec::new();
-            for rule in &self.search {
+            for rule in search {
                 for info in &infos {
                     if rule.ends_with("//") {
                         // Match start of patent path
