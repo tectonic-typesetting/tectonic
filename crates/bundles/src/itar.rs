@@ -231,9 +231,13 @@ impl<'this> CachableBundle<'this, ItarFileIndex> for ItarBundle {
         info: &ItarFileInfo,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
+        match self.ensure_index() {
+            Ok(_) => {}
+            Err(e) => return OpenResult::Err(e),
+        };
+
         let mut v = Vec::with_capacity(info.length);
         tt_note!(status, "downloading {}", info.name);
-        self.connect_reader();
 
         // Edge case for zero-sized reads
         // (these cause errors on some web hosts)

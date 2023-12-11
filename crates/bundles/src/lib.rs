@@ -18,7 +18,7 @@
 //! - [`zip::ZipBundle`] for a ZIP-format bundle.
 
 use std::{io::Read, path::PathBuf};
-use tectonic_errors::Result;
+use tectonic_errors::{prelude::bail, Result};
 use tectonic_io_base::{digest::DigestData, InputHandle, IoProvider, OpenResult};
 use tectonic_status_base::StatusBackend;
 
@@ -279,10 +279,9 @@ pub fn get_fallback_bundle_url(format_version: u32) -> String {
 /// position to use it.
 pub fn get_fallback_bundle(format_version: u32, only_cached: bool) -> Result<Box<dyn Bundle>> {
     let url = get_fallback_bundle_url(format_version);
-
-    Ok(Box::new(BundleCache::new(
-        Box::new(ItarBundle::new(url)?),
-        only_cached,
-        None,
-    )?))
+    let bundle = detect_bundle(url, only_cached, None)?;
+    if bundle.is_none() {
+        bail!("could not open default bundle")
+    }
+    return Ok(bundle.unwrap());
 }

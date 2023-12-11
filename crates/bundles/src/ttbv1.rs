@@ -8,7 +8,6 @@ use crate::{FileIndex, FileInfo};
 use std::{
     collections::HashMap,
     convert::{TryFrom, TryInto},
-    fs::OpenOptions,
     io::{BufRead, BufReader, Read},
     str::FromStr,
 };
