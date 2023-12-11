@@ -70,7 +70,7 @@ macro_rules! ensure_dir {
 ///
 /// The caching scheme here is designed so that a document build may avoid
 /// touching the network altogether if no new files need to be downloaded.
-pub struct BundleCache<'this, F, T> {
+pub struct BundleCache<'this, T> {
     /// If true, only use cached files -- never connect to the backend.
     ///
     /// This option can be useful if we are operating disconnected from the
@@ -88,7 +88,7 @@ pub struct BundleCache<'this, F, T> {
     /// necessary to "pull" and/or download a new file from the backend, this
     /// value will become `Some` — it represents something like an open network
     /// connection.
-    bundle: Box<dyn CachableBundle<'this, F, T>>,
+    bundle: Box<dyn CachableBundle<'this, T>>,
 
     /// The root directory of this cache.
     /// All other paths are subdirectories of this path.
@@ -98,10 +98,10 @@ pub struct BundleCache<'this, F, T> {
     bundle_hash: DigestData,
 }
 
-impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T> {
+impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
     /// Make a new filesystem-backed cache from `bundle`.
     pub fn new(
-        mut bundle: Box<dyn CachableBundle<'this, F, T>>,
+        mut bundle: Box<dyn CachableBundle<'this, T>>,
         only_cached: bool,
         cache_root: Option<PathBuf>,
     ) -> Result<Self> {
@@ -168,7 +168,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
     }
 
     // Build path for a bundle file
-    fn get_file_path(&self, info: &F) -> PathBuf {
+    fn get_file_path(&self, info: &T::InfoType) -> PathBuf {
         return self
             .cache_root
             .join(&format!("data/{}", self.bundle_hash.to_string()))
@@ -205,7 +205,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
     /// This returns (in_cache, info), where in_cache is true
     /// if this file is already in our cache and can be retrieved
     /// without touching the backing bundle.
-    fn get_fileinfo(&mut self, name: &str) -> OpenResult<(bool, F)> {
+    fn get_fileinfo(&mut self, name: &str) -> OpenResult<(bool, T::InfoType)> {
         match self.ensure_index() {
             Ok(_) => {}
             Err(e) => return OpenResult::Err(e),
@@ -222,7 +222,11 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
 
     /// Fetch a file from the bundle backing this cache.
     /// Returns a path to the file that was created.
-    fn fetch_file(&mut self, info: F, status: &mut dyn StatusBackend) -> OpenResult<PathBuf> {
+    fn fetch_file(
+        &mut self,
+        info: T::InfoType,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<PathBuf> {
         let target = self.get_file_path(&info);
         fs::create_dir_all(&target.parent().unwrap()).unwrap();
 
@@ -251,7 +255,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
     }
 }
 
-impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> IoProvider for BundleCache<'this, F, T> {
+impl<'this, T: FileIndex<'this>> IoProvider for BundleCache<'this, T> {
     fn input_open_name(
         &mut self,
         name: &str,
@@ -281,7 +285,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> IoProvider for BundleCa
     }
 }
 
-impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> Bundle for BundleCache<'this, F, T> {
+impl<'this, T: FileIndex<'this>> Bundle for BundleCache<'this, T> {
     fn get_digest(&mut self) -> Result<DigestData> {
         Ok(self.bundle_hash)
     }

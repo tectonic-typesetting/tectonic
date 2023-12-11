@@ -136,7 +136,9 @@ impl TTBFileIndex {
     }
 }
 
-impl<'this> FileIndex<'this, TTBFileInfo> for TTBFileIndex {
+impl<'this> FileIndex<'this> for TTBFileIndex {
+    type InfoType = TTBFileInfo;
+
     fn iter(&'this self) -> Box<dyn Iterator<Item = &'this TTBFileInfo> + 'this> {
         return Box::new(self.content.iter());
     }

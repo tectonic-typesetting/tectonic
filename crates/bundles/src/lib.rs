@@ -53,13 +53,15 @@ pub trait FileInfo: Clone {
 }
 
 /// Keeps track of
-pub trait FileIndex<'this, T>
+pub trait FileIndex<'this>
 where
     Self: Sized + 'this,
-    T: FileInfo + 'this,
 {
+    /// The FileInfo this index handles
+    type InfoType: FileInfo;
+
     /// Iterate over all [`FileInfo`]s in this index
-    fn iter(&'this self) -> Box<dyn Iterator<Item = &'this T> + 'this>;
+    fn iter(&'this self) -> Box<dyn Iterator<Item = &'this Self::InfoType> + 'this>;
 
     /// Get the number of [`FileInfo`]s in this index
     fn len(&self) -> usize;
@@ -77,7 +79,7 @@ where
     /// Search for a file in this index, obeying search order.
     ///
     /// Returns a `Some(FileInfo)` if a file was found, and `None` otherwise.
-    fn search(&'this mut self, name: &str) -> Option<T>;
+    fn search(&'this mut self, name: &str) -> Option<Self::InfoType>;
 }
 
 /// A trait for bundles of Tectonic support files.
@@ -125,11 +127,10 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 /// These methods do not implement any new features.
 /// Instead, they give the [`cache::BundleCache`] wrapper
 /// more granular access to existing bundle functionality.
-pub trait CachableBundle<'this, F, T>
+pub trait CachableBundle<'this, T>
 where
     Self: Bundle + 'this,
-    F: FileInfo + 'this,
-    T: FileIndex<'this, F>,
+    T: FileIndex<'this>,
 {
     /// Initialize this bundle's file index from an external reader
     /// This allows us to retrieve the FileIndex from the cache WITHOUT
@@ -148,13 +149,13 @@ where
     /// Open the file that `info` points to.
     fn open_fileinfo(
         &mut self,
-        info: &F,
+        info: &T::InfoType,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle>;
 
     /// Search for a file in this bundle.
     /// This should foward the call to `self.index`
-    fn search(&mut self, name: &str) -> Option<F>;
+    fn search(&mut self, name: &str) -> Option<T::InfoType>;
 
     /// Return a string that corresponds to this bundle's location,
     /// probably a URL.
@@ -163,12 +164,8 @@ where
     fn get_location(&mut self) -> String;
 }
 
-impl<
-        'this,
-        F: FileInfo + 'this,
-        T: FileIndex<'this, F>,
-        B: CachableBundle<'this, F, T> + ?Sized,
-    > CachableBundle<'this, F, T> for Box<B>
+impl<'this, T: FileIndex<'this>, B: CachableBundle<'this, T> + ?Sized> CachableBundle<'this, T>
+    for Box<B>
 {
     fn initialize_index(&mut self, source: &mut dyn Read) -> Result<()> {
         (**self).initialize_index(source)
@@ -188,13 +185,13 @@ impl<
 
     fn open_fileinfo(
         &mut self,
-        info: &F,
+        info: &T::InfoType,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).open_fileinfo(info, status)
     }
 
-    fn search(&mut self, name: &str) -> Option<F> {
+    fn search(&mut self, name: &str) -> Option<T::InfoType> {
         (**self).search(name)
     }
 }

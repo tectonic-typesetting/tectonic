@@ -59,7 +59,9 @@ impl ItarFileIndex {
     }
 }
 
-impl<'this> FileIndex<'this, ItarFileInfo> for ItarFileIndex {
+impl<'this> FileIndex<'this> for ItarFileIndex {
+    type InfoType = ItarFileInfo;
+
     fn iter(&'this self) -> Box<dyn Iterator<Item = &'this ItarFileInfo> + 'this> {
         return Box::new(self.content.values());
     }
@@ -195,7 +197,7 @@ impl Bundle for ItarBundle {
     }
 }
 
-impl<'this> CachableBundle<'this, ItarFileInfo, ItarFileIndex> for ItarBundle {
+impl<'this> CachableBundle<'this, ItarFileIndex> for ItarBundle {
     fn get_location(&mut self) -> String {
         return self.url.clone();
     }

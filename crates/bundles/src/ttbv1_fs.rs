@@ -30,17 +30,20 @@ fn read_fileinfo<'a>(fileinfo: &TTBFileInfo, reader: &'a mut File) -> Result<Box
 }
 
 /// A bundle backed by a ZIP file.
-pub struct Ttbv1FsBundle {
+pub struct Ttbv1FsBundle<T>
+where
+    for<'a> T: FileIndex<'a>,
+{
     file: File,
-    index: TTBFileIndex,
+    index: T,
     header: TTBv1Header,
 }
 
 /// The internal file-information struct used by the [`Ttbv1FsBundle`].
 
-impl<'a> Ttbv1FsBundle {
+impl Ttbv1FsBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
-    pub fn new(mut file: File) -> Result<Ttbv1FsBundle> {
+    pub fn new(mut file: File) -> Result<Self> {
         // Parse header
         file.seek(SeekFrom::Start(0))?;
         let mut header: [u8; 70] = [0u8; 70];
@@ -71,16 +74,14 @@ impl<'a> Ttbv1FsBundle {
 
         return Ok(());
     }
-}
 
-impl Ttbv1FsBundle {
     /// Open a file on the filesystem as a zip bundle.
-    pub fn open<P: AsRef<Path>>(path: P) -> Result<Ttbv1FsBundle> {
+    pub fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
         Self::new(File::open(path)?)
     }
 }
 
-impl IoProvider for Ttbv1FsBundle {
+impl IoProvider for Ttbv1FsBundle<TTBFileIndex> {
     fn input_open_name(
         &mut self,
         name: &str,
@@ -117,7 +118,7 @@ impl IoProvider for Ttbv1FsBundle {
     }
 }
 
-impl Bundle for Ttbv1FsBundle {
+impl Bundle for Ttbv1FsBundle<TTBFileIndex> {
     fn all_files(&mut self) -> Result<Vec<String>> {
         Ok(self.index.iter().map(|x| x.path.clone()).collect())
     }

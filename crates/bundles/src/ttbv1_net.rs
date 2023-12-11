@@ -37,9 +37,12 @@ fn read_fileinfo(fileinfo: &TTBFileInfo, reader: &mut DefaultRangeReader) -> Res
 /// are downloaded.
 ///
 /// As such, this bundle should probably be wrapped in a [`crate::BundleCache`].
-pub struct Ttbv1NetBundle {
+pub struct Ttbv1NetBundle<T>
+where
+    for<'a> T: FileIndex<'a>,
+{
     url: String,
-    index: TTBFileIndex,
+    index: T,
 
     // We need the network to load these.
     // They're None until absolutely necessary.
@@ -48,9 +51,9 @@ pub struct Ttbv1NetBundle {
 
 /// The internal file-information struct used by the [`Ttbv1NetBundle`].
 
-impl Ttbv1NetBundle {
+impl Ttbv1NetBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
-    pub fn new(url: String) -> Result<Ttbv1NetBundle> {
+    pub fn new(url: String) -> Result<Self> {
         Ok(Ttbv1NetBundle {
             reader: None,
             index: TTBFileIndex::new(),
@@ -91,7 +94,7 @@ impl Ttbv1NetBundle {
     }
 }
 
-impl IoProvider for Ttbv1NetBundle {
+impl IoProvider for Ttbv1NetBundle<TTBFileIndex> {
     fn input_open_name(
         &mut self,
         name: &str,
@@ -113,7 +116,7 @@ impl IoProvider for Ttbv1NetBundle {
     }
 }
 
-impl Bundle for Ttbv1NetBundle {
+impl Bundle for Ttbv1NetBundle<TTBFileIndex> {
     fn all_files(&mut self) -> Result<Vec<String>> {
         Ok(self.index.iter().map(|x| x.path.clone()).collect())
     }
@@ -124,7 +127,7 @@ impl Bundle for Ttbv1NetBundle {
     }
 }
 
-impl<'this> CachableBundle<'this, TTBFileInfo, TTBFileIndex> for Ttbv1NetBundle {
+impl<'this> CachableBundle<'this, TTBFileIndex> for Ttbv1NetBundle<TTBFileIndex> {
     fn get_location(&mut self) -> String {
         return self.url.clone();
     }
