@@ -144,8 +144,8 @@ impl ItarBundle {
         }
         self.connect_reader();
 
-        let mut reader = self.get_index_reader().unwrap();
-        self.index.initialize(&mut reader).unwrap();
+        let mut reader = self.get_index_reader()?;
+        self.index.initialize(&mut reader)?;
 
         return Ok(());
     }
