@@ -8,6 +8,7 @@ use crate::{FileIndex, FileInfo};
 use std::{
     collections::HashMap,
     convert::{TryFrom, TryInto},
+    fs::OpenOptions,
     io::{BufRead, BufReader, Read},
     str::FromStr,
 };
@@ -186,6 +187,11 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
         }
 
         let search = self.search_orders.get(&self.default_search_order).unwrap();
+
+        // Edge case: absolute paths
+        if name.starts_with("/") {
+            return None;
+        }
 
         // Get last element of path, since
         // some packages reference a path to a file.
