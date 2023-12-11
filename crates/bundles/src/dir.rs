@@ -58,22 +58,15 @@ impl IoProvider for DirBundle {
 }
 
 impl Bundle for DirBundle {
-    fn all_files(&mut self) -> Result<Vec<String>> {
-        let mut files = Vec::new();
-
-        // We intentionally do not explore the directory recursively.
-        for entry in fs::read_dir(self.0.root())? {
-            let entry = entry?;
-
-            // This catches both regular files and symlinks:`
-            if !entry.file_type()?.is_dir() {
-                if let Some(s) = entry.file_name().to_str() {
-                    files.push(s.to_owned());
-                }
-            }
-        }
-
-        Ok(files)
+    fn all_files(&self) -> Vec<String> {
+        fs::read_dir(self.0.root())
+            .unwrap()
+            .filter(|x| x.is_ok())
+            .map(|x| x.unwrap())
+            .filter(|x| !x.file_type().map(|x| x.is_dir()).unwrap_or(false))
+            .map(|x| x.file_name().to_str().unwrap_or("").to_owned())
+            .filter(|x| x.len() != 0)
+            .collect()
     }
 
     fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {

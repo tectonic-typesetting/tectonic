@@ -130,7 +130,7 @@ impl Bundle for TestBundle {
         Ok(DigestData::zeros())
     }
 
-    fn all_files(&mut self) -> Result<Vec<String>> {
+    fn all_files(&self) -> Vec<String> {
         self.0.all_files()
     }
 }

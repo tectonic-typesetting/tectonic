@@ -174,9 +174,8 @@ impl IoProvider for ItarBundle {
 }
 
 impl Bundle for ItarBundle {
-    fn all_files(&mut self) -> Result<Vec<String>> {
-        self.ensure_index()?;
-        Ok(self.index.iter().map(|x| x.name().to_owned()).collect())
+    fn all_files(&self) -> Vec<String> {
+        self.index.iter().map(|x| x.path().to_owned()).collect()
     }
 
     fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {

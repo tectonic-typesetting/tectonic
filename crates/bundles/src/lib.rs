@@ -98,18 +98,9 @@ pub trait Bundle: IoProvider {
     /// which summarizes the exact contents of every file in the bundle.
     fn get_digest(&mut self) -> Result<DigestData>;
 
-    /// Enumerate the files in this bundle.
-    ///
-    /// This interface is intended to be used for diagnostics, not by anything
-    /// during actual execution of an engine. This should include meta-files
-    /// such as the `SHA256SUM` file. The ordering of the returned filenames is
-    /// unspecified.
-    ///
-    /// To ease implementation, the filenames are returned in one big vector of
-    /// owned strings. For a large bundle, the memory consumed by this operation
-    /// might be fairly substantial (although we are talking megabytes, not
-    /// gigabytes).
-    fn all_files(&mut self) -> Result<Vec<String>>;
+    /// Iterate over all file paths in this bundle.
+    /// This is used for the `bundle search` command
+    fn all_files(&self) -> Vec<String>;
 }
 
 impl<B: Bundle + ?Sized> Bundle for Box<B> {
@@ -117,7 +108,7 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
         (**self).get_digest()
     }
 
-    fn all_files(&mut self) -> Result<Vec<String>> {
+    fn all_files(&self) -> Vec<String> {
         (**self).all_files()
     }
 }
@@ -126,7 +117,7 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 ///
 /// These methods do not implement any new features.
 /// Instead, they give the [`cache::BundleCache`] wrapper
-/// more granular access to existing bundle functionality.
+/// more direct access to existing bundle functionality.
 pub trait CachableBundle<'this, T>
 where
     Self: Bundle + 'this,
@@ -157,10 +148,8 @@ where
     /// This should foward the call to `self.index`
     fn search(&mut self, name: &str) -> Option<T::InfoType>;
 
-    /// Return a string that corresponds to this bundle's location,
-    /// probably a URL.
-    ///
-    /// We should NOT need to do any IO to get this value.
+    /// Return a string that corresponds to this bundle's location, probably a URL.
+    /// We should NOT need to do any network IO to get this value.
     fn get_location(&mut self) -> String;
 }
 

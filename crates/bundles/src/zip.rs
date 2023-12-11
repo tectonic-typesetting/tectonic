@@ -76,8 +76,8 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
 }
 
 impl<R: Read + Seek> Bundle for ZipBundle<R> {
-    fn all_files(&mut self) -> Result<Vec<String>> {
-        Ok(self.zip.file_names().map(|s| s.to_owned()).collect())
+    fn all_files(&self) -> Vec<String> {
+        self.zip.file_names().map(|x| x.to_owned()).collect()
     }
 
     fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {

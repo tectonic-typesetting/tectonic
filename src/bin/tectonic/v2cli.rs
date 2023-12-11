@@ -413,8 +413,8 @@ impl BundleSearchCommand {
     }
 
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        let mut bundle = get_a_bundle(config, self.only_cached, status)?;
-        let files = bundle.all_files()?;
+        let bundle = get_a_bundle(config, self.only_cached, status)?;
+        let files = bundle.all_files();
 
         if let Some(t) = &self.term {
             for filename in files.iter().filter(|x| x.contains(t)) {

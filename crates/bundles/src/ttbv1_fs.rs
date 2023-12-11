@@ -7,7 +7,7 @@
 
 use crate::{
     ttbv1::{TTBFileIndex, TTBFileInfo, TTBv1Header},
-    Bundle, FileIndex,
+    Bundle, FileIndex, FileInfo,
 };
 use flate2::read::GzDecoder;
 use std::{
@@ -120,8 +120,8 @@ impl IoProvider for Ttbv1FsBundle<TTBFileIndex> {
 }
 
 impl Bundle for Ttbv1FsBundle<TTBFileIndex> {
-    fn all_files(&mut self) -> Result<Vec<String>> {
-        Ok(self.index.iter().map(|x| x.path.clone()).collect())
+    fn all_files(&self) -> Vec<String> {
+        self.index.iter().map(|x| x.path().to_owned()).collect()
     }
 
     fn get_digest(&mut self) -> Result<DigestData> {

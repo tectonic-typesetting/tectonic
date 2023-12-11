@@ -289,12 +289,7 @@ impl<'this, T: FileIndex<'this>> Bundle for BundleCache<'this, T> {
         Ok(self.bundle_hash)
     }
 
-    // Returns a list of all files that are *available*.
-    // If we're online, this is the list of all files in the bundle.
-    // If we're offline, this is every file in the cache.
-    //
-    // TODO: Maybe we want different errors for "offline" and "actually doesn't exist"?
-    fn all_files(&mut self) -> Result<Vec<String>> {
-        return self.bundle.all_files();
+    fn all_files(&self) -> Vec<String> {
+        self.bundle.all_files()
     }
 }
