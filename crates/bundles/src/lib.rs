@@ -20,6 +20,7 @@
 use std::{io::Read, path::PathBuf};
 use tectonic_errors::Result;
 use tectonic_io_base::{digest::DigestData, InputHandle, IoProvider, OpenResult};
+use tectonic_status_base::StatusBackend;
 
 pub mod cache;
 pub mod dir;
@@ -35,6 +36,12 @@ use itar::ItarBundle;
 use ttbv1_fs::Ttbv1FsBundle;
 use ttbv1_net::Ttbv1NetBundle;
 use zip::ZipBundle;
+
+// How many times network bundles should retry
+// a download, and how long they should wait
+// between attempts.
+const NET_RETRY_ATTEMPTS: usize = 3;
+const NET_RETRY_SLEEP_MS: u64 = 500;
 
 /// Uniquely identifies a file in a bundle.
 pub trait FileInfo: Clone {
@@ -139,7 +146,11 @@ where
     fn index(&mut self) -> &mut T;
 
     /// Open the file that `info` points to.
-    fn open_fileinfo(&mut self, info: &F) -> OpenResult<InputHandle>;
+    fn open_fileinfo(
+        &mut self,
+        info: &F,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle>;
 
     /// Search for a file in this bundle.
     /// This should foward the call to `self.index`
@@ -175,8 +186,12 @@ impl<
         (**self).index()
     }
 
-    fn open_fileinfo(&mut self, info: &F) -> OpenResult<InputHandle> {
-        (**self).open_fileinfo(info)
+    fn open_fileinfo(
+        &mut self,
+        info: &F,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        (**self).open_fileinfo(info, status)
     }
 
     fn search(&mut self, name: &str) -> Option<F> {

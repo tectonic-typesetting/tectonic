@@ -25,7 +25,7 @@ use tectonic_status_base::StatusBackend;
 fn read_fileinfo<'a>(fileinfo: &TTBFileInfo, reader: &'a mut File) -> Result<Box<dyn Read + 'a>> {
     reader.seek(SeekFrom::Start(fileinfo.start))?;
     return Ok(Box::new(GzDecoder::new(
-        reader.take(fileinfo.length as u64),
+        reader.take(fileinfo.gzip_len as u64),
     )));
 }
 
@@ -59,7 +59,8 @@ impl<'a> Ttbv1FsBundle {
     fn fill_index(&mut self) -> Result<()> {
         let info = TTBFileInfo {
             start: self.header.index_start,
-            length: self.header.index_len,
+            gzip_len: self.header.index_real_len,
+            real_len: self.header.index_gzip_len,
             path: "/INDEX".to_owned(),
             name: "INDEX".to_owned(),
             hash: None,
@@ -98,7 +99,7 @@ impl IoProvider for Ttbv1FsBundle {
             Some(s) => s,
         };
 
-        let mut v: Vec<u8> = Vec::new();
+        let mut v: Vec<u8> = Vec::with_capacity(info.real_len as usize);
 
         match read_fileinfo(&info, &mut self.file) {
             Err(e) => return OpenResult::Err(e.into()),

@@ -20,9 +20,7 @@ use tectonic_io_base::{
     digest::{self, DigestData},
     InputHandle, InputOrigin, IoProvider, OpenResult,
 };
-use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
-
-use crate::{Bundle, CachableBundle, FileIndex, FileInfo};
+use tectonic_status_base::StatusBackend;
 
 /// A convenience method to provide a better error message when writing to a created file.
 fn file_create_write<P, F, E>(path: P, write_fn: F) -> Result<()>
@@ -137,7 +135,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
         // Check remote bundle digest
         let bundle_hash: DigestData = match (saved_hash, live_hash) {
             (None, None) => {
-                bail!("Couldn't get bundle");
+                bail!("this bundle isn't cached, and we couldn't get it from the internet.");
             }
             (Some(s), Some(l)) => {
                 if s != l {
@@ -224,7 +222,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
 
     /// Fetch a file from the bundle backing this cache.
     /// Returns a path to the file that was created.
-    fn fetch_file(&mut self, info: F) -> OpenResult<PathBuf> {
+    fn fetch_file(&mut self, info: F, status: &mut dyn StatusBackend) -> OpenResult<PathBuf> {
         let target = self.get_file_path(&info);
         fs::create_dir_all(&target.parent().unwrap()).unwrap();
 
@@ -239,7 +237,7 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> BundleCache<'this, F, T
         }
 
         // Get the file.
-        let mut handle = match self.bundle.open_fileinfo(&info) {
+        let mut handle = match self.bundle.open_fileinfo(&info, status) {
             OpenResult::Ok(c) => c,
             OpenResult::Err(e) => return OpenResult::Err(e),
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
@@ -263,14 +261,11 @@ impl<'this, F: FileInfo + 'this, T: FileIndex<'this, F>> IoProvider for BundleCa
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
             OpenResult::Ok((true, f)) => self.get_file_path(&f),
-            OpenResult::Ok((false, f)) => {
-                tt_note!(status, "downloading {}", name);
-                match self.fetch_file(f) {
-                    OpenResult::Ok(p) => p,
-                    OpenResult::NotAvailable => return OpenResult::NotAvailable,
-                    OpenResult::Err(e) => return OpenResult::Err(e),
-                }
-            }
+            OpenResult::Ok((false, f)) => match self.fetch_file(f, status) {
+                OpenResult::Ok(p) => p,
+                OpenResult::NotAvailable => return OpenResult::NotAvailable,
+                OpenResult::Err(e) => return OpenResult::Err(e),
+            },
         };
 
         let f = match File::open(path) {

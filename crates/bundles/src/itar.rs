@@ -15,18 +15,19 @@
 //! resource, the index file merely contains a byte offset and length that are
 //! then used to construct an HTTP Range request to obtain the file as needed.
 
-use crate::{Bundle, CachableBundle, FileIndex, FileInfo};
+use crate::{Bundle, CachableBundle, FileIndex, FileInfo, NET_RETRY_ATTEMPTS, NET_RETRY_SLEEP_MS};
 use flate2::read::GzDecoder;
 use std::{
     collections::HashMap,
     io::{BufRead, BufReader, Cursor, Read},
     str::FromStr,
+    thread,
+    time::Duration,
 };
 use tectonic_errors::prelude::*;
-use tectonic_geturl::DefaultRangeReader;
-use tectonic_geturl::{DefaultBackend, GetUrlBackend, RangeReader};
+use tectonic_geturl::{DefaultBackend, DefaultRangeReader, GetUrlBackend, RangeReader};
 use tectonic_io_base::{digest, InputHandle, InputOrigin, IoProvider, OpenResult};
-use tectonic_status_base::{NoopStatusBackend, StatusBackend};
+use tectonic_status_base::{tt_note, tt_warning, NoopStatusBackend, StatusBackend};
 
 /// The internal file-information struct used by the [`ItarBundle`].
 #[derive(Clone, Debug)]
@@ -147,7 +148,7 @@ impl IoProvider for ItarBundle {
     fn input_open_name(
         &mut self,
         name: &str,
-        _status: &mut dyn StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         match self.ensure_index() {
             Err(e) => return OpenResult::Err(e),
@@ -159,8 +160,9 @@ impl IoProvider for ItarBundle {
             None => return OpenResult::NotAvailable,
         };
 
-        // TODO: handle retries and logging here
-        return self.open_fileinfo(&info);
+        // Retries are handled in open_fileinfo,
+        // since BundleCache never calls input_open_name.
+        return self.open_fileinfo(&info, status);
     }
 }
 
@@ -218,10 +220,13 @@ impl<'this> CachableBundle<'this, ItarFileInfo, ItarFileIndex> for ItarBundle {
         return Ok(Box::new(reader));
     }
 
-    fn open_fileinfo(&mut self, info: &ItarFileInfo) -> OpenResult<InputHandle> {
-        let mut buf = Vec::with_capacity(info.length);
-
-        //tt_note!(status, "downloading {}", name);
+    fn open_fileinfo(
+        &mut self,
+        info: &ItarFileInfo,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        let mut v = Vec::with_capacity(info.length);
+        tt_note!(status, "downloading {}", info.name);
 
         // Connect reader if it is not already connected
         if self.reader.is_none() {
@@ -229,36 +234,57 @@ impl<'this> CachableBundle<'this, ItarFileInfo, ItarFileIndex> for ItarBundle {
             self.reader = Some(geturl_backend.open_range_reader(&self.url));
         }
 
-        // Our HTTP implementation actually has problems with zero-sized ranged
-        // reads (Azure gives us a 200 response, which we don't properly
-        // handle), but when the file is 0-sized we're all set anyway!
+        // Edge case for zero-sized reads
+        // (these cause errors on some web hosts)
         if info.length == 0 {
             return OpenResult::Ok(InputHandle::new_read_only(
                 info.name.to_owned(),
-                Cursor::new(buf),
+                Cursor::new(v),
                 InputOrigin::Other,
             ));
         }
 
-        let mut stream = match self
-            .reader
-            .as_mut()
-            .unwrap()
-            .read_range(info.offset, info.length)
-        {
-            Ok(r) => r,
-            Err(e) => return OpenResult::Err(e),
-        };
+        // Get file with retries
+        for i in 0..NET_RETRY_ATTEMPTS {
+            let mut stream = match self
+                .reader
+                .as_mut()
+                .unwrap()
+                .read_range(info.offset, info.length)
+            {
+                Ok(r) => r,
+                Err(e) => {
+                    tt_warning!(status,
+                        "failure fetching \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                        info.name, i+1; e
+                    );
+                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                    continue;
+                }
+            };
 
-        match stream.read_to_end(&mut buf) {
-            Ok(_) => {}
-            Err(e) => return OpenResult::Err(e.into()),
-        };
+            match stream.read_to_end(&mut v) {
+                Ok(_) => {}
+                Err(e) => {
+                    tt_warning!(status,
+                        "failure downloading \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                        info.name, i+1; e.into()
+                    );
+                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                    continue;
+                }
+            };
 
-        return OpenResult::Ok(InputHandle::new_read_only(
-            info.name.to_owned(),
-            Cursor::new(buf),
-            InputOrigin::Other,
+            return OpenResult::Ok(InputHandle::new_read_only(
+                info.name.to_owned(),
+                Cursor::new(v),
+                InputOrigin::Other,
+            ));
+        }
+
+        return OpenResult::Err(anyhow!(
+            "failed to download \"{}\"; please check your network connection.",
+            info.name
         ));
     }
 }

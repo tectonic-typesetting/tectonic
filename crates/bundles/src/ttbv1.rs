@@ -1,19 +1,20 @@
 // Copyright 2023-2024 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::collections::HashMap;
-use std::convert::{TryFrom, TryInto};
-use std::io::{BufRead, BufReader, Read};
-use std::str::FromStr;
+use crate::{FileIndex, FileInfo};
+use std::{
+    collections::HashMap,
+    convert::{TryFrom, TryInto},
+    io::{BufRead, BufReader, Read},
+    str::FromStr,
+};
 use tectonic_errors::prelude::*;
 use tectonic_io_base::digest::{self, DigestData};
 
-use crate::FileIndex;
-use crate::FileInfo;
-
 pub struct TTBv1Header {
     pub index_start: u64,
-    pub index_len: u32,
+    pub index_real_len: u32,
+    pub index_gzip_len: u32,
     pub digest: DigestData,
 }
 
@@ -24,8 +25,9 @@ impl TryFrom<[u8; 70]> for TTBv1Header {
         let signature = &header[0..14];
         let version = u64::from_le_bytes(header[14..22].try_into()?);
         let index_start = u64::from_le_bytes(header[22..30].try_into()?);
-        let index_len = u32::from_le_bytes(header[30..34].try_into()?);
-        let digest: DigestData = DigestData::from_str(&digest::bytes_to_hex(&header[34..66]))?;
+        let index_gzip_len = u32::from_le_bytes(header[30..34].try_into()?);
+        let index_real_len = u32::from_le_bytes(header[34..38].try_into()?);
+        let digest: DigestData = DigestData::from_str(&digest::bytes_to_hex(&header[38..70]))?;
 
         if signature != b"tectonicbundle" {
             bail!("this is not a bundle");
@@ -38,7 +40,8 @@ impl TryFrom<[u8; 70]> for TTBv1Header {
         return Ok(TTBv1Header {
             digest,
             index_start,
-            index_len,
+            index_real_len,
+            index_gzip_len,
         });
     }
 }
@@ -47,7 +50,8 @@ impl TryFrom<[u8; 70]> for TTBv1Header {
 #[derive(Clone, Debug)]
 pub struct TTBFileInfo {
     pub start: u64,
-    pub length: u32,
+    pub real_len: u32,
+    pub gzip_len: u32,
     pub path: String,
     pub name: String,
     pub hash: Option<String>,
@@ -87,14 +91,19 @@ impl TTBFileIndex {
     fn read_filelist_line(&mut self, line: &str) -> Result<()> {
         let mut bits = line.split_whitespace();
 
-        if let (Some(start), Some(length), Some(path), Some(hash)) =
-            (bits.next(), bits.next(), bits.next(), bits.next())
-        {
+        if let (Some(start), Some(gzip_len), Some(real_len), Some(path), Some(hash)) = (
+            bits.next(),
+            bits.next(),
+            bits.next(),
+            bits.next(),
+            bits.next(),
+        ) {
             let (_, name) = path.rsplit_once("/").unwrap();
 
             self.content.push(TTBFileInfo {
                 start: start.parse::<u64>()?,
-                length: length.parse::<u32>()?,
+                gzip_len: gzip_len.parse::<u32>()?,
+                real_len: real_len.parse::<u32>()?,
                 path: path.to_owned(),
                 name: name.to_owned(),
                 hash: match hash {

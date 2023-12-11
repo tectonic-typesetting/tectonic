@@ -8,28 +8,27 @@
 //!
 //! Instead, wrap it in a [`crate::BundleCache`] for filesystem-backed caching.
 
+use crate::{
+    ttbv1::{TTBFileIndex, TTBFileInfo, TTBv1Header},
+    Bundle, CachableBundle, FileIndex, NET_RETRY_ATTEMPTS, NET_RETRY_SLEEP_MS,
+};
+use flate2::read::GzDecoder;
 use std::{
     convert::TryFrom,
     io::{Cursor, Read},
+    thread,
+    time::Duration,
 };
 use tectonic_errors::prelude::*;
+use tectonic_geturl::{DefaultBackend, DefaultRangeReader, GetUrlBackend, RangeReader};
 use tectonic_io_base::{InputHandle, InputOrigin, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
-
-use crate::{
-    ttbv1::{TTBFileIndex, TTBFileInfo, TTBv1Header},
-    Bundle, CachableBundle, FileIndex,
-};
-use flate2::read::GzDecoder;
-
-use tectonic_geturl::DefaultRangeReader;
-use tectonic_geturl::{DefaultBackend, GetUrlBackend, RangeReader};
+use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
 
 /// Read a [`TTBFileInfo`] from this bundle.
 /// We assume that `fileinfo` points to a valid file in this bundle.
 fn read_fileinfo(fileinfo: &TTBFileInfo, reader: &mut DefaultRangeReader) -> Result<Box<dyn Read>> {
     // fileinfo.length is a u32, so it must fit inside a usize (assuming 32/64-bit machine).
-    let stream = reader.read_range(fileinfo.start, fileinfo.length as usize)?;
+    let stream = reader.read_range(fileinfo.start, fileinfo.gzip_len as usize)?;
     return Ok(Box::new(GzDecoder::new(stream)));
 }
 
@@ -96,7 +95,7 @@ impl IoProvider for Ttbv1NetBundle {
     fn input_open_name(
         &mut self,
         name: &str,
-        _status: &mut dyn StatusBackend,
+        status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         match self.ensure_index() {
             Err(e) => return OpenResult::Err(e),
@@ -108,8 +107,9 @@ impl IoProvider for Ttbv1NetBundle {
             Some(s) => s,
         };
 
-        // TODO: handle retries and logging here
-        return self.open_fileinfo(&info);
+        // Retries are handled in open_fileinfo,
+        // since BundleCache never calls input_open_name.
+        return self.open_fileinfo(&info, status);
     }
 }
 
@@ -149,7 +149,8 @@ impl<'this> CachableBundle<'this, TTBFileInfo, TTBFileIndex> for Ttbv1NetBundle 
         return Ok(read_fileinfo(
             &TTBFileInfo {
                 start: header.index_start,
-                length: header.index_len,
+                gzip_len: header.index_gzip_len,
+                real_len: header.index_real_len,
                 path: "".to_owned(),
                 name: "".to_owned(),
                 hash: None,
@@ -158,23 +159,60 @@ impl<'this> CachableBundle<'this, TTBFileInfo, TTBFileIndex> for Ttbv1NetBundle 
         )?);
     }
 
-    fn open_fileinfo(&mut self, info: &TTBFileInfo) -> OpenResult<InputHandle> {
-        let mut v: Vec<u8> = Vec::new();
+    fn open_fileinfo(
+        &mut self,
+        info: &TTBFileInfo,
+        status: &mut dyn StatusBackend,
+    ) -> OpenResult<InputHandle> {
+        let mut v: Vec<u8> = Vec::with_capacity(info.real_len as usize);
+        tt_note!(status, "downloading {}", info.name);
 
-        let mut reader = match read_fileinfo(&info, self.reader.as_mut().unwrap()) {
-            Ok(r) => r,
-            Err(e) => return OpenResult::Err(e.into()),
-        };
+        // Edge case for zero-sized reads
+        // (these cause errors on some web hosts)
+        if info.gzip_len == 0 {
+            return OpenResult::Ok(InputHandle::new_read_only(
+                info.name.to_owned(),
+                Cursor::new(v),
+                InputOrigin::Other,
+            ));
+        }
 
-        match reader.read_to_end(&mut v) {
-            Ok(_) => {}
-            Err(e) => return OpenResult::Err(e.into()),
-        };
+        // Get file with retries
+        for i in 0..NET_RETRY_ATTEMPTS {
+            let mut reader = match read_fileinfo(&info, self.reader.as_mut().unwrap()) {
+                Ok(r) => r,
+                Err(e) => {
+                    tt_warning!(status,
+                        "failure fetching \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                        info.name, i+1; e
+                    );
+                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                    continue;
+                }
+            };
 
-        return OpenResult::Ok(InputHandle::new_read_only(
-            info.name.to_owned(),
-            Cursor::new(v),
-            InputOrigin::Other,
+            match reader.read_to_end(&mut v) {
+                Ok(_) => {}
+                Err(e) => {
+                    tt_warning!(status,
+                        "failure downloading \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                        info.name, i+1; e.into()
+                    );
+                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                    continue;
+                }
+            };
+
+            return OpenResult::Ok(InputHandle::new_read_only(
+                info.name.to_owned(),
+                Cursor::new(v),
+                InputOrigin::Other,
+            ));
+        }
+
+        return OpenResult::Err(anyhow!(
+            "failed to download \"{}\"; please check your network connection.",
+            info.name
         ));
     }
 }
