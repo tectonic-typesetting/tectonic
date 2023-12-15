@@ -790,7 +790,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
         } else {
             let field_ptr =
                 cites.entry_ptr() * other.num_fields() + hash.ilk_info(field_name_loc) as usize;
-            if field_ptr > other.max_fields() {
+            if field_ptr >= other.max_fields() {
                 write_logs("field_info index is out of range");
                 print_confusion();
                 return Err(BibtexError::Fatal);

@@ -112,7 +112,7 @@ $ sudo pacman -S tectonic
 and [tectonic-git][arch-tectonic-git] from the [AUR].
 
 [Arch Linux]: https://archlinux.org/
-[arch-tectonic]: https://archlinux.org/packages/community/x86_64/tectonic/
+[arch-tectonic]: https://archlinux.org/packages/extra/x86_64/tectonic/
 [AUR]: https://aur.archlinux.org/
 [arch-tectonic-git]: https://aur.archlinux.org/packages/tectonic-git
 
