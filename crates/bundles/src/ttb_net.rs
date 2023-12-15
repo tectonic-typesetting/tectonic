@@ -3,13 +3,13 @@
 
 //! Read ttb v1 bundles on the internet.
 //!
-//! The main type offered by this module is the [`Ttbv1NetBundle`] struct,
+//! The main type offered by this module is the [`TTBNetBundle`] struct,
 //! which can (but should not) be used directly as a [`tectonic_io_base::IoProvider`].
 //!
 //! Instead, wrap it in a [`crate::BundleCache`] for filesystem-backed caching.
 
 use crate::{
-    ttbv1::{TTBFileIndex, TTBFileInfo, TTBv1Header},
+    ttb::{TTBFileIndex, TTBFileInfo, TTBv1Header},
     Bundle, CachableBundle, FileIndex, FileInfo, NET_RETRY_ATTEMPTS, NET_RETRY_SLEEP_MS,
 };
 use flate2::read::GzDecoder;
@@ -37,7 +37,7 @@ fn read_fileinfo(fileinfo: &TTBFileInfo, reader: &mut DefaultRangeReader) -> Res
 /// are downloaded.
 ///
 /// As such, this bundle should probably be wrapped in a [`crate::BundleCache`].
-pub struct Ttbv1NetBundle<T>
+pub struct TTBNetBundle<T>
 where
     for<'a> T: FileIndex<'a>,
 {
@@ -49,14 +49,14 @@ where
     reader: Option<DefaultRangeReader>,
 }
 
-/// The internal file-information struct used by the [`Ttbv1NetBundle`].
+/// The internal file-information struct used by the [`TTBNetBundle`].
 
-impl Ttbv1NetBundle<TTBFileIndex> {
+impl TTBNetBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
     /// This method does not require network access.
     /// It will succeed even in we can't connect to the bundle, or if we're given a bad url.
     pub fn new(url: String) -> Result<Self> {
-        Ok(Ttbv1NetBundle {
+        Ok(TTBNetBundle {
             reader: None,
             index: TTBFileIndex::new(),
             url,
@@ -96,7 +96,7 @@ impl Ttbv1NetBundle<TTBFileIndex> {
     }
 }
 
-impl IoProvider for Ttbv1NetBundle<TTBFileIndex> {
+impl IoProvider for TTBNetBundle<TTBFileIndex> {
     fn input_open_name(
         &mut self,
         name: &str,
@@ -118,7 +118,7 @@ impl IoProvider for Ttbv1NetBundle<TTBFileIndex> {
     }
 }
 
-impl Bundle for Ttbv1NetBundle<TTBFileIndex> {
+impl Bundle for TTBNetBundle<TTBFileIndex> {
     fn all_files(&self) -> Vec<String> {
         self.index.iter().map(|x| x.path().to_owned()).collect()
     }
@@ -129,7 +129,7 @@ impl Bundle for Ttbv1NetBundle<TTBFileIndex> {
     }
 }
 
-impl<'this> CachableBundle<'this, TTBFileIndex> for Ttbv1NetBundle<TTBFileIndex> {
+impl<'this> CachableBundle<'this, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
     fn get_location(&mut self) -> String {
         return self.url.clone();
     }

@@ -26,11 +26,11 @@ impl TryFrom<[u8; 70]> for TTBv1Header {
 
     fn try_from(header: [u8; 70]) -> Result<Self, Self::Error> {
         let signature = &header[0..14];
-        let version = u64::from_le_bytes(header[14..22].try_into()?);
-        let index_start = u64::from_le_bytes(header[22..30].try_into()?);
-        let index_gzip_len = u32::from_le_bytes(header[30..34].try_into()?);
-        let index_real_len = u32::from_le_bytes(header[34..38].try_into()?);
-        let digest: DigestData = DigestData::from_str(&digest::bytes_to_hex(&header[38..70]))?;
+        let version = u32::from_le_bytes(header[14..18].try_into()?);
+        let index_start = u64::from_le_bytes(header[18..26].try_into()?);
+        let index_gzip_len = u32::from_le_bytes(header[26..30].try_into()?);
+        let index_real_len = u32::from_le_bytes(header[30..34].try_into()?);
+        let digest: DigestData = DigestData::from_str(&digest::bytes_to_hex(&header[34..66]))?;
 
         if signature != b"tectonicbundle" {
             bail!("this is not a bundle");

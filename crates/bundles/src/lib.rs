@@ -25,16 +25,16 @@ use tectonic_status_base::StatusBackend;
 pub mod cache;
 pub mod dir;
 pub mod itar;
-mod ttbv1;
-pub mod ttbv1_fs;
-pub mod ttbv1_net;
+mod ttb;
+pub mod ttb_fs;
+pub mod ttb_net;
 pub mod zip;
 
 use cache::BundleCache;
 use dir::DirBundle;
 use itar::ItarBundle;
-use ttbv1_fs::Ttbv1FsBundle;
-use ttbv1_net::Ttbv1NetBundle;
+use ttb_fs::TTBFsBundle;
+use ttb_net::TTBNetBundle;
 use zip::ZipBundle;
 
 // How many times network bundles should retry
@@ -201,7 +201,7 @@ pub fn detect_bundle(
         if url.scheme() == "https" || url.scheme() == "http" {
             if source.ends_with("ttb") {
                 let bundle = BundleCache::new(
-                    Box::new(Ttbv1NetBundle::new(source)?),
+                    Box::new(TTBNetBundle::new(source)?),
                     only_cached,
                     custom_cache_dir,
                 )?;
@@ -238,7 +238,7 @@ pub fn detect_bundle(
         } else if ext == "zip" {
             Ok(Some(Box::new(ZipBundle::open(p)?)))
         } else if ext == "ttb" {
-            Ok(Some(Box::new(Ttbv1FsBundle::open(p)?)))
+            Ok(Some(Box::new(TTBFsBundle::open(p)?)))
         } else {
             Ok(None)
         }

@@ -6,7 +6,7 @@
 //! The main type offered by this module is the [`Ttbv1NetBundle`] struct.
 
 use crate::{
-    ttbv1::{TTBFileIndex, TTBFileInfo, TTBv1Header},
+    ttb::{TTBFileIndex, TTBFileInfo, TTBv1Header},
     Bundle, FileIndex, FileInfo,
 };
 use flate2::read::GzDecoder;
@@ -30,7 +30,7 @@ fn read_fileinfo<'a>(fileinfo: &TTBFileInfo, reader: &'a mut File) -> Result<Box
 }
 
 /// A bundle backed by a ZIP file.
-pub struct Ttbv1FsBundle<T>
+pub struct TTBFsBundle<T>
 where
     for<'a> T: FileIndex<'a>,
 {
@@ -38,12 +38,12 @@ where
     index: T,
 }
 
-/// The internal file-information struct used by the [`Ttbv1FsBundle`].
+/// The internal file-information struct used by the [`TTBFsBundle`].
 
-impl Ttbv1FsBundle<TTBFileIndex> {
+impl TTBFsBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
     pub fn new(file: File) -> Result<Self> {
-        Ok(Ttbv1FsBundle {
+        Ok(TTBFsBundle {
             file,
             index: TTBFileIndex::new(),
         })
@@ -82,7 +82,7 @@ impl Ttbv1FsBundle<TTBFileIndex> {
     }
 }
 
-impl IoProvider for Ttbv1FsBundle<TTBFileIndex> {
+impl IoProvider for TTBFsBundle<TTBFileIndex> {
     fn input_open_name(
         &mut self,
         name: &str,
@@ -119,7 +119,7 @@ impl IoProvider for Ttbv1FsBundle<TTBFileIndex> {
     }
 }
 
-impl Bundle for Ttbv1FsBundle<TTBFileIndex> {
+impl Bundle for TTBFsBundle<TTBFileIndex> {
     fn all_files(&self) -> Vec<String> {
         self.index.iter().map(|x| x.path().to_owned()).collect()
     }
