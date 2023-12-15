@@ -159,6 +159,14 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             bundle_hash,
         };
 
+        // Right now, files are stored in
+        // `<root>/data/<bundle hash>/<file path>.
+        // This works for now, but may cause issues if we add multiple
+        // bundle formats with incompatible path schemes. We assume that
+        // all bundles with the same hash use the same path scheme,
+        // which is true for TTBNet and TTBFs.
+        // Adding support for multiple formats of a single bundle hash
+        // shouldn't be too hard, but isn't necessary yet.
         ensure_dir!(&bundle
             .cache_root
             .join(&format!("data/{}", bundle.bundle_hash.to_string())));
