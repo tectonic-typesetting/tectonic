@@ -127,19 +127,6 @@ impl TarIndexService {
             req.uri().path(),
             req.headers().typed_get::<headers::Range>(),
         ) {
-            (&Method::HEAD, "/tectonic-default", None) => {
-                self.log_request(TectonicRequest::Head(req.uri().path().to_owned()));
-                let mut resp = Response::builder().status(StatusCode::FOUND);
-                resp.headers_mut().unwrap().insert(
-                    header::LOCATION,
-                    HeaderValue::from_str(&format!(
-                        "http://{}/bundle.tar",
-                        self.local_addr.lock().unwrap().unwrap()
-                    ))
-                    .unwrap(),
-                );
-                Box::pin(async move { resp.body(Body::empty()).unwrap() })
-            }
             (&Method::HEAD, "/bundle.tar", None) => {
                 self.log_request(TectonicRequest::Head(req.uri().path().to_owned()));
                 Box::pin(async move { Response::new(Body::empty()) })
@@ -182,7 +169,7 @@ impl TarIndexService {
 
     fn url(&self) -> String {
         format!(
-            "http://{}/tectonic-default",
+            "http://{}/bundle.tar",
             self.local_addr.lock().unwrap().unwrap()
         )
     }
@@ -296,11 +283,11 @@ fn test_full_session() {
         run("tests/tex-outputs/redbox_png.tex");
     });
 
-    check_req_count(&requests, TectonicRequest::Index, 1);
+    check_req_count(&requests, TectonicRequest::Index, 4);
     check_req_count(
         &requests,
         TectonicRequest::File(tectonic::digest::DIGEST_NAME.into()),
-        2,
+        3,
     );
     // This file should be cached.
     check_req_count(&requests, TectonicRequest::File("plain.tex".into()), 1);
@@ -378,11 +365,11 @@ fn test_cached_url_provider() {
         }
     });
 
-    check_req_count(&requests, TectonicRequest::Index, 1);
+    check_req_count(&requests, TectonicRequest::Index, 5);
     check_req_count(
         &requests,
         TectonicRequest::File(tectonic::digest::DIGEST_NAME.into()),
-        2,
+        4,
     );
     // This files should be cached.
     check_req_count(&requests, TectonicRequest::File("plain.tex".into()), 1);
