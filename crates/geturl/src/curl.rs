@@ -70,6 +70,10 @@ impl GetUrlBackend for CurlBackend {
         get_url_generic(&mut self.handle, url, None)
     }
 
+    fn resolve_url(&mut self, url: &str) -> Result<String> {
+        Ok(url.into())
+    }
+
     fn open_range_reader(&self, url: &str) -> Self::RangeReader {
         CurlRangeReader::new(url)
     }

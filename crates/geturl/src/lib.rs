@@ -43,6 +43,12 @@ pub trait GetUrlBackend: Default {
     /// The range-reader type for URLs that will undergo byte-range reads.
     type RangeReader: RangeReader;
 
+    /// Starting with an input URL, follow redirections to get a final URL.
+    ///
+    /// But we attempt to detect redirects into CDNs/S3/etc and *stop* following
+    /// before we get that deep.
+    fn resolve_url(&mut self, url: &str) -> Result<String>;
+
     /// Perform an HTTP GET on a URL, returning a readable result.
     fn get_url(&mut self, url: &str) -> Result<Self::Response>;
 

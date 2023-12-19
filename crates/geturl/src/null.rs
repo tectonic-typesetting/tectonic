@@ -37,6 +37,10 @@ impl GetUrlBackend for NullBackend {
         Err((NoGetUrlBackendError {}).into())
     }
 
+    fn resolve_url(&mut self, _url: &str) -> Result<String> {
+        Err((NoGetUrlBackendError {}).into())
+    }
+
     fn open_range_reader(&self, _url: &str) -> Self::RangeReader {
         NullRangeReader {}
     }
