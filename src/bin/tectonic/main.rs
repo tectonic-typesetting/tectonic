@@ -51,6 +51,11 @@ struct CliOptions {
     #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
     cli_color: String,
 
+    /// Use this URL to find resource files instead of the default
+    #[structopt(takes_value(true), long, short, name = "url", overrides_with = "url")]
+    // TODO add URL validation
+    web_bundle: Option<String>,
+
     #[structopt(flatten)]
     compile: compile::CompileOptions,
 }
@@ -165,7 +170,7 @@ fn main() {
     // all so that we can print out the word "error:" in red. This code
     // parallels various bits of the `error_chain` crate.
 
-    if let Err(e) = args.compile.execute(config, &mut *status) {
+    if let Err(e) = args.compile.execute(config, &mut *status, args.web_bundle) {
         status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }

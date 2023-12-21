@@ -36,11 +36,6 @@ pub struct CompileOptions {
     #[structopt(takes_value(true), parse(from_os_str), long, short, name = "file_path")]
     bundle: Option<PathBuf>,
 
-    /// Use this URL to find resource files instead of the default
-    #[structopt(takes_value(true), long, short, name = "url")]
-    // TODO add URL validation
-    web_bundle: Option<String>,
-
     /// Use only resource files cached locally
     #[structopt(short = "C", long)]
     only_cached: bool,
@@ -95,7 +90,12 @@ pub struct CompileOptions {
 }
 
 impl CompileOptions {
-    pub fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    pub fn execute(
+        self,
+        config: PersistentConfig,
+        status: &mut dyn StatusBackend,
+        web_bundle: Option<String>,
+    ) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
         // Default to allowing insecure since it would be super duper annoying
@@ -193,7 +193,7 @@ impl CompileOptions {
         }
         if let Some(path) = self.bundle {
             sess_builder.bundle(config.make_local_file_provider(path, status)?);
-        } else if let Some(u) = self.web_bundle {
+        } else if let Some(u) = web_bundle {
             sess_builder.bundle(config.make_cached_url_provider(&u, only_cached, None, status)?);
         } else {
             sess_builder.bundle(config.default_bundle(only_cached, status)?);
