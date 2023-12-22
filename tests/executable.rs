@@ -636,6 +636,37 @@ fn stdin_content() {
     success_or_panic(&output);
 }
 
+#[test]
+fn web_bundle_flag() {
+    let filename = "subdirectory/content/1.tex";
+    let fmt_arg: &str = &get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[filename]);
+    let temppath = tempdir.path().to_owned();
+
+    let arg_bad_bundle = ["--web-bundle", "bad-bundle"];
+    let arg_good_bundle = ["--web-bundle", "test-bundle://"];
+
+    // test with a bad bundle
+    let output = run_tectonic(
+        &temppath,
+        &[&arg_bad_bundle[..], &[fmt_arg, filename]].concat(),
+    );
+    error_or_panic(&output);
+
+    // test with a good bundle
+    let valid_args: Vec<Vec<&str>> = vec![
+        // different positions
+        [&arg_good_bundle[..], &[fmt_arg, filename]].concat(),
+        [&[fmt_arg], &arg_good_bundle[..], &[filename]].concat(),
+        [&[fmt_arg], &[filename], &arg_good_bundle[..]].concat(),
+    ];
+
+    for args in valid_args {
+        let output = run_tectonic(&temppath, &args);
+        success_or_panic(&output);
+    }
+}
+
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_build_basic() {
