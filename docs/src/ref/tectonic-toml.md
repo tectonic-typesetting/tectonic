@@ -17,6 +17,14 @@ the file are detailed below.
 name = <string>  # the document name
 bundle = <url or filesystem path>  # the source of the TeX bundle
 
+# The doc.metadata table may contain arbitrary data.
+# It does not affect Tectonic in any way.
+[doc.metadata]
+pubish = false
+arr = [1, 2, [6, 7]]
+
+
+
 [[output]]  # one or more output specifications
 name = <string>  # the output's name
 type = <"pdf">  # the output's type
@@ -50,6 +58,12 @@ This field can also be a filesystem path, pointing to either a Zip-format bundle
 or a directory of support files. This mode of operation is discouraged because
 it limits reproducibility. URLs with a `file:` protocol are also treated
 identically to filesystem paths.
+
+### `doc.metadata`
+
+Arbitrary metadata, not read by Tectonic. This table allows us to
+save parameters for external scripts without creating an extra file.
+
 
 ### `output`
 
