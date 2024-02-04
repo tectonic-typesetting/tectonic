@@ -6,6 +6,7 @@
 use std::fmt::{Display, Error, Formatter};
 use tectonic_status_base::{tt_warning, StatusBackend};
 
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub(crate) enum Special<'a> {
     AddTemplate(&'a str),

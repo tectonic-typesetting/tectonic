@@ -22,7 +22,7 @@ use std::{
 use tectonic::{errors::Result, io::memory::MemoryFileCollection};
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 
-pub use tectonic::test_util::{test_path, TestBundle};
+pub use tectonic::test_util::test_path;
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
