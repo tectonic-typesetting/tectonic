@@ -238,12 +238,17 @@ impl FontManager {
         best_match.unwrap_or(ptr::null_mut())
     }
 
-    pub fn append_to_list(list: &mut Vec<String>, str: *const libc::c_char) {
-        todo!()
+    pub unsafe fn append_to_list(list: &mut Vec<CString>, str: *const libc::c_char) {
+        let str = CStr::from_ptr(str);
+        if !list.iter().any(|s| s == str) {
+            list.push(str.to_owned())
+        }
     }
 
-    pub fn prepend_to_list(list: &mut Vec<String>, str: *const libc::c_char) {
-        todo!()
+    pub unsafe fn prepend_to_list(list: &mut Vec<CString>, str: *const libc::c_char) {
+        let str = CStr::from_ptr(str);
+        *list = list.drain(..).filter(|s| s != str).collect();
+        list.insert(0, str.to_owned());
     }
 
     pub fn add_to_maps(&mut self, font: PlatformFontRef, names: *const NameCollection) {
