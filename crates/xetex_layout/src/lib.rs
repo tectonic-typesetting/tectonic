@@ -31,6 +31,12 @@ mod linkage {
     use tectonic_bridge_fontconfig as clipyrenamehack6;
 }
 
+macro_rules! c {
+    ($lit:literal) => {
+        concat!($lit, "\0") as *const str as *const libc::c_char
+    };
+}
+
 mod c_api {
     use crate::c_api::engine::XeTeXLayoutEngineBase;
     use crate::c_api::font::XeTeXFontBase;
@@ -44,6 +50,9 @@ mod c_api {
     /// cbindgen:ignore
     mod fc;
     mod font;
+    mod manager;
+    /// cbindgen:ignore
+    mod unicode;
 
     pub(crate) struct SyncPtr<T>(*mut T);
     unsafe impl<T> Send for SyncPtr<T> {}
