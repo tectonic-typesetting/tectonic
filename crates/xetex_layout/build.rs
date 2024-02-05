@@ -232,4 +232,18 @@ fn main() {
     }
 
     println!();
+
+    let info = os_info::get();
+
+    match info.os_type() {
+        os_info::Type::Macos => match info.version() {
+            os_info::Version::Semantic(major, minor, _) => {
+                if (*major == 10 && *minor < 6) || *major < 10 {
+                    println!("cargo:rustc-cfg=feature=\"MACOS_LE_10_6\"")
+                }
+            }
+            _ => (),
+        },
+        _ => (),
+    }
 }
