@@ -255,20 +255,12 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn usingGraphite(engine: XeTeXLayoutEngine) -> bool {
-        (*engine).shaper != ptr::null_mut()
-            && libc::strcmp(
-                b"graphite2\0" as *const u8 as *const libc::c_char,
-                (*engine).shaper,
-            ) == 0
+        (*engine).shaper != ptr::null_mut() && libc::strcmp(c!("graphite2"), (*engine).shaper) == 0
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn usingOpenType(engine: XeTeXLayoutEngine) -> bool {
-        (*engine).shaper != ptr::null_mut()
-            && libc::strcmp(
-                b"ot\0" as *const u8 as *const libc::c_char,
-                (*engine).shaper,
-            ) == 0
+        (*engine).shaper != ptr::null_mut() && libc::strcmp(c!("ot"), (*engine).shaper) == 0
     }
 
     #[no_mangle]
@@ -358,7 +350,7 @@ impl XeTeXLayoutEngineBase {
             // here for sake of backward compatibility. Since "ot" shaper never
             // fails, we set the shaper list to just include it.
             engine.shaper_list = xcalloc(2, mem::size_of::<*const libc::c_char>()).cast();
-            *engine.shaper_list = b"ot\0" as *const u8 as *const libc::c_char;
+            *engine.shaper_list = c!("ot");
             *engine.shaper_list.add(1) = ptr::null();
             engine.shaper_list_to_free = true;
         }
@@ -409,7 +401,7 @@ impl XeTeXLayoutEngineBase {
                 engine.shaper = libc::strdup(hb_shape_plan_get_shaper(shape_plan));
                 hb_buffer_set_content_type(engine.hb_buffer, hb_buffer_content_type_t::Glyphs);
             } else {
-                _tt_abort(b"all shapers failed\0" as *const u8 as *const libc::c_char);
+                _tt_abort(c!("all shapers failed"));
             }
         }
 
@@ -821,7 +813,7 @@ pub unsafe extern "C" fn initGraphiteBreaking(
 #[no_mangle]
 pub unsafe extern "C" fn findNextGraphiteBreak() -> libc::c_int {
     let gr_seg = GR_SEGMENT.get();
-    let mut gr_prev_slot = GR_PREV_SLOT.get();
+    let gr_prev_slot = GR_PREV_SLOT.get();
 
     if !gr_seg.is_null() && !gr_prev_slot.is_null() && gr_prev_slot != gr_seg_last_slot(gr_seg) {
         let mut s = gr_slot_next_in_segment(gr_prev_slot);
