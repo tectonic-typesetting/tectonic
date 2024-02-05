@@ -222,6 +222,22 @@ const char *getNameFromCTFont(CTFontRef ct_font_ref, CFStringRef name_key);
 const char *getFileNameFromCTFont(CTFontRef ct_font_ref, uint32_t *index);
 #endif
 
+void terminate_font_manager(void);
+
+void destroy_font_manager(void);
+
+PlatformFontRef findFontByName(const char *name, char *var, double size);
+
+char getReqEngine(void);
+
+void setReqEngine(char engine);
+
+const char *getFullName(PlatformFontRef font);
+
+double getDesignSize(XeTeXFont font);
+
+const char *ttxl_platfont_get_desc(PlatformFontRef font);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif // __cplusplus
