@@ -83,10 +83,6 @@ double getDesignSize(XeTeXFont font);
 /* Extra APIs needed to encapsulate across the crate boundaries */
 const char *ttxl_platfont_get_desc(PlatformFontRef fontRef);
 
-#ifdef XETEX_MAC
-char* getFileNameFromCTFont(CTFontRef ctFontRef, uint32_t *index);
-#endif
-
 END_EXTERN_C
 
 #endif /* XETEX_LAYOUT_INTERFACE_H */
