@@ -1,5 +1,5 @@
-pub const FC_FILE: *const libc::c_char = b"file" as *const [u8] as *const libc::c_char;
-pub const FC_INDEX: *const libc::c_char = b"index" as *const [u8] as *const libc::c_char;
+pub const FC_FILE: *const libc::c_char = b"file\0" as *const [u8] as *const libc::c_char;
+pub const FC_INDEX: *const libc::c_char = b"index\0" as *const [u8] as *const libc::c_char;
 
 #[repr(C)]
 pub struct FcPattern(());
