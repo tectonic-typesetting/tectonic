@@ -1,3 +1,8 @@
+# tectonic_xetex_format 0.3.2 (2024-02-05)
+
+- Update for latest Clippy complaints (#1119, @pkgw).
+
+
 # tectonic_xetex_format 0.3.1 (2023-05-18)
 
 - Tidy up recent Clippy warnings.

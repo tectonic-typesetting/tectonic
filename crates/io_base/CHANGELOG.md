@@ -1,3 +1,8 @@
+# tectonic_io_base 0.4.3 (2024-02-05)
+
+- Once again, tidy up recent Clippy warnings (#1076, @CraftSpider).
+
+
 # tectonic_io_base 0.4.2 (2023-05-18)
 
 - Tidy up recent Clippy warnings.

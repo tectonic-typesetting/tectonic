@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_docmodel"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The Tectonic document model and its serialization into `Tectonic.toml`.

@@ -1,3 +1,11 @@
+# tectonic_docmodel 0.2.2 (2024-02-05)
+
+- Add a `metadata` field to the Tectonic.toml file specification, allowing
+  open-ended, user-defined metadata (#1120, @rm-dr). This is useful for custom
+  tools that build on top of Tectonic, where you might want to have some custom
+  piece of information about each document in a group.
+
+
 # tectonic_docmodel 0.2.1 (2023-05-18)
 
 - Update the `toml` dependency to the 0.7 series (#1038, @CraftSpider)

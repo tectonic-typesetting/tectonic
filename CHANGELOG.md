@@ -1,3 +1,73 @@
+# tectonic 0.15.0 (2024-02-05)
+
+This release contains a grab-bag of nice improvements:
+
+- The port of Tectonic’s BibTeX engine to a pure-Rust implementation has been
+  completed by [@CraftSpider] ([#1077], [#1083], [#1127], [#1129])! It continues
+  to be the case that this change should be invisible to users, but it shows
+  that large chunks of Tectonic’s legacy C/C++ code can be migrated to cleaner,
+  safer, more maintainable Rust over time.
+- The official Linux builds of Tectonic now link against OpenSSL 3.x, instead of
+  the old 1.1 series ([#1092], [@pkgw]). This should improve binary
+  compatibility on mainstream platforms. If you need a build that uses the older
+  series, you’ll have to compile it yourself.
+- The `--web-bundle` flag can now be used in more situations, specifically
+  `tectonic -X new` and `tectonic -X init` ([#1132], [@bryango]).
+- As part of the above work, you can now activate the "V2" interface with the
+  `-X` flag in more places on the Tectonic command line.
+- The `Tectonic.toml` file used by the "V2" interface now supports a
+  `[metadata]` section for arbitrary structured user metadata ([#1120],
+  [@rm-dr]). This is useful for custom tools that build on top of Tectonic,
+  where you might want to have some custom pieces of information about each
+  document in a group.
+- The "V2" interface also now supports external commands ([#1103], [@rm-dr]). If
+  you have a program named `tectonic-blah` in your search path, running
+  `tectonic -X blah` will execute it.
+- Running `tectonic -Z help` (as opposed to `tectonic -Zhelp`) now actually
+  works ([#1064], [#1084], [@pkgw]).
+
+Build changes:
+
+- You can now cross-compile Tectonic to the `aarch64-unknown-linux-musl` target
+  ([#1089], [@pkgw]).
+- MIPS is no longer supported as a build target ([#1076], [@CraftSpider]). It
+  dropped to Tier 3 support by the Rust language, which makes it difficult to
+  support in our continuous integration systems. Sorry, MIPS!
+
+Documentation fixes:
+
+- Update the Arch Linux package URL ([#1119], [@felixonmars])
+- Document `shell_escape_cwd` in `Tectonic.toml` ([#1116], [@eljamm])
+- Fix a type in the Unicode section ([#1111], [@goyalyashpal])
+- Various other corrections ([#1065], [#1068], [@ColeFrench])
+
+[@CraftSpider]: https://github.com/CraftSpider
+[#1064]: https://github.com/tectonic-typesetting/tectonic/pull/1064
+[#1065]: https://github.com/tectonic-typesetting/tectonic/pull/1065
+[#1068]: https://github.com/tectonic-typesetting/tectonic/pull/1068
+[#1076]: https://github.com/tectonic-typesetting/tectonic/pull/1076
+[#1077]: https://github.com/tectonic-typesetting/tectonic/pull/1077
+[#1083]: https://github.com/tectonic-typesetting/tectonic/pull/1083
+[#1084]: https://github.com/tectonic-typesetting/tectonic/pull/1084
+[#1089]: https://github.com/tectonic-typesetting/tectonic/pull/1089
+[#1092]: https://github.com/tectonic-typesetting/tectonic/pull/1092
+[#1103]: https://github.com/tectonic-typesetting/tectonic/pull/1103
+[#1111]: https://github.com/tectonic-typesetting/tectonic/pull/1111
+[#1116]: https://github.com/tectonic-typesetting/tectonic/pull/1116
+[#1119]: https://github.com/tectonic-typesetting/tectonic/pull/1119
+[#1120]: https://github.com/tectonic-typesetting/tectonic/pull/1120
+[#1127]: https://github.com/tectonic-typesetting/tectonic/pull/1127
+[#1129]: https://github.com/tectonic-typesetting/tectonic/pull/1129
+[#1132]: https://github.com/tectonic-typesetting/tectonic/pull/1132
+[@bryango]: https://github.com/bryango
+[@rm-dr]: https://github.com/rm-dr
+[@pkgw]: https://github.com/pkgw
+[@ColeFrench]: https://github.com/ColeFrench
+[@goyalyashpal]: https://github.com/goyalyashpal
+[@eljamm]: https://github.com/eljamm
+[@felixonmars]: https://github.com/felixonmars
+
+
 # tectonic 0.14.1 (2023-06-15)
 
 This is a bugfix release:

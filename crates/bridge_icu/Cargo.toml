@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_icu"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose a subset of the ICU Unicode APIs to Rust/Cargo.

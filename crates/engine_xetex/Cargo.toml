@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_engine_xetex"
-version = "0.4.3"
+version = "0.4.4"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The [XeTeX](http://xetex.sourceforge.net/) engine as a reusable crate.

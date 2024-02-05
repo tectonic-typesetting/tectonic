@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_engine_bibtex"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The `bibtex` program as a reusable crate.
@@ -16,16 +16,12 @@ repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
 edition = "2018"
-links = "tectonic_engine_bibtex"
 
 [dependencies]
 libc = "^0.2"
 tectonic_io_base = { path = "../io_base", version =">=0.4.2,<1"}
 tectonic_bridge_core = { path = "../bridge_core", version =">=0.1.0,<1"}
 tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
-
-[build-dependencies]
-cc = "^1.0.66"
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2021-01-17:fohCh1sh"

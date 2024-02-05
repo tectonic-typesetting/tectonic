@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_core"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing core backend APIs to the Tectonic C/C++ code.

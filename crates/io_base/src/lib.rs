@@ -674,7 +674,7 @@ fn try_normalize_tex_path(path: &str) -> Option<String> {
 
     let r = repeat("..")
         .take(parent_level)
-        .chain(r.into_iter())
+        .chain(r)
         // No `join` on `Iterator`.
         .collect::<Vec<_>>()
         .join("/");

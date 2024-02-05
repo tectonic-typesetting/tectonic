@@ -1,3 +1,8 @@
+# tectonic_bridge_harfbuzz 0.2.9 (2024-02-05)
+
+- Update the vendored Harfbuzz to 8.3.0.
+
+
 # tectonic_bridge_harfbuzz 0.2.8 (2023-05-22)
 
 - Update the vendored Harfbuzz to 7.3.0.

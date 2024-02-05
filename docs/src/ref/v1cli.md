@@ -43,23 +43,25 @@ behavior. If you have Tectonic installed, you can view them with `tectonic
 
 The following are the available flags.
 
-| Short | Full                      | Explanation                                                                                    |
-|:------|:--------------------------|:-----------------------------------------------------------------------------------------------|
-| `-b`  | `--bundle <PATH>`         | Use this Zip-format bundle file to find resource files instead of the default                  |
-| `-c`  | `--chatter <LEVEL>`       | How much chatter to print when running [default: default]  [possible values: default, minimal] |
-|       | `--format <PATH>`         | The name of the "format" file used to initialize the TeX engine [default: latex]               |
-| `-h`  | `--help`                  | Prints help information                                                                        |
-|       | `--hide <PATH>...`        | Tell the engine that no file at `<PATH>` exists, if it tries to read it                        |
-| `-k`  | `--keep-intermediates`    | Keep the intermediate files generated during processing                                        |
-|       | `--keep-logs`             | Keep the log files generated during processing                                                 |
-|       | `--makefile-rules <PATH>` | Write Makefile-format rules expressing the dependencies of this run to `<PATH>`                |
-| `-C`  | `--only-cached`           | Use only resource files cached locally                                                         |
-| `-o`  | `--outdir <OUTDIR>`       | The directory in which to place output files [default: the directory containing INPUT]         |
-|       | `--outfmt <FORMAT>`       | The kind of output to generate [default: pdf]  [possible values: pdf, html, xdv, aux, format]  |
-|       | `--pass <PASS>`           | Which engines to run [default: default]  [possible values: default, tex, bibtex_first]         |
-| `-p`  | `--print`                 | Print the engine's chatter during processing                                                   |
-| `-r`  | `--reruns <COUNT>`        | Rerun the TeX engine exactly this many times after the first                                   |
-|       | `--synctex`               | Generate SyncTeX data                                                                          |
-|       | `--untrusted`             | Input is untrusted: disable all known-insecure features                                        |
-| `-V`  | `--version`               | Prints version information                                                                     |
-| `-w`  | `--web-bundle <URL>`      | Use this URL find resource files instead of the default                                        |
+| Short | Full                           | Explanation                                                                                            |
+|:------|:-------------------------------|:-------------------------------------------------------------------------------------------------------|
+| `-b`  | `--bundle <file_path>`         | Use this directory or Zip-format bundle file to find resource files instead of the default             |
+| `-c`  | `--chatter <level>`            | How much chatter to print when running [default: `default`]  [possible values: `default`, `minimal`]   |
+|       | `--color <when>`               | Enable/disable colorful log output [default: `auto`]  [possible values: `always`, `auto`, `never`]     |
+| `-f`  | `--format <path>`              | The name of the “format” file used to initialize the TeX engine [default: `latex`]                     |
+| `-h`  | `--help`                       | Prints help information                                                                                |
+|       | `--hide <hide_path>...`        | Tell the engine that no file at `<hide_path>` exists, if it tries to read it                           |
+| `-k`  | `--keep-intermediates`         | Keep the intermediate files generated during processing                                                |
+|       | `--keep-logs`                  | Keep the log files generated during processing                                                         |
+|       | `--makefile-rules <dest_path>` | Write Makefile-format rules expressing the dependencies of this run to `<dest_path>`                   |
+| `-C`  | `--only-cached`                | Use only resource files cached locally                                                                 |
+| `-o`  | `--outdir <outdir>`            | The directory in which to place output files [default: the directory containing `<input>`]             |
+|       | `--outfmt <format>`            | The kind of output to generate [default: `pdf`]  [possible values: `pdf`, `html`, `xdv`, `aux`, `fmt`] |
+|       | `--pass <pass>`                | Which engines to run [default: `default`]  [possible values: `default`, `tex`, `bibtex_first`]         |
+| `-p`  | `--print`                      | Print the engine’s chatter during processing                                                           |
+| `-r`  | `--reruns <count>`             | Rerun the TeX engine exactly this many times after the first                                           |
+|       | `--synctex`                    | Generate SyncTeX data                                                                                  |
+|       | `--untrusted`                  | Input is untrusted — disable all known-insecure features                                               |
+| `-V`  | `--version`                    | Prints version information                                                                             |
+| `-w`  | `--web-bundle <url>`           | Use this URL to find resource files instead of the default                                             |
+| `-Z`  | `-Z <option>...`               | Unstable options. Pass `-Zhelp` to show a list                                                         |

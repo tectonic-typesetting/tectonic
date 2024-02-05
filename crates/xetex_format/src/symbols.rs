@@ -170,7 +170,7 @@ impl SymbolTable {
             // We let identical values get re-inserted, mainly for NORMAL.
             ensure!(prev == value, format!("changed symbol name `{name}`"));
         } else {
-            let group = self.grouped.entry(cat).or_insert_with(Vec::new);
+            let group = self.grouped.entry(cat).or_default();
             group.push(name);
         }
 

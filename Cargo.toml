@@ -1,10 +1,10 @@
 # Cargo.toml -- Cargo definition file for Tectonic.
-# Copyright 2016-2021 the Tectonic Project
+# Copyright 2016-2023 the Tectonic Project
 # Licensed under the MIT License.
 
 [package]
 name = "tectonic"
-version = "0.14.1"
+version = "0.15.0"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
@@ -16,7 +16,13 @@ documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "CARGO_README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
-categories = ["command-line-interface", "parser-implementations", "rendering", "science", "text-processing"]
+categories = [
+  "command-line-interface",
+  "parser-implementations",
+  "rendering",
+  "science",
+  "text-processing",
+]
 license = "MIT"
 edition = "2018"
 exclude = ["/dist/", "/reference_sources/"]
@@ -108,7 +114,10 @@ external-harfbuzz = ["tectonic_engine_xetex/external-harfbuzz"]
 geturl-curl = ["tectonic_bundles/geturl-curl", "tectonic_geturl/curl"]
 geturl-reqwest = ["tectonic_bundles/geturl-reqwest", "tectonic_geturl/reqwest"]
 
-native-tls-vendored = ["tectonic_bundles/native-tls-vendored", "tectonic_geturl/native-tls-vendored"]
+native-tls-vendored = [
+  "tectonic_bundles/native-tls-vendored",
+  "tectonic_geturl/native-tls-vendored",
+]
 
 # developer feature to compile with the necessary flags for profiling tectonic.
 profile = []
@@ -122,24 +131,38 @@ tempfile = "^3.1"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "63366443439398a62afc9a63b34b9a3ba63b1cae"
+rev = "4a600e9fea71bd7872080cbb716797e04d30e6d3"
 overlay-triplets-path = "dist/vcpkg-triplets"
 
 # If other targets start using custom triplets like x86_64-pc-windows-msvc,
 # add them to crates/dep_support/src/lib.rs:new_from_vcpkg() to give users
 # guidance if they might need to set $VCPKGRS_TRIPLET.
 [package.metadata.vcpkg.target]
-x86_64-apple-darwin = { install = ["freetype","harfbuzz[icu,graphite2]"] }
-aarch64-apple-darwin = { triplet = "arm64-osx", install = ["freetype","harfbuzz[icu,graphite2]"] }
-x86_64-unknown-linux-gnu = { install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
-x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = ["fontconfig","freetype","harfbuzz[icu,graphite2]"] }
+x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
+aarch64-apple-darwin = { triplet = "arm64-osx", install = [
+  "freetype",
+  "harfbuzz[graphite2]",
+  "icu",
+] }
+x86_64-unknown-linux-gnu = { install = [
+  "fontconfig",
+  "freetype",
+  "harfbuzz[graphite2]",
+  "icu",
+] }
+x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
+  "fontconfig",
+  "freetype",
+  "harfbuzz[graphite2]",
+  "icu",
+] }
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2023-06-11:PvhF7YB"
 tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bridge_icu = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_harfbuzz = "thiscommit:2023-09-17:FZwRtUP"
+tectonic_bridge_icu = "thiscommit:2023-09-17:AwTXf3W"
 tectonic_bundles = "thiscommit:2022-03-29:SFnXSaL"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

@@ -17,7 +17,7 @@ use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
-use crate::util::{ensure_plain_format, test_path, ExpectedInfo};
+use crate::util::{ensure_plain_format, test_path, Expected, ExpectedFile};
 
 struct TestCase {
     stem: String,
@@ -107,7 +107,7 @@ impl TestCase {
         // add this layer.
         let mut assets = FilesystemIo::new(&test_path(&["assets"]), false, false, HashSet::new());
 
-        let expected_log = ExpectedInfo::read_with_extension(&mut p, "log");
+        let expected_log = ExpectedFile::read_with_extension(&mut p, "log");
 
         // Run the engine(s)!
         let res = {
@@ -159,20 +159,24 @@ impl TestCase {
 
         let files = mem.files.borrow();
 
-        expected_log.test_from_collection(&files);
+        let mut expect = Expected::new().file(expected_log.collection(&files));
 
         if expect_xdv {
-            ExpectedInfo::read_with_extension(&mut p, "xdv").test_from_collection(&files);
+            expect =
+                expect.file(ExpectedFile::read_with_extension(&mut p, "xdv").collection(&files));
         }
-
         if self.check_synctex {
-            ExpectedInfo::read_with_extension_rooted_gz(&mut p, "synctex.gz")
-                .test_from_collection(&files);
+            expect = expect.file(
+                ExpectedFile::read_with_extension_rooted_gz(&mut p, "synctex.gz")
+                    .collection(&files),
+            );
+        }
+        if self.check_pdf {
+            expect =
+                expect.file(ExpectedFile::read_with_extension(&mut p, "pdf").collection(&files));
         }
 
-        if self.check_pdf {
-            ExpectedInfo::read_with_extension(&mut p, "pdf").test_from_collection(&files);
-        }
+        expect.finish();
     }
 }
 

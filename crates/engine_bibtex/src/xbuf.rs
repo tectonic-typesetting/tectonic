@@ -1,8 +1,10 @@
-use crate::c_api::{xcalloc, xrealloc};
+use crate::{xcalloc, xrealloc};
 use std::{
     mem,
     ops::{Deref, DerefMut},
-    ptr, slice,
+    ptr,
+    ptr::NonNull,
+    slice,
 };
 
 /// # Safety
@@ -21,6 +23,10 @@ unsafe impl SafelyZero for i32 {}
 unsafe impl SafelyZero for i64 {}
 // SAFETY: Pointers are sound to init as all-zero, that's just null
 unsafe impl<T> SafelyZero for *mut T {}
+// SAFETY: Option<NonNull<T>> has the same layout as *mut T
+unsafe impl<T> SafelyZero for Option<NonNull<T>> {}
+// SAFETY: Option<&mut T> has the same layout as *mut T
+unsafe impl<T> SafelyZero for Option<&mut T> {}
 
 pub fn xcalloc_zeroed<T: SafelyZero>(len: usize) -> Option<&'static mut [T]> {
     if len == 0 || mem::size_of::<T>() == 0 {
@@ -39,14 +45,17 @@ pub fn xcalloc_zeroed<T: SafelyZero>(len: usize) -> Option<&'static mut [T]> {
     }
 }
 
-pub fn xrealloc_zeroed<T: SafelyZero>(
-    old: &'static mut [T],
+/// # Safety
+///
+/// The provided `old` buffer must be valid, and allocated by `xalloc`/`xcalloc`
+pub unsafe fn xrealloc_zeroed<T: SafelyZero>(
+    old: *mut [T],
     new_len: usize,
 ) -> Option<&'static mut [T]> {
-    let old_len = old.len();
+    let old_len = (*old).len();
     let new_size = new_len * mem::size_of::<T>();
     // SAFETY: realloc can be called with any size, even 0, that will just deallocate and return null
-    let ptr = unsafe { xrealloc((old as *mut [_]).cast(), new_size) }.cast::<T>();
+    let ptr = unsafe { xrealloc(old.cast(), new_size) }.cast::<T>();
     if ptr.is_null() {
         None
     } else {
@@ -57,14 +66,14 @@ pub fn xrealloc_zeroed<T: SafelyZero>(
         }
         // SAFETY: realloc guarantees `new_size` bytes valid, plus `SafelyZero` means it's sound to
         //         return a reference to all-zero T
-        Some(unsafe { slice::from_raw_parts_mut(ptr.cast(), new_len) })
+        Some(unsafe { slice::from_raw_parts_mut(ptr, new_len) })
     }
 }
 
 #[derive(Debug)]
-pub(crate) struct XBuf<T: Copy + 'static>(&'static mut [T]);
+pub(crate) struct XBuf<T: SafelyZero + 'static>(&'static mut [T]);
 
-impl<T: SafelyZero + Copy + 'static> XBuf<T> {
+impl<T: SafelyZero + 'static> XBuf<T> {
     pub fn new(init_len: usize) -> XBuf<T> {
         XBuf(xcalloc_zeroed(init_len + 1).unwrap())
     }
@@ -72,11 +81,12 @@ impl<T: SafelyZero + Copy + 'static> XBuf<T> {
     pub fn grow(&mut self, grow_by: usize) {
         let slice = mem::take(&mut self.0);
         let old_len = slice.len();
-        self.0 = xrealloc_zeroed(slice, grow_by + old_len).unwrap();
+        // TODO: Just use system allocator?
+        self.0 = unsafe { xrealloc_zeroed(slice, grow_by + old_len) }.unwrap();
     }
 }
 
-impl<T: Copy + 'static> Deref for XBuf<T> {
+impl<T: SafelyZero + 'static> Deref for XBuf<T> {
     type Target = [T];
 
     fn deref(&self) -> &Self::Target {
@@ -84,13 +94,13 @@ impl<T: Copy + 'static> Deref for XBuf<T> {
     }
 }
 
-impl<T: Copy + 'static> DerefMut for XBuf<T> {
+impl<T: SafelyZero + 'static> DerefMut for XBuf<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.0
     }
 }
 
-impl<T: Copy + 'static> Drop for XBuf<T> {
+impl<T: SafelyZero + 'static> Drop for XBuf<T> {
     fn drop(&mut self) {
         // SAFETY: Inner pointer is guaranteed valid and not previously freed
         unsafe { libc::free((self.0 as *mut [_]).cast()) };

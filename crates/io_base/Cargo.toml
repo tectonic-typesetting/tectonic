@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_io_base"
-version = "0.4.2"
+version = "0.4.3"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Basic types for Tectonic's pluggable I/O backend system

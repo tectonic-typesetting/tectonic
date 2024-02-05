@@ -1,3 +1,8 @@
+# tectonic_bridge_core 0.4.1 (2024-02-05)
+
+- Add a safety comment and fix some new Clippy complaints (#1076, @CraftSpider)
+
+
 # tectonic_bridge_core 0.4.0 (2023-06-12)
 
 - Add new APIs, `CoreBridgeLauncher::with_expose_absolute_paths` and

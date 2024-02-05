@@ -11,11 +11,10 @@ CLI), see [its reference page][v1cli-ref]._**
 #### Usage Synopsis
 
 ```sh
-tectonic -X new [DIRECTORY]
+tectonic -X new [path]
 ```
 
-If `{DIRECTORY}` is unspecified, the workspace is created in the current
-directory.
+If `[path]` is unspecified, the workspace is created in the current directory.
 
 #### Remarks
 

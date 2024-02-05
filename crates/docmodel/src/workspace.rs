@@ -144,10 +144,10 @@ impl WorkspaceCreator {
             tex_dir.push("_preamble.tex");
             let mut f = fs::File::create(&tex_dir)?;
             f.write_all(
-                br#"\documentclass{article}
+                br"\documentclass{article}
 \title{My Title}
 \begin{document}
-"#,
+",
             )?;
             tex_dir.pop();
         }
@@ -156,8 +156,8 @@ impl WorkspaceCreator {
             tex_dir.push("index.tex");
             let mut f = fs::File::create(&tex_dir)?;
             f.write_all(
-                br#"Hello, world.
-"#,
+                br"Hello, world.
+",
             )?;
             tex_dir.pop();
         }
@@ -166,8 +166,8 @@ impl WorkspaceCreator {
             tex_dir.push("_postamble.tex");
             let mut f = fs::File::create(&tex_dir)?;
             f.write_all(
-                br#"\end{document}
-"#,
+                br"\end{document}
+",
             )?;
             tex_dir.pop();
         }

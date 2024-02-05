@@ -18,15 +18,15 @@ use std::str::FromStr;
 
 const HELPMSG: &str = r#"Available unstable options:
 
-    -Z help                     Lists all unstable options
+    -Z help                     List all unstable options
     -Z continue-on-errors       Keep compiling even when severe errors occur
     -Z min-crossrefs=<num>      Equivalent to bibtex's -min-crossrefs flag - "include after <num>
                                     crossrefs" [default: 2]
-    -Z paper-size=<spec>        Change the default paper size [default: letter]
-    -Z search-path=<path>       Also look in <path> for files, like TEXINPUTS. Can be specified
-                                    multiple times.
-    -Z shell-escape             Enable \write18
-    -Z shell-escape-cwd         Working directory to use for \write18. Use $(pwd) for same behaviour as
+    -Z paper-size=<spec>        Change the initial paper size [default: letter]
+    -Z search-path=<path>       Also look in <path> for files (unless --untrusted has been specified),
+                                    like TEXINPUTS. Can be specified multiple times.
+    -Z shell-escape             Enable \write18 (unless --untrusted has been specified)
+    -Z shell-escape-cwd=<path>  Working directory to use for \write18. Use $(pwd) for same behaviour as
                                     most other engines (e.g. for relative paths in \inputminted).
                                     Implies -Z shell-escape
     -Z deterministic-mode       Force a deterministic build environment. Note that setting

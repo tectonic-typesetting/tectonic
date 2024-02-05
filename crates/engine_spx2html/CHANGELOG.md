@@ -1,3 +1,8 @@
+# tectonic_engine_spx2html 0.3.2 (2024-02-05)
+
+- Fix (well, suppress) a new Clippy complaint (#1137, @pkgw).
+
+
 # tectonic_engine_spx2html 0.3.1 (2023-06-12)
 
 - Avoid emitting negative padding values, which are illegal (#1052, @pkgw)

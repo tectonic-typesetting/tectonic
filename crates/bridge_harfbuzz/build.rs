@@ -1,4 +1,4 @@
-// Copyright 2020 the Tectonic Project
+// Copyright 2020-2023 the Tectonic Project
 // Licensed under the MIT License.
 
 //! Harfbuzz build script.
@@ -7,15 +7,23 @@
 mod inner {
     use tectonic_dep_support::{Configuration, Dependency, Spec};
 
-    // TODO: ICU not necessary if Harfbuzz >= 2.5.
     struct HarfbuzzSpec;
 
     impl Spec for HarfbuzzSpec {
+        // We require Harfbuzz >= 1.4, but that version is ancient, and
+        // specifying the version constraint in this string causes problems with
+        // the `pkgconf` implementation of pkg-config on Windows/MSYS2.
+        // (Specifically, its `--modversion` mode won't print anything out when
+        // given two arguments, causing an unhandled crash inside the pkg_config
+        // Rust library.) Likewise, for Harfbuzz < 2.5, the `harfbuzz-icu`
+        // pkg-config item is needed, but this may also cause problems for
+        // pkgconf. If you really need to compile against very old Harfbuzz,
+        // patch this file and don't use pkgconf.
         fn get_pkgconfig_spec(&self) -> &str {
-            "harfbuzz >= 1.4 harfbuzz-icu"
+            "harfbuzz"
         }
 
-        // TODO: can we ensure that the ICU and graphite2 options are enabled?
+        // TODO: can we ensure that the graphite2 option is enabled?
         fn get_vcpkg_spec(&self) -> &[&str] {
             &["harfbuzz"]
         }
@@ -75,7 +83,6 @@ mod inner {
         // Include paths exported by our internal dependencies:
         let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
         let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
-        let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
 
         let mut cfg = cc::Build::new();
 
@@ -83,15 +90,9 @@ mod inner {
             .flag("-std=c++11")
             .warnings(false)
             .define("HAVE_GRAPHITE2", "1")
-            .define("HAVE_ICU", "1")
-            .file("harfbuzz/src/harfbuzz.cc")
-            .file("harfbuzz/src/hb-icu.cc");
+            .file("harfbuzz/src/harfbuzz.cc");
 
         for item in graphite2_include_path.split(';') {
-            cfg.include(item);
-        }
-
-        for item in icu_include_path.split(';') {
             cfg.include(item);
         }
 
@@ -126,10 +127,6 @@ mod inner {
         );
 
         for item in graphite2_include_path.split(';') {
-            print!(";{}", item);
-        }
-
-        for item in icu_include_path.split(';') {
             print!(";{}", item);
         }
 

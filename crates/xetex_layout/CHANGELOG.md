@@ -1,3 +1,10 @@
+# tectonic_xetex_layout 0.2.4 (2024-02-05)
+
+- Remove a hack related to `libicudata` from the build script; this is now
+  handled in the proper place, in the `tectonic_bridge_icu` crate (#1092,
+  @pkgw).
+
+
 # tectonic_xetex_layout 0.2.3 (2023-06-12)
 
 - Fix a potential crash on invalid font files (#1035, @Mrmaxmeier).

@@ -1,3 +1,10 @@
+# tectonic_engine_xetex 0.4.4 (2024-02-05)
+
+- Support aarch64-unknown-linux-musl as a cross-buildable architecture (#1089,
+  @pkgw). This includes one of the gnarliest build hacks I've ever had to
+  perpetrate, as documented in `xetex/xetex-engine-interface.c`.
+
+
 # tectonic_engine_xetex 0.4.3 (2023-06-12)
 
 - Address a C compiler warning (#1050, @pkgw).

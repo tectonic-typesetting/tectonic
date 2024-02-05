@@ -1,0 +1,12 @@
+\begin{thebibliography}{1}
+
+\bibitem{Nobody06}
+Nobody Jr.
+\newblock {My} article, 2006.
+
+\bibitem{Book01}
+Nobody Sr.
+\newblock {\em Foo {\em Bar}}.
+\newblock Book Publisher, July 2020.
+
+\end{thebibliography}

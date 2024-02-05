@@ -1224,10 +1224,14 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 }
 
 /// "Finish" a diagnostic: report it to the driver and free the diagnostic object.
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences a raw Diagnostic pointer
 #[no_mangle]
-pub extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
+pub unsafe extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
-    let rdiag = unsafe { Box::from_raw(diag as *mut Diagnostic) };
+    let rdiag = Box::from_raw(diag);
     es.status
         .report(rdiag.kind, format_args!("{}", rdiag.message), None);
 }
