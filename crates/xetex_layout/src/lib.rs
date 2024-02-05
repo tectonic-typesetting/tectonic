@@ -28,6 +28,7 @@ mod linkage {
 }
 
 mod c_api {
+    use crate::c_api::engine::XeTeXLayoutEngineBase;
     use crate::c_api::font::XeTeXFontBase;
     use std::collections::BTreeMap;
     use std::ffi::CStr;
@@ -35,6 +36,7 @@ mod c_api {
     use tectonic_bridge_core::FileFormat;
     use tectonic_io_base::InputHandle;
 
+    mod engine;
     /// cbindgen:ignore
     mod fc;
     mod font;
@@ -51,7 +53,7 @@ mod c_api {
     }
 
     /// cbindgen:rename-all=camelCase
-    #[derive(Copy, Clone, PartialEq, Debug)]
+    #[derive(Copy, Clone, Default, PartialEq, Debug)]
     #[repr(C)]
     pub struct GlyphBBox {
         x_min: f32,
@@ -62,9 +64,15 @@ mod c_api {
 
     pub type Fixed = i32;
     pub type OTTag = u32;
+    pub type GlyphID = u16;
     /// cbindgen:ignore
     pub type XeTeXFont = *mut XeTeXFontBase;
+    /// cbindgen:ignore
+    pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngineBase;
+    #[cfg(not(target_os = "macos"))]
     type PlatformFontRef = *mut fc::FcPattern;
+    #[cfg(target_os = "macos")]
+    type PlatformFontRef = CTFontDescriptorRef;
 
     #[no_mangle]
     pub extern "C" fn RsFix2D(f: Fixed) -> f64 {
@@ -143,34 +151,9 @@ mod c_api {
         name.add(pos)
     }
 
-    #[no_mangle]
-    pub unsafe extern "C" fn getFontTablePtr(font: XeTeXFont, table_tag: OTTag) -> *mut () {
-        (*font).get_font_table_ot(table_tag)
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn getSlant(font: XeTeXFont) -> Fixed {
-        let angle = (*font).italic_angle();
-        RsD2Fix(f32::tan(-angle * std::f32::consts::PI / 180.0) as f64)
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn countGlyphs(font: XeTeXFont) -> libc::c_uint {
-        (*font).get_num_glyphs() as libc::c_uint
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn getGlyphWidth(font: XeTeXFont, gid: u32) -> f32 {
-        (*font).get_glyph_width(gid)
-    }
-
-    #[no_mangle]
-    pub unsafe extern "C" fn setFontLayoutDir(font: XeTeXFont, vertical: libc::c_int) {
-        (*font).set_layout_dir_vertical(vertical != 0)
-    }
-
     /// cbindgen:ignore
     extern "C" {
+        fn _tt_abort(format: *const libc::c_char, ...) -> !;
         fn ttstub_input_open(
             path: *const libc::c_char,
             format: FileFormat,
@@ -186,6 +169,7 @@ mod c_api {
         fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
         fn xmalloc(s: usize) -> *mut libc::c_char;
         fn xcalloc(elems: usize, s: usize) -> *mut libc::c_char;
+        fn getReqEngine() -> libc::c_char;
     }
 }
 
