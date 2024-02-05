@@ -35,6 +35,7 @@ pub type hb_position_t = i32;
 pub type hb_tag_t = u32;
 pub type hb_mask_t = u32;
 pub type hb_language_t = *mut hb_language_impl_t;
+pub type hb_ot_name_id_t = libc::c_uint;
 
 #[repr(C)]
 pub struct hb_language_impl_t(());
@@ -446,6 +447,14 @@ extern "C" {
         patch: libc::c_uint,
     ) -> hb_bool_t;
     pub fn hb_font_get_ptem(font: *mut hb_font_t) -> f32;
+    pub fn hb_ot_layout_get_size_params(
+        face: *mut hb_face_t,
+        design_size: *mut libc::c_uint,
+        subfamily_id: *mut libc::c_uint,
+        subfamily_name_id: *mut hb_ot_name_id_t,
+        range_start: *mut libc::c_uint,
+        range_end: *mut libc::c_uint,
+    ) -> hb_bool_t;
 }
 
 #[test]

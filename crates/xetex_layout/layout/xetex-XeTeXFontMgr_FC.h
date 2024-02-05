@@ -40,27 +40,26 @@ class XeTeXFontMgr_FC
     : public XeTeXFontMgr
 {
 public:
-                                    XeTeXFontMgr_FC()
-                                        { }
-    virtual                         ~XeTeXFontMgr_FC()
-                                        { }
+	XeTeXFontMgr_FC() { }
+
+    virtual ~XeTeXFontMgr_FC() { }
 
 protected:
 
-    virtual void                    initialize();
-    virtual void                    terminate();
+    virtual void initialize();
+    virtual void terminate();
 
-    virtual void                    getOpSizeRecAndStyleFlags(Font* theFont);
-    virtual void                    searchForHostPlatformFonts(const std::string& name);
+    virtual void getOpSizeRecAndStyleFlags(Font* theFont);
+    virtual void searchForHostPlatformFonts(const std::string& name);
 
-    virtual NameCollection*         readNames(FcPattern* pat);
+    virtual NameCollection* readNames(FcPattern* pat);
 
-    std::string                     getPlatformFontDesc(PlatformFontRef font) const;
+    std::string getPlatformFontDesc(PlatformFontRef font) const;
 
-    void                            cacheFamilyMembers(const std::list<std::string>& familyNames);
+    void cacheFamilyMembers(const std::list<std::string>& familyNames);
 
-    FcFontSet*  allFonts;
-    bool        cachedAll;
+    FcFontSet* allFonts;
+    bool cachedAll;
 };
 
 #endif  /* __XETEX_FONT_MGR_FC_H */
