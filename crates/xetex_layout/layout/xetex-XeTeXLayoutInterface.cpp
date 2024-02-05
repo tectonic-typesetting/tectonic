@@ -61,52 +61,52 @@ authorization from the copyright holders.
 
 /*******************************************************************/
 
-void
-terminate_font_manager()
-{
-    XeTeXFontMgr::Terminate();
-}
-
-void
-destroy_font_manager()
-{
-    XeTeXFontMgr::Destroy();
-}
-
-PlatformFontRef
-findFontByName(const char* name, char* var, double size)
-{
-    return XeTeXFontMgr::GetFontManager()->findFont(name, var, size);
-}
-
-char
-getReqEngine()
-{
-    return XeTeXFontMgr::GetFontManager()->getReqEngine();
-}
-
-void
-setReqEngine(char reqEngine)
-{
-    XeTeXFontMgr::GetFontManager()->setReqEngine(reqEngine);
-}
-
-const char*
-getFullName(PlatformFontRef fontRef)
-{
-    return XeTeXFontMgr::GetFontManager()->getFullName(fontRef);
-}
-
-double
-getDesignSize(XeTeXFont font)
-{
-    return XeTeXFontMgr::GetFontManager()->getDesignSize(font);
-}
+//void
+//terminate_font_manager()
+//{
+//    XeTeXFontMgr::Terminate();
+//}
+//
+//void
+//destroy_font_manager()
+//{
+//    XeTeXFontMgr::Destroy();
+//}
+//
+//PlatformFontRef
+//findFontByName(const char* name, char* var, double size)
+//{
+//    return XeTeXFontMgr::GetFontManager()->findFont(name, var, size);
+//}
+//
+//char
+//getReqEngine()
+//{
+//    return XeTeXFontMgr::GetFontManager()->getReqEngine();
+//}
+//
+//void
+//setReqEngine(char reqEngine)
+//{
+//    XeTeXFontMgr::GetFontManager()->setReqEngine(reqEngine);
+//}
+//
+//const char*
+//getFullName(PlatformFontRef fontRef)
+//{
+//    return XeTeXFontMgr::GetFontManager()->getFullName(fontRef);
+//}
+//
+//double
+//getDesignSize(XeTeXFont font)
+//{
+//    return XeTeXFontMgr::GetFontManager()->getDesignSize(font);
+//}
 
 /* New Tectonic APIs for crate encapsulation */
 
-const char *
-ttxl_platfont_get_desc(PlatformFontRef fontRef)
-{
-    return XeTeXFontMgr::GetFontManager()->getPlatformFontDesc(fontRef).c_str();
-}
+//const char *
+//ttxl_platfont_get_desc(PlatformFontRef fontRef)
+//{
+//    return XeTeXFontMgr::GetFontManager()->getPlatformFontDesc(fontRef).c_str();
+//}

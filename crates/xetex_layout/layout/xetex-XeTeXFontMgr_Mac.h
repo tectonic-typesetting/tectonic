@@ -44,32 +44,29 @@ class XeTeXFontMgr_Mac
     : public XeTeXFontMgr
 {
 public:
-                                    XeTeXFontMgr_Mac()
-                                        { }
-    virtual                         ~XeTeXFontMgr_Mac()
-                                        { }
+	XeTeXFontMgr_Mac() { }
+
+    virtual ~XeTeXFontMgr_Mac() { }
 
 protected:
 
-    virtual void                    initialize();
-    virtual void                    terminate();
+    virtual void initialize();
+    virtual void terminate();
 
-    virtual void                    searchForHostPlatformFonts(const std::string& name);
+    virtual void searchForHostPlatformFonts(const std::string& name);
 
-    virtual NameCollection*         readNames(CTFontDescriptorRef fontRef);
+    virtual NameCollection* readNames(CTFontDescriptorRef fontRef);
 
-    virtual std::string             getPlatformFontDesc(PlatformFontRef font) const;
+    virtual std::string getPlatformFontDesc(PlatformFontRef font) const;
 
 private:
-    void        addFontsToCaches(CFArrayRef fonts);
+    void addFontsToCaches(CFArrayRef fonts);
 
-    void        addFamilyToCaches(CTFontDescriptorRef familyRef);
+    void addFamilyToCaches(CTFontDescriptorRef familyRef);
 
-    void        addFontAndSiblingsToCaches(CTFontDescriptorRef fontRef);
+    void addFontAndSiblingsToCaches(CTFontDescriptorRef fontRef);
 
-    void        appendNameToList(CTFontRef font,
-                                 std::list<std::string>* nameList,
-                                 CFStringRef nameKey);
+    void appendNameToList(CTFontRef font, std::list<std::string>* nameList, CFStringRef nameKey);
 };
 
 #endif  /* __XETEX_FONT_MGR_MAC_H */
