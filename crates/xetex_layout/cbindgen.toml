@@ -3,9 +3,12 @@ cpp_compat = true
 style = "type"
 include_guard = "XETEX_LAYOUT_BINDINGS_H"
 includes = ["harfbuzz/hb.h", "harfbuzz/hb-ft.h", "fontconfig/fontconfig.h"]
-after_includes = "typedef struct XeTeXFont_rec* XeTeXFont;"
+after_includes = "typedef struct XeTeXFont_rec* XeTeXFont;\ntypedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;"
 
 [export.rename]
+
+[defines]
+"target_os = macos" = "XETEX_MAC"
 
 [enum]
 prefix_with_name = true

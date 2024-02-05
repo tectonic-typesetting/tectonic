@@ -73,52 +73,17 @@ struct XeTeXFontInst
     FT_Byte *m_backingData, *m_backingData2;
     hb_font_t* m_hbFont;
 
-    XeTeXFontInst(const char* filename, int index, float pointSize, int &status);
-
-    virtual ~XeTeXFontInst();
+    ~XeTeXFontInst();
 
     void *getFontTable(FT_Sfnt_Tag tableTag) const;
 
-    const char *getFilename(uint32_t* index) const
-    {
-        *index = m_index;
-        return m_filename;
-    }
     hb_font_t *getHbFont() const { return m_hbFont; }
     bool getLayoutDirVertical() const { return m_vertical; }
 
-    float getPointSize() const { return m_pointSize; }
-    float getAscent() const { return m_ascent; }
-    float getDescent() const { return m_descent; }
-    float getCapHeight() const { return m_capHeight; }
-    float getXHeight() const { return m_xHeight; }
-
-    GlyphID mapCharToGlyph(UChar32 ch) const;
-    GlyphID mapGlyphToIndex(const char* glyphName) const;
-
-    void getGlyphBounds(GlyphID glyph, GlyphBBox* bbox);
-
-    void getGlyphHeightDepth(GlyphID glyph, float *ht, float* dp);
-    void getGlyphSidebearings(GlyphID glyph, float* lsb, float* rsb);
-    float getGlyphItalCorr(GlyphID glyph);
-
-    const char* getGlyphName(GlyphID gid, int& nameLen);
-
-    UChar32 getFirstCharCode();
-    UChar32 getLastCharCode();
-
-    /* Tectonic: these are modified from the base XeTeX code to use doubles;
-     * otherwise roundoff errors can accumulate leading to differences in the
-     * XDV outputs. */
-    float unitsToPoints(double units) const
-    {
-        return (units * m_pointSize) / m_unitsPerEM;
-    }
-
-    float pointsToUnits(double points) const
-    {
-        return (points * m_unitsPerEM) / m_pointSize;
-    }
+	float unitsToPoints(double units) const
+	{
+		return (units * m_pointSize) / m_unitsPerEM;
+	}
 };
 
 #endif
