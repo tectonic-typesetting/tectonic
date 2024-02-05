@@ -3,7 +3,7 @@ use super::fc::*;
 use crate::c_api::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xbasename,
     xcalloc, xmalloc, xstrdup, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RsD2Fix, RsFix2D,
-    SyncPtr, XeTeXFont, _tt_abort,
+    SyncPtr, XeTeXFont,
 };
 use libc::{free, strcpy, strlen, strrchr};
 use std::alloc::{alloc, dealloc, Layout};
@@ -16,7 +16,7 @@ use tectonic_bridge_freetype2::{
     FT_Fixed, FT_Get_Advance, FT_Get_Char_Index, FT_Get_First_Char, FT_Get_Glyph,
     FT_Get_Glyph_Name, FT_Get_Kerning, FT_Get_Name_Index, FT_Get_Next_Char, FT_Get_Sfnt_Table,
     FT_Glyph_BBox_Mode, FT_Glyph_Format, FT_Glyph_Get_CBox, FT_Init_FreeType, FT_Kerning_Mode,
-    FT_Library, FT_LibraryRec, FT_Load_Glyph, FT_Load_Sfnt_Table, FT_New_Memory_Face, FT_Open_Args,
+    FT_LibraryRec, FT_Load_Glyph, FT_Load_Sfnt_Table, FT_New_Memory_Face, FT_Open_Args,
     FT_Sfnt_Tag, FT_Vector, TT_Postscript, FT_HAS_GLYPH_NAMES, FT_IS_SCALABLE, FT_IS_SFNT,
     FT_LOAD_NO_SCALE, FT_LOAD_VERTICAL_LAYOUT, FT_OPEN_MEMORY, TT_OS2,
 };
@@ -532,8 +532,6 @@ pub unsafe extern "C" fn countFeatures(
 /// cbindgen:rename-all=camelCase
 #[repr(C)]
 pub struct XeTeXFontBase {
-    // TODO: This is UB to rely on layout
-    // vtable: *mut (),
     units_per_em: libc::c_ushort,
     point_size: f32,
     ascent: f32,
@@ -677,7 +675,7 @@ impl XeTeXFontBase {
                 && (*p.add(1) as u8).to_ascii_lowercase() == b'p'
                 && (*p.add(2) as u8).to_ascii_lowercase() == b'f'
             {
-                strcpy(p, (b".afm\0" as *const [u8]).cast());
+                strcpy(p, c!(".afm"));
             }
 
             let afm_handle = ttstub_input_open(afm, FileFormat::Afm, 0);
@@ -1267,7 +1265,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                 let mut library = ptr::null_mut();
                 let error = FT_Init_FreeType(&mut library);
                 if error != 0 {
-                    _tt_abort("FreeType initialization failed; error %d", error);
+                    _tt_abort(c!("FreeType initialization failed; error %d"), error);
                 } else {
                     FREE_TYPE_LIBRARY.set(library);
                 }
