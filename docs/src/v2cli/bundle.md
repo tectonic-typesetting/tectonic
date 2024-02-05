@@ -21,7 +21,7 @@ Print out a file stored in the current document’s backing bundle.
 #### Usage Synopsis
 
 ```sh
-tectonic -X bundle cat <FILENAME>
+tectonic -X bundle cat <filename>
 ```
 
 #### Example
@@ -48,7 +48,7 @@ potentially with filtering.
 #### Usage Synopsis
 
 ```sh
-tectonic -X bundle search [TERM]
+tectonic -X bundle search [term]
 ```
 
 #### Example

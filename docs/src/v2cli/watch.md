@@ -12,7 +12,7 @@ CLI), see [its reference page][v1cli-ref].***
 
 ```sh
 tectonic -X watch
-  [--exec COMMAND] [-x COMMAND]
+  [--exec <execute>...] [-x <execute>...]
 ```
 
 #### Remarks
@@ -23,7 +23,7 @@ files. It rebuilds the document when changes are detected.
 
 #### Command-Line Options
 
-The `--exec` option (or `-x` for short) configures the command that is used to
-run the document build. The value of this option is appended to `tectonic -X`
-and defaults to `build`. If you want to pass options to the build command, this
-is the way to do so.
+The `--exec` option (or `-x` for short) configures the command used to run the
+document build. The value of this option is appended to `tectonic -X` and
+defaults to `build`. If you want to pass options to the build command, this is
+the way to do so.

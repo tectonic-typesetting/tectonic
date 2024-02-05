@@ -1,4 +1,4 @@
-# Copyright 2016-2020 the Tectonic Project
+# Copyright 2016-2023 the Tectonic Project
 # Licensed under the MIT License.
 #
 # Azure Pipelines template for a standard build-and-test workflow once
@@ -46,6 +46,11 @@ steps:
     echo "Cargo features for this build: $ffs --features=\"$fts\""
     echo "##vso[task.setvariable variable=CARGO_FEATURES_EXPLICIT;]$fts"
     echo "##vso[task.setvariable variable=CARGO_FEATURES_FLAGS;]$ffs"
+
+    # OK, these have nothing to do with features, but if a build script fails, it
+    # can be helpful to get a full backtrace.
+    echo "##vso[task.setvariable variable=RUST_BACKTRACE;]full"
+    echo "##vso[task.setvariable variable=CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG;]true"
   displayName: Set feature flags
   env:
     DEFAULT_FEATURES_FLAG: ${{ parameters.defaultFeatures }}
@@ -74,7 +79,8 @@ steps:
       artifactName: binary-$(TARGET)
 
   # If, further, we're the primary build, do some stuff that should only happen
-  # once among all of the build jobs.
+  # once among all of the build jobs. TODO: this should probably be handled as
+  # part of our deployment stage, now that we have a more refined CI/CD workflow.
 
   - ${{ if eq(parameters.primaryBuild, true) }}:
     - bash: |

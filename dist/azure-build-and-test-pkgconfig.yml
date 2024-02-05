@@ -1,4 +1,4 @@
-# Copyright 2016-2020 the Tectonic Project
+# Copyright 2016-2023 the Tectonic Project
 # Licensed under the MIT License.
 #
 # Azure Pipelines template for a standard build-and-test job getting
@@ -32,9 +32,12 @@ steps:
 - bash: |
     set -xeuo pipefail
 
+    # libfuse2 here is to support the AppImage build associated with
+    # the "primary" Linux artifact.
     pkgs="
       libgraphite2-dev
       libfontconfig1-dev
+      libfuse2
       libicu-dev
       libssl-dev
       openssl

@@ -1,8 +1,16 @@
-# See elsewhere for changelog
+# rc: micro bump
 
-This project’s release notes are curated from the Git history of its main
-branch. You can find them by looking at [the version of this file on the
-`release` branch][branch] or the [GitHub release history][gh-releases].
+- Adjust the build script to try to get proper link ordering with libicudata
+  (#1092, @pkgw).
 
-[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_icu/CHANGELOG.md
-[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases
+
+# tectonic_bridge_icu 0.2.0 (2021-06-03)
+
+Fix up handling of how C/C++ header file paths are exported to dependent crates.
+This is a breaking change: we've moved from a single include directory to a list
+of them.
+
+
+# tectonic_bridge_icu 0.1.0 (2021-01-15)
+
+Initial release of ICU "bridge" crate for Tectonic.

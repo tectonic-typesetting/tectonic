@@ -15,8 +15,8 @@
 - [`tectonic -X bundle`](v2cli/bundle.md)
 - [`tectonic -X compile`](v2cli/compile.md)
 - [`tectonic -X dump`](v2cli/dump.md)
-- [`tectonic -X new`](v2cli/new.md)
 - [`tectonic -X init`](v2cli/init.md)
+- [`tectonic -X new`](v2cli/new.md)
 - [`tectonic -X show`](v2cli/show.md)
 - [`tectonic -X watch`](v2cli/watch.md)
 

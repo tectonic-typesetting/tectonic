@@ -1,6 +1,6 @@
 # “V2” (Prototype) Command-Line Interface
 
-The “V2” command-line interface to Tectonic is substantially new interface to
+The “V2” command-line interface to Tectonic is a substantially new interface to
 the Tectonic engine introduced in the 0.4.x release series.
 
 In short, the V2 interface is “[cargo]-like”, with a variety of subcommands
@@ -40,10 +40,18 @@ nextonic build
 You can use various Unix `argv[0]` hacks to achieve this, or you can just rename
 or symlink the `tectonic` binary to `nextonic` manually.
 
+
+## External tools
+
+The V2 interface also supports external commands. If you run `tectonic -X cmd`, where `cmd` is NOT built into Tectonic, Tectonic will search for a binary called `tectonic-cmd` and run it if it exists.
+
+
+
+
 ## Migration plan
 
-The plan is to eventually migrate to make the V2 interface into the default.
-This will be implemented as follows:
+The plan is to eventually migrate to make the V2 interface the default. This
+will be implemented as follows:
 
 1. Under the current situation, the V2 interface can be explicitly activated
    with the leading `-X` flag. The V1 interface can be explicitly selected by
@@ -54,6 +62,6 @@ This will be implemented as follows:
    `-Y` option.
 3. After a sufficient amount of time, the V1 interface will be flagged as
    deprecated.
-4. After more time has passed, the default will flip: if neither `-X` or `-Y` is
-   provided, the V2 interface will be assumed rather than V1.
+4. After more time has passed, the default will flip: if neither `-X` nor `-Y`
+   is provided, the V2 interface will be assumed rather than V1.
 5. Eventually, the V1 interface may be entirely removed.

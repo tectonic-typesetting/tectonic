@@ -28,7 +28,7 @@ use crate::{
     driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
     errors::{ErrorKind, Result},
     status::StatusBackend,
-    test_util, tt_note,
+    tt_note,
     unstable_opts::UnstableOptions,
 };
 
@@ -111,9 +111,8 @@ impl DocumentExt for Document {
             }
         }
 
-        if config::is_config_test_mode_activated() {
-            let bundle = test_util::TestBundle::default();
-            Ok(Box::new(bundle))
+        if let Ok(test_bundle) = config::maybe_return_test_bundle(None) {
+            Ok(test_bundle)
         } else if let Ok(url) = Url::parse(&self.bundle_loc) {
             if url.scheme() != "file" {
                 let mut cache = Cache::get_user_default()?;
@@ -216,22 +215,25 @@ pub trait WorkspaceCreatorExt {
     /// for the main document.
     fn create_defaulted(
         self,
-        config: &config::PersistentConfig,
+        config: config::PersistentConfig,
         status: &mut dyn StatusBackend,
+        web_bundle: Option<String>,
     ) -> Result<Workspace>;
 }
 
 impl WorkspaceCreatorExt for WorkspaceCreator {
     fn create_defaulted(
         self,
-        config: &config::PersistentConfig,
+        config: config::PersistentConfig,
         status: &mut dyn StatusBackend,
+        web_bundle: Option<String>,
     ) -> Result<Workspace> {
-        let bundle_loc = if config::is_config_test_mode_activated() {
+        let bundle_loc = if config::is_test_bundle_wanted(web_bundle.clone()) {
             "test-bundle://".to_owned()
         } else {
+            let unresolved_loc = web_bundle.unwrap_or(config.default_bundle_loc().to_owned());
             let mut gub = DefaultBackend::default();
-            gub.resolve_url(config.default_bundle_loc(), status)?
+            gub.resolve_url(&unresolved_loc, status)?
         };
 
         Ok(self.create(bundle_loc)?)

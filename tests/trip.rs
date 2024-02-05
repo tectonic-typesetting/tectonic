@@ -24,7 +24,7 @@ use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
-use crate::util::{test_path, ExpectedInfo};
+use crate::util::{test_path, Expected, ExpectedFile};
 
 #[test]
 fn trip_test() {
@@ -41,11 +41,11 @@ fn trip_test() {
     let mut tfm = SingleInputFileIo::new(&p);
 
     // Read in the expected outputs.
-    let expected_log = ExpectedInfo::read_with_extension(&mut p, "log");
-    let expected_xdv = ExpectedInfo::read_with_extension(&mut p, "xdv");
-    let expected_fot = ExpectedInfo::read_with_extension(&mut p, "fot");
+    let expected_log = ExpectedFile::read_with_extension(&mut p, "log");
+    let expected_xdv = ExpectedFile::read_with_extension(&mut p, "xdv");
+    let expected_fot = ExpectedFile::read_with_extension(&mut p, "fot");
     p.set_file_name("tripos");
-    let expected_os = ExpectedInfo::read_with_extension(&mut p, "tex");
+    let expected_os = ExpectedFile::read_with_extension(&mut p, "tex");
 
     // MemoryIo layer that will accept the outputs. Save `files` since the
     // engine consumes `mem`.
@@ -81,10 +81,12 @@ fn trip_test() {
 
     // Check that outputs match expectations.
     let files = &*mem.files.borrow();
-    expected_log.test_from_collection(files);
-    expected_xdv.test_from_collection(files);
-    expected_os.test_from_collection(files);
-    expected_fot.test_data(&files.get("").unwrap().data);
+    Expected::new()
+        .file(expected_log.collection(files))
+        .file(expected_xdv.collection(files))
+        .file(expected_os.collection(files))
+        .file(expected_fot.data(&files.get("").unwrap().data))
+        .finish();
 }
 
 #[test]
@@ -102,10 +104,10 @@ fn etrip_test() {
     let mut tfm = SingleInputFileIo::new(&p);
 
     // Read in the expected outputs.
-    let expected_log = ExpectedInfo::read_with_extension(&mut p, "log");
-    let expected_xdv = ExpectedInfo::read_with_extension(&mut p, "xdv");
-    let expected_fot = ExpectedInfo::read_with_extension(&mut p, "fot");
-    let expected_out = ExpectedInfo::read_with_extension(&mut p, "out");
+    let expected_log = ExpectedFile::read_with_extension(&mut p, "log");
+    let expected_xdv = ExpectedFile::read_with_extension(&mut p, "xdv");
+    let expected_fot = ExpectedFile::read_with_extension(&mut p, "fot");
+    let expected_out = ExpectedFile::read_with_extension(&mut p, "out");
 
     // MemoryIo layer that will accept the outputs. Save `files` since the
     // engine consumes `mem`.
@@ -142,8 +144,10 @@ fn etrip_test() {
 
     // Check that outputs match expectations.
     let files = &*files.borrow();
-    expected_log.test_from_collection(files);
-    expected_xdv.test_from_collection(files);
-    expected_out.test_from_collection(files);
-    expected_fot.test_data(&files.get("").unwrap().data);
+    Expected::new()
+        .file(expected_log.collection(files))
+        .file(expected_xdv.collection(files))
+        .file(expected_out.collection(files))
+        .file(expected_fot.data(&files.get("").unwrap().data))
+        .finish();
 }

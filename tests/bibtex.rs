@@ -8,12 +8,11 @@ use std::path::PathBuf;
 use tectonic::io::{FilesystemIo, IoProvider, IoStack, MemoryIo};
 use tectonic::BibtexEngine;
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
-use tectonic_io_base::stdstreams::GenuineStdoutIo;
 use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
-use crate::util::{test_path, ExpectedInfo};
+use crate::util::{test_path, Expected, ExpectedFile};
 
 struct TestCase {
     stem: String,
@@ -55,18 +54,14 @@ impl TestCase {
 
         let mut assets = FilesystemIo::new(&p, false, false, HashSet::new());
 
-        let mut genio = GenuineStdoutIo::new();
-
-        let io_list: Vec<&mut dyn IoProvider> = vec![&mut genio, &mut mem, &mut assets];
+        let io_list: Vec<&mut dyn IoProvider> = vec![&mut mem, &mut assets];
 
         let io = IoStack::new(io_list);
         let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
         let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
 
-        BibtexEngine::new()
-            .process(&mut launcher, &auxname, &Default::default())
-            .unwrap();
+        let res = BibtexEngine::new().process(&mut launcher, &auxname, &Default::default());
 
         // Check that outputs match expectations.
 
@@ -74,13 +69,18 @@ impl TestCase {
 
         let files = mem.files.borrow();
 
+        let mut expect = Expected::new();
+
         if self.test_bbl {
-            let expected_bbl = ExpectedInfo::read_with_extension(&mut p, "bbl");
-            expected_bbl.test_from_collection(&files);
+            expect =
+                expect.file(ExpectedFile::read_with_extension(&mut p, "bbl").collection(&files));
         }
 
-        let expected_blg = ExpectedInfo::read_with_extension(&mut p, "blg");
-        expected_blg.test_from_collection(&files);
+        expect
+            .file(ExpectedFile::read_with_extension(&mut p, "blg").collection(&files))
+            .finish();
+
+        res.unwrap();
     }
 }
 
@@ -90,8 +90,18 @@ fn test_single_entry() {
 }
 
 #[test]
+fn test_brace_string() {
+    TestCase::new("odd_strings", Some("cites")).go();
+}
+
+#[test]
 fn test_many() {
     TestCase::new("many", Some("cites")).go();
+}
+
+#[test]
+fn test_colon() {
+    TestCase::new("colon", Some("cites")).go();
 }
 
 #[test]
@@ -164,4 +174,14 @@ fn test_many_preamble() {
 #[test]
 fn test_nested_aux() {
     TestCase::new("nested", Some("aux_files")).go();
+}
+
+/// Test for [#1105](https://github.com/tectonic-typesetting/tectonic/issues/1105), with enough
+/// citations in the aux and fields in the bst to require more than one allocation of field space
+/// at once.
+#[test]
+fn test_lots_of_cites() {
+    TestCase::new("lots_of_cites", Some("aux_files"))
+        .test_bbl(false)
+        .go();
 }

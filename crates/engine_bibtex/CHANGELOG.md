@@ -1,5 +1,10 @@
 # rc: micro bump
 
+- Complete the port of BibTeX to pure Rust (#1077, #1083, @CraftSpider)!
+
+
+# tectonic_engine_bibtex 0.2.1 (2023-06-15)
+
 - Fix a translation bug in the growth of the `global_str` buffer
   (#1055, @CraftSpider, reported in #1054 by @giammirove)
 

@@ -1,12 +1,11 @@
-// src/bin/tectonic.rs -- Command-line driver for the Tectonic engine.
-// Copyright 2016-2022 the Tectonic Project
+// src/bin/tectonic/main.rs -- Command-line driver for the Tectonic engine.
+// Copyright 2016-2023 the Tectonic Project
 // Licensed under the MIT License.
 
 use std::{env, process, str::FromStr};
 use structopt::StructOpt;
 use tectonic_status_base::plain::PlainStatusBackend;
 
-use structopt::clap;
 use tectonic::{
     config::PersistentConfig,
     errors::SyncError,
@@ -40,7 +39,7 @@ mod v2cli {
 #[derive(Debug, StructOpt)]
 #[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
 struct CliOptions {
-    /// Use experimental V2 interface (see `tectonic -X --help`); must be the first argument
+    /// Use experimental V2 interface (see `tectonic -X --help`)
     #[structopt(short = "X")]
     use_v2: bool,
 
@@ -48,26 +47,43 @@ struct CliOptions {
     #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
     chatter_level: String,
 
-    /// Enable/disable colorful log output.
+    /// Enable/disable colorful log output
     #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
     cli_color: String,
+
+    /// Use this URL to find resource files instead of the default
+    #[structopt(takes_value(true), long, short, name = "url", overrides_with = "url")]
+    // TODO add URL validation
+    web_bundle: Option<String>,
 
     #[structopt(flatten)]
     compile: compile::CompileOptions,
 }
 
+#[derive(StructOpt)]
+struct PeekUnstableOptions {
+    #[structopt(name = "option", short = "Z", number_of_values = 1)]
+    unstable: Vec<unstable_opts::UnstableArg>,
+
+    #[structopt()]
+    _remainder: Vec<std::ffi::OsString>,
+}
+
 fn main() {
     let os_args: Vec<_> = env::args_os().collect();
 
-    // A hack so that you can just run `tectonic -Zhelp` without getting a usage
-    // error. Note that `tectonic -Z help` won't work.
+    // A hack so that you can just run `tectonic -Z help` without getting a
+    // usage error about a missing input file specification. If
+    // `from_unstable_args()` sees a `help` option, it will print the usage and
+    // exit. Otherwise, this will all be a no-op, and we'll re-parse the args
+    // "for real" momentarily.
 
-    if os_args.iter().any(|s| s == "-Zhelp") {
-        unstable_opts::print_unstable_help_and_exit();
+    if let Ok(args) = PeekUnstableOptions::from_args_safe() {
+        unstable_opts::UnstableOptions::from_unstable_args(args.unstable.into_iter());
     }
 
-    // Migration to the "cargo-style" command-line interface. If the first
-    // argument is `-X`, or argv[0] contains `nextonic`, we activate the
+    // Migration to the "cargo-style" command-line interface. If the arguments
+    // list contains `-X`, or argv[0] contains `nextonic`, we activate the
     // alternative operation mode. Once this experimental mode is working OK,
     // we'll start printing a message telling people to prefer the `-X` option
     // and use `-X compile` for the "classic" ("rustc"-style, current)
@@ -75,17 +91,25 @@ fn main() {
     // default.
 
     let mut v2cli_enabled = false;
-    let mut v2cli_arg_idx = 1;
+    let mut v2cli_args = os_args[1..].to_vec(); // deep copy
 
     if !os_args.is_empty() && os_args[0].to_str().map(|s| s.contains("nextonic")) == Some(true) {
         v2cli_enabled = true;
-    } else if os_args.len() > 1 && os_args[1] == "-X" {
-        v2cli_enabled = true;
-        v2cli_arg_idx = 2;
+    } else if let Some(index) = v2cli_args
+        .to_vec()
+        .iter()
+        .position(|s| s.to_str().unwrap_or_default() == "-X")
+    {
+        // Try to parse as v1 cli first, and when that doesn't work,
+        // interpret it as v2 cli:
+        if CliOptions::from_args_safe().is_err() || CliOptions::from_args().use_v2 {
+            v2cli_enabled = true;
+            v2cli_args.remove(index);
+        }
     }
 
     if v2cli_enabled {
-        v2cli::v2_main(&os_args[v2cli_arg_idx..]);
+        v2cli::v2_main(&v2cli_args);
         return;
     }
 
@@ -142,20 +166,11 @@ fn main() {
         Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
     };
 
-    if args.use_v2 {
-        let err = clap::Error::with_description(
-            "-X option must be the first argument if given",
-            clap::ErrorKind::ArgumentConflict,
-        );
-        status.report_error(&err.into());
-        process::exit(1)
-    }
-
     // Now that we've got colorized output, pass off to the inner function ...
     // all so that we can print out the word "error:" in red. This code
     // parallels various bits of the `error_chain` crate.
 
-    if let Err(e) = args.compile.execute(config, &mut *status) {
+    if let Err(e) = args.compile.execute(config, &mut *status, args.web_bundle) {
         status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }

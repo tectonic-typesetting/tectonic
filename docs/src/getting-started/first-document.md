@@ -46,7 +46,7 @@ $ cd myfirstdoc
 it will become unnecessary and you’ll just be able to write `tectonic new`, but
 that changeover hasn’t happened yet.*
 
-If you’ve got an existing TeX file, you can process it in in one-off fashion with:
+If you’ve got an existing TeX file, you can process it in one-off fashion with:
 
 ```sh
 $ tectonic -X compile myfile.tex
@@ -88,7 +88,7 @@ When Tectonic builds your document, it processes these files in the order listed
 above, so all three of them need to be available. But the breakdown suggested
 above is only a suggestion, nothing more. If you want all of your boilerplate
 and content to be in a single file, we recommend putting it all in `index.tex`
-and making your preamble and postamble be empty.
+and making your preamble and postamble empty.
 
 The motivation for this separation is partially stylistic, but not entirely so.
 In the future, we anticipate that there might be different ways to build the

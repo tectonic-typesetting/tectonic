@@ -24,7 +24,7 @@ include that traditional authoring frameworks have trouble supporting?
 - **Integrated computation**. In the 21st century, it is finally possible to
   integrate computation — runnable code samples, interactive graphics,
   live-updating data, and so on — into documents, and it is becoming clear
-  that this is new capability is not just evolutionary, but revolutionary.
+  that this new capability is not just evolutionary, but revolutionary.
 - **Hackability**. Finally, we also believe that technical documents should
   ideally be “hackable,” meaning that people should be able to see how they
   work “under the hood” and use them as a basis for their own creations.
