@@ -14,6 +14,7 @@ pub const FT_LOAD_VERTICAL_LAYOUT: i32 = 1 << 4;
 
 pub const FT_FACE_FLAG_SCALABLE: libc::c_long = 1 << 0;
 pub const FT_FACE_FLAG_SFNT: libc::c_long = 1 << 3;
+pub const FT_FACE_FLAG_GLYPH_NAMES: libc::c_long = 1 << 9;
 
 pub const FT_OPEN_MEMORY: libc::c_uint = 0x1;
 
@@ -25,11 +26,23 @@ pub unsafe fn FT_IS_SFNT(face: FT_Face) -> bool {
     ((*face).face_flags & FT_FACE_FLAG_SFNT) != 0
 }
 
+pub unsafe fn FT_HAS_GLYPH_NAMES(face: FT_Face) -> bool {
+    (*face).face_flags & FT_FACE_FLAG_GLYPH_NAMES != 0
+}
+
 #[repr(C)]
 pub enum FT_Kerning_Mode {
     Default = 0,
     Unfitted,
     Unscaled,
+}
+
+#[repr(C)]
+pub enum FT_Glyph_BBox_Mode {
+    Unscaled = 0,
+    GridFit = 1,
+    Truncate = 2,
+    Pixels = 3,
 }
 
 #[repr(C)]
@@ -128,6 +141,12 @@ pub struct FT_ModuleRec {
     _priv: [u8; 1],
 }
 
+#[repr(C)]
+pub struct FT_GlyphRec {
+    // TODO
+    _priv: [u8; 1],
+}
+
 #[derive(Default)]
 #[repr(C)]
 pub struct FT_Vector {
@@ -185,6 +204,7 @@ pub struct FT_Generic {
     pub finalizer: FT_Generic_Finalizer,
 }
 
+#[derive(Default)]
 #[repr(C)]
 pub struct FT_BBox {
     pub xMin: FT_Pos,
@@ -331,9 +351,11 @@ pub type FT_GlyphSlot = *mut FT_GlyphSlotRec;
 pub type FT_Library = *mut FT_LibraryRec;
 pub type FT_Stream = *mut FT_StreamRec;
 pub type FT_Module = *mut FT_ModuleRec;
+pub type FT_Glyph = *mut FT_GlyphRec;
 pub type FT_Fixed = libc::c_long;
 pub type FT_Error = libc::c_int;
 pub type FT_Pos = libc::c_long;
+pub type FT_String = libc::c_char;
 pub type FT_Generic_Finalizer = extern "C" fn(object: *mut ());
 pub type FT_Pointer = *mut ();
 
@@ -383,4 +405,14 @@ extern "C" {
     pub fn FT_Attach_Stream(face: FT_Face, parameters: *mut FT_Open_Args) -> FT_Error;
     pub fn FT_Get_Sfnt_Table(face: FT_Face, tag: FT_Sfnt_Tag) -> *mut ();
     pub fn FT_Done_Face(face: FT_Face) -> FT_Error;
+    pub fn FT_Get_Glyph(slot: FT_GlyphSlot, aglyph: *mut FT_Glyph) -> FT_Error;
+    pub fn FT_Glyph_Get_CBox(glyph: FT_Glyph, bbox_mode: FT_Glyph_BBox_Mode, acbox: *mut FT_BBox);
+    pub fn FT_Done_Glyph(glyph: FT_Glyph);
+    pub fn FT_Get_First_Char(face: FT_Face, agindex: *mut libc::c_uint) -> libc::c_ulong;
+    pub fn FT_Get_Next_Char(
+        face: FT_Face,
+        char_code: libc::c_ulong,
+        agindex: *mut libc::c_uint,
+    ) -> libc::c_ulong;
+    pub fn FT_Get_Name_Index(face: FT_Face, glyph_name: *const FT_String) -> libc::c_uint;
 }

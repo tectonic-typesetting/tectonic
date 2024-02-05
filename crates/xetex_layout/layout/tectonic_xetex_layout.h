@@ -58,11 +58,6 @@ typedef int32_t Fixed; /* macOS defines Fixed in system headers */
 
 #endif /* XETEX_MAC */
 
-typedef struct {
-    float x;
-    float y;
-} FloatPoint;
-
 typedef uint16_t GlyphID;
 
 typedef struct XeTeXFont_rec* XeTeXFont;
@@ -83,86 +78,9 @@ char getReqEngine(void);
 void setReqEngine(char reqEngine);
 const char* getFullName(PlatformFontRef fontRef);
 
-char* getFontFilename(XeTeXLayoutEngine engine, uint32_t* index);
-
 double getDesignSize(XeTeXFont font);
 
-hb_tag_t getIndScript(XeTeXFont font, unsigned int index);
-hb_tag_t getIndLanguage(XeTeXFont font, hb_tag_t script, unsigned int index);
-hb_tag_t getIndFeature(XeTeXFont font, hb_tag_t script, hb_tag_t language, unsigned int index);
-
-XeTeXLayoutEngine createLayoutEngine(PlatformFontRef fontRef, XeTeXFont font, hb_tag_t script, char *language,
-                        hb_feature_t* features, int nFeatures, char **shapers, uint32_t rgbValue,
-                        float extend, float slant, float embolden);
-
-void deleteLayoutEngine(XeTeXLayoutEngine engine);
-
-XeTeXFont getFont(XeTeXLayoutEngine engine);
-PlatformFontRef getFontRef(XeTeXLayoutEngine engine);
-
-float getExtendFactor(XeTeXLayoutEngine engine);
-float getSlantFactor(XeTeXLayoutEngine engine);
-float getEmboldenFactor(XeTeXLayoutEngine engine);
-
-int layoutChars(XeTeXLayoutEngine engine, uint16_t* chars, int32_t offset, int32_t count, int32_t max,
-                        bool rightToLeft);
-
-void getGlyphs(XeTeXLayoutEngine engine, uint32_t* glyphs);
-void getGlyphAdvances(XeTeXLayoutEngine engine, float *advances);
-void getGlyphPositions(XeTeXLayoutEngine engine, FloatPoint* positions);
-
-float getPointSize(XeTeXLayoutEngine engine);
-
-void getAscentAndDescent(XeTeXLayoutEngine engine, float* ascent, float* descent);
-void getCapAndXHeight(XeTeXLayoutEngine engine, float* capheight, float* xheight);
-
-int getDefaultDirection(XeTeXLayoutEngine engine);
-
-uint32_t getRgbValue(XeTeXLayoutEngine engine);
-
-void getGlyphBounds(XeTeXLayoutEngine engine, uint32_t glyphID, GlyphBBox* bbox);
-
-float getGlyphWidthFromEngine(XeTeXLayoutEngine engine, uint32_t glyphID);
-
-void getGlyphHeightDepth(XeTeXLayoutEngine engine, uint32_t glyphID, float* height, float* depth);
-
-void getGlyphSidebearings(XeTeXLayoutEngine engine, uint32_t glyphID, float* lsb, float* rsb);
-
-float getGlyphItalCorr(XeTeXLayoutEngine engine, uint32_t glyphID);
-
-uint32_t mapCharToGlyph(XeTeXLayoutEngine engine, uint32_t charCode);
-
-int mapGlyphToIndex(XeTeXLayoutEngine engine, const char* glyphName);
-
-const char* getGlyphName(XeTeXFont font, uint16_t gid, int* len);
-
-int getFontCharRange(XeTeXLayoutEngine engine, int reqFirst);
-
-/* graphite interface functions... */
-bool initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t* txtPtr, int txtLen);
-int findNextGraphiteBreak(void);
-
-bool usingOpenType(XeTeXLayoutEngine engine);
-bool usingGraphite(XeTeXLayoutEngine engine);
-bool isOpenTypeMathFont(XeTeXLayoutEngine engine);
-
-bool findGraphiteFeature(XeTeXLayoutEngine engine, const char* s, const char* e, hb_tag_t* f, int* v);
-
-uint32_t countGraphiteFeatures(XeTeXLayoutEngine engine);
-uint32_t getGraphiteFeatureCode(XeTeXLayoutEngine engine, uint32_t index);
-uint32_t countGraphiteFeatureSettings(XeTeXLayoutEngine engine, uint32_t feature);
-uint32_t getGraphiteFeatureSettingCode(XeTeXLayoutEngine engine, uint32_t feature, uint32_t index);
-uint32_t getGraphiteFeatureDefaultSetting(XeTeXLayoutEngine engine, uint32_t feature);
-char* getGraphiteFeatureLabel(XeTeXLayoutEngine engine, uint32_t feature);
-char* getGraphiteFeatureSettingLabel(XeTeXLayoutEngine engine, uint32_t feature, uint32_t setting);
-long findGraphiteFeatureNamed(XeTeXLayoutEngine engine, const char* name, int namelength);
-long findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine, uint32_t feature, const char* name, int namelength);
-
 /* Extra APIs needed to encapsulate across the crate boundaries */
-hb_font_t *ttxl_get_hb_font(XeTeXLayoutEngine engine);
-float ttxl_font_units_to_points(XeTeXFont font, float units);
-float ttxl_font_points_to_units(XeTeXFont font, float points);
-float ttxl_font_get_point_size(XeTeXFont font);
 const char *ttxl_platfont_get_desc(PlatformFontRef fontRef);
 
 #ifdef XETEX_MAC
