@@ -705,17 +705,9 @@ impl FontManager {
         }
     }
 
-    pub unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
-        self.backend.get_op_size_rec_and_style_flags(font)
-    }
-
     pub unsafe fn search_for_host_platform_fonts(&mut self, name: &CStr) {
         self.backend
             .search_for_host_platform_fonts(&mut self.maps, name)
-    }
-
-    pub unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection {
-        self.backend.read_names(font)
     }
 
     pub unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr {
