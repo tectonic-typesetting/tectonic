@@ -29,7 +29,6 @@ use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
 #[repr(C)]
 pub struct XeTeXLayoutEngineBase {
-    // _vtable: *mut (),
     font: *mut XeTeXFontBase,
     font_ref: PlatformFontRef,
     script: hb_tag_t,
@@ -64,7 +63,6 @@ impl XeTeXLayoutEngineBase {
         embolden: f32,
     ) -> XeTeXLayoutEngine {
         let this = Box::new(XeTeXLayoutEngineBase {
-            // _vtable: ptr::null_mut(),
             font,
             font_ref,
             script,
@@ -687,7 +685,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
         *f,
         cp.cast(),
         e.byte_offset_from(cp) as libc::c_int,
-    );
+    ) as libc::c_int;
 
     *v != -1
 }
