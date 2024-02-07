@@ -39,50 +39,21 @@ authorization from the copyright holders.
 #include "tectonic_bridge_core.h"
 #include "layout_bindings.h"
 
-/* harfbuzz: hb_tag_t and hb_font_t used below */
-#include <harfbuzz/hb.h>
-
-
 /* Set up our types */
 
-#ifdef XETEX_MAC
-
-#include <ApplicationServices/ApplicationServices.h>
-typedef CTFontDescriptorRef PlatformFontRef;
-
-#else /* XETEX_MAC */
-
-#include <fontconfig/fontconfig.h>
-typedef FcPattern* PlatformFontRef;
-typedef int32_t Fixed; /* macOS defines Fixed in system headers */
-
-#endif /* XETEX_MAC */
+//#ifdef XETEX_MAC
+//
+//#include <ApplicationServices/ApplicationServices.h>
+//typedef CTFontDescriptorRef PlatformFontRef;
+//
+//#else /* XETEX_MAC */
+//
+//#include <fontconfig/fontconfig.h>
+//typedef FcPattern* PlatformFontRef;
+//typedef int32_t Fixed; /* macOS defines Fixed in system headers */
+//
+//#endif /* XETEX_MAC */
 
 typedef uint16_t GlyphID;
-
-typedef struct XeTeXFont_rec* XeTeXFont;
-typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
-
-/* Now we can defined our C APIs */
-
-BEGIN_EXTERN_C
-
-extern Fixed loaded_font_design_size;
-
-void terminate_font_manager(void);
-void destroy_font_manager(void);
-
-PlatformFontRef findFontByName(const char* name, char* var, double size);
-
-char getReqEngine(void);
-void setReqEngine(char reqEngine);
-const char* getFullName(PlatformFontRef fontRef);
-
-double getDesignSize(XeTeXFont font);
-
-/* Extra APIs needed to encapsulate across the crate boundaries */
-const char *ttxl_platfont_get_desc(PlatformFontRef fontRef);
-
-END_EXTERN_C
 
 #endif /* XETEX_LAYOUT_INTERFACE_H */
