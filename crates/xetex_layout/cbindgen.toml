@@ -2,8 +2,16 @@ language = "C"
 cpp_compat = true
 style = "type"
 include_guard = "XETEX_LAYOUT_BINDINGS_H"
-includes = ["harfbuzz/hb.h", "harfbuzz/hb-ft.h", "fontconfig/fontconfig.h"]
-after_includes = "typedef struct XeTeXFont_rec* XeTeXFont;\ntypedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;"
+includes = ["harfbuzz/hb.h", "harfbuzz/hb-ft.h"]
+after_includes = """
+#ifdef XETEX_MAC
+#include <ApplicationServices/ApplicationServices.h>
+#else
+#include <fontconfig/fontconfig.h>
+#endif
+
+typedef struct XeTeXFont_rec* XeTeXFont;
+typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;"""
 
 [export.rename]
 

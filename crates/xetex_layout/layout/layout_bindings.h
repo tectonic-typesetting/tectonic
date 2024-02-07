@@ -7,7 +7,12 @@
 #include <stdlib.h>
 #include "harfbuzz/hb.h"
 #include "harfbuzz/hb-ft.h"
-#include "fontconfig/fontconfig.h"
+#ifdef XETEX_MAC
+#include <ApplicationServices/ApplicationServices.h>
+#else
+#include <fontconfig/fontconfig.h>
+#endif
+
 typedef struct XeTeXFont_rec* XeTeXFont;
 typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 
@@ -15,7 +20,29 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 
 #define RIGHT_SIDE 1
 
+#if !defined(XETEX_MAC)
+#define FONT_FAMILY_NAME 1
+#endif
+
+#if !defined(XETEX_MAC)
+#define FONT_STYLE_NAME 2
+#endif
+
+#if !defined(XETEX_MAC)
+#define FONT_FULL_NAME 4
+#endif
+
+#if !defined(XETEX_MAC)
+#define PREFERRED_FAMILY_NAME 16
+#endif
+
+#if !defined(XETEX_MAC)
+#define PREFERRED_SUBFAMILY_NAME 17
+#endif
+
+#if !defined(XETEX_MAC)
 typedef int32_t Fixed;
+#endif
 
 typedef struct {
   float xMin;
