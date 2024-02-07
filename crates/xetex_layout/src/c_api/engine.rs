@@ -1,7 +1,7 @@
 use super::font::{deleteFont, XeTeXFontBase};
 use crate::c_api::{
     getReqEngine, xcalloc, xstrdup, FloatPoint, GlyphBBox, PlatformFontRef, XeTeXFont,
-    XeTeXLayoutEngine, _tt_abort,
+    XeTeXLayoutEngine,
 };
 use std::cell::Cell;
 use std::{mem, ptr};
@@ -401,7 +401,7 @@ impl XeTeXLayoutEngineBase {
                 engine.shaper = libc::strdup(hb_shape_plan_get_shaper(shape_plan));
                 hb_buffer_set_content_type(engine.hb_buffer, hb_buffer_content_type_t::Glyphs);
             } else {
-                _tt_abort(c!("all shapers failed"));
+                panic!("all shapers failed");
             }
         }
 
