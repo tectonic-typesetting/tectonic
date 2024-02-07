@@ -1,6 +1,7 @@
 use super::{sys, FcErr};
 use std::convert::TryInto;
 use std::ffi::CStr;
+use std::ops::Deref;
 use std::ptr;
 use std::ptr::NonNull;
 
@@ -96,12 +97,35 @@ impl Pattern {
         self.0.as_ptr()
     }
 
-    pub fn from_name(name: &CStr) -> Option<Pattern> {
-        let raw = unsafe { sys::FcNameParse(name.as_ptr()) };
-        NonNull::new(raw).map(Pattern)
+    pub fn as_raw(&self) -> *mut sys::FcPattern {
+        self.0.as_ptr()
     }
 
     pub fn get<T: PatParam>(&self, idx: usize) -> Result<T::Output<'_>, FcErr> {
         T::get(self, idx)
+    }
+}
+
+#[derive(PartialEq, Eq, Hash)]
+pub struct OwnPattern(Pattern);
+
+impl OwnPattern {
+    pub fn from_name(name: &CStr) -> Option<OwnPattern> {
+        let raw = unsafe { sys::FcNameParse(name.as_ptr()) };
+        NonNull::new(raw).map(Pattern).map(OwnPattern)
+    }
+}
+
+impl Drop for OwnPattern {
+    fn drop(&mut self) {
+        unsafe { sys::FcPatternDestroy(self.0 .0.as_ptr()) };
+    }
+}
+
+impl Deref for OwnPattern {
+    type Target = Pattern;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
