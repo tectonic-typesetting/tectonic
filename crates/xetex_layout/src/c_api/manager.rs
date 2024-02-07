@@ -142,7 +142,7 @@ impl FontMaps {
             return;
         }
 
-        let mut font = Box::leak(Box::new(Font::new(pfont, ps_name.to_owned())));
+        let font = Box::leak(Box::new(Font::new(pfont, ps_name.to_owned())));
         backend.get_op_size_rec_and_style_flags(font);
         self.ps_name_to_font.insert(font.ps_name.clone(), font);
         self.platform_ref_to_font.insert(pfont, font);
