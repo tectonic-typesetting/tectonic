@@ -3,7 +3,7 @@ use std::convert::TryFrom;
 pub mod pat;
 pub mod sys;
 
-pub use pat::Pattern;
+pub use pat::{OwnPattern, Pattern};
 
 #[derive(Debug, PartialEq)]
 pub enum FcErr {

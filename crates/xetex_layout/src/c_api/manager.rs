@@ -106,7 +106,7 @@ pub struct NameCollection {
 pub trait FontManagerBackend {
     unsafe fn initialize(&mut self);
     unsafe fn terminate(&mut self);
-    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr;
+    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr;
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
     unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection;
