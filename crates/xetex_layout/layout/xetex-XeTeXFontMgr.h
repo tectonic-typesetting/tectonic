@@ -161,7 +161,7 @@ protected:
         std::list<std::string> m_styleNames;
         std::list<std::string> m_fullNames;
         std::string m_psName;
-        std::string m_subFamily;
+//        std::string m_subFamily;
     };
 
     std::map<std::string,Font*> m_nameToFont;                     // maps full name (as used in TeX source) to font record
