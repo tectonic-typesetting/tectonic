@@ -45,14 +45,14 @@ impl<'a> PlatformLayoutDeps<'a> {
         PlatformLayoutDeps { fontconfig }
     }
 
-    pub fn foreach_include_path<F>(&self, f: F)
-    where
-        F: FnMut(&Path),
-    {
-        if let Some(ref fc) = self.fontconfig {
-            fc.foreach_include_path(f);
-        }
-    }
+    // pub fn foreach_include_path<F>(&self, f: F)
+    // where
+    //     F: FnMut(&Path),
+    // {
+    //     if let Some(ref fc) = self.fontconfig {
+    //         fc.foreach_include_path(f);
+    //     }
+    // }
 
     pub fn emit(&self) {
         if let Some(ref fc) = self.fontconfig {
@@ -62,7 +62,7 @@ impl<'a> PlatformLayoutDeps<'a> {
 }
 
 fn main() {
-    let target = env::var("TARGET").unwrap();
+    // let target = env::var("TARGET").unwrap();
     let out_dir = env::var("OUT_DIR").unwrap();
     let manifest_dir: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().into();
     let is_mac_os = target_cfg!(target_os = "macos");
@@ -74,98 +74,98 @@ fn main() {
 
     // Include paths and settings exported by our internal dependencies.
 
-    let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
+    // let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
     let freetype2_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
     let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
-    let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
+    // let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
     let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
 
     // Define the C++ support library.
 
-    let mut cppcfg = cc::Build::new();
+    // let mut cppcfg = cc::Build::new();
 
-    let cppflags = [
-        "-std=c++17",
-        "-Wall",
-        "-Wdate-time",
-        "-Wendif-labels",
-        "-Wextra",
-        "-Wformat=2",
-        "-Wlogical-op",
-        "-Wmissing-declarations",
-        "-Wmissing-include-dirs",
-        "-Wpointer-arith",
-        "-Wredundant-decls",
-        "-Wsuggest-attribute=noreturn",
-        "-Wsuggest-attribute=format",
-        "-Wshadow",
-        "-Wswitch-bool",
-        "-Wundef",
-        // TODO: Fix existing warnings before enabling these:
-        // "-Wdouble-promotion",
-        // "-Wcast-align",
-        // "-Wconversion",
-        // "-Wmissing-variable-declarations",
-        "-Wextra-semi",
-        // "-Wsuggest-attribute=const",
-        // "-Wsuggest-attribute=pure",
-        // "-Wunreachable-code-aggresive",
-        "-Wno-unused-parameter",
-        "-Wno-implicit-fallthrough",
-        "-fno-exceptions",
-        "-fno-rtti",
-    ];
+    // let cppflags = [
+    //     "-std=c++17",
+    //     "-Wall",
+    //     "-Wdate-time",
+    //     "-Wendif-labels",
+    //     "-Wextra",
+    //     "-Wformat=2",
+    //     "-Wlogical-op",
+    //     "-Wmissing-declarations",
+    //     "-Wmissing-include-dirs",
+    //     "-Wpointer-arith",
+    //     "-Wredundant-decls",
+    //     "-Wsuggest-attribute=noreturn",
+    //     "-Wsuggest-attribute=format",
+    //     "-Wshadow",
+    //     "-Wswitch-bool",
+    //     "-Wundef",
+    //     // TODO: Fix existing warnings before enabling these:
+    //     // "-Wdouble-promotion",
+    //     // "-Wcast-align",
+    //     // "-Wconversion",
+    //     // "-Wmissing-variable-declarations",
+    //     "-Wextra-semi",
+    //     // "-Wsuggest-attribute=const",
+    //     // "-Wsuggest-attribute=pure",
+    //     // "-Wunreachable-code-aggresive",
+    //     "-Wno-unused-parameter",
+    //     "-Wno-implicit-fallthrough",
+    //     "-fno-exceptions",
+    //     "-fno-rtti",
+    // ];
 
-    for flag in &cppflags {
-        cppcfg.flag_if_supported(flag);
-    }
+    // for flag in &cppflags {
+    //     cppcfg.flag_if_supported(flag);
+    // }
 
-    fn compile(cfg: &mut cc::Build, s: &str) {
-        cfg.file(s);
-        println!("cargo:rerun-if-changed={s}");
-    }
+    // fn compile(cfg: &mut cc::Build, s: &str) {
+    //     cfg.file(s);
+    //     println!("cargo:rerun-if-changed={s}");
+    // }
 
-    cppcfg
-        .cpp(true)
-        .flag("-Wall")
-        .include("layout")
-        .include(&core_include_dir);
+    // cppcfg
+    //     .cpp(true)
+    //     .flag("-Wall")
+    //     .include("layout")
+    //     .include(&core_include_dir);
 
-    deps.foreach_include_path(|p| {
-        cppcfg.include(p);
-    });
+    // deps.foreach_include_path(|p| {
+    //     cppcfg.include(p);
+    // });
 
-    for item in harfbuzz_include_path.split(';') {
-        cppcfg.include(item);
-    }
+    // for item in harfbuzz_include_path.split(';') {
+    //     cppcfg.include(item);
+    // }
 
-    for item in freetype2_include_path.split(';') {
-        cppcfg.include(item);
-    }
+    // for item in freetype2_include_path.split(';') {
+    //     cppcfg.include(item);
+    // }
 
-    for item in graphite2_include_path.split(';') {
-        cppcfg.include(item);
-    }
+    // for item in graphite2_include_path.split(';') {
+    //     cppcfg.include(item);
+    // }
 
-    for item in icu_include_path.split(';') {
-        cppcfg.include(item);
-    }
+    // for item in icu_include_path.split(';') {
+    //     cppcfg.include(item);
+    // }
 
-    compile(&mut cppcfg, "layout/xetex-XeTeXFontInst.cpp");
-    compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr.cpp");
-    compile(&mut cppcfg, "layout/xetex-XeTeXLayoutInterface.cpp");
+    // compile(&mut cppcfg, "layout/xetex-XeTeXFontInst.cpp");
+    // compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr.cpp");
+    // compile(&mut cppcfg, "layout/xetex-XeTeXLayoutInterface.cpp");
 
-    if graphite2_static {
-        cppcfg.define("GRAPHITE2_STATIC", "1");
-    }
+    // if graphite2_static {
+    //     cppcfg.define("GRAPHITE2_STATIC", "1");
+    // }
 
     // Platform-specific adjustments:
 
     if is_mac_os {
-        cppcfg.define("XETEX_MAC", Some("1"));
-        compile(&mut cppcfg, "layout/xetex-XeTeXFontInst_Mac.cpp");
-        compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr_Mac.mm");
+        // cppcfg.define("XETEX_MAC", Some("1"));
+        // compile(&mut cppcfg, "layout/xetex-XeTeXFontInst_Mac.cpp");
+        // compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr_Mac.mm");
         println!("cargo:rustc-link-lib=framework=Foundation");
         println!("cargo:rustc-link-lib=framework=CoreFoundation");
         println!("cargo:rustc-link-lib=framework=CoreGraphics");
@@ -173,18 +173,18 @@ fn main() {
         println!("cargo:rustc-link-lib=framework=AppKit");
     }
 
-    if !is_mac_os {
-        // At the moment we use Fontconfig on both Linux and Windows.
-        compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr_FC.cpp");
-    }
+    // if !is_mac_os {
+    // At the moment we use Fontconfig on both Linux and Windows.
+    // compile(&mut cppcfg, "layout/xetex-XeTeXFontMgr_FC.cpp");
+    // }
 
-    if target.contains("-msvc") {
-        cppcfg.flag("/EHsc");
-    }
+    // if target.contains("-msvc") {
+    //     cppcfg.flag("/EHsc");
+    // }
 
     // OK, back to generic build rules.
 
-    cppcfg.compile("libtectonic_xetex_layout.a");
+    // cppcfg.compile("libtectonic_xetex_layout.a");
 
     deps.emit();
 
