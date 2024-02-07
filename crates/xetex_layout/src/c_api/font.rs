@@ -1,5 +1,5 @@
 #[cfg(not(target_os = "macos"))]
-use super::fc::*;
+use crate::c_api::fc;
 use crate::c_api::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xbasename,
     xcalloc, xmalloc, xstrdup, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RsD2Fix, RsFix2D,
@@ -8,6 +8,7 @@ use crate::c_api::{
 use libc::{free, strcpy, strlen, strrchr};
 use std::alloc::{alloc, dealloc, Layout};
 use std::cell::UnsafeCell;
+use std::ffi::CStr;
 use std::sync::OnceLock;
 use std::{mem, ptr};
 use tectonic_bridge_core::FileFormat;
@@ -356,6 +357,11 @@ pub unsafe extern "C" fn createFontFromFile(
     index: libc::c_int,
     point_size: Fixed,
 ) -> XeTeXFont {
+    let filename = if filename.is_null() {
+        None
+    } else {
+        Some(CStr::from_ptr(filename))
+    };
     match XeTeXFontBase::new_path_index(filename, index, RsFix2D(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
@@ -525,17 +531,15 @@ pub struct XeTeXFontBase {
 impl XeTeXFontBase {
     #[cfg(not(target_os = "macos"))]
     pub(crate) unsafe fn new(font: PlatformFontRef, point_size: f32) -> Result<XeTeXFontBase, i32> {
-        let mut path = ptr::null();
-        FcPatternGetString(font, FC_FILE, 0, &mut path);
-        let mut index = 0;
-        FcPatternGetInteger(font, FC_INDEX, 0, &mut index);
+        let path = font.get::<fc::pat::File>(0).ok();
+        let index = font.get::<fc::pat::Index>(0).unwrap_or(0);
 
         XeTeXFontBase::new_path_index(path, index, point_size)
     }
 
     #[cfg(not(target_os = "macos"))]
     pub(crate) unsafe fn new_path_index(
-        path: *const libc::c_char,
+        path: Option<&CStr>,
         index: libc::c_int,
         point_size: f32,
     ) -> Result<XeTeXFontBase, i32> {
@@ -555,7 +559,7 @@ impl XeTeXFontBase {
             backing_data2: ptr::null_mut(),
             hb_font: ptr::null_mut(),
         };
-        let status = if !path.is_null() {
+        let status = if let Some(path) = path {
             out.initialize(path, index)
         } else {
             0
@@ -598,11 +602,7 @@ impl XeTeXFontBase {
         }
     }
 
-    unsafe fn initialize_common(
-        &mut self,
-        pathname: *const libc::c_char,
-        index: libc::c_int,
-    ) -> i32 {
+    unsafe fn initialize_common(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
         static FREE_TYPE_LIBRARY: OnceLock<SyncPtr<FT_LibraryRec>> = OnceLock::new();
 
         let ft_lib = FREE_TYPE_LIBRARY
@@ -616,12 +616,12 @@ impl XeTeXFontBase {
             })
             .0;
 
-        let mut handle = ttstub_input_open(pathname, FileFormat::OpenType, 0);
+        let mut handle = ttstub_input_open(pathname.as_ptr(), FileFormat::OpenType, 0);
         if handle.is_null() {
-            handle = ttstub_input_open(pathname, FileFormat::TrueType, 0);
+            handle = ttstub_input_open(pathname.as_ptr(), FileFormat::TrueType, 0);
         }
         if handle.is_null() {
-            handle = ttstub_input_open(pathname, FileFormat::Type1, 0);
+            handle = ttstub_input_open(pathname.as_ptr(), FileFormat::Type1, 0);
         }
         if handle.is_null() {
             return 1;
@@ -647,7 +647,7 @@ impl XeTeXFontBase {
         }
 
         if index == 0 && !FT_IS_SFNT(self.ft_face) {
-            let afm = xstrdup(xbasename(pathname));
+            let afm = xstrdup(xbasename(pathname.as_ptr()));
             let p = strrchr(afm, b'.' as libc::c_int);
             if !p.is_null()
                 && strlen(p) == 4
@@ -678,7 +678,7 @@ impl XeTeXFontBase {
             }
         }
 
-        self.filename = xstrdup(pathname);
+        self.filename = xstrdup(pathname.as_ptr());
         self.index = index as u32;
         self.units_per_em = (*self.ft_face).units_per_EM;
         self.ascent = self.units_to_points((*self.ft_face).ascender as f64) as f32;
@@ -715,7 +715,7 @@ impl XeTeXFontBase {
     }
 
     #[cfg(not(target_os = "macos"))]
-    pub unsafe fn initialize(&mut self, pathname: *const libc::c_char, index: libc::c_int) -> i32 {
+    pub unsafe fn initialize(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
         self.initialize_common(pathname, index)
     }
 
