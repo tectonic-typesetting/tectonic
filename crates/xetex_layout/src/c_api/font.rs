@@ -106,10 +106,10 @@ pub unsafe extern "C" fn _get_glyph_v_advance(
 
 pub unsafe extern "C" fn _get_glyph_h_origin(
     _: *mut hb_font_t,
-    font_data: *mut (),
-    gid: hb_codepoint_t,
-    x: *mut hb_position_t,
-    y: *mut hb_position_t,
+    _: *mut (),
+    _: hb_codepoint_t,
+    _: *mut hb_position_t,
+    _: *mut hb_position_t,
     _: *mut (),
 ) -> hb_bool_t {
     true as hb_bool_t
@@ -117,10 +117,10 @@ pub unsafe extern "C" fn _get_glyph_h_origin(
 
 pub unsafe extern "C" fn _get_glyph_v_origin(
     _: *mut hb_font_t,
-    font_data: *mut (),
-    gid: hb_codepoint_t,
-    x: *mut hb_position_t,
-    y: *mut hb_position_t,
+    _: *mut (),
+    _: hb_codepoint_t,
+    _: *mut hb_position_t,
+    _: *mut hb_position_t,
     _: *mut (),
 ) -> hb_bool_t {
     true as hb_bool_t
@@ -165,9 +165,9 @@ pub unsafe extern "C" fn _get_glyph_h_kerning(
 
 pub unsafe extern "C" fn _get_glyph_v_kerning(
     _: *mut hb_font_t,
-    font_data: *mut (),
-    gid1: hb_codepoint_t,
-    gid2: hb_codepoint_t,
+    _: *mut (),
+    _: hb_codepoint_t,
+    _: hb_codepoint_t,
     _: *mut (),
 ) -> hb_bool_t {
     false as hb_bool_t
@@ -1125,7 +1125,7 @@ impl XeTeXFontBase {
         self.filename
     }
 
-    unsafe fn get_font_table(&self, tag: FT_Sfnt_Tag) -> *mut () {
+    pub(crate) unsafe fn get_font_table(&self, tag: FT_Sfnt_Tag) -> *mut () {
         FT_Get_Sfnt_Table(self.ft_face, tag)
     }
 
@@ -1265,7 +1265,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                 let mut library = ptr::null_mut();
                 let error = FT_Init_FreeType(&mut library);
                 if error != 0 {
-                    _tt_abort(c!("FreeType initialization failed; error %d"), error);
+                    panic!("FreeType initialization failed; error {}", error);
                 } else {
                     FREE_TYPE_LIBRARY.set(library);
                 }

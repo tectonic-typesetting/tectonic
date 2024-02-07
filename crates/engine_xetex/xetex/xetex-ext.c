@@ -761,7 +761,7 @@ find_native_font(char* uname, int32_t scaled_size)
         }
         font = createFontFromFile(nameString + 1, index, scaled_size);
         if (font != NULL) {
-            loaded_font_design_size = D2Fix(getDesignSize(font));
+            set_loaded_font_design_size(D2Fix(getDesignSize(font)));
 
             /* This is duplicated in XeTeXFontMgr::findFont! */
             setReqEngine(0);

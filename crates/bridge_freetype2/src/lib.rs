@@ -18,6 +18,12 @@ pub const FT_FACE_FLAG_GLYPH_NAMES: libc::c_long = 1 << 9;
 
 pub const FT_OPEN_MEMORY: libc::c_uint = 0x1;
 
+pub const TT_PLATFORM_APPLE_UNICODE: libc::c_ushort = 0;
+pub const TT_PLATFORM_MACINTOSH: libc::c_ushort = 1;
+pub const TT_PLATFORM_MICROSOFT: libc::c_ushort = 3;
+
+pub const TT_MAC_ID_ROMAN: libc::c_ushort = 0;
+
 pub unsafe fn FT_IS_SCALABLE(face: FT_Face) -> bool {
     ((*face).face_flags & FT_FACE_FLAG_SCALABLE) != 0
 }
@@ -145,6 +151,31 @@ pub struct FT_ModuleRec {
 pub struct FT_GlyphRec {
     // TODO
     _priv: [u8; 1],
+}
+
+#[repr(C)]
+pub struct FT_SfntName {
+    pub platform_id: libc::c_ushort,
+    pub encoding_id: libc::c_ushort,
+    pub language_id: libc::c_ushort,
+    pub name_id: libc::c_ushort,
+
+    /// *Not* null terminated
+    pub string: *mut u8,
+    pub string_len: libc::c_uint,
+}
+
+impl Default for FT_SfntName {
+    fn default() -> Self {
+        FT_SfntName {
+            platform_id: 0,
+            encoding_id: 0,
+            language_id: 0,
+            name_id: 0,
+            string: ptr::null_mut(),
+            string_len: 0,
+        }
+    }
 }
 
 #[derive(Default)]
@@ -344,6 +375,29 @@ pub struct TT_OS2 {
     pub usMaxContext: libc::c_ushort,
 }
 
+#[repr(C)]
+pub struct TT_Header {
+    pub Table_Version: FT_Fixed,
+    pub Font_Revision: FT_Fixed,
+    pub CheckSum_Adjust: libc::c_long,
+    pub Magic_Number: libc::c_long,
+    pub Flags: libc::c_ushort,
+    pub Units_Per_Em: libc::c_ushort,
+    pub Created: [libc::c_ulong; 2],
+    pub Modified: [libc::c_ulong; 2],
+    pub xMin: libc::c_short,
+    pub yMin: libc::c_short,
+    pub xMax: libc::c_short,
+    pub yMax: libc::c_short,
+    pub Mac_Style: libc::c_ushort,
+    // TODO
+    // FT_UShort  Lowest_Rec_PPEM;
+    //
+    // FT_Short   Font_Direction;
+    // FT_Short   Index_To_Loc_Format;
+    // FT_Short   Glyph_Data_Format;
+}
+
 pub type FT_Face = *mut FT_FaceRec;
 pub type FT_Size = *mut FT_SizeRec;
 pub type FT_CharMap = *mut FT_CharMapRec;
@@ -415,4 +469,13 @@ extern "C" {
         agindex: *mut libc::c_uint,
     ) -> libc::c_ulong;
     pub fn FT_Get_Name_Index(face: FT_Face, glyph_name: *const FT_String) -> libc::c_uint;
+    pub fn FT_New_Face(
+        library: FT_Library,
+        filepathname: *const libc::c_char,
+        face_index: libc::c_long,
+        aface: *mut FT_Face,
+    ) -> FT_Error;
+    pub fn FT_Get_Postscript_Name(face: FT_Face) -> *const libc::c_char;
+    pub fn FT_Get_Sfnt_Name_Count(face: FT_Face) -> libc::c_uint;
+    pub fn FT_Get_Sfnt_Name(face: FT_Face, idx: libc::c_uint, aname: *mut FT_SfntName) -> FT_Error;
 }
