@@ -1,8 +1,8 @@
 use super::{Font, FontManager, FontManagerBackend, FontMaps, NameCollection};
 use crate::c_api::fc::sys::{
-    FcConfigGetCurrent, FcFalse, FcFontList, FcFontSet, FcFontSetDestroy, FcInit, FcNameParse,
-    FcObjectSetBuild, FcObjectSetDestroy, FcPatternDestroy, FC_FAMILY, FC_FILE, FC_FONTFORMAT,
-    FC_FULLNAME, FC_INDEX, FC_SLANT, FC_STYLE, FC_WEIGHT, FC_WIDTH,
+    FcConfigGetCurrent, FcFalse, FcFontList, FcFontSet, FcFontSetDestroy, FcInit, FcObjectSetBuild,
+    FcObjectSetDestroy, FC_FAMILY, FC_FILE, FC_FONTFORMAT, FC_FULLNAME, FC_INDEX, FC_SLANT,
+    FC_STYLE, FC_WEIGHT, FC_WIDTH,
 };
 use crate::c_api::font::XeTeXFontBase;
 use crate::c_api::{fc, Fixed, PlatformFontRef, RsFix2D};
