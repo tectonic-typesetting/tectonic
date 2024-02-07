@@ -222,6 +222,10 @@ const char *getNameFromCTFont(CTFontRef ct_font_ref, CFStringRef name_key);
 const char *getFileNameFromCTFont(CTFontRef ct_font_ref, uint32_t *index);
 #endif
 
+Fixed get_loaded_font_design_size(void);
+
+void set_loaded_font_design_size(Fixed val);
+
 void terminate_font_manager(void);
 
 void destroy_font_manager(void);

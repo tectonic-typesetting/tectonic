@@ -166,7 +166,6 @@ mod c_api {
 
     /// cbindgen:ignore
     extern "C" {
-        fn _tt_abort(format: *const libc::c_char, ...) -> !;
         fn ttstub_input_open(
             path: *const libc::c_char,
             format: FileFormat,
