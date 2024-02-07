@@ -1,4 +1,4 @@
-#![allow(nonstandard_style)]
+#![allow(nonstandard_style, unused)]
 
 pub const FC_FAMILY: *const libc::c_char = c!("family");
 pub const FC_STYLE: *const libc::c_char = c!("style");
@@ -19,7 +19,11 @@ pub const FcFalse: FcBool = 0;
 pub struct FcPattern(());
 
 #[repr(C)]
-pub struct FcFontSet(());
+pub struct FcFontSet {
+    pub nfont: libc::c_int,
+    sfont: libc::c_int,
+    pub fonts: *const *const FcPattern,
+}
 
 #[repr(C)]
 pub struct FcObjectSet(());
@@ -27,6 +31,7 @@ pub struct FcObjectSet(());
 #[repr(C)]
 pub struct FcConfig(());
 
+#[derive(PartialEq)]
 #[repr(C)]
 pub enum FcResult {
     Match,
