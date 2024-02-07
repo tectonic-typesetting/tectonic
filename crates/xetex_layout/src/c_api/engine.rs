@@ -112,7 +112,7 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn getFontRef(engine: XeTeXLayoutEngine) -> PlatformFontRef {
-        (*engine).font_ref
+        (*engine).font_ref.clone()
     }
 
     #[no_mangle]

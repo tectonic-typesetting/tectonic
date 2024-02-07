@@ -71,7 +71,11 @@ mod c_api {
         y_max: f32,
     }
 
+    #[cfg(not(target_os = "macos"))]
     pub type Fixed = i32;
+    /// cbindgen:ignore
+    #[cfg(target_os = "macos")]
+    pub type Fixed = u32;
     pub type OTTag = u32;
     pub type GlyphID = u16;
     /// cbindgen:ignore
@@ -79,7 +83,11 @@ mod c_api {
     /// cbindgen:ignore
     pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngineBase;
     #[cfg(not(target_os = "macos"))]
-    type PlatformFontRef = *mut fc::FcPattern;
+    type RawPlatformFontRef = *mut fc::sys::FcPattern;
+    #[cfg(target_os = "macos")]
+    type RawPlatformFontRef = CTFontDescriptorRef;
+    #[cfg(not(target_os = "macos"))]
+    type PlatformFontRef = fc::Pattern;
     #[cfg(target_os = "macos")]
     type PlatformFontRef = CTFontDescriptorRef;
 

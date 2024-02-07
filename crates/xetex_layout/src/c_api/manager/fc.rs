@@ -1,15 +1,14 @@
 use super::{Font, FontManager, FontManagerBackend, FontMaps, NameCollection};
-use crate::c_api::fc::{
+use crate::c_api::fc::sys::{
     FcConfigGetCurrent, FcFalse, FcFontList, FcFontSet, FcFontSetDestroy, FcInit, FcNameParse,
-    FcObjectSetBuild, FcObjectSetDestroy, FcPatternDestroy, FcPatternGetInteger,
-    FcPatternGetString, FcResult, FC_FAMILY, FC_FILE, FC_FONTFORMAT, FC_FULLNAME, FC_INDEX,
-    FC_SLANT, FC_STYLE, FC_WEIGHT, FC_WIDTH,
+    FcObjectSetBuild, FcObjectSetDestroy, FcPatternDestroy, FC_FAMILY, FC_FILE, FC_FONTFORMAT,
+    FC_FULLNAME, FC_INDEX, FC_SLANT, FC_STYLE, FC_WEIGHT, FC_WIDTH,
 };
 use crate::c_api::font::XeTeXFontBase;
 use crate::c_api::unicode::{
     ucnv_close, ucnv_fromUChars, ucnv_open, ucnv_toUChars, UConverter, U_SUCCESS, U_ZERO_ERROR,
 };
-use crate::c_api::{Fixed, PlatformFontRef, RsFix2D};
+use crate::c_api::{fc, Fixed, PlatformFontRef, RsFix2D};
 use std::cell::{Cell, RefCell};
 use std::ffi::{CStr, CString};
 use std::ptr;
@@ -73,8 +72,30 @@ impl FcBackend {
         }
     }
 
-    fn cache_family_members(&mut self, names: &[CString]) {
-        todo!()
+    unsafe fn cache_family_members(&mut self, maps: &mut FontMaps, names: &[CString]) {
+        if names.is_empty() {
+            return;
+        }
+
+        'outer: for f in 0..(*self.all_fonts).nfont as usize {
+            let pat = fc::Pattern::from_raw(*(*self.all_fonts).fonts.add(f)).unwrap();
+            if maps.platform_ref_to_font.contains_key(&pat) {
+                continue;
+            }
+
+            let mut i = 0;
+            while let Ok(str) = pat.get::<fc::pat::Family>(i) {
+                for name in names {
+                    if **name == *str {
+                        let names = self.read_names(pat.clone());
+                        maps.add_to_maps(self, pat.clone(), &names);
+                        continue 'outer;
+                    }
+                }
+
+                i += 1;
+            }
+        }
     }
 }
 
@@ -105,7 +126,7 @@ impl FontManagerBackend for FcBackend {
             panic!("cannot read font names");
         }
 
-        let pat = FcNameParse(c!(":outline=true") as *const u8);
+        let pat = FcNameParse(c!(":outline=true"));
         let os = FcObjectSetBuild(
             FC_FAMILY,
             FC_STYLE,
@@ -144,12 +165,16 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    fn get_platform_font_desc(&self, font: PlatformFontRef) -> &CStr {
-        todo!()
+    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr {
+        if let Ok(str) = font.get::<fc::pat::File>(0) {
+            str
+        } else {
+            CStr::from_ptr(c!("[unknown]"))
+        }
     }
 
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
-        let mut xfont = match XeTeXFontBase::new(font.font_ref, 10.0) {
+        let mut xfont = match XeTeXFontBase::new(font.font_ref.clone(), 10.0) {
             Ok(xfont) => xfont,
             Err(_) => return,
         };
@@ -220,24 +245,23 @@ impl FontManagerBackend for FcBackend {
         let mut found = false;
         loop {
             'outer: for f in 0..(*self.all_fonts).nfont as usize {
-                let pat = *(*self.all_fonts).fonts.add(f) as PlatformFontRef;
+                let pat = fc::Pattern::from_raw(*(*self.all_fonts).fonts.add(f)).unwrap();
                 if let Some(_) = maps.platform_ref_to_font.get(&pat) {
                     continue;
                 }
 
                 if self.cached_all {
-                    let names = self.read_names(pat);
-                    maps.add_to_maps(self, pat, &names);
+                    let names = self.read_names(pat.clone());
+                    maps.add_to_maps(self, pat.clone(), &names);
                     continue;
                 }
 
-                let mut s = ptr::null();
                 let mut i = 0;
-                while FcPatternGetString(pat, FC_FULLNAME, i, &mut s) == FcResult::Match {
-                    if name == CStr::from_ptr(s) {
-                        let names = self.read_names(pat);
-                        maps.add_to_maps(self, pat, &names);
-                        self.cache_family_members(&names.family_names);
+                while let Ok(str) = pat.get::<fc::pat::FullName>(i) {
+                    if name == str {
+                        let names = self.read_names(pat.clone());
+                        maps.add_to_maps(self, pat.clone(), &names);
+                        self.cache_family_members(maps, &names.family_names);
                         found = true;
                         continue 'outer;
                     }
@@ -245,27 +269,24 @@ impl FontManagerBackend for FcBackend {
                 }
 
                 let mut i = 0;
-                while FcPatternGetString(pat, FC_FAMILY, i, &mut s) == FcResult::Match {
-                    if name == CStr::from_ptr(s)
-                        || (hyph != 0 && fam_name == CStr::from_ptr(s).to_bytes())
-                    {
-                        let names = self.read_names(pat);
-                        maps.add_to_maps(self, pat, &names);
-                        self.cache_family_members(&names.family_names);
+                while let Ok(str) = pat.get::<fc::pat::Family>(i) {
+                    if name == str || (hyph != 0 && fam_name == str.to_bytes()) {
+                        let names = self.read_names(pat.clone());
+                        maps.add_to_maps(self, pat.clone(), &names);
+                        self.cache_family_members(maps, &names.family_names);
                         found = true;
                         continue 'outer;
                     }
-                    let mut t = ptr::null();
                     let mut j = 0;
-                    while FcPatternGetString(pat, FC_STYLE, j, &mut t) == FcResult::Match {
-                        let mut full = CStr::from_ptr(s).to_bytes().to_owned();
+                    while let Ok(style) = pat.get::<fc::pat::Style>(j) {
+                        let mut full = str.to_bytes().to_owned();
                         full.push(b' ');
-                        full.extend(CStr::from_ptr(t).to_bytes());
+                        full.extend(style.to_bytes());
 
                         if name.to_bytes() == full {
-                            let names = self.read_names(pat);
-                            maps.add_to_maps(self, pat, &names);
-                            self.cache_family_members(&*names.family_names);
+                            let names = self.read_names(pat.clone());
+                            maps.add_to_maps(self, pat.clone(), &names);
+                            self.cache_family_members(maps, &*names.family_names);
                             found = true;
                             continue 'outer;
                         }
@@ -286,24 +307,25 @@ impl FontManagerBackend for FcBackend {
     unsafe fn read_names(&self, pat: PlatformFontRef) -> NameCollection {
         let mut names = NameCollection::default();
 
-        let mut pathname = ptr::null();
-        if FcPatternGetString(pat, FC_FILE, 0, &mut pathname) != FcResult::Match {
-            return names;
-        }
+        let pathname = match pat.get::<fc::pat::File>(0) {
+            Ok(name) => name,
+            Err(_) => return names,
+        };
 
-        let mut index = 0;
-        if FcPatternGetInteger(pat, FC_INDEX, 0, &mut index) != FcResult::Match {
-            return names;
-        }
+        let index = match pat.get::<fc::pat::Index>(0) {
+            Ok(index) => index,
+            Err(_) => return names,
+        };
 
         let mut face = ptr::null_mut();
-        let ret = FREE_TYPE_LIBRARY
-            .with_borrow(|lib| FT_New_Face(*lib, pathname, index as libc::c_long, &mut face) != 0);
+        let ret = FREE_TYPE_LIBRARY.with_borrow(|lib| {
+            FT_New_Face(*lib, pathname.as_ptr(), index as libc::c_long, &mut face) != 0
+        });
         if ret {
             return names;
         }
 
-        let mut name = FT_Get_Postscript_Name(face);
+        let name = FT_Get_Postscript_Name(face);
         if name.is_null() {
             return names;
         }
@@ -372,20 +394,20 @@ impl FontManagerBackend for FcBackend {
                 }
             }
         } else {
-            index = 0;
-            while FcPatternGetString(pat, FC_FULLNAME, index, &mut name) == FcResult::Match {
+            let mut index = 0;
+            while let Ok(name) = pat.get::<fc::pat::FullName>(index) {
                 index += 1;
-                FontManager::append_to_list(&mut names.full_names, CStr::from_ptr(name));
+                FontManager::append_to_list(&mut names.full_names, name);
             }
             index = 0;
-            while FcPatternGetString(pat, FC_FAMILY, index, &mut name) == FcResult::Match {
+            while let Ok(fam) = pat.get::<fc::pat::Family>(index) {
                 index += 1;
-                FontManager::append_to_list(&mut names.family_names, CStr::from_ptr(name));
+                FontManager::append_to_list(&mut names.family_names, fam);
             }
             index = 0;
-            while FcPatternGetString(pat, FC_FULLNAME, index, &mut name) == FcResult::Match {
+            while let Ok(name) = pat.get::<fc::pat::FullName>(index) {
                 index += 1;
-                FontManager::append_to_list(&mut names.style_names, CStr::from_ptr(name));
+                FontManager::append_to_list(&mut names.style_names, name);
             }
         }
 

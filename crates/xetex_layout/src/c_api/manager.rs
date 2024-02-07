@@ -1,4 +1,4 @@
-use crate::c_api::{Fixed, PlatformFontRef, XeTeXFont};
+use crate::c_api::{Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
@@ -101,13 +101,12 @@ pub struct NameCollection {
     full_names: Vec<CString>,
     // TODO: Lifetime is a lie, it's actually that of the source font
     ps_name: Option<&'static CStr>,
-    sub_family: String,
 }
 
 pub trait FontManagerBackend {
     unsafe fn initialize(&mut self);
     unsafe fn terminate(&mut self);
-    fn get_platform_font_desc(&self, font: PlatformFontRef) -> &CStr;
+    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr;
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
     unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection;
@@ -142,7 +141,7 @@ impl FontMaps {
             return;
         }
 
-        let font = Box::leak(Box::new(Font::new(pfont, ps_name.to_owned())));
+        let font = Box::leak(Box::new(Font::new(pfont.clone(), ps_name.to_owned())));
         backend.get_op_size_rec_and_style_flags(font);
         self.ps_name_to_font.insert(font.ps_name.clone(), font);
         self.platform_ref_to_font.insert(pfont, font);
@@ -276,7 +275,7 @@ impl FontManager {
         name: *const libc::c_char,
         variant: *mut libc::c_char,
         mut pt_size: f64,
-    ) -> PlatformFontRef {
+    ) -> Option<PlatformFontRef> {
         let name_str = CStr::from_ptr(name);
         let mut font = ptr::null_mut();
         let mut dsize = 10.0;
@@ -363,7 +362,7 @@ impl FontManager {
         }
 
         if font.is_null() {
-            return ptr::null_mut();
+            return None;
         }
 
         let parent = (*font).parent;
@@ -591,7 +590,7 @@ impl FontManager {
                 .set(((*font).op_size_info.design_size * 65536.0 + 0.5) as Fixed);
         }
 
-        (*font).font_ref
+        Some((*font).font_ref.clone())
     }
 
     pub unsafe fn get_full_name(&self, font: PlatformFontRef) -> *const libc::c_char {
@@ -719,7 +718,7 @@ impl FontManager {
         self.backend.read_names(font)
     }
 
-    pub fn get_platform_font_desc(&self, font: PlatformFontRef) -> &CStr {
+    pub unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr {
         self.backend.get_platform_font_desc(font)
     }
 
@@ -747,8 +746,15 @@ pub unsafe extern "C" fn findFontByName(
     name: *const libc::c_char,
     var: *mut libc::c_char,
     size: f64,
-) -> PlatformFontRef {
-    FontManager::with_font_manager(|mgr| mgr.find_font(name, var, size))
+) -> RawPlatformFontRef {
+    #[cfg(target_os = "macos")]
+    panic!();
+    #[cfg(not(target_os = "macos"))]
+    FontManager::with_font_manager(|mgr| {
+        mgr.find_font(name, var, size)
+            .map(super::fc::Pattern::into_raw)
+            .unwrap_or(ptr::null_mut())
+    })
 }
 
 #[no_mangle]
@@ -773,5 +779,5 @@ pub unsafe extern "C" fn getDesignSize(font: XeTeXFont) -> f64 {
 
 #[no_mangle]
 pub unsafe extern "C" fn ttxl_platfont_get_desc(font: PlatformFontRef) -> *const libc::c_char {
-    FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(font).as_ptr())
+    FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(&font).as_ptr())
 }
