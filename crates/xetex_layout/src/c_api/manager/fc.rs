@@ -5,11 +5,11 @@ use crate::c_api::fc::{
     FcPatternGetString, FcResult, FC_FAMILY, FC_FILE, FC_FONTFORMAT, FC_FULLNAME, FC_INDEX,
     FC_SLANT, FC_STYLE, FC_WEIGHT, FC_WIDTH,
 };
-use crate::c_api::font::{createFont, deleteFont};
+use crate::c_api::font::XeTeXFontBase;
 use crate::c_api::unicode::{
     ucnv_close, ucnv_fromUChars, ucnv_open, ucnv_toUChars, UConverter, U_SUCCESS, U_ZERO_ERROR,
 };
-use crate::c_api::{PlatformFontRef, RsFix2D};
+use crate::c_api::{Fixed, PlatformFontRef, RsFix2D};
 use std::cell::{Cell, RefCell};
 use std::ffi::{CStr, CString};
 use std::ptr;
@@ -149,13 +149,12 @@ impl FontManagerBackend for FcBackend {
     }
 
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
-        // TODO: Internal version of this API
-        let xfont = createFont(font.font_ref, 655360);
-        if xfont.is_null() {
-            return;
-        }
+        let mut xfont = match XeTeXFontBase::new(font.font_ref, 10.0) {
+            Ok(xfont) => xfont,
+            Err(_) => return,
+        };
 
-        let size_rec = FontManager::get_op_size(xfont);
+        let size_rec = FontManager::get_op_size(&mut xfont);
         if let Some(size_rec) = size_rec {
             font.op_size_info.design_size = size_rec.design_size;
             if size_rec.sub_family_id != 0
@@ -170,7 +169,7 @@ impl FontManagerBackend for FcBackend {
             }
         }
 
-        let os2_table = (*xfont).get_font_table(FT_Sfnt_Tag::Os2).cast::<TT_OS2>();
+        let os2_table = xfont.get_font_table(FT_Sfnt_Tag::Os2).cast::<TT_OS2>();
         if !os2_table.is_null() {
             font.weight = (*os2_table).usWeightClass;
             font.width = (*os2_table).usWidthClass;
@@ -180,9 +179,7 @@ impl FontManagerBackend for FcBackend {
             font.is_italic = (sel & (1 << 0)) != 0;
         }
 
-        let head_table = (*xfont)
-            .get_font_table(FT_Sfnt_Tag::Head)
-            .cast::<TT_Header>();
+        let head_table = xfont.get_font_table(FT_Sfnt_Tag::Head).cast::<TT_Header>();
         if !head_table.is_null() {
             let ms = (*head_table).Mac_Style;
             if (ms & (1 << 0)) != 0 {
@@ -193,15 +190,15 @@ impl FontManagerBackend for FcBackend {
             }
         }
 
-        let post_table = (*xfont)
+        let post_table = xfont
             .get_font_table(FT_Sfnt_Tag::Post)
             .cast::<TT_Postscript>();
         if !post_table.is_null() {
             font.slant = (1000.0
-                * (f64::tan(RsFix2D(-(*post_table).italic_angle) * std::f64::consts::PI / 180.0)))
-                as _;
+                * (f64::tan(
+                    RsFix2D((-(*post_table).italic_angle) as Fixed) * std::f64::consts::PI / 180.0,
+                ))) as _;
         }
-        deleteFont(xfont);
     }
 
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
@@ -300,8 +297,8 @@ impl FontManagerBackend for FcBackend {
         }
 
         let mut face = ptr::null_mut();
-        let ret =
-            FREE_TYPE_LIBRARY.with_borrow(|lib| FT_New_Face(*lib, pathname, index, &mut face) != 0);
+        let ret = FREE_TYPE_LIBRARY
+            .with_borrow(|lib| FT_New_Face(*lib, pathname, index as libc::c_long, &mut face) != 0);
         if ret {
             return names;
         }

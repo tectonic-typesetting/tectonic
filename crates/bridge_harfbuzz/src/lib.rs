@@ -217,20 +217,15 @@ pub union hb_var_int_t {
     i8: [i8; 4],
 }
 
-#[derive(PartialEq)]
+#[derive(Default, PartialEq)]
 #[repr(C)]
 pub enum hb_direction_t {
+    #[default]
     Invalid = 0,
     Ltr = 4,
     Rtl,
     Ttb,
     Btt,
-}
-
-impl Default for hb_direction_t {
-    fn default() -> Self {
-        hb_direction_t::Invalid
-    }
 }
 
 #[link(name = "harfbuzz", kind = "static")]
