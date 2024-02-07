@@ -2405,6 +2405,7 @@ dependencies = [
 name = "tectonic_bridge_icu"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
  "tectonic_dep_support",
 ]
 
