@@ -344,35 +344,9 @@ pub unsafe extern "C" fn _get_table(
 
 #[no_mangle]
 pub unsafe extern "C" fn createFont(font_ref: PlatformFontRef, point_size: Fixed) -> XeTeXFont {
-    let mut status = 0;
-    let out;
-    #[cfg(target_os = "macos")]
-    {
-        out = Box::new(XeTeXFontBase::new_mac(
-            font_ref,
-            RsFix2D(point_size),
-            &mut status,
-        ));
-    }
-    #[cfg(not(target_os = "macos"))]
-    {
-        let mut pathname = ptr::null();
-        FcPatternGetString(font_ref, FC_FILE, 0, &mut pathname);
-        let mut index = 0;
-        FcPatternGetInteger(font_ref, FC_INDEX, 0, &mut index);
-
-        out = Box::new(XeTeXFontBase::new(
-            pathname,
-            index,
-            RsFix2D(point_size) as f32,
-            &mut status,
-        ));
-    }
-
-    if status != 0 {
-        ptr::null_mut()
-    } else {
-        Box::into_raw(out)
+    match XeTeXFontBase::new(font_ref, RsFix2D(point_size) as f32) {
+        Err(_) => ptr::null_mut(),
+        Ok(out) => Box::into_raw(Box::new(out)),
     }
 }
 
@@ -382,17 +356,9 @@ pub unsafe extern "C" fn createFontFromFile(
     index: libc::c_int,
     point_size: Fixed,
 ) -> XeTeXFont {
-    let mut status = 0;
-    let out = Box::new(XeTeXFontBase::new(
-        filename,
-        index,
-        RsFix2D(point_size) as f32,
-        &mut status,
-    ));
-    if status != 0 {
-        ptr::null_mut()
-    } else {
-        Box::into_raw(out)
+    match XeTeXFontBase::new_path_index(filename, index, RsFix2D(point_size) as f32) {
+        Err(_) => ptr::null_mut(),
+        Ok(out) => Box::into_raw(Box::new(out)),
     }
 }
 
@@ -558,14 +524,22 @@ pub struct XeTeXFontBase {
 
 impl XeTeXFontBase {
     #[cfg(not(target_os = "macos"))]
-    pub(crate) unsafe fn new(
+    pub(crate) unsafe fn new(font: PlatformFontRef, point_size: f32) -> Result<XeTeXFontBase, i32> {
+        let mut path = ptr::null();
+        FcPatternGetString(font, FC_FILE, 0, &mut path);
+        let mut index = 0;
+        FcPatternGetInteger(font, FC_INDEX, 0, &mut index);
+
+        XeTeXFontBase::new_path_index(path, index, point_size)
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    pub(crate) unsafe fn new_path_index(
         path: *const libc::c_char,
         index: libc::c_int,
         point_size: f32,
-        status: &mut libc::c_int,
-    ) -> XeTeXFontBase {
+    ) -> Result<XeTeXFontBase, i32> {
         let mut out = XeTeXFontBase {
-            // vtable: ptr::null_mut(),
             units_per_em: 0,
             point_size,
             ascent: 0.0,
@@ -581,20 +555,24 @@ impl XeTeXFontBase {
             backing_data2: ptr::null_mut(),
             hb_font: ptr::null_mut(),
         };
-        if !path.is_null() {
-            out.initialize(path, index, status);
+        let status = if !path.is_null() {
+            out.initialize(path, index)
+        } else {
+            0
+        };
+        if status != 0 {
+            Err(status)
+        } else {
+            Ok(out)
         }
-        out
     }
 
     #[cfg(target_os = "macos")]
     pub(crate) unsafe fn new(
         descriptor: CTFontDescriptorRef,
         point_size: f32,
-        status: &mut libc::c_int,
-    ) {
+    ) -> Result<XeTeXFontBase, i32> {
         let mut out = XeTeXFontBase {
-            vtable: ptr::null_mut(),
             units_per_em: 0,
             point_size,
             ascent: 0.0,
@@ -612,16 +590,19 @@ impl XeTeXFontBase {
             descriptor,
             font_ref: 0,
         };
-        out.initialize_mac(status);
-        out
+        let status = out.initialize();
+        if status != 0 {
+            Err(status)
+        } else {
+            Ok(out)
+        }
     }
 
-    pub unsafe fn initialize(
+    unsafe fn initialize_common(
         &mut self,
         pathname: *const libc::c_char,
         index: libc::c_int,
-        status: &mut libc::c_int,
-    ) {
+    ) -> i32 {
         static FREE_TYPE_LIBRARY: OnceLock<SyncPtr<FT_LibraryRec>> = OnceLock::new();
 
         let ft_lib = FREE_TYPE_LIBRARY
@@ -643,8 +624,7 @@ impl XeTeXFontBase {
             handle = ttstub_input_open(pathname, FileFormat::Type1, 0);
         }
         if handle.is_null() {
-            *status = 1;
-            return;
+            return 1;
         }
 
         let sz = ttstub_input_get_size(handle);
@@ -663,8 +643,7 @@ impl XeTeXFontBase {
             &mut self.ft_face,
         ) != 0;
         if error || !FT_IS_SCALABLE(self.ft_face) {
-            *status = 1;
-            return;
+            return 1;
         }
 
         if index == 0 && !FT_IS_SFNT(self.ft_face) {
@@ -731,18 +710,24 @@ impl XeTeXFontBase {
             self.units_per_em as libc::c_int,
         );
         hb_font_set_ppem(self.hb_font, 0, 0);
+
+        0
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    pub unsafe fn initialize(&mut self, pathname: *const libc::c_char, index: libc::c_int) -> i32 {
+        self.initialize_common(pathname, index)
     }
 
     #[cfg(target_os = "macos")]
-    pub unsafe fn initialize_mac(&mut self, status: &mut libc::c_int) {
+    pub unsafe fn initialize(&mut self) -> i32 {
         if self.descriptor == 0 {
-            *status = 1;
-            return;
+            return 1;
         }
 
-        if *status != 0 {
-            self.descriptor = 0;
-        }
+        // if *status != 0 {
+        //     self.descriptor = 0;
+        // }
 
         let empty_cascade_list =
             CFArrayCreate(ptr::null(), ptr::null(), 0, &mut kCFTypeArrayCallBacks);
@@ -768,11 +753,11 @@ impl XeTeXFontBase {
         if self.font_ref != 0 {
             let mut index = 0;
             let pathname = getFileNameFromCTFont(self.font_ref, &mut index);
-            self.initialize(pathname, index, status);
+            self.initialize_common(pathname, index, status)
         } else {
-            *status = 1;
             CFRelease(self.descriptor);
             self.descriptor = 0;
+            1
         }
     }
 
@@ -1026,7 +1011,7 @@ impl XeTeXFontBase {
     }
 
     pub(crate) unsafe fn map_char_to_glyph(&self, ch: UChar32) -> GlyphID {
-        FT_Get_Char_Index(self.ft_face, ch as u32) as GlyphID
+        FT_Get_Char_Index(self.ft_face, ch as libc::c_ulong) as GlyphID
     }
 
     pub(crate) unsafe fn get_first_char_code(&self) -> UChar32 {
