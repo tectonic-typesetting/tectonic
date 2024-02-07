@@ -5,9 +5,6 @@ use crate::c_api::fc::sys::{
     FC_FULLNAME, FC_INDEX, FC_SLANT, FC_STYLE, FC_WEIGHT, FC_WIDTH,
 };
 use crate::c_api::font::XeTeXFontBase;
-use crate::c_api::unicode::{
-    ucnv_close, ucnv_fromUChars, ucnv_open, ucnv_toUChars, UConverter, U_SUCCESS, U_ZERO_ERROR,
-};
 use crate::c_api::{fc, Fixed, PlatformFontRef, RsFix2D};
 use std::cell::{Cell, RefCell};
 use std::ffi::{CStr, CString};
@@ -17,6 +14,9 @@ use tectonic_bridge_freetype2::{
     FT_Init_FreeType, FT_Library, FT_New_Face, FT_SfntName, FT_Sfnt_Tag, TT_Header, TT_Postscript,
     FT_IS_SFNT, TT_MAC_ID_ROMAN, TT_OS2, TT_PLATFORM_APPLE_UNICODE, TT_PLATFORM_MACINTOSH,
     TT_PLATFORM_MICROSOFT,
+};
+use tectonic_bridge_icu::{
+    ucnv_close, ucnv_fromUChars, ucnv_open, ucnv_toUChars, UConverter, U_SUCCESS, U_ZERO_ERROR,
 };
 
 pub const FONT_FAMILY_NAME: libc::c_ushort = 1;
@@ -126,7 +126,7 @@ impl FontManagerBackend for FcBackend {
             panic!("cannot read font names");
         }
 
-        let pat = FcNameParse(c!(":outline=true"));
+        let pat = fc::OwnPattern::from_name(cstr!(":outline=true")).unwrap();
         let os = FcObjectSetBuild(
             FC_FAMILY,
             FC_STYLE,
@@ -139,9 +139,8 @@ impl FontManagerBackend for FcBackend {
             FC_FONTFORMAT,
             ptr::null::<()>(),
         );
-        self.all_fonts = FcFontList(FcConfigGetCurrent(), pat, os);
+        self.all_fonts = FcFontList(FcConfigGetCurrent(), pat.as_raw(), os);
         FcObjectSetDestroy(os);
-        FcPatternDestroy(pat);
         self.cached_all = false;
     }
 
@@ -165,11 +164,11 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr {
+    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr {
         if let Ok(str) = font.get::<fc::pat::File>(0) {
             str
         } else {
-            CStr::from_ptr(c!("[unknown]"))
+            cstr!("[unknown]")
         }
     }
 
