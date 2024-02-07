@@ -31,6 +31,15 @@ mod linkage {
     use tectonic_bridge_fontconfig as clipyrenamehack6;
 }
 
+macro_rules! cstr {
+    ($lit:literal) => {
+        // SAFETY: C string passed to from_ptr guaranteed to end with a null due to concat!
+        unsafe {
+            ::std::ffi::CStr::from_ptr(concat!($lit, "\0") as *const str as *const ::libc::c_char)
+        }
+    };
+}
+
 macro_rules! c {
     ($lit:literal) => {
         concat!($lit, "\0") as *const str as *const libc::c_char
@@ -51,8 +60,6 @@ mod c_api {
     mod fc;
     mod font;
     mod manager;
-    /// cbindgen:ignore
-    mod unicode;
 
     pub(crate) struct SyncPtr<T>(*mut T);
     unsafe impl<T> Send for SyncPtr<T> {}
