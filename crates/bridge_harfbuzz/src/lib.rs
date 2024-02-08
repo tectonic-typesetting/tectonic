@@ -228,7 +228,7 @@ pub enum hb_direction_t {
     Btt,
 }
 
-#[link(name = "harfbuzz", kind = "static")]
+// #[link(name = "harfbuzz", kind = "static")]
 extern "C" {
     pub fn hb_font_funcs_create() -> *mut hb_font_funcs_t;
     pub fn hb_font_funcs_set_nominal_glyph_func(
