@@ -8,10 +8,7 @@
 //! Specifically, on macOS we use CoreText. On all other platforms, including
 //! Windows, we use Fontconfig to discover fonts.
 
-use std::{
-    env,
-    path::{Path, PathBuf},
-};
+use std::{env, path::PathBuf};
 use tectonic_cfg_support::target_cfg;
 use tectonic_dep_support::{Configuration, Dependency, Spec};
 

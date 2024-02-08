@@ -413,7 +413,6 @@ pub type FT_String = libc::c_char;
 pub type FT_Generic_Finalizer = extern "C" fn(object: *mut ());
 pub type FT_Pointer = *mut ();
 
-#[link(name = "freetype", kind = "static")]
 extern "C" {
     pub fn FT_Get_Char_Index(face: FT_Face, charcode: libc::c_ulong) -> libc::c_uint;
     pub fn FT_Face_GetCharVariantIndex(
