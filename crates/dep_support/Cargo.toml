@@ -17,4 +17,5 @@ edition = "2018"
 
 [dependencies]
 pkg-config = "^0.3"
-vcpkg = "^0.2.11"
+# FIXME: THIS CANNOT SHIP LIKE THIS DO NOT MERGE WITH THIS HERE THIS IS JUST FOR TESTING
+vcpkg = { version = "^0.2.11", git = "https://github.com/CraftSpider/vcpkg-rs/", branch = "expose-version" }
