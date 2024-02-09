@@ -22,17 +22,7 @@ workspace directory.
 
 [tectonic-toml]: ../ref/tectonic-toml.md
 
-It will also create placeholder source files in a `src` subdirectory:
-`index.tex`, `_preamble.tex`, and `_postamble.tex`. The default build command
-will process these files in the expected order:
-
-1. `src/_preamble.tex`
-2. `src/index.tex`
-3. `src/_postamble.tex`
-
-The intention of this framework is to allow you to isolate the main content of
-your document from the usual LaTeX boilerplate. There are no restrictions on
-what kind of content may be placed in each file, though.
+It will also create a placeholder source file in `src/main.tex`.
 
 #### See Also
 
