@@ -41,6 +41,13 @@ fn main() {
 
     dep.emit();
 
+    let icu_version = dep.version().split(".").collect::<Vec<_>>();
+    let &[major, minor, ..] = &*icu_version else {
+        panic!()
+    };
+    println!("cargo:rustc-env=ICU_MAJOR_VERSION={}", major);
+    println!("cargo:rustc-env=ICU_MINOR_VERSION={}", minor);
+
     // vcpkg-rs is not guaranteed to emit libraries in the order required by a
     // single-pass linker, so we might need to make sure that's done right.
 
