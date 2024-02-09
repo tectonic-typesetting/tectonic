@@ -91,7 +91,7 @@ impl Document {
         let mut outputs = HashMap::new();
 
         for toml_output in &doc.outputs {
-            let output = toml_output.to_runtime();
+            let output: OutputProfile = toml_output.into();
 
             if outputs.insert(output.name.clone(), output).is_some() {
                 bail!(
@@ -125,7 +125,7 @@ impl Document {
         let outputs = self
             .outputs
             .values()
-            .map(syntax::TomlOutputProfile::from_runtime)
+            .map(syntax::TomlOutputProfile::from)
             .collect();
 
         let doc = syntax::TomlDocument {
@@ -215,14 +215,8 @@ pub struct OutputProfile {
     /// The name of the TeX format used by this profile.
     pub tex_format: String,
 
-    /// The name of the preamble file within the `src` directory.
-    pub preamble_file: String,
-
-    /// The name of the index (main) file within the `src` directory.
-    pub index_file: String,
-
-    /// The name of the postamble file within the `src` directory.
-    pub postamble_file: String,
+    /// The input files we should use to build this document
+    pub inputs: Vec<String>,
 
     /// Whether TeX's shell-escape feature should be activated in this profile.
     ///
@@ -310,9 +304,11 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
             name: "default".to_owned(),
             target_type: BuildTargetType::Pdf,
             tex_format: "latex".to_owned(),
-            preamble_file: DEFAULT_PREAMBLE_FILE.to_owned(),
-            index_file: DEFAULT_INDEX_FILE.to_owned(),
-            postamble_file: DEFAULT_POSTAMBLE_FILE.to_owned(),
+            inputs: vec![
+                DEFAULT_PREAMBLE_FILE.to_owned(),
+                DEFAULT_INDEX_FILE.to_owned(),
+                DEFAULT_POSTAMBLE_FILE.to_owned(),
+            ],
             shell_escape: false,
             shell_escape_cwd: None,
         },

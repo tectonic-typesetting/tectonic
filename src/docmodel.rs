@@ -151,14 +151,9 @@ impl DocumentExt for Document {
         };
 
         let mut input_buffer = String::new();
-        if !profile.preamble_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.preamble_file)?;
-        }
-        if !profile.index_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.index_file)?;
-        }
-        if !profile.postamble_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.postamble_file)?;
+
+        for f in &profile.inputs {
+            writeln!(input_buffer, "\\input{{{}}}", f)?;
         }
 
         let mut sess_builder =
