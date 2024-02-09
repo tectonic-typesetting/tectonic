@@ -13,10 +13,8 @@ macro_rules! versioned_names {
         )+
     ) => {
         $(
-        paste::paste! {
-            #[link(name = "[< $name _ env!(\"ICU_MAJOR_VERSION\") >]")]
-            pub fn $name($($argname: $argty),*) $(-> $output)?;
-        }
+        #[link_name = concat!(stringify!($name), "_", env!("ICU_MAJOR_VERSION"))]
+        pub fn $name($($argname: $argty),*) $(-> $output)?;
         )*
     };
 }
