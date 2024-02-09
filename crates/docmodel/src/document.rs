@@ -22,23 +22,11 @@ use tectonic_errors::prelude::*;
 use crate::syntax;
 use crate::workspace::WorkspaceCreator;
 
-/// The default filesystem name for the "preamble" file of a document.
+/// The default files used to build a document.
 ///
 /// This default can be overridden on an output-by-output basis in
 /// `Tectonic.toml`.
-pub const DEFAULT_PREAMBLE_FILE: &str = "_preamble.tex";
-
-/// The default filesystem name for the main "index" file of a document.
-///
-/// This default can be overridden on an output-by-output basis in
-/// `Tectonic.toml`.
-pub const DEFAULT_INDEX_FILE: &str = "index.tex";
-
-/// The default filesystem name for the "postamble" file of a document.
-///
-/// This default can be overridden on an output-by-output basis in
-/// `Tectonic.toml`.
-pub const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
+pub const DEFAULT_INPUTS: &[&str] = &["_preamble.tex", "index.tex", "_postamble.tex"];
 
 /// A Tectonic document.
 #[derive(Debug)]
@@ -216,7 +204,7 @@ pub struct OutputProfile {
     pub tex_format: String,
 
     /// The input files we should use to build this document
-    pub inputs: Vec<String>,
+    pub inputs: Vec<InputFile>,
 
     /// Whether TeX's shell-escape feature should be activated in this profile.
     ///
@@ -243,6 +231,16 @@ pub enum BuildTargetType {
 
     /// Output to the Portable Document Format (PDF).
     Pdf,
+}
+
+/// The output target type of a document build.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum InputFile {
+    /// A file system path.
+    File(String),
+
+    /// An inline file.
+    Inline(String),
 }
 
 impl Document {
@@ -304,11 +302,10 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
             name: "default".to_owned(),
             target_type: BuildTargetType::Pdf,
             tex_format: "latex".to_owned(),
-            inputs: vec![
-                DEFAULT_PREAMBLE_FILE.to_owned(),
-                DEFAULT_INDEX_FILE.to_owned(),
-                DEFAULT_POSTAMBLE_FILE.to_owned(),
-            ],
+            inputs: DEFAULT_INPUTS
+                .iter()
+                .map(|x| InputFile::File(x.to_string()))
+                .collect(),
             shell_escape: false,
             shell_escape_cwd: None,
         },

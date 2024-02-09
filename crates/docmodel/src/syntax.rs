@@ -6,8 +6,8 @@
 //!
 //! This module is only used by [`crate::document::Document`]
 
-use crate::document::{BuildTargetType, OutputProfile};
-use serde::{Deserialize, Serialize};
+use crate::document::{BuildTargetType, InputFile, OutputProfile};
+use serde::{Deserialize, Serialize, Serializer};
 
 // This file is an exercise in Rust type conversion.
 //
@@ -32,6 +32,60 @@ pub struct TomlDocSection {
     pub metadata: Option<toml::Value>,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum StringOrInputVec {
+    String(TomlInputFile),
+    Vec(Vec<TomlInputFile>),
+}
+
+// Minor modification on the default serializer.
+// Omits array brackets when we only have one input file.
+impl Serialize for StringOrInputVec {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            Self::String(s) => s.serialize(serializer),
+            Self::Vec(v) => {
+                if v.len() == 1 {
+                    v[0].serialize(serializer)
+                } else {
+                    v.serialize(serializer)
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(untagged)]
+pub enum TomlInputFile {
+    Inline { inline: String },
+    Path(String),
+}
+
+impl From<&InputFile> for TomlInputFile {
+    fn from(val: &InputFile) -> TomlInputFile {
+        match val {
+            InputFile::Inline(inline) => TomlInputFile::Inline {
+                inline: inline.clone(),
+            },
+            InputFile::File(f) => TomlInputFile::Path(f.clone()),
+        }
+    }
+}
+
+impl From<TomlInputFile> for InputFile {
+    fn from(val: TomlInputFile) -> InputFile {
+        match val {
+            TomlInputFile::Inline { inline } => InputFile::Inline(inline),
+            TomlInputFile::Path(f) => InputFile::File(f),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct TomlOutputProfile {
@@ -46,7 +100,7 @@ pub struct TomlOutputProfile {
     // The ideal solution requires #[serde(flatten)],
     // which is incompatible with deny_unknown_fields.
     // This will have to do for now.
-    pub inputs: Option<Vec<String>>,
+    pub inputs: Option<StringOrInputVec>,
 
     // Old-fashioned file inputs
     // we might want to deprecate these eventually, or at least provide a warning.
@@ -63,18 +117,21 @@ impl From<&TomlOutputProfile> for OutputProfile {
         let shell_escape_default = val.shell_escape_cwd.is_some();
 
         let inputs = {
-            if let Some(ref inputs) = val.inputs {
-                inputs.clone()
+            if let Some(inputs) = &val.inputs {
+                match inputs {
+                    StringOrInputVec::String(s) => vec![s.clone().into()],
+                    StringOrInputVec::Vec(v) => v.iter().map(|x| x.clone().into()).collect(),
+                }
             } else {
                 let mut v = Vec::with_capacity(3);
                 if let Some(s) = &val.preamble_file {
-                    v.push(s.clone())
+                    v.push(TomlInputFile::Path(s.to_string()).into())
                 }
                 if let Some(s) = &val.index_file {
-                    v.push(s.clone())
+                    v.push(TomlInputFile::Path(s.to_string()).into())
                 }
                 if let Some(s) = &val.postamble_file {
-                    v.push(s.clone())
+                    v.push(TomlInputFile::Path(s.to_string()).into())
                 }
                 v
             }
@@ -104,6 +161,14 @@ impl From<&OutputProfile> for TomlOutputProfile {
             Some(rt.tex_format.clone())
         };
 
+        let inputs: StringOrInputVec = StringOrInputVec::Vec(
+            rt.inputs
+                .clone()
+                .iter()
+                .map(|x| TomlInputFile::from(x))
+                .collect(),
+        );
+
         let shell_escape = if !rt.shell_escape { None } else { Some(true) };
         let shell_escape_cwd = rt.shell_escape_cwd.clone();
 
@@ -111,7 +176,7 @@ impl From<&OutputProfile> for TomlOutputProfile {
             name: rt.name.clone(),
             target_type: TomlBuildTargetType::from(&rt.target_type),
             tex_format,
-            inputs: Some(rt.inputs.clone()),
+            inputs: Some(inputs),
             shell_escape,
             shell_escape_cwd,
             preamble_file: None,
