@@ -19,6 +19,7 @@ use std::{
 };
 use tectonic_errors::prelude::*;
 
+use crate::syntax;
 use crate::workspace::WorkspaceCreator;
 
 /// The default filesystem name for the "preamble" file of a document.
@@ -85,7 +86,7 @@ impl Document {
     ) -> Result<Self> {
         let mut toml_text = String::new();
         toml_data.read_to_string(&mut toml_text)?;
-        let doc: syntax::Document = toml::from_str(&toml_text)?;
+        let doc: syntax::TomlDocument = toml::from_str(&toml_text)?;
 
         let mut outputs = HashMap::new();
 
@@ -124,11 +125,11 @@ impl Document {
         let outputs = self
             .outputs
             .values()
-            .map(syntax::OutputProfile::from_runtime)
+            .map(syntax::TomlOutputProfile::from_runtime)
             .collect();
 
-        let doc = syntax::Document {
-            doc: syntax::DocSection {
+        let doc = syntax::TomlDocument {
+            doc: syntax::TomlDocSection {
                 name: self.name.clone(),
                 bundle: self.bundle_loc.clone(),
                 metadata: None,
@@ -317,169 +318,6 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
         },
     );
     outputs
-}
-
-/// The concrete syntax for saving document state, wired up via serde.
-mod syntax {
-    use super::{DEFAULT_INDEX_FILE, DEFAULT_POSTAMBLE_FILE, DEFAULT_PREAMBLE_FILE};
-    use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
-
-    #[derive(Debug, Deserialize, Serialize)]
-    #[serde(deny_unknown_fields)]
-    pub struct Document {
-        pub doc: DocSection,
-
-        #[serde(rename = "output")]
-        pub outputs: Vec<OutputProfile>,
-    }
-
-    #[derive(Debug, Deserialize, Serialize)]
-    #[serde(deny_unknown_fields)]
-    pub struct DocSection {
-        pub name: String,
-        pub bundle: String,
-        pub metadata: Option<toml::Value>,
-    }
-
-    #[derive(Debug, Deserialize, Serialize)]
-    #[serde(deny_unknown_fields)]
-    pub struct OutputProfile {
-        pub name: String,
-        #[serde(rename = "type")]
-        pub target_type: BuildTargetType,
-        pub tex_format: Option<String>,
-        #[serde(rename = "preamble")]
-        pub preamble_file: Option<String>,
-        #[serde(rename = "index")]
-        pub index_file: Option<String>,
-        #[serde(rename = "postamble")]
-        pub postamble_file: Option<String>,
-        pub shell_escape: Option<bool>,
-        pub shell_escape_cwd: Option<String>,
-    }
-
-    impl OutputProfile {
-        pub fn from_runtime(rt: &super::OutputProfile) -> Self {
-            let tex_format = if rt.tex_format == "latex" {
-                None
-            } else {
-                Some(rt.tex_format.clone())
-            };
-
-            let preamble_file = if rt.preamble_file == DEFAULT_PREAMBLE_FILE {
-                None
-            } else {
-                Some(rt.preamble_file.clone())
-            };
-
-            let index_file = if rt.index_file == DEFAULT_INDEX_FILE {
-                None
-            } else {
-                Some(rt.index_file.clone())
-            };
-
-            let postamble_file = if rt.postamble_file == DEFAULT_POSTAMBLE_FILE {
-                None
-            } else {
-                Some(rt.postamble_file.clone())
-            };
-
-            let shell_escape = if !rt.shell_escape { None } else { Some(true) };
-            let shell_escape_cwd = rt.shell_escape_cwd.clone();
-
-            OutputProfile {
-                name: rt.name.clone(),
-                target_type: BuildTargetType::from_runtime(&rt.target_type),
-                tex_format,
-                preamble_file,
-                index_file,
-                postamble_file,
-                shell_escape,
-                shell_escape_cwd,
-            }
-        }
-
-        pub fn to_runtime(&self) -> super::OutputProfile {
-            let shell_escape_default = self.shell_escape_cwd.is_some();
-
-            super::OutputProfile {
-                name: self.name.clone(),
-                target_type: self.target_type.to_runtime(),
-                tex_format: self
-                    .tex_format
-                    .as_ref()
-                    .map(|s| s.as_ref())
-                    .unwrap_or("latex")
-                    .to_owned(),
-                preamble_file: self
-                    .preamble_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_PREAMBLE_FILE.to_owned()),
-                index_file: self
-                    .index_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_INDEX_FILE.to_owned()),
-                postamble_file: self
-                    .postamble_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
-                shell_escape: self.shell_escape.unwrap_or(shell_escape_default),
-                shell_escape_cwd: self.shell_escape_cwd.clone(),
-            }
-        }
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    pub enum BuildTargetType {
-        Html,
-        Pdf,
-    }
-
-    impl BuildTargetType {
-        pub fn from_runtime(rt: &super::BuildTargetType) -> Self {
-            match rt {
-                super::BuildTargetType::Html => BuildTargetType::Html,
-                super::BuildTargetType::Pdf => BuildTargetType::Pdf,
-            }
-        }
-
-        pub fn to_runtime(self) -> super::BuildTargetType {
-            match self {
-                BuildTargetType::Html => super::BuildTargetType::Html,
-                BuildTargetType::Pdf => super::BuildTargetType::Pdf,
-            }
-        }
-    }
-
-    impl Serialize for BuildTargetType {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            serializer.serialize_str(match *self {
-                BuildTargetType::Html => "html",
-                BuildTargetType::Pdf => "pdf",
-            })
-        }
-    }
-    impl<'de> Deserialize<'de> for BuildTargetType {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s = String::deserialize(deserializer)?;
-            Ok(match s.as_str() {
-                "html" => BuildTargetType::Html,
-                "pdf" => BuildTargetType::Pdf,
-                other => {
-                    return Err(<D as Deserializer>::Error::unknown_variant(
-                        other,
-                        &["html", "pdf"],
-                    ))
-                }
-            })
-        }
-    }
 }
 
 #[cfg(test)]
