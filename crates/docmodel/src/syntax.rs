@@ -161,13 +161,8 @@ impl From<&OutputProfile> for TomlOutputProfile {
             Some(rt.tex_format.clone())
         };
 
-        let inputs: StringOrInputVec = StringOrInputVec::Vec(
-            rt.inputs
-                .clone()
-                .iter()
-                .map(|x| TomlInputFile::from(x))
-                .collect(),
-        );
+        let inputs: StringOrInputVec =
+            StringOrInputVec::Vec(rt.inputs.clone().iter().map(TomlInputFile::from).collect());
 
         let shell_escape = if !rt.shell_escape { None } else { Some(true) };
         let shell_escape_cwd = rt.shell_escape_cwd.clone();
