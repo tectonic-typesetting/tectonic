@@ -12,6 +12,7 @@ use std::{
     fs::{self, File},
     io::{self, BufReader, Read, Write},
     path::{Path, PathBuf},
+    process,
     str::FromStr,
 };
 use tectonic_errors::prelude::*;
@@ -174,7 +175,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         Ok(bundle)
     }
 
-    // Build path for a bundle file
+    /// Build a cache path for the given bundle file
     fn get_file_path(&self, info: &T::InfoType) -> PathBuf {
         return self
             .cache_root
@@ -182,10 +183,27 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             .join(&info.path()[1..]);
     }
 
+    /// Build a temporary path for the given bundle file
+    /// To ensure safety with multiple instances of tectonic,
+    /// files are first downloaded to a known-unique location, then renamed.
+    fn get_file_path_tmp(&self, info: &T::InfoType) -> PathBuf {
+        return self
+            .cache_root
+            .join(format!("data/{}", self.bundle_hash.to_string(),))
+            .join(format!("{}-tmp-pid{}", &info.path()[1..], process::id()));
+    }
+
     fn ensure_index(&mut self) -> Result<()> {
         let target = self
             .cache_root
             .join(format!("data/{}.index", self.bundle_hash.to_string()));
+
+        // Download here, then rename to target
+        let tmp_target = self.cache_root.join(format!(
+            "data/{}.index-tmp-pid{}",
+            self.bundle_hash.to_string(),
+            process::id()
+        ));
 
         // We check for two things here:
         // - that the bundle index is initialized
@@ -198,8 +216,9 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             if self.bundle.index().is_initialized() {
                 return Ok(());
             } else {
-                let mut file = File::open(&target)?;
+                let mut file = File::open(&tmp_target)?;
                 self.bundle.initialize_index(&mut file)?;
+                fs::rename(&tmp_target, &target)?;
             }
         } else {
             let mut reader = self.bundle.get_index_reader()?;
@@ -210,8 +229,9 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             if self.bundle.index().is_initialized() {
                 return Ok(());
             } else {
-                let mut file = File::open(&target)?;
+                let mut file = File::open(&tmp_target)?;
                 self.bundle.initialize_index(&mut file)?;
+                fs::rename(&tmp_target, &target)?;
             }
         }
 
@@ -263,9 +283,15 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
         };
 
-        if let Err(e) = file_create_write(&target, |f| io::copy(&mut handle, f).map(|_| ())) {
+        // Download to a known-unique temporary location, then move.
+        // This prevents issues when running multiple processes.
+        let tmp_path = self.get_file_path_tmp(&info);
+        if let Err(e) = file_create_write(&tmp_path, |f| io::copy(&mut handle, f).map(|_| ())) {
             return OpenResult::Err(e);
         }
+        if let Err(e) = fs::rename(&tmp_path, &target) {
+            return OpenResult::Err(e.into());
+        };
 
         OpenResult::Ok(target)
     }
