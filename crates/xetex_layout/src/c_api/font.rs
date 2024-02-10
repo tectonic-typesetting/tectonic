@@ -366,14 +366,25 @@ pub unsafe extern "C" fn createFontFromFile(
     index: libc::c_int,
     point_size: Fixed,
 ) -> XeTeXFont {
-    let filename = if filename.is_null() {
-        None
-    } else {
-        Some(CStr::from_ptr(filename))
-    };
-    match XeTeXFontBase::new_path_index(filename, index, RsFix2D(point_size) as f32) {
-        Err(_) => ptr::null_mut(),
-        Ok(out) => Box::into_raw(Box::new(out)),
+    #[cfg(target_os = "macos")]
+    {
+        _ = filename;
+        _ = index;
+        _ = point_size;
+        panic!("This feature isn't currently implemented on Mac");
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let filename = if filename.is_null() {
+            None
+        } else {
+            Some(CStr::from_ptr(filename))
+        };
+        match XeTeXFontBase::new_path_index(filename, index, RsFix2D(point_size) as f32) {
+            Err(_) => ptr::null_mut(),
+            Ok(out) => Box::into_raw(Box::new(out)),
+        }
     }
 }
 
@@ -1247,7 +1258,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     }
 
     if !url.is_null() {
-        let mut pathname = [0u8; libc::PATH_MAX];
+        let mut pathname = [0u8; libc::PATH_MAX as usize];
         let ret = if CFURLGetFileSystemRepresentation(
             url.cast(),
             true,
@@ -1299,7 +1310,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                         FT_Done_Face(face);
                     }
                 }
-                free(ps_name1.cast().cast_mut());
+                free(ps_name1.cast::<libc::c_void>().cast_mut());
             }
 
             if *index != 0xFFFFFFFF {

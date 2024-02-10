@@ -18,8 +18,8 @@ unsafe fn find_font_with_name(name: CFStringRef, key: CFStringRef) -> CTFontDesc
 
     let attributes = CFDictionaryCreate(
         ptr::null_mut(),
-        &mut (keys as *const _).cast(),
-        &mut (values as *const _).cast(),
+        &mut (keys as *const [_]).cast(),
+        &mut (values as *const [_]).cast(),
         1,
         &kCFTypeDictionaryKeyCallBacks,
         &kCFTypeDictionaryValueCallBacks,
@@ -29,7 +29,7 @@ unsafe fn find_font_with_name(name: CFStringRef, key: CFStringRef) -> CTFontDesc
 
     let mandatory_attributes = CFSetCreate(
         ptr::null_mut(),
-        &mut (keys as *const _).cast(),
+        &mut (keys as *const [_]).cast(),
         1,
         &kCFTypeSetCallBacks,
     );
