@@ -39,35 +39,28 @@ pub struct ItarFileInfo {
 
 impl FileInfo for ItarFileInfo {
     fn name(&self) -> &str {
-        return &self.name;
+        &self.name
     }
     fn path(&self) -> &str {
-        return &self.name;
+        &self.name
     }
 }
 
 /// A simple FileIndex for compatiblity with [`crate::BundleCache`]
+#[derive(Default)]
 pub struct ItarFileIndex {
     content: HashMap<String, ItarFileInfo>,
-}
-
-impl ItarFileIndex {
-    fn new() -> Self {
-        ItarFileIndex {
-            content: HashMap::new(),
-        }
-    }
 }
 
 impl<'this> FileIndex<'this> for ItarFileIndex {
     type InfoType = ItarFileInfo;
 
     fn iter(&'this self) -> Box<dyn Iterator<Item = &'this ItarFileInfo> + 'this> {
-        return Box::new(self.content.values());
+        Box::new(self.content.values())
     }
 
     fn len(&self) -> usize {
-        return self.content.len();
+        self.content.len()
     }
 
     fn initialize(&mut self, reader: &mut dyn Read) -> Result<()> {
@@ -93,12 +86,12 @@ impl<'this> FileIndex<'this> for ItarFileIndex {
                 bail!("malformed index line");
             }
         }
-        return Ok(());
+        Ok(())
     }
 
     /// Find a file in this index
     fn search(&'this mut self, name: &str) -> Option<ItarFileInfo> {
-        return self.content.get(name).cloned();
+        self.content.get(name).cloned()
     }
 }
 
@@ -122,7 +115,7 @@ impl ItarBundle {
     /// It will succeed even in we can't connect to the bundle, or if we're given a bad url.
     pub fn new(url: String) -> Result<ItarBundle> {
         Ok(ItarBundle {
-            index: ItarFileIndex::new(),
+            index: ItarFileIndex::default(),
             reader: None,
             url,
         })
@@ -147,7 +140,7 @@ impl ItarBundle {
         let mut reader = self.get_index_reader()?;
         self.index.initialize(&mut reader)?;
 
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -157,19 +150,18 @@ impl IoProvider for ItarBundle {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
-        match self.ensure_index() {
-            Err(e) => return OpenResult::Err(e),
-            _ => {}
+        if let Err(e) = self.ensure_index() {
+            return OpenResult::Err(e);
         };
 
-        let info = match self.index.search(&name) {
+        let info = match self.index.search(name) {
             Some(a) => a,
             None => return OpenResult::NotAvailable,
         };
 
         // Retries are handled in open_fileinfo,
         // since BundleCache never calls input_open_name.
-        return self.open_fileinfo(&info, status);
+        self.open_fileinfo(&info, status)
     }
 }
 
@@ -203,27 +195,27 @@ impl Bundle for ItarBundle {
 
 impl<'this> CachableBundle<'this, ItarFileIndex> for ItarBundle {
     fn get_location(&mut self) -> String {
-        return self.url.clone();
+        self.url.clone()
     }
 
     fn initialize_index(&mut self, source: &mut dyn Read) -> Result<()> {
         self.index.initialize(source)?;
-        return Ok(());
+        Ok(())
     }
 
     fn index(&mut self) -> &mut ItarFileIndex {
-        return &mut self.index;
+        &mut self.index
     }
 
     fn search(&mut self, name: &str) -> Option<ItarFileInfo> {
-        return self.index.search(name);
+        self.index.search(name)
     }
 
     fn get_index_reader(&mut self) -> Result<Box<dyn Read>> {
         let mut geturl_backend = DefaultBackend::default();
         let index_url = format!("{}.index.gz", &self.url);
         let reader = GzDecoder::new(geturl_backend.get_url(&index_url)?);
-        return Ok(Box::new(reader));
+        Ok(Box::new(reader))
     }
 
     fn open_fileinfo(
@@ -287,9 +279,9 @@ impl<'this> CachableBundle<'this, ItarFileIndex> for ItarBundle {
             ));
         }
 
-        return OpenResult::Err(anyhow!(
+        OpenResult::Err(anyhow!(
             "failed to download \"{}\"; please check your network connection.",
             info.name
-        ));
+        ))
     }
 }

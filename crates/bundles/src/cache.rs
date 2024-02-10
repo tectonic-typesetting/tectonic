@@ -169,16 +169,16 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         // shouldn't be too hard, but isn't necessary yet.
         ensure_dir!(&bundle
             .cache_root
-            .join(&format!("data/{}", bundle.bundle_hash.to_string())));
+            .join(format!("data/{}", bundle.bundle_hash.to_string())));
 
-        return Ok(bundle);
+        Ok(bundle)
     }
 
     // Build path for a bundle file
     fn get_file_path(&self, info: &T::InfoType) -> PathBuf {
         return self
             .cache_root
-            .join(&format!("data/{}", self.bundle_hash.to_string()))
+            .join(format!("data/{}", self.bundle_hash.to_string()))
             .join(&info.path()[1..]);
     }
 
@@ -215,7 +215,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
     /// Get a FileInfo from a name.
@@ -223,9 +223,8 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
     /// if this file is already in our cache and can be retrieved
     /// without touching the backing bundle.
     fn get_fileinfo(&mut self, name: &str) -> OpenResult<(bool, T::InfoType)> {
-        match self.ensure_index() {
-            Ok(_) => {}
-            Err(e) => return OpenResult::Err(e),
+        if let Err(e) = self.ensure_index() {
+            return OpenResult::Err(e);
         };
 
         let info = match self.bundle.search(name) {
@@ -234,7 +233,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         };
 
         let target = self.get_file_path(&info);
-        return OpenResult::Ok((target.exists(), info));
+        OpenResult::Ok((target.exists(), info))
     }
 
     /// Fetch a file from the bundle backing this cache.
@@ -245,7 +244,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         status: &mut dyn StatusBackend,
     ) -> OpenResult<PathBuf> {
         let target = self.get_file_path(&info);
-        fs::create_dir_all(&target.parent().unwrap()).unwrap();
+        fs::create_dir_all(target.parent().unwrap()).unwrap();
 
         // Already in the cache?
         if target.exists() {

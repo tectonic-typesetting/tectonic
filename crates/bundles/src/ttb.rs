@@ -40,12 +40,12 @@ impl TryFrom<[u8; 70]> for TTBv1Header {
             bail!("wrong ttb version");
         }
 
-        return Ok(TTBv1Header {
+        Ok(TTBv1Header {
             digest,
             index_start,
             index_real_len,
             index_gzip_len,
-        });
+        })
     }
 }
 
@@ -62,13 +62,14 @@ pub struct TTBFileInfo {
 
 impl FileInfo for TTBFileInfo {
     fn name(&self) -> &str {
-        return &self.name;
+        &self.name
     }
     fn path(&self) -> &str {
-        return &self.path;
+        &self.path
     }
 }
 
+#[derive(Default)]
 pub struct TTBFileIndex {
     // Vector of fileinfos.
     // This MUST be sorted by path for search() to work properly!
@@ -82,17 +83,6 @@ pub struct TTBFileIndex {
 }
 
 impl TTBFileIndex {
-    pub fn new() -> Self {
-        return Self {
-            content: Vec::new(),
-            search_orders: HashMap::new(),
-            default_search_order: String::new(),
-            search_cache: HashMap::new(),
-        };
-    }
-}
-
-impl TTBFileIndex {
     fn read_filelist_line(&mut self, line: String) -> Result<()> {
         let mut bits = line.split_whitespace();
 
@@ -103,7 +93,7 @@ impl TTBFileIndex {
             bits.next(),
             bits.next(),
         ) {
-            let (_, name) = path.rsplit_once("/").unwrap();
+            let (_, name) = path.rsplit_once('/').unwrap();
 
             self.content.push(TTBFileInfo {
                 start: start.parse::<u64>()?,
@@ -121,18 +111,18 @@ impl TTBFileIndex {
             bail!("malformed FILELIST line");
         }
 
-        return Ok(());
+        Ok(())
     }
 
     fn read_search_line(&mut self, name: String, line: String) -> Result<()> {
-        let stat = self.search_orders.entry(name).or_insert(Vec::new());
+        let stat = self.search_orders.entry(name).or_default();
         stat.push(line);
-        return Ok(());
+        Ok(())
     }
 
     fn read_defaultsearch_line(&mut self, line: String) -> Result<()> {
         self.default_search_order = line;
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -144,7 +134,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
     }
 
     fn len(&self) -> usize {
-        return self.content.len();
+        self.content.len()
     }
 
     fn initialize(&mut self, reader: &mut dyn Read) -> Result<()> {
@@ -157,7 +147,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
         for line in BufReader::new(reader).lines() {
             let line = line?;
 
-            if line.starts_with("[") {
+            if line.starts_with('[') {
                 mode = line[1..line.len() - 1].to_owned();
                 continue;
             }
@@ -166,7 +156,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
                 continue;
             }
 
-            let (cmd, arg) = mode.rsplit_once(":").unwrap_or((&mode[..], ""));
+            let (cmd, arg) = mode.rsplit_once(':').unwrap_or((&mode[..], ""));
 
             match cmd {
                 "DEFAULTSEARCH" => self.read_defaultsearch_line(line)?,
@@ -176,7 +166,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
     fn search(&'this mut self, name: &str) -> Option<TTBFileInfo> {
@@ -188,7 +178,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
         let search = self.search_orders.get(&self.default_search_order).unwrap();
 
         // Edge case: absolute paths
-        if name.starts_with("/") {
+        if name.starts_with('/') {
             return None;
         }
 
@@ -197,7 +187,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
         // `fithesis4` is one example.
         let relative_parent: bool;
 
-        let n = match name.rsplit_once("/") {
+        let n = match name.rsplit_once('/') {
             Some(n) => {
                 relative_parent = true;
                 n.1
@@ -213,8 +203,8 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
         let mut infos: Vec<&TTBFileInfo> = Vec::new();
         for i in self.iter() {
             if i.name() == n {
-                infos.push(&i);
-            } else if infos.len() != 0 {
+                infos.push(i);
+            } else if !infos.is_empty() {
                 // infos is sorted, so we can stop searching now.
                 break;
             }
@@ -233,7 +223,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
             }
             let matching = Some(matching?.clone());
             self.search_cache.insert(name.to_owned(), matching.clone());
-            return matching;
+            matching
         } else {
             // Even if paths.len() is 1, we don't return here.
             // We need to make sure this file matches a search path:
@@ -255,13 +245,13 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
                         }
                     }
                 }
-                if picked.len() != 0 {
+                if !picked.is_empty() {
                     break;
                 }
             }
 
             let r = {
-                if picked.len() == 0 {
+                if picked.is_empty() {
                     // No file in our search dirs had this name.
                     None
                 } else if picked.len() == 1 {
@@ -275,13 +265,13 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
                     // We found multiple files with this name, all of which
                     // have the same priority. Pick alphabetically to emulate
                     // an "alphabetic DFS" search order.
-                    picked.sort_by(|a, b| a.path().cmp(&b.path()));
+                    picked.sort_by(|a, b| a.path().cmp(b.path()));
                     Some(picked[0].clone())
                 }
             };
 
             self.search_cache.insert(name.to_owned(), r.clone());
-            return r;
+            r
         }
     }
 }

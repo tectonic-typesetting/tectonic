@@ -29,7 +29,7 @@ use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
 fn read_fileinfo(fileinfo: &TTBFileInfo, reader: &mut DefaultRangeReader) -> Result<Box<dyn Read>> {
     // fileinfo.length is a u32, so it must fit inside a usize (assuming 32/64-bit machine).
     let stream = reader.read_range(fileinfo.start, fileinfo.gzip_len as usize)?;
-    return Ok(Box::new(GzDecoder::new(stream)));
+    Ok(Box::new(GzDecoder::new(stream)))
 }
 
 /// Access ttbv1 bundle hosted on the internet.
@@ -58,7 +58,7 @@ impl TTBNetBundle<TTBFileIndex> {
     pub fn new(url: String) -> Result<Self> {
         Ok(TTBNetBundle {
             reader: None,
-            index: TTBFileIndex::new(),
+            index: TTBFileIndex::default(),
             url,
         })
     }
@@ -69,7 +69,7 @@ impl TTBNetBundle<TTBFileIndex> {
         }
         let geturl_backend = DefaultBackend::default();
         self.reader = Some(geturl_backend.open_range_reader(&self.url));
-        return Ok(());
+        Ok(())
     }
 
     fn get_header(&mut self) -> Result<TTBv1Header> {
@@ -81,7 +81,7 @@ impl TTBNetBundle<TTBFileIndex> {
             .read_range(0, 70)?
             .read_exact(&mut header)?;
         let header = TTBv1Header::try_from(header)?;
-        return Ok(header);
+        Ok(header)
     }
 
     // Fill this bundle's index if it is empty.
@@ -92,7 +92,7 @@ impl TTBNetBundle<TTBFileIndex> {
 
         let mut reader = self.get_index_reader()?;
         self.index.initialize(&mut reader)?;
-        return Ok(());
+        Ok(())
     }
 }
 
@@ -102,19 +102,18 @@ impl IoProvider for TTBNetBundle<TTBFileIndex> {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
-        match self.ensure_index() {
-            Err(e) => return OpenResult::Err(e),
-            _ => {}
+        if let Err(e) = self.ensure_index() {
+            return OpenResult::Err(e);
         };
 
-        let info = match self.index.search(&name) {
+        let info = match self.index.search(name) {
             None => return OpenResult::NotAvailable,
             Some(s) => s,
         };
 
         // Retries are handled in open_fileinfo,
         // since BundleCache never calls input_open_name.
-        return self.open_fileinfo(&info, status);
+        self.open_fileinfo(&info, status)
     }
 }
 
@@ -125,33 +124,33 @@ impl Bundle for TTBNetBundle<TTBFileIndex> {
 
     fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {
         let header = self.get_header()?;
-        return Ok(header.digest);
+        Ok(header.digest)
     }
 }
 
 impl<'this> CachableBundle<'this, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
     fn get_location(&mut self) -> String {
-        return self.url.clone();
+        self.url.clone()
     }
 
     fn initialize_index(&mut self, source: &mut dyn Read) -> Result<()> {
         self.index.initialize(source)?;
-        return Ok(());
+        Ok(())
     }
 
     fn index(&mut self) -> &mut TTBFileIndex {
-        return &mut self.index;
+        &mut self.index
     }
 
     fn search(&mut self, name: &str) -> Option<TTBFileInfo> {
-        return self.index.search(name);
+        self.index.search(name)
     }
 
     fn get_index_reader(&mut self) -> Result<Box<dyn Read>> {
         self.connect_reader()?;
         let header = self.get_header()?;
 
-        return Ok(read_fileinfo(
+        read_fileinfo(
             &TTBFileInfo {
                 start: header.index_start,
                 gzip_len: header.index_gzip_len,
@@ -161,7 +160,7 @@ impl<'this> CachableBundle<'this, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
                 hash: None,
             },
             self.reader.as_mut().unwrap(),
-        )?);
+        )
     }
 
     fn open_fileinfo(
@@ -184,7 +183,7 @@ impl<'this> CachableBundle<'this, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
 
         // Get file with retries
         for i in 0..NET_RETRY_ATTEMPTS {
-            let mut reader = match read_fileinfo(&info, self.reader.as_mut().unwrap()) {
+            let mut reader = match read_fileinfo(info, self.reader.as_mut().unwrap()) {
                 Ok(r) => r,
                 Err(e) => {
                     tt_warning!(status,
@@ -215,9 +214,9 @@ impl<'this> CachableBundle<'this, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
             ));
         }
 
-        return OpenResult::Err(anyhow!(
+        OpenResult::Err(anyhow!(
             "failed to download \"{}\"; please check your network connection.",
             info.name
-        ));
+        ))
     }
 }

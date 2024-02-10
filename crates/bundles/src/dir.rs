@@ -61,11 +61,10 @@ impl Bundle for DirBundle {
     fn all_files(&self) -> Vec<String> {
         fs::read_dir(self.0.root())
             .unwrap()
-            .filter(|x| x.is_ok())
-            .map(|x| x.unwrap())
+            .filter_map(|x| x.ok())
             .filter(|x| !x.file_type().map(|x| x.is_dir()).unwrap_or(false))
             .map(|x| x.file_name().to_str().unwrap_or("").to_owned())
-            .filter(|x| x.len() != 0)
+            .filter(|x| !x.is_empty())
             .collect()
     }
 

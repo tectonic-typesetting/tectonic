@@ -24,9 +24,9 @@ use tectonic_status_base::StatusBackend;
 /// We assume that `fileinfo` points to a valid file in this bundle.
 fn read_fileinfo<'a>(fileinfo: &TTBFileInfo, reader: &'a mut File) -> Result<Box<dyn Read + 'a>> {
     reader.seek(SeekFrom::Start(fileinfo.start))?;
-    return Ok(Box::new(GzDecoder::new(
+    Ok(Box::new(GzDecoder::new(
         reader.take(fileinfo.gzip_len as u64),
-    )));
+    )))
 }
 
 /// A bundle backed by a ZIP file.
@@ -45,7 +45,7 @@ impl TTBFsBundle<TTBFileIndex> {
     pub fn new(file: File) -> Result<Self> {
         Ok(TTBFsBundle {
             file,
-            index: TTBFileIndex::new(),
+            index: TTBFileIndex::default(),
         })
     }
 
@@ -55,7 +55,7 @@ impl TTBFsBundle<TTBFileIndex> {
         self.file.read_exact(&mut header)?;
         self.file.seek(SeekFrom::Start(0))?;
         let header = TTBv1Header::try_from(header)?;
-        return Ok(header);
+        Ok(header)
     }
 
     // Fill this bundle's search rules, fetching files from our backend.
@@ -73,7 +73,7 @@ impl TTBFsBundle<TTBFileIndex> {
         let mut reader = read_fileinfo(&info, &mut self.file)?;
         self.index.initialize(&mut reader)?;
 
-        return Ok(());
+        Ok(())
     }
 
     /// Open a file on the filesystem as a zip bundle.
@@ -89,14 +89,13 @@ impl IoProvider for TTBFsBundle<TTBFileIndex> {
         _status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         // Fetch index if it is empty
-        if self.index.len() == 0 {
-            match self.fill_index() {
-                Err(e) => return OpenResult::Err(e.into()),
-                _ => {}
+        if self.index.is_empty() {
+            if let Err(e) = self.fill_index() {
+                return OpenResult::Err(e);
             }
         }
 
-        let info = match self.index.search(&name) {
+        let info = match self.index.search(name) {
             None => return OpenResult::NotAvailable,
             Some(s) => s,
         };
@@ -104,18 +103,19 @@ impl IoProvider for TTBFsBundle<TTBFileIndex> {
         let mut v: Vec<u8> = Vec::with_capacity(info.real_len as usize);
 
         match read_fileinfo(&info, &mut self.file) {
-            Err(e) => return OpenResult::Err(e.into()),
-            Ok(mut b) => match b.read_to_end(&mut v) {
-                Err(e) => return OpenResult::Err(e.into()),
-                Ok(_) => {}
-            },
+            Err(e) => return OpenResult::Err(e),
+            Ok(mut b) => {
+                if let Err(e) = b.read_to_end(&mut v) {
+                    return OpenResult::Err(e.into());
+                }
+            }
         };
 
-        return OpenResult::Ok(InputHandle::new_read_only(
+        OpenResult::Ok(InputHandle::new_read_only(
             name,
             Cursor::new(v),
             InputOrigin::Other,
-        ));
+        ))
     }
 }
 
@@ -126,6 +126,6 @@ impl Bundle for TTBFsBundle<TTBFileIndex> {
 
     fn get_digest(&mut self) -> Result<DigestData> {
         let header = self.get_header()?;
-        return Ok(header.digest.clone());
+        Ok(header.digest)
     }
 }

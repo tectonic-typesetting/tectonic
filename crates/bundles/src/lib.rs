@@ -66,11 +66,16 @@ where
     /// Get the number of [`FileInfo`]s in this index
     fn len(&self) -> usize;
 
+    /// Returns true if this index is empty
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Has this index been filled with bundle data?
     /// This is always false until we call [`self.initialize()`],
     /// and is always true afterwards.
     fn is_initialized(&self) -> bool {
-        return self.len() != 0;
+        !self.is_empty()
     }
 
     /// Fill this index from a file
@@ -283,5 +288,5 @@ pub fn get_fallback_bundle(format_version: u32, only_cached: bool) -> Result<Box
     if bundle.is_none() {
         bail!("could not open default bundle")
     }
-    return Ok(bundle.unwrap());
+    Ok(bundle.unwrap())
 }
