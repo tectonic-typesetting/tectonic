@@ -52,6 +52,7 @@ mod c_api {
     use tectonic_io_base::InputHandle;
 
     mod engine;
+    #[cfg(not(target_os = "macos"))]
     /// cbindgen:ignore
     mod fc;
     mod font;
