@@ -1,5 +1,14 @@
 #[cfg(not(target_os = "macos"))]
 use crate::c_api::fc;
+#[cfg(target_os = "macos")]
+use crate::c_api::mac_core::{
+    kCFStringEncodingUTF8, kCFTypeArrayCallBacks, kCFTypeDictionaryKeyCallBacks,
+    kCFTypeDictionaryValueCallBacks, kCTFontCascadeListAttribute, kCTFontPostScriptNameKey,
+    kCTFontURLAttribute, CFArrayCreate, CFDictionaryCreate, CFIndex, CFRelease, CFStringGetCString,
+    CFStringGetLength, CFStringRef, CFURLGetFileSystemRepresentation, CGFloat, CTFontCopyAttribute,
+    CTFontCopyName, CTFontCreateWithFontDescriptor, CTFontDescriptorCreateCopyWithAttributes,
+    CTFontDescriptorRef, CTFontRef,
+};
 use crate::c_api::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xbasename,
     xcalloc, xmalloc, xstrdup, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RsD2Fix, RsFix2D,
@@ -592,7 +601,7 @@ impl XeTeXFontBase {
             backing_data2: ptr::null_mut(),
             hb_font: ptr::null_mut(),
             descriptor,
-            font_ref: 0,
+            font_ref: ptr::null(),
         };
         let status = out.initialize();
         if status != 0 {
@@ -721,42 +730,38 @@ impl XeTeXFontBase {
 
     #[cfg(target_os = "macos")]
     pub unsafe fn initialize(&mut self) -> i32 {
-        if self.descriptor == 0 {
+        if self.descriptor.is_null() {
             return 1;
         }
 
-        // if *status != 0 {
-        //     self.descriptor = 0;
-        // }
-
         let empty_cascade_list =
-            CFArrayCreate(ptr::null(), ptr::null(), 0, &mut kCFTypeArrayCallBacks);
-        let values = [empty_cascade_list];
-        let attribute_keys = [kCTFontCascadeListAttribute];
+            CFArrayCreate(ptr::null(), ptr::null_mut(), 0, &kCFTypeArrayCallBacks);
+        let mut values = &[empty_cascade_list];
+        let mut attribute_keys = &[kCTFontCascadeListAttribute];
         let attributes = CFDictionaryCreate(
             ptr::null(),
-            attribute_keys,
-            values,
+            &mut (attribute_keys as *const [_]).cast(),
+            &mut (values as *const [_]).cast(),
             1,
             &kCFTypeDictionaryKeyCallBacks,
             &kCFTypeDictionaryValueCallBacks,
         );
-        CFRelease(empty_cascade_list);
+        CFRelease(empty_cascade_list.cast());
 
         self.descriptor = CTFontDescriptorCreateCopyWithAttributes(self.descriptor, attributes);
-        CFRelease(attributes);
+        CFRelease(attributes.cast());
         self.font_ref = CTFontCreateWithFontDescriptor(
             self.descriptor,
-            self.point_size * 72.0 / 72.27,
+            (self.point_size * 72.0 / 72.27) as CGFloat,
             ptr::null(),
         );
-        if self.font_ref != 0 {
+        if !self.font_ref.is_null() {
             let mut index = 0;
-            let pathname = getFileNameFromCTFont(self.font_ref, &mut index);
-            self.initialize_common(pathname, index, status)
+            let pathname = CStr::from_ptr(getFileNameFromCTFont(self.font_ref, &mut index));
+            self.initialize_common(pathname, index as libc::c_int)
         } else {
-            CFRelease(self.descriptor);
-            self.descriptor = 0;
+            CFRelease(self.descriptor.cast());
+            self.descriptor = ptr::null();
             1
         }
     }
@@ -1182,11 +1187,11 @@ impl Drop for XeTeXFontBase {
             free(self.filename.cast());
             #[cfg(target_os = "macos")]
             {
-                if self.descriptor != 0 {
-                    CFRelease(self.descriptor);
+                if !self.descriptor.is_null() {
+                    CFRelease(self.descriptor.cast());
                 }
-                if self.font_ref != 0 {
-                    CFRelease(self.font_ref);
+                if !self.font_ref.is_null() {
+                    CFRelease(self.font_ref.cast());
                 }
             }
         }
@@ -1202,11 +1207,11 @@ pub unsafe extern "C" fn getNameFromCTFont(
     let name = CTFontCopyName(ct_font_ref, name_key);
     let mut len = CFStringGetLength(name);
     len = len * 6 + 1;
-    let buf = xmalloc(len);
-    if CFStringGetCString(name, buf, len, kCFStringEncodingUTF8) != 0 {
+    let buf = xmalloc(len as _);
+    if CFStringGetCString(name, buf, len, kCFStringEncodingUTF8) {
         buf
     } else {
-        libc::free(buf);
+        free(buf.cast());
         ptr::null()
     }
 }
@@ -1217,11 +1222,14 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     ct_font_ref: CTFontRef,
     index: *mut u32,
 ) -> *const libc::c_char {
+    use std::cell::Cell;
+    use tectonic_bridge_freetype2::{FT_Get_Postscript_Name, FT_Library, FT_New_Face};
+
     thread_local! {
         static FREE_TYPE_LIBRARY: Cell<FT_Library> = const { Cell::new(ptr::null_mut()) };
     }
 
-    let mut url = ptr::null_mut();
+    let mut url = ptr::null();
 
     #[cfg(feature = "MACOS_LE_10_6")]
     {
@@ -1235,14 +1243,18 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     }
     #[cfg(not(feature = "MACOS_LE_10_6"))]
     {
-        url = CTFontCopyAttribute(ctFontRef, kCTFontURLAttribute);
+        url = CTFontCopyAttribute(ct_font_ref, kCTFontURLAttribute);
     }
 
-    if url != 0 {
-        let pathname = [0u8; PATH_MAX];
-        if CFURLGetFileSystemRepresentation(url, true, pathname, PATH_MAX) {
-            let error;
-            let face = ptr::null_mut();
+    if !url.is_null() {
+        let mut pathname = [0u8; libc::PATH_MAX];
+        let ret = if CFURLGetFileSystemRepresentation(
+            url.cast(),
+            true,
+            pathname.as_mut_ptr(),
+            libc::PATH_MAX as CFIndex,
+        ) {
+            let mut face = ptr::null_mut();
 
             *index = 0;
 
@@ -1256,14 +1268,24 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                 }
             }
 
-            let error = FT_New_Face(FREE_TYPE_LIBRARY.get(), pathname, 0, &mut face);
+            let error = FT_New_Face(
+                FREE_TYPE_LIBRARY.get(),
+                pathname.as_ptr().cast(),
+                0,
+                &mut face,
+            );
             if error == 0 && (*face).num_faces > 1 {
                 let num_faces = (*face).num_faces;
                 let ps_name1 = getNameFromCTFont(ct_font_ref, kCTFontPostScriptNameKey);
                 *index = 0xFFFFFFFF;
                 FT_Done_Face(face);
                 for i in 0..num_faces {
-                    let error = FT_New_Face(FREE_TYPE_LIBRARY.get(), pathname, i, &mut face);
+                    let error = FT_New_Face(
+                        FREE_TYPE_LIBRARY.get(),
+                        pathname.as_ptr().cast(),
+                        i,
+                        &mut face,
+                    );
                     if error == 0 {
                         let ps_name2 = FT_Get_Postscript_Name(face);
                         if (ps_name1.is_null() && ps_name2.is_null())
@@ -1271,25 +1293,25 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                                 && !ps_name2.is_null()
                                 && libc::strcmp(ps_name1, ps_name2) == 0)
                         {
-                            *index = i;
+                            *index = i as u32;
                             break;
                         }
                         FT_Done_Face(face);
                     }
                 }
-                libc::free(ps_name1);
+                free(ps_name1.cast().cast_mut());
             }
 
             if *index != 0xFFFFFFFF {
-                libc::strdup(pathname)
+                libc::strdup(pathname.cast())
             } else {
                 ptr::null()
             }
         } else {
             ptr::null()
-        }
-
+        };
         CFRelease(url);
+        ret
     } else {
         ptr::null()
     }
