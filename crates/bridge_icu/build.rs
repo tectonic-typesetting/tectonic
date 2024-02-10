@@ -41,7 +41,7 @@ fn main() {
 
     dep.emit();
 
-    let icu_version = dep.version().split(".").collect::<Vec<_>>();
+    let icu_version = dep.version().split('.').collect::<Vec<_>>();
     let &[major, minor, ..] = &*icu_version else {
         panic!()
     };

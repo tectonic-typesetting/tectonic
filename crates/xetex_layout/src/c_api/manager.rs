@@ -99,8 +99,7 @@ pub struct NameCollection {
     family_names: Vec<CString>,
     style_names: Vec<CString>,
     full_names: Vec<CString>,
-    // TODO: Lifetime is a lie, it's actually that of the source font
-    ps_name: Option<&'static CStr>,
+    ps_name: Option<CString>,
 }
 
 pub trait FontManagerBackend {
@@ -131,7 +130,7 @@ impl FontMaps {
             // this font has already been cached
             return;
         }
-        let ps_name = match names.ps_name {
+        let ps_name = match &names.ps_name {
             Some(name) => name,
             // can't use a font that lacks a PostScript name
             None => return,
