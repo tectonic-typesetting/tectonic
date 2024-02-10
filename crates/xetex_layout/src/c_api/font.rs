@@ -1314,7 +1314,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
             }
 
             if *index != 0xFFFFFFFF {
-                libc::strdup(pathname.cast())
+                libc::strdup(pathname.as_ptr().cast())
             } else {
                 ptr::null()
             }
