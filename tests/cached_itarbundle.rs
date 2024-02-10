@@ -432,15 +432,16 @@ fn test_bundle_update() {
                             .unwrap();
 
                     // This should not be in the bundle
-                    match cache.input_open_name("only-first.tex", &mut status) {
-                        OpenResult::Ok(_) => panic!("Found only-first.tex in second bundle"),
-                        _ => {}
+                    if let OpenResult::Ok(_) = cache.input_open_name("only-first.tex", &mut status)
+                    {
+                        panic!("Found only-first.tex in second bundle")
                     }
 
                     // This should be in the second bundle
-                    match cache.input_open_name("only-second.tex", &mut status) {
-                        OpenResult::NotAvailable => panic!("File should be in the second bundle"),
-                        _ => {}
+                    if let OpenResult::NotAvailable =
+                        cache.input_open_name("only-second.tex", &mut status)
+                    {
+                        panic!("File should be in the second bundle")
                     }
 
                     /*
