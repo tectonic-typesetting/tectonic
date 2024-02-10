@@ -1189,12 +1189,12 @@ impl Drop for XeTeXFontBase {
             free(self.backing_data2.cast());
             free(self.filename.cast());
             #[cfg(target_os = "macos")]
-            {
-                if !self.descriptor.is_null() {
-                    CFRelease(self.descriptor.cast());
+            if let FontKind::Mac(descriptor, font_ref) = self.kind {
+                if !descriptor.is_null() {
+                    CFRelease(descriptor.cast());
                 }
-                if !self.font_ref.is_null() {
-                    CFRelease(self.font_ref.cast());
+                if !font_ref.is_null() {
+                    CFRelease(font_ref.cast());
                 }
             }
         }
