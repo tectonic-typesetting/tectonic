@@ -140,6 +140,8 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             (Some(s), Some(l)) => {
                 if s != l {
                     // Silently update hash in cache.
+                    // We don't need to delete anything, since data is indexed by hash.
+                    // TODO: show a warning
                     file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))?;
                     l
                 } else {
@@ -165,7 +167,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         // This works for now, but may cause issues if we add multiple
         // bundle formats with incompatible path schemes. We assume that
         // all bundles with the same hash use the same path scheme,
-        // which is true for TTBNet and TTBFs.
+        // which is true for network TTB and fs TTB.
         // Adding support for multiple formats of a single bundle hash
         // shouldn't be too hard, but isn't necessary yet.
         ensure_dir!(&bundle

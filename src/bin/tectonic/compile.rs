@@ -13,7 +13,7 @@ use structopt::StructOpt;
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 
 use tectonic::{
-    config::PersistentConfig,
+    config::{maybe_return_test_bundle, PersistentConfig},
     driver::{OutputFormat, PassSetting, ProcessingSession, ProcessingSessionBuilder},
     errmsg,
     errors::{ErrorKind, Result},
@@ -196,11 +196,25 @@ impl CompileOptions {
         if let Some(source) = self.bundle {
             if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, None)? {
                 sess_builder.bundle(bundle);
-            } else if let Some(bundle) = web_bundle {
-                sess_builder.bundle(detect_bundle(bundle, self.only_cached, None)?.unwrap());
             } else {
                 return Err(errmsg!("\"{source}\" doesn't specify a valid bundle."));
             }
+        } else if let Some(bundle) = web_bundle {
+            // TODO: this is ugly.
+            // It's probably a good idea to re-design our code so we
+            // don't need special cases for tests our source.
+            if let Ok(bundle) = maybe_return_test_bundle(Some(bundle.clone())) {
+                sess_builder.bundle(bundle);
+            } else if let Some(bundle) = detect_bundle(bundle.clone(), self.only_cached, None)? {
+                sess_builder.bundle(bundle);
+            } else {
+                return Err(errmsg!(
+                    "web bundle \"{bundle}\" doesn't specify a valid bundle."
+                ));
+            }
+        } else if let Ok(bundle) = maybe_return_test_bundle(None) {
+            // TODO: this is ugly too.
+            sess_builder.bundle(bundle);
         } else {
             sess_builder.bundle(config.default_bundle(self.only_cached)?);
         }

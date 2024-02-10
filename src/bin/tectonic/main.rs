@@ -51,9 +51,10 @@ struct CliOptions {
     #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
     cli_color: String,
 
+    // TODO: this should also accept files, since we have bundle autodetection.
+    // probably just a case of renaming the flag.
     /// Use this URL to find resource files instead of the default
     #[structopt(takes_value(true), long, short, name = "url", overrides_with = "url")]
-    // TODO add URL validation
     web_bundle: Option<String>,
 
     #[structopt(flatten)]
