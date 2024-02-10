@@ -328,7 +328,7 @@ impl FontManagerBackend for FcBackend {
         if name.is_null() {
             return names;
         }
-        names.ps_name = Some(CStr::from_ptr(name.cast_mut()));
+        names.ps_name = Some(CStr::from_ptr(name.cast_mut()).to_owned());
 
         if FT_IS_SFNT(face) {
             let mut family_names = Vec::new();
