@@ -92,7 +92,12 @@ pub struct CompileOptions {
 }
 
 impl CompileOptions {
-    pub fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    pub fn execute(
+        self,
+        config: PersistentConfig,
+        status: &mut dyn StatusBackend,
+        web_bundle: Option<String>,
+    ) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
         // Default to allowing insecure since it would be super duper annoying
@@ -191,6 +196,8 @@ impl CompileOptions {
         if let Some(source) = self.bundle {
             if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, None)? {
                 sess_builder.bundle(bundle);
+            } else if let Some(bundle) = web_bundle {
+                sess_builder.bundle(detect_bundle(bundle, self.only_cached, None)?.unwrap());
             } else {
                 return Err(errmsg!("\"{source}\" doesn't specify a valid bundle."));
             }

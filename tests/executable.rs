@@ -636,6 +636,141 @@ fn stdin_content() {
     success_or_panic(&output);
 }
 
+/// Test various web bundle overrides for the v1 CLI & `-X compile`
+#[test]
+fn web_bundle_overrides() {
+    let filename = "subdirectory/content/1.tex";
+    let fmt_arg: &str = &get_plain_format_arg();
+    let tempdir = setup_and_copy_files(&[filename]);
+    let temppath = tempdir.path().to_owned();
+
+    let arg_bad_bundle = ["--web-bundle", "bad-bundle"];
+    let arg_good_bundle = ["--web-bundle", "test-bundle://"];
+
+    // test with a bad bundle
+    let output = run_tectonic(
+        &temppath,
+        &[&arg_bad_bundle[..], &[fmt_arg, filename]].concat(),
+    );
+    error_or_panic(&output);
+
+    // test with a good bundle (override)
+    let mut valid_args: Vec<Vec<&str>> = vec![
+        // different positions
+        [&arg_good_bundle[..], &[fmt_arg, filename]].concat(),
+        [&[fmt_arg], &arg_good_bundle[..], &[filename]].concat(),
+        [&[fmt_arg], &[filename], &arg_good_bundle[..]].concat(),
+        // overriding vendor presets
+        [
+            &arg_bad_bundle[..],
+            &arg_good_bundle[..],
+            &[fmt_arg],
+            &[filename],
+        ]
+        .concat(),
+        // stress test
+        [
+            &arg_bad_bundle[..],
+            &arg_bad_bundle[..],
+            &[fmt_arg],
+            &arg_bad_bundle[..],
+            &arg_bad_bundle[..],
+            &[filename],
+            &arg_bad_bundle[..],
+            &arg_good_bundle[..],
+        ]
+        .concat(),
+    ];
+
+    // test `-X compile`
+    #[cfg(feature = "serialization")]
+    valid_args.push(
+        [
+            &arg_bad_bundle[..],
+            &arg_bad_bundle[..],
+            &["-X"],
+            &arg_bad_bundle[..],
+            &["compile"],
+            &arg_bad_bundle[..],
+            &[fmt_arg],
+            &arg_bad_bundle[..],
+            &[filename],
+            &arg_bad_bundle[..],
+            &arg_good_bundle[..],
+        ]
+        .concat(),
+    );
+
+    for args in valid_args {
+        let output = run_tectonic(&temppath, &args);
+        success_or_panic(&output);
+    }
+}
+
+/// Test various web bundle overrides for the v2 CLI
+#[cfg(feature = "serialization")]
+#[test]
+fn v2_bundle_overrides() {
+    let arg_bad_bundle = ["--web-bundle", "bad-bundle"];
+    let arg_good_bundle = ["--web-bundle", "test-bundle://"];
+
+    // test `-X command`
+    for command in ["new", "init"] {
+        // test with a bad bundle
+        let tempdir = setup_and_copy_files(&[]);
+        let temppath = tempdir.path().to_owned();
+        let output = run_tectonic(&temppath, &[&arg_bad_bundle[..], &["-X", command]].concat());
+        error_or_panic(&output);
+
+        // test with a good bundle (override)
+        let valid_args: Vec<Vec<&str>> = vec![
+            // different positions
+            [&arg_good_bundle[..], &["-X", command]].concat(),
+            [&["-X"], &arg_good_bundle[..], &[command]].concat(),
+            [&["-X", command], &arg_good_bundle[..]].concat(),
+            // overriding vendor presets
+            [&arg_bad_bundle[..], &arg_good_bundle[..], &["-X", command]].concat(),
+            [
+                &arg_bad_bundle[..],
+                &["-X"],
+                &arg_good_bundle[..],
+                &[command],
+            ]
+            .concat(),
+            [&arg_bad_bundle[..], &["-X", command], &arg_good_bundle[..]].concat(),
+            // stress test
+            [
+                &arg_bad_bundle[..],
+                &arg_bad_bundle[..],
+                &["-X"],
+                &arg_bad_bundle[..],
+                &arg_bad_bundle[..],
+                &[command],
+                &arg_bad_bundle[..],
+                &arg_good_bundle[..],
+            ]
+            .concat(),
+        ];
+
+        for args in valid_args {
+            let tempdir = setup_and_copy_files(&[]);
+            let temppath = tempdir.path().to_owned();
+            let output = run_tectonic(&temppath, &args);
+            success_or_panic(&output);
+        }
+    }
+
+    // test `-X build`
+    let (_tempdir, temppath) = setup_v2();
+
+    // `--web-bundle` is ignored
+    let output = run_tectonic(
+        &temppath,
+        &[&arg_bad_bundle[..], &["-X"], &["build"]].concat(),
+    );
+    success_or_panic(&output);
+}
+
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_build_basic() {
@@ -923,21 +1058,6 @@ fn extra_search_paths() {
         ],
         "\\input 1.tex\n\\bye",
     );
-    error_or_panic(&output);
-}
-
-/// -X in non-initial position fails
-#[test]
-fn bad_v2_position() {
-    let output = run_tectonic(&PathBuf::from("."), &["-", "-X"]);
-    error_or_panic(&output);
-}
-
-#[cfg(feature = "serialization")]
-#[test]
-fn bad_v2_position_build() {
-    let (_tempdir, temppath) = setup_v2();
-    let output = run_tectonic(&temppath, &["build", "-X"]);
     error_or_panic(&output);
 }
 

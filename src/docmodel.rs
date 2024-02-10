@@ -21,7 +21,7 @@ use crate::{
     driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
     errors::{ErrorKind, Result},
     status::StatusBackend,
-    test_util, tt_note,
+    tt_note,
     unstable_opts::UnstableOptions,
 };
 
@@ -88,10 +88,8 @@ pub trait DocumentExt {
 
 impl DocumentExt for Document {
     fn bundle(&self, setup_options: &DocumentSetupOptions) -> Result<Box<dyn Bundle>> {
-        // Load test bundle
-        if config::is_config_test_mode_activated() {
-            let bundle = test_util::TestBundle::default();
-            return Ok(Box::new(bundle));
+        if let Ok(test_bundle) = config::maybe_return_test_bundle(None) {
+            return Ok(test_bundle);
         }
 
         let d = detect_bundle(self.bundle_loc.clone(), setup_options.only_cached, None)?;
@@ -182,16 +180,25 @@ pub trait WorkspaceCreatorExt {
     /// This method is a thin wrapper on [`WorkspaceCreator::create`] that uses
     /// the current configuration to determine a good default bundle location
     /// for the main document.
-    fn create_defaulted(self, config: &config::PersistentConfig) -> Result<Workspace>;
+    fn create_defaulted(
+        self,
+        config: &config::PersistentConfig,
+        web_bundle: Option<String>,
+    ) -> Result<Workspace>;
 }
 
 impl WorkspaceCreatorExt for WorkspaceCreator {
-    fn create_defaulted(self, config: &config::PersistentConfig) -> Result<Workspace> {
-        let bundle_loc = if config::is_config_test_mode_activated() {
+    fn create_defaulted(
+        self,
+        config: &config::PersistentConfig,
+        web_bundle: Option<String>,
+    ) -> Result<Workspace> {
+        let bundle_loc = if config::is_test_bundle_wanted(web_bundle.clone()) {
             "test-bundle://".to_owned()
         } else {
-            let mut b = DefaultBackend::default();
-            b.resolve_url(config.default_bundle_loc())?
+            let loc = web_bundle.unwrap_or(config.default_bundle_loc().to_owned());
+            let mut gub = DefaultBackend::default();
+            gub.resolve_url(&loc)?
         };
 
         Ok(self.create(bundle_loc)?)

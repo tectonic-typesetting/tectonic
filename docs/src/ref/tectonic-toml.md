@@ -17,6 +17,14 @@ the file are detailed below.
 name = <string>  # the document name
 bundle = <url or filesystem path> # the TeX bundle to use to build this document
 
+# The doc.metadata table may contain arbitrary data.
+# It does not affect Tectonic in any way.
+[doc.metadata]
+pubish = false
+arr = [1, 2, [6, 7]]
+
+
+
 [[output]]  # one or more output specifications
 name = <string>  # the output's name
 type = <"pdf">  # the output's type
@@ -46,6 +54,12 @@ will populate this field with the current recommended default.
 
 This field should be a URL (a `.ttb` on the web, or a legacy indexed tar bundle),
 or a file on your computer (a `.ttb` or a legacy `.zip` bundle).
+
+### `doc.metadata`
+
+Arbitrary metadata, not read by Tectonic. This table allows us to
+save parameters for external scripts without creating an extra file.
+
 
 ### `output`
 

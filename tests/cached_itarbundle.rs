@@ -1,6 +1,5 @@
 use flate2::{write::GzEncoder, GzBuilder};
 use headers::HeaderMapExt;
-use hyper::header::{self, HeaderValue};
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
