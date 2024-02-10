@@ -366,25 +366,15 @@ pub unsafe extern "C" fn createFontFromFile(
     index: libc::c_int,
     point_size: Fixed,
 ) -> XeTeXFont {
-    #[cfg(target_os = "macos")]
-    {
-        _ = filename;
-        _ = index;
-        _ = point_size;
-        panic!("This feature isn't currently implemented on Mac");
-    }
+    let filename = if filename.is_null() {
+        None
+    } else {
+        Some(CStr::from_ptr(filename))
+    };
 
-    #[cfg(not(target_os = "macos"))]
-    {
-        let filename = if filename.is_null() {
-            None
-        } else {
-            Some(CStr::from_ptr(filename))
-        };
-        match XeTeXFontBase::new_path_index(filename, index, RsFix2D(point_size) as f32) {
-            Err(_) => ptr::null_mut(),
-            Ok(out) => Box::into_raw(Box::new(out)),
-        }
+    match XeTeXFontBase::new_path_index(filename, index, RsFix2D(point_size) as f32) {
+        Err(_) => ptr::null_mut(),
+        Ok(out) => Box::into_raw(Box::new(out)),
     }
 }
 
@@ -521,6 +511,12 @@ pub unsafe extern "C" fn countFeatures(
     rval
 }
 
+enum FontKind {
+    FtFont,
+    #[cfg(target_os = "macos")]
+    Mac(CTFontDescriptorRef, CTFontRef),
+}
+
 /// cbindgen:rename-all=camelCase
 #[repr(C)]
 pub struct XeTeXFontBase {
@@ -542,10 +538,7 @@ pub struct XeTeXFontBase {
     backing_data2: *mut libc::c_uchar,
     hb_font: *mut hb_font_t,
 
-    #[cfg(target_os = "macos")]
-    descriptor: CTFontDescriptorRef,
-    #[cfg(target_os = "macos")]
-    font_ref: CTFontRef,
+    kind: FontKind,
 }
 
 impl XeTeXFontBase {
@@ -555,40 +548,6 @@ impl XeTeXFontBase {
         let index = font.get::<fc::pat::Index>(0).unwrap_or(0);
 
         XeTeXFontBase::new_path_index(path, index, point_size)
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    pub(crate) unsafe fn new_path_index(
-        path: Option<&CStr>,
-        index: libc::c_int,
-        point_size: f32,
-    ) -> Result<XeTeXFontBase, i32> {
-        let mut out = XeTeXFontBase {
-            units_per_em: 0,
-            point_size,
-            ascent: 0.0,
-            descent: 0.0,
-            cap_height: 0.0,
-            x_height: 0.0,
-            italic_angle: 0.0,
-            vertical: false,
-            filename: ptr::null_mut(),
-            index: 0,
-            ft_face: ptr::null_mut(),
-            backing_data: ptr::null_mut(),
-            backing_data2: ptr::null_mut(),
-            hb_font: ptr::null_mut(),
-        };
-        let status = if let Some(path) = path {
-            out.initialize(path, index)
-        } else {
-            0
-        };
-        if status != 0 {
-            Err(status)
-        } else {
-            Ok(out)
-        }
     }
 
     #[cfg(target_os = "macos")]
@@ -611,10 +570,9 @@ impl XeTeXFontBase {
             backing_data: ptr::null_mut(),
             backing_data2: ptr::null_mut(),
             hb_font: ptr::null_mut(),
-            descriptor,
-            font_ref: ptr::null(),
+            kind: FontKind::Mac(descriptor, ptr::null()),
         };
-        let status = out.initialize();
+        let status = out.initialize_mac();
         if status != 0 {
             Err(status)
         } else {
@@ -622,7 +580,41 @@ impl XeTeXFontBase {
         }
     }
 
-    unsafe fn initialize_common(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
+    pub(crate) unsafe fn new_path_index(
+        path: Option<&CStr>,
+        index: libc::c_int,
+        point_size: f32,
+    ) -> Result<XeTeXFontBase, i32> {
+        let mut out = XeTeXFontBase {
+            units_per_em: 0,
+            point_size,
+            ascent: 0.0,
+            descent: 0.0,
+            cap_height: 0.0,
+            x_height: 0.0,
+            italic_angle: 0.0,
+            vertical: false,
+            filename: ptr::null_mut(),
+            index: 0,
+            ft_face: ptr::null_mut(),
+            backing_data: ptr::null_mut(),
+            backing_data2: ptr::null_mut(),
+            hb_font: ptr::null_mut(),
+            kind: FontKind::FtFont,
+        };
+        let status = if let Some(path) = path {
+            out.initialize_ft(path, index)
+        } else {
+            0
+        };
+        if status != 0 {
+            Err(status)
+        } else {
+            Ok(out)
+        }
+    }
+
+    unsafe fn initialize_ft(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
         static FREE_TYPE_LIBRARY: OnceLock<SyncPtr<FT_LibraryRec>> = OnceLock::new();
 
         let ft_lib = FREE_TYPE_LIBRARY
@@ -736,14 +728,14 @@ impl XeTeXFontBase {
 
     #[cfg(not(target_os = "macos"))]
     pub unsafe fn initialize(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
-        self.initialize_common(pathname, index)
+        self.initialize_ft(pathname, index)
     }
 
     #[cfg(target_os = "macos")]
-    pub unsafe fn initialize(&mut self) -> i32 {
-        if self.descriptor.is_null() {
+    pub unsafe fn initialize_mac(&mut self) -> i32 {
+        let FontKind::Mac(descriptor, font_ref) = &mut self.kind else {
             return 1;
-        }
+        };
 
         let empty_cascade_list =
             CFArrayCreate(ptr::null(), ptr::null_mut(), 0, &kCFTypeArrayCallBacks);
@@ -759,20 +751,20 @@ impl XeTeXFontBase {
         );
         CFRelease(empty_cascade_list.cast());
 
-        self.descriptor = CTFontDescriptorCreateCopyWithAttributes(self.descriptor, attributes);
+        *descriptor = CTFontDescriptorCreateCopyWithAttributes(*descriptor, attributes);
         CFRelease(attributes.cast());
-        self.font_ref = CTFontCreateWithFontDescriptor(
-            self.descriptor,
+        *font_ref = CTFontCreateWithFontDescriptor(
+            *descriptor,
             (self.point_size * 72.0 / 72.27) as CGFloat,
             ptr::null(),
         );
-        if !self.font_ref.is_null() {
+        if !font_ref.is_null() {
             let mut index = 0;
-            let pathname = CStr::from_ptr(getFileNameFromCTFont(self.font_ref, &mut index));
-            self.initialize_common(pathname, index as libc::c_int)
+            let pathname = CStr::from_ptr(getFileNameFromCTFont(*font_ref, &mut index));
+            self.initialize_ft(pathname, index as libc::c_int)
         } else {
-            CFRelease(self.descriptor.cast());
-            self.descriptor = ptr::null();
+            CFRelease((*descriptor).cast());
+            *descriptor = ptr::null();
             1
         }
     }
