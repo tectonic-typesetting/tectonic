@@ -180,17 +180,16 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         return self
             .cache_root
             .join(format!("data/{}", self.bundle_hash.to_string()))
-            .join(&info.path()[1..]);
+            .join(info.path());
     }
 
     /// Build a temporary path for the given bundle file
     /// To ensure safety with multiple instances of tectonic,
     /// files are first downloaded to a known-unique location, then renamed.
     fn get_file_path_tmp(&self, info: &T::InfoType) -> PathBuf {
-        return self
-            .cache_root
+        self.cache_root
             .join(format!("data/{}", self.bundle_hash.to_string(),))
-            .join(format!("{}-tmp-pid{}", &info.path()[1..], process::id()));
+            .join(format!("{}-tmp-pid{}", &info.path(), process::id()))
     }
 
     fn ensure_index(&mut self) -> Result<()> {
