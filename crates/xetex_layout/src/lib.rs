@@ -55,6 +55,8 @@ mod c_api {
     /// cbindgen:ignore
     mod fc;
     mod font;
+    #[cfg(target_os = "macos")]
+    mod mac_core;
     mod manager;
 
     pub(crate) struct SyncPtr<T>(*mut T);
@@ -92,11 +94,11 @@ mod c_api {
     #[cfg(not(target_os = "macos"))]
     type RawPlatformFontRef = *mut fc::sys::FcPattern;
     #[cfg(target_os = "macos")]
-    type RawPlatformFontRef = CTFontDescriptorRef;
+    type RawPlatformFontRef = mac_core::CTFontDescriptorRef;
     #[cfg(not(target_os = "macos"))]
     type PlatformFontRef = fc::Pattern;
     #[cfg(target_os = "macos")]
-    type PlatformFontRef = CTFontDescriptorRef;
+    type PlatformFontRef = mac_core::CTFontDescriptorRef;
 
     #[no_mangle]
     pub extern "C" fn RsFix2D(f: Fixed) -> f64 {
