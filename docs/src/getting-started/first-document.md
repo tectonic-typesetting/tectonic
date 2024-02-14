@@ -7,8 +7,8 @@ Now that [you’ve installed Tectonic][install], let’s create and build your f
 [document]: ../ref/documents.md
 
 **Important:** *From here on out, this [Getting Started][gs-index] guide will
-use what we call the [“V2” interface][v2cli] to the Tectonic program. The V2
-interface coexists with, but has a fairly different approach than, the [“V1”
+use what we call the ["V2" interface][v2cli] to the Tectonic program. The V2
+interface coexists with, but has a fairly different approach than, the ["V1"
 interface][v1cli]. We are gradually migrating from V1 to V2. Neither interface
 (V1 or V2) is the same as the one exposed by classic TeX tools such as
 `pdflatex`.*
@@ -20,7 +20,7 @@ interface][v1cli]. We are gradually migrating from V1 to V2. Neither interface
 
 ## Create a new document
 
-The Tectonic [V2 interface][v2cli] has a “multitool” structure similar to that
+The Tectonic [V2 interface][v2cli] has a "multitool" structure similar to that
 of other powerful tools such as [git] and [cargo]. To create a new document, we
 use a [`new`][cli-new] subcommand that looks like this:
 
@@ -75,12 +75,12 @@ You’ll see three files that were created by the [`new`][cli-new] command:
 These files are pre-populated with extremely basic contents following this
 suggested source structure:
 
-- The “preamble” file should contain all of your (La)TeX initialization
+- The "preamble" file should contain all of your (La)TeX initialization
   boilerplate, up to and including the LaTeX `\begin{document}` command.
-- The “index” file contains all of your actual document content, without any of
+- The "index" file contains all of your actual document content, without any of
   the annoying boilerplate. When you create a new Tectonic document, it just
   contains the text `Hello, world.`
-- The “postamble” file should contain all of your cleanup code, starting with
+- The "postamble" file should contain all of your cleanup code, starting with
   the LaTeX `\end{document}` command. There will almost never need to be any
   other content in this file.
 
@@ -105,7 +105,7 @@ $ tectonic -X build
 
 If you haven’t run Tectonic on your computer before, this command will take a
 minute or two as it downloads the support files that it needs and generates the
-LaTeX “format file” storing the default macro collection. Tectonic will [cache](#cache)
+LaTeX "format file" storing the default macro collection. Tectonic will [cache](#cache)
 these files and avoid downloading them again. Test it out by running the build
 again:
 
@@ -122,7 +122,7 @@ $ ls -l build/default/
 ```
 
 If you’re familiar with traditional TeX engines, you’ll have noticed that
-Tectonic’s “user experience” is substantially different from those engines:
+Tectonic’s "user experience" is substantially different from those engines:
 
 1. Tectonic doesn’t print out the usual chatter — unless there’s an error.
 2. Tectonic automatically reruns the TeX stage until its output stabilizes.

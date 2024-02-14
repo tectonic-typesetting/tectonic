@@ -1,7 +1,7 @@
 # Documents
 
 ***This concept only applies to Tectonic’s [V2 interface][v2cli-ref]. It is not
-relevant to [the original (“V1”) interface][v1cli-ref].***
+relevant to [the original ("V1") interface][v1cli-ref].***
 
 [v2cli-ref]: ./v2cli.md
 [v1cli-ref]: ./v1cli.md
@@ -15,7 +15,7 @@ output formats.
 
 Every Tectonic document is defined by a [Tectonic.toml][tectonic-toml] file,
 which is found at the root of its source tree. This directory is also the root
-of the current Tectonic [workspace]. At the moment, “workspaces” and “documents”
+of the current Tectonic [workspace]. At the moment, "workspaces" and "documents"
 are the same thing, but in the future it might become possible to define
 multiple documents inside a single workspace.
 

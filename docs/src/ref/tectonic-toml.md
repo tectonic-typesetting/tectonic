@@ -48,7 +48,7 @@ filesystem-friendly.
 
 ### `doc.bundle`
 
-A string identifying the location of the “bundle” of TeX support files
+A string identifying the location of the "bundle" of TeX support files
 underlying the processing of the document.
 
 In most circumstances this value should be a URL. The `tectonic -X new` command
@@ -84,13 +84,13 @@ which creates a [Portable Document Format][pdf] file.
 
 ### `output.tex_format`
 
-The TeX “format” of preloaded macros to use when compiling the document. The
+The TeX "format" of preloaded macros to use when compiling the document. The
 default is `"latex"`, corresponding to the standard LaTeX format. The exact set
 of formats that are supported will depend on the bundle that is being used.
 
 ### `output.shell_escape`
 
-Whether the TeX “shell escape”, AKA `\write18`, mechanism is allowed. The
+Whether the TeX "shell escape", AKA `\write18`, mechanism is allowed. The
 default is false. Shell-escape is inherently insecure, because its usage
 requires that text from the document compilation is passed directly to the
 operating system shell. It also is inherently unportable, because it requires
@@ -100,7 +100,7 @@ discouraged, but some packages require it.
 
 ### `output.shell_escape_cwd`
 
-The working directory path to use for “shell escape”. The default is a
+The working directory path to use for "shell escape". The default is a
 temporary directory if `output.shell_escape` is true, else it's disabled.
 The path can be absolute or relative to the root file, but it must exist.
 Specifying this path automatically sets `output.shell_escape` to true.

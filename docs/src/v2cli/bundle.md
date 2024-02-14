@@ -1,8 +1,8 @@
 # tectonic -X bundle
 
-Commands relating to Tectonic’s “bundles” of support files.
+Commands relating to Tectonic’s "bundles" of support files.
 
-***This is a [V2 CLI][v2cli-ref] command. For information on the original (“V1”
+***This is a [V2 CLI][v2cli-ref] command. For information on the original ("V1"
 CLI), see [its reference page][v1cli-ref].***
 
 [v2cli-ref]: ../ref/v2cli.md

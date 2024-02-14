@@ -4,7 +4,7 @@
 
 This crate is part of [the Tectonic
 project](https://tectonic-typesetting.github.io/en-US/). It exposes the *C* API
-of the [graphite2] “smart font” system within the Rust/Cargo build framework,
+of the [graphite2] "smart font" system within the Rust/Cargo build framework,
 **with no Rust bindings**. This is why it is not named `graphite2-sys`.
 
 [graphite2]: https://graphite.sil.org/
@@ -13,7 +13,7 @@ of the [graphite2] “smart font” system within the Rust/Cargo build framework
 - [Main Git repository](https://github.com/tectonic-typesetting/tectonic/).
 
 The intention is that eventually this crate will provide the option of
-“vendoring” the graphite2 library, so that the Tectonic C code can use the
+"vendoring" the graphite2 library, so that the Tectonic C code can use the
 library without it needing to be installed on the system. However, this has not
 yet been implemented.
 

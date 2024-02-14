@@ -2,7 +2,7 @@
 
 Initializes a new Tectonic workspace in the current directory.
 
-**_This is a [V2 CLI][v2cli-ref] command. For information on the original (“V1”
+**_This is a [V2 CLI][v2cli-ref] command. For information on the original ("V1"
 CLI), see [its reference page][v1cli-ref]._**
 
 [v2cli-ref]: ../ref/v2cli.md
