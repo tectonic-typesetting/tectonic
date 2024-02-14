@@ -233,7 +233,7 @@ pub enum BuildTargetType {
     Pdf,
 }
 
-/// The output target type of a document build.
+/// An input provided to a document build
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum InputFile {
     /// A file system path.

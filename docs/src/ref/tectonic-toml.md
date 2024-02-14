@@ -1,7 +1,7 @@
 # The `Tectonic.toml` File
 
 **Starting with [the V2 interface][v2]**, the `Tectonic.toml` file defines a
-Tectonic workspace.
+Tectonic document.
 
 [v2]: ./v2cli.md
 
@@ -57,11 +57,12 @@ shell_escape = false
 # This is optional, and defaults to a temporary directory.
 shell_escape_cwd = "string"
 
-# The input files we'll use to build this document.
-# Usually, this is a path relative to the `./src` directory.
+# The input file we'll use to build this document,
+# Given as a path relative to the `./src` directory.
 #
-# This may also be an array of paths, which are concatenated
-# while building. You could, for example, define:
+# This may also be an array of file paths,
+# the contents of which are concatenated while building.
+# You could, for example, define:
 # inputs = ["preamble.tex", "main.tex"]
 #
 # Finally, you may include an "inline" document as follows:
@@ -72,4 +73,18 @@ shell_escape_cwd = "string"
 # This will insert "\documentclass[a4paper]{article}" before main.tex
 # (with a newline), allowing you to set options without making a new file.
 inputs = "main.tex"
+
+
+# Deprecated input specification.
+# These options serve the same purpose as `inputs` above, but shouldn't be used
+# unless you have a legacy document.
+#
+# If you do have a legacy document, you should replace these options with the following:
+# inputs = ["_preamble.tex", "index.tex", "_postamble.tex"]
+#
+# Note that these options may NOT be used with `inputs`.
+# You may only use one kind of input specification.
+preamble = "_preamble.tex" # the preamble file to use (within `src`)
+index = "index.tex" # the index file to use (within `src`)
+postamble = "_postamble.tex" # the postamble file to use (within `src`)
 ```
