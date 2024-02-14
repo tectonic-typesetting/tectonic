@@ -26,7 +26,7 @@ use tectonic_errors::prelude::*;
 
 /// A struct for invoking the `xdvipdfmx` engine.
 ///
-/// This struct has a fairly straightforward “builder” interface: you create it,
+/// This struct has a fairly straightforward "builder" interface: you create it,
 /// apply any settings that you wish, and eventually run the
 /// [`process()`](Self::process) method.
 ///

@@ -385,8 +385,8 @@ declare! {
     /// Kinds of math "noads".
     //
     // "An mlist is represented internally as a linked list consisting chiefly of
-    // “noads” (pronounced “no-adds”), to distinguish them from the somewhat
-    // similar “nodes” in hlists and vlists. Certain kinds of ordinary nodes are
+    // "noads" (pronounced "no-adds"), to distinguish them from the somewhat
+    // similar "nodes" in hlists and vlists. Certain kinds of ordinary nodes are
     // allowed to appear in mlists together with the noads; TEX tells the diﬀerence
     // by means of the type field, since a noad’s type is always greater than that
     // of a node. An mlist does not contain character nodes, hlist nodes, vlist
