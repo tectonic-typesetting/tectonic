@@ -22,24 +22,11 @@ multiple documents inside a single workspace.
 [tectonic-toml]: ./tectonic-toml.md
 [workspace]: ./workspaces.md
 
-The TeX sources are stored in a `src` subdirectory of the document root. This
-directory should contain at least three files: `index.tex`, `_preamble.tex`,
-and `_postamble.tex`. These filenames can be changed in the
-[Tectonic.toml][tectonic-toml] configuration file. The [`build`
-command][cli-build] will process these files in the following order:
-
-1. `src/_preamble.tex`
-2. `src/index.tex`
-3. `src/_postamble.tex`
-
-The intention of this framework is to allow you to isolate the main content of
-your document from the usual LaTeX boilerplate. There are no restrictions on
-what kind of content may be placed in each file, though. The preamble and
-postamble can be empty if you’d like. The [`new` command][cli-new] will stub out
-these files for you.
+The TeX sources are stored in a `src` subdirectory of the document root.
+Fresh workspaces will contain a file named `main.tex`, but this may be
+configured in [Tectonic.toml][tectonic-toml]. The [`build` command][cli-build] will process these files in the order they're provided in the `inputs` array.
 
 [cli-build]: ../v2cli/build.md
-[cli-new]: ../v2cli/new.md
 
 
 ## Build structure

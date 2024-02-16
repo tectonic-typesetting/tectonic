@@ -7,7 +7,7 @@ Tectonic document.
 
 ## Contents
 
-The `Tectonic.toml` file is expressed in, yes, [TOML] format. Allowed items in
+The `Tectonic.toml` file is written in the [TOML] format. Allowed items in
 the file are detailed below.
 
 [TOML]: https://toml.io/
@@ -24,101 +24,67 @@ pubish = false
 arr = [1, 2, [6, 7]]
 
 
+# One (of possibly many) output specifications.
+[[output]]
 
-[[output]]  # one or more output specifications
-name = <string>  # the output's name
-type = <"pdf">  # the output's type
-tex_format = [string]  # optional, defaults to "latex": the TeX format to use
-shell_escape = [bool]  # optional, defaults to false: whether "shell escape" (\write18) is allowed
-shell_escape_cwd = [string]  # optional, defaults to a temporary directory: path to use for \write18
-preamble = [string] # optional, defaults to "_preamble.tex": the preamble file to use (within `src`)
-index = [string] # optional, defaults to "index.tex": the index file to use (within `src`)
-postamble = [string] # optional, defaults to "_postamble.tex": the postamble file to use (within `src`)
+# This output's name. By default, build products for each output will be
+# placed in the build directory under subdirectory with this name.
+name = "output name"
+
+# The output's type. Right now, only "pdf" is valid.
+type = "pdf"
+
+# The TeX "format" of preloaded macros to use when compiling the document.
+# This is optional, with a default of "latex" (which corresponds to the
+# standard LaTeX format). The exact set of formats that are supported will
+# depend on the bundle that is being used.
+tex_format = "latex"
+
+# Whether the TeX “shell escape”, AKA `\write18`, mechanism is allowed.
+# This is optional and defaults to false.
+#
+# Shell-escape is insecure, since it give the document access to your shell.
+# It also is non-portable, because it requires your document to be built
+# is run in an environment where a shell exists.
+# Naturally, its use is strongly discouraged, but some packages depend on
+# this feature.
+shell_escape = false
+
+# The working directory path to use for “shell escape”. The default is a
+# temporary directory if `output.shell_escape` is true, else it's disabled.
+# The path can be absolute or relative to the root file, but it must exist.
+# Specifying this path automatically sets `output.shell_escape` to true.
+# This is optional, and defaults to a temporary directory.
+shell_escape_cwd = "string"
+
+# The input file we'll use to build this document,
+# Given as a path relative to the `./src` directory.
+#
+# This may also be an array of file paths,
+# the contents of which are concatenated while building.
+# You could, for example, define:
+# inputs = ["preamble.tex", "main.tex"]
+#
+# Finally, you may include an "inline" document as follows:
+# inputs = [
+#   { inline = "\\documentclass[a4paper]{article}" },
+#   "main.tex"
+# ]
+# This will insert "\documentclass[a4paper]{article}" before main.tex
+# (with a newline), allowing you to set options without making a new file.
+inputs = "main.tex"
+
+
+# Deprecated input specification.
+# These options serve the same purpose as `inputs` above, but shouldn't be used
+# unless you have a legacy document.
+#
+# If you do have a legacy document, you should replace these options with the following:
+# inputs = ["_preamble.tex", "index.tex", "_postamble.tex"]
+#
+# Note that these options may NOT be used with `inputs`.
+# You may only use one kind of input specification.
+preamble = "_preamble.tex" # the preamble file to use (within `src`)
+index = "index.tex" # the index file to use (within `src`)
+postamble = "_postamble.tex" # the postamble file to use (within `src`)
 ```
-
-Unexpected items are not allowed.
-
-## Items
-
-### `doc.name`
-
-The name of the document. This is distinct from the document title. This value
-will be used to name output files, so it should be relatively short and
-filesystem-friendly.
-
-### `doc.bundle`
-
-A string identifying the location of the "bundle" of TeX support files
-underlying the processing of the document.
-
-In most circumstances this value should be a URL. The `tectonic -X new` command
-will populate this field with the current recommended default.
-
-This field can also be a filesystem path, pointing to either a Zip-format bundle
-or a directory of support files. This mode of operation is discouraged because
-it limits reproducibility. URLs with a `file:` protocol are also treated
-identically to filesystem paths.
-
-### `doc.metadata`
-
-Arbitrary metadata, not read by Tectonic. This table allows us to
-save parameters for external scripts without creating an extra file.
-
-
-### `output`
-
-A list of dictionaries defining different outputs to be created from the
-document source.
-
-### `output.name`
-
-A name given to the output. By default, build products for each output will be
-placed in the build directory, in a subdirectory with this name.
-
-### `output.type`
-
-The kind of output to create. Currently, the only allowed option is `"pdf"`,
-which creates a [Portable Document Format][pdf] file.
-
-[pdf]: https://en.wikipedia.org/wiki/PDF
-
-### `output.tex_format`
-
-The TeX "format" of preloaded macros to use when compiling the document. The
-default is `"latex"`, corresponding to the standard LaTeX format. The exact set
-of formats that are supported will depend on the bundle that is being used.
-
-### `output.shell_escape`
-
-Whether the TeX "shell escape", AKA `\write18`, mechanism is allowed. The
-default is false. Shell-escape is inherently insecure, because its usage
-requires that text from the document compilation is passed directly to the
-operating system shell. It also is inherently unportable, because it requires
-that your document compilation is run in an environment where an operating
-system shell exists and can be invoked. Its use is therefore strongly
-discouraged, but some packages require it.
-
-### `output.shell_escape_cwd`
-
-The working directory path to use for "shell escape". The default is a
-temporary directory if `output.shell_escape` is true, else it's disabled.
-The path can be absolute or relative to the root file, but it must exist.
-Specifying this path automatically sets `output.shell_escape` to true.
-
-### `output.preamble`
-
-The preamble file to build the document with for this output. This defaults to
-`"_preamble.tex"` within the `src` directory. Typically this file will contain
-document setup steps.
-
-### `output.index`
-
-The index file to build the document with for this output. This defaults to
-`"index.tex"` within the `src` directory. Typically this file will contain
-the body of the document.
-
-### `output.postamble`
-
-The postamble file to build the document with for this output. This defaults to
-`"_postamble.tex"` within the `src` directory. Typically this file will contain
-document closing steps.

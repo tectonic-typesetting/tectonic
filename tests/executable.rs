@@ -248,11 +248,7 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
     {
         let mut toml_path = temppath.clone();
         toml_path.push("Tectonic.toml");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(toml_path)
-            .unwrap();
+        let mut file = OpenOptions::new().append(true).open(toml_path).unwrap();
         writeln!(file, "tex_format = 'plain'").unwrap();
     }
 
@@ -805,11 +801,7 @@ fn v2_build_multiple_outputs() {
     {
         let mut toml_path = temppath.clone();
         toml_path.push("Tectonic.toml");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(toml_path)
-            .unwrap();
+        let mut file = OpenOptions::new().append(true).open(toml_path).unwrap();
         writeln!(
             file,
             "tex_format = 'plain'

@@ -64,7 +64,7 @@ one of the prime reasons that the Tectonic project was started.
 
 The choice of fonts is foundational to TeX’s document processing, so modern
 fonts aren’t automatically activated. To start using a nice new font like [TeX
-Gyre Pagella][pagella] (derived from [Palatino]), open up your
+Gyre Pagella][pagella] (derived from [Palatino]), edit your
 `src/_preamble.tex` file and add the following lines after the `\documentclass`
 command:
 
