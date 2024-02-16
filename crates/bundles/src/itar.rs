@@ -8,7 +8,7 @@
 //! the default backend for cached web-based bundle access through the
 //! [`crate::cache::CachingBundle`] framework.
 //!
-//! While the on-server file format backing the “indexed tar” backend is indeed
+//! While the on-server file format backing the "indexed tar" backend is indeed
 //! a standard `tar` file, as far as the client is concerned, this backend is
 //! centered on HTTP byte-range requests. For each file contained in the backing
 //! resource, the index file merely contains a byte offset and length that are

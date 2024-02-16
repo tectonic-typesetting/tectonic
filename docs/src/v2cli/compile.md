@@ -2,7 +2,7 @@
 
 Compile a standalone TeX document.
 
-***This is a [V2 CLI][v2cli-ref] command. For information on the original (“V1”
+***This is a [V2 CLI][v2cli-ref] command. For information on the original ("V1"
 CLI), see [its reference page][v1cli-ref].***
 
 [v2cli-ref]: ../ref/v2cli.md
@@ -44,9 +44,9 @@ tectonic -X compile  # full form
 #### Remarks
 
 This command compiles a freestanding TeX document, outside of the Tectonic
-[document][docs-ref] framework. It is virtually the same interface as the [“V1”
+[document][docs-ref] framework. It is virtually the same interface as the ["V1"
 command-line interface][v1cli-ref], with lots of options. In comparison, the V2
-interface is “[cargo]-like”, with a variety of subcommands anchored around a
+interface is "[cargo]-like", with a variety of subcommands anchored around a
 [Tectonic.toml] file defining a document to build.
 
 [docs-ref]: ../ref/documents.md
@@ -65,10 +65,10 @@ this case, the output file will be named `texput.pdf`.)
 
 ##### Security
 
-By default, the document is compiled in a “trusted” mode. This means that the
+By default, the document is compiled in a "trusted" mode. This means that the
 calling user can request to enable certain engine features that could raise
 security concerns if used with untrusted input: the classic example of this
-being TeX’s “shell-escape” functionality. These features are *not* enabled by
+being TeX’s "shell-escape" functionality. These features are *not* enabled by
 default, but they can be enabled on the command line; in the case of
 shell-escape, this is done with `-Z shell-escape`.
 
@@ -94,7 +94,7 @@ The following are the available flags.
 | Short | Full                           | Explanation                                                                                            |
 |:------|:-------------------------------|:-------------------------------------------------------------------------------------------------------|
 | `-b`  | `--bundle <file_path>`         | Use this directory or Zip-format bundle file to find resource files instead of the default             |
-| `-f`  | `--format <path>`              | The name of the “format” file used to initialize the TeX engine [default: `latex`]                     |
+| `-f`  | `--format <path>`              | The name of the "format" file used to initialize the TeX engine [default: `latex`]                     |
 | `-h`  | `--help`                       | Prints help information                                                                                |
 |       | `--hide <hide_path>...`        | Tell the engine that no file at `<hide_path>` exists, if it tries to read it                           |
 | `-k`  | `--keep-intermediates`         | Keep the intermediate files generated during processing                                                |
@@ -123,7 +123,7 @@ the set of unstable options is subject to change at any time.
 |:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `-Z help`                    | List all unstable options                                                                                                                                                                                                                                                                                  |
 | `-Z continue-on-errors`      | Keep compiling even when severe errors occur                                                                                                                                                                                                                                                               |
-| `-Z min-crossrefs=<num>`     | Equivalent to bibtex’s `-min-crossrefs` flag - “include after `<num>` crossrefs” [default: `2`]                                                                                                                                                                                                            |
+| `-Z min-crossrefs=<num>`     | Equivalent to bibtex’s `-min-crossrefs` flag - "include after `<num>` crossrefs" [default: `2`]                                                                                                                                                                                                            |
 | `-Z paper-size=<spec>`       | Change the initial paper size [default: `letter`]                                                                                                                                                                                                                                                          |
 | `-Z search-path=<path>`      | Also look in `<path>` for files (unless `--untrusted` has been specified), like `TEXINPUTS`. Can be specified multiple times.                                                                                                                                                                              |
 | `-Z shell-escape`            | Enable `\write18` (unless `--untrusted` has been specified)                                                                                                                                                                                                                                                |
