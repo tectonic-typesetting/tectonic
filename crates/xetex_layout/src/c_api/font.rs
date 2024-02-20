@@ -2,7 +2,7 @@
 use crate::c_api::fc;
 #[cfg(target_os = "macos")]
 use crate::c_api::mac_core::{
-    kCFStringEncodingUTF8, kCFTypeArrayCallBacks, kCFTypeDictionaryKeyCallBacks,
+    cf_to_cstr, kCFStringEncodingUTF8, kCFTypeArrayCallBacks, kCFTypeDictionaryKeyCallBacks,
     kCFTypeDictionaryValueCallBacks, kCTFontCascadeListAttribute, kCTFontPostScriptNameKey,
     kCTFontURLAttribute, CFArrayCreate, CFDictionaryCreate, CFIndex, CFRelease, CFStringGetCString,
     CFStringGetLength, CFStringRef, CFURLGetFileSystemRepresentation, CGFloat, CTFontCopyAttribute,
@@ -1208,15 +1208,7 @@ pub unsafe extern "C" fn getNameFromCTFont(
     name_key: CFStringRef,
 ) -> *const libc::c_char {
     let name = CTFontCopyName(ct_font_ref, name_key);
-    let mut len = CFStringGetLength(name);
-    len = len * 6 + 1;
-    let buf = xmalloc(len as _);
-    if CFStringGetCString(name, buf, len, kCFStringEncodingUTF8) {
-        buf
-    } else {
-        free(buf.cast());
-        ptr::null()
-    }
+    cf_to_cstr(name).into_raw()
 }
 
 #[cfg(target_os = "macos")]
