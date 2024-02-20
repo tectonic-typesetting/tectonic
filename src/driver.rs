@@ -1718,6 +1718,9 @@ impl ProcessingSession {
             // this, but, uh, so far it seems to work.
             for summ in self.bs.events.values_mut() {
                 summ.read_digest = None;
+                if summ.access_pattern == AccessPattern::ReadThenWritten {
+                    summ.access_pattern = AccessPattern::Read
+                }
             }
 
             warnings = self.tex_pass(Some(&rerun_explanation), status)?;
