@@ -1,3 +1,28 @@
+use std::ffi::{CStr, CString};
+
+// TODO: Split into sys and helpers
+pub(crate) unsafe fn cf_to_cstr(cf_str: CFStringRef) -> CString {
+    let cstr = CFStringGetCStringPtr(cf_str, kCFStringEncodingUTF8);
+    if cstr.is_null() {
+        let mut len = CFStringGetLength(cf_str);
+        len = len * 6 + 1;
+        let mut buf = vec![0; len as usize];
+        if CFStringGetCString(
+            cf_str.cast(),
+            buf.as_mut_ptr().cast(),
+            len,
+            kCFStringEncodingUTF8,
+        ) {
+            let buf = buf.into_iter().take_while(|&c| c != 0).collect::<Vec<_>>();
+            CString::new(buf).unwrap()
+        } else {
+            panic!("Invalid C String")
+        }
+    } else {
+        CStr::from_ptr(cstr).to_owned()
+    }
+}
+
 #[repr(C)]
 pub struct CFAllocator(());
 
@@ -43,6 +68,9 @@ pub struct CGAffineTransform {
     tx: CGFloat,
     ty: CGFloat,
 }
+
+#[repr(C)]
+pub struct NSFontManager(());
 
 pub type CTFontDescriptorRef = *const CTFontDescriptor;
 pub type CFDictionaryRef = *const CFDictionary;
@@ -125,6 +153,18 @@ extern "C" {
         original: CTFontDescriptorRef,
         attributes: CFDictionaryRef,
     ) -> CTFontDescriptorRef;
+    pub fn CFStringGetCStringPtr(str: CFStringRef, enc: CFStringEncoding) -> *const libc::c_char;
+    pub fn CTFontCopyLocalizedName(
+        font: CTFontRef,
+        name_key: CFStringRef,
+        actual_lang: *mut CFStringRef,
+    ) -> CFStringRef;
+    pub fn CFStringCreateWithCString(
+        alloc: CFAllocatorRef,
+        c_str: *const libc::c_char,
+        encoding: CFStringEncoding,
+    ) -> CFStringRef;
+    pub fn CTFontManagerCopyAvailableFontFamilyNames() -> CFArrayRef;
 
     pub static kCFTypeDictionaryKeyCallBacks: CFDictionaryKeyCallBacks;
     pub static kCFTypeDictionaryValueCallBacks: CFDictionaryValueCallBacks;
@@ -137,4 +177,7 @@ extern "C" {
     pub static kCTFontURLAttribute: CFStringRef;
     pub static kCTFontPostScriptNameKey: CFStringRef;
     pub static kCTFontCascadeListAttribute: CFStringRef;
+    pub static kCTFontFamilyNameAttribute: CFStringRef;
+    pub static kCTFontDisplayNameAttribute: CFStringRef;
+    pub static sharedFontManager: *mut NSFontManager;
 }
