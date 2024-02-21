@@ -10,8 +10,7 @@ use crate::{
         bst_err_print_and_look_for_blank_line, bst_id_print, bst_left_brace_print,
         bst_right_brace_print, bst_warn_print, cite_key_disappeared_confusion, eat_bst_print,
         hash_cite_confusion, log_pr_bib_name, nonexistent_cross_reference_error, print_a_token,
-        print_bib_name, print_confusion, print_missing_entry, rs_print_fn_class, write_log_file,
-        write_logs,
+        print_bib_name, print_confusion, print_fn_class, print_missing_entry,
     },
     pool::StringPool,
     scan::{eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
@@ -21,8 +20,8 @@ use crate::{
 macro_rules! eat_bst_white {
     ($ctx:ident, $globals:ident, $name:literal) => {
         if !eat_bst_white_space($ctx.glbl_ctx_mut(), $globals.buffers) {
-            eat_bst_print();
-            write_logs($name);
+            eat_bst_print($ctx.glbl_ctx_mut());
+            $ctx.glbl_ctx_mut().write_logs($name);
             bst_err_print_and_look_for_blank_line(
                 $ctx.glbl_ctx_mut(),
                 $globals.buffers,
@@ -36,8 +35,8 @@ macro_rules! eat_bst_white {
 macro_rules! bst_brace {
     ('{', $ctx:expr, $globals:ident, $name:literal) => {
         if $globals.buffers.at_offset(BufTy::Base, 2) != b'{' {
-            bst_left_brace_print();
-            write_logs($name);
+            bst_left_brace_print($ctx.glbl_ctx_mut());
+            $ctx.glbl_ctx_mut().write_logs($name);
             bst_err_print_and_look_for_blank_line(
                 $ctx.glbl_ctx_mut(),
                 $globals.buffers,
@@ -48,8 +47,8 @@ macro_rules! bst_brace {
     };
     ('}', $ctx:expr, $globals:ident, $name:literal) => {
         if $globals.buffers.at_offset(BufTy::Base, 2) != b'}' {
-            bst_right_brace_print();
-            write_logs($name);
+            bst_right_brace_print($ctx.glbl_ctx_mut());
+            $ctx.glbl_ctx_mut().write_logs($name);
             bst_err_print_and_look_for_blank_line(
                 $ctx.glbl_ctx_mut(),
                 $globals.buffers,
@@ -67,7 +66,7 @@ macro_rules! bst_ident {
             ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
             _ => {
                 bst_id_print($ctx.glbl_ctx_mut(), $globals.buffers, scan_res)?;
-                write_logs($name);
+                $ctx.glbl_ctx_mut().write_logs($name);
                 bst_err_print_and_look_for_blank_line(
                     $ctx.glbl_ctx_mut(),
                     $globals.buffers,
@@ -84,7 +83,8 @@ fn bst_entry_command(
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().entry_seen {
-        write_logs("Illegal, another entry command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, another entry command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -135,7 +135,8 @@ fn bst_entry_command(
     eat_bst_white!(ctx, globals, "entry");
 
     if globals.other.num_fields() == globals.other.pre_defined_fields() {
-        write_logs("Warning--I didn't find any fields");
+        ctx.glbl_ctx_mut()
+            .write_logs("Warning--I didn't find any fields");
         bst_warn_print(ctx.glbl_ctx_mut(), globals.pool)?;
     }
 
@@ -236,7 +237,8 @@ fn bst_execute_command(
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
-        write_logs("Illegal, execute command before read command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, execute command before read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -387,7 +389,8 @@ fn bst_iterate_command(
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
-        write_logs("Illegal, iterate command before read command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, iterate command before read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -437,7 +440,8 @@ fn bst_macro_command(
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().read_seen {
-        write_logs("Illegal, macro command after read command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, macro command after read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -459,8 +463,9 @@ fn bst_macro_command(
             .pool
             .lookup_str_insert(ctx.glbl_ctx_mut(), globals.hash, bst_fn, StrIlk::Macro)?;
     if res.exists {
-        print_a_token(globals.buffers);
-        write_logs(" is already defined as a macro");
+        print_a_token(ctx.glbl_ctx_mut(), globals.buffers);
+        ctx.glbl_ctx_mut()
+            .write_logs(" is already defined as a macro");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -480,7 +485,8 @@ fn bst_macro_command(
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
     eat_bst_white!(ctx, globals, "macro");
     if globals.buffers.at_offset(BufTy::Base, 2) != b'"' {
-        write_logs("A macro definition must be \"-delimited");
+        ctx.glbl_ctx_mut()
+            .write_logs("A macro definition must be \"-delimited");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -489,7 +495,8 @@ fn bst_macro_command(
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
     let init = globals.buffers.init(BufTy::Base);
     if !Scan::new().chars(&[b'"']).scan_till(globals.buffers, init) {
-        write_logs("There's no `\"' to end macro definition");
+        ctx.glbl_ctx_mut()
+            .write_logs("There's no `\"' to end macro definition");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -522,14 +529,16 @@ fn bst_read_command(
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if ctx.glbl_ctx().read_seen {
-        write_logs("Illegal, another read command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, another read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
     ctx.glbl_ctx_mut().read_seen = true;
 
     if !ctx.glbl_ctx().entry_seen {
-        write_logs("Illegal, read command before entry command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, read command before entry command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -573,10 +582,12 @@ fn bst_read_command(
     ctx.glbl_ctx_mut().read_performed = true;
     while globals.bibs.len() != 0 {
         if ctx.glbl_ctx().config.verbose {
-            write_logs(&format!("Database file #{}: ", globals.bibs.len()));
+            ctx.glbl_ctx_mut()
+                .write_logs(&format!("Database file #{}: ", globals.bibs.len()));
             print_bib_name(ctx.glbl_ctx, globals.pool, globals.bibs.top_file().name)?;
         } else {
-            write_log_file(&format!("Database file #{}: ", globals.bibs.len()));
+            ctx.glbl_ctx_mut()
+                .write_log_file(&format!("Database file #{}: ", globals.bibs.len()));
             log_pr_bib_name(ctx.glbl_ctx, globals.bibs, globals.pool)?;
         }
 
@@ -607,7 +618,8 @@ fn bst_read_command(
     if cites * globals.other.num_fields() + globals.other.crossref_num()
         >= globals.other.max_fields()
     {
-        write_logs("field_info index is out of range");
+        ctx.glbl_ctx_mut()
+            .write_logs("field_info index is out of range");
         print_confusion(ctx.glbl_ctx);
         return Err(BibtexError::Fatal);
     }
@@ -687,7 +699,8 @@ fn bst_read_command(
                     let field_parent_ptr =
                         cite_parent_ptr * globals.other.num_fields() + globals.other.crossref_num();
                     if globals.other.field(field_parent_ptr) != 0 {
-                        write_logs("Warning--you've nested cross references");
+                        ctx.glbl_ctx_mut()
+                            .write_logs("Warning--you've nested cross references");
                         bad_cross_reference_print(
                             ctx.glbl_ctx_mut(),
                             globals.pool,
@@ -695,7 +708,8 @@ fn bst_read_command(
                             cite_ptr,
                             globals.cites.get_cite(cite_parent_ptr),
                         )?;
-                        write_logs("\", which also refers to something\n");
+                        ctx.glbl_ctx_mut()
+                            .write_logs("\", which also refers to something\n");
                         ctx.glbl_ctx_mut().mark_warning();
                     }
                     if !ctx.glbl_ctx().all_entries
@@ -725,7 +739,8 @@ fn bst_read_command(
                 if (ctx.glbl_ctx().cite_xptr + 1) * globals.other.num_fields()
                     > globals.other.max_fields()
                 {
-                    write_logs("field_info index is out of range");
+                    ctx.glbl_ctx_mut()
+                        .write_logs("field_info index is out of range");
                     print_confusion(ctx.glbl_ctx);
                     return Err(BibtexError::Fatal);
                 }
@@ -807,7 +822,8 @@ fn bst_reverse_command(
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
-        write_logs("Illegal, reverse command before read command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, reverse command before read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -856,7 +872,8 @@ fn bst_sort_command(
     globals: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
     if !ctx.glbl_ctx().read_seen {
-        write_logs("Illegal, sort command before read command");
+        ctx.glbl_ctx_mut()
+            .write_logs("Illegal, sort command before read command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -947,14 +964,14 @@ fn bad_argument_token(
     }
 
     if !res.exists {
-        print_a_token(buffers);
-        write_logs(" is an unknown function");
+        print_a_token(ctx, buffers);
+        ctx.write_logs(" is an unknown function");
         bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         Ok(true)
     } else if hash.ty(res.loc) != FnClass::Builtin && hash.ty(res.loc) != FnClass::Wizard {
-        print_a_token(buffers);
-        write_logs(" has bad function type");
-        rs_print_fn_class(hash, res.loc);
+        print_a_token(ctx, buffers);
+        ctx.write_logs(" has bad function type");
+        print_fn_class(ctx, hash, res.loc);
         bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         Ok(true)
     } else {
@@ -971,7 +988,7 @@ pub(crate) fn get_bst_command_and_process(
         .not_class(LexClass::Alpha)
         .scan_till_nonempty(globals.buffers, init)
     {
-        write_logs(&format!(
+        ctx.glbl_ctx_mut().write_logs(&format!(
             "\"{}\" can't start a style-file command",
             globals.buffers.at_offset(BufTy::Base, 2) as char,
         ));
@@ -987,8 +1004,9 @@ pub(crate) fn get_bst_command_and_process(
         .pool
         .lookup_str(globals.hash, bst_cmd, StrIlk::BstCommand);
     if !res.exists {
-        print_a_token(globals.buffers);
-        write_logs(" is an illegal style-file command");
+        print_a_token(ctx.glbl_ctx_mut(), globals.buffers);
+        ctx.glbl_ctx_mut()
+            .write_logs(" is an illegal style-file command");
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
@@ -1005,7 +1023,7 @@ pub(crate) fn get_bst_command_and_process(
         8 => bst_sort_command(ctx, globals),
         9 => bst_strings_command(ctx, globals),
         _ => {
-            write_logs("Unknown style-file command");
+            ctx.glbl_ctx_mut().write_logs("Unknown style-file command");
             print_confusion(ctx.glbl_ctx);
             Err(BibtexError::Fatal)
         }
