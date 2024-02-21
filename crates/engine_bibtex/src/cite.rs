@@ -1,5 +1,5 @@
 use crate::{
-    entries::EntryData, hash::HashData, other::OtherData, pool::StringPool, xbuf::XBuf, CiteNumber,
+    entries::EntryData, hash::HashData, other::OtherData, pool::StringPool, CiteNumber,
     FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
 use std::{cmp::Ordering, ops::IndexMut};
@@ -7,10 +7,10 @@ use std::{cmp::Ordering, ops::IndexMut};
 pub(crate) const MAX_CITES: usize = 750;
 
 pub(crate) struct CiteInfo {
-    cite_list: XBuf<StrNumber>,
-    cite_info: XBuf<StrNumber>,
-    type_list: XBuf<HashPointer>,
-    entry_exists: XBuf<bool>,
+    cite_list: Vec<StrNumber>,
+    cite_info: Vec<StrNumber>,
+    type_list: Vec<HashPointer>,
+    entry_exists: Vec<bool>,
     cite_ptr: CiteNumber,
 
     entry_cite_ptr: CiteNumber,
@@ -22,10 +22,10 @@ pub(crate) struct CiteInfo {
 impl CiteInfo {
     pub fn new() -> CiteInfo {
         CiteInfo {
-            cite_list: XBuf::new(MAX_CITES),
-            cite_info: XBuf::new(MAX_CITES),
-            type_list: XBuf::new(MAX_CITES),
-            entry_exists: XBuf::new(MAX_CITES),
+            cite_list: vec![0; MAX_CITES],
+            cite_info: vec![0; MAX_CITES],
+            type_list: vec![0; MAX_CITES],
+            entry_exists: vec![false; MAX_CITES],
             cite_ptr: 0,
             entry_cite_ptr: 0,
             num_cites: 0,
@@ -35,10 +35,11 @@ impl CiteInfo {
     }
 
     pub fn grow(&mut self) {
-        self.cite_list.grow(MAX_CITES);
-        self.cite_info.grow(MAX_CITES);
-        self.type_list.grow(MAX_CITES);
-        self.entry_exists.grow(MAX_CITES);
+        self.cite_list.resize(self.cite_list.len() + MAX_CITES, 0);
+        self.cite_info.resize(self.cite_info.len() + MAX_CITES, 0);
+        self.type_list.resize(self.type_list.len() + MAX_CITES, 0);
+        self.entry_exists
+            .resize(self.entry_exists.len() + MAX_CITES, false);
     }
 
     pub fn get_cite(&self, offset: usize) -> StrNumber {
@@ -119,7 +120,7 @@ impl CiteInfo {
 
     pub fn sort_info<I>(&mut self, entries: &EntryData, r: I)
     where
-        [usize]: IndexMut<I, Output = [usize]>,
+        Vec<usize>: IndexMut<I, Output = [usize]>,
     {
         self.cite_info[r].sort_by(|a, b| less_than(entries, a, b))
     }

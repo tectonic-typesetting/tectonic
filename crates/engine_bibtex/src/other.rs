@@ -1,10 +1,10 @@
-use crate::{xbuf::XBuf, FieldLoc, HashPointer, StrNumber};
+use crate::{FieldLoc, HashPointer, StrNumber};
 
 const MAX_FIELDS: usize = 17250;
 
 pub(crate) struct OtherData {
     wiz_functions: Vec<HashPointer>,
-    field_info: XBuf<StrNumber>,
+    field_info: Vec<StrNumber>,
     num_fields: FieldLoc,
     num_pre_defined_fields: FieldLoc,
     crossref_num: FieldLoc,
@@ -14,7 +14,7 @@ impl OtherData {
     pub fn new() -> OtherData {
         OtherData {
             wiz_functions: Vec::new(),
-            field_info: XBuf::new(MAX_FIELDS),
+            field_info: vec![0; MAX_FIELDS],
             num_fields: 0,
             num_pre_defined_fields: 0,
             crossref_num: 0,
@@ -51,7 +51,8 @@ impl OtherData {
 
     pub fn check_field_overflow(&mut self, fields: usize) {
         while fields > self.field_info.len() {
-            self.field_info.grow(MAX_FIELDS);
+            self.field_info
+                .resize(self.field_info.len() + MAX_FIELDS, 0);
         }
     }
 
