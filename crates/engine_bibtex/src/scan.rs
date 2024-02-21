@@ -166,7 +166,7 @@ pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut Global
             return true;
         }
 
-        if !input_ln(&mut ctx.bst.as_mut().unwrap().file, buffers) {
+        if !input_ln(ctx.engine, &mut ctx.bst.as_mut().unwrap().file, buffers) {
             return false;
         }
 
@@ -502,7 +502,7 @@ fn scan_balanced_braces(
                 b'{' => {
                     brace_level += 1;
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
-                    if !eat_bib_white_space(buffers, bibs) {
+                    if !eat_bib_white_space(ctx, buffers, bibs) {
                         return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command)
                             .map(|_| false);
                     }
@@ -520,7 +520,7 @@ fn scan_balanced_braces(
                         if (c == b'{'
                             || c == b'}'
                             || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
-                            && !eat_bib_white_space(buffers, bibs)
+                            && !eat_bib_white_space(ctx, buffers, bibs)
                         {
                             return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command)
                                 .map(|_| false);
@@ -537,7 +537,7 @@ fn scan_balanced_braces(
                     if !Scan::new()
                         .chars(&[right_str_delim, b'{', b'}'])
                         .scan_till(buffers, init)
-                        && !eat_bib_white_space(buffers, bibs)
+                        && !eat_bib_white_space(ctx, buffers, bibs)
                     {
                         return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command)
                             .map(|_| false);
@@ -690,7 +690,7 @@ fn scan_a_field_token_and_eat_white(
         }
     }
 
-    if !eat_bib_white_space(buffers, bibs) {
+    if !eat_bib_white_space(ctx, buffers, bibs) {
         return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command).map(|_| false);
     }
     Ok(true)
@@ -732,7 +732,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
     }
     while buffers.at_offset(BufTy::Base, 2) == b'#' {
         buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
-        if !eat_bib_white_space(buffers, bibs) {
+        if !eat_bib_white_space(ctx, buffers, bibs) {
             return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command).map(|_| false);
         }
         if !scan_a_field_token_and_eat_white(
