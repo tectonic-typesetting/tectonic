@@ -10,7 +10,7 @@ use crate::{
         aux_err_no_right_brace_print, aux_err_print, aux_err_stuff_after_right_brace_print,
         aux_err_white_space_in_argument_print, hash_cite_confusion, log_pr_aux_name,
         log_pr_bst_name, print_a_pool_str, print_a_token, print_aux_name, print_bib_name,
-        print_confusion, print_overflow, write_log_file, write_logs, AuxTy,
+        print_confusion, print_overflow, AuxTy,
     },
     peekable::PeekableInput,
     pool::StringPool,
@@ -62,7 +62,7 @@ fn aux_bib_data_command(
     hash: &mut HashData,
 ) -> Result<(), BibtexError> {
     if ctx.bib_seen {
-        aux_err_illegal_another_print(AuxTy::Data)?;
+        aux_err_illegal_another_print(ctx, AuxTy::Data)?;
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
@@ -76,13 +76,13 @@ fn aux_bib_data_command(
             .class(LexClass::Whitespace)
             .scan_till(buffers, init)
         {
-            aux_err_no_right_brace_print();
+            aux_err_no_right_brace_print(ctx);
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
 
         if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
-            aux_err_white_space_in_argument_print();
+            aux_err_white_space_in_argument_print(ctx);
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
@@ -90,7 +90,7 @@ fn aux_bib_data_command(
         if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1
             && buffers.at_offset(BufTy::Base, 2) == b'}'
         {
-            aux_err_stuff_after_right_brace_print();
+            aux_err_stuff_after_right_brace_print(ctx);
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
@@ -99,7 +99,7 @@ fn aux_bib_data_command(
             [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
         let res = pool.lookup_str_insert(ctx, hash, file, StrIlk::BibFile)?;
         if res.exists {
-            write_logs("This database file appears more than once: ");
+            ctx.write_logs("This database file appears more than once: ");
             print_bib_name(ctx, pool, hash.text(res.loc))?;
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
@@ -110,7 +110,7 @@ fn aux_bib_data_command(
         let bib_in = PeekableInput::open(ctx, &fname, FileFormat::Bib);
         match bib_in {
             Err(_) => {
-                write_logs("I couldn't open database file ");
+                ctx.write_logs("I couldn't open database file ");
                 print_bib_name(ctx, pool, hash.text(res.loc))?;
                 aux_err_print(ctx, buffers, aux, pool)?;
                 return Ok(());
@@ -136,7 +136,7 @@ fn aux_bib_style_command(
     hash: &mut HashData,
 ) -> Result<(), BibtexError> {
     if ctx.bst_seen {
-        aux_err_illegal_another_print(AuxTy::Style)?;
+        aux_err_illegal_another_print(ctx, AuxTy::Style)?;
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
@@ -149,19 +149,19 @@ fn aux_bib_style_command(
         .class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
-        aux_err_no_right_brace_print();
+        aux_err_no_right_brace_print(ctx);
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
 
     if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
-        aux_err_white_space_in_argument_print();
+        aux_err_white_space_in_argument_print(ctx);
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
 
     if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1 {
-        aux_err_stuff_after_right_brace_print();
+        aux_err_stuff_after_right_brace_print(ctx);
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
@@ -170,7 +170,7 @@ fn aux_bib_style_command(
         [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
     let res = pool.lookup_str_insert(ctx, hash, file, StrIlk::BstFile)?;
     if res.exists {
-        write_logs("Already encountered style file");
+        ctx.write_logs("Already encountered style file");
         print_confusion(ctx);
         return Err(BibtexError::Fatal);
     }
@@ -180,7 +180,7 @@ fn aux_bib_style_command(
     let bst_file = PeekableInput::open(ctx, &fname, FileFormat::Bst);
     match bst_file {
         Err(_) => {
-            write_logs("I couldn't open style file ");
+            ctx.write_logs("I couldn't open style file ");
             print_bst_name(ctx, pool, hash.text(res.loc))?;
             ctx.bst = None;
             aux_err_print(ctx, buffers, aux, pool)?;
@@ -196,10 +196,10 @@ fn aux_bib_style_command(
     }
 
     if ctx.config.verbose {
-        write_logs("The style file: ");
+        ctx.write_logs("The style file: ");
         print_bst_name(ctx, pool, ctx.bst.as_ref().unwrap().name)?;
     } else {
-        write_log_file("The style file: ");
+        ctx.write_log_file("The style file: ");
         log_pr_bst_name(ctx, pool)?;
     }
 
@@ -225,19 +225,19 @@ fn aux_citation_command(
             .class(LexClass::Whitespace)
             .scan_till(buffers, init)
         {
-            aux_err_no_right_brace_print();
+            aux_err_no_right_brace_print(ctx);
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
         if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
-            aux_err_white_space_in_argument_print();
+            aux_err_white_space_in_argument_print(ctx);
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
         if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1
             && buffers.at_offset(BufTy::Base, 2) == b'}'
         {
-            aux_err_stuff_after_right_brace_print();
+            aux_err_stuff_after_right_brace_print(ctx);
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
@@ -246,7 +246,7 @@ fn aux_citation_command(
             && buffers.at_offset(BufTy::Base, 1) == b'*'
         {
             if ctx.all_entries {
-                write_logs("Multiple inclusions of entire database\n");
+                ctx.write_logs("Multiple inclusions of entire database\n");
                 aux_err_print(ctx, buffers, aux, pool)?;
                 return Ok(());
             } else {
@@ -274,15 +274,15 @@ fn aux_citation_command(
                 [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
             let uc_res = pool.lookup_str(hash, cite, StrIlk::Cite);
             if !uc_res.exists {
-                write_logs("Case mismatch error between cite keys ");
-                print_a_token(buffers);
-                write_logs(" and ");
+                ctx.write_logs("Case mismatch error between cite keys ");
+                print_a_token(ctx, buffers);
+                ctx.write_logs(" and ");
                 print_a_pool_str(
                     ctx,
                     cites.get_cite(hash.ilk_info(hash.ilk_info(lc_res.loc) as usize) as usize),
                     pool,
                 )?;
-                write_logs("\n");
+                ctx.write_logs("\n");
                 aux_err_print(ctx, buffers, aux, pool)?;
                 return Ok(());
             }
@@ -324,26 +324,26 @@ fn aux_input_command(
         .class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
-        aux_err_no_right_brace_print();
+        aux_err_no_right_brace_print(ctx);
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
     if LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace {
-        aux_err_white_space_in_argument_print();
+        aux_err_white_space_in_argument_print(ctx);
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
     if buffers.init(BufTy::Base) > buffers.offset(BufTy::Base, 2) + 1 {
-        aux_err_stuff_after_right_brace_print();
+        aux_err_stuff_after_right_brace_print(ctx);
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
 
     if aux.ptr() == AUX_STACK_SIZE {
-        print_a_token(buffers);
-        write_logs(": ");
+        print_a_token(ctx, buffers);
+        ctx.write_logs(": ");
         print_overflow(ctx);
-        write_logs(&format!("auxiliary file depth {}\n", AUX_STACK_SIZE));
+        ctx.write_logs(&format!("auxiliary file depth {}\n", AUX_STACK_SIZE));
         return Err(BibtexError::Fatal);
     }
 
@@ -355,8 +355,8 @@ fn aux_input_command(
                 [buffers.offset(BufTy::Base, 2) - aux_ext.len()..buffers.offset(BufTy::Base, 2)]);
 
     if !aux_extension_ok {
-        print_a_token(buffers);
-        write_logs(" has a wrong extension");
+        print_a_token(ctx, buffers);
+        ctx.write_logs(" has a wrong extension");
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
@@ -365,7 +365,7 @@ fn aux_input_command(
         [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
     let res = pool.lookup_str_insert(ctx, hash, file, StrIlk::AuxFile)?;
     if res.exists {
-        write_logs("Already encountered file ");
+        ctx.write_logs("Already encountered file ");
         print_aux_name(ctx, pool, hash.text(res.loc))?;
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
@@ -376,7 +376,7 @@ fn aux_input_command(
     let file = PeekableInput::open(ctx, &fname, FileFormat::Tex);
     match file {
         Err(_) => {
-            write_logs("I couldn't open auxiliary file ");
+            ctx.write_logs("I couldn't open auxiliary file ");
             print_aux_name(ctx, pool, hash.text(res.loc))?;
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
@@ -390,7 +390,7 @@ fn aux_input_command(
         }
     }
 
-    write_logs(&format!("A level-{} auxiliary file: ", aux.ptr() - 1));
+    ctx.write_logs(&format!("A level-{} auxiliary file: ", aux.ptr() - 1));
     log_pr_aux_name(ctx, aux, pool)?;
 
     Ok(())
@@ -445,7 +445,7 @@ pub(crate) fn get_aux_command_and_process(
                 globals.hash,
             )?,
             _ => {
-                write_logs("Unknown auxiliary-file command");
+                ctx.write_logs("Unknown auxiliary-file command");
                 print_confusion(ctx);
                 return Err(BibtexError::Fatal);
             }
@@ -473,32 +473,32 @@ pub(crate) fn last_check_for_aux_errors(
 ) -> Result<(), BibtexError> {
     cites.set_num_cites(cites.ptr());
     if !ctx.citation_seen {
-        aux_end1_err_print();
-        write_logs("\\citation commands");
+        aux_end1_err_print(ctx);
+        ctx.write_logs("\\citation commands");
         aux_end2_err_print(ctx, pool, last_aux)?;
     } else if cites.num_cites() == 0 && !ctx.all_entries {
-        aux_end1_err_print();
-        write_logs("cite keys");
+        aux_end1_err_print(ctx);
+        ctx.write_logs("cite keys");
         aux_end2_err_print(ctx, pool, last_aux)?;
     }
 
     if !ctx.bib_seen {
-        aux_end1_err_print();
-        write_logs("\\bibdata command");
+        aux_end1_err_print(ctx);
+        ctx.write_logs("\\bibdata command");
         aux_end2_err_print(ctx, pool, last_aux)?;
     } else if bibs.len() == 0 {
-        aux_end1_err_print();
-        write_logs("database files");
+        aux_end1_err_print(ctx);
+        ctx.write_logs("database files");
         aux_end2_err_print(ctx, pool, last_aux)?;
     }
 
     if !ctx.bst_seen {
-        aux_end1_err_print();
-        write_logs("\\bibstyle command");
+        aux_end1_err_print(ctx);
+        ctx.write_logs("\\bibstyle command");
         aux_end2_err_print(ctx, pool, last_aux)?;
     } else if ctx.bst.is_none() {
-        aux_end1_err_print();
-        write_logs("style file");
+        aux_end1_err_print(ctx);
+        ctx.write_logs("style file");
         aux_end2_err_print(ctx, pool, last_aux)?;
     }
 
