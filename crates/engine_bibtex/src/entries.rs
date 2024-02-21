@@ -74,12 +74,13 @@ impl EntryData {
 
     pub fn init_entries(&mut self, cites: &CiteInfo) {
         let num_cites = cites.num_cites();
-        self.entry_ints = Some(vec![0; (self.num_entry_ints + 1) * (num_cites + 1)]);
+        self.entry_ints = Some(vec![0; (self.num_entry_ints + 1) * (num_cites + 1) + 1]);
         self.entry_strs = Some(vec![
             127;
             (self.num_entry_strs + 1)
                 * (num_cites + 1)
                 * (ENT_STR_SIZE + 1)
+                + 1
         ]);
     }
 }

@@ -13,9 +13,9 @@ pub(crate) struct GlobalData {
 impl GlobalData {
     pub fn new() -> GlobalData {
         GlobalData {
-            glb_bib_str_ptr: vec![0; MAX_GLOB_STRS],
-            global_strs: vec![0; (GLOB_STR_SIZE + 1) * MAX_GLOB_STRS],
-            glb_str_end: vec![0; MAX_GLOB_STRS],
+            glb_bib_str_ptr: vec![0; MAX_GLOB_STRS + 1],
+            global_strs: vec![0; (GLOB_STR_SIZE + 1) * MAX_GLOB_STRS + 1],
+            glb_str_end: vec![0; MAX_GLOB_STRS + 1],
             num_glb_strs: 0,
         }
     }

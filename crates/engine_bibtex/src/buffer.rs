@@ -14,7 +14,7 @@ struct Buffer<T, const N: usize> {
 impl<T: Default + Clone, const N: usize> Buffer<T, N> {
     fn new(len: usize) -> Buffer<T, N> {
         Buffer {
-            ptr: vec![T::default(); len],
+            ptr: vec![T::default(); len + 1],
             offset: [0; N],
             init: 0,
         }
@@ -46,7 +46,7 @@ impl GlobalBuffer {
             ex_buf: Buffer::new(buf_len),
             out_buf: Buffer::new(buf_len),
             name_sep_char: Buffer::new(buf_len),
-            name_tok: vec![0; buf_len],
+            name_tok: vec![0; buf_len + 1],
         }
     }
 

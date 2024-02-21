@@ -84,11 +84,11 @@ pub(crate) struct HashData {
 impl HashData {
     pub(crate) fn new() -> HashData {
         HashData {
-            hash_next: vec![0; HASH_MAX],
-            hash_text: vec![0; HASH_MAX],
-            hash_ilk: vec![StrIlk::Text; HASH_MAX],
-            ilk_info: vec![0; HASH_MAX],
-            fn_type: vec![FnClass::Builtin; HASH_MAX],
+            hash_next: vec![0; HASH_MAX + 1],
+            hash_text: vec![0; HASH_MAX + 1],
+            hash_ilk: vec![StrIlk::Text; HASH_MAX + 1],
+            ilk_info: vec![0; HASH_MAX + 1],
+            fn_type: vec![FnClass::Builtin; HASH_MAX + 1],
             hash_used: HASH_MAX + 1,
         }
     }

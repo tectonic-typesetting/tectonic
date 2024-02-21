@@ -14,7 +14,7 @@ impl OtherData {
     pub fn new() -> OtherData {
         OtherData {
             wiz_functions: Vec::new(),
-            field_info: vec![0; MAX_FIELDS],
+            field_info: vec![0; MAX_FIELDS + 1],
             num_fields: 0,
             num_pre_defined_fields: 0,
             crossref_num: 0,
