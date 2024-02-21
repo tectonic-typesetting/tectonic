@@ -1,18 +1,17 @@
 use crate::{
     buffer::{BufTy, GlobalBuffer},
     char_info::LexClass,
-    ttbc_input_close, ttbc_input_open, ASCIICode, Bibtex, BibtexError, BufPointer,
+    ASCIICode, Bibtex, BibtexError, BufPointer,
 };
 use libc::EOF;
-use std::{ffi::CStr, io, ptr::NonNull};
-use tectonic_bridge_core::FileFormat;
-use tectonic_io_base::InputHandle;
+use std::{ffi::CStr, io};
+use tectonic_bridge_core::{CoreBridgeState, FileFormat, InputId};
 
 /* Sigh, I'm worried about ungetc() and EOF semantics in Bibtex's I/O, so
  * here's a tiny wrapper that lets us fake it. */
 
 pub(crate) struct PeekableInput {
-    handle: NonNull<InputHandle>,
+    id: InputId,
     peek_char: libc::c_int,
     saw_eof: bool,
 }
@@ -23,12 +22,11 @@ impl PeekableInput {
         path: &CStr,
         format: FileFormat,
     ) -> Result<PeekableInput, BibtexError> {
-        // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
-        let handle = unsafe { ttbc_input_open(ctx.engine, path.as_ptr(), format, 0) };
+        let id = ctx.engine.input_open(path.to_str().unwrap(), format, false);
 
-        if let Some(handle) = NonNull::new(handle) {
+        if let Some(id) = id {
             Ok(PeekableInput {
-                handle,
+                id,
                 peek_char: EOF,
                 saw_eof: false,
             })
@@ -38,15 +36,14 @@ impl PeekableInput {
     }
 
     pub(crate) fn close(self, ctx: &mut Bibtex<'_, '_>) -> Result<(), BibtexError> {
-        let err = ttbc_input_close(ctx.engine, self.handle.as_ptr());
-        if err == 0 {
+        if !ctx.engine.input_close(self.id) {
             Ok(())
         } else {
             Err(BibtexError::Fatal)
         }
     }
 
-    fn getc(&mut self) -> libc::c_int {
+    fn getc(&mut self, engine: &mut CoreBridgeState<'_>) -> libc::c_int {
         if self.peek_char != EOF {
             let rv = self.peek_char;
             self.peek_char = EOF;
@@ -55,7 +52,7 @@ impl PeekableInput {
 
         // SAFETY: Internal handle guaranteed valid, unique access to this input is unique access
         //         to the handle
-        let handle = unsafe { self.handle.as_mut() };
+        let handle = engine.get_input(self.id);
         let rv = match handle.getc() {
             Ok(c) => libc::c_int::from(c),
             Err(e) => {
@@ -78,11 +75,11 @@ impl PeekableInput {
         self.peek_char = c;
     }
 
-    pub fn eof(&mut self) -> bool {
+    pub fn eof(&mut self, engine: &mut CoreBridgeState<'_>) -> bool {
         if self.saw_eof {
             return true;
         }
-        let c = self.getc();
+        let c = self.getc(engine);
         if c == EOF {
             return true;
         }
@@ -90,11 +87,11 @@ impl PeekableInput {
         false
     }
 
-    fn eoln(&mut self) -> bool {
+    fn eoln(&mut self, engine: &mut CoreBridgeState<'_>) -> bool {
         if self.saw_eof {
             return true;
         }
-        let c = self.getc();
+        let c = self.getc(engine);
         if c != EOF {
             self.ungetc(c);
         }
@@ -102,27 +99,31 @@ impl PeekableInput {
     }
 }
 
-pub(crate) fn input_ln(peekable: &mut PeekableInput, buffers: &mut GlobalBuffer) -> bool {
+pub(crate) fn input_ln(
+    engine: &mut CoreBridgeState<'_>,
+    peekable: &mut PeekableInput,
+    buffers: &mut GlobalBuffer,
+) -> bool {
     buffers.set_init(BufTy::Base, 0);
     let mut last = 0;
-    if peekable.eof() {
+    if peekable.eof(engine) {
         return false;
     }
 
     // Read up to end-of-line
-    while !peekable.eoln() {
+    while !peekable.eoln(engine) {
         if last >= buffers.len() as BufPointer {
             buffers.grow_all();
         }
 
-        buffers.set_at(BufTy::Base, last, peekable.getc() as ASCIICode);
+        buffers.set_at(BufTy::Base, last, peekable.getc(engine) as ASCIICode);
         last += 1;
     }
 
     // For side effects - consume the eoln we saw
-    let eoln = peekable.getc();
+    let eoln = peekable.getc(engine);
     if eoln == '\r' as libc::c_int {
-        let next = peekable.getc();
+        let next = peekable.getc(engine);
         if next != '\n' as libc::c_int {
             peekable.ungetc(next);
         }

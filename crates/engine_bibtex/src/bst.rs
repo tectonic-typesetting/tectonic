@@ -597,7 +597,7 @@ fn bst_read_command(
 
         let mut cur_macro_loc = 0;
         let mut field_name_loc = 0;
-        while !globals.bibs.top_file_mut().file.eof() {
+        while !globals.bibs.top_file_mut().file.eof(ctx.glbl_ctx.engine) {
             get_bib_command_or_entry_and_process(
                 ctx.glbl_ctx_mut(),
                 globals,
