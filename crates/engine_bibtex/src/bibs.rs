@@ -60,13 +60,17 @@ impl BibData {
     }
 }
 
-pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData) -> bool {
+pub(crate) fn eat_bib_white_space(
+    ctx: &mut Bibtex<'_, '_>,
+    buffers: &mut GlobalBuffer,
+    bibs: &mut BibData,
+) -> bool {
     let mut init = buffers.init(BufTy::Base);
     while !Scan::new()
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
-        if !input_ln(&mut bibs.top_file_mut().file, buffers) {
+        if !input_ln(ctx.engine, &mut bibs.top_file_mut().file, buffers) {
             return false;
         }
 
@@ -96,7 +100,7 @@ pub(crate) fn compress_bib_white(
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, last)
     {
-        let res = !input_ln(&mut bibs.top_file_mut().file, buffers);
+        let res = !input_ln(ctx.engine, &mut bibs.top_file_mut().file, buffers);
 
         if res {
             return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command).map(|_| false);
@@ -124,7 +128,11 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let mut init = globals.buffers.init(BufTy::Base);
     while !Scan::new().chars(&[b'@']).scan_till(globals.buffers, init) {
-        if !input_ln(&mut globals.bibs.top_file_mut().file, globals.buffers) {
+        if !input_ln(
+            ctx.engine,
+            &mut globals.bibs.top_file_mut().file,
+            globals.buffers,
+        ) {
             return Ok(());
         }
 
@@ -143,7 +151,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-    if !eat_bib_white_space(globals.buffers, globals.bibs) {
+    if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
         eat_bib_print(
             ctx,
             globals.buffers,
@@ -186,7 +194,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         match globals.hash.ilk_info(res.loc) {
             0 => (),
             1 => {
-                if !eat_bib_white_space(globals.buffers, globals.bibs) {
+                if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
                     eat_bib_print(
                         ctx,
                         globals.buffers,
@@ -220,7 +228,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                     globals.buffers.offset(BufTy::Base, 2) + 1,
                 );
 
-                if !eat_bib_white_space(globals.buffers, globals.bibs) {
+                if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
                     eat_bib_print(
                         ctx,
                         globals.buffers,
@@ -271,7 +279,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 );
             }
             2 => {
-                if !eat_bib_white_space(globals.buffers, globals.bibs) {
+                if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
                     eat_bib_print(
                         ctx,
                         globals.buffers,
@@ -305,7 +313,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                     globals.buffers.offset(BufTy::Base, 2) + 1,
                 );
 
-                if !eat_bib_white_space(globals.buffers, globals.bibs) {
+                if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
                     eat_bib_print(
                         ctx,
                         globals.buffers,
@@ -349,7 +357,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                     .hash
                     .set_ilk_info(res.loc, globals.hash.text(res.loc) as i32);
 
-                if !eat_bib_white_space(globals.buffers, globals.bibs) {
+                if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
                     eat_bib_print(
                         ctx,
                         globals.buffers,
@@ -377,7 +385,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                     globals.buffers.offset(BufTy::Base, 2) + 1,
                 );
 
-                if !eat_bib_white_space(globals.buffers, globals.bibs) {
+                if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
                     eat_bib_print(
                         ctx,
                         globals.buffers,
@@ -442,7 +450,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let type_exists = bst_res.exists && globals.hash.ty(bst_res.loc) == FnClass::Wizard;
 
-    if !eat_bib_white_space(globals.buffers, globals.bibs) {
+    if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
         eat_bib_print(
             ctx,
             globals.buffers,
@@ -474,7 +482,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-    if !eat_bib_white_space(globals.buffers, globals.bibs) {
+    if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
         eat_bib_print(
             ctx,
             globals.buffers,
@@ -660,7 +668,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         }
     }
 
-    if !eat_bib_white_space(globals.buffers, globals.bibs) {
+    if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
         eat_bib_print(
             ctx,
             globals.buffers,
@@ -689,7 +697,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             .buffers
             .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-        if !eat_bib_white_space(globals.buffers, globals.bibs) {
+        if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
             eat_bib_print(
                 ctx,
                 globals.buffers,
@@ -736,7 +744,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             }
         }
 
-        if !eat_bib_white_space(globals.buffers, globals.bibs) {
+        if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
             eat_bib_print(
                 ctx,
                 globals.buffers,
@@ -762,7 +770,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             .buffers
             .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-        if !eat_bib_white_space(globals.buffers, globals.bibs) {
+        if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
             eat_bib_print(
                 ctx,
                 globals.buffers,
