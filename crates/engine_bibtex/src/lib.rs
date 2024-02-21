@@ -81,7 +81,7 @@ pub(crate) enum BibtexError {
 
 /// A possible outcome from a BibTeX engine invocation.
 ///
-/// The classic TeX implementation provides a fourth outcome: “fatal error”. In
+/// The classic TeX implementation provides a fourth outcome: "fatal error". In
 /// Tectonic, this outcome is represented as an `Err` result rather than a
 /// [`BibtexOutcome`].
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -92,7 +92,7 @@ pub enum BibtexOutcome {
     /// Warnings were issued.
     Warnings = 1,
 
-    /// Errors occurred. Note that, in TeX usage, “errors” are not necessarily
+    /// Errors occurred. Note that, in TeX usage, "errors" are not necessarily
     /// *fatal* errors: the engine will proceed and work around errors as best
     /// it can.
     Errors = 2,
@@ -100,7 +100,7 @@ pub enum BibtexOutcome {
 
 /// A struct for invoking the BibTeX engine.
 ///
-/// This struct has a fairly straightforward “builder” interface: you create it,
+/// This struct has a fairly straightforward "builder" interface: you create it,
 /// apply any settings that you wish, and eventually run the
 /// [`process()`](Self::process) method.
 ///

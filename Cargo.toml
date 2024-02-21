@@ -8,7 +8,7 @@ version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
-extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
+extension to the classic "Web2C" implementation of TeX and uses the TeXLive distribution
 of support files.
 """
 homepage = "https://tectonic-typesetting.github.io/"

@@ -19,4 +19,5 @@
 //! creating new workspaces from scratch.
 
 pub mod document;
+mod syntax;
 pub mod workspace;

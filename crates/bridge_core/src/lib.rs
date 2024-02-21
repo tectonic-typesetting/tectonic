@@ -6,7 +6,7 @@
 //! Core APIs for bridging the C and Rust portions of Tectonic’s processing
 //! backends.
 //!
-//! This crate is used by the Tectonic “engines”, which are predominantly C/C++
+//! This crate is used by the Tectonic "engines", which are predominantly C/C++
 //! code derived from the original TeX codebase. It provides a framework so that
 //! the C/C++ code can invoke the support services provided by Tectonic, such as
 //! its pluggable I/O backends. The interfaces exposed to the C/C++ layers are
@@ -54,7 +54,7 @@ use tectonic_io_base::{
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
 
-/// Possible failures for “system request” calls to the driver.
+/// Possible failures for "system request" calls to the driver.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SystemRequestError {
     /// The driver does not implement this system request.
@@ -115,7 +115,7 @@ pub trait DriverHooks {
     /// ownership of the name and digest.
     fn event_input_closed(&mut self, _name: String, _digest: Option<DigestData>) {}
 
-    /// The engine is requesting a “shell escape” evaluation.
+    /// The engine is requesting a "shell escape" evaluation.
     ///
     /// If the driver wishes to implement this request, it should run the
     /// specified command using the OS’s default shell. Relevant files should be
