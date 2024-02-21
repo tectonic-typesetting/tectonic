@@ -29,8 +29,8 @@ use crate::{
     global::GlobalData,
     hash::HashData,
     log::{
-        bib_close_log, init_log_file, init_standard_output, log_pr_aux_name, print_aux_name,
-        print_confusion, sam_wrong_file_name_print, write_log_file, write_logs,
+        bib_close_log, log_pr_aux_name, print_aux_name, print_confusion, sam_wrong_file_name_print,
+        AsBytes,
     },
     other::OtherData,
     peekable::{input_ln, PeekableInput},
@@ -39,6 +39,7 @@ use crate::{
 };
 use std::{
     ffi::{CStr, CString},
+    io::Write,
     ptr,
 };
 use tectonic_bridge_core::{
@@ -199,10 +200,17 @@ impl Default for BibtexConfig {
     }
 }
 
+#[derive(Default)]
+pub(crate) struct Logs {
+    stdout: Option<&'static mut OutputHandle>,
+    file: Option<&'static mut OutputHandle>,
+}
+
 pub(crate) struct Bibtex<'a, 'cbs> {
     pub engine: &'a mut CoreBridgeState<'cbs>,
     pub config: BibtexConfig,
     pub history: History,
+    pub logs: Logs,
 
     pub bst: Option<File>,
 
@@ -236,6 +244,7 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
             engine,
             config,
             history: History::Spotless,
+            logs: Logs::default(),
             bst: None,
             bbl_file: ptr::null_mut(),
             bbl_line_num: 0,
@@ -274,6 +283,47 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
 
     pub(crate) fn mark_fatal(&mut self) {
         self.history = History::FatalError;
+    }
+
+    pub(crate) fn write_logs<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        let _ = self.logs.file.as_mut().unwrap().write_all(str.as_bytes());
+        let _ = self.logs.stdout.as_mut().unwrap().write_all(str.as_bytes());
+    }
+
+    pub(crate) fn write_stdout<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        let _ = self.logs.stdout.as_mut().unwrap().write_all(str.as_bytes());
+    }
+
+    pub(crate) fn write_log_file<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        self.logs
+            .file
+            .as_mut()
+            .unwrap()
+            .write_all(str.as_bytes())
+            .unwrap();
+    }
+
+    pub(crate) fn init_stdout(&mut self) -> bool {
+        if self.logs.stdout.is_none() {
+            let stdout = ttbc_output_open_stdout(self.engine);
+            // SAFETY: Pointer from ttstub_output_open_stdout is valid if non-null
+            self.logs.stdout = unsafe { stdout.as_mut() };
+            !stdout.is_null()
+        } else {
+            true
+        }
+    }
+
+    pub(crate) fn init_log_file(&mut self, file: &CStr) -> bool {
+        if self.logs.file.is_none() {
+            // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
+            let new = unsafe { ttbc_output_open(self.engine, file.as_ptr(), 0) };
+            // SAFETY: Return of ttstub_output_open should be valid if non-null
+            self.logs.file = unsafe { new.as_mut() };
+            !new.is_null()
+        } else {
+            true
+        }
     }
 }
 
@@ -324,9 +374,6 @@ type FieldLoc = usize;
 type FnDefLoc = usize;
 
 pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> History {
-    ctx.history = History::Spotless;
-    log::reset();
-
     let mut buffers = GlobalBuffer::new();
     let mut pool = StringPool::new();
     let mut hash = HashData::new();
@@ -366,20 +413,20 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
         History::Spotless => (),
         History::WarningIssued(warns) => {
             if warns == 1 {
-                write_logs("(There was 1 warning)\n")
+                ctx.write_logs("(There was 1 warning)\n")
             } else {
-                write_logs(&format!("(There were {} warnings)\n", warns))
+                ctx.write_logs(&format!("(There were {} warnings)\n", warns))
             }
         }
         History::ErrorIssued(errs) => {
             if errs == 1 {
-                write_logs("(There was 1 error message)\n")
+                ctx.write_logs("(There was 1 error message)\n")
             } else {
-                write_logs(&format!("(There were {} error messages)\n", errs))
+                ctx.write_logs(&format!("(There were {} error messages)\n", errs))
             }
         }
         History::FatalError => {
-            write_logs("(That was a fatal error)\n");
+            ctx.write_logs("(That was a fatal error)\n");
         }
     }
 
@@ -392,7 +439,7 @@ pub(crate) fn inner_bibtex_main(
     globals: &mut GlobalItems<'_>,
     aux_file_name: &CStr,
 ) -> Result<History, BibtexError> {
-    if !init_standard_output(ctx) {
+    if !ctx.init_stdout() {
         return Ok(History::FatalError);
     }
 
@@ -401,12 +448,12 @@ pub(crate) fn inner_bibtex_main(
     }
 
     if ctx.config.verbose {
-        write_logs("This is BibTeX, Version 0.99d\n");
+        ctx.write_logs("This is BibTeX, Version 0.99d\n");
     } else {
-        write_log_file("This is BibTeX, Version 0.99d\n");
+        ctx.write_log_file("This is BibTeX, Version 0.99d\n");
     }
 
-    write_log_file(&format!(
+    ctx.write_log_file(&format!(
         "Capacity: max_strings={}, hash_size={}, hash_prime={}\n",
         pool::MAX_STRINGS,
         hash::HASH_SIZE,
@@ -414,10 +461,10 @@ pub(crate) fn inner_bibtex_main(
     ));
 
     if ctx.config.verbose {
-        write_logs("The top-level auxiliary file: ");
+        ctx.write_logs("The top-level auxiliary file: ");
         print_aux_name(ctx, globals.pool, globals.aux.top_file().name)?;
     } else {
-        write_log_file("The top-level auxiliary file: ");
+        ctx.write_log_file("The top-level auxiliary file: ");
         log_pr_aux_name(ctx, globals.aux, globals.pool)?;
     }
 
@@ -462,7 +509,6 @@ pub(crate) fn get_the_top_level_aux_file_name(
     }: &mut GlobalItems<'_>,
     aux_file_name: &CStr,
 ) -> Result<i32, BibtexError> {
-    let ctx = &mut *ctx;
     let aux_bytes = aux_file_name.to_bytes_with_nul();
 
     // This will be our scratch space for CStr filenames
@@ -478,15 +524,15 @@ pub(crate) fn get_the_top_level_aux_file_name(
     let aux_file = match PeekableInput::open(ctx, aux_file_name, FileFormat::Tex) {
         Ok(file) => file,
         Err(_) => {
-            sam_wrong_file_name_print(aux_file_name);
+            sam_wrong_file_name_print(ctx, aux_file_name);
             return Ok(1);
         }
     };
 
     set_extension(&mut path, b".blg");
     let log_file = CStr::from_bytes_with_nul(&path).unwrap();
-    if !init_log_file(ctx, log_file) {
-        sam_wrong_file_name_print(log_file);
+    if !ctx.init_log_file(log_file) {
+        sam_wrong_file_name_print(ctx, log_file);
         return Ok(1);
     }
 
@@ -495,7 +541,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
     // SAFETY: Function sound if provided a valid path pointer
     ctx.bbl_file = unsafe { ttbc_output_open(ctx.engine, bbl_file.as_ptr(), 0) };
     if ctx.bbl_file.is_null() {
-        sam_wrong_file_name_print(bbl_file);
+        sam_wrong_file_name_print(ctx, bbl_file);
         return Ok(1);
     }
 
@@ -512,7 +558,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
     });
 
     if lookup.exists {
-        write_logs("Already encountered auxiliary file");
+        ctx.write_logs("Already encountered auxiliary file");
         print_confusion(ctx);
         return Err(BibtexError::Fatal);
     }
