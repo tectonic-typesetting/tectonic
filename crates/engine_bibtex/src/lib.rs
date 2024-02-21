@@ -26,7 +26,6 @@ use crate::{
     cite::CiteInfo,
     entries::EntryData,
     exec::ExecCtx,
-    external::*,
     global::GlobalData,
     hash::HashData,
     history::{get_history, History},
@@ -49,7 +48,6 @@ use tectonic_bridge_core::{
 };
 use tectonic_errors::prelude::*;
 use tectonic_io_base::OutputHandle;
-use xbuf::SafelyZero;
 
 pub(crate) mod auxi;
 pub(crate) mod bibs;
@@ -67,7 +65,6 @@ pub(crate) mod other;
 pub(crate) mod peekable;
 pub(crate) mod pool;
 pub(crate) mod scan;
-pub(crate) mod xbuf;
 
 #[doc(hidden)]
 #[derive(Debug)]
@@ -288,9 +285,6 @@ pub(crate) enum StrIlk {
     ControlSeq,
 }
 
-// SAFETY: StrIlk is valid at zero as StrIlk::Text
-unsafe impl SafelyZero for StrIlk {}
-
 type StrNumber = usize;
 type CiteNumber = usize;
 type ASCIICode = u8;
@@ -330,7 +324,6 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
     let res = inner_bibtex_main(ctx, &mut globals, aux_file_name);
     match res {
         Err(BibtexError::Recover) | Ok(History::Spotless) => {
-            // SAFETY: bst_file guaranteed valid at this point
             ctx.bst.take().map(|file| file.file.close(ctx));
             ttbc_output_close(ctx.engine, ctx.bbl_file);
         }
@@ -522,15 +515,6 @@ fn initialize(
 
     pre_def_certain_strings(ctx, globals)?;
     get_the_top_level_aux_file_name(ctx, globals, aux_file_name)
-}
-
-mod external {
-    #[allow(improper_ctypes)]
-    extern "C" {
-        pub(crate) fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
-
-        pub(crate) fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;
-    }
 }
 
 /// Does our resulting executable link correctly?
