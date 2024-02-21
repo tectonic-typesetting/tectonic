@@ -40,14 +40,9 @@ use crate::{
 use std::{
     ffi::{CStr, CString},
     io::Write,
-    ptr,
 };
-use tectonic_bridge_core::{
-    ttbc_input_close, ttbc_input_open, ttbc_output_close, ttbc_output_open,
-    ttbc_output_open_stdout, CoreBridgeLauncher, CoreBridgeState, FileFormat,
-};
+use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, FileFormat, OutputId};
 use tectonic_errors::prelude::*;
-use tectonic_io_base::OutputHandle;
 
 pub(crate) mod auxi;
 pub(crate) mod bibs;
@@ -202,8 +197,8 @@ impl Default for BibtexConfig {
 
 #[derive(Default)]
 pub(crate) struct Logs {
-    stdout: Option<&'static mut OutputHandle>,
-    file: Option<&'static mut OutputHandle>,
+    stdout: Option<OutputId>,
+    file: Option<OutputId>,
 }
 
 pub(crate) struct Bibtex<'a, 'cbs> {
@@ -214,7 +209,7 @@ pub(crate) struct Bibtex<'a, 'cbs> {
 
     pub bst: Option<File>,
 
-    pub bbl_file: *mut OutputHandle,
+    pub bbl_file: Option<OutputId>,
     pub bbl_line_num: usize,
 
     pub impl_fn_num: usize,
@@ -246,7 +241,7 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
             history: History::Spotless,
             logs: Logs::default(),
             bst: None,
-            bbl_file: ptr::null_mut(),
+            bbl_file: None,
             bbl_line_num: 0,
             impl_fn_num: 0,
             cite_xptr: 0,
@@ -286,29 +281,34 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
     }
 
     pub(crate) fn write_logs<B: ?Sized + AsBytes>(&mut self, str: &B) {
-        let _ = self.logs.file.as_mut().unwrap().write_all(str.as_bytes());
-        let _ = self.logs.stdout.as_mut().unwrap().write_all(str.as_bytes());
+        let _ = self
+            .engine
+            .get_output(self.logs.file.unwrap())
+            .write_all(str.as_bytes());
+        let _ = self
+            .engine
+            .get_output(self.logs.stdout.unwrap())
+            .write_all(str.as_bytes());
     }
 
     pub(crate) fn write_stdout<B: ?Sized + AsBytes>(&mut self, str: &B) {
-        let _ = self.logs.stdout.as_mut().unwrap().write_all(str.as_bytes());
+        let _ = self
+            .engine
+            .get_output(self.logs.stdout.unwrap())
+            .write_all(str.as_bytes());
     }
 
     pub(crate) fn write_log_file<B: ?Sized + AsBytes>(&mut self, str: &B) {
-        self.logs
-            .file
-            .as_mut()
-            .unwrap()
+        self.engine
+            .get_output(self.logs.file.unwrap())
             .write_all(str.as_bytes())
             .unwrap();
     }
 
     pub(crate) fn init_stdout(&mut self) -> bool {
         if self.logs.stdout.is_none() {
-            let stdout = ttbc_output_open_stdout(self.engine);
-            // SAFETY: Pointer from ttstub_output_open_stdout is valid if non-null
-            self.logs.stdout = unsafe { stdout.as_mut() };
-            !stdout.is_null()
+            self.logs.stdout = self.engine.output_open_stdout();
+            self.logs.stdout.is_some()
         } else {
             true
         }
@@ -316,11 +316,8 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
 
     pub(crate) fn init_log_file(&mut self, file: &CStr) -> bool {
         if self.logs.file.is_none() {
-            // SAFETY: Our CStr is valid for the length of the call, so this can't access bad memory
-            let new = unsafe { ttbc_output_open(self.engine, file.as_ptr(), 0) };
-            // SAFETY: Return of ttstub_output_open should be valid if non-null
-            self.logs.file = unsafe { new.as_mut() };
-            !new.is_null()
+            self.logs.file = self.engine.output_open(file.to_str().unwrap(), false);
+            self.logs.file.is_some()
         } else {
             true
         }
@@ -400,10 +397,14 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
     match res {
         Err(BibtexError::Recover) | Ok(History::Spotless) => {
             ctx.bst.take().map(|file| file.file.close(ctx));
-            ttbc_output_close(ctx.engine, ctx.bbl_file);
+            if let Some(bbl) = ctx.bbl_file {
+                ctx.engine.output_close(bbl);
+            }
         }
         Err(BibtexError::NoBst) => {
-            ttbc_output_close(ctx.engine, ctx.bbl_file);
+            if let Some(bbl) = ctx.bbl_file {
+                ctx.engine.output_close(bbl);
+            }
         }
         Err(BibtexError::Fatal) => (),
         Ok(hist) => return hist,
@@ -471,7 +472,11 @@ pub(crate) fn inner_bibtex_main(
     let last_aux = loop {
         globals.aux.top_file_mut().line += 1;
 
-        if !input_ln(&mut globals.aux.top_file_mut().file, globals.buffers) {
+        if !input_ln(
+            ctx.engine,
+            &mut globals.aux.top_file_mut().file,
+            globals.buffers,
+        ) {
             if let Some(last) = pop_the_aux_stack(ctx, globals.aux) {
                 break last;
             }
@@ -538,9 +543,8 @@ pub(crate) fn get_the_top_level_aux_file_name(
 
     set_extension(&mut path, b".bbl");
     let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
-    // SAFETY: Function sound if provided a valid path pointer
-    ctx.bbl_file = unsafe { ttbc_output_open(ctx.engine, bbl_file.as_ptr(), 0) };
-    if ctx.bbl_file.is_null() {
+    ctx.bbl_file = ctx.engine.output_open(bbl_file.to_str().unwrap(), false);
+    if ctx.bbl_file.is_none() {
         sam_wrong_file_name_print(ctx, bbl_file);
         return Ok(1);
     }

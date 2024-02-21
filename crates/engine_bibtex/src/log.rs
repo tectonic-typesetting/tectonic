@@ -10,8 +10,7 @@ use crate::{
     peekable::input_ln,
     pool::StringPool,
     scan::{Scan, ScanRes},
-    ttbc_output_close, ASCIICode, Bibtex, BibtexError, CiteNumber, FieldLoc, HashPointer,
-    StrNumber,
+    ASCIICode, Bibtex, BibtexError, CiteNumber, FieldLoc, HashPointer, StrNumber,
 };
 use std::{ffi::CStr, io::Write, slice};
 use tectonic_io_base::OutputHandle;
@@ -40,7 +39,7 @@ impl AsBytes for [u8] {
 
 pub(crate) fn bib_close_log(ctx: &mut Bibtex<'_, '_>) {
     if let Some(log) = ctx.logs.file.take() {
-        ttbc_output_close(ctx.engine, log);
+        ctx.engine.output_close(log);
     }
 }
 
@@ -62,8 +61,8 @@ pub(crate) fn out_token(handle: &mut OutputHandle, buffers: &GlobalBuffer) {
 }
 
 pub(crate) fn print_a_token(ctx: &mut Bibtex<'_, '_>, buffers: &GlobalBuffer) {
-    out_token(ctx.logs.stdout.as_mut().unwrap(), buffers);
-    out_token(ctx.logs.file.as_mut().unwrap(), buffers);
+    out_token(ctx.engine.get_output(ctx.logs.stdout.unwrap()), buffers);
+    out_token(ctx.engine.get_output(ctx.logs.file.unwrap()), buffers);
 }
 
 pub(crate) fn print_bad_input_line(ctx: &mut Bibtex<'_, '_>, buffers: &GlobalBuffer) {
@@ -558,7 +557,7 @@ pub(crate) fn bst_err_print_and_look_for_blank_line(
     bst_ln_num_print(ctx, pool)?;
     print_bad_input_line(ctx, buffers);
     while buffers.init(BufTy::Base) != 0 {
-        if !input_ln(&mut ctx.bst.as_mut().unwrap().file, buffers) {
+        if !input_ln(ctx.engine, &mut ctx.bst.as_mut().unwrap().file, buffers) {
             return Err(BibtexError::Recover);
         } else {
             ctx.bst.as_mut().unwrap().line += 1;
@@ -612,11 +611,12 @@ pub(crate) fn output_bbl_line(ctx: &mut Bibtex<'_, '_>, buffers: &mut GlobalBuff
             return;
         }
         let slice = &buffers.buffer(BufTy::Out)[..init];
-        // SAFETY: The bbl_file pointer is guaranteed valid
-        (unsafe { &mut *ctx.bbl_file }).write_all(slice).unwrap();
+        ctx.engine
+            .get_output(ctx.bbl_file.unwrap())
+            .write_all(slice)
+            .unwrap();
     }
-    // SAFETY: The bbl_file pointer is guaranteed valid
-    writeln!(unsafe { &mut *ctx.bbl_file }).unwrap();
+    writeln!(ctx.engine.get_output(ctx.bbl_file.unwrap())).unwrap();
     ctx.bbl_line_num += 1;
     buffers.set_init(BufTy::Out, 0);
 }
