@@ -28,7 +28,6 @@ use crate::{
     exec::ExecCtx,
     global::GlobalData,
     hash::HashData,
-    history::{get_history, History},
     log::{
         bib_close_log, init_log_file, init_standard_output, log_pr_aux_name, print_aux_name,
         print_confusion, sam_wrong_file_name_print, write_log_file, write_logs,
@@ -59,12 +58,19 @@ pub(crate) mod entries;
 pub(crate) mod exec;
 pub(crate) mod global;
 pub(crate) mod hash;
-pub(crate) mod history;
 pub(crate) mod log;
 pub(crate) mod other;
 pub(crate) mod peekable;
 pub(crate) mod pool;
 pub(crate) mod scan;
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub(crate) enum History {
+    Spotless,
+    WarningIssued(u32),
+    ErrorIssued(u32),
+    FatalError,
+}
 
 #[doc(hidden)]
 #[derive(Debug)]
@@ -196,6 +202,7 @@ impl Default for BibtexConfig {
 pub(crate) struct Bibtex<'a, 'cbs> {
     pub engine: &'a mut CoreBridgeState<'cbs>,
     pub config: BibtexConfig,
+    pub history: History,
 
     pub bst: Option<File>,
 
@@ -228,6 +235,7 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
         Bibtex {
             engine,
             config,
+            history: History::Spotless,
             bst: None,
             bbl_file: ptr::null_mut(),
             bbl_line_num: 0,
@@ -246,6 +254,26 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
             s_default: 0,
             s_aux_extension: 0,
         }
+    }
+
+    pub(crate) fn mark_warning(&mut self) {
+        match self.history {
+            History::WarningIssued(cur) => self.history = History::WarningIssued(cur + 1),
+            History::Spotless => self.history = History::WarningIssued(1),
+            _ => (),
+        }
+    }
+
+    pub(crate) fn mark_error(&mut self) {
+        match self.history {
+            History::Spotless | History::WarningIssued(_) => self.history = History::ErrorIssued(1),
+            History::ErrorIssued(cur) => self.history = History::ErrorIssued(cur + 1),
+            _ => (),
+        }
+    }
+
+    pub(crate) fn mark_fatal(&mut self) {
+        self.history = History::FatalError;
     }
 }
 
@@ -296,7 +324,7 @@ type FieldLoc = usize;
 type FnDefLoc = usize;
 
 pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> History {
-    history::reset();
+    ctx.history = History::Spotless;
     log::reset();
 
     let mut buffers = GlobalBuffer::new();
@@ -334,7 +362,7 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
         Ok(hist) => return hist,
     }
 
-    match get_history() {
+    match ctx.history {
         History::Spotless => (),
         History::WarningIssued(warns) => {
             if warns == 1 {
@@ -356,7 +384,7 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
     }
 
     bib_close_log(ctx);
-    get_history()
+    ctx.history
 }
 
 pub(crate) fn inner_bibtex_main(
@@ -387,10 +415,10 @@ pub(crate) fn inner_bibtex_main(
 
     if ctx.config.verbose {
         write_logs("The top-level auxiliary file: ");
-        print_aux_name(globals.pool, globals.aux.top_file().name)?;
+        print_aux_name(ctx, globals.pool, globals.aux.top_file().name)?;
     } else {
         write_log_file("The top-level auxiliary file: ");
-        log_pr_aux_name(globals.aux, globals.pool)?;
+        log_pr_aux_name(ctx, globals.aux, globals.pool)?;
     }
 
     let last_aux = loop {
@@ -472,7 +500,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
     }
 
     set_extension(&mut path, b".aux");
-    let lookup = match pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile) {
+    let lookup = match pool.lookup_str_insert(ctx, hash, &path[..path.len() - 1], StrIlk::AuxFile) {
         Ok(res) => res,
         Err(_) => return Err(BibtexError::Fatal),
     };
@@ -485,7 +513,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
 
     if lookup.exists {
         write_logs("Already encountered auxiliary file");
-        print_confusion();
+        print_confusion(ctx);
         return Err(BibtexError::Fatal);
     }
 
