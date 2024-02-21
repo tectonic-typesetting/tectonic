@@ -22,10 +22,10 @@ pub(crate) struct CiteInfo {
 impl CiteInfo {
     pub fn new() -> CiteInfo {
         CiteInfo {
-            cite_list: vec![0; MAX_CITES],
-            cite_info: vec![0; MAX_CITES],
-            type_list: vec![0; MAX_CITES],
-            entry_exists: vec![false; MAX_CITES],
+            cite_list: vec![0; MAX_CITES + 1],
+            cite_info: vec![0; MAX_CITES + 1],
+            type_list: vec![0; MAX_CITES + 1],
+            entry_exists: vec![false; MAX_CITES + 1],
             cite_ptr: 0,
             entry_cite_ptr: 0,
             num_cites: 0,

@@ -34,8 +34,8 @@ pub(crate) struct StringPool {
 impl StringPool {
     pub(crate) fn new() -> StringPool {
         StringPool {
-            strings: vec![0; POOL_SIZE],
-            offsets: vec![0; MAX_STRINGS],
+            strings: vec![0; POOL_SIZE + 1],
+            offsets: vec![0; MAX_STRINGS + 1],
             pool_ptr: 0,
             str_ptr: 1,
         }
