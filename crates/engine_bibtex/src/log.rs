@@ -6,7 +6,6 @@ use crate::{
     cite::CiteInfo,
     exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
     hash::{FnClass, HashData},
-    history::{mark_error, mark_fatal, mark_warning},
     other::OtherData,
     peekable::input_ln,
     pool::StringPool,
@@ -116,14 +115,14 @@ pub(crate) fn bib_close_log(ctx: &mut Bibtex<'_, '_>) {
     })
 }
 
-pub fn print_overflow() {
+pub fn print_overflow(ctx: &mut Bibtex<'_, '_>) {
     write_logs("Sorry---you've exceeded BibTeX's ");
-    mark_fatal();
+    ctx.mark_fatal();
 }
 
-pub fn print_confusion() {
+pub fn print_confusion(ctx: &mut Bibtex<'_, '_>) {
     write_logs("---this can't happen\n*Please notify the Tectonic maintainer*\n");
-    mark_fatal();
+    ctx.mark_fatal();
 }
 
 pub(crate) fn out_token(handle: &mut OutputHandle, buffers: &GlobalBuffer) {
@@ -138,7 +137,7 @@ pub(crate) fn print_a_token(buffers: &GlobalBuffer) {
     with_log(|log| out_token(log, buffers));
 }
 
-pub(crate) fn print_bad_input_line(buffers: &GlobalBuffer) {
+pub(crate) fn print_bad_input_line(ctx: &mut Bibtex<'_, '_>, buffers: &GlobalBuffer) {
     write_logs(" : ");
 
     let offset2 = buffers.offset(BufTy::Base, 2);
@@ -177,7 +176,7 @@ pub(crate) fn print_bad_input_line(buffers: &GlobalBuffer) {
         write_logs("(Error may have been on previous line)\n");
     }
 
-    mark_error();
+    ctx.mark_error();
 }
 
 pub(crate) fn print_skipping_whatever_remains() {
@@ -185,6 +184,7 @@ pub(crate) fn print_skipping_whatever_remains() {
 }
 
 pub(crate) fn out_pool_str(
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
     handle: &mut OutputHandle,
     s: StrNumber,
@@ -195,19 +195,23 @@ pub(crate) fn out_pool_str(
         Ok(())
     } else {
         write_logs(&format!("Illegal string number: {}", s));
-        print_confusion();
+        print_confusion(ctx);
         Err(BibtexError::Fatal)
     }
 }
 
-pub(crate) fn print_a_pool_str(s: StrNumber, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn print_a_pool_str(
+    ctx: &mut Bibtex<'_, '_>,
+    s: StrNumber,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
     let str = pool.try_get_str(s);
     if let Ok(str) = str {
         write_logs(str);
         Ok(())
     } else {
         write_logs(&format!("Illegal string number: {}", s));
-        print_confusion();
+        print_confusion(ctx);
         Err(BibtexError::Fatal)
     }
 }
@@ -223,28 +227,37 @@ pub fn sam_wrong_file_name_print(file: &CStr) {
     })
 }
 
-pub(crate) fn print_aux_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
-    print_a_pool_str(name, pool)?;
+pub(crate) fn print_aux_name(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    name: StrNumber,
+) -> Result<(), BibtexError> {
+    print_a_pool_str(ctx, name, pool)?;
     write_logs("\n");
     Ok(())
 }
 
-pub(crate) fn log_pr_aux_name(aux: &AuxData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_aux_name(
+    ctx: &mut Bibtex<'_, '_>,
+    aux: &AuxData,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
     with_log(|log| {
-        out_pool_str(pool, log, aux.top_file().name)?;
+        out_pool_str(ctx, pool, log, aux.top_file().name)?;
         writeln!(log).unwrap();
         Ok(())
     })
 }
 
 pub(crate) fn aux_err_print(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     aux: &AuxData,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs(&format!("---line {} of file ", aux.top_file().line));
-    print_aux_name(pool, aux.top_file().name)?;
-    print_bad_input_line(buffers);
+    print_aux_name(ctx, pool, aux.top_file().name)?;
+    print_bad_input_line(ctx, buffers);
     print_skipping_whatever_remains();
     write_logs("command\n");
     Ok(())
@@ -281,15 +294,23 @@ pub fn aux_end1_err_print() {
     write_logs("I found no ");
 }
 
-pub(crate) fn aux_end2_err_print(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
+pub(crate) fn aux_end2_err_print(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    name: StrNumber,
+) -> Result<(), BibtexError> {
     write_logs("---while reading file ");
-    print_aux_name(pool, name)?;
-    mark_error();
+    print_aux_name(ctx, pool, name)?;
+    ctx.mark_error();
     Ok(())
 }
 
-pub(crate) fn print_bib_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
-    print_a_pool_str(name, pool)?;
+pub(crate) fn print_bib_name(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    name: StrNumber,
+) -> Result<(), BibtexError> {
+    print_a_pool_str(ctx, name, pool)?;
     let res = pool
         .try_get_str(name)
         .map_err(|_| BibtexError::Fatal)
@@ -301,9 +322,13 @@ pub(crate) fn print_bib_name(pool: &StringPool, name: StrNumber) -> Result<(), B
     Ok(())
 }
 
-pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_bib_name(
+    ctx: &mut Bibtex<'_, '_>,
+    bibs: &BibData,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
     with_log(|log| {
-        out_pool_str(pool, log, bibs.top_file().name)?;
+        out_pool_str(ctx, pool, log, bibs.top_file().name)?;
         let res = pool
             .try_get_str(bibs.top_file().name)
             .map(|str| str.ends_with(b".bib"))
@@ -316,23 +341,29 @@ pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), B
     })
 }
 
-pub(crate) fn log_pr_bst_name(ctx: &Bibtex<'_, '_>, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_bst_name(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
     with_log(|log| {
         // TODO: This call can panic if bst_str doesn't exist
-        out_pool_str(pool, log, ctx.bst.as_ref().unwrap().name)?;
+        out_pool_str(ctx, pool, log, ctx.bst.as_ref().unwrap().name)?;
         writeln!(log, ".bst").unwrap();
         Ok(())
     })
 }
 
-pub(crate) fn hash_cite_confusion() {
+pub(crate) fn hash_cite_confusion(ctx: &mut Bibtex<'_, '_>) {
     write_logs("Cite hash error");
-    print_confusion();
+    print_confusion(ctx);
 }
 
-pub(crate) fn bst_warn_print(ctx: &Bibtex<'_, '_>, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn bst_warn_print(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+) -> Result<(), BibtexError> {
     bst_ln_num_print(ctx, pool)?;
-    mark_warning();
+    ctx.mark_warning();
     Ok(())
 }
 
@@ -340,12 +371,13 @@ pub fn eat_bst_print() {
     write_logs("Illegal end of style file in command: ");
 }
 
-pub fn id_scanning_confusion() {
+pub fn id_scanning_confusion(ctx: &mut Bibtex<'_, '_>) {
     write_logs("Identifier scanning error");
-    print_confusion();
+    print_confusion(ctx);
 }
 
 pub(crate) fn bst_id_print(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     scan_result: ScanRes,
 ) -> Result<(), BibtexError> {
@@ -363,7 +395,7 @@ pub(crate) fn bst_id_print(
             Ok(())
         }
         _ => {
-            id_scanning_confusion();
+            id_scanning_confusion(ctx);
             Err(BibtexError::Fatal)
         }
     }
@@ -377,20 +409,25 @@ pub fn bst_right_brace_print() {
     write_logs("\"}\" is missing in command: ");
 }
 
-pub(crate) fn bib_ln_num_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
+pub(crate) fn bib_ln_num_print(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    bibs: &BibData,
+) -> Result<(), BibtexError> {
     write_logs(&format!("--line {} of file ", bibs.top_file().line));
-    print_bib_name(pool, bibs.top_file().name)
+    print_bib_name(ctx, pool, bibs.top_file().name)
 }
 
 pub(crate) fn bib_err_print(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("-");
-    bib_ln_num_print(pool, bibs)?;
-    print_bad_input_line(buffers);
+    bib_ln_num_print(ctx, pool, bibs)?;
+    print_bad_input_line(ctx, buffers);
     print_skipping_whatever_remains();
     if at_bib_command {
         write_logs("command\n");
@@ -400,23 +437,29 @@ pub(crate) fn bib_err_print(
     Ok(())
 }
 
-pub(crate) fn bib_warn_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
-    bib_ln_num_print(pool, bibs)?;
-    mark_warning();
+pub(crate) fn bib_warn_print(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    bibs: &BibData,
+) -> Result<(), BibtexError> {
+    bib_ln_num_print(ctx, pool, bibs)?;
+    ctx.mark_warning();
     Ok(())
 }
 
 pub(crate) fn eat_bib_print(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("Illegal end of database file");
-    bib_err_print(buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
 }
 
 pub(crate) fn bib_one_of_two_print(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
@@ -428,27 +471,29 @@ pub(crate) fn bib_one_of_two_print(
         "I was expecting a `{}' or a `{}'",
         char1 as char, char2 as char
     ));
-    bib_err_print(buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
 }
 
 pub(crate) fn bib_equals_sign_print(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("I was expecting an \"=\"");
-    bib_err_print(buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
 }
 
 pub(crate) fn bib_unbalanced_braces_print(
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
     at_bib_command: bool,
 ) -> Result<(), BibtexError> {
     write_logs("Unbalanced braces");
-    bib_err_print(buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
 }
 
 pub(crate) fn macro_warn_print(buffers: &GlobalBuffer) {
@@ -457,7 +502,11 @@ pub(crate) fn macro_warn_print(buffers: &GlobalBuffer) {
     write_logs("\" is ");
 }
 
-pub(crate) fn bib_id_print(buffers: &GlobalBuffer, scan_res: ScanRes) -> Result<(), BibtexError> {
+pub(crate) fn bib_id_print(
+    ctx: &mut Bibtex<'_, '_>,
+    buffers: &GlobalBuffer,
+    scan_res: ScanRes,
+) -> Result<(), BibtexError> {
     match scan_res {
         ScanRes::IdNull => {
             write_logs("You're missing ");
@@ -469,59 +518,64 @@ pub(crate) fn bib_id_print(buffers: &GlobalBuffer, scan_res: ScanRes) -> Result<
             Ok(())
         }
         _ => {
-            id_scanning_confusion();
+            id_scanning_confusion(ctx);
             Err(BibtexError::Fatal)
         }
     }
 }
 
-pub(crate) fn bib_cmd_confusion() {
+pub(crate) fn bib_cmd_confusion(ctx: &mut Bibtex<'_, '_>) {
     write_logs("Unknown database-file command");
-    print_confusion();
+    print_confusion(ctx);
 }
 
-pub fn cite_key_disappeared_confusion() {
+pub fn cite_key_disappeared_confusion(ctx: &mut Bibtex<'_, '_>) {
     write_logs("A cite key disappeared");
-    print_confusion();
+    print_confusion(ctx);
 }
 
-pub(crate) fn rs_bad_cross_reference_print(
+pub(crate) fn bad_cross_reference_print(
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     cite_ptr: CiteNumber,
     s: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("--entry \"");
-    print_a_pool_str(cites.get_cite(cite_ptr), pool)?;
+    print_a_pool_str(ctx, cites.get_cite(cite_ptr), pool)?;
     write_logs("\"\nrefers to entry \"");
-    print_a_pool_str(s, pool)?;
+    print_a_pool_str(ctx, s, pool)?;
     write_logs("\"");
     Ok(())
 }
 
-pub(crate) fn print_missing_entry(pool: &StringPool, s: StrNumber) -> Result<(), BibtexError> {
+pub(crate) fn print_missing_entry(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    s: StrNumber,
+) -> Result<(), BibtexError> {
     write_logs("Warning--I didn't find a database entry for \"");
-    print_a_pool_str(s, pool)?;
+    print_a_pool_str(ctx, s, pool)?;
     write_logs("\"\n");
-    mark_warning();
+    ctx.mark_warning();
     Ok(())
 }
 
 pub(crate) fn bst_mild_ex_warn_print(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        print_a_pool_str(cites.get_cite(cites.ptr()), pool)?;
+        print_a_pool_str(ctx.glbl_ctx_mut(), cites.get_cite(cites.ptr()), pool)?;
     }
     write_logs("\nwhile executing");
-    bst_warn_print(ctx.glbl_ctx(), pool)
+    bst_warn_print(ctx.glbl_ctx_mut(), pool)
 }
 
 pub(crate) fn bst_cant_mess_with_entries_print(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
@@ -534,7 +588,7 @@ pub fn bst_1print_string_size_exceeded() {
 }
 
 pub(crate) fn bst_2print_string_size_exceeded(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
@@ -545,13 +599,13 @@ pub(crate) fn bst_2print_string_size_exceeded(
 }
 
 pub(crate) fn braces_unbalanced_complaint(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     pop_lit_var: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("Warning--\"");
-    print_a_pool_str(pop_lit_var, pool)?;
+    print_a_pool_str(ctx.glbl_ctx_mut(), pop_lit_var, pool)?;
     write_logs("\" isn't a brace-balanced string");
     bst_mild_ex_warn_print(ctx, pool, cites)
 }
@@ -578,7 +632,7 @@ pub(crate) fn bst_err_print_and_look_for_blank_line(
 ) -> Result<(), BibtexError> {
     write_logs("-");
     bst_ln_num_print(ctx, pool)?;
-    print_bad_input_line(buffers);
+    print_bad_input_line(ctx, buffers);
     while buffers.init(BufTy::Base) != 0 {
         if !input_ln(&mut ctx.bst.as_mut().unwrap().file, buffers) {
             return Err(BibtexError::Recover);
@@ -597,14 +651,15 @@ pub(crate) fn already_seen_function_print(
     hash: &HashData,
     seen_fn_loc: HashPointer,
 ) -> Result<(), BibtexError> {
-    print_a_pool_str(hash.text(seen_fn_loc), pool)?;
+    print_a_pool_str(ctx, hash.text(seen_fn_loc), pool)?;
     write_logs(" is already a type \"");
     rs_print_fn_class(hash, seen_fn_loc);
     write_logs("\" function name\n");
     bst_err_print_and_look_for_blank_line(ctx, buffers, pool)
 }
 
-pub(crate) fn rs_nonexistent_cross_reference_error(
+pub(crate) fn nonexistent_cross_reference_error(
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     other: &OtherData,
@@ -612,9 +667,9 @@ pub(crate) fn rs_nonexistent_cross_reference_error(
     field_ptr: FieldLoc,
 ) -> Result<(), BibtexError> {
     write_logs("A bad cross reference-");
-    rs_bad_cross_reference_print(pool, cites, cite_ptr, other.field(field_ptr))?;
+    bad_cross_reference_print(ctx, pool, cites, cite_ptr, other.field(field_ptr))?;
     write_logs(", which doesn't exist\n");
-    mark_error();
+    ctx.mark_error();
     Ok(())
 }
 
@@ -643,13 +698,13 @@ pub(crate) fn output_bbl_line(ctx: &mut Bibtex<'_, '_>, buffers: &mut GlobalBuff
 }
 
 pub(crate) fn skip_token_print(
-    ctx: &Bibtex<'_, '_>,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs("-");
     bst_ln_num_print(ctx, pool)?;
-    mark_error();
+    ctx.mark_error();
 
     Scan::new()
         .chars(b"}%")
@@ -660,7 +715,7 @@ pub(crate) fn skip_token_print(
 }
 
 pub(crate) fn print_recursion_illegal(
-    ctx: &Bibtex<'_, '_>,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -671,7 +726,7 @@ pub(crate) fn print_recursion_illegal(
 }
 
 pub(crate) fn skip_token_unknown_function_print(
-    ctx: &Bibtex<'_, '_>,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -681,7 +736,7 @@ pub(crate) fn skip_token_unknown_function_print(
 }
 
 pub(crate) fn skip_illegal_stuff_after_token_print(
-    ctx: &Bibtex<'_, '_>,
+    ctx: &mut Bibtex<'_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
@@ -693,13 +748,13 @@ pub(crate) fn skip_illegal_stuff_after_token_print(
 }
 
 pub(crate) fn brace_lvl_one_letters_complaint(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
     str: StrNumber,
 ) -> Result<(), BibtexError> {
     write_logs("The format string \"");
-    print_a_pool_str(str, pool)?;
+    print_a_pool_str(ctx.glbl_ctx_mut(), str, pool)?;
     write_logs("\" has an illegal brace-level-1 letter");
     bst_ex_warn_print(ctx, pool, cites)?;
     Ok(())

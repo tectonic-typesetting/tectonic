@@ -6,7 +6,6 @@ use crate::{
     entries::{EntryData, ENT_STR_SIZE},
     global::{GlobalData, GLOB_STR_SIZE},
     hash::{FnClass, HashData},
-    history::{mark_error, mark_warning},
     log::{
         brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
         bst_1print_string_size_exceeded, bst_2print_string_size_exceeded,
@@ -87,7 +86,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
                 if str >= self.bib_str_ptr {
                     if str != pool.str_ptr() - 1 {
                         write_logs("Nontop top of string stack");
-                        print_confusion();
+                        print_confusion(self.glbl_ctx);
                         return Err(BibtexError::Fatal);
                     }
                     pool.set_str_ptr(pool.str_ptr() - 1);
@@ -112,6 +111,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
 }
 
 pub(crate) fn print_lit(
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
     hash: &HashData,
     val: ExecVal,
@@ -121,19 +121,19 @@ pub(crate) fn print_lit(
             write_logs(&format!("{}\n", val));
         }
         ExecVal::String(str) => {
-            print_a_pool_str(str, pool)?;
+            print_a_pool_str(ctx, str, pool)?;
             write_logs("\n");
         }
         ExecVal::Function(f) => {
-            print_a_pool_str(hash.text(f), pool)?;
+            print_a_pool_str(ctx, hash.text(f), pool)?;
             write_logs("\n");
         }
         ExecVal::Missing(s) => {
-            print_a_pool_str(s, pool)?;
+            print_a_pool_str(ctx, s, pool)?;
             write_logs("\n");
         }
         ExecVal::Illegal => {
-            illegl_literal_confusion();
+            illegl_literal_confusion(ctx);
             return Err(BibtexError::Fatal);
         }
     }
@@ -141,6 +141,7 @@ pub(crate) fn print_lit(
 }
 
 pub(crate) fn print_stk_lit(
+    ctx: &mut Bibtex<'_, '_>,
     val: ExecVal,
     pool: &StringPool,
     hash: &HashData,
@@ -149,21 +150,21 @@ pub(crate) fn print_stk_lit(
         ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
             write_logs("\"");
-            print_a_pool_str(str, pool)?;
+            print_a_pool_str(ctx, str, pool)?;
             write_logs("\" is a string literal");
         }
         ExecVal::Function(f) => {
             write_logs("`");
-            print_a_pool_str(hash.text(f), pool)?;
+            print_a_pool_str(ctx, hash.text(f), pool)?;
             write_logs("` is a function literal");
         }
         ExecVal::Missing(s) => {
             write_logs("`");
-            print_a_pool_str(s, pool)?;
+            print_a_pool_str(ctx, s, pool)?;
             write_logs("` is a missing field");
         }
         ExecVal::Illegal => {
-            illegl_literal_confusion();
+            illegl_literal_confusion(ctx);
             return Err(BibtexError::Fatal);
         }
     }
@@ -171,7 +172,7 @@ pub(crate) fn print_stk_lit(
 }
 
 pub(crate) fn print_wrong_stk_lit(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     hash: &HashData,
     cites: &CiteInfo,
@@ -181,14 +182,14 @@ pub(crate) fn print_wrong_stk_lit(
     match val {
         ExecVal::Illegal => Ok(()),
         _ => {
-            print_stk_lit(val, pool, hash)?;
+            print_stk_lit(ctx.glbl_ctx, val, pool, hash)?;
 
             match typ2 {
                 StkType::Integer => write_logs(", not an integer,"),
                 StkType::String => write_logs(", not a string,"),
                 StkType::Function => write_logs(", not a function,"),
                 StkType::Missing | StkType::Illegal => {
-                    illegl_literal_confusion();
+                    illegl_literal_confusion(ctx.glbl_ctx);
                     return Err(BibtexError::Fatal);
                 }
             };
@@ -199,41 +200,45 @@ pub(crate) fn print_wrong_stk_lit(
 }
 
 pub(crate) fn bst_ex_warn_print(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
         write_logs(" for entry ");
-        print_a_pool_str(cites.get_cite(cites.ptr()), pool)?;
+        print_a_pool_str(ctx.glbl_ctx_mut(), cites.get_cite(cites.ptr()), pool)?;
     }
 
     write_logs("\nwhile executing-");
-    bst_ln_num_print(ctx.glbl_ctx(), pool)?;
-    mark_error();
+    bst_ln_num_print(ctx.glbl_ctx_mut(), pool)?;
+    ctx.glbl_ctx_mut().mark_error();
     Ok(())
 }
 
 pub(crate) fn bst_ln_num_print(
-    glbl_ctx: &Bibtex<'_, '_>,
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     write_logs(&format!(
         "--line {} of file ",
-        glbl_ctx.bst.as_ref().unwrap().line
+        ctx.bst.as_ref().unwrap().line
     ));
-    print_bst_name(pool, glbl_ctx.bst.as_ref().unwrap().name)
+    print_bst_name(ctx, pool, ctx.bst.as_ref().unwrap().name)
 }
 
-pub(crate) fn print_bst_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
-    print_a_pool_str(name, pool)?;
+pub(crate) fn print_bst_name(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    name: StrNumber,
+) -> Result<(), BibtexError> {
+    print_a_pool_str(ctx, name, pool)?;
     write_logs(".bst\n");
     Ok(())
 }
 
-pub fn illegl_literal_confusion() {
+pub fn illegl_literal_confusion(ctx: &mut Bibtex<'_, '_>) {
     write_logs("Illegal literal type");
-    print_confusion();
+    print_confusion(ctx);
 }
 
 fn pop_top_and_print(
@@ -247,7 +252,7 @@ fn pop_top_and_print(
             write_logs("Empty literal\n");
             Ok(())
         } else {
-            print_lit(pool, hash, val)
+            print_lit(ctx.glbl_ctx, pool, hash, val)
         }
     })
 }
@@ -279,7 +284,7 @@ pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i3
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn figure_out_the_formatted_name(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
     cites: &CiteInfo,
@@ -620,7 +625,7 @@ pub(crate) fn check_command_execution(
     }
     if ctx.bib_str_ptr != pool.str_ptr() {
         write_logs("Nonempty empty string stack");
-        print_confusion();
+        print_confusion(ctx.glbl_ctx);
         return Err(BibtexError::Fatal);
     }
     Ok(())
@@ -633,7 +638,8 @@ fn add_pool_buf_and_push(
 ) -> Result<(), BibtexError> {
     buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
-    ctx.push_stack(ExecVal::String(pool.add_string_raw(str)?));
+    let val = ExecVal::String(pool.add_string_raw(ctx.glbl_ctx_mut(), str)?);
+    ctx.push_stack(val);
     Ok(())
 }
 
@@ -658,9 +664,9 @@ fn interp_eq(
         }
         _ if pop1.ty() != pop2.ty() => {
             if pop1.ty() != StkType::Illegal && pop2.ty() != StkType::Illegal {
-                print_stk_lit(pop1, pool, hash)?;
+                print_stk_lit(ctx.glbl_ctx, pop1, pool, hash)?;
                 write_logs(", ");
-                print_stk_lit(pop2, pool, hash)?;
+                print_stk_lit(ctx.glbl_ctx, pop2, pool, hash)?;
                 write_logs("\n---they aren't the same literal types");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
@@ -668,7 +674,7 @@ fn interp_eq(
         }
         _ => {
             if pop1.ty() != StkType::Illegal {
-                print_stk_lit(pop1, pool, hash)?;
+                print_stk_lit(ctx.glbl_ctx, pop1, pool, hash)?;
                 write_logs(", not an integer or a string,");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
@@ -821,7 +827,7 @@ fn interp_concat(
             let ptr = pool.str_start(s2 + 1);
             pool.copy_raw(s1, ptr);
             pool.set_pool_ptr(ptr + s1_len);
-            let new = pool.make_string()?;
+            let new = pool.make_string(ctx.glbl_ctx_mut())?;
             ctx.push_stack(ExecVal::String(new));
         }
     } else if s1 >= ctx.bib_str_ptr {
@@ -845,7 +851,8 @@ fn interp_concat(
             pool.copy_raw(s1, pool.str_start(s1 + 1) + s2_len - s1_len);
             pool.copy_raw(s2, pool.str_start(s1));
             pool.set_pool_ptr(pool.str_start(s1) + s1_len + s2_len);
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
+            let val = ExecVal::String(pool.make_string(ctx.glbl_ctx_mut())?);
+            ctx.push_stack(val);
         }
     } else {
         let str1 = pool.get_str(s1);
@@ -864,7 +871,8 @@ fn interp_concat(
             pool.copy_raw(s2, ptr);
             pool.copy_raw(s1, ptr + s2_len);
             pool.set_pool_ptr(ptr + s1_len + s2_len);
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
+            let val = ExecVal::String(pool.make_string(ctx.glbl_ctx_mut())?);
+            ctx.push_stack(val);
         }
     }
     Ok(())
@@ -1008,7 +1016,8 @@ fn interp_add_period(
                 }
             }
             pool.append(b'.');
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
+            let val = ExecVal::String(pool.make_string(ctx.glbl_ctx_mut())?);
+            ctx.push_stack(val);
         }
     }
     Ok(())
@@ -1048,7 +1057,7 @@ fn interp_change_case(
             };
 
             if conv_ty == ConvTy::Bad {
-                print_a_pool_str(s1, pool)?;
+                print_a_pool_str(ctx.glbl_ctx, s1, pool)?;
                 write_logs(" is an illegal case-conversion string");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
@@ -1164,7 +1173,8 @@ fn interp_change_case(
                 idx += 1;
             }
             check_brace_level(ctx, pool, cites, s2, brace_level)?;
-            ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch)?));
+            let val = ExecVal::String(pool.add_string_raw(ctx.glbl_ctx_mut(), &scratch)?);
+            ctx.push_stack(val);
         }
         (ExecVal::String(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::String)?;
@@ -1190,7 +1200,7 @@ fn interp_chr_to_int(
             let str = pool.get_str(s1);
             if str.len() != 1 {
                 write_logs("\"");
-                print_a_pool_str(s1, pool)?;
+                print_a_pool_str(ctx.glbl_ctx, s1, pool)?;
                 write_logs("\" isn't a single character");
                 bst_ex_warn_print(ctx, pool, cites)?;
                 ctx.push_stack(ExecVal::Integer(0));
@@ -1242,7 +1252,8 @@ fn interp_dup(
                 let ptr = pool.pool_ptr();
                 pool.copy_raw(s1, ptr);
                 pool.set_pool_ptr(ptr + str_len);
-                ctx.push_stack(ExecVal::String(pool.make_string()?));
+                let val = ExecVal::String(pool.make_string(ctx.glbl_ctx_mut())?);
+                ctx.push_stack(val);
             }
         }
         _ => {
@@ -1273,7 +1284,7 @@ fn interp_empty(
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(pop1, pool, hash)?;
+            print_stk_lit(ctx.glbl_ctx, pop1, pool, hash)?;
             write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool, cites)?;
             ctx.push_stack(ExecVal::Integer(0));
@@ -1335,7 +1346,7 @@ fn interp_format_name(
         } else {
             write_logs(&format!("There aren't {} names in \"", i2));
         }
-        print_a_pool_str(s3, pool)?;
+        print_a_pool_str(ctx.glbl_ctx, s3, pool)?;
         write_logs("\"");
         bst_ex_warn_print(ctx, pool, cites)?;
     }
@@ -1348,7 +1359,7 @@ fn interp_format_name(
             _ => {
                 if buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b',' {
                     write_logs(&format!("Name {} in \"", i2));
-                    print_a_pool_str(s3, pool)?;
+                    print_a_pool_str(ctx.glbl_ctx, s3, pool)?;
                     write_logs("\" has a comma at the end");
                     bst_ex_warn_print(ctx, pool, cites)?;
                     buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
@@ -1384,7 +1395,7 @@ fn interp_format_name(
                     }
                     Commas::Two(_, _) => {
                         write_logs(&format!("Too many commas in name {} of \"", i2));
-                        print_a_pool_str(s3, pool)?;
+                        print_a_pool_str(ctx.glbl_ctx, s3, pool)?;
                         write_logs("\"");
                         bst_ex_warn_print(ctx, pool, cites)?;
                     }
@@ -1420,7 +1431,7 @@ fn interp_format_name(
                 }
 
                 write_logs(&format!("Name {} of \"", i2));
-                print_a_pool_str(s3, pool)?;
+                print_a_pool_str(ctx.glbl_ctx, s3, pool)?;
                 write_logs("\" isn't brace balanced");
                 bst_ex_warn_print(ctx, pool, cites)?;
                 xptr += 1;
@@ -1474,8 +1485,16 @@ fn interp_format_name(
             while von_start < last_end - 1 {
                 name_ptr = buffers.name_tok(von_start);
                 name_ptr2 = buffers.name_tok(von_start + 1);
-                if von_token_found(buffers, hash, pool, &mut name_ptr, name_ptr2)? {
+                if von_token_found(
+                    ctx.glbl_ctx_mut(),
+                    buffers,
+                    hash,
+                    pool,
+                    &mut name_ptr,
+                    name_ptr2,
+                )? {
                     von_name_ends_and_last_name_starts_stuff(
+                        ctx.glbl_ctx_mut(),
                         buffers,
                         hash,
                         pool,
@@ -1510,6 +1529,7 @@ fn interp_format_name(
             first_start = jr_end;
             first_end = num_tokens;
             von_name_ends_and_last_name_starts_stuff(
+                ctx.glbl_ctx_mut(),
                 buffers,
                 hash,
                 pool,
@@ -1526,6 +1546,7 @@ fn interp_format_name(
             first_start = jr_end;
             first_end = num_tokens;
             von_name_ends_and_last_name_starts_stuff(
+                ctx.glbl_ctx_mut(),
                 buffers,
                 hash,
                 pool,
@@ -1587,7 +1608,8 @@ fn interp_int_to_chr(
         }
 
         pool.append(i1 as u8);
-        ctx.push_stack(ExecVal::String(pool.make_string()?));
+        let val = ExecVal::String(pool.make_string(ctx.glbl_ctx_mut())?);
+        ctx.push_stack(val);
     }
     Ok(())
 }
@@ -1609,7 +1631,8 @@ fn interp_int_to_str(
     };
 
     let scratch = i1.to_string();
-    ctx.push_stack(ExecVal::String(pool.add_string_raw(scratch.as_bytes())?));
+    let val = ExecVal::String(pool.add_string_raw(ctx.glbl_ctx_mut(), scratch.as_bytes())?);
+    ctx.push_stack(val);
     Ok(())
 }
 
@@ -1635,7 +1658,7 @@ fn interp_missing(
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(pop1, pool, hash)?;
+            print_stk_lit(ctx.glbl_ctx, pop1, pool, hash)?;
             write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool, cites)?;
             ctx.push_stack(ExecVal::Integer(0));
@@ -1682,7 +1705,7 @@ fn interp_preamble(
     for s in bibs.preamble() {
         out.extend(pool.get_str(*s));
     }
-    let s = pool.add_string_raw(&out)?;
+    let s = pool.add_string_raw(ctx.glbl_ctx_mut(), &out)?;
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1773,14 +1796,14 @@ fn interp_purify(
     }
 
     scratch.truncate(write_idx);
-    let out = pool.add_string_raw(&scratch)?;
+    let out = pool.add_string_raw(ctx.glbl_ctx_mut(), &scratch)?;
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
 }
 
 fn interp_quote(ctx: &mut ExecCtx<'_, '_, '_>, pool: &mut StringPool) -> Result<(), BibtexError> {
-    let s = pool.add_string_raw(b"\"")?;
+    let s = pool.add_string_raw(ctx.glbl_ctx_mut(), b"\"")?;
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1870,7 +1893,7 @@ fn interp_substr(
     // TODO: Remove this intermediate allocation, currently can't pass a `&str` from a StringPool
     //       to that StringPool.
     let new_str = Vec::from(&str[SLRange { start, len }]);
-    let out = pool.add_string_raw(&new_str)?;
+    let out = pool.add_string_raw(ctx.glbl_ctx_mut(), &new_str)?;
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
@@ -1893,8 +1916,10 @@ fn interp_swap(
             let ptr = pool.pool_ptr();
             pool.copy_raw(s1, ptr);
             pool.set_pool_ptr(ptr + s1_len);
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
-            ctx.push_stack(ExecVal::String(pool.add_string_raw(&tmp)?));
+            let val = ExecVal::String(pool.make_string(ctx.glbl_ctx_mut())?);
+            ctx.push_stack(val);
+            let val = ExecVal::String(pool.add_string_raw(ctx.glbl_ctx_mut(), &tmp)?);
+            ctx.push_stack(val);
             return Ok(());
         }
         (ExecVal::String(s), _) | (_, ExecVal::String(s)) if s >= ctx.bib_str_ptr => {
@@ -2031,7 +2056,8 @@ fn interp_text_prefix(
         pool.append(b'}');
     }
 
-    ctx.push_stack(ExecVal::String(pool.make_string()?));
+    let val = ExecVal::String(pool.make_string(ctx.glbl_ctx_mut())?);
+    ctx.push_stack(val);
     Ok(())
 }
 
@@ -2066,8 +2092,8 @@ fn interp_warning(
     match pop1 {
         ExecVal::String(_) => {
             write_logs("Warning--");
-            print_lit(pool, hash, pop1)?;
-            mark_warning();
+            print_lit(ctx.glbl_ctx, pool, hash, pop1)?;
+            ctx.glbl_ctx_mut().mark_warning();
         }
         _ => print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?,
     }
@@ -2350,7 +2376,7 @@ pub(crate) fn execute_fn(
             ),
             _ => {
                 write_logs("Unknown built-in function");
-                print_confusion();
+                print_confusion(ctx.glbl_ctx);
                 Err(BibtexError::Fatal)
             }
         },
@@ -2386,7 +2412,7 @@ pub(crate) fn execute_fn(
                     + globals.hash.ilk_info(ex_fn_loc) as usize;
                 if field_ptr >= globals.other.max_fields() {
                     write_logs("field_info index is out of range");
-                    print_confusion();
+                    print_confusion(ctx.glbl_ctx);
                     return Err(BibtexError::Fatal);
                 }
 
@@ -2417,7 +2443,8 @@ pub(crate) fn execute_fn(
                 let str_ent_ptr = globals.cites.ptr() * globals.entries.num_ent_strs()
                     + globals.hash.ilk_info(ex_fn_loc) as usize;
                 let str = globals.entries.strs(str_ent_ptr);
-                ctx.push_stack(ExecVal::String(globals.pool.add_string_raw(str)?));
+                let val = ExecVal::String(globals.pool.add_string_raw(ctx.glbl_ctx_mut(), str)?);
+                ctx.push_stack(val);
                 Ok(())
             }
         }
@@ -2432,7 +2459,8 @@ pub(crate) fn execute_fn(
                 ctx.push_stack(ExecVal::String(str_ptr));
             } else {
                 let str = globals.globals.str(str_glb_ptr);
-                ctx.push_stack(ExecVal::String(globals.pool.add_string_raw(str)?));
+                let val = ExecVal::String(globals.pool.add_string_raw(ctx.glbl_ctx_mut(), str)?);
+                ctx.push_stack(val);
             }
             Ok(())
         }
