@@ -6,7 +6,7 @@ use crate::{
     log::{
         bib_cmd_confusion, bib_equals_sign_print, bib_err_print, bib_id_print,
         bib_one_of_two_print, bib_warn_print, cite_key_disappeared_confusion, eat_bib_print,
-        hash_cite_confusion, print_a_token, print_confusion, write_log_file, write_logs,
+        hash_cite_confusion, print_a_token, print_confusion,
     },
     peekable::input_ln,
     pool::StringPool,
@@ -85,7 +85,7 @@ pub(crate) fn compress_bib_white(
     at_bib_command: bool,
 ) -> Result<bool, BibtexError> {
     if buffers.offset(BufTy::Ex, 1) == buffers.len() {
-        write_log_file("Field filled up at ' ', reallocating.\n");
+        ctx.write_log_file("Field filled up at ' ', reallocating.\n");
         buffers.grow_all();
     }
 
@@ -134,7 +134,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     }
 
     if globals.buffers.at_offset(BufTy::Base, 2) != b'@' {
-        write_logs("An \"@\" disappeared");
+        ctx.write_logs("An \"@\" disappeared");
         print_confusion(ctx);
         return Err(BibtexError::Fatal);
     }
@@ -159,7 +159,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
         _ => {
             bib_id_print(ctx, globals.buffers, scan_res)?;
-            write_logs("an entry type");
+            ctx.write_logs("an entry type");
             bib_err_print(
                 ctx,
                 globals.buffers,
@@ -251,7 +251,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 }
 
                 if globals.buffers.at_offset(BufTy::Base, 2) != right_outer_delim {
-                    write_logs(&format!(
+                    ctx.write_logs(&format!(
                         "Missing \"{}\" in preamble command",
                         right_outer_delim
                     ));
@@ -321,7 +321,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                     ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
                     _ => {
                         bib_id_print(ctx, globals.buffers, scan_res)?;
-                        write_logs("a string name");
+                        ctx.write_logs("a string name");
                         bib_err_print(
                             ctx,
                             globals.buffers,
@@ -408,7 +408,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 }
 
                 if globals.buffers.at_offset(BufTy::Base, 2) != right_outer_delim {
-                    write_logs(&format!(
+                    ctx.write_logs(&format!(
                         "Missing \"{}\" in string command",
                         right_outer_delim
                     ));
@@ -581,12 +581,12 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             }
 
             if globals.cites.get_type(entry_ptr) == 0 {
-                write_logs("The cite list is messed up");
+                ctx.write_logs("The cite list is messed up");
                 print_confusion(ctx);
                 return Some(Err(BibtexError::Fatal));
             }
 
-            write_logs("Repeated entry");
+            ctx.write_logs("Repeated entry");
             return Some(bib_err_print(
                 ctx,
                 globals.buffers,
@@ -653,9 +653,9 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             globals
                 .cites
                 .set_type(globals.cites.entry_ptr(), HashData::undefined());
-            write_logs("Warning--entry type for \"");
-            print_a_token(globals.buffers);
-            write_logs("\" isn't style-file defined\n");
+            ctx.write_logs("Warning--entry type for \"");
+            print_a_token(ctx, globals.buffers);
+            ctx.write_logs("\" isn't style-file defined\n");
             bib_warn_print(ctx, globals.pool, globals.bibs)?;
         }
     }
@@ -709,7 +709,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent => (),
             _ => {
                 bib_id_print(ctx, globals.buffers, scan_res)?;
-                write_logs("a field name");
+                ctx.write_logs("a field name");
                 bib_err_print(
                     ctx,
                     globals.buffers,

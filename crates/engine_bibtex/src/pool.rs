@@ -5,7 +5,7 @@ use crate::{
     global::GLOB_STR_SIZE,
     hash,
     hash::{FnClass, HashData},
-    log::{output_bbl_line, print_overflow, write_logs},
+    log::{output_bbl_line, print_overflow},
     ASCIICode, Bibtex, BibtexError, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk,
     StrNumber,
 };
@@ -68,7 +68,7 @@ impl StringPool {
     pub fn make_string(&mut self, ctx: &mut Bibtex<'_, '_>) -> Result<StrNumber, BibtexError> {
         if self.str_ptr == MAX_STRINGS {
             print_overflow(ctx);
-            write_logs(&format!("number of strings {}\n", MAX_STRINGS));
+            ctx.write_logs(&format!("number of strings {}\n", MAX_STRINGS));
             return Err(BibtexError::Fatal);
         }
         self.str_ptr += 1;
@@ -137,7 +137,7 @@ impl StringPool {
                     loop {
                         if hash.used() == hash::HASH_BASE {
                             print_overflow(ctx);
-                            write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
+                            ctx.write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
                             return Err(BibtexError::Fatal);
                         }
                         hash.set_used(hash.used() - 1);

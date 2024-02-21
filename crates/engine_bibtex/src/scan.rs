@@ -11,7 +11,7 @@ use crate::{
         bib_warn_print, braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line,
         eat_bib_print, eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str,
         print_confusion, print_recursion_illegal, skip_illegal_stuff_after_token_print,
-        skip_token_print, skip_token_unknown_function_print, write_log_file, write_logs,
+        skip_token_print, skip_token_unknown_function_print,
     },
     other::OtherData,
     peekable::input_ln,
@@ -192,7 +192,7 @@ fn handle_char(
             buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
             if !scan_integer(buffers, &mut token_value) {
-                write_logs("Illegal integer in integer literal");
+                ctx.write_logs("Illegal integer in integer literal");
                 return skip_token_print(ctx, buffers, pool);
             }
 
@@ -224,8 +224,8 @@ fn handle_char(
             buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
             let init = buffers.init(BufTy::Base);
-            if !Scan::new().chars(b"\"").scan_till(buffers, init) {
-                write_logs("No `\"` to end string literal");
+            if !Scan::new().chars(&[b'"']).scan_till(buffers, init) {
+                ctx.write_logs("No `\"` to end string literal");
                 return skip_token_print(ctx, buffers, pool);
             }
 
@@ -284,7 +284,7 @@ fn handle_char(
                 let res = pool.lookup_str_insert(ctx, hash, str.as_bytes(), StrIlk::BstFn)?;
 
                 if res.exists {
-                    write_logs("Already encountered implicit function");
+                    ctx.write_logs("Already encountered implicit function");
                     print_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
@@ -332,12 +332,11 @@ pub(crate) fn scan_fn_def(
     fn_hash_loc: HashPointer,
     wiz_loc: HashPointer,
 ) -> Result<(), BibtexError> {
-    let ctx = &mut *ctx;
     let mut single_function = Vec::new();
 
     if !eat_bst_white_space(ctx, buffers) {
-        eat_bst_print();
-        write_logs("function");
+        eat_bst_print(ctx);
+        ctx.write_logs("function");
         bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         return Ok(());
     }
@@ -356,8 +355,8 @@ pub(crate) fn scan_fn_def(
         )?;
 
         if !eat_bst_white_space(ctx, buffers) {
-            eat_bst_print();
-            write_logs("function");
+            eat_bst_print(ctx);
+            ctx.write_logs("function");
             return bst_err_print_and_look_for_blank_line(ctx, buffers, pool);
         }
 
@@ -410,7 +409,7 @@ fn scan_balanced_braces(
                 b'{' => {
                     brace_level += 1;
                     if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
-                        write_log_file("Field filled up at '{', reallocating.\n");
+                        ctx.write_log_file("Field filled up at '{', reallocating.\n");
                         buffers.grow_all();
                     }
 
@@ -437,13 +436,13 @@ fn scan_balanced_braces(
                         if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
                             match c {
                                 b'}' | b'{' => {
-                                    write_log_file(&format!(
+                                    ctx.write_log_file(&format!(
                                         "Field filled up at '{}', reallocating.\n",
                                         c as char
                                     ));
                                 }
                                 _ => {
-                                    write_log_file(&format!(
+                                    ctx.write_log_file(&format!(
                                         "Field filled up at {}, reallocating.\n",
                                         buffers.offset(BufTy::Base, 2)
                                     ));
@@ -476,7 +475,7 @@ fn scan_balanced_braces(
                 }
                 c => {
                     if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
-                        write_log_file(&format!(
+                        ctx.write_log_file(&format!(
                             "Field filled up at {}, reallocating.\n",
                             buffers.offset(BufTy::Base, 2)
                         ));
@@ -582,7 +581,7 @@ fn scan_a_field_token_and_eat_white(
                 .not_class(LexClass::Numeric)
                 .scan_till_nonempty(buffers, last)
             {
-                write_logs("A digit disappeared");
+                ctx.write_logs("A digit disappeared");
                 print_confusion(ctx);
                 return Err(BibtexError::Fatal);
             }
@@ -593,7 +592,7 @@ fn scan_a_field_token_and_eat_white(
 
                 while len >= buffers.len() {
                     // TODO: This may change output of a field long enough to fill the buffer twice. OTOH, that is a 40KB field roughly
-                    write_log_file(&format!(
+                    ctx.write_log_file(&format!(
                         "Field filled up at {}, reallocating.\n",
                         buffers.at_offset(BufTy::Base, 1)
                     ));
@@ -618,7 +617,7 @@ fn scan_a_field_token_and_eat_white(
                 ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent
             ) {
                 bib_id_print(ctx, buffers, res)?;
-                write_logs("a field part");
+                ctx.write_logs("a field part");
                 bib_err_print(ctx, buffers, pool, bibs, at_bib_command)?;
                 return Ok(false);
             }
@@ -634,15 +633,15 @@ fn scan_a_field_token_and_eat_white(
                     cur_macro_loc
                 {
                     store_token = false;
-                    macro_warn_print(buffers);
-                    write_logs("used in its own definition\n");
+                    macro_warn_print(ctx, buffers);
+                    ctx.write_logs("used in its own definition\n");
                     bib_warn_print(ctx, pool, bibs)?;
                 }
 
                 if !res.exists {
                     store_token = false;
-                    macro_warn_print(buffers);
-                    write_logs("undefined\n");
+                    macro_warn_print(ctx, buffers);
+                    ctx.write_logs("undefined\n");
                     bib_warn_print(ctx, pool, bibs)?;
                 }
 
@@ -654,7 +653,7 @@ fn scan_a_field_token_and_eat_white(
                         && LexClass::of(str[0]) == LexClass::Whitespace
                     {
                         if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
-                            write_log_file("Field filled up at ' ', reallocating.\n");
+                            ctx.write_log_file("Field filled up at ' ', reallocating.\n");
                             buffers.grow_all();
                         }
 
@@ -674,7 +673,7 @@ fn scan_a_field_token_and_eat_white(
                         };
 
                         if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
-                            write_log_file(&msg(c));
+                            ctx.write_log_file(&msg(c));
                             buffers.grow_all();
                         }
 
@@ -792,7 +791,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
             let field_ptr =
                 cites.entry_ptr() * other.num_fields() + hash.ilk_info(field_name_loc) as usize;
             if field_ptr >= other.max_fields() {
-                write_logs("field_info index is out of range");
+                ctx.write_logs("field_info index is out of range");
                 print_confusion(ctx);
                 return Err(BibtexError::Fatal);
             }
@@ -800,11 +799,11 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
             if other.field(field_ptr) != 0
             /* missing */
             {
-                write_logs("Warning--I'm ignoring ");
+                ctx.write_logs("Warning--I'm ignoring ");
                 print_a_pool_str(ctx, cites.get_cite(cites.entry_ptr()), pool)?;
-                write_logs("'s extra \"");
+                ctx.write_logs("'s extra \"");
                 print_a_pool_str(ctx, hash.text(field_name_loc), pool)?;
-                write_logs("\" field\n");
+                ctx.write_logs("\" field\n");
                 bib_warn_print(ctx, pool, bibs)?;
             } else {
                 other.set_field(field_ptr, hash.text(res.loc));
@@ -979,7 +978,7 @@ pub(crate) fn von_token_found(
                             3 | 5 | 7 | 9 | 11 => return Ok(false),
                             0 | 1 | 2 | 4 | 6 | 8 | 10 | 12 => return Ok(true),
                             _ => {
-                                write_logs("Control-sequence hash error");
+                                ctx.write_logs("Control-sequence hash error");
                                 print_confusion(ctx);
                                 return Err(BibtexError::Fatal);
                             }
