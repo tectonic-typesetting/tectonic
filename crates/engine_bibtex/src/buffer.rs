@@ -1,30 +1,27 @@
-use crate::{
-    xbuf::{SafelyZero, XBuf},
-    ASCIICode, BufPointer,
-};
+use crate::{ASCIICode, BufPointer};
 use std::slice;
 
 pub(crate) const BUF_SIZE: usize = 20000;
 
-struct Buffer<T: SafelyZero + 'static, const N: usize> {
-    ptr: XBuf<T>,
+struct Buffer<T, const N: usize> {
+    ptr: Vec<T>,
     /// Stateful offsets into the buffer
     offset: [BufPointer; N],
     /// Initialized length of the buffer
     init: BufPointer,
 }
 
-impl<T: SafelyZero + Copy + 'static, const N: usize> Buffer<T, N> {
+impl<T: Default + Clone, const N: usize> Buffer<T, N> {
     fn new(len: usize) -> Buffer<T, N> {
         Buffer {
-            ptr: XBuf::new(len),
+            ptr: vec![T::default(); len],
             offset: [0; N],
             init: 0,
         }
     }
 
     fn grow(&mut self, new_len: usize) {
-        self.ptr.grow(new_len);
+        self.ptr.resize(self.ptr.len() + new_len, T::default());
     }
 }
 
@@ -36,7 +33,7 @@ pub(crate) struct GlobalBuffer {
     ex_buf: Buffer<ASCIICode, 1>,
     out_buf: Buffer<ASCIICode, 0>,
     name_sep_char: Buffer<ASCIICode, 0>,
-    name_tok: XBuf<BufPointer>,
+    name_tok: Vec<BufPointer>,
 }
 
 impl GlobalBuffer {
@@ -49,7 +46,7 @@ impl GlobalBuffer {
             ex_buf: Buffer::new(buf_len),
             out_buf: Buffer::new(buf_len),
             name_sep_char: Buffer::new(buf_len),
-            name_tok: XBuf::new(buf_len),
+            name_tok: vec![0; buf_len],
         }
     }
 
@@ -194,7 +191,7 @@ impl GlobalBuffer {
         self.ex_buf.grow(BUF_SIZE);
         self.out_buf.grow(BUF_SIZE);
         self.name_sep_char.grow(BUF_SIZE);
-        self.name_tok.grow(BUF_SIZE);
+        self.name_tok.resize(self.name_tok.len() + BUF_SIZE, 0);
         self.buf_len = new_len;
     }
 }

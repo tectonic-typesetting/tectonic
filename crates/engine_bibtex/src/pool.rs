@@ -6,7 +6,6 @@ use crate::{
     hash,
     hash::{FnClass, HashData},
     log::{output_bbl_line, print_overflow, write_logs},
-    xbuf::XBuf,
     ASCIICode, Bibtex, BibtexError, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk,
     StrNumber,
 };
@@ -24,10 +23,10 @@ pub(crate) enum LookupErr {
 }
 
 pub(crate) struct StringPool {
-    strings: XBuf<u8>,
+    strings: Vec<u8>,
     // Stores string starting locations in the string pool
     // length of string `s` is offsets[s + 1] - offsets[s]
-    offsets: XBuf<usize>,
+    offsets: Vec<usize>,
     pool_ptr: PoolPointer,
     str_ptr: StrNumber,
 }
@@ -35,8 +34,8 @@ pub(crate) struct StringPool {
 impl StringPool {
     pub(crate) fn new() -> StringPool {
         StringPool {
-            strings: XBuf::new(POOL_SIZE),
-            offsets: XBuf::new(MAX_STRINGS),
+            strings: vec![0; POOL_SIZE],
+            offsets: vec![0; MAX_STRINGS],
             pool_ptr: 0,
             str_ptr: 1,
         }
@@ -61,7 +60,7 @@ impl StringPool {
     }
 
     pub fn grow(&mut self) {
-        self.strings.grow(POOL_SIZE);
+        self.strings.resize(self.strings.len() + POOL_SIZE, 0);
     }
 
     /// Used while defining strings - declare the current `pool_ptr` as the end of the current

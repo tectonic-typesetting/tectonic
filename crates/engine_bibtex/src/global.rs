@@ -1,29 +1,34 @@
-use crate::{xbuf::XBuf, ASCIICode, StrNumber};
+use crate::{ASCIICode, StrNumber};
 
 const MAX_GLOB_STRS: usize = 10;
 pub(crate) const GLOB_STR_SIZE: usize = 20000;
 
 pub(crate) struct GlobalData {
-    glb_bib_str_ptr: XBuf<StrNumber>,
-    global_strs: XBuf<ASCIICode>,
-    glb_str_end: XBuf<usize>,
+    glb_bib_str_ptr: Vec<StrNumber>,
+    global_strs: Vec<ASCIICode>,
+    glb_str_end: Vec<usize>,
     num_glb_strs: i32,
 }
 
 impl GlobalData {
     pub fn new() -> GlobalData {
         GlobalData {
-            glb_bib_str_ptr: XBuf::new(MAX_GLOB_STRS),
-            global_strs: XBuf::new((GLOB_STR_SIZE + 1) * MAX_GLOB_STRS),
-            glb_str_end: XBuf::new(MAX_GLOB_STRS),
+            glb_bib_str_ptr: vec![0; MAX_GLOB_STRS],
+            global_strs: vec![0; (GLOB_STR_SIZE + 1) * MAX_GLOB_STRS],
+            glb_str_end: vec![0; MAX_GLOB_STRS],
             num_glb_strs: 0,
         }
     }
 
     pub fn grow(&mut self) {
-        self.glb_bib_str_ptr.grow(MAX_GLOB_STRS);
-        self.global_strs.grow((GLOB_STR_SIZE + 1) * MAX_GLOB_STRS);
-        self.glb_str_end.grow(MAX_GLOB_STRS);
+        self.glb_bib_str_ptr
+            .resize(self.glb_bib_str_ptr.len() + MAX_GLOB_STRS, 0);
+        self.global_strs.resize(
+            self.global_strs.len() + (GLOB_STR_SIZE + 1) * MAX_GLOB_STRS,
+            0,
+        );
+        self.glb_str_end
+            .resize(self.glb_str_end.len() + MAX_GLOB_STRS, 0);
     }
 
     pub fn str(&self, pos: usize) -> &[ASCIICode] {
