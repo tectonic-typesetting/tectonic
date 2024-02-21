@@ -333,7 +333,9 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
 
     let res = inner_bibtex_main(ctx, &mut globals, aux_file_name);
     match res {
-        Err(BibtexError::Recover) | Ok(History::Spotless) => {
+        Ok(History::Spotless) => (),
+        Ok(hist) => return hist,
+        Err(BibtexError::Recover) => {
             // SAFETY: bst_file guaranteed valid at this point
             unsafe { peekable_close(ctx, ctx.bst_file) };
             ctx.bst_file = None;
@@ -343,7 +345,6 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
             ttbc_output_close(ctx.engine, ctx.bbl_file);
         }
         Err(BibtexError::Fatal) => (),
-        Ok(hist) => return hist,
     }
 
     match get_history() {
