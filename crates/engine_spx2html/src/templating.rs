@@ -8,7 +8,7 @@ use std::{
     io::{Read, Write},
 };
 use tectonic_errors::prelude::*;
-use tectonic_status_base::tt_warning;
+use tracing::warn;
 
 use crate::Common;
 
@@ -47,10 +47,9 @@ impl Templating {
         if let Some((varname, varval)) = remainder.split_once(' ') {
             self.set_variable(varname, varval);
         } else {
-            tt_warning!(
-                common.status,
-                "ignoring malformatted tdux:setTemplateVariable special `{}`",
-                remainder
+            warn!(
+                tectonic_log_source = "spx2html",
+                "ignoring malformatted tdux:setTemplateVariable special `{}`", remainder
             );
         }
 

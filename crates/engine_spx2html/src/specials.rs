@@ -4,7 +4,8 @@
 //! TeX `\special` items recognized by the spx2html emitter.
 
 use std::fmt::{Display, Error, Formatter};
-use tectonic_status_base::{tt_warning, StatusBackend};
+
+use tracing::warn;
 
 #[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -68,11 +69,9 @@ impl<'a> Special<'a> {
             "startFontFamilyTagAssociations" => Special::StartFontFamilyTagAssociations,
             "endFontFamilyTagAssociations" => Special::EndFontFamilyTagAssociations,
             _ => {
-                tt_warning!(
-                    status,
-                    "ignoring unrecognized Tectonic special: tdux:{} {}",
-                    cmd,
-                    remainder
+                warn!(
+                    tectonic_log_source = "spx2html",
+                    "ignoring unrecognized Tectonic special: tdux:{} {}", cmd, remainder
                 );
                 return None;
             }

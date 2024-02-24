@@ -6,7 +6,7 @@
 
 use std::{
     convert::Infallible, env, ffi::OsString, fs, io::Write, path::Path, path::PathBuf, process,
-    str::FromStr, sync::Arc,
+    sync::Arc,
 };
 use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
@@ -15,16 +15,14 @@ use tectonic::{
     ctry,
     docmodel::{DocumentExt, DocumentSetupOptions, WorkspaceCreatorExt},
     driver::PassSetting,
-    errors::{Result, SyncError},
-    status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
-    tt_error, tt_note,
+    errors::Result,
 };
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_errors::prelude::anyhow;
-use tectonic_status_base::plain::PlainStatusBackend;
 use tokio::runtime;
+use tracing::{error, info};
 use watchexec::event::ProcessEnd;
 use watchexec::{
     action::{Action, Outcome, PreSpawn},
@@ -116,44 +114,24 @@ pub fn v2_main(effective_args: &[OsString]) {
     let mut customizations = CommandCustomizations::default();
     args.command.customize(&mut customizations);
 
-    // Set up colorized output.
-
-    let chatter_level = if customizations.minimal_chatter {
-        ChatterLevel::Minimal
-    } else {
-        ChatterLevel::from_str(&args.chatter_level).unwrap()
-    };
-
+    /*
     let use_cli_color = match &*args.cli_color {
         "always" => true,
         "auto" => atty::is(atty::Stream::Stdout),
         "never" => false,
         _ => unreachable!(),
     };
+    */
 
-    let mut status = if use_cli_color {
-        let mut sb = TermcolorStatusBackend::new(chatter_level);
-        sb.always_stderr(customizations.always_stderr);
-        Box::new(sb) as Box<dyn StatusBackend>
-    } else {
-        let mut sb = PlainStatusBackend::new(chatter_level);
-        sb.always_stderr(customizations.always_stderr);
-        Box::new(sb) as Box<dyn StatusBackend>
-    };
-
-    // For now ...
-
-    tt_note!(
-        status,
+    info!(
+        tectonic_log_source = "cli",
         "\"version 2\" Tectonic command-line interface activated"
     );
 
-    // Now that we've got colorized output, pass off to the inner function.
-
-    let code = match args.command.execute(config, &mut *status, args.web_bundle) {
+    let code = match args.command.execute(config, args.web_bundle) {
         Ok(c) => c,
         Err(e) => {
-            status.report_error(&SyncError::new(e).into());
+            error!(tectonic_log_source = "cli", "{}", e.0.to_string());
             1
         }
     };
@@ -216,21 +194,16 @@ impl Commands {
         }
     }
 
-    fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
-    ) -> Result<i32> {
+    fn execute(self, config: PersistentConfig, web_bundle: Option<String>) -> Result<i32> {
         match self {
-            Commands::Build(o) => o.execute(config, status, web_bundle),
-            Commands::Bundle(o) => o.execute(config, status),
-            Commands::Compile(o) => o.execute(config, status, web_bundle),
-            Commands::Dump(o) => o.execute(config, status),
-            Commands::New(o) => o.execute(config, status, web_bundle),
-            Commands::Init(o) => o.execute(config, status, web_bundle),
-            Commands::Show(o) => o.execute(config, status),
-            Commands::Watch(o) => o.execute(config, status),
+            Commands::Build(o) => o.execute(config, web_bundle),
+            Commands::Bundle(o) => o.execute(config),
+            Commands::Compile(o) => o.execute(config, web_bundle),
+            Commands::Dump(o) => o.execute(config),
+            Commands::New(o) => o.execute(config, web_bundle),
+            Commands::Init(o) => o.execute(config, web_bundle),
+            Commands::Show(o) => o.execute(config),
+            Commands::Watch(o) => o.execute(config),
             Commands::External(args) => do_external(args),
         }
     }
@@ -271,17 +244,15 @@ pub struct BuildCommand {
 impl BuildCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
-    fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
-    ) -> Result<i32> {
+    fn execute(self, config: PersistentConfig, web_bundle: Option<String>) -> Result<i32> {
         // `--web-bundle` is not actually used for `-X build`,
         // so inform the user instead of ignoring silently.
         if let Some(url) = web_bundle {
-            tt_note!(status, "--web-bundle {} ignored", &url);
-            tt_note!(status, "using workspace bundle configuration");
+            info!(tectonic_log_source = "cli", "--web-bundle {} ignored", &url);
+            info!(
+                tectonic_log_source = "cli",
+                "using workspace bundle configuration"
+            );
         }
         let ws = Workspace::open_from_environment()?;
         let doc = ws.first_document();
@@ -307,7 +278,7 @@ impl BuildCommand {
                 }
             }
 
-            let mut builder = doc.setup_session(output_name, &setup_options, status)?;
+            let mut builder = doc.setup_session(output_name, &setup_options)?;
 
             builder
                 .format_cache_path(config.format_cache_path()?)
@@ -315,21 +286,29 @@ impl BuildCommand {
                 .keep_logs(self.keep_logs)
                 .print_stdout(self.print_stdout);
 
-            crate::compile::run_and_report(builder, status)?;
+            crate::compile::run_and_report(builder)?;
 
             if self.open {
                 let out_file = doc.output_main_file(output_name);
 
                 if is_config_test_mode_activated() {
-                    tt_note!(status, "not opening `{}` -- test mode", out_file.display());
+                    info!(
+                        tectonic_log_source = "cli",
+                        "not opening `{}` -- test mode",
+                        out_file.display()
+                    );
                 } else {
-                    tt_note!(status, "opening `{}`", out_file.display());
+                    info!(
+                        tectonic_log_source = "cli",
+                        "opening `{}`",
+                        out_file.display()
+                    );
                     if let Err(e) = open::that(&out_file) {
-                        tt_error!(
-                            status,
-                            "failed to open `{}` with system handler",
-                            out_file.display();
-                            e.into()
+                        error!(
+                            tectonic_log_source = "cli",
+                            "failed to open `{}` with system handler: {}",
+                            out_file.display(),
+                            e
                         )
                     }
                 }
@@ -366,19 +345,15 @@ impl BundleCommand {
         }
     }
 
-    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn execute(self, config: PersistentConfig) -> Result<i32> {
         match self.command {
-            BundleCommands::Cat(c) => c.execute(config, status),
-            BundleCommands::Search(c) => c.execute(config, status),
+            BundleCommands::Cat(c) => c.execute(config),
+            BundleCommands::Search(c) => c.execute(config),
         }
     }
 }
 
-fn get_a_bundle(
-    _config: PersistentConfig,
-    only_cached: bool,
-    status: &mut dyn StatusBackend,
-) -> Result<Box<dyn Bundle>> {
+fn get_a_bundle(_config: PersistentConfig, only_cached: bool) -> Result<Box<dyn Bundle>> {
     use tectonic_docmodel::workspace::NoWorkspaceFoundError;
 
     match Workspace::open_from_environment() {
@@ -386,21 +361,20 @@ fn get_a_bundle(
             let doc = ws.first_document();
             let mut options: DocumentSetupOptions = Default::default();
             options.only_cached(only_cached);
-            doc.bundle(&options, status)
+            doc.bundle(&options)
         }
 
         Err(e) => {
             if e.downcast_ref::<NoWorkspaceFoundError>().is_none() {
                 Err(e.into())
             } else {
-                tt_note!(
-                    status,
+                info!(
+                    tectonic_log_source = "setup",
                     "not in a document workspace; using the built-in default bundle"
                 );
                 Ok(Box::new(tectonic_bundles::get_fallback_bundle(
                     tectonic_engine_xetex::FORMAT_SERIAL,
                     only_cached,
-                    status,
                 )?))
             }
         }
@@ -422,11 +396,9 @@ impl BundleCatCommand {
         cc.always_stderr = true;
     }
 
-    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        let mut bundle = get_a_bundle(config, self.only_cached, status)?;
-        let mut ih = bundle
-            .input_open_name(&self.filename, status)
-            .must_exist()?;
+    fn execute(self, config: PersistentConfig) -> Result<i32> {
+        let mut bundle = get_a_bundle(config, self.only_cached)?;
+        let mut ih = bundle.input_open_name(&self.filename).must_exist()?;
         std::io::copy(&mut ih, &mut std::io::stdout())?;
         Ok(0)
     }
@@ -447,9 +419,9 @@ impl BundleSearchCommand {
         cc.always_stderr = true;
     }
 
-    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        let mut bundle = get_a_bundle(config, self.only_cached, status)?;
-        let files = bundle.all_files(status)?;
+    fn execute(self, config: PersistentConfig) -> Result<i32> {
+        let mut bundle = get_a_bundle(config, self.only_cached)?;
+        let files = bundle.all_files()?;
 
         // Is there a better way to do this?
         let filter: Box<dyn Fn(&str) -> bool> = if let Some(t) = self.term {
@@ -498,7 +470,7 @@ impl DumpCommand {
         cc.minimal_chatter = true;
     }
 
-    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn execute(self, config: PersistentConfig) -> Result<i32> {
         let ws = Workspace::open_from_environment()?;
         let doc = ws.first_document();
 
@@ -522,13 +494,13 @@ impl DumpCommand {
             .as_ref()
             .unwrap_or_else(|| doc.outputs.keys().next().unwrap());
 
-        let mut builder = doc.setup_session(output_name, &setup_options, status)?;
+        let mut builder = doc.setup_session(output_name, &setup_options)?;
 
         builder
             .format_cache_path(config.format_cache_path()?)
             .pass(PassSetting::Tex);
 
-        let sess = crate::compile::run_and_report(builder, status)?;
+        let sess = crate::compile::run_and_report(builder)?;
         let files = sess.into_file_data();
 
         if self.suffix_mode {
@@ -545,10 +517,9 @@ impl DumpCommand {
             }
 
             if !found_any {
-                tt_error!(
-                    status,
-                    "found no intermediate files with names ending in `{}`",
-                    self.filename
+                error!(
+                    tectonic_log_source = "cli",
+                    "found no intermediate files with names ending in `{}`", self.filename
                 );
                 return Ok(1);
             }
@@ -577,7 +548,7 @@ pub struct WatchCommand {
 impl WatchCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
-    async fn execute_inner(self, status: &mut dyn StatusBackend) -> Result<i32> {
+    async fn execute_inner(self) -> Result<i32> {
         let exe_name = crate::watch::get_trimmed_exe_name()
             .into_os_string()
             .into_string()
@@ -675,10 +646,9 @@ impl WatchCommand {
 
         match exec_handler {
             Err(e) => {
-                tt_error!(
-                    status,
-                    "failed to build arguments for watch ExecHandler";
-                    e.into()
+                error!(
+                    tectonic_log_source = "cli",
+                    "failed to build arguments for watch ExecHandler: {}", e
                 );
                 Ok(1)
             }
@@ -689,12 +659,12 @@ impl WatchCommand {
         }
     }
 
-    fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn execute(self, _config: PersistentConfig) -> Result<i32> {
         let rt = runtime::Builder::new_multi_thread()
             .enable_all()
             .build()
             .unwrap();
-        rt.block_on(self.execute_inner(status))
+        rt.block_on(self.execute_inner())
     }
 }
 
@@ -709,21 +679,16 @@ pub struct NewCommand {
 impl NewCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
-    fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
-    ) -> Result<i32> {
-        tt_note!(
-            status,
+    fn execute(self, config: PersistentConfig, web_bundle: Option<String>) -> Result<i32> {
+        info!(
+            tectonic_log_source = "cli",
             "creating new document in directory `{}`",
             self.path.display()
         );
 
         let wc = WorkspaceCreator::new(self.path);
         ctry!(
-            wc.create_defaulted(config, status, web_bundle);
+            wc.create_defaulted(config,  web_bundle);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)
@@ -737,22 +702,17 @@ pub struct InitCommand {}
 impl InitCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
-    fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
-    ) -> Result<i32> {
+    fn execute(self, config: PersistentConfig, web_bundle: Option<String>) -> Result<i32> {
         let path = env::current_dir()?;
-        tt_note!(
-            status,
+        info!(
+            tectonic_log_source = "cli",
             "creating new document in this directory ({})",
             path.display()
         );
 
         let wc = WorkspaceCreator::new(path);
         ctry!(
-            wc.create_defaulted(config, status, web_bundle);
+            wc.create_defaulted(config,  web_bundle);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)
@@ -780,9 +740,9 @@ impl ShowCommand {
         }
     }
 
-    fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn execute(self, config: PersistentConfig) -> Result<i32> {
         match self.command {
-            ShowCommands::UserCacheDir(c) => c.execute(config, status),
+            ShowCommands::UserCacheDir(c) => c.execute(config),
         }
     }
 }
@@ -795,7 +755,7 @@ impl ShowUserCacheDirCommand {
         cc.always_stderr = true;
     }
 
-    fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
+    fn execute(self, _config: PersistentConfig) -> Result<i32> {
         use tectonic_bundles::cache::Cache;
         let cache = Cache::get_user_default()?;
         println!("{}", cache.root().display());

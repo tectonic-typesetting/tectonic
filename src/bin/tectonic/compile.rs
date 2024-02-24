@@ -134,8 +134,8 @@ impl CompileOptions {
             // Don't provide an input path to the ProcessingSession, so it will default to stdin.
             sess_builder.tex_input_name("texput.tex");
             sess_builder.output_dir(Path::new(""));
-            tt_note!(
-                status,
+            info!(
+                tectonic_log_source = "setup",
                 "reading from standard input; outputs will appear under the base name \"texput\""
             );
         } else {
@@ -183,7 +183,10 @@ impl CompileOptions {
 
         let only_cached = self.only_cached;
         if only_cached {
-            tt_note!(status, "using only cached resource files");
+            info!(
+                tectonic_log_source = "setup",
+                "using only cached resource files"
+            );
         }
         if let Some(path) = self.bundle {
             sess_builder.bundle(config.make_local_file_provider(path)?);
@@ -206,18 +209,24 @@ pub(crate) fn run_and_report(sess_builder: ProcessingSessionBuilder) -> Result<P
             let output = sess.get_stdout_content();
 
             if output.is_empty() {
-                tt_error!(
-                    status,
-                    "something bad happened inside {}, but no output was logged",
-                    engine
+                error!(
+                    tectonic_log_source = "compile",
+                    "something bad happened inside {}, but no output was logged", engine
                 );
             } else {
-                tt_error!(
-                    status,
-                    "something bad happened inside {}; its output follows:\n",
-                    engine
+                error!(
+                    tectonic_log_source = "compile",
+                    "something bad happened inside {}; its output follows:\n", engine
                 );
-                status.dump_error_logs(&output);
+
+                if let Ok(s) = std::str::from_utf8(&output) {
+                    error!(tectonic_log_source = "compile", "{s}",);
+                } else {
+                    error!(
+                        tectonic_log_source = "compile",
+                        "couldn't show output, expected utf8",
+                    );
+                }
             }
         }
     }

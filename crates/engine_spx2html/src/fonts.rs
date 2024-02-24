@@ -9,7 +9,7 @@
 use std::{collections::HashMap, fmt::Write, io::Read, path::Path};
 use tectonic_errors::prelude::*;
 use tectonic_io_base::InputHandle;
-use tectonic_status_base::{tt_warning, StatusBackend};
+use tracing::warn;
 
 use crate::{
     assets::syntax,
@@ -615,8 +615,8 @@ fn get_text_info(font: &mut Font, glyph: GlyphId) -> Option<(char, String)> {
                 ch = map.usv;
                 Some(map.variant_map_index)
             } else {
-                tt_warning!(
-                    status,
+                warn!(
+                    tectonic_log_source = "spx2html",
                     "prohibited from defining new variant glyph {} in font `{}` (face {})",
                     glyph,
                     font.out_rel_path,
@@ -636,8 +636,8 @@ fn get_text_info(font: &mut Font, glyph: GlyphId) -> Option<(char, String)> {
     });
 
     if text_info.is_none() {
-        tt_warning!(
-            status,
+        warn!(
+            tectonic_log_source = "spx2html",
             "unable to reverse-map glyph {} in font `{}` (face {})",
             glyph,
             font.out_rel_path,

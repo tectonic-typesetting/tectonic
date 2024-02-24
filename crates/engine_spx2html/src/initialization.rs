@@ -6,7 +6,7 @@
 use std::{collections::HashMap, io::Read, path::PathBuf};
 use tectonic_errors::prelude::*;
 use tectonic_io_base::OpenResult;
-use tectonic_status_base::tt_warning;
+use tracing::warn;
 
 use crate::{
     fonts::FontEnsemble, html::Element, specials::Special, templating::Templating, Common,
@@ -135,7 +135,10 @@ impl InitializationState {
             Special::EndFontFamilyTagAssociations => self.handle_end_font_family_tag_associations(),
 
             Special::ProvideFile(_) => {
-                tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
+                warn!(
+                    tectonic_log_source = "spx2html",
+                    "ignoring too-soon tdux:provideFile special"
+                );
                 Ok(())
             }
 
@@ -176,10 +179,9 @@ impl InitializationState {
         if let Some((varname, varval)) = remainder.split_once(' ') {
             self.variables.insert(varname.to_owned(), varval.to_owned());
         } else {
-            tt_warning!(
-                common.status,
-                "ignoring malformatted tdux:setTemplateVariable special `{}`",
-                remainder
+            warn!(
+                tectonic_log_source = "spx2html",
+                "ignoring malformatted tdux:setTemplateVariable special `{}`", remainder
             );
         }
 
@@ -206,8 +208,8 @@ impl InitializationState {
             self.fonts
                 .register_family(family_name, regular, bold, italic, bold_italic)?;
         } else {
-            tt_warning!(
-                common.status,
+            warn!(
+                tectonic_log_source = "spx2html",
                 "end of font-family definition block that didn't start"
             );
         }
@@ -230,8 +232,8 @@ impl InitializationState {
                 self.tag_associations.insert(k, v);
             }
         } else {
-            tt_warning!(
-                common.status,
+            warn!(
+                tectonic_log_source = "spx2html",
                 "end of font-family tag-association block that didn't start"
             );
         }
@@ -280,10 +282,9 @@ impl InitializationState {
         } else {
             // This shouldn't happen; the top-level processor should exit init
             // phase if it's invoked and none of the above cases hold.
-            tt_warning!(
-                common.status,
-                "internal bug; losing text `{}` in initialization phase",
-                text
+            warn!(
+                tectonic_log_source = "spx2html",
+                "internal bug; losing text `{}` in initialization phase", text
             );
         }
 

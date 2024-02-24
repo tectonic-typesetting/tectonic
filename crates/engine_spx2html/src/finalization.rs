@@ -4,7 +4,7 @@
 //! The finalization phase of SPX to HTML processing.
 
 use tectonic_errors::prelude::*;
-use tectonic_status_base::tt_warning;
+use tracing::warn;
 
 use crate::{
     assets::Assets, fonts::FontEnsemble, specials::Special, templating::Templating, Common,
@@ -28,9 +28,12 @@ impl FinalizingState {
         })
     }
 
-    fn warn_finished_content(&mut self, detail: &str, common: &mut Common) {
+    fn warn_finished_content(&mut self, detail: &str) {
         if !self.warning_issued {
-            tt_warning!(common.status, "dropping post-finish content ({})", detail);
+            warn!(
+                tectonic_log_source = "spx2html",
+                "dropping post-finish content ({})", detail
+            );
             self.warning_issued = true;
         }
     }

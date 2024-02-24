@@ -52,7 +52,7 @@ use tectonic_io_base::{
     digest::DigestData, normalize_tex_path, InputFeatures, InputHandle, IoProvider, OpenResult,
     OutputHandle,
 };
-use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
+use tracing::{error, warn};
 
 /// Possible failures for "system request" calls to the driver.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -410,8 +410,10 @@ impl<'a> CoreBridgeState<'a> {
                 return true;
             }
             OpenResult::Err(e) => {
-                tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
-                          name; e);
+                error!(
+                    tectonic_log_source = "bridge",
+                    "error trying to open file \"{}\" for MD5 calculation: {e}", name
+                );
                 return true;
             }
         };
@@ -429,8 +431,11 @@ impl<'a> CoreBridgeState<'a> {
                 }
                 Ok(n) => n,
                 Err(e) => {
-                    tt_error!(self.status, "error reading file \"{}\" for MD5 calculation",
-                              ih.name(); e.into());
+                    error!(
+                        tectonic_log_source = "bridge",
+                        "error reading file \"{}\" for MD5 calculation: {e}",
+                        ih.name()
+                    );
                     error_occurred = true;
                     break;
                 }
@@ -459,7 +464,10 @@ impl<'a> CoreBridgeState<'a> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of output {} failed", name; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "open of output {} failed: {e}", name
+                );
                 return ptr::null_mut();
             }
         };
@@ -483,7 +491,7 @@ impl<'a> CoreBridgeState<'a> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of stdout failed"; e);
+                warn!(tectonic_log_source = "bridge", "open of stdout failed {e}");
                 return ptr::null_mut();
             }
         };
@@ -499,7 +507,7 @@ impl<'a> CoreBridgeState<'a> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                tt_warning!(self.status, "write failed"; e.into());
+                warn!(tectonic_log_source = "bridge", "write failed: {e}");
                 true
             }
         }
@@ -512,7 +520,7 @@ impl<'a> CoreBridgeState<'a> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                tt_warning!(self.status, "flush failed"; e.into());
+                warn!(tectonic_log_source = "bridge", "flush failed: {e}");
                 true
             }
         }
@@ -528,7 +536,11 @@ impl<'a> CoreBridgeState<'a> {
             if p == handle {
                 let mut oh = self.output_handles.swap_remove(i);
                 if let Err(e) = oh.flush() {
-                    tt_warning!(self.status, "error when closing output {}", oh.name(); e.into());
+                    warn!(
+                        tectonic_log_source = "bridge",
+                        "error when closing output {}: {e}",
+                        oh.name()
+                    );
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
@@ -549,7 +561,10 @@ impl<'a> CoreBridgeState<'a> {
                 return ptr::null_mut();
             }
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of input {} failed", name; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "open of input {} failed: {e}", name
+                );
                 return ptr::null_mut();
             }
         };
@@ -565,11 +580,17 @@ impl<'a> CoreBridgeState<'a> {
         let (ih, path) = match io.input_open_primary_with_abspath() {
             OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
-                tt_error!(self.status, "primary input not available (?!)");
+                error!(
+                    tectonic_log_source = "bridge",
+                    "primary input not available (?!)"
+                );
                 return ptr::null_mut();
             }
             OpenResult::Err(e) => {
-                tt_error!(self.status, "open of primary input failed"; e);
+                error!(
+                    tectonic_log_source = "bridge",
+                    "open of primary input failed: {e}"
+                );
                 return ptr::null_mut();
             }
         };
@@ -585,7 +606,10 @@ impl<'a> CoreBridgeState<'a> {
         match rhandle.get_size() {
             Ok(s) => s,
             Err(e) => {
-                tt_warning!(self.status, "failed to get the size of an input"; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "failed to get the size of an input: {e}"
+                );
                 0
             }
         }
@@ -600,7 +624,10 @@ impl<'a> CoreBridgeState<'a> {
         let maybe_time = match rhandle.get_unix_mtime() {
             Ok(t) => t,
             Err(e) => {
-                tt_warning!(self.status, "failed to get the modification time of an input"; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "failed to get the modification time of an input: {e}"
+                );
                 Some(0)
             }
         };
@@ -643,7 +670,11 @@ impl<'a> CoreBridgeState<'a> {
                 let mut rv = false;
 
                 if let Err(e) = ih.scan_remainder() {
-                    tt_warning!(self.status, "error closing out input {}", ih.name(); e);
+                    warn!(
+                        tectonic_log_source = "bridge",
+                        "error closing out input {}: {e}",
+                        ih.name()
+                    );
                     rv = true;
                 }
 
@@ -654,10 +685,9 @@ impl<'a> CoreBridgeState<'a> {
         }
 
         // TODO: Handle the error better. This indicates a bug in the engine.
-        tt_error!(
-            self.status,
-            "serious internal bug: unexpected handle in input close: {:?}",
-            handle
+        error!(
+            tectonic_log_source = "bridge",
+            "serious internal bug: unexpected handle in input close: {:?}", handle
         );
 
         true
@@ -665,24 +695,21 @@ impl<'a> CoreBridgeState<'a> {
 
     fn shell_escape(&mut self, command: &str) -> bool {
         if self.security.allow_shell_escape() {
-            match self.hooks.sysrq_shell_escape(command, self.status) {
+            match self.hooks.sysrq_shell_escape(command) {
                 Ok(_) => false,
 
                 Err(e) => {
-                    tt_error!(
-                        self.status,
-                        "failed to execute the shell-escape command \"{}\": {}",
-                        command,
-                        e
+                    error!(
+                        tectonic_log_source = "bridge",
+                        "failed to execute the shell-escape command \"{}\": {}", command, e
                     );
                     true
                 }
             }
         } else {
-            tt_error!(
-                self.status,
-                "forbidden to execute shell-escape command \"{}\"",
-                command
+            error!(
+                tectonic_log_source = "bridge",
+                "forbidden to execute shell-escape command \"{}\"", command
             );
             true
         }
@@ -812,7 +839,7 @@ impl Default for FsEmulationSettings {
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_issue_warning(text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
-    tt_warning!(es.status, "{}", rtext.to_string_lossy());
+    warn!(tectonic_log_source = "ctex", "{}", rtext.to_string_lossy());
 }
 
 /// Issue an error.
@@ -823,7 +850,7 @@ pub unsafe extern "C" fn ttbc_issue_warning(text: *const libc::c_char) {
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_issue_error(text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
-    tt_error!(es.status, "{}", rtext.to_string_lossy());
+    error!(tectonic_log_source = "ctex", "{}", rtext.to_string_lossy());
 }
 
 /// Calculate the MD5 digest of a Tectonic file.
@@ -1058,8 +1085,8 @@ pub unsafe extern "C" fn ttbc_input_seek(
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
         libc::SEEK_END => SeekFrom::End(offset as i64),
         _ => {
-            tt_error!(
-                es.status,
+            error!(
+                tectonic_log_source = "ctex",
                 "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
                 whence
             );
@@ -1072,7 +1099,7 @@ pub unsafe extern "C" fn ttbc_input_seek(
         Ok(pos) => pos as libc::size_t,
         Err(e) => {
             // TODO: Handle the error better. Report the error properly to the caller?
-            tt_error!(es.status, "input seek failed"; e);
+            error!(tectonic_log_source = "ctex", "input seek failed: {e}");
             0
         }
     }
@@ -1096,7 +1123,7 @@ pub extern "C" fn ttbc_input_getc(
                 }
             }
 
-            tt_warning!(es.status, "getc failed"; e);
+            warn!(tectonic_log_source = "ctex", "getc failed: {e}");
             -1
         }
     }
@@ -1112,7 +1139,7 @@ pub extern "C" fn ttbc_input_ungetc(
     match es.input_ungetc(handle, ch as u8) {
         Ok(_) => 0,
         Err(e) => {
-            tt_warning!(es.status, "ungetc() failed"; e);
+            warn!(tectonic_log_source = "ctex", "ungetc() failed: {e}");
             -1
         }
     }
@@ -1135,7 +1162,10 @@ pub unsafe extern "C" fn ttbc_input_read(
     match es.input_read(handle, rdata) {
         Ok(_) => len as isize,
         Err(e) => {
-            tt_warning!(es.status, "{}-byte read failed", len; e);
+            warn!(
+                tectonic_log_source = "ctex",
+                "{}-byte read failed: {e}", len
+            );
             -1
         }
     }
@@ -1214,8 +1244,10 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 pub unsafe extern "C" fn ttbc_diag_finish(diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
     let rdiag = Box::from_raw(diag);
-    es.status
-        .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+    match rdiag.kind {
+        MessageKind::Error => error!(tectonic_log_source = "ctex", "{}", rdiag.message),
+        MessageKind::Warning => warn!(tectonic_log_source = "ctex", "{}", rdiag.message),
+    }
 }
 
 /// Run a shell command
@@ -1233,7 +1265,10 @@ pub unsafe extern "C" fn ttbc_shell_escape(
     let rcmd = match String::from_utf16(rcmd) {
         Ok(cmd) => cmd,
         Err(err) => {
-            tt_error!(es.status, "command was not valid UTF-16"; err.into());
+            error!(
+                tectonic_log_source = "ctex",
+                "command was not valid UTF-16: {}", err
+            );
             return -1;
         }
     };

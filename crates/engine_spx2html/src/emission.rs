@@ -9,7 +9,7 @@ use std::{
     result::Result as StdResult,
 };
 use tectonic_errors::prelude::*;
-use tectonic_status_base::tt_warning;
+use tracing::warn;
 
 use crate::{
     assets::Assets,
@@ -295,21 +295,20 @@ impl EmittingState {
             .push_space_if_needed(x0, cur_space_width, self.cur_elstate().do_auto_spaces);
     }
 
-    fn create_elem(&self, name: &str, is_start: bool, common: &mut Common) -> Element {
+    fn create_elem(&self, name: &str, is_start: bool) -> Element {
         // Parsing can never fail since we offer an `Other` element type
         let el: Element = name.parse().unwrap();
 
         if el.is_deprecated() {
-            tt_warning!(
-                common.status,
-                "HTML element `{}` is deprecated; templates should be updated to avoid it",
-                name
+            warn!(
+                tectonic_log_source = "spx2html",
+                "HTML element `{}` is deprecated; templates should be updated to avoid it", name
             );
         }
 
         if is_start && el.is_empty() {
-            tt_warning!(
-                common.status,
+            warn!(
+                tectonic_log_source = "spx2html",
                 "HTML element `{}` is an empty element; insert it with `tdux:mfe`, not as a start-tag",
                 name
             );
@@ -317,8 +316,8 @@ impl EmittingState {
 
         if let Some(cur) = self.cur_elstate().elem.as_ref() {
             if cur.is_autoclosed_by(&el) {
-                tt_warning!(
-                    common.status,
+                warn!(
+                    tectonic_log_source = "spx2html",
                     "currently open HTML element `{}` will be implicitly closed by new \
                     element `{}`; explicit closing tags are strongly encouraged",
                     cur.name(),
@@ -386,7 +385,7 @@ impl EmittingState {
     }
 
     /// TODO: may need to hone semantics when element nesting isn't as expected.
-    fn pop_elem(&mut self, name: &str, common: &mut Common) {
+    fn pop_elem(&mut self, name: &str) {
         self.close_automatics();
 
         let mut n_closed = 0;
@@ -405,11 +404,9 @@ impl EmittingState {
         }
 
         if n_closed != 1 {
-            tt_warning!(
-                common.status,
-                "imbalanced tags; had to close {} to find `{}`",
-                n_closed,
-                name
+            warn!(
+                tectonic_log_source = "spx2html",
+                "imbalanced tags; had to close {} to find `{}`", n_closed, name
             );
         }
     }
@@ -435,7 +432,7 @@ impl EmittingState {
                     // semantics itself. The HTML spec explicitly recommends that
                     // you can use <div> elements to group logical paragraphs. So
                     // that's what we do.
-                    let el = self.create_elem("div", true, common);
+                    let el = self.create_elem("div", true);
                     self.push_space_if_needed(x, None);
                     self.content.push_str("<div class=\"tdux-p\">");
                     self.push_elem(el, ElementOrigin::EngineAuto);
@@ -445,7 +442,7 @@ impl EmittingState {
 
             Special::AutoEndParagraph => {
                 if self.cur_elstate().do_auto_tags {
-                    self.pop_elem("div", common);
+                    self.pop_elem("div");
                 }
                 Ok(())
             }
@@ -464,11 +461,10 @@ impl EmittingState {
                 if let Some(canvas) = self.current_canvas.as_mut() {
                     canvas.depth -= 1;
                     if canvas.depth == 0 {
-                        self.handle_end_canvas(common)?;
+                        self.handle_end_canvas()?;
                     }
                 } else {
-                    tt_warning!(
-                        common.status,
+                    warn!(
                         "ignoring unpaired tdux:c[anvas]e[nd] special for `{}`",
                         kind
                     );
@@ -478,11 +474,11 @@ impl EmittingState {
 
             Special::ManualFlexibleStart(spec) => {
                 self.close_automatics();
-                self.handle_flexible_start_tag(x, y, spec, common)
+                self.handle_flexible_start_tag(x, y, spec)
             }
 
             Special::ManualEnd(tag) => {
-                self.pop_elem(tag, common);
+                self.pop_elem(tag);
                 Ok(())
             }
 
@@ -504,16 +500,19 @@ impl EmittingState {
             }
 
             Special::SetTemplateVariable(spec) => {
-                self.templating.handle_set_template_variable(spec, common)
+                self.templating.handle_set_template_variable(spec)
             }
 
             Special::ProvideFile(_) | Special::ProvideSpecial(_) => {
-                self.assets.try_handle_special(special, common);
+                self.assets.try_handle_special(special);
                 Ok(())
             }
 
             other => {
-                tt_warning!(common.status, "ignoring unrecognized special: {}", other);
+                warn!(
+                    tectonic_log_source = "spx2html",
+                    "ignoring unrecognized special: {}", other
+                );
                 Ok(())
             }
         }
@@ -536,38 +535,30 @@ impl EmittingState {
     /// }
     /// ```
     ///
-    /// More ...
-    fn handle_flexible_start_tag(
-        &mut self,
-        x: i32,
-        _y: i32,
-        remainder: &str,
-        common: &mut Common,
-    ) -> Result<()> {
+    /// More...
+    fn handle_flexible_start_tag(&mut self, x: i32, _y: i32, remainder: &str) -> Result<()> {
         let mut lines = remainder.lines();
 
         let tagname = match lines.next() {
             Some(t) => t,
             None => {
-                tt_warning!(
-                    common.status,
-                    "ignoring TDUX flexible start tag -- no tag name: {:?}",
-                    remainder
+                warn!(
+                    tectonic_log_source = "spx2html",
+                    "ignoring TDUX flexible start tag -- no tag name: {:?}", remainder
                 );
                 return Ok(());
             }
         };
 
         if !tagname.chars().all(char::is_alphanumeric) {
-            tt_warning!(
-                common.status,
-                "ignoring TDUX flexible start tag -- invalid tag name: {:?}",
-                remainder
+            warn!(
+                tectonic_log_source = "spx2html",
+                "ignoring TDUX flexible start tag -- invalid tag name: {:?}", remainder
             );
             return Ok(());
         }
 
-        let el = self.create_elem(tagname, true, common);
+        let el = self.create_elem(tagname, true);
 
         let mut elstate = {
             let cur = self.cur_elstate();
@@ -597,10 +588,9 @@ impl EmittingState {
                 if !cls.is_empty() {
                     classes.push(cls.to_owned());
                 } else {
-                    tt_warning!(
-                        common.status,
-                        "ignoring TDUX flexible start tag class -- invalid name: {:?}",
-                        cls
+                    warn!(
+                        tectonic_log_source = "spx2html",
+                        "ignoring TDUX flexible start tag class -- invalid name: {:?}", cls
                     );
                 }
             } else if let Some(rest) = line.strip_prefix('S') {
@@ -609,10 +599,9 @@ impl EmittingState {
                 let name = match bits.next() {
                     Some(n) => n,
                     None => {
-                        tt_warning!(
-                            common.status,
-                            "ignoring TDUX flexible start tag style -- no name: {:?}",
-                            rest
+                        warn!(
+                            tectonic_log_source = "spx2html",
+                            "ignoring TDUX flexible start tag style -- no name: {:?}", rest
                         );
                         continue;
                     }
@@ -620,10 +609,9 @@ impl EmittingState {
                 let value = match bits.next() {
                     Some(v) => v,
                     None => {
-                        tt_warning!(
-                            common.status,
-                            "ignoring TDUX flexible start tag style -- no value: {:?}",
-                            rest
+                        warn!(
+                            tectonic_log_source = "spx2html",
+                            "ignoring TDUX flexible start tag style -- no value: {:?}", rest
                         );
                         continue;
                     }
@@ -634,19 +622,17 @@ impl EmittingState {
                 let mut bits = rest.splitn(2, ' ');
                 let name = match bits.next() {
                     Some("class") | Some("style") => {
-                        tt_warning!(
-                            common.status,
-                            "ignoring TDUX flexible start tag attr -- use C/S command: {:?}",
-                            rest
+                        warn!(
+                            tectonic_log_source = "spx2html",
+                            "ignoring TDUX flexible start tag attr -- use C/S command: {:?}", rest
                         );
                         continue;
                     }
                     Some(n) => n,
                     None => {
-                        tt_warning!(
-                            common.status,
-                            "ignoring TDUX flexible start tag attr -- no name: {:?}",
-                            rest
+                        warn!(
+                            tectonic_log_source = "spx2html",
+                            "ignoring TDUX flexible start tag attr -- no name: {:?}", rest
                         );
                         continue;
                     }
@@ -657,19 +643,17 @@ impl EmittingState {
                 let mut bits = rest.splitn(2, ' ');
                 let name = match bits.next() {
                     Some("class") | Some("style") => {
-                        tt_warning!(
-                            common.status,
-                            "ignoring TDUX flexible start tag attr -- use C/S command: {:?}",
-                            rest
+                        warn!(
+                            tectonic_log_source = "spx2html",
+                            "ignoring TDUX flexible start tag attr -- use C/S command: {:?}", rest
                         );
                         continue;
                     }
                     Some(n) => n,
                     None => {
-                        tt_warning!(
-                            common.status,
-                            "ignoring TDUX flexible start tag attr -- no name: {:?}",
-                            rest
+                        warn!(
+                            tectonic_log_source = "spx2html",
+                            "ignoring TDUX flexible start tag attr -- no name: {:?}", rest
                         );
                         continue;
                     }
@@ -680,10 +664,9 @@ impl EmittingState {
             } else if line == "NAT" {
                 elstate.do_auto_tags = false;
             } else {
-                tt_warning!(
-                    common.status,
-                    "ignoring unrecognized TDUX flexible start tag command: {:?}",
-                    line
+                warn!(
+                    tectonic_log_source = "spx2html",
+                    "ignoring unrecognized TDUX flexible start tag command: {:?}", line
                 );
             }
         }
@@ -839,7 +822,7 @@ impl EmittingState {
             let fonts = &mut self.fonts;
 
             let iter = atry!(
-                fonts.process_glyphs_as_text(font_num, glyphs, common.status);
+                fonts.process_glyphs_as_text(font_num, glyphs);
                 ["undeclared font {} in glyph run", font_num]
             );
 
@@ -895,7 +878,10 @@ impl EmittingState {
             }
 
             FontFamilyAnalysis::Unrecognized => {
-                tt_warning!(common.status, "undeclared font number {}", fnum);
+                warn!(
+                    tectonic_log_source = "spx2html",
+                    "undeclared font number {}", fnum
+                );
                 return;
             }
         };
@@ -907,8 +893,8 @@ impl EmittingState {
             } else {
                 // This is a logic error in our implementation -- this
                 // should never happen.
-                tt_warning!(
-                    common.status,
+                warn!(
+                    tectonic_log_source = "spx2html",
                     "font selection failed (ffid={}, active={:?}, desired={})",
                     cur_ffid,
                     cur_af,
@@ -958,14 +944,7 @@ impl EmittingState {
         }
     }
 
-    pub(crate) fn handle_rule(
-        &mut self,
-        x: i32,
-        y: i32,
-        height: i32,
-        width: i32,
-        common: &mut Common,
-    ) -> Result<()> {
+    pub(crate) fn handle_rule(&mut self, x: i32, y: i32, height: i32, width: i32) -> Result<()> {
         // Rules with non-positive dimensions are not drawn. Perhaps there are
         // tricky cases where they should affect the computation of the canvas
         // bounding box, but my first guess is that it is fine to just ignore
@@ -984,8 +963,8 @@ impl EmittingState {
         } else {
             // Not sure what to do here. Does this even happen in
             // non-pathological cases?
-            tt_warning!(
-                common.status,
+            warn!(
+                tectonic_log_source = "spx2html",
                 "ignoring rule outside of Tectonic HTML canvas"
             );
         }
@@ -993,7 +972,7 @@ impl EmittingState {
         Ok(())
     }
 
-    fn handle_end_canvas(&mut self, common: &mut Common) -> Result<()> {
+    fn handle_end_canvas(&mut self) -> Result<()> {
         let mut canvas = self.current_canvas.take().unwrap();
 
         // This is the *end* of a canvas, but we haven't pushed anything into
@@ -1081,8 +1060,7 @@ impl EmittingState {
 
         for gi in canvas.glyphs.drain(..) {
             let (text_info, size, baseline_factor) =
-                self.fonts
-                    .process_glyph_for_canvas(gi.font_num, gi.glyph, common.status);
+                self.fonts.process_glyph_for_canvas(gi.font_num, gi.glyph);
 
             // The size of the font being used for this glyph, in rems; that is,
             // relative to the main body font.
@@ -1170,7 +1148,7 @@ impl EmittingState {
             ("div", "canvas-block", "".to_owned())
         };
 
-        let element = self.create_elem(element, true, common);
+        let element = self.create_elem(element, true);
 
         // Negative padding values are illegal.
         let pad_left = match -x_min_tex as f32 * self.rems_per_tex {
@@ -1209,8 +1187,8 @@ impl EmittingState {
 
     pub(crate) fn emission_finished(mut self, common: &mut Common) -> Result<FinalizingState> {
         if !self.content.is_empty() {
-            tt_warning!(
-                common.status,
+            warn!(
+                tectonic_log_source = "spx2html",
                 "non-empty content left at the end without an explicit `emit` in HTML output"
             );
 

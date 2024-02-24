@@ -37,6 +37,7 @@ use tectonic_io_base::{
     stdstreams::{BufferedPrimaryIo, GenuineStdoutIo},
     InputHandle, IoProvider, OpenResult, OutputHandle,
 };
+use tracing::{error, info, warn};
 
 use crate::{
     ctry, errmsg,
@@ -46,8 +47,6 @@ use crate::{
         memory::{MemoryFileCollection, MemoryIo},
         InputOrigin,
     },
-    status::StatusBackend,
-    tt_error, tt_note, tt_warning,
     unstable_opts::UnstableOptions,
     BibtexEngine, Spx2HtmlEngine, TexEngine, TexOutcome, XdvipdfmxEngine,
 };
@@ -272,12 +271,11 @@ impl BridgeState {
     }
 
     /// Invoke an external tool as a pass in the processing pipeline.
-    fn external_tool_pass(
-        &mut self,
-        tool: &ExternalToolPass,
-        status: &mut dyn StatusBackend,
-    ) -> Result<()> {
-        status.note_highlighted("Running external tool ", &tool.argv[0], " ...");
+    fn external_tool_pass(&mut self, tool: &ExternalToolPass) -> Result<()> {
+        info!(
+            tectonic_log_source = "session",
+            "Running external tool `{}`...", &tool.argv[0]
+        );
 
         // Process the command arguments. Filenames appearing in the arguments
         // are treated as "requirements" that will be placed in the tool's
@@ -360,13 +358,23 @@ impl BridgeState {
 
         if let Some(0) = output.status.code() {
         } else {
-            tt_error!(
-                status,
+            error!(
+                tectonic_log_source = "session",
                 "the external tool exited with an error code; its stdout was:\n"
             );
-            status.dump_error_logs(&output.stdout[..]);
-            tt_error!(status, "its stderr was:\n");
-            status.dump_error_logs(&output.stderr[..]);
+            error!(
+                tectonic_log_source = "session",
+                "{}",
+                std::str::from_utf8(&output.stdout[..]).expect("Our bytes should be valid utf8")
+            );
+            //status.dump_error_logs(&output.stdout[..]);
+            error!(tectonic_log_source = "session", "its stderr was:");
+            error!(
+                tectonic_log_source = "session",
+                "{}",
+                std::str::from_utf8(&output.stderr[..]).expect("Our bytes should be valid utf8")
+            );
+            //status.dump_error_logs(&output.stderr[..]);
 
             return if let Some(n) = output.status.code() {
                 Err(errmsg!("the external tool exited with error code {}", n))
@@ -679,18 +687,31 @@ impl DriverHooks for BridgeState {
 
                 let real_path = work.root().join(name);
                 let mut f = File::create(&real_path).map_err(|e| {
-                    tt_error!(status, "failed to create file `{}`", real_path.display(); e.into());
+                    error!(
+                        tectonic_log_source = "session",
+                        "failed to create file `{}`: `{}`",
+                        real_path.display(),
+                        e
+                    );
                     SystemRequestError::Failed
                 })?;
                 f.write_all(&file.data).map_err(|e| {
-                    tt_error!(status, "failed to write file `{}`", real_path.display(); e.into());
+                    error!(
+                        tectonic_log_source = "session",
+                        "failed to write file `{}`: `{}`",
+                        real_path.display(),
+                        e
+                    );
                     SystemRequestError::Failed
                 })?;
             }
 
             // Now we can actually run the command.
 
-            tt_note!(status, "running shell command: `{}`", command);
+            info!(
+                tectonic_log_source = "session",
+                "running shell command: `{}`", command
+            );
 
             match Command::new(SHELL[0])
                 .args(&SHELL[1..])
@@ -701,16 +722,25 @@ impl DriverHooks for BridgeState {
                 Ok(s) => match s.code() {
                     Some(0) => Ok(()),
                     Some(n) => {
-                        tt_warning!(status, "command exited with error code {}", n);
+                        warn!(
+                            tectonic_log_source = "session",
+                            "command exited with error code {}", n
+                        );
                         Err(SystemRequestError::Failed)
                     }
                     None => {
-                        tt_warning!(status, "command was terminated by signal");
+                        warn!(
+                            tectonic_log_source = "session",
+                            "command was terminated by signal"
+                        );
                         Err(SystemRequestError::Failed)
                     }
                 },
                 Err(err) => {
-                    tt_warning!(status, "failed to run command"; err.into());
+                    warn!(
+                        tectonic_log_source = "session",
+                        "failed to run command: `{}`", err
+                    );
                     Err(SystemRequestError::Failed)
                 }
             }
@@ -722,8 +752,8 @@ impl DriverHooks for BridgeState {
         } else {
             // No shell-escape work directory. This "shouldn't happen" but means
             // that shell-escape is supposed to be disabled anyway!
-            tt_error!(
-                status,
+            error!(
+                tectonic_log_source = "session",
                 "the engine requested a shell-escape invocation but it's currently disabled"
             );
             Err(SystemRequestError::NotAllowed)
@@ -1153,7 +1183,10 @@ impl ProcessingSessionBuilder {
                 .collect()
         } else {
             if !self.unstables.extra_search_paths.is_empty() {
-                tt_warning!(status, "Extra search path(s) ignored due to security");
+                warn!(
+                    tectonic_log_source = "session",
+                    "Extra search path(s) ignored due to security"
+                );
             }
             Vec::new()
         };
@@ -1333,10 +1366,9 @@ impl ProcessingSession {
                     (&None, &Some(_)) => true,
                     (_, _) => {
                         // Other cases shouldn't happen.
-                        tt_warning!(
-                            status,
-                            "internal consistency problem when checking if {} changed",
-                            name
+                        warn!(
+                            tectonic_log_source = "session",
+                            "internal consistency problem when checking if {} changed", name
                         );
                         true
                     }
@@ -1363,13 +1395,9 @@ impl ProcessingSession {
                     Some(ref d) => d.to_string(),
                     None => "-".into(),
                 };
-                tt_note!(
-                    status,
-                    "ACCESS: {} {:?} {:?} {:?}",
-                    name,
-                    info.access_pattern,
-                    r,
-                    w
+                info!(
+                    tectonic_log_source = "session",
+                    "ACCESS: {} {:?} {:?} {:?}", name, info.access_pattern, r, w
                 );
             }
         }
@@ -1424,8 +1452,13 @@ impl ProcessingSession {
             let shell_escape_err = std::fs::remove_dir_all(shell_escape_work.root());
 
             if let Err(e) = shell_escape_err {
-                tt_warning!(status, "an error occurred while cleaning up the \
-                    shell-escape temporary directory `{}`", shell_escape_work.root().display(); e.into());
+                warn!(
+                    tectonic_log_source = "session",
+                    "an error occurred while cleaning up the \
+                    shell-escape temporary directory `{}`: `{}`",
+                    shell_escape_work.root().display(),
+                    e
+                );
             }
         }
 
@@ -1453,8 +1486,11 @@ impl ProcessingSession {
         };
 
         if generate_format {
-            tt_note!(status, "generating format \"{}\"", self.format_name);
-            self.make_format_pass(status)?;
+            info!(
+                tectonic_log_source = "session",
+                "generating format \"{}\"", self.format_name
+            );
+            self.make_format_pass()?;
         }
 
         // Do the meat of the work.
@@ -1462,14 +1498,14 @@ impl ProcessingSession {
         let result = match self.pass {
             PassSetting::Tex => match self.tex_pass(None) {
                 Ok(Some(warnings)) => {
-                    tt_warning!(status, "{}", warnings);
+                    warn!(tectonic_log_source = "session", "{}", warnings);
                     Ok(0)
                 }
                 Ok(None) => Ok(0),
                 Err(e) => Err(e),
             },
-            PassSetting::Default => self.default_pass(false, status),
-            PassSetting::BibtexFirst => self.default_pass(true, status),
+            PassSetting::Default => self.default_pass(false),
+            PassSetting::BibtexFirst => self.default_pass(true),
         };
 
         if let Err(e) = result {
@@ -1482,8 +1518,8 @@ impl ProcessingSession {
         let mut mf_dest_maybe = match self.makefile_output_path {
             Some(ref p) => {
                 if self.output_path.is_none() {
-                    tt_warning!(
-                        status,
+                    warn!(
+                        tectonic_log_source = "session",
                         "requested to generate Makefile rules, but no files written to disk!"
                     );
                     None
@@ -1498,10 +1534,9 @@ impl ProcessingSession {
         let n_skipped_intermediates = self.write_files(mf_dest_maybe.as_mut(), false)?;
 
         if n_skipped_intermediates > 0 {
-            status.note_highlighted(
-                "Skipped writing ",
-                &format!("{n_skipped_intermediates}"),
-                " intermediate files (use --keep-intermediates to keep them)",
+            info!(
+                tectonic_log_source = "session",
+                "Skipped writing {n_skipped_intermediates} intermediate files (use --keep-intermediates to keep them)",
             );
         }
 
@@ -1533,7 +1568,10 @@ impl ProcessingSession {
                     // two-stage compilation involving the .aux file, the
                     // latter case is what arises unless --keep-intermediates
                     // is specified.
-                    tt_warning!(status, "omitting circular Makefile dependency for {}", name);
+                    warn!(
+                        tectonic_log_source = "session",
+                        "omitting circular Makefile dependency for {}", name
+                    );
                     continue;
                 }
 
@@ -1602,20 +1640,20 @@ impl ProcessingSession {
             }
 
             if file.data.is_empty() {
-                status.note_highlighted(
-                    "Not writing ",
-                    &format!("`{sname}`"),
-                    ": it would be empty.",
+                info!(
+                    tectonic_log_source = "session",
+                    "Not writing `{sname}`: it would be empty."
                 );
                 continue;
             }
 
             let real_path = root.join(name);
             let byte_len = Byte::from_bytes(file.data.len() as u128);
-            status.note_highlighted(
-                "Writing ",
-                &format!("`{}`", real_path.display()),
-                &format!(" ({})", byte_len.get_appropriate_unit(true)),
+            info!(
+                tectonic_log_source = "session",
+                "Writing `{}` ({})",
+                real_path.display(),
+                byte_len.get_appropriate_unit(true),
             );
 
             let mut f = File::create(&real_path)?;
@@ -1699,10 +1737,9 @@ impl ProcessingSession {
                 rerun_result = self.is_rerun_needed();
 
                 if rerun_result.is_some() && i == DEFAULT_MAX_TEX_PASSES - 1 {
-                    tt_warning!(
-                        status,
-                        "TeX rerun seems needed, but stopping at {} passes",
-                        DEFAULT_MAX_TEX_PASSES
+                    warn!(
+                        tectonic_log_source = "session",
+                        "TeX rerun seems needed, but stopping at {} passes", DEFAULT_MAX_TEX_PASSES
                     );
                     break;
                 }
@@ -1711,7 +1748,7 @@ impl ProcessingSession {
 
         // The last tex pass generated warnings.
         if let Some(warnings) = warnings {
-            tt_warning!(status, "{}", warnings);
+            warn!(tectonic_log_source = "session", "{}", warnings);
         }
 
         // And finally, xdvipdfmx or spx2html. Maybe.
@@ -1773,10 +1810,16 @@ impl ProcessingSession {
         match result {
             Ok(TexOutcome::Spotless) => {}
             Ok(TexOutcome::Warnings) => {
-                tt_warning!(status, "warnings were issued by the TeX engine; use --print and/or --keep-logs for details.");
+                warn!(
+                    tectonic_log_source = "session",
+                    "warnings were issued by the TeX engine; use --print and/or --keep-logs for details."
+                );
             }
             Ok(TexOutcome::Errors) => {
-                tt_error!(status, "errors were issued by the TeX engine; use --print and/or --keep-logs for details.");
+                error!(
+                    tectonic_log_source = "session",
+                    "errors were issued by the TeX engine; use --print and/or --keep-logs for details."
+                );
                 return Err(ErrorKind::Msg("unhandled TeX engine error".to_owned()).into());
             }
             Err(e) => {
@@ -1813,9 +1856,12 @@ impl ProcessingSession {
     fn tex_pass(&mut self, rerun_explanation: Option<&str>) -> Result<Option<&'static str>> {
         let result = {
             if let Some(s) = rerun_explanation {
-                status.note_highlighted("Rerunning ", "TeX", &format!(" because {s} ..."));
+                info!(
+                    tectonic_log_source = "session",
+                    "Rerunning TeX because {s}..."
+                );
             } else {
-                status.note_highlighted("Running ", "TeX", " ...");
+                info!(tectonic_log_source = "session", "Running TeX...");
             }
 
             let mut launcher =
@@ -1860,8 +1906,8 @@ impl ProcessingSession {
 
         if !self.bs.mem.files.borrow().contains_key(&self.tex_xdv_path) {
             // TeX did not produce the expected output file
-            tt_warning!(
-                status,
+            warn!(
+                tectonic_log_source = "session",
                 "did not produce \"{}\"; this may mean that your document is empty",
                 self.tex_xdv_path
             )
@@ -1873,9 +1919,12 @@ impl ProcessingSession {
     // Run Bibtex process for one .aux file.
     fn bibtex_pass_for_one_aux_file(&mut self, aux_file: &String) -> Result<i32> {
         let result = {
-            status.note_highlighted("Running ", "BibTeX", &format!(" on {aux_file} ..."));
+            info!(
+                tectonic_log_source = "session",
+                "Running BibTeX on {aux_file}..."
+            );
             let mut launcher =
-                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
+                CoreBridgeLauncher::new_with_security(&mut self.bs, self.security.clone());
             let mut engine = BibtexEngine::new();
             engine.process(&mut launcher, aux_file, &self.unstables)
         };
@@ -1883,14 +1932,14 @@ impl ProcessingSession {
         match result {
             Ok(TexOutcome::Spotless) => {}
             Ok(TexOutcome::Warnings) => {
-                tt_note!(
-                    status,
+                info!(
+                    tectonic_log_source = "session",
                     "warnings were issued by BibTeX; use --print and/or --keep-logs for details."
                 );
             }
             Ok(TexOutcome::Errors) => {
-                tt_warning!(
-                    status,
+                warn!(
+                    tectonic_log_source = "session",
                     "errors were issued by BibTeX, but were ignored; \
                      use --print and/or --keep-logs for details."
                 );
@@ -1922,7 +1971,7 @@ impl ProcessingSession {
 
     fn xdvipdfmx_pass(&mut self) -> Result<i32> {
         {
-            status.note_highlighted("Running ", "xdvipdfmx", " ...");
+            info!(tectonic_log_source = "session", "Running xdvipdfmx...");
 
             let mut launcher =
                 CoreBridgeLauncher::new_with_security(&mut self.bs, self.security.clone());
@@ -1961,7 +2010,7 @@ impl ProcessingSession {
                 engine.precomputed_assets(a.clone());
             }
 
-            status.note_highlighted("Running ", "spx2html", " ...");
+            info!(tectonic_log_source = "session", "Running spx2html...");
             engine.process_to_filesystem(&mut self.bs, &self.tex_xdv_path)?;
         }
 

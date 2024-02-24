@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tectonic_errors::Result;
-use tectonic_status_base::{tt_warning, StatusBackend};
+use tracing::warn;
 
 use super::{
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
@@ -154,7 +154,6 @@ impl IoProvider for FilesystemIo {
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
@@ -197,8 +196,8 @@ impl IoProvider for FilesystemIo {
         // into absolute paths (e.g. when self.root is absolute).
         let name_path = Path::new(name);
         if name_path.is_absolute() && !self.reported_paths.contains(name_path) {
-            tt_warning!(
-                status,
+            warn!(
+                tectonic_log_source = "io",
                 "accessing absolute path `{}`; build may not be reproducible in other environments",
                 name_path.display()
             );

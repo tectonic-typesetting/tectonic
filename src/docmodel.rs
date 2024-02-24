@@ -21,14 +21,13 @@ use tectonic_docmodel::{
     workspace::{Workspace, WorkspaceCreator},
 };
 use tectonic_geturl::{DefaultBackend, GetUrlBackend};
+use tracing::info;
 use url::Url;
 
 use crate::{
     config, ctry,
     driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
     errors::{ErrorKind, Result},
-    status::StatusBackend,
-    tt_note,
     unstable_opts::UnstableOptions,
 };
 
@@ -175,7 +174,10 @@ impl DocumentExt for Document {
         }
 
         if setup_options.only_cached {
-            tt_note!(status, "using only cached resource files");
+            info!(
+                tectonic_log_source = "setup",
+                "using only cached resource files"
+            );
         }
         sess_builder.bundle(self.bundle(setup_options)?);
 

@@ -143,8 +143,8 @@ fn main() {
         }
     };
 
-    if let Err(_) = args.compile.execute(config, args.web_bundle) {
-        status.report_error(&SyncError::new(e).into());
+    if let Err(e) = args.compile.execute(config, args.web_bundle) {
+        error!(tectonic_log_source = "cli", "{}", e.0.to_string());
         process::exit(1)
     }
 }

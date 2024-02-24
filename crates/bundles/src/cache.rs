@@ -16,6 +16,7 @@
 //! explicitly specify the concrete [`CacheBackend`] type that will service
 //! backend requests.
 
+use crate::Bundle;
 use fs2::FileExt;
 use std::{
     collections::HashMap,
@@ -31,9 +32,7 @@ use tectonic_io_base::{
     digest::{self, Digest, DigestData},
     try_open_file, InputHandle, InputOrigin, IoProvider, OpenResult,
 };
-use tectonic_status_base::{tt_warning, StatusBackend};
-
-use crate::Bundle;
+use tracing::warn;
 
 /// A cache of data from one or more bundles using the local filesystem.
 #[derive(Debug)]
@@ -87,9 +86,8 @@ impl Cache {
         &mut self,
         url: &str,
         only_cached: bool,
-        status: &mut dyn StatusBackend,
     ) -> Result<CachingBundle<CB>> {
-        CachingBundle::new(url, only_cached, status, &self.root)
+        CachingBundle::new(url, only_cached, &self.root)
     }
 }
 
@@ -138,10 +136,7 @@ pub trait CacheBackend: Sized {
     /// The return value includes a package of information ([`BackendPullData`])
     /// that the cache will store to enable efficient operation on subsequent
     /// requests.
-    fn open_with_pull(
-        start_url: &str,
-        status: &mut dyn StatusBackend,
-    ) -> Result<(Self, BackendPullData)>;
+    fn open_with_pull(start_url: &str) -> Result<(Self, BackendPullData)>;
 
     /// Connect to the backend and fetch validation information.
     ///
@@ -156,7 +151,6 @@ pub trait CacheBackend: Sized {
     fn open_with_quick_check(
         resolved_url: &str,
         digest_file_info: &Self::FileInfo,
-        status: &mut dyn StatusBackend,
     ) -> Result<Option<(Self, DigestData)>>;
 
     /// Parse a line of the indexing data.
@@ -175,12 +169,7 @@ pub trait CacheBackend: Sized {
     /// Backend-specific retrieval information can be passed in the
     /// [`Self::FileInfo`] item, which is constructed from the backend’s index
     /// information. The file should be returned as one large byte vector.
-    fn get_file(
-        &mut self,
-        name: &str,
-        info: &Self::FileInfo,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Vec<u8>>;
+    fn get_file(&mut self, name: &str, info: &Self::FileInfo) -> Result<Vec<u8>>;
 }
 
 /// Information about a cached file.
@@ -306,12 +295,7 @@ struct CachedPullData<FI> {
 }
 
 impl<CB: CacheBackend> CachingBundle<CB> {
-    fn new(
-        start_url: &str,
-        only_cached: bool,
-        status: &mut dyn StatusBackend,
-        cache_root: &Path,
-    ) -> Result<Self> {
+    fn new(start_url: &str, only_cached: bool, cache_root: &Path) -> Result<Self> {
         // Set up our paths.
         let digest_path =
             ensure_cache_dir(cache_root, "urls")?.join(app_dirs::app_dirs2::sanitized(start_url));
@@ -333,7 +317,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
                     // Some portion of the required cached data is missing. We need to
                     // do a complete pull and then cache the results.
 
-                    let (new_backend, pull_data) = CB::open_with_pull(start_url, status)?;
+                    let (new_backend, pull_data) = CB::open_with_pull(start_url)?;
                     backend = Some(new_backend);
 
                     let digest_text = pull_data.digest.to_string();
@@ -345,7 +329,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
                         f.write_all(pull_data.index.as_bytes())
                     })?;
 
-                    // Now that we've done that, load_cached_pull_data() really ought to succeed ...
+                    // Now that we've done that, load_cached_pull_data() really ought to succeed...
                     atry!(
                         load_cached_pull_data::<CB>(&digest_path, &resolved_base, &index_base)?;
                         ["cache files missing even after they were created"]
@@ -373,9 +357,12 @@ impl<CB: CacheBackend> CachingBundle<CB> {
                 // Note that the lock is released when the file is closed,
                 // which is good since BufReader::new() and BufReader::lines()
                 // consume their objects.
-                if let Err(e) = mfile.lock_shared() {
-                    tt_warning!(status, "failed to lock manifest file \"{}\" for reading; this might be fine",
-                                manifest_path.display(); e.into());
+                if let Err(_) = mfile.lock_shared() {
+                    warn!(
+                        tectonic_log_source = "bundle",
+                        "failed to lock manifest file \"{}\" for reading; this might be fine",
+                        manifest_path.display()
+                    );
                 }
 
                 let f = BufReader::new(mfile);
@@ -402,9 +389,14 @@ impl<CB: CacheBackend> CachingBundle<CB> {
                     } else {
                         match DigestData::from_str(digest) {
                             Ok(d) => d,
-                            Err(e) => {
-                                tt_warning!(status, "ignoring bad digest data \"{}\" for \"{}\" in \"{}\"",
-                                            &digest, original_name, manifest_path.display() ; e);
+                            Err(_) => {
+                                warn!(
+                                    tectonic_log_source = "bundle",
+                                    "ignoring bad digest data \"{}\" for \"{}\" in \"{}\"",
+                                    &digest,
+                                    original_name,
+                                    manifest_path.display()
+                                );
                                 continue;
                             }
                         }
@@ -484,7 +476,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
     ///
     /// After this function has been called, you can assume that `self.backend`
     /// is Some.
-    fn ensure_backend_validity(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
+    fn ensure_backend_validity(&mut self) -> Result<()> {
         // If backend is Some, we already have a validated connection to it.
         if self.backend.is_some() {
             return Ok(());
@@ -493,8 +485,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
         // Do the quick check. If anything goes wrong, eat the error and try a
         // fresh pull.
         if let Some(info) = self.index.get(digest::DIGEST_NAME) {
-            if let Ok(Some((backend, digest))) =
-                CB::open_with_quick_check(&self.resolved_url, info, status)
+            if let Ok(Some((backend, digest))) = CB::open_with_quick_check(&self.resolved_url, info)
             {
                 if self.cached_digest == digest {
                     // We managed to pull some data that match the digest. We
@@ -508,7 +499,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
 
         // The quick check failed. Try to pull all data to make sure that it
         // wasn't a network error or that the resolved URL hasn't been updated.
-        let (new_backend, pull_data) = CB::open_with_pull(&self.start_url, status)?;
+        let (new_backend, pull_data) = CB::open_with_pull(&self.start_url)?;
 
         if self.cached_digest != pull_data.digest {
             // Crap! The backend isn't what we thought it was. We may have been
@@ -541,11 +532,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
     ///
     /// If the file is already cached, just pull it out. Otherwise, fetch it
     /// from the backend.
-    fn ensure_file_availability(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<PathBuf> {
+    fn ensure_file_availability(&mut self, name: &str) -> OpenResult<PathBuf> {
         // Already in the cache?
         if let Some(info) = self.contents.get(name) {
             return match info.digest.create_two_part_path(&self.data_base) {
@@ -567,7 +554,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
 
         // Yes, it is. Time to fetch it! In order to do that, we need to ensure
         // that we have a valid backend connection.
-        if let Err(e) = self.ensure_backend_validity(status) {
+        if let Err(e) = self.ensure_backend_validity() {
             return OpenResult::Err(e);
         }
 
@@ -579,7 +566,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
         // have returned incorrect data for previous requests that hit the
         // cache.
 
-        let content = match self.backend.as_mut().unwrap().get_file(name, &info, status) {
+        let content = match self.backend.as_mut().unwrap().get_file(name, &info) {
             Ok(c) => c,
             Err(e) => return OpenResult::Err(e),
         };
@@ -636,12 +623,8 @@ impl<CB: CacheBackend> CachingBundle<CB> {
 }
 
 impl<CB: CacheBackend> IoProvider for CachingBundle<CB> {
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        let path = match self.ensure_file_availability(name, status) {
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
+        let path = match self.ensure_file_availability(name) {
             OpenResult::Ok(p) => p,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
@@ -661,13 +644,13 @@ impl<CB: CacheBackend> IoProvider for CachingBundle<CB> {
 }
 
 impl<CB: CacheBackend> Bundle for CachingBundle<CB> {
-    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self) -> Result<DigestData> {
         Ok(self.cached_digest)
     }
 
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self) -> Result<Vec<String>> {
         if !self.only_cached {
-            self.ensure_backend_validity(status)?;
+            self.ensure_backend_validity()?;
         }
         Ok(self.index.keys().cloned().collect())
     }
