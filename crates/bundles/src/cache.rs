@@ -357,10 +357,10 @@ impl<CB: CacheBackend> CachingBundle<CB> {
                 // Note that the lock is released when the file is closed,
                 // which is good since BufReader::new() and BufReader::lines()
                 // consume their objects.
-                if let Err(_) = mfile.lock_shared() {
+                if let Err(e) = mfile.lock_shared() {
                     warn!(
                         tectonic_log_source = "bundle",
-                        "failed to lock manifest file \"{}\" for reading; this might be fine",
+                        "failed to lock manifest file \"{}\" for reading: {e}",
                         manifest_path.display()
                     );
                 }

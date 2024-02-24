@@ -289,9 +289,7 @@ impl<'a> XdvEvents for EngineState<'a> {
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
             State::Initializing(s) => s.handle_text_and_glyphs(font_num, text, glyphs, x, y)?,
-            State::Emitting(s) => {
-                s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)?
-            }
+            State::Emitting(s) => s.handle_text_and_glyphs(font_num, text, glyphs, x, y)?,
             State::Finalizing(s) => s.handle_text_and_glyphs(text)?,
         }
 
@@ -338,7 +336,7 @@ impl<'a> XdvEvents for EngineState<'a> {
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
             State::Initializing(_) => unreachable!(),
-            State::Emitting(s) => s.handle_glyph_run(font_num, glyphs, x, y, &mut self.common),
+            State::Emitting(s) => s.handle_glyph_run(font_num, glyphs, x, y),
             State::Finalizing(s) => s.handle_glyph_run(),
         }
     }

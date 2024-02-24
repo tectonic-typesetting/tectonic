@@ -126,6 +126,6 @@ impl Bundle for TestBundle {
     }
 
     fn all_files(&mut self) -> Result<Vec<String>> {
-        Ok(self.0.all_files()?)
+        self.0.all_files()
     }
 }

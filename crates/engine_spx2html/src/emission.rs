@@ -749,7 +749,6 @@ impl EmittingState {
         glyphs: &[u16],
         xs: &[i32],
         ys: &[i32],
-        common: &mut Common,
     ) -> Result<()> {
         if let Some(c) = self.current_canvas.as_mut() {
             for i in 0..glyphs.len() {
@@ -761,7 +760,7 @@ impl EmittingState {
                 });
             }
         } else if !glyphs.is_empty() {
-            self.set_up_for_font(xs[0], font_num, common);
+            self.set_up_for_font(xs[0], font_num);
             self.push_space_if_needed(xs[0], Some(font_num));
             self.content.push_with_html_escaping(text);
 
@@ -794,7 +793,6 @@ impl EmittingState {
         glyphs: &[u16],
         xs: &[i32],
         ys: &[i32],
-        common: &mut Common,
     ) -> Result<()> {
         if let Some(c) = self.current_canvas.as_mut() {
             for i in 0..glyphs.len() {
@@ -817,7 +815,7 @@ impl EmittingState {
             // translate them to Unicode, hoping for the best that the naive
             // inversion suffices.
 
-            self.set_up_for_font(xs[0], font_num, common);
+            self.set_up_for_font(xs[0], font_num);
 
             let fonts = &mut self.fonts;
 
@@ -851,7 +849,7 @@ impl EmittingState {
         Ok(())
     }
 
-    fn set_up_for_font(&mut self, x0: i32, fnum: TexFontNum, common: &mut Common) {
+    fn set_up_for_font(&mut self, x0: i32, fnum: TexFontNum) {
         let (cur_ffid, cur_af, cur_is_autofont) = {
             let cur = self.cur_elstate();
             (
@@ -889,7 +887,7 @@ impl EmittingState {
         if path.close_one_and_retry {
             if cur_is_autofont {
                 self.close_one();
-                return self.set_up_for_font(x0, fnum, common);
+                return self.set_up_for_font(x0, fnum);
             } else {
                 // This is a logic error in our implementation -- this
                 // should never happen.

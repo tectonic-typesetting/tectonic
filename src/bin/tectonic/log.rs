@@ -19,6 +19,7 @@ pub struct StringVisitor {
 
 impl Visit for StringVisitor {
     fn record_debug(&mut self, field: &Field, value: &dyn fmt::Debug) {
+        #[allow(clippy::single_match)]
         match field.name() {
             "message" => self.message = format!("{:?}", value),
             _ => {}
@@ -26,6 +27,7 @@ impl Visit for StringVisitor {
     }
 
     fn record_str(&mut self, field: &Field, value: &str) {
+        #[allow(clippy::single_match)]
         match field.name() {
             "tectonic_log_source" => {
                 self.source = Some(value.to_string());
