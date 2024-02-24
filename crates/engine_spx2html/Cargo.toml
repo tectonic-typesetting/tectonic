@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_engine_spx2html"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The Tectonic engine that converts SPX output to HTML.
@@ -26,15 +26,15 @@ serde = { version = "^1.0", features = ["derive"] }
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "../xdv", version = "0.0.0-dev.0" }
 tempfile = "^3.1"
 tera = "^1.13"
 serde_json = "^1.0"
+tracing = "0.1"
+
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_io_base = "thiscommit:2022-02-20:gQ6H0Gx"
-tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"

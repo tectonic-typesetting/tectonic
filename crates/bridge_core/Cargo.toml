@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_core"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing core backend APIs to the Tectonic C/C++ code.
@@ -25,7 +25,7 @@ libc = "^0.2"
 md-5 = "^0.10"
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
+tracing = "0.1"
 
 [build-dependencies]
 cc = "^1.0.66"
@@ -33,4 +33,3 @@ cc = "^1.0.66"
 [package.metadata.internal_dep_versions]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
 tectonic_io_base = "f7eeff461778f7082db7ed5097d93aa63119eb12"
-tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"

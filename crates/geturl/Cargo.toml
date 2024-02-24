@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_geturl"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A generic interface for HTTP GETs and byte-range requests, with pluggable backends.
@@ -20,7 +20,7 @@ cfg-if = "^1.0"
 curl = { version = "^0.4", optional = true }
 reqwest = { version = "^0.11", optional = true, features = ["blocking"] }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
+tracing = "0.1"
 
 [features]
 default = ["reqwest"]
@@ -28,4 +28,3 @@ native-tls-vendored = ["reqwest/native-tls-vendored"]
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"
-tectonic_status_base = "401387acfd98113133db6981c301426431f55ea3"

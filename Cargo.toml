@@ -50,7 +50,6 @@ members = [
   "crates/geturl",
   "crates/io_base",
   "crates/pdf_io",
-  "crates/status_base",
   "crates/xdv",
   "crates/xetex_format",
   "crates/xetex_layout",
@@ -69,6 +68,9 @@ flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 fs2 = "^0.4"
 lazy_static = "^1.4"
 libc = "^0.2"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+nu-ansi-term = "0.46"
 md-5 = "^0.10"
 open = "^4.0"
 quick-xml = "^0.28"
@@ -85,11 +87,9 @@ tectonic_engine_xetex = { path = "crates/engine_xetex", version = "0.0.0-dev.0" 
 tectonic_errors = { path = "crates/errors", version = "0.0.0-dev.0" }
 tectonic_geturl = { path = "crates/geturl", version = "0.0.0-dev.0", default-features = false }
 tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "crates/status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "crates/xdv", version = "0.0.0-dev.0" }
 tectonic_xetex_layout = { path = "crates/xetex_layout", version = "0.0.0-dev.0" }
 tempfile = "^3.1"
-termcolor = "^1.1"
 tokio = "^1.0"
 toml = { version = "^0.7", optional = true }
 url = "^2.0"
@@ -174,6 +174,5 @@ tectonic_engine_xetex = "c135e6a4a5a2e8c2dc4edcbcfd93f7d466ff8f88"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_geturl = "68c5fc525c5fead75913bd90380043761bde9f61"
 tectonic_io_base = "thiscommit:2021-06-13:XFjtSsZ"
-tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
 tectonic_xetex_layout = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
