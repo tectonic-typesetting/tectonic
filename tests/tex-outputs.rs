@@ -13,7 +13,6 @@ use tectonic::unstable_opts::UnstableOptions;
 use tectonic::{TexEngine, XdvipdfmxEngine};
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 use tectonic_errors::{anyhow::anyhow, Result};
-use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
@@ -118,8 +117,7 @@ impl TestCase {
             }
             let io = IoStack::new(io_list);
             let mut hooks = MinimalDriver::new(io);
-            let mut status = NoopStatusBackend::default();
-            let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
+            let mut launcher = CoreBridgeLauncher::new(&mut hooks);
 
             let tex_res = TexEngine::default()
                 .shell_escape(self.unstables.shell_escape)

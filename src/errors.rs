@@ -190,7 +190,7 @@ pub trait DefinitelySame {
 }
 
 // Rust currently thinks that this impl conflicts with the one that we
-// provide for Result ... I am pretty sure that's not the case since the
+// provide for Result... I am pretty sure that's not the case since the
 // Result PartialEq impl requires that T and E be PartialEq too, whereas
 // our definition works for subtypes that are DefinitelySame but
 // not PartialEq too.

@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bundles"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Tectonic "bundle" (support file collection) implementations.
@@ -23,8 +23,9 @@ fs2 = "^0.4"
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_geturl = { path = "../geturl", version = "0.0.0-dev.0", default-features = false }
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
+tracing = "0.1"
+
 
 [features]
 default = ["geturl-reqwest"]
@@ -36,4 +37,3 @@ native-tls-vendored = ["tectonic_geturl/native-tls-vendored"]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
 tectonic_geturl = "68c5fc525c5fead75913bd90380043761bde9f61"
 tectonic_io_base = "thiscommit:2021-06-13:s9130zU"
-tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"

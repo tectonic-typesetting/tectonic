@@ -3,8 +3,6 @@
 
 //! Extensions to Tectonic’s pluggable I/O backend.
 
-use tectonic_status_base::StatusBackend;
-
 pub mod format_cache;
 pub mod memory;
 
@@ -56,11 +54,7 @@ pub mod testing {
             OpenResult::NotAvailable
         }
 
-        fn input_open_name(
-            &mut self,
-            name: &str,
-            _status: &mut dyn StatusBackend,
-        ) -> OpenResult<InputHandle> {
+        fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
             if name == self.name {
                 OpenResult::Ok(InputHandle::new(
                     name,

@@ -19,7 +19,7 @@ use std::{convert::TryInto, io::Read, str::FromStr};
 use tectonic_errors::prelude::*;
 use tectonic_geturl::{DefaultBackend, DefaultRangeReader, GetUrlBackend, RangeReader};
 use tectonic_io_base::digest::{self, DigestData};
-use tectonic_status_base::{tt_note, tt_warning, StatusBackend};
+use tracing::{info, warn};
 
 use crate::cache::{BackendPullData, CacheBackend};
 
@@ -45,21 +45,20 @@ pub struct IndexedTarBackend {
 impl CacheBackend for IndexedTarBackend {
     type FileInfo = FileInfo;
 
-    fn open_with_pull(
-        start_url: &str,
-        status: &mut dyn StatusBackend,
-    ) -> Result<(Self, BackendPullData)> {
+    fn open_with_pull(start_url: &str) -> Result<(Self, BackendPullData)> {
         // Step 1: resolve URL
         let mut geturl_backend = DefaultBackend::default();
-        let resolved_url = geturl_backend.resolve_url(start_url, status)?;
+        let resolved_url = geturl_backend.resolve_url(start_url)?;
 
         // Step 2: fetch index
         let index = {
             let mut index = String::new();
             let index_url = format!("{}.index.gz", &resolved_url);
-            tt_note!(status, "downloading index {}", index_url);
-            GzDecoder::new(geturl_backend.get_url(&index_url, status)?)
-                .read_to_string(&mut index)?;
+            info!(
+                tectonic_log_source = "bundle",
+                "downloading index {}", index_url
+            );
+            GzDecoder::new(geturl_backend.get_url(&index_url)?).read_to_string(&mut index)?;
             index
         };
 
@@ -88,7 +87,7 @@ impl CacheBackend for IndexedTarBackend {
         };
 
         let digest_text =
-            String::from_utf8(cache_backend.get_file(digest::DIGEST_NAME, &digest_info, status)?)
+            String::from_utf8(cache_backend.get_file(digest::DIGEST_NAME, &digest_info)?)
                 .map_err(|e| e.utf8_error())?;
         let digest = DigestData::from_str(&digest_text)?;
 
@@ -106,13 +105,12 @@ impl CacheBackend for IndexedTarBackend {
     fn open_with_quick_check(
         resolved_url: &str,
         digest_file_info: &Self::FileInfo,
-        status: &mut dyn StatusBackend,
     ) -> Result<Option<(Self, DigestData)>> {
         let mut cache_backend = IndexedTarBackend {
             reader: DefaultBackend::default().open_range_reader(resolved_url),
         };
 
-        if let Ok(d) = cache_backend.get_file(digest::DIGEST_NAME, digest_file_info, status) {
+        if let Ok(d) = cache_backend.get_file(digest::DIGEST_NAME, digest_file_info) {
             if let Ok(d) = String::from_utf8(d) {
                 if let Ok(d) = DigestData::from_str(&d) {
                     return Ok(Some((cache_backend, d)));
@@ -140,13 +138,8 @@ impl CacheBackend for IndexedTarBackend {
         }
     }
 
-    fn get_file(
-        &mut self,
-        name: &str,
-        info: &Self::FileInfo,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Vec<u8>> {
-        tt_note!(status, "downloading {}", name);
+    fn get_file(&mut self, name: &str, info: &Self::FileInfo) -> Result<Vec<u8>> {
+        info!(tectonic_log_source = "bundle", "downloading {}", name);
 
         // Historically, sometimes our web service would drop connections when
         // fetching a bunch of resource files (i.e., on the first invocation).
@@ -167,14 +160,20 @@ impl CacheBackend for IndexedTarBackend {
                 let mut stream = match self.reader.read_range(info.offset, n) {
                     Ok(r) => r,
                     Err(e) => {
-                        tt_warning!(status, "failure requesting \"{}\" from network", name; e);
+                        warn!(
+                            tectonic_log_source = "bundle",
+                            "failure requesting \"{}\" from network: {e}", name
+                        );
                         any_failed = true;
                         continue;
                     }
                 };
 
                 if let Err(e) = stream.read_to_end(&mut buf) {
-                    tt_warning!(status, "failure downloading \"{}\" from network", name; e.into());
+                    warn!(
+                        tectonic_log_source = "bundle",
+                        "failure downloading \"{}\" from network: {e}", name
+                    );
                     any_failed = true;
                     continue;
                 }
@@ -191,7 +190,10 @@ impl CacheBackend for IndexedTarBackend {
                     name
                 );
             } else if any_failed {
-                tt_note!(status, "download succeeded after retry");
+                info!(
+                    tectonic_log_source = "bundle",
+                    "download succeeded after retry"
+                );
             }
         }
 

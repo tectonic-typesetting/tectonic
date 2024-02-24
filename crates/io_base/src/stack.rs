@@ -5,7 +5,6 @@
 //! a series of sub-providers in turn.
 
 use std::path::PathBuf;
-use tectonic_status_base::StatusBackend;
 
 use super::{InputHandle, IoProvider, OpenResult, OutputHandle};
 
@@ -52,13 +51,9 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
         for item in &mut self.items {
-            let r = item.input_open_name(name, status);
+            let r = item.input_open_name(name);
 
             match r {
                 OpenResult::NotAvailable => continue,
@@ -72,10 +67,9 @@ impl<'a> IoProvider for IoStack<'a> {
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         for item in &mut self.items {
-            let r = item.input_open_name_with_abspath(name, status);
+            let r = item.input_open_name_with_abspath(name);
 
             match r {
                 OpenResult::NotAvailable => continue,
@@ -86,9 +80,9 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
-    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self) -> OpenResult<InputHandle> {
         for item in &mut self.items {
-            let r = item.input_open_primary(status);
+            let r = item.input_open_primary();
 
             match r {
                 OpenResult::NotAvailable => continue,
@@ -99,12 +93,9 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
-    fn input_open_primary_with_abspath(
-        &mut self,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+    fn input_open_primary_with_abspath(&mut self) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         for item in &mut self.items {
-            let r = item.input_open_primary_with_abspath(status);
+            let r = item.input_open_primary_with_abspath();
 
             match r {
                 OpenResult::NotAvailable => continue,
@@ -115,13 +106,9 @@ impl<'a> IoProvider for IoStack<'a> {
         OpenResult::NotAvailable
     }
 
-    fn input_open_format(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
+    fn input_open_format(&mut self, name: &str) -> OpenResult<InputHandle> {
         for item in &mut self.items {
-            let r = item.input_open_format(name, status);
+            let r = item.input_open_format(name);
 
             match r {
                 OpenResult::NotAvailable => continue,

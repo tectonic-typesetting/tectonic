@@ -11,14 +11,13 @@ use std::{
 };
 use structopt::StructOpt;
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
+use tracing::{error, info};
 
 use tectonic::{
     config::PersistentConfig,
     driver::{OutputFormat, PassSetting, ProcessingSession, ProcessingSessionBuilder},
     errmsg,
     errors::{ErrorKind, Result},
-    status::StatusBackend,
-    tt_error, tt_note,
     unstable_opts::{UnstableArg, UnstableOptions},
 };
 
@@ -90,12 +89,7 @@ pub struct CompileOptions {
 }
 
 impl CompileOptions {
-    pub fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
-    ) -> Result<i32> {
+    pub fn execute(self, config: PersistentConfig, web_bundle: Option<String>) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
         // Default to allowing insecure since it would be super duper annoying
@@ -140,8 +134,8 @@ impl CompileOptions {
             // Don't provide an input path to the ProcessingSession, so it will default to stdin.
             sess_builder.tex_input_name("texput.tex");
             sess_builder.output_dir(Path::new(""));
-            tt_note!(
-                status,
+            info!(
+                tectonic_log_source = "setup",
                 "reading from standard input; outputs will appear under the base name \"texput\""
             );
         } else {
@@ -189,44 +183,50 @@ impl CompileOptions {
 
         let only_cached = self.only_cached;
         if only_cached {
-            tt_note!(status, "using only cached resource files");
+            info!(
+                tectonic_log_source = "setup",
+                "using only cached resource files"
+            );
         }
         if let Some(path) = self.bundle {
-            sess_builder.bundle(config.make_local_file_provider(path, status)?);
+            sess_builder.bundle(config.make_local_file_provider(path)?);
         } else if let Some(u) = web_bundle {
-            sess_builder.bundle(config.make_cached_url_provider(&u, only_cached, None, status)?);
+            sess_builder.bundle(config.make_cached_url_provider(&u, only_cached, None)?);
         } else {
-            sess_builder.bundle(config.default_bundle(only_cached, status)?);
+            sess_builder.bundle(config.default_bundle(only_cached)?);
         }
         sess_builder.build_date_from_env(deterministic_mode);
-        run_and_report(sess_builder, status).map(|_| 0)
+        run_and_report(sess_builder).map(|_| 0)
     }
 }
 
-pub(crate) fn run_and_report(
-    sess_builder: ProcessingSessionBuilder,
-    status: &mut dyn StatusBackend,
-) -> Result<ProcessingSession> {
-    let mut sess = sess_builder.create(status)?;
-    let result = sess.run(status);
+pub(crate) fn run_and_report(sess_builder: ProcessingSessionBuilder) -> Result<ProcessingSession> {
+    let mut sess = sess_builder.create()?;
+    let result = sess.run();
 
     if let Err(e) = &result {
         if let ErrorKind::EngineError(engine) = e.kind() {
             let output = sess.get_stdout_content();
 
             if output.is_empty() {
-                tt_error!(
-                    status,
-                    "something bad happened inside {}, but no output was logged",
-                    engine
+                error!(
+                    tectonic_log_source = "compile",
+                    "something bad happened inside {}, but no output was logged", engine
                 );
             } else {
-                tt_error!(
-                    status,
-                    "something bad happened inside {}; its output follows:\n",
-                    engine
+                error!(
+                    tectonic_log_source = "compile",
+                    "something bad happened inside {}; its output follows:\n", engine
                 );
-                status.dump_error_logs(&output);
+
+                if let Ok(s) = std::str::from_utf8(&output) {
+                    error!(tectonic_log_source = "compile", "{s}",);
+                } else {
+                    error!(
+                        tectonic_log_source = "compile",
+                        "couldn't show output, expected utf8",
+                    );
+                }
             }
         }
     }

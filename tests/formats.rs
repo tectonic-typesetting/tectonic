@@ -16,7 +16,6 @@
 /// way to implement that option.
 use std::{
     collections::{HashMap, HashSet},
-    default::Default,
     str::FromStr,
 };
 
@@ -31,7 +30,6 @@ use tectonic_io_base::{
     filesystem::{FilesystemIo, FilesystemPrimaryInputIo},
     InputHandle, IoProvider, OpenResult, OutputHandle,
 };
-use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 
 mod util;
 use crate::util::test_path;
@@ -83,33 +81,20 @@ impl<'a> IoProvider for FormatTestDriver<'a> {
         self.io.output_open_stdout()
     }
 
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        self.io.input_open_name(name, status)
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
+        self.io.input_open_name(name)
     }
 
-    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
-        self.io.input_open_primary(status)
+    fn input_open_primary(&mut self) -> OpenResult<InputHandle> {
+        self.io.input_open_primary()
     }
 
-    fn input_open_format(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        self.io.input_open_format(name, status)
+    fn input_open_format(&mut self, name: &str) -> OpenResult<InputHandle> {
+        self.io.input_open_format(name)
     }
 
-    fn write_format(
-        &mut self,
-        name: &str,
-        data: &[u8],
-        status: &mut dyn StatusBackend,
-    ) -> Result<()> {
-        self.io.write_format(name, data, status)
+    fn write_format(&mut self, name: &str, data: &[u8]) -> Result<()> {
+        self.io.write_format(name, data)
     }
 }
 
@@ -118,12 +103,7 @@ impl<'a> DriverHooks for FormatTestDriver<'a> {
         self
     }
 
-    fn event_output_closed(
-        &mut self,
-        name: String,
-        digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .events
             .get_mut(&name)
@@ -158,8 +138,7 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
             IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support])
         };
         let mut hooks = FormatTestDriver::new(io);
-        let mut status = NoopStatusBackend::default();
-        let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
+        let mut launcher = CoreBridgeLauncher::new(&mut hooks);
 
         TexEngine::default()
             .initex_mode(true)

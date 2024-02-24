@@ -6,7 +6,7 @@
 use std::{collections::HashMap, io::Read, path::PathBuf};
 use tectonic_errors::prelude::*;
 use tectonic_io_base::OpenResult;
-use tectonic_status_base::tt_warning;
+use tracing::warn;
 
 use crate::{
     fonts::FontEnsemble, html::Element, specials::Special, templating::Templating, Common,
@@ -93,7 +93,7 @@ impl InitializationState {
         for ext in &["", ".otf"] {
             texpath = format!("{name}{ext}");
 
-            match io.input_open_name(&texpath, common.status) {
+            match io.input_open_name(&texpath) {
                 OpenResult::Ok(h) => {
                     ih = Some(h);
                     break;
@@ -123,21 +123,22 @@ impl InitializationState {
     ) -> Result<()> {
         match special {
             Special::AddTemplate(t) => self.handle_add_template(t, common),
-            Special::SetTemplate(t) => self.handle_set_template(t, common),
-            Special::SetOutputPath(t) => self.handle_set_output_path(t, common),
-            Special::SetTemplateVariable(t) => self.handle_set_template_variable(t, common),
+            Special::SetTemplate(t) => self.handle_set_template(t),
+            Special::SetOutputPath(t) => self.handle_set_output_path(t),
+            Special::SetTemplateVariable(t) => self.handle_set_template_variable(t),
             Special::StartDefineFontFamily => self.handle_start_define_font_family(),
-            Special::EndDefineFontFamily => self.handle_end_define_font_family(common),
+            Special::EndDefineFontFamily => self.handle_end_define_font_family(),
             Special::StartFontFamilyTagAssociations => {
                 self.handle_start_font_family_tag_associations()
             }
 
-            Special::EndFontFamilyTagAssociations => {
-                self.handle_end_font_family_tag_associations(common)
-            }
+            Special::EndFontFamilyTagAssociations => self.handle_end_font_family_tag_associations(),
 
             Special::ProvideFile(_) => {
-                tt_warning!(common.status, "ignoring too-soon tdux:provideFile special");
+                warn!(
+                    tectonic_log_source = "spx2html",
+                    "ignoring too-soon tdux:provideFile special"
+                );
                 Ok(())
             }
 
@@ -147,7 +148,7 @@ impl InitializationState {
 
     fn handle_add_template(&mut self, texpath: &str, common: &mut Common) -> Result<()> {
         let mut ih = atry!(
-            common.hooks.io().input_open_name(texpath, common.status).must_exist();
+            common.hooks.io().input_open_name(texpath).must_exist();
             ["unable to open input HTML template `{}`", texpath]
         );
 
@@ -160,30 +161,27 @@ impl InitializationState {
         self.templates.insert(texpath.to_owned(), contents);
 
         let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name, digest_opt, common.status);
+        common.hooks.event_input_closed(name, digest_opt);
         Ok(())
     }
 
-    fn handle_set_template(&mut self, texpath: &str, _common: &mut Common) -> Result<()> {
+    fn handle_set_template(&mut self, texpath: &str) -> Result<()> {
         self.next_template_path = texpath.to_owned();
         Ok(())
     }
 
-    fn handle_set_output_path(&mut self, texpath: &str, _common: &mut Common) -> Result<()> {
+    fn handle_set_output_path(&mut self, texpath: &str) -> Result<()> {
         self.next_output_path = texpath.to_owned();
         Ok(())
     }
 
-    fn handle_set_template_variable(&mut self, remainder: &str, common: &mut Common) -> Result<()> {
+    fn handle_set_template_variable(&mut self, remainder: &str) -> Result<()> {
         if let Some((varname, varval)) = remainder.split_once(' ') {
             self.variables.insert(varname.to_owned(), varval.to_owned());
         } else {
-            tt_warning!(
-                common.status,
-                "ignoring malformatted tdux:setTemplateVariable special `{}`",
-                remainder
+            warn!(
+                tectonic_log_source = "spx2html",
+                "ignoring malformatted tdux:setTemplateVariable special `{}`", remainder
             );
         }
 
@@ -199,7 +197,7 @@ impl InitializationState {
         Ok(())
     }
 
-    fn handle_end_define_font_family(&mut self, common: &mut Common) -> Result<()> {
+    fn handle_end_define_font_family(&mut self) -> Result<()> {
         if let Some(b) = self.cur_font_family_definition.take() {
             let family_name = b.family_name;
             let regular = a_ok_or!(b.regular; ["no regular face defined"]);
@@ -210,8 +208,8 @@ impl InitializationState {
             self.fonts
                 .register_family(family_name, regular, bold, italic, bold_italic)?;
         } else {
-            tt_warning!(
-                common.status,
+            warn!(
+                tectonic_log_source = "spx2html",
                 "end of font-family definition block that didn't start"
             );
         }
@@ -228,14 +226,14 @@ impl InitializationState {
         Ok(())
     }
 
-    fn handle_end_font_family_tag_associations(&mut self, common: &mut Common) -> Result<()> {
+    fn handle_end_font_family_tag_associations(&mut self) -> Result<()> {
         if let Some(mut a) = self.cur_font_family_tag_associations.take() {
             for (k, v) in a.assoc.drain() {
                 self.tag_associations.insert(k, v);
             }
         } else {
-            tt_warning!(
-                common.status,
+            warn!(
+                tectonic_log_source = "spx2html",
                 "end of font-family tag-association block that didn't start"
             );
         }
@@ -254,7 +252,6 @@ impl InitializationState {
         _glyphs: &[u16],
         _xs: &[i32],
         _ys: &[i32],
-        common: &mut Common,
     ) -> Result<()> {
         if let Some(b) = self.cur_font_family_definition.as_mut() {
             if text.starts_with("bold-italic") {
@@ -285,10 +282,9 @@ impl InitializationState {
         } else {
             // This shouldn't happen; the top-level processor should exit init
             // phase if it's invoked and none of the above cases hold.
-            tt_warning!(
-                common.status,
-                "internal bug; losing text `{}` in initialization phase",
-                text
+            warn!(
+                tectonic_log_source = "spx2html",
+                "internal bug; losing text `{}` in initialization phase", text
             );
         }
 

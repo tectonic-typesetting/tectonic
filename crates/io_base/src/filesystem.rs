@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use tectonic_errors::Result;
-use tectonic_status_base::{tt_warning, StatusBackend};
+use tracing::warn;
 
 use super::{
     try_open_file, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle,
@@ -43,18 +43,15 @@ impl FilesystemPrimaryInputIo {
 }
 
 impl IoProvider for FilesystemPrimaryInputIo {
-    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
-        match self.input_open_primary_with_abspath(status) {
+    fn input_open_primary(&mut self) -> OpenResult<InputHandle> {
+        match self.input_open_primary_with_abspath() {
             OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
             OpenResult::Err(e) => OpenResult::Err(e),
             OpenResult::NotAvailable => OpenResult::NotAvailable,
         }
     }
 
-    fn input_open_primary_with_abspath(
-        &mut self,
-        _status: &mut dyn StatusBackend,
-    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+    fn input_open_primary_with_abspath(&mut self) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let f = match try_open_file(&self.path) {
             OpenResult::Ok(f) => f,
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
@@ -145,12 +142,8 @@ impl IoProvider for FilesystemIo {
         OpenResult::NotAvailable
     }
 
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        match self.input_open_name_with_abspath(name, status) {
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
+        match self.input_open_name_with_abspath(name) {
             OpenResult::Ok((h, _path)) => OpenResult::Ok(h),
             OpenResult::Err(e) => OpenResult::Err(e),
             OpenResult::NotAvailable => OpenResult::NotAvailable,
@@ -161,7 +154,6 @@ impl IoProvider for FilesystemIo {
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let path = match self.construct_path(name) {
             Ok(p) => p,
@@ -204,8 +196,8 @@ impl IoProvider for FilesystemIo {
         // into absolute paths (e.g. when self.root is absolute).
         let name_path = Path::new(name);
         if name_path.is_absolute() && !self.reported_paths.contains(name_path) {
-            tt_warning!(
-                status,
+            warn!(
+                tectonic_log_source = "io",
                 "accessing absolute path `{}`; build may not be reproducible in other environments",
                 name_path.display()
             );
