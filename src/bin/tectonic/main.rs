@@ -1,20 +1,16 @@
 // src/bin/tectonic/main.rs -- Command-line driver for the Tectonic engine.
 // Copyright 2016-2023 the Tectonic Project
 // Licensed under the MIT License.
-
-use std::{env, process, str::FromStr};
+use nu_ansi_term::{Color, Style};
+use std::{env, fmt::Debug, process};
 use structopt::StructOpt;
-use tectonic_status_base::plain::PlainStatusBackend;
-
-use tectonic::{
-    config::PersistentConfig,
-    errors::SyncError,
-    status::{
-        termcolor::TermcolorStatusBackend,
-        {ChatterLevel, StatusBackend},
-    },
-    unstable_opts,
+use tracing_subscriber::{
+    self,
+    fmt::{format, FormatEvent, FormatFields},
+    registry::LookupSpan,
 };
+
+use tectonic::{config::PersistentConfig, unstable_opts};
 
 mod compile;
 mod watch;
@@ -147,30 +143,7 @@ fn main() {
         }
     };
 
-    // Set up colorized output. This comes after the config because you could
-    // imagine wanting to be able to configure the colorization (which is
-    // something I'd be relatively OK with since it'd only affect the progam
-    // UI, not the processing results).
-
-    let chatter_level = ChatterLevel::from_str(&args.chatter_level).unwrap();
-    let use_cli_color = match &*args.cli_color {
-        "always" => true,
-        "auto" => atty::is(atty::Stream::Stdout),
-        "never" => false,
-        _ => unreachable!(),
-    };
-
-    let mut status = if use_cli_color {
-        Box::new(TermcolorStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
-    } else {
-        Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
-    };
-
-    // Now that we've got colorized output, pass off to the inner function ...
-    // all so that we can print out the word "error:" in red. This code
-    // parallels various bits of the `error_chain` crate.
-
-    if let Err(e) = args.compile.execute(config, &mut *status, args.web_bundle) {
+    if let Err(_) = args.compile.execute(config, args.web_bundle) {
         status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }

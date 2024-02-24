@@ -8,10 +8,7 @@
 //! ProcessingSessionBuilder will need to learn how to tell `xdvipdfmx` to
 //! enable the reproducibility options used in the `tex-outputs` test rig.
 
-use tectonic::{
-    config::PersistentConfig, driver::ProcessingSessionBuilder,
-    status::termcolor::TermcolorStatusBackend, status::ChatterLevel, test_util::TestBundle,
-};
+use tectonic::{config::PersistentConfig, driver::ProcessingSessionBuilder, test_util::TestBundle};
 
 mod util;
 
@@ -22,10 +19,6 @@ fn the_letter_a() {
     util::set_test_root();
 
     let _config = PersistentConfig::default();
-
-    // The "Normal" chatter escapes the test rig's attempts to eat stdout ...
-    let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
-
     let bundle = TestBundle::default();
 
     let tempdir = tempfile::Builder::new()
@@ -43,10 +36,8 @@ fn the_letter_a() {
         .bundle(Box::new(bundle));
 
     let mut session = pbuilder
-        .create(&mut status)
+        .create()
         .expect("couldn't create processing session");
 
-    session
-        .run(&mut status)
-        .expect("failed to execute processing session");
+    session.run().expect("failed to execute processing session");
 }

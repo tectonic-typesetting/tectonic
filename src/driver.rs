@@ -319,7 +319,7 @@ impl BridgeState {
                 }
 
                 let mut ih = ctry!(
-                    self.input_open_name(name, status).must_exist();
+                    self.input_open_name(name).must_exist();
                     "can't open path `{}`", name
                 );
 
@@ -530,12 +530,8 @@ impl IoProvider for BridgeState {
         r
     }
 
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        match self.input_open_name_with_abspath(name, status) {
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
+        match self.input_open_name_with_abspath(name) {
             OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
             OpenResult::Err(e) => OpenResult::Err(e),
             OpenResult::NotAvailable => OpenResult::NotAvailable,
@@ -545,10 +541,9 @@ impl IoProvider for BridgeState {
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
         let r = (|| {
-            bridgestate_ioprovider_cascade!(self, input_open_name_with_abspath(name, status));
+            bridgestate_ioprovider_cascade!(self, input_open_name_with_abspath(name));
         })();
 
         match r {
@@ -594,28 +589,21 @@ impl IoProvider for BridgeState {
         r
     }
 
-    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
-        match self.input_open_primary_with_abspath(status) {
+    fn input_open_primary(&mut self) -> OpenResult<InputHandle> {
+        match self.input_open_primary_with_abspath() {
             OpenResult::Ok((ih, _path)) => OpenResult::Ok(ih),
             OpenResult::Err(e) => OpenResult::Err(e),
             OpenResult::NotAvailable => OpenResult::NotAvailable,
         }
     }
 
-    fn input_open_primary_with_abspath(
-        &mut self,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
-        bridgestate_ioprovider_cascade!(self, input_open_primary_with_abspath(status));
+    fn input_open_primary_with_abspath(&mut self) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        bridgestate_ioprovider_cascade!(self, input_open_primary_with_abspath());
     }
 
-    fn input_open_format(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
+    fn input_open_format(&mut self, name: &str) -> OpenResult<InputHandle> {
         let r = (|| {
-            bridgestate_ioprovider_cascade!(self, input_open_format(name, status));
+            bridgestate_ioprovider_cascade!(self, input_open_format(name));
         })();
 
         if let OpenResult::Ok(ref ih) = r {
@@ -641,12 +629,7 @@ impl DriverHooks for BridgeState {
         self
     }
 
-    fn event_output_closed(
-        &mut self,
-        name: String,
-        digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .events
             .get_mut(&name)
@@ -654,12 +637,7 @@ impl DriverHooks for BridgeState {
         summ.write_digest = Some(digest);
     }
 
-    fn event_input_closed(
-        &mut self,
-        name: String,
-        digest: Option<DigestData>,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_input_closed(&mut self, name: String, digest: Option<DigestData>) {
         let summ = self
             .events
             .get_mut(&name)
@@ -673,11 +651,7 @@ impl DriverHooks for BridgeState {
         }
     }
 
-    fn sysrq_shell_escape(
-        &mut self,
-        command: &str,
-        status: &mut dyn StatusBackend,
-    ) -> StdResult<(), SystemRequestError> {
+    fn sysrq_shell_escape(&mut self, command: &str) -> StdResult<(), SystemRequestError> {
         #[cfg(unix)]
         const SHELL: &[&str] = &["sh", "-c"];
 
@@ -697,7 +671,7 @@ impl DriverHooks for BridgeState {
 
         if let Some(work) = self.shell_escape_work.as_ref() {
             for (name, file) in &*self.mem.files.borrow() {
-                // If it's in the `mem` backend, it's of interest here ...
+                // If it's in the `mem` backend, it's of interest here...
                 // unless it's stdout.
                 if name == self.mem.stdout_key() {
                     continue;
@@ -1108,7 +1082,7 @@ impl ProcessingSessionBuilder {
     }
 
     /// Creates a `ProcessingSession`.
-    pub fn create(self, status: &mut dyn StatusBackend) -> Result<ProcessingSession> {
+    pub fn create(self) -> Result<ProcessingSession> {
         // First, work on the "bridge state", which gathers the subset of our
         // state that has to be held in a mutable reference while running the
         // C/C++ engines:
@@ -1160,7 +1134,7 @@ impl ProcessingSessionBuilder {
         let format_cache_path = self
             .format_cache_path
             .unwrap_or_else(|| filesystem_root.clone());
-        let format_cache = FormatCache::new(bundle.get_digest(status)?, format_cache_path);
+        let format_cache = FormatCache::new(bundle.get_digest()?, format_cache_path);
 
         let genuine_stdout = if self.print_stdout {
             Some(GenuineStdoutIo::new())
@@ -1347,7 +1321,7 @@ impl ProcessingSession {
     /// Assess whether we need to rerun an engine. This is the case if there
     /// was a file that the engine read and then rewrote, and the rewritten
     /// version is different than the version that it read in.
-    fn is_rerun_needed(&self, status: &mut dyn StatusBackend) -> Option<RerunReason> {
+    fn is_rerun_needed(&self) -> Option<RerunReason> {
         // TODO: we should probably wire up diagnostics since I expect this
         // stuff could get finicky and we're going to want to be able to
         // figure out why rerun detection is breaking.
@@ -1378,7 +1352,7 @@ impl ProcessingSession {
     }
 
     #[allow(dead_code)]
-    fn _dump_access_info(&self, status: &mut dyn StatusBackend) {
+    fn _dump_access_info(&self) {
         for (name, info) in &self.bs.events {
             if info.access_pattern != AccessPattern::Read {
                 let r = match info.read_digest {
@@ -1411,7 +1385,7 @@ impl ProcessingSession {
     /// - run BibTeX, if it seems to be required
     /// - repeat the last two steps as often as needed
     /// - write the output files to disk, including a Makefile if it was requested.
-    pub fn run(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
+    pub fn run(&mut self) -> Result<()> {
         // Pre-invocation setup that requires cleanup even if the processing errors out.
 
         let (shell_escape_work, clean_up_shell_escape) = match self.shell_escape_mode {
@@ -1441,7 +1415,7 @@ impl ProcessingSession {
         self.bs.shell_escape_work = shell_escape_work;
 
         // Go-time!
-        let result = self.run_inner(status);
+        let result = self.run_inner();
 
         // Do that cleanup.
 
@@ -1462,13 +1436,13 @@ impl ProcessingSession {
     /// The bulk of the `run` implementation. We need to wrap it to manage the
     /// lifecycle of resources like the shell-escape temporary directory, if
     /// needed.
-    fn run_inner(&mut self, status: &mut dyn StatusBackend) -> Result<()> {
+    fn run_inner(&mut self) -> Result<()> {
         // Do we need to generate the format file?
 
         let generate_format = if self.output_format == OutputFormat::Format {
             false
         } else {
-            match self.bs.input_open_format(&self.format_name, status) {
+            match self.bs.input_open_format(&self.format_name) {
                 OpenResult::Ok(_) => false,
                 OpenResult::NotAvailable => true,
                 OpenResult::Err(e) => {
@@ -1486,7 +1460,7 @@ impl ProcessingSession {
         // Do the meat of the work.
 
         let result = match self.pass {
-            PassSetting::Tex => match self.tex_pass(None, status) {
+            PassSetting::Tex => match self.tex_pass(None) {
                 Ok(Some(warnings)) => {
                     tt_warning!(status, "{}", warnings);
                     Ok(0)
@@ -1499,7 +1473,7 @@ impl ProcessingSession {
         };
 
         if let Err(e) = result {
-            self.write_files(None, status, true)?;
+            self.write_files(None, true)?;
             return Err(e);
         };
 
@@ -1521,7 +1495,7 @@ impl ProcessingSession {
             None => None,
         };
 
-        let n_skipped_intermediates = self.write_files(mf_dest_maybe.as_mut(), status, false)?;
+        let n_skipped_intermediates = self.write_files(mf_dest_maybe.as_mut(), false)?;
 
         if n_skipped_intermediates > 0 {
             status.note_highlighted(
@@ -1577,7 +1551,6 @@ impl ProcessingSession {
     fn write_files(
         &mut self,
         mut mf_dest_maybe: Option<&mut File>,
-        status: &mut dyn StatusBackend,
         only_logs: bool,
     ) -> Result<u32> {
         let root = match self.output_path {
@@ -1666,7 +1639,7 @@ impl ProcessingSession {
 
     /// The "default" pass really runs a bunch of sub-passes. It is a "Do What
     /// I Mean" operation.
-    fn default_pass(&mut self, bibtex_first: bool, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn default_pass(&mut self, bibtex_first: bool) -> Result<i32> {
         // If `bibtex_first` is true, we start by running bibtex, and run
         // proceed with the standard rerun logic. Otherwise, we run TeX,
         // auto-detect whether we need to run bibtex, possibly run it, and
@@ -1674,20 +1647,20 @@ impl ProcessingSession {
 
         let mut warnings = None;
         let mut rerun_result = if bibtex_first {
-            self.bibtex_pass(status)?;
+            self.bibtex_pass()?;
             Some(RerunReason::Bibtex)
         } else {
-            warnings = self.tex_pass(None, status)?;
+            warnings = self.tex_pass(None)?;
             let maybe_biber = self.check_biber_requirement()?;
 
             if let Some(biber) = maybe_biber {
-                self.bs.external_tool_pass(&biber, status)?;
+                self.bs.external_tool_pass(&biber)?;
                 Some(RerunReason::Biber)
             } else if self.is_bibtex_needed() {
-                self.bibtex_pass(status)?;
+                self.bibtex_pass()?;
                 Some(RerunReason::Bibtex)
             } else {
-                self.is_rerun_needed(status)
+                self.is_rerun_needed()
             }
         };
 
@@ -1720,10 +1693,10 @@ impl ProcessingSession {
                 summ.read_digest = None;
             }
 
-            warnings = self.tex_pass(Some(&rerun_explanation), status)?;
+            warnings = self.tex_pass(Some(&rerun_explanation))?;
 
             if !reruns_fixed {
-                rerun_result = self.is_rerun_needed(status);
+                rerun_result = self.is_rerun_needed();
 
                 if rerun_result.is_some() && i == DEFAULT_MAX_TEX_PASSES - 1 {
                     tt_warning!(
@@ -1744,9 +1717,9 @@ impl ProcessingSession {
         // And finally, xdvipdfmx or spx2html. Maybe.
 
         if let OutputFormat::Pdf = self.output_format {
-            self.xdvipdfmx_pass(status)?;
+            self.xdvipdfmx_pass()?;
         } else if let OutputFormat::Html = self.output_format {
-            self.spx2html_pass(status)?;
+            self.spx2html_pass()?;
         }
 
         Ok(0)
@@ -1770,7 +1743,7 @@ impl ProcessingSession {
 
     /// Use the TeX engine to generate a format file.
     #[allow(clippy::manual_split_once)] // requires Rust 1.52 (note that we don't actually define our MSRV)
-    fn make_format_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn make_format_pass(&mut self) -> Result<i32> {
         // PathBuf.file_stem() doesn't do what we want since it only strips
         // one extension. As of 1.17, the compiler needs a type annotation for
         // some reason, which is why we use the `r` variable.
@@ -1787,7 +1760,7 @@ impl ProcessingSession {
             self.bs
                 .enter_format_mode(&format!("tectonic-format-{stem}.tex"));
             let mut launcher =
-                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
+                CoreBridgeLauncher::new_with_security(&mut self.bs, self.security.clone());
             let r = TexEngine::default()
                 .halt_on_error_mode(true)
                 .initex_mode(true)
@@ -1827,7 +1800,7 @@ impl ProcessingSession {
             }
 
             // Note that we intentionally pass 'stem', not 'name'.
-            ctry!(self.bs.format_cache.write_format(stem, &file.data, status); "cannot write format file {}", sname);
+            ctry!(self.bs.format_cache.write_format(stem, &file.data); "cannot write format file {}", sname);
         }
 
         // All done. Clear the memory layer since this was a special preparatory step.
@@ -1837,11 +1810,7 @@ impl ProcessingSession {
     }
 
     /// Run one pass of the TeX engine.
-    fn tex_pass(
-        &mut self,
-        rerun_explanation: Option<&str>,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Option<&'static str>> {
+    fn tex_pass(&mut self, rerun_explanation: Option<&str>) -> Result<Option<&'static str>> {
         let result = {
             if let Some(s) = rerun_explanation {
                 status.note_highlighted("Rerunning ", "TeX", &format!(" because {s} ..."));
@@ -1850,7 +1819,7 @@ impl ProcessingSession {
             }
 
             let mut launcher =
-                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
+                CoreBridgeLauncher::new_with_security(&mut self.bs, self.security.clone());
 
             // In deterministic mode, we stub a few aspects of the environment.
             // They default to a "realistic" view, but we override them with static values:
@@ -1902,11 +1871,7 @@ impl ProcessingSession {
     }
 
     // Run Bibtex process for one .aux file.
-    fn bibtex_pass_for_one_aux_file(
-        &mut self,
-        status: &mut dyn StatusBackend,
-        aux_file: &String,
-    ) -> Result<i32> {
+    fn bibtex_pass_for_one_aux_file(&mut self, aux_file: &String) -> Result<i32> {
         let result = {
             status.note_highlighted("Running ", "BibTeX", &format!(" on {aux_file} ..."));
             let mut launcher =
@@ -1938,7 +1903,7 @@ impl ProcessingSession {
         Ok(0)
     }
 
-    fn bibtex_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn bibtex_pass(&mut self) -> Result<i32> {
         let mut aux_files = vec![self.tex_aux_path.clone()];
 
         // find other .aux files generated by tex_pass
@@ -1949,18 +1914,18 @@ impl ProcessingSession {
         }
 
         for f in aux_files {
-            let _r = self.bibtex_pass_for_one_aux_file(status, &f)?;
+            let _r = self.bibtex_pass_for_one_aux_file(&f)?;
         }
 
         Ok(0)
     }
 
-    fn xdvipdfmx_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn xdvipdfmx_pass(&mut self) -> Result<i32> {
         {
             status.note_highlighted("Running ", "xdvipdfmx", " ...");
 
             let mut launcher =
-                CoreBridgeLauncher::new_with_security(&mut self.bs, status, self.security.clone());
+                CoreBridgeLauncher::new_with_security(&mut self.bs, self.security.clone());
             let mut engine = XdvipdfmxEngine::default();
 
             engine.build_date(self.build_date);
@@ -1976,7 +1941,7 @@ impl ProcessingSession {
         Ok(0)
     }
 
-    fn spx2html_pass(&mut self, status: &mut dyn StatusBackend) -> Result<i32> {
+    fn spx2html_pass(&mut self) -> Result<i32> {
         {
             let mut engine = Spx2HtmlEngine::default();
 
@@ -1997,7 +1962,7 @@ impl ProcessingSession {
             }
 
             status.note_highlighted("Running ", "spx2html", " ...");
-            engine.process_to_filesystem(&mut self.bs, status, &self.tex_xdv_path)?;
+            engine.process_to_filesystem(&mut self.bs, &self.tex_xdv_path)?;
         }
 
         self.bs.mem.files.borrow_mut().remove(&self.tex_xdv_path);

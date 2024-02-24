@@ -17,8 +17,6 @@ use std::{env, fs, thread};
 use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::io::OpenResult;
-use tectonic::status::termcolor::TermcolorStatusBackend;
-use tectonic::status::ChatterLevel;
 use tokio::runtime;
 
 mod util;
@@ -272,11 +270,10 @@ fn test_full_session() {
         let config = PersistentConfig::default();
 
         let run = |path| {
-            let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
             let mut sess_builder = ProcessingSessionBuilder::default();
             sess_builder.bundle(Box::new(
                 config
-                    .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+                    .make_cached_url_provider(url, false, Some(tempdir.path()))
                     .unwrap(),
             ));
             let input_path = Path::new(path);
@@ -286,8 +283,8 @@ fn test_full_session() {
             sess_builder.format_name("plain");
             sess_builder.format_cache_path(tempdir.path());
 
-            let mut sess = sess_builder.create(&mut status).unwrap();
-            sess.run(&mut status).unwrap();
+            let mut sess = sess_builder.create().unwrap();
+            sess.run().unwrap();
         };
 
         // Run tectonic twice
@@ -324,58 +321,56 @@ fn test_cached_url_provider() {
 
     let requests = run_test(Some(tar_index), |_, url| {
         let tempdir = tempfile::tempdir().unwrap();
-        let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
-
         let config = PersistentConfig::default();
 
         {
             let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+                .make_cached_url_provider(url, false, Some(tempdir.path()))
                 .unwrap();
 
-            match cache.input_open_name("plain.tex", &mut status) {
+            match cache.input_open_name("plain.tex") {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open plain.tex"),
             }
-            match cache.input_open_name("plain.tex", &mut status) {
-                OpenResult::Ok(_) => {}
-                _ => panic!("Failed to open plain.tex"),
-            }
-        }
-        {
-            let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
-                .unwrap();
-
-            // should be cached
-            match cache.input_open_name("plain.tex", &mut status) {
+            match cache.input_open_name("plain.tex") {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open plain.tex"),
             }
         }
         {
             let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+                .make_cached_url_provider(url, false, Some(tempdir.path()))
                 .unwrap();
 
             // should be cached
-            match cache.input_open_name("plain.tex", &mut status) {
+            match cache.input_open_name("plain.tex") {
+                OpenResult::Ok(_) => {}
+                _ => panic!("Failed to open plain.tex"),
+            }
+        }
+        {
+            let mut cache = config
+                .make_cached_url_provider(url, false, Some(tempdir.path()))
+                .unwrap();
+
+            // should be cached
+            match cache.input_open_name("plain.tex") {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open plain.tex"),
             }
             // in index, should check digest and download the file
-            match cache.input_open_name("other.tex", &mut status) {
+            match cache.input_open_name("other.tex") {
                 OpenResult::Ok(_) => {}
                 _ => panic!("Failed to open other.tex"),
             }
         }
         {
             let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+                .make_cached_url_provider(url, false, Some(tempdir.path()))
                 .unwrap();
 
             // not in index
-            match cache.input_open_name("my-favourite-file.tex", &mut status) {
+            match cache.input_open_name("my-favourite-file.tex") {
                 OpenResult::NotAvailable => {}
                 _ => panic!("'my-favourite-file.tex' file exists?"),
             }
@@ -409,18 +404,16 @@ fn test_bundle_update() {
     };
 
     run_test(Some(tar_index), |service, url| {
-        let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
-
         let config = PersistentConfig::default();
 
         {
             // Run with first tar index.
             {
                 let mut cache = config
-                    .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+                    .make_cached_url_provider(url, false, Some(tempdir.path()))
                     .unwrap();
 
-                match cache.input_open_name("only-first.tex", &mut status) {
+                match cache.input_open_name("only-first.tex") {
                     OpenResult::Ok(_) => {}
                     _ => panic!("Failed to open only-first.tex"),
                 }
@@ -442,29 +435,27 @@ fn test_bundle_update() {
 
             // Run with the new tar index.
             {
-                let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
-
                 let config = PersistentConfig::default();
 
                 {
                     let mut cache = config
-                        .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+                        .make_cached_url_provider(url, false, Some(tempdir.path()))
                         .unwrap();
 
                     // This should be cached even thought the bundle does not contain it.
-                    match cache.input_open_name("only-first.tex", &mut status) {
+                    match cache.input_open_name("only-first.tex") {
                         OpenResult::Ok(_) => {}
                         _ => panic!("Failed to open only-first.tex"),
                     }
 
                     // Not in index of the first bundle and therefore no digest check.
-                    match cache.input_open_name("only-second.tex", &mut status) {
+                    match cache.input_open_name("only-second.tex") {
                         OpenResult::NotAvailable => {}
                         _ => panic!("File should not be in the first bundle"),
                     }
                     // File in the first bundle and the second bundle, but not cached yet. Should
                     // trigger a digest check.
-                    match cache.input_open_name("file-in-both.tex", &mut status) {
+                    match cache.input_open_name("file-in-both.tex") {
                         OpenResult::Err(_) => {}
                         _ => panic!("Bundle digest changed but no error"),
                     }
@@ -494,14 +485,11 @@ fn test_cache_location_redirect() {
     };
 
     run_test(Some(tar_index), |_, url| {
-        let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
         let config = PersistentConfig::default();
 
-        let mut cache = config
-            .make_cached_url_provider(url, false, None, &mut status)
-            .unwrap();
+        let mut cache = config.make_cached_url_provider(url, false, None).unwrap();
 
-        match cache.input_open_name("plain.tex", &mut status) {
+        match cache.input_open_name("plain.tex") {
             OpenResult::Ok(_) => {}
             _ => panic!("Failed to open plain.tex"),
         }

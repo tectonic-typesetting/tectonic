@@ -79,11 +79,7 @@ pub trait DocumentExt {
     ///
     /// This parses [`Document::bundle_loc`] and turns it into the appropriate
     /// bundle backend.
-    fn bundle(
-        &self,
-        setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>>;
+    fn bundle(&self, setup_options: &DocumentSetupOptions) -> Result<Box<dyn Bundle>>;
 
     /// Set up a [`ProcessingSessionBuilder`] for one of the outputs.
     ///
@@ -93,16 +89,11 @@ pub trait DocumentExt {
         &self,
         output_profile: &str,
         setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
     ) -> Result<ProcessingSessionBuilder>;
 }
 
 impl DocumentExt for Document {
-    fn bundle(
-        &self,
-        setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
+    fn bundle(&self, setup_options: &DocumentSetupOptions) -> Result<Box<dyn Bundle>> {
         fn bundle_from_path(p: PathBuf) -> Result<Box<dyn Bundle>> {
             if p.is_dir() {
                 Ok(Box::new(DirBundle::new(p)))
@@ -116,11 +107,8 @@ impl DocumentExt for Document {
         } else if let Ok(url) = Url::parse(&self.bundle_loc) {
             if url.scheme() != "file" {
                 let mut cache = Cache::get_user_default()?;
-                let bundle = cache.open::<IndexedTarBackend>(
-                    &self.bundle_loc,
-                    setup_options.only_cached,
-                    status,
-                )?;
+                let bundle =
+                    cache.open::<IndexedTarBackend>(&self.bundle_loc, setup_options.only_cached)?;
                 Ok(Box::new(bundle))
             } else {
                 let file_path = url.to_file_path().map_err(|_| {
@@ -137,7 +125,6 @@ impl DocumentExt for Document {
         &self,
         output_profile: &str,
         setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
     ) -> Result<ProcessingSessionBuilder> {
         let profile = self.outputs.get(output_profile).ok_or_else(|| {
             ErrorKind::Msg(format!(
@@ -190,7 +177,7 @@ impl DocumentExt for Document {
         if setup_options.only_cached {
             tt_note!(status, "using only cached resource files");
         }
-        sess_builder.bundle(self.bundle(setup_options, status)?);
+        sess_builder.bundle(self.bundle(setup_options)?);
 
         let mut tex_dir = self.src_dir().to_owned();
         tex_dir.push("src");
@@ -218,7 +205,6 @@ pub trait WorkspaceCreatorExt {
     fn create_defaulted(
         self,
         config: config::PersistentConfig,
-        status: &mut dyn StatusBackend,
         web_bundle: Option<String>,
     ) -> Result<Workspace>;
 }
@@ -227,7 +213,6 @@ impl WorkspaceCreatorExt for WorkspaceCreator {
     fn create_defaulted(
         self,
         config: config::PersistentConfig,
-        status: &mut dyn StatusBackend,
         web_bundle: Option<String>,
     ) -> Result<Workspace> {
         let bundle_loc = if config::is_test_bundle_wanted(web_bundle.clone()) {
@@ -235,7 +220,7 @@ impl WorkspaceCreatorExt for WorkspaceCreator {
         } else {
             let unresolved_loc = web_bundle.unwrap_or(config.default_bundle_loc().to_owned());
             let mut gub = DefaultBackend::default();
-            gub.resolve_url(&unresolved_loc, status)?
+            gub.resolve_url(&unresolved_loc)?
         };
 
         Ok(self.create(bundle_loc)?)

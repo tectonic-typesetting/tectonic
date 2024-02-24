@@ -9,7 +9,6 @@ use std::{
 };
 use tectonic_errors::prelude::*;
 use tectonic_io_base::{filesystem::FilesystemIo, InputHandle, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
 
 use super::Bundle;
 
@@ -38,25 +37,20 @@ impl DirBundle {
 }
 
 impl IoProvider for DirBundle {
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        self.0.input_open_name(name, status)
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
+        self.0.input_open_name(name)
     }
 
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
-        self.0.input_open_name_with_abspath(name, status)
+        self.0.input_open_name_with_abspath(name)
     }
 }
 
 impl Bundle for DirBundle {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self) -> Result<Vec<String>> {
         let mut files = Vec::new();
 
         // We intentionally do not explore the directory recursively.

@@ -85,7 +85,6 @@ pub mod driver;
 pub mod engines;
 pub mod errors;
 pub mod io;
-pub mod status;
 pub mod unstable_opts;
 
 // Note: this module is intentionally *not* gated by #[cfg(test)] -- see its
@@ -101,7 +100,6 @@ pub use crate::errors::{Error, ErrorKind, Result};
 
 // Convenienece re-exports for migration into our multi-crate setup
 pub use tectonic_engine_xetex::FORMAT_SERIAL;
-pub use tectonic_status_base::{tt_error, tt_note, tt_warning};
 
 /// Compile LaTeX text to a PDF.
 ///
@@ -142,14 +140,12 @@ pub use tectonic_status_base::{tt_error, tt_note, tt_warning};
 /// serial. The aim is to lift this limitation one day, but it will require
 /// extensive work on the underlying C/C++ code.
 pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
-    let mut status = status::NoopStatusBackend::default();
-
     let auto_create_config_file = false;
     let config = ctry!(config::PersistentConfig::open(auto_create_config_file);
                        "failed to open the default configuration file");
 
     let only_cached = false;
-    let bundle = ctry!(config.default_bundle(only_cached, &mut status);
+    let bundle = ctry!(config.default_bundle(only_cached);
                        "failed to load the default resource bundle");
 
     let format_cache_path = ctry!(config.format_cache_path();
@@ -169,9 +165,8 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
             .output_format(driver::OutputFormat::Pdf)
             .do_not_write_output_files();
 
-        let mut sess =
-            ctry!(sb.create(&mut status); "failed to initialize the LaTeX processing session");
-        ctry!(sess.run(&mut status); "the LaTeX engine failed");
+        let mut sess = ctry!(sb.create(); "failed to initialize the LaTeX processing session");
+        ctry!(sess.run(); "the LaTeX engine failed");
         sess.into_file_data()
     };
 

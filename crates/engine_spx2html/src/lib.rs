@@ -11,7 +11,6 @@
 use std::path::{Path, PathBuf};
 use tectonic_bridge_core::DriverHooks;
 use tectonic_errors::prelude::*;
-use tectonic_status_base::StatusBackend;
 use tectonic_xdv::{FileType, XdvEvents, XdvParser};
 
 mod assets;
@@ -130,13 +129,8 @@ impl Spx2HtmlEngine {
     /// Before calling this function, you must explicitly specify the output
     /// mode by calling either [`Self::do_not_emit_files`] or
     /// [`Self::output_base`]. If you do not, this function will panic.
-    pub fn process_to_filesystem(
-        &mut self,
-        hooks: &mut dyn DriverHooks,
-        status: &mut dyn StatusBackend,
-        spx: &str,
-    ) -> Result<()> {
-        let mut input = hooks.io().input_open_name(spx, status).must_exist()?;
+    pub fn process_to_filesystem(&mut self, hooks: &mut dyn DriverHooks, spx: &str) -> Result<()> {
+        let mut input = hooks.io().input_open_name(spx).must_exist()?;
 
         let out_base = match self.output {
             OutputState::NoOutput => None,
@@ -145,7 +139,7 @@ impl Spx2HtmlEngine {
         };
 
         {
-            let state = EngineState::new(hooks, status, out_base, self.precomputed_assets.as_ref());
+            let state = EngineState::new(hooks, out_base, self.precomputed_assets.as_ref());
             let state = XdvParser::process_with_seeks(&mut input, state)?;
             let (fonts, assets, mut common) = state.finished()?;
 
@@ -154,14 +148,14 @@ impl Spx2HtmlEngine {
                 let mut output = hooks.io().output_open_name(asp).must_exist()?;
                 serde_json::to_writer_pretty(&mut output, &ser)?;
                 let (name, digest) = output.into_name_digest();
-                hooks.event_output_closed(name, digest, status);
+                hooks.event_output_closed(name, digest);
             } else if !self.do_not_emit_assets {
                 assets.emit(fonts, &mut common)?;
             }
         }
 
         let (name, digest_opt) = input.into_name_digest();
-        hooks.event_input_closed(name, digest_opt, status);
+        hooks.event_input_closed(name, digest_opt);
         Ok(())
     }
 }
@@ -175,7 +169,6 @@ struct EngineState<'a> {
 
 struct Common<'a> {
     hooks: &'a mut dyn DriverHooks,
-    status: &'a mut dyn StatusBackend,
     out_base: Option<&'a Path>,
     precomputed_assets: Option<&'a AssetSpecification>,
 }
@@ -183,14 +176,12 @@ struct Common<'a> {
 impl<'a> EngineState<'a> {
     pub fn new(
         hooks: &'a mut dyn DriverHooks,
-        status: &'a mut dyn StatusBackend,
         out_base: Option<&'a Path>,
         precomputed_assets: Option<&'a AssetSpecification>,
     ) -> Self {
         Self {
             common: Common {
                 hooks,
-                status,
                 out_base,
                 precomputed_assets,
             },
@@ -255,7 +246,7 @@ impl<'a> XdvEvents for EngineState<'a> {
     fn handle_special(&mut self, x: i32, y: i32, contents: &[u8]) -> Result<()> {
         let contents = atry!(std::str::from_utf8(contents); ["could not parse \\special as UTF-8"]);
 
-        let special = match Special::parse(contents, self.common.status) {
+        let special = match Special::parse(contents) {
             Some(s) => s,
             None => return Ok(()),
         };
@@ -297,13 +288,11 @@ impl<'a> XdvEvents for EngineState<'a> {
 
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
-            State::Initializing(s) => {
-                s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)?
-            }
+            State::Initializing(s) => s.handle_text_and_glyphs(font_num, text, glyphs, x, y)?,
             State::Emitting(s) => {
                 s.handle_text_and_glyphs(font_num, text, glyphs, x, y, &mut self.common)?
             }
-            State::Finalizing(s) => s.handle_text_and_glyphs(text, &mut self.common)?,
+            State::Finalizing(s) => s.handle_text_and_glyphs(text)?,
         }
 
         Ok(())
@@ -350,7 +339,7 @@ impl<'a> XdvEvents for EngineState<'a> {
             State::Invalid => panic!("invalid spx2html state leaked"),
             State::Initializing(_) => unreachable!(),
             State::Emitting(s) => s.handle_glyph_run(font_num, glyphs, x, y, &mut self.common),
-            State::Finalizing(s) => s.handle_glyph_run(&mut self.common),
+            State::Finalizing(s) => s.handle_glyph_run(),
         }
     }
 
@@ -360,8 +349,8 @@ impl<'a> XdvEvents for EngineState<'a> {
         match &mut self.state {
             State::Invalid => panic!("invalid spx2html state leaked"),
             State::Initializing(_) => unreachable!(),
-            State::Emitting(s) => s.handle_rule(x, y, height, width, &mut self.common),
-            State::Finalizing(s) => s.handle_rule(&mut self.common),
+            State::Emitting(s) => s.handle_rule(x, y, height, width),
+            State::Finalizing(s) => s.handle_rule(),
         }
     }
 }

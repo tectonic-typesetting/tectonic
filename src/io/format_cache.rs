@@ -12,7 +12,7 @@ use std::{
 use tectonic_errors::{anyhow::bail, Result};
 
 use super::{InputHandle, InputOrigin, IoProvider, OpenResult};
-use crate::{digest::DigestData, status::StatusBackend};
+use crate::digest::DigestData;
 
 /// A local cache for compiled format files.
 ///
@@ -64,11 +64,7 @@ impl FormatCache {
 }
 
 impl IoProvider for FormatCache {
-    fn input_open_format(
-        &mut self,
-        name: &str,
-        _status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
+    fn input_open_format(&mut self, name: &str) -> OpenResult<InputHandle> {
         let path = match self.path_for_format(name) {
             Ok(p) => p,
             Err(e) => return OpenResult::Err(e),
@@ -87,12 +83,7 @@ impl IoProvider for FormatCache {
         ))
     }
 
-    fn write_format(
-        &mut self,
-        name: &str,
-        data: &[u8],
-        _status: &mut dyn StatusBackend,
-    ) -> Result<()> {
+    fn write_format(&mut self, name: &str, data: &[u8]) -> Result<()> {
         let final_path = self.path_for_format(name)?;
         let mut temp_dest = tempfile::Builder::new()
             .prefix("format_")

@@ -126,9 +126,7 @@ impl FontEnsemble {
             );
 
             let (name, digest_opt) = ih.into_name_digest();
-            common
-                .hooks
-                .event_input_closed(name, digest_opt, common.status);
+            common.hooks.event_input_closed(name, digest_opt);
 
             let ffd = atry!(
                 FontFileData::from_opentype(contents, face_index);
@@ -170,7 +168,7 @@ impl FontEnsemble {
         let io = common.hooks.io();
 
         let ih = atry!(
-            io.input_open_name(&texpath, common.status).must_exist();
+            io.input_open_name(&texpath).must_exist();
             ["failed to find a font file `{}`", texpath]
         );
 
@@ -269,7 +267,6 @@ impl FontEnsemble {
         &mut self,
         fnum: TexFontNum,
         glyph: GlyphId,
-        status: &mut dyn StatusBackend,
     ) -> (Option<(char, String)>, FixedPoint, f32) {
         // Can't borrow `self` in the map() closure.
         let font_files = &mut self.font_files;
@@ -277,7 +274,7 @@ impl FontEnsemble {
         self.tex_fonts
             .get(&fnum)
             .map(|tfi| {
-                let text_info = get_text_info(&mut font_files[tfi.fid], glyph, status);
+                let text_info = get_text_info(&mut font_files[tfi.fid], glyph);
                 let size = tfi.size;
                 let baseline_factor = font_files[tfi.fid].details.baseline_factor();
 
@@ -304,7 +301,6 @@ impl FontEnsemble {
         &'a mut self,
         font_num: TexFontNum,
         glyphs: &'a [GlyphId],
-        status: &'a mut dyn StatusBackend,
     ) -> Result<impl Iterator<Item = (usize, Option<(char, String)>, FixedPoint)> + 'a> {
         // Can't use lookup_tex() here since the borrow checker treats it as
         // borrowing all of `self`, not just the `tex_fonts` member.
@@ -318,7 +314,6 @@ impl FontEnsemble {
             fi,
             font,
             glyphs,
-            status,
             next: 0,
         })
     }
@@ -572,7 +567,6 @@ struct GlyphTextProcessingIterator<'a> {
     fi: &'a TexFontInfo,
     font: &'a mut Font,
     glyphs: &'a [GlyphId],
-    status: &'a mut dyn StatusBackend,
     next: usize,
 }
 
@@ -597,7 +591,7 @@ impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
 
         // Get the textualization info:
 
-        let text_info = get_text_info(self.font, glyph, self.status);
+        let text_info = get_text_info(self.font, glyph);
 
         // And that's it!
 
@@ -608,11 +602,7 @@ impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
 }
 
 /// Get information about how to render a desired glyph from a font.
-fn get_text_info(
-    font: &mut Font,
-    glyph: GlyphId,
-    status: &mut dyn StatusBackend,
-) -> Option<(char, String)> {
+fn get_text_info(font: &mut Font, glyph: GlyphId) -> Option<(char, String)> {
     let text_info = font.details.lookup_mapping(glyph).map(|mc| {
         let (mut ch, need_alt) = match mc {
             MapEntry::Direct(c) => (c, false),

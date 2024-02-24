@@ -381,7 +381,7 @@ impl<T: XdvEvents> XdvParser<T> {
     {
         const BUF_SIZE: usize = 4096;
         // Note that it is unsound to pass uninitialized data to a read() call,
-        // even though it *should* never cause problems ...
+        // even though it *should* never cause problems...
         let mut buf = vec![0; BUF_SIZE];
         let mut n_saved_bytes = 0;
 

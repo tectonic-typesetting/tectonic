@@ -21,10 +21,7 @@ use tectonic_bundles::{
 use tectonic_io_base::app_dirs;
 use url::Url;
 
-use crate::{
-    errors::{ErrorKind, Result},
-    status::StatusBackend,
-};
+use crate::errors::{ErrorKind, Result};
 
 /// Awesome hack time!!!
 ///
@@ -139,7 +136,6 @@ impl PersistentConfig {
         url: &str,
         only_cached: bool,
         custom_cache_root: Option<&Path>,
-        status: &mut dyn StatusBackend,
     ) -> Result<Box<dyn Bundle>> {
         if let Ok(test_bundle) = maybe_return_test_bundle(Some(url.to_owned())) {
             return Ok(test_bundle);
@@ -151,15 +147,11 @@ impl PersistentConfig {
             Cache::get_user_default()?
         };
 
-        let bundle = cache.open::<IndexedTarBackend>(url, only_cached, status)?;
+        let bundle = cache.open::<IndexedTarBackend>(url, only_cached)?;
         Ok(Box::new(bundle) as _)
     }
 
-    pub fn make_local_file_provider(
-        &self,
-        file_path: PathBuf,
-        _status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
+    pub fn make_local_file_provider(&self, file_path: PathBuf) -> Result<Box<dyn Bundle>> {
         let bundle: Box<dyn Bundle> = if file_path.is_dir() {
             Box::new(DirBundle::new(file_path))
         } else {
@@ -172,11 +164,7 @@ impl PersistentConfig {
         &self.default_bundles[0].url
     }
 
-    pub fn default_bundle(
-        &self,
-        only_cached: bool,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
+    pub fn default_bundle(&self, only_cached: bool) -> Result<Box<dyn Bundle>> {
         use std::io;
 
         if let Ok(test_bundle) = maybe_return_test_bundle(None) {
@@ -197,10 +185,10 @@ impl PersistentConfig {
             let file_path = url.to_file_path().map_err(|_| {
                 io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path")
             })?;
-            return self.make_local_file_provider(file_path, status);
+            return self.make_local_file_provider(file_path);
         }
         let bundle =
-            self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, None, status)?;
+            self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, None)?;
         Ok(Box::new(bundle) as _)
     }
 

@@ -243,7 +243,7 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
     temppath.push("doc");
 
     // To run a build in our test setup, we can only use plain TeX. So, jankily
-    // change the format ...
+    // change the format...
 
     {
         let mut toml_path = temppath.clone();
@@ -252,7 +252,7 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
         writeln!(file, "tex_format = 'plain'").unwrap();
     }
 
-    // ... and write some files that are plain TeX.
+    // ...and write some files that are plain TeX.
 
     {
         let mut path = temppath.clone();
@@ -796,7 +796,7 @@ fn v2_build_multiple_outputs() {
     temppath.push("doc");
 
     // To run a build in our test setup, we can only use plain TeX. So, jankily
-    // change the format ...
+    // change the format...
 
     {
         let mut toml_path = temppath.clone();
@@ -818,7 +818,7 @@ fn v2_build_multiple_outputs() {
         .unwrap();
     }
 
-    // ... and write some files that are plain TeX.
+    // ...and write some files that are plain TeX.
 
     {
         let mut path = temppath.clone();

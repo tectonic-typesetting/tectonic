@@ -20,7 +20,6 @@
 use std::{io::Read, str::FromStr};
 use tectonic_errors::{anyhow::bail, atry, Result};
 use tectonic_io_base::{digest, digest::DigestData, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
 
 pub mod cache;
 pub mod dir;
@@ -50,8 +49,8 @@ pub trait Bundle: IoProvider {
     /// The default implementation gets the digest from a file named
     /// `SHA256SUM`, which is expected to contain the digest in hex-encoded
     /// format.
-    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData> {
-        let digest_text = match self.input_open_name(digest::DIGEST_NAME, status) {
+    fn get_digest(&mut self) -> Result<DigestData> {
+        let digest_text = match self.input_open_name(digest::DIGEST_NAME) {
             OpenResult::Ok(h) => {
                 let mut text = String::new();
                 h.take(64).read_to_string(&mut text)?;
@@ -82,16 +81,16 @@ pub trait Bundle: IoProvider {
     /// owned strings. For a large bundle, the memory consumed by this operation
     /// might be fairly substantial (although we are talking megabytes, not
     /// gigabytes).
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>>;
+    fn all_files(&mut self) -> Result<Vec<String>>;
 }
 
 impl<B: Bundle + ?Sized> Bundle for Box<B> {
-    fn get_digest(&mut self, status: &mut dyn StatusBackend) -> Result<DigestData> {
-        (**self).get_digest(status)
+    fn get_digest(&mut self) -> Result<DigestData> {
+        (**self).get_digest()
     }
 
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        (**self).all_files(status)
+    fn all_files(&mut self) -> Result<Vec<String>> {
+        (**self).all_files()
     }
 }
 
@@ -130,9 +129,8 @@ pub fn get_fallback_bundle_url(format_version: u32) -> String {
 pub fn get_fallback_bundle(
     format_version: u32,
     only_cached: bool,
-    status: &mut dyn StatusBackend,
 ) -> Result<cache::CachingBundle<itar::IndexedTarBackend>> {
     let url = get_fallback_bundle_url(format_version);
     let mut cache = cache::Cache::get_user_default()?;
-    cache.open(&url, only_cached, status)
+    cache.open(&url, only_cached)
 }

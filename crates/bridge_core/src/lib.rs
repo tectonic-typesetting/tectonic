@@ -106,26 +106,14 @@ pub trait DriverHooks {
     /// argument specifies the cryptographic digest of the data that were
     /// written. Note that this function takes ownership of the name and
     /// digest.
-    fn event_output_closed(
-        &mut self,
-        _name: String,
-        _digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
-    }
+    fn event_output_closed(&mut self, _name: String, _digest: DigestData) {}
 
     /// This function is called when an input file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
     /// read, if available. This digest is not always available, if the engine
     /// used seeks while reading the file. Note that this function takes
     /// ownership of the name and digest.
-    fn event_input_closed(
-        &mut self,
-        _name: String,
-        _digest: Option<DigestData>,
-        _status: &mut dyn StatusBackend,
-    ) {
-    }
+    fn event_input_closed(&mut self, _name: String, _digest: Option<DigestData>) {}
 
     /// The engine is requesting a "shell escape" evaluation.
     ///
@@ -143,11 +131,7 @@ pub trait DriverHooks {
     /// This function can only return a limited range of error values because
     /// the C/C++ engines can't do anything useful with them. Detailed error
     /// information should be logged or stored inside the hook function.
-    fn sysrq_shell_escape(
-        &mut self,
-        _command: &str,
-        _status: &mut dyn StatusBackend,
-    ) -> StdResult<(), SystemRequestError> {
+    fn sysrq_shell_escape(&mut self, _command: &str) -> StdResult<(), SystemRequestError> {
         Err(SystemRequestError::NotImplemented)
     }
 }
@@ -217,7 +201,6 @@ impl std::error::Error for EngineAbortedError {}
 /// A mechanism for launching bridged FFI code.
 pub struct CoreBridgeLauncher<'a> {
     hooks: &'a mut dyn DriverHooks,
-    status: &'a mut dyn StatusBackend,
     security: SecuritySettings,
     filesystem_emulation_settings: FsEmulationSettings,
 }
@@ -229,19 +212,14 @@ impl<'a> CoreBridgeLauncher<'a> {
     /// known-insecure engine features. Use [`Self::new_with_security`] to
     /// provide your own security settings that can attempt to allow the use of
     /// such features.
-    pub fn new(hooks: &'a mut dyn DriverHooks, status: &'a mut dyn StatusBackend) -> Self {
-        Self::new_with_security(hooks, status, SecuritySettings::default())
+    pub fn new(hooks: &'a mut dyn DriverHooks) -> Self {
+        Self::new_with_security(hooks, SecuritySettings::default())
     }
 
     /// Set up a new context for launching bridged FFI code.
-    pub fn new_with_security(
-        hooks: &'a mut dyn DriverHooks,
-        status: &'a mut dyn StatusBackend,
-        security: SecuritySettings,
-    ) -> Self {
+    pub fn new_with_security(hooks: &'a mut dyn DriverHooks, security: SecuritySettings) -> Self {
         CoreBridgeLauncher {
             hooks,
-            status,
             security,
             filesystem_emulation_settings: FsEmulationSettings::default(),
         }
@@ -283,7 +261,6 @@ impl<'a> CoreBridgeLauncher<'a> {
         let mut state = CoreBridgeState::new(
             self.security.clone(),
             self.hooks,
-            self.status,
             self.filesystem_emulation_settings.clone(),
         );
         let result = callback(&mut state);
@@ -314,9 +291,6 @@ pub struct CoreBridgeState<'a> {
     /// The driver hooks associated with this engine invocation.
     hooks: &'a mut dyn DriverHooks,
 
-    /// The status-reporting backend associated with this engine invocation.
-    status: &'a mut dyn StatusBackend,
-
     #[allow(clippy::vec_box)]
     input_handles: Vec<Box<InputHandle>>,
 
@@ -337,13 +311,11 @@ impl<'a> CoreBridgeState<'a> {
     fn new(
         security: SecuritySettings,
         hooks: &'a mut dyn DriverHooks,
-        status: &'a mut dyn StatusBackend,
         fs_emulation_settings: FsEmulationSettings,
     ) -> CoreBridgeState<'a> {
         CoreBridgeState {
             security,
             hooks,
-            status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
             latest_input_path: None,
@@ -359,13 +331,13 @@ impl<'a> CoreBridgeState<'a> {
         let io = self.hooks.io();
 
         if let FileFormat::Format = format {
-            match io.input_open_format(name, self.status) {
+            match io.input_open_format(name) {
                 OpenResult::NotAvailable => {}
                 OpenResult::Err(e) => return OpenResult::Err(e),
                 OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
             }
         } else {
-            match io.input_open_name_with_abspath(name, self.status) {
+            match io.input_open_name_with_abspath(name) {
                 OpenResult::NotAvailable => {}
                 r => return r,
             }
@@ -380,13 +352,13 @@ impl<'a> CoreBridgeState<'a> {
             let ext = format!("{name}.{e}");
 
             if let FileFormat::Format = format {
-                match io.input_open_format(&ext, self.status) {
+                match io.input_open_format(&ext) {
                     OpenResult::NotAvailable => {}
                     OpenResult::Err(e) => return OpenResult::Err(e),
                     OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
                 }
             } else {
-                match io.input_open_name_with_abspath(&ext, self.status) {
+                match io.input_open_name_with_abspath(&ext) {
                     OpenResult::NotAvailable => {}
                     r => return r,
                 }
@@ -424,8 +396,8 @@ impl<'a> CoreBridgeState<'a> {
         let mut hash = Md5::default();
 
         // We could try to be fancy and look up the file in our cache to see
-        // if we've already computed is SHA256 ... and then lie and use a
-        // truncated SHA256 digest as the MD5 ... but it seems like a better
+        // if we've already computed is SHA256... and then lie and use a
+        // truncated SHA256 digest as the MD5... but it seems like a better
         // idea to just go and read the file.
 
         let mut ih = match self.input_open_name_format(&name, FileFormat::Tex) {
@@ -469,7 +441,7 @@ impl<'a> CoreBridgeState<'a> {
         // Clean up.
 
         let (name, digest_opt) = ih.into_name_digest();
-        self.hooks.event_input_closed(name, digest_opt, self.status);
+        self.hooks.event_input_closed(name, digest_opt);
 
         if !error_occurred {
             let result = hash.finalize();
@@ -560,7 +532,7 @@ impl<'a> CoreBridgeState<'a> {
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
-                self.hooks.event_output_closed(name, digest, self.status);
+                self.hooks.event_output_closed(name, digest);
                 break;
             }
         }
@@ -590,7 +562,7 @@ impl<'a> CoreBridgeState<'a> {
     fn input_open_primary(&mut self) -> *mut InputHandle {
         let io = self.hooks.io();
 
-        let (ih, path) = match io.input_open_primary_with_abspath(self.status) {
+        let (ih, path) = match io.input_open_primary_with_abspath() {
             OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
@@ -676,7 +648,7 @@ impl<'a> CoreBridgeState<'a> {
                 }
 
                 let (name, digest_opt) = ih.into_name_digest();
-                self.hooks.event_input_closed(name, digest_opt, self.status);
+                self.hooks.event_input_closed(name, digest_opt);
                 return rv;
             }
         }
@@ -838,7 +810,7 @@ impl Default for FsEmulationSettings {
 ///
 /// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub unsafe extern "C" fn ttbc_issue_warning(es: &mut CoreBridgeState, text: *const libc::c_char) {
+pub unsafe extern "C" fn ttbc_issue_warning(text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
     tt_warning!(es.status, "{}", rtext.to_string_lossy());
 }
@@ -849,7 +821,7 @@ pub unsafe extern "C" fn ttbc_issue_warning(es: &mut CoreBridgeState, text: *con
 ///
 /// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub unsafe extern "C" fn ttbc_issue_error(es: &mut CoreBridgeState, text: *const libc::c_char) {
+pub unsafe extern "C" fn ttbc_issue_error(text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
     tt_error!(es.status, "{}", rtext.to_string_lossy());
 }
@@ -1182,6 +1154,16 @@ pub extern "C" fn ttbc_input_close(
     libc::c_int::from(es.input_close(handle))
 }
 
+/// The type of diagnostic message to send
+#[derive(Clone, Debug)]
+pub enum MessageKind {
+    /// Send a warning message
+    Warning,
+
+    /// Send an error message
+    Error,
+}
+
 /// A buffer for diagnostic messages. Rust code does not need to use this type.
 ///
 /// This type has to be public so that it can be exposed in the C/C++ headers,
@@ -1229,7 +1211,7 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 ///
 /// This function is unsafe because it dereferences a raw Diagnostic pointer
 #[no_mangle]
-pub unsafe extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
+pub unsafe extern "C" fn ttbc_diag_finish(diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
     let rdiag = Box::from_raw(diag);
     es.status

@@ -60,7 +60,6 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
         io::{try_open_file, FilesystemIo, FilesystemPrimaryInputIo, IoStack, MemoryIo},
         TexEngine,
     };
-    use tectonic_status_base::NoopStatusBackend;
 
     let fmt_path = test_path(&["plain.fmt"]);
 
@@ -77,8 +76,7 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
         {
             let io = IoStack::new(vec![&mut mem, &mut fs_primary, &mut fs_support]);
             let mut hooks = MinimalDriver::new(io);
-            let mut status = NoopStatusBackend::default();
-            let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
+            let mut launcher = CoreBridgeLauncher::new(&mut hooks);
 
             TexEngine::default()
                 .halt_on_error_mode(true)

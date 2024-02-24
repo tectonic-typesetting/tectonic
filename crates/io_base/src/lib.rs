@@ -23,7 +23,6 @@ use tectonic_errors::{
     anyhow::{bail, ensure},
     Error, Result,
 };
-use tectonic_status_base::StatusBackend;
 use thiserror::Error as ThisError;
 
 use crate::digest::DigestData;
@@ -450,11 +449,7 @@ pub trait IoProvider: AsIoProviderMut {
     }
 
     /// Open the named file for input.
-    fn input_open_name(
-        &mut self,
-        _name: &str,
-        _status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, _name: &str) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
 
@@ -476,9 +471,8 @@ pub trait IoProvider: AsIoProviderMut {
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
-        match self.input_open_name(name, status) {
+        match self.input_open_name(name) {
             OpenResult::Ok(h) => OpenResult::Ok((h, None)),
             OpenResult::Err(e) => OpenResult::Err(e),
             OpenResult::NotAvailable => OpenResult::NotAvailable,
@@ -490,7 +484,7 @@ pub trait IoProvider: AsIoProviderMut {
     /// filesystem and the input is a file on the filesystem, this function
     /// isn't necesssarily that important, but those conditions don't always
     /// hold.
-    fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self) -> OpenResult<InputHandle> {
         OpenResult::NotAvailable
     }
 
@@ -498,11 +492,8 @@ pub trait IoProvider: AsIoProviderMut {
     ///
     /// This method is as to [`Self::input_open_primary`] as
     /// [`Self::input_open_name_with_abspath`] is to [`Self::input_open_name`].
-    fn input_open_primary_with_abspath(
-        &mut self,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
-        match self.input_open_primary(status) {
+    fn input_open_primary_with_abspath(&mut self) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        match self.input_open_primary() {
             OpenResult::Ok(h) => OpenResult::Ok((h, None)),
             OpenResult::Err(e) => OpenResult::Err(e),
             OpenResult::NotAvailable => OpenResult::NotAvailable,
@@ -514,23 +505,14 @@ pub trait IoProvider: AsIoProviderMut {
     /// specially: namely, to munge the filename to one that includes the
     /// current version of the Tectonic engine, since the format contents
     /// depend sensitively on the engine internals.
-    fn input_open_format(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        self.input_open_name(name, status)
+    fn input_open_format(&mut self, name: &str) -> OpenResult<InputHandle> {
+        self.input_open_name(name)
     }
 
     /// Save an a format dump in some way that this provider may be able to
     /// recover in the future. This awkward interface is needed to write
     /// formats with their special munged file names.
-    fn write_format(
-        &mut self,
-        _name: &str,
-        _data: &[u8],
-        _status: &mut dyn StatusBackend,
-    ) -> Result<()> {
+    fn write_format(&mut self, _name: &str, _data: &[u8]) -> Result<()> {
         bail!("this I/O layer cannot save format files");
     }
 }
@@ -544,48 +526,31 @@ impl<P: IoProvider + ?Sized> IoProvider for Box<P> {
         (**self).output_open_stdout()
     }
 
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        (**self).input_open_name(name, status)
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
+        (**self).input_open_name(name)
     }
 
     fn input_open_name_with_abspath(
         &mut self,
         name: &str,
-        status: &mut dyn StatusBackend,
     ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
-        (**self).input_open_name_with_abspath(name, status)
+        (**self).input_open_name_with_abspath(name)
     }
 
-    fn input_open_primary(&mut self, status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
-        (**self).input_open_primary(status)
+    fn input_open_primary(&mut self) -> OpenResult<InputHandle> {
+        (**self).input_open_primary()
     }
 
-    fn input_open_primary_with_abspath(
-        &mut self,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<(InputHandle, Option<PathBuf>)> {
-        (**self).input_open_primary_with_abspath(status)
+    fn input_open_primary_with_abspath(&mut self) -> OpenResult<(InputHandle, Option<PathBuf>)> {
+        (**self).input_open_primary_with_abspath()
     }
 
-    fn input_open_format(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        (**self).input_open_format(name, status)
+    fn input_open_format(&mut self, name: &str) -> OpenResult<InputHandle> {
+        (**self).input_open_format(name)
     }
 
-    fn write_format(
-        &mut self,
-        name: &str,
-        data: &[u8],
-        status: &mut dyn StatusBackend,
-    ) -> Result<()> {
-        (**self).write_format(name, data, status)
+    fn write_format(&mut self, name: &str, data: &[u8]) -> Result<()> {
+        (**self).write_format(name, data)
     }
 }
 

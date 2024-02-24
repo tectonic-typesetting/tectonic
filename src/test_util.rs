@@ -42,7 +42,6 @@ use tectonic_errors::Result;
 use crate::{
     digest::DigestData,
     io::{InputHandle, IoProvider, OpenResult},
-    status::StatusBackend,
 };
 
 /// The name of the environment variable that the test code will consult to
@@ -116,21 +115,17 @@ impl Default for TestBundle {
 
 impl IoProvider for TestBundle {
     // All other functions can default to NotAvailable/error.
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
-        self.0.input_open_name(name, status)
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
+        self.0.input_open_name(name)
     }
 }
 
 impl Bundle for TestBundle {
-    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self) -> Result<DigestData> {
         Ok(DigestData::zeros())
     }
 
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        self.0.all_files(status)
+    fn all_files(&mut self) -> Result<Vec<String>> {
+        Ok(self.0.all_files()?)
     }
 }

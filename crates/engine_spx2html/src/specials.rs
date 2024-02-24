@@ -31,7 +31,7 @@ pub(crate) enum Special<'a> {
 }
 
 impl<'a> Special<'a> {
-    pub(crate) fn parse(text: &'a str, status: &mut dyn StatusBackend) -> Option<Self> {
+    pub(crate) fn parse(text: &'a str) -> Option<Self> {
         // str.split_once() would be nice but it was introduced in 1.52 which is
         // a bit recent for us.
 

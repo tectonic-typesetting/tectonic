@@ -43,11 +43,7 @@ impl Templating {
         self.next_output_path = arg.to_string();
     }
 
-    pub(crate) fn handle_set_template_variable(
-        &mut self,
-        remainder: &str,
-        common: &mut Common,
-    ) -> Result<()> {
+    pub(crate) fn handle_set_template_variable(&mut self, remainder: &str) -> Result<()> {
         if let Some((varname, varval)) = remainder.split_once(' ') {
             self.set_variable(varname, varval);
         } else {
@@ -101,7 +97,7 @@ impl Templating {
         // TeX infrastructure that Tectonic needs to make it work.
 
         let mut ih = atry!(
-            common.hooks.io().input_open_name(&self.next_template_path, common.status).must_exist();
+            common.hooks.io().input_open_name(&self.next_template_path).must_exist();
             ["unable to open input HTML template `{}`", &self.next_template_path]
         );
 
@@ -112,9 +108,7 @@ impl Templating {
         );
 
         let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name, digest_opt, common.status);
+        common.hooks.event_input_closed(name, digest_opt);
 
         // Ready to render!
 
