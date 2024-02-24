@@ -41,25 +41,6 @@ use watchexec_signals::Signal;
     setting(AppSettings::NoBinaryName)
 )]
 struct V2CliOptions {
-    /// How much chatter to print when running
-    #[structopt(
-        long = "chatter",
-        short,
-        name = "level",
-        default_value = "default",
-        possible_values(&["default", "minimal"])
-    )]
-    chatter_level: String,
-
-    /// Control colorization of output
-    #[structopt(
-        long = "color",
-        name = "when",
-        default_value = "auto",
-        possible_values(&["always", "auto", "never"])
-    )]
-    cli_color: String,
-
     /// Use this URL to find resource files instead of the default
     #[structopt(
         takes_value(true),

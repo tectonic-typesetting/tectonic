@@ -1,18 +1,14 @@
 // src/bin/tectonic/main.rs -- Command-line driver for the Tectonic engine.
 // Copyright 2016-2023 the Tectonic Project
 // Licensed under the MIT License.
-use nu_ansi_term::{Color, Style};
 use std::{env, fmt::Debug, process};
 use structopt::StructOpt;
-use tracing_subscriber::{
-    self,
-    fmt::{format, FormatEvent, FormatFields},
-    registry::LookupSpan,
-};
+use tracing::error;
 
 use tectonic::{config::PersistentConfig, unstable_opts};
 
 mod compile;
+mod log;
 mod watch;
 
 #[cfg(feature = "serialization")]
@@ -39,14 +35,6 @@ struct CliOptions {
     #[structopt(short = "X")]
     use_v2: bool,
 
-    /// How much chatter to print when running
-    #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
-    chatter_level: String,
-
-    /// Enable/disable colorful log output
-    #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
-    cli_color: String,
-
     /// Use this URL to find resource files instead of the default
     #[structopt(takes_value(true), long, short, name = "url", overrides_with = "url")]
     // TODO add URL validation
@@ -67,6 +55,11 @@ struct PeekUnstableOptions {
 
 fn main() {
     let os_args: Vec<_> = env::args_os().collect();
+
+    // Set up logger
+    tracing_subscriber::fmt()
+        .event_format(log::LogFormatter::new(true))
+        .init();
 
     // A hack so that you can just run `tectonic -Z help` without getting a
     // usage error about a missing input file specification. If
