@@ -1,9 +1,10 @@
 // src/bin/tectonic/main.rs -- Command-line driver for the Tectonic engine.
 // Copyright 2016-2023 the Tectonic Project
 // Licensed under the MIT License.
+use log::LogFormatter;
 use std::{env, fmt::Debug, process};
 use structopt::StructOpt;
-use tracing::error;
+use tracing::{error, Level};
 
 use tectonic::{config::PersistentConfig, unstable_opts};
 
@@ -35,6 +36,14 @@ struct CliOptions {
     #[structopt(short = "X")]
     use_v2: bool,
 
+    /// Maximum log level to print when running
+    #[structopt(long = "log", short, name = "level", default_value = "info", possible_values(&["debug", "info", "warn", "error"]))]
+    log_level: String,
+
+    /// Enable/disable colorful log output
+    #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
+    cli_color: String,
+
     /// Use this URL to find resource files instead of the default
     #[structopt(takes_value(true), long, short, name = "url", overrides_with = "url")]
     // TODO add URL validation
@@ -55,11 +64,6 @@ struct PeekUnstableOptions {
 
 fn main() {
     let os_args: Vec<_> = env::args_os().collect();
-
-    // Set up logger
-    tracing_subscriber::fmt()
-        .event_format(log::LogFormatter::new(true))
-        .init();
 
     // A hack so that you can just run `tectonic -Z help` without getting a
     // usage error about a missing input file specification. If
@@ -103,8 +107,26 @@ fn main() {
     }
 
     // OK, we're still using the "rustc-style" CLI. Proceed here.
-
     let args = CliOptions::from_args();
+
+    // Set up logger
+    let log_level = match &*args.log_level {
+        "debug" => Level::DEBUG,
+        "info" => Level::INFO,
+        "warn" => Level::WARN,
+        "error" => Level::ERROR,
+        _ => unreachable!(),
+    };
+    let use_cli_color = match &*args.cli_color {
+        "always" => true,
+        "auto" => atty::is(atty::Stream::Stdout),
+        "never" => false,
+        _ => unreachable!(),
+    };
+    tracing_subscriber::fmt()
+        .with_max_level(log_level)
+        .event_format(LogFormatter::new(use_cli_color))
+        .init();
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
     // it to use a specified set of local files, rather than going to the

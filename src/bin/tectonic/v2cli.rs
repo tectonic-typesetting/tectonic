@@ -22,7 +22,7 @@ use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_errors::prelude::anyhow;
 use tokio::runtime;
-use tracing::{error, info};
+use tracing::{error, info, Level};
 use watchexec::event::ProcessEnd;
 use watchexec::{
     action::{Action, Outcome, PreSpawn},
@@ -33,6 +33,8 @@ use watchexec::{
 use watchexec_filterer_globset::GlobsetFilterer;
 use watchexec_signals::Signal;
 
+use crate::log::LogFormatter;
+
 /// The main options for the "V2" command-line interface.
 #[derive(Debug, StructOpt)]
 #[structopt(
@@ -41,6 +43,25 @@ use watchexec_signals::Signal;
     setting(AppSettings::NoBinaryName)
 )]
 struct V2CliOptions {
+    /// Maximum log level to print when running
+    #[structopt(
+            long = "log",
+            short,
+            name = "level",
+            default_value = "info",
+            possible_values(&["debug", "info", "warn", "error"])
+        )]
+    log_level: String,
+
+    /// Control colorization of output
+    #[structopt(
+            long = "color",
+            name = "when",
+            default_value = "auto",
+            possible_values(&["always", "auto", "never"])
+        )]
+    cli_color: String,
+
     /// Use this URL to find resource files instead of the default
     #[structopt(
         takes_value(true),
@@ -85,7 +106,6 @@ pub fn v2_main(effective_args: &[OsString]) {
     };
 
     // Parse args -- this will exit if there are problems.
-
     let args = V2CliOptions::from_iter(effective_args);
 
     // Command-specific customizations before we do our centralized setup.
@@ -95,14 +115,24 @@ pub fn v2_main(effective_args: &[OsString]) {
     let mut customizations = CommandCustomizations::default();
     args.command.customize(&mut customizations);
 
-    /*
+    // Set up logger
+    let log_level = match &*args.log_level {
+        "debug" => Level::DEBUG,
+        "info" => Level::INFO,
+        "warn" => Level::WARN,
+        "error" => Level::ERROR,
+        _ => unreachable!(),
+    };
     let use_cli_color = match &*args.cli_color {
         "always" => true,
         "auto" => atty::is(atty::Stream::Stdout),
         "never" => false,
         _ => unreachable!(),
     };
-    */
+    tracing_subscriber::fmt()
+        .with_max_level(log_level)
+        .event_format(LogFormatter::new(use_cli_color))
+        .init();
 
     info!(
         tectonic_log_source = "cli",

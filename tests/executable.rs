@@ -279,12 +279,6 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
 /* Keep tests alphabetized */
 
 #[test]
-fn bad_chatter_1() {
-    let output = run_tectonic(&PathBuf::from("."), &["-", "--chatter=reticent"]);
-    error_or_panic(&output);
-}
-
-#[test]
 fn bad_input_path_1() {
     let output = run_tectonic(&PathBuf::from("."), &["/"]);
     error_or_panic(&output);
@@ -293,6 +287,12 @@ fn bad_input_path_1() {
 #[test]
 fn bad_input_path_2() {
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
+    error_or_panic(&output);
+}
+
+#[test]
+fn bad_log_1() {
+    let output = run_tectonic(&PathBuf::from("."), &["-", "--log=reticent"]);
     error_or_panic(&output);
 }
 
