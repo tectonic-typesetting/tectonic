@@ -27,7 +27,7 @@ use crate::{
     entries::EntryData,
     exec::ExecCtx,
     global::GlobalData,
-    hash::HashData,
+    hash::{HashData, HashExtra},
     log::{
         bib_close_log, log_pr_aux_name, print_aux_name, print_confusion, sam_wrong_file_name_print,
         AsBytes,
@@ -550,10 +550,11 @@ pub(crate) fn get_the_top_level_aux_file_name(
     }
 
     set_extension(&mut path, b".aux");
-    let lookup = match pool.lookup_str_insert(ctx, hash, &path[..path.len() - 1], StrIlk::AuxFile) {
-        Ok(res) => res,
-        Err(_) => return Err(BibtexError::Fatal),
-    };
+    let lookup =
+        match pool.lookup_str_insert(ctx, hash, &path[..path.len() - 1], HashExtra::AuxFile) {
+            Ok(res) => res,
+            Err(_) => return Err(BibtexError::Fatal),
+        };
 
     aux.push_file(File {
         name: hash.text(lookup.loc),
