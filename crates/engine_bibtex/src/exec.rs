@@ -5,7 +5,7 @@ use crate::{
     cite::CiteInfo,
     entries::{EntryData, ENT_STR_SIZE},
     global::{GlobalData, GLOB_STR_SIZE},
-    hash::{FnClass, HashData},
+    hash::{FnClass, HashData, HashExtra},
     log::{
         brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
         bst_1print_string_size_exceeded, bst_2print_string_size_exceeded,
@@ -939,7 +939,7 @@ fn interp_gets(
         }
         FnClass::IntGlblVar => {
             if let ExecVal::Integer(i2) = pop2 {
-                hash.set_ilk_info(f1, i2);
+                hash.node_mut(f1).extra = HashExtra::BstFn(i2);
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }

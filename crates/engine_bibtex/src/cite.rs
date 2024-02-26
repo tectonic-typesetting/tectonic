@@ -1,6 +1,9 @@
 use crate::{
-    entries::EntryData, hash::HashData, other::OtherData, pool::StringPool, CiteNumber,
-    FindCiteLocs, HashPointer, StrIlk, StrNumber,
+    entries::EntryData,
+    hash::{HashData, HashExtra},
+    other::OtherData,
+    pool::StringPool,
+    CiteNumber, FindCiteLocs, HashPointer, StrIlk, StrNumber,
 };
 use std::{cmp::Ordering, ops::IndexMut};
 
@@ -150,8 +153,8 @@ pub(crate) fn add_database_cite(
     other.check_field_overflow(other.num_fields() * (new_cite + 1));
 
     cites.set_cite(new_cite, hash.text(cite_loc));
-    hash.set_ilk_info(cite_loc, new_cite as i32);
-    hash.set_ilk_info(lc_cite_loc, cite_loc as i32);
+    hash.node_mut(cite_loc).extra = HashExtra::Cite(new_cite);
+    hash.node_mut(lc_cite_loc).extra = HashExtra::LcCite(cite_loc);
     new_cite + 1
 }
 
