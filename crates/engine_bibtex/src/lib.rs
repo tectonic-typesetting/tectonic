@@ -498,7 +498,7 @@ pub(crate) fn inner_bibtex_main(
 
     let mut exec = ExecCtx::new(ctx);
     loop {
-        if !eat_bst_white_space(exec.glbl_ctx_mut(), globals.buffers) {
+        if !eat_bst_white_space(&mut exec, globals.buffers) {
             break;
         }
         get_bst_command_and_process(&mut exec, globals)?;
