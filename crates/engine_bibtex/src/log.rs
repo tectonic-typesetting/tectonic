@@ -487,11 +487,11 @@ pub(crate) fn bst_mild_ex_warn_print(
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
-        ctx.glbl_ctx_mut().write_logs(" for entry ");
-        print_a_pool_str(ctx.glbl_ctx_mut(), cites.get_cite(cites.ptr()), pool)?;
+        ctx.write_logs(" for entry ");
+        print_a_pool_str(ctx, cites.get_cite(cites.ptr()), pool)?;
     }
-    ctx.glbl_ctx_mut().write_logs("\nwhile executing");
-    bst_warn_print(ctx.glbl_ctx_mut(), pool)
+    ctx.write_logs("\nwhile executing");
+    bst_warn_print(ctx, pool)
 }
 
 pub(crate) fn bst_cant_mess_with_entries_print(
@@ -499,8 +499,7 @@ pub(crate) fn bst_cant_mess_with_entries_print(
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
-    ctx.glbl_ctx_mut()
-        .write_logs("You can't mess with entries here");
+    ctx.write_logs("You can't mess with entries here");
     bst_ex_warn_print(ctx, pool, cites)
 }
 
@@ -513,10 +512,9 @@ pub(crate) fn bst_2print_string_size_exceeded(
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
-    ctx.glbl_ctx_mut().write_logs("-string-size,");
+    ctx.write_logs("-string-size,");
     bst_mild_ex_warn_print(ctx, pool, cites)?;
-    ctx.glbl_ctx_mut()
-        .write_logs("*Please notify the bibstyle designer*\n");
+    ctx.write_logs("*Please notify the bibstyle designer*\n");
     Ok(())
 }
 
@@ -526,10 +524,9 @@ pub(crate) fn braces_unbalanced_complaint(
     cites: &CiteInfo,
     pop_lit_var: StrNumber,
 ) -> Result<(), BibtexError> {
-    ctx.glbl_ctx_mut().write_logs("Warning--\"");
-    print_a_pool_str(ctx.glbl_ctx_mut(), pop_lit_var, pool)?;
-    ctx.glbl_ctx_mut()
-        .write_logs("\" isn't a brace-balanced string");
+    ctx.write_logs("Warning--\"");
+    print_a_pool_str(ctx, pop_lit_var, pool)?;
+    ctx.write_logs("\" isn't a brace-balanced string");
     bst_mild_ex_warn_print(ctx, pool, cites)
 }
 
@@ -677,10 +674,9 @@ pub(crate) fn brace_lvl_one_letters_complaint(
     cites: &CiteInfo,
     str: StrNumber,
 ) -> Result<(), BibtexError> {
-    ctx.glbl_ctx_mut().write_logs("The format string \"");
-    print_a_pool_str(ctx.glbl_ctx_mut(), str, pool)?;
-    ctx.glbl_ctx_mut()
-        .write_logs("\" has an illegal brace-level-1 letter");
+    ctx.write_logs("The format string \"");
+    print_a_pool_str(ctx, str, pool)?;
+    ctx.write_logs("\" has an illegal brace-level-1 letter");
     bst_ex_warn_print(ctx, pool, cites)?;
     Ok(())
 }
