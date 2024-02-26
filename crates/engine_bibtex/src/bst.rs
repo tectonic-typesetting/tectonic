@@ -4,7 +4,7 @@ use crate::{
     char_info::LexClass,
     cite::find_cite_locs_for_this_cite_key,
     exec::{check_command_execution, execute_fn, ExecCtx},
-    hash::{FnClass, HashData},
+    hash::{FnClass, HashData, HashExtra},
     log::{
         already_seen_function_print, bad_cross_reference_print,
         bst_err_print_and_look_for_blank_line, bst_id_print, bst_left_brace_print,
@@ -107,7 +107,7 @@ fn bst_entry_command(
             ctx.glbl_ctx_mut(),
             globals.hash,
             bst_fn,
-            StrIlk::BstFn,
+            HashExtra::BstFn(globals.other.num_fields() as i32),
         )?;
         if res.exists {
             already_seen_function_print(
@@ -121,9 +121,6 @@ fn bst_entry_command(
         }
 
         globals.hash.set_ty(res.loc, FnClass::Field);
-        globals
-            .hash
-            .set_ilk_info(res.loc, globals.other.num_fields() as i32);
         globals.other.set_num_fields(globals.other.num_fields() + 1);
 
         eat_bst_white!(ctx, globals, "entry");
@@ -157,7 +154,7 @@ fn bst_entry_command(
             ctx.glbl_ctx_mut(),
             globals.hash,
             bst_fn,
-            StrIlk::BstFn,
+            HashExtra::BstFn(globals.entries.num_ent_ints() as i32),
         )?;
         if res.exists {
             already_seen_function_print(
@@ -171,9 +168,6 @@ fn bst_entry_command(
         }
 
         globals.hash.set_ty(res.loc, FnClass::IntEntryVar);
-        globals
-            .hash
-            .set_ilk_info(res.loc, globals.entries.num_ent_ints() as i32);
         globals
             .entries
             .set_num_ent_ints(globals.entries.num_ent_ints() + 1);
@@ -202,7 +196,7 @@ fn bst_entry_command(
             ctx.glbl_ctx_mut(),
             globals.hash,
             bst_fn,
-            StrIlk::BstFn,
+            HashExtra::BstFn(globals.entries.num_ent_strs() as i32),
         )?;
         if res.exists {
             already_seen_function_print(
@@ -216,9 +210,6 @@ fn bst_entry_command(
         }
 
         globals.hash.set_ty(res.loc, FnClass::StrEntryVar);
-        globals
-            .hash
-            .set_ilk_info(res.loc, globals.entries.num_ent_strs() as i32);
         globals
             .entries
             .set_num_ent_strs(globals.entries.num_ent_strs() + 1);
@@ -295,10 +286,12 @@ fn bst_function_command(
     let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
     bst_fn.make_ascii_lowercase();
 
-    let res =
-        globals
-            .pool
-            .lookup_str_insert(ctx.glbl_ctx_mut(), globals.hash, bst_fn, StrIlk::BstFn)?;
+    let res = globals.pool.lookup_str_insert(
+        ctx.glbl_ctx_mut(),
+        globals.hash,
+        bst_fn,
+        HashExtra::BstFn(0),
+    )?;
     if res.exists {
         already_seen_function_print(
             ctx.glbl_ctx_mut(),
@@ -359,7 +352,7 @@ fn bst_integers_command(
             ctx.glbl_ctx_mut(),
             globals.hash,
             bst_fn,
-            StrIlk::BstFn,
+            HashExtra::BstFn(0),
         )?;
         if res.exists {
             already_seen_function_print(
@@ -373,7 +366,6 @@ fn bst_integers_command(
         }
 
         globals.hash.set_ty(res.loc, FnClass::IntGlblVar);
-        globals.hash.set_ilk_info(res.loc, 0);
         eat_bst_white!(ctx, globals, "integers");
     }
 
@@ -458,10 +450,12 @@ fn bst_macro_command(
     let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
     bst_fn.make_ascii_lowercase();
 
-    let res =
-        globals
-            .pool
-            .lookup_str_insert(ctx.glbl_ctx_mut(), globals.hash, bst_fn, StrIlk::Macro)?;
+    let res = globals.pool.lookup_str_insert(
+        ctx.glbl_ctx_mut(),
+        globals.hash,
+        bst_fn,
+        HashExtra::Macro(0),
+    )?;
     if res.exists {
         print_a_token(ctx.glbl_ctx_mut(), globals.buffers);
         ctx.glbl_ctx_mut()
@@ -469,9 +463,8 @@ fn bst_macro_command(
         bst_err_print_and_look_for_blank_line(ctx.glbl_ctx_mut(), globals.buffers, globals.pool)?;
         return Ok(());
     }
-    globals
-        .hash
-        .set_ilk_info(res.loc, globals.hash.text(res.loc) as i32);
+    // This is always unused if the macro is successfully defined, but appears to be a fallback for invalid macros.
+    globals.hash.node_mut(res.loc).extra = HashExtra::Macro(globals.hash.text(res.loc));
 
     eat_bst_white!(ctx, globals, "macro");
     bst_brace!('}', ctx, globals, "macro");
@@ -503,15 +496,15 @@ fn bst_macro_command(
 
     let range = globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
     let text = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
-    let res2 =
-        globals
-            .pool
-            .lookup_str_insert(ctx.glbl_ctx_mut(), globals.hash, text, StrIlk::Text)?;
+    let res2 = globals.pool.lookup_str_insert(
+        ctx.glbl_ctx_mut(),
+        globals.hash,
+        text,
+        HashExtra::Text(0),
+    )?;
 
     globals.hash.set_ty(res2.loc, FnClass::StrLit);
-    globals
-        .hash
-        .set_ilk_info(res.loc, globals.hash.text(res2.loc) as i32);
+    globals.hash.node_mut(res.loc).extra = HashExtra::Macro(globals.hash.text(res2.loc));
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
@@ -769,9 +762,8 @@ fn bst_read_command(
                     return Err(BibtexError::Fatal);
                 }
 
-                globals
-                    .hash
-                    .set_ilk_info(find.cite_loc, ctx.glbl_ctx().cite_xptr as i32);
+                globals.hash.node_mut(find.cite_loc).extra =
+                    HashExtra::Cite(ctx.glbl_ctx().cite_xptr);
 
                 let start = ctx.glbl_ctx().cite_xptr * globals.other.num_fields();
                 let end = start + globals.other.num_fields();
@@ -909,7 +901,7 @@ fn bst_strings_command(
             ctx.glbl_ctx_mut(),
             globals.hash,
             bst_fn,
-            StrIlk::BstFn,
+            HashExtra::BstFn(globals.globals.num_glb_strs()),
         )?;
 
         if res.exists {
@@ -924,9 +916,6 @@ fn bst_strings_command(
         }
 
         globals.hash.set_ty(res.loc, FnClass::StrGlblVar);
-        globals
-            .hash
-            .set_ilk_info(res.loc, globals.globals.num_glb_strs());
 
         if globals.globals.num_glb_strs() as usize == globals.globals.len() {
             globals.globals.grow();

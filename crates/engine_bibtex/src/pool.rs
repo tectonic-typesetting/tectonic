@@ -4,7 +4,7 @@ use crate::{
     entries::ENT_STR_SIZE,
     global::GLOB_STR_SIZE,
     hash,
-    hash::{FnClass, HashData},
+    hash::{FnClass, HashData, HashExtra},
     log::{output_bbl_line, print_overflow},
     ASCIICode, Bibtex, BibtexError, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk,
     StrNumber,
@@ -86,24 +86,21 @@ impl StringPool {
         let h = Self::hash_str(hash, str);
         let mut p = h as HashPointer + hash::HASH_BASE as HashPointer;
 
-        loop {
+        let exists = loop {
             let existing = hash.text(p);
 
-            if existing > 0 && self.get_str(existing) == str && hash.hash_ilk(p) == ilk {
-                return LookupRes {
-                    loc: p,
-                    exists: true,
-                };
+            if existing > 0 && self.get_str(existing) == str && hash.node(p).kind() == ilk {
+                break true;
             }
 
             if hash.next(p) == 0 {
-                return LookupRes {
-                    loc: p,
-                    exists: false,
-                };
+                break false;
             }
+
             p = hash.next(p);
-        }
+        };
+
+        LookupRes { loc: p, exists }
     }
 
     /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
@@ -113,16 +110,22 @@ impl StringPool {
         ctx: &mut Bibtex<'_, '_>,
         hash: &mut HashData,
         str: &[ASCIICode],
-        ilk: StrIlk,
+        ilk: HashExtra,
     ) -> Result<LookupRes, BibtexError> {
+        // Hash string using simple hash function. This hash is capped to HASH_PRIME
         let h = Self::hash_str(hash, str);
         let mut str_num = 0;
+        // Get position by adding HASH_BASE
         let mut p = (h + hash::HASH_BASE) as HashPointer;
 
-        loop {
+        // Look for an existing match, or the last slot
+        let existing = loop {
+            // Get the current text at the position
             let existing = hash.text(p);
-            if existing > 0 && self.try_get_str(existing) == Ok(str) {
-                if hash.hash_ilk(p) == ilk {
+            // If the text exists and is the same as the text we're adding
+            if self.try_get_str(existing) == Ok(str) {
+                // If an existing hash entry exists for this type, return it
+                if hash.node(p).kind() == ilk.kind() {
                     return Ok(LookupRes {
                         loc: p,
                         exists: true,
@@ -133,48 +136,58 @@ impl StringPool {
             }
 
             if hash.next(p) == 0 {
-                if existing > 0 {
-                    loop {
-                        if hash.used() == hash::HASH_BASE {
-                            print_overflow(ctx);
-                            ctx.write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
-                            return Err(BibtexError::Fatal);
-                        }
-                        hash.set_used(hash.used() - 1);
-
-                        if hash.text(hash.used()) == 0 {
-                            break;
-                        }
-                    }
-                    hash.set_next(p, hash.used());
-                    p = hash.used();
-                }
-
-                if str_num > 0 {
-                    hash.set_text(p, str_num);
-                } else {
-                    while self.pool_ptr + str.len() > self.strings.len() {
-                        self.grow();
-                    }
-                    self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
-                    self.pool_ptr += str.len();
-
-                    match self.make_string(ctx) {
-                        Ok(str) => hash.set_text(p, str),
-                        Err(err) => return Err(err),
-                    }
-                }
-
-                hash.set_hash_ilk(p, ilk);
-
-                return Ok(LookupRes {
-                    loc: p,
-                    exists: false,
-                });
+                break existing;
             }
 
             p = hash.next(p);
+        };
+
+        // If we hit the end and the slot is already in use
+        if existing > 0 {
+            // Walk backwards from our current len to our first empty slot.
+            // If all slots are full, error
+            loop {
+                if hash.len() == hash::HASH_BASE {
+                    print_overflow(ctx);
+                    ctx.write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
+                    return Err(BibtexError::Fatal);
+                }
+                hash.set_len(hash.len() - 1);
+
+                if hash.text(hash.len()) == 0 {
+                    break;
+                }
+            }
+            // Set the next item to our new lowest open slot
+            hash.set_next(p, hash.len());
+            // Operate on the new empty slot
+            p = hash.len();
         }
+
+        // We found the string in the string pool while hunting for a slot
+        if str_num > 0 {
+            hash.set_text(p, str_num);
+        // The string isn't in the string pool - add it
+        } else {
+            while self.pool_ptr + str.len() > self.strings.len() {
+                self.grow();
+            }
+            self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
+            self.pool_ptr += str.len();
+
+            match self.make_string(ctx) {
+                Ok(str) => hash.set_text(p, str),
+                Err(err) => return Err(err),
+            }
+        }
+
+        // Set the type of this slot
+        hash.node_mut(p).extra = ilk;
+
+        Ok(LookupRes {
+            loc: p,
+            exists: false,
+        })
     }
 
     pub fn str_ptr(&self) -> usize {
@@ -267,50 +280,32 @@ pub(crate) fn pre_def_certain_strings(
         ..
     }: &mut GlobalItems<'_>,
 ) -> Result<(), BibtexError> {
-    let res = pool.lookup_str_insert(ctx, hash, b".aux", StrIlk::FileExt)?;
+    let res = pool.lookup_str_insert(ctx, hash, b".aux", HashExtra::FileExt)?;
     ctx.s_aux_extension = hash.text(res.loc);
 
-    let res = pool.lookup_str_insert(ctx, hash, b"\\citation", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 2);
-    let res = pool.lookup_str_insert(ctx, hash, b"\\bibdata", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(ctx, hash, b"\\bibstyle", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(ctx, hash, b"\\@input", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 3);
+    pool.lookup_str_insert(ctx, hash, b"\\bibdata", HashExtra::AuxCommand(0))?;
+    pool.lookup_str_insert(ctx, hash, b"\\bibstyle", HashExtra::AuxCommand(1))?;
+    pool.lookup_str_insert(ctx, hash, b"\\citation", HashExtra::AuxCommand(2))?;
+    pool.lookup_str_insert(ctx, hash, b"\\@input", HashExtra::AuxCommand(3))?;
 
-    let res = pool.lookup_str_insert(ctx, hash, b"entry", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(ctx, hash, b"execute", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(ctx, hash, b"function", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 2);
-    let res = pool.lookup_str_insert(ctx, hash, b"integers", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 3);
-    let res = pool.lookup_str_insert(ctx, hash, b"iterate", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 4);
-    let res = pool.lookup_str_insert(ctx, hash, b"macro", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 5);
-    let res = pool.lookup_str_insert(ctx, hash, b"read", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 6);
-    let res = pool.lookup_str_insert(ctx, hash, b"reverse", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 7);
-    let res = pool.lookup_str_insert(ctx, hash, b"sort", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 8);
-    let res = pool.lookup_str_insert(ctx, hash, b"strings", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 9);
+    pool.lookup_str_insert(ctx, hash, b"entry", HashExtra::BstCommand(0))?;
+    pool.lookup_str_insert(ctx, hash, b"execute", HashExtra::BstCommand(1))?;
+    pool.lookup_str_insert(ctx, hash, b"function", HashExtra::BstCommand(2))?;
+    pool.lookup_str_insert(ctx, hash, b"integers", HashExtra::BstCommand(3))?;
+    pool.lookup_str_insert(ctx, hash, b"iterate", HashExtra::BstCommand(4))?;
+    pool.lookup_str_insert(ctx, hash, b"macro", HashExtra::BstCommand(5))?;
+    pool.lookup_str_insert(ctx, hash, b"read", HashExtra::BstCommand(6))?;
+    pool.lookup_str_insert(ctx, hash, b"reverse", HashExtra::BstCommand(7))?;
+    pool.lookup_str_insert(ctx, hash, b"sort", HashExtra::BstCommand(8))?;
+    pool.lookup_str_insert(ctx, hash, b"strings", HashExtra::BstCommand(9))?;
 
-    let res = pool.lookup_str_insert(ctx, hash, b"comment", StrIlk::BibCommand)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(ctx, hash, b"preamble", StrIlk::BibCommand)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(ctx, hash, b"string", StrIlk::BibCommand)?;
-    hash.set_ilk_info(res.loc, 2);
+    pool.lookup_str_insert(ctx, hash, b"comment", HashExtra::BibCommand(0))?;
+    pool.lookup_str_insert(ctx, hash, b"preamble", HashExtra::BibCommand(1))?;
+    pool.lookup_str_insert(ctx, hash, b"string", HashExtra::BibCommand(2))?;
 
     let mut build_in = |pds: &[ASCIICode], blt_in_num| {
-        let res = pool.lookup_str_insert(ctx, hash, pds, StrIlk::BstFn)?;
+        let res = pool.lookup_str_insert(ctx, hash, pds, HashExtra::BstFn(blt_in_num))?;
         hash.set_ty(res.loc, FnClass::Builtin);
-        hash.set_ilk_info(res.loc, blt_in_num);
         Ok(res.loc)
     };
 
@@ -352,62 +347,62 @@ pub(crate) fn pre_def_certain_strings(
     build_in(b"width$", 35)?;
     build_in(b"write$", 36)?;
 
-    let res = pool.lookup_str_insert(ctx, hash, b"", StrIlk::Text)?;
+    let res = pool.lookup_str_insert(ctx, hash, b"", HashExtra::Text(0))?;
     hash.set_ty(res.loc, FnClass::StrLit);
     ctx.s_null = hash.text(res.loc);
-    let res = pool.lookup_str_insert(ctx, hash, b"default.type", StrIlk::Text)?;
+    let res = pool.lookup_str_insert(ctx, hash, b"default.type", HashExtra::Text(0))?;
     hash.set_ty(res.loc, FnClass::StrLit);
     ctx.s_default = hash.text(res.loc);
     ctx.b_default = skip_loc;
 
-    let res = pool.lookup_str_insert(ctx, hash, b"i", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(ctx, hash, b"j", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(ctx, hash, b"oe", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 2);
-    let res = pool.lookup_str_insert(ctx, hash, b"OE", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 3);
-    let res = pool.lookup_str_insert(ctx, hash, b"ae", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 4);
-    let res = pool.lookup_str_insert(ctx, hash, b"AE", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 5);
-    let res = pool.lookup_str_insert(ctx, hash, b"aa", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 6);
-    let res = pool.lookup_str_insert(ctx, hash, b"AA", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 7);
-    let res = pool.lookup_str_insert(ctx, hash, b"o", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 8);
-    let res = pool.lookup_str_insert(ctx, hash, b"O", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 9);
-    let res = pool.lookup_str_insert(ctx, hash, b"l", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 10);
-    let res = pool.lookup_str_insert(ctx, hash, b"L", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 11);
-    let res = pool.lookup_str_insert(ctx, hash, b"ss", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 12);
+    pool.lookup_str_insert(ctx, hash, b"i", HashExtra::ControlSeq(0))?;
+    pool.lookup_str_insert(ctx, hash, b"j", HashExtra::ControlSeq(1))?;
+    pool.lookup_str_insert(ctx, hash, b"oe", HashExtra::ControlSeq(2))?;
+    pool.lookup_str_insert(ctx, hash, b"OE", HashExtra::ControlSeq(3))?;
+    pool.lookup_str_insert(ctx, hash, b"ae", HashExtra::ControlSeq(4))?;
+    pool.lookup_str_insert(ctx, hash, b"AE", HashExtra::ControlSeq(5))?;
+    pool.lookup_str_insert(ctx, hash, b"aa", HashExtra::ControlSeq(6))?;
+    pool.lookup_str_insert(ctx, hash, b"AA", HashExtra::ControlSeq(7))?;
+    pool.lookup_str_insert(ctx, hash, b"o", HashExtra::ControlSeq(8))?;
+    pool.lookup_str_insert(ctx, hash, b"O", HashExtra::ControlSeq(9))?;
+    pool.lookup_str_insert(ctx, hash, b"l", HashExtra::ControlSeq(10))?;
+    pool.lookup_str_insert(ctx, hash, b"L", HashExtra::ControlSeq(11))?;
+    pool.lookup_str_insert(ctx, hash, b"ss", HashExtra::ControlSeq(12))?;
 
-    let res = pool.lookup_str_insert(ctx, hash, b"crossref", StrIlk::BstFn)?;
     let num_fields = other.num_fields();
+    let res =
+        pool.lookup_str_insert(ctx, hash, b"crossref", HashExtra::BstFn(num_fields as i32))?;
     hash.set_ty(res.loc, FnClass::Field);
-    hash.set_ilk_info(res.loc, num_fields as i32);
     other.set_crossref_num(num_fields);
     other.set_num_fields(num_fields + 1);
     other.set_pre_defined_fields(num_fields + 1);
 
-    let res = pool.lookup_str_insert(ctx, hash, b"sort.key$", StrIlk::BstFn)?;
+    let num_ent_strs = entries.num_ent_strs();
+    let res = pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"sort.key$",
+        HashExtra::BstFn(num_ent_strs as i32),
+    )?;
     hash.set_ty(res.loc, FnClass::StrEntryVar);
-    hash.set_ilk_info(res.loc, entries.num_ent_strs() as i32);
-    entries.set_sort_key_num(entries.num_ent_strs());
-    entries.set_num_ent_strs(entries.num_ent_strs() + 1);
+    entries.set_sort_key_num(num_ent_strs);
+    entries.set_num_ent_strs(num_ent_strs + 1);
 
-    let res = pool.lookup_str_insert(ctx, hash, b"entry.max$", StrIlk::BstFn)?;
+    let res = pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"entry.max$",
+        HashExtra::BstFn(ENT_STR_SIZE as i32),
+    )?;
     hash.set_ty(res.loc, FnClass::IntGlblVar);
-    hash.set_ilk_info(res.loc, ENT_STR_SIZE as i32);
 
-    let res = pool.lookup_str_insert(ctx, hash, b"global.max$", StrIlk::BstFn)?;
+    let res = pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"global.max$",
+        HashExtra::BstFn(GLOB_STR_SIZE as i32),
+    )?;
     hash.set_ty(res.loc, FnClass::IntGlblVar);
-    hash.set_ilk_info(res.loc, GLOB_STR_SIZE as i32);
 
     Ok(())
 }

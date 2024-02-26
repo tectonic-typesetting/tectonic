@@ -5,7 +5,7 @@ use crate::{
     cite::{add_database_cite, CiteInfo},
     exec::ExecCtx,
     hash,
-    hash::{FnClass, HashData},
+    hash::{FnClass, HashData, HashExtra},
     log::{
         bib_cmd_confusion, bib_err_print, bib_id_print, bib_unbalanced_braces_print,
         bib_warn_print, braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line,
@@ -199,11 +199,11 @@ fn handle_char(
             let res = {
                 let str = &buffers.buffer(BufTy::Base)
                     [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
-                let res = pool.lookup_str_insert(ctx, hash, str, StrIlk::Integer)?;
+                let res =
+                    pool.lookup_str_insert(ctx, hash, str, HashExtra::Integer(token_value))?;
 
                 if !res.exists {
                     hash.set_ty(res.loc, FnClass::IntLit);
-                    hash.set_ilk_info(res.loc, token_value);
                 }
                 Ok(res)
             }?;
@@ -232,7 +232,7 @@ fn handle_char(
             let res = {
                 let str = &buffers.buffer(BufTy::Base)
                     [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
-                let res = pool.lookup_str_insert(ctx, hash, str, StrIlk::Text)?;
+                let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text(0))?;
                 hash.set_ty(res.loc, FnClass::StrLit);
                 Ok(res)
             }?;
@@ -281,7 +281,7 @@ fn handle_char(
             let str = format!("'{}", ctx.impl_fn_num);
 
             let res = {
-                let res = pool.lookup_str_insert(ctx, hash, str.as_bytes(), StrIlk::BstFn)?;
+                let res = pool.lookup_str_insert(ctx, hash, str.as_bytes(), HashExtra::BstFn(0))?;
 
                 if res.exists {
                     ctx.write_logs("Already encountered implicit function");
@@ -365,7 +365,7 @@ pub(crate) fn scan_fn_def(
 
     single_function.push(HashData::end_of_def());
 
-    hash.set_ilk_info(fn_hash_loc, other.wiz_func_len() as i32);
+    hash.node_mut(fn_hash_loc).extra = HashExtra::BstFn(other.wiz_func_len() as i32);
 
     for ptr in single_function {
         other.push_wiz_func(ptr);
@@ -770,7 +770,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
 
         let str = &buffers.buffer(BufTy::Ex)[ex_buf_xptr..buffers.offset(BufTy::Ex, 1)];
         let res = {
-            let res = pool.lookup_str_insert(ctx, hash, str, StrIlk::Text)?;
+            let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text(0))?;
 
             hash.set_ty(res.loc, FnClass::StrLit);
 
@@ -780,7 +780,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
         if at_bib_command {
             match command_num {
                 1 => bibs.add_preamble(hash.text(res.loc)),
-                2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i32),
+                2 => hash.node_mut(cur_macro_loc).extra = HashExtra::BibCommand(hash.text(res.loc)),
                 _ => {
                     // TODO: Replace command_num with an enum
                     bib_cmd_confusion(ctx);
@@ -821,7 +821,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     );
                     buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
                     let str = &buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
-                    let lc_res = pool.lookup_str_insert(ctx, hash, str, StrIlk::LcCite)?;
+                    let lc_res = pool.lookup_str_insert(ctx, hash, str, HashExtra::LcCite(0))?;
                     if let Some(cite_out) = cite_out {
                         *cite_out = lc_res.loc;
                     }
@@ -834,7 +834,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     } else {
                         let str =
                             &buffers.buffer(BufTy::Ex)[ex_buf_xptr..buffers.offset(BufTy::Ex, 1)];
-                        let c_res = pool.lookup_str_insert(ctx, hash, str, StrIlk::Cite)?;
+                        let c_res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Cite(0))?;
                         if c_res.exists {
                             hash_cite_confusion(ctx);
                             return Err(BibtexError::Fatal);
