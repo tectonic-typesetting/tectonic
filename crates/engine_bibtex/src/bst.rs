@@ -259,7 +259,7 @@ fn bst_function_command(
 
     globals.hash.set_ty(res.loc, FnClass::Wizard);
     if globals.hash.text(res.loc) == ctx.s_default {
-        ctx._default = res.loc;
+        ctx.default = res.loc;
     }
 
     eat_bst_white!(ctx, globals, "function");
