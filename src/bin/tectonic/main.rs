@@ -2,8 +2,8 @@
 // Copyright 2016-2023 the Tectonic Project
 // Licensed under the MIT License.
 
-use std::{env, process, str::FromStr};
-use structopt::StructOpt;
+use clap::{Parser, ValueEnum};
+use std::{env, io::IsTerminal, process};
 use tectonic_status_base::plain::PlainStatusBackend;
 
 use tectonic::{
@@ -36,36 +36,58 @@ mod v2cli {
     }
 }
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = "Tectonic", about = "Process a (La)TeX document")]
+#[derive(Debug, Parser)]
+#[command(name = "Tectonic", about = "Process a (La)TeX document")]
 struct CliOptions {
     /// Use experimental V2 interface (see `tectonic -X --help`)
-    #[structopt(short = "X")]
+    #[arg(short = 'X')]
     use_v2: bool,
 
     /// How much chatter to print when running
-    #[structopt(long = "chatter", short, name = "level", default_value = "default", possible_values(&["default", "minimal"]))]
-    chatter_level: String,
+    #[arg(long = "chatter", short, name = "level", default_value = "default")]
+    chatter_level: ChatterLevel,
 
     /// Enable/disable colorful log output
-    #[structopt(long = "color", name = "when", default_value = "auto", possible_values(&["always", "auto", "never"]))]
-    cli_color: String,
+    #[arg(long = "color", name = "when", default_value = "auto")]
+    cli_color: CliColor,
 
     /// Use this URL to find resource files instead of the default
-    #[structopt(takes_value(true), long, short, name = "url", overrides_with = "url")]
+    #[arg(long, short, name = "url", overrides_with = "url")]
     // TODO add URL validation
     web_bundle: Option<String>,
 
-    #[structopt(flatten)]
+    #[command(flatten)]
     compile: compile::CompileOptions,
 }
 
-#[derive(StructOpt)]
+#[derive(ValueEnum, Clone, Debug)]
+pub enum CliColor {
+    #[value(name = "always")]
+    Always,
+
+    #[value(name = "auto")]
+    Auto,
+
+    #[value(name = "never")]
+    Never,
+}
+
+impl CliColor {
+    pub fn should_enable(&self) -> bool {
+        match self {
+            Self::Always => true,
+            Self::Auto => std::io::stdout().is_terminal(),
+            Self::Never => false,
+        }
+    }
+}
+
+#[derive(Parser)]
 struct PeekUnstableOptions {
-    #[structopt(name = "option", short = "Z", number_of_values = 1)]
+    #[arg(name = "option", short = 'Z')]
     unstable: Vec<unstable_opts::UnstableArg>,
 
-    #[structopt()]
+    #[arg()]
     _remainder: Vec<std::ffi::OsString>,
 }
 
@@ -78,7 +100,7 @@ fn main() {
     // exit. Otherwise, this will all be a no-op, and we'll re-parse the args
     // "for real" momentarily.
 
-    if let Ok(args) = PeekUnstableOptions::from_args_safe() {
+    if let Ok(args) = PeekUnstableOptions::try_parse() {
         unstable_opts::UnstableOptions::from_unstable_args(args.unstable.into_iter());
     }
 
@@ -102,7 +124,7 @@ fn main() {
     {
         // Try to parse as v1 cli first, and when that doesn't work,
         // interpret it as v2 cli:
-        if CliOptions::from_args_safe().is_err() || CliOptions::from_args().use_v2 {
+        if CliOptions::try_parse().is_err() || CliOptions::parse().use_v2 {
             v2cli_enabled = true;
             v2cli_args.remove(index);
         }
@@ -115,7 +137,7 @@ fn main() {
 
     // OK, we're still using the "rustc-style" CLI. Proceed here.
 
-    let args = CliOptions::from_args();
+    let args = CliOptions::parse();
 
     // The Tectonic crate comes with a hidden internal "test mode" that forces
     // it to use a specified set of local files, rather than going to the
@@ -152,18 +174,10 @@ fn main() {
     // something I'd be relatively OK with since it'd only affect the progam
     // UI, not the processing results).
 
-    let chatter_level = ChatterLevel::from_str(&args.chatter_level).unwrap();
-    let use_cli_color = match &*args.cli_color {
-        "always" => true,
-        "auto" => atty::is(atty::Stream::Stdout),
-        "never" => false,
-        _ => unreachable!(),
-    };
-
-    let mut status = if use_cli_color {
-        Box::new(TermcolorStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
+    let mut status = if args.cli_color.should_enable() {
+        Box::new(TermcolorStatusBackend::new(args.chatter_level)) as Box<dyn StatusBackend>
     } else {
-        Box::new(PlainStatusBackend::new(chatter_level)) as Box<dyn StatusBackend>
+        Box::new(PlainStatusBackend::new(args.chatter_level)) as Box<dyn StatusBackend>
     };
 
     // Now that we've got colorized output, pass off to the inner function ...

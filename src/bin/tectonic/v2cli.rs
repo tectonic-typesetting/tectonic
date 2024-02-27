@@ -4,11 +4,11 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
+use clap::{Parser, Subcommand};
 use std::{
     convert::Infallible, env, ffi::OsString, fs, io::Write, path::Path, path::PathBuf, process,
-    str::FromStr, sync::Arc,
+    sync::Arc,
 };
-use structopt::{clap::AppSettings, StructOpt};
 use tectonic::{
     self,
     config::{is_config_test_mode_activated, PersistentConfig},
@@ -25,56 +25,37 @@ use tectonic_docmodel::workspace::{Workspace, WorkspaceCreator};
 use tectonic_errors::prelude::anyhow;
 use tectonic_status_base::plain::PlainStatusBackend;
 use tokio::runtime;
-use watchexec::event::ProcessEnd;
 use watchexec::{
     action::{Action, Outcome, PreSpawn},
-    command::{Command, Shell},
+    command::Shell,
     config::InitConfig,
     Watchexec,
 };
+use watchexec::{command::Command, event::ProcessEnd};
 use watchexec_filterer_globset::GlobsetFilterer;
 use watchexec_signals::Signal;
 
 /// The main options for the "V2" command-line interface.
-#[derive(Debug, StructOpt)]
-#[structopt(
+#[derive(Debug, Parser)]
+#[command(
     name = "tectonic -X",
     about = "Process (La)TeX documents",
-    setting(AppSettings::NoBinaryName)
+    no_binary_name(true)
 )]
 struct V2CliOptions {
     /// How much chatter to print when running
-    #[structopt(
-        long = "chatter",
-        short,
-        name = "level",
-        default_value = "default",
-        possible_values(&["default", "minimal"])
-    )]
-    chatter_level: String,
+    #[arg(long = "chatter", short, name = "level", default_value = "default")]
+    chatter_level: ChatterLevel,
 
     /// Control colorization of output
-    #[structopt(
-        long = "color",
-        name = "when",
-        default_value = "auto",
-        possible_values(&["always", "auto", "never"])
-    )]
-    cli_color: String,
+    #[arg(long = "color", name = "when", default_value = "auto")]
+    cli_color: crate::CliColor,
 
     /// Use this URL to find resource files instead of the default
-    #[structopt(
-        takes_value(true),
-        long,
-        short,
-        name = "url",
-        overrides_with = "url",
-        global(true)
-    )]
+    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
     // TODO add URL validation
     web_bundle: Option<String>,
-
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: Commands,
 }
 
@@ -107,7 +88,7 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     // Parse args -- this will exit if there are problems.
 
-    let args = V2CliOptions::from_iter(effective_args);
+    let args = V2CliOptions::parse_from(effective_args);
 
     // Command-specific customizations before we do our centralized setup.
     // This is a semi-hack so that we can set up certain commands to ensure
@@ -121,17 +102,10 @@ pub fn v2_main(effective_args: &[OsString]) {
     let chatter_level = if customizations.minimal_chatter {
         ChatterLevel::Minimal
     } else {
-        ChatterLevel::from_str(&args.chatter_level).unwrap()
+        args.chatter_level
     };
 
-    let use_cli_color = match &*args.cli_color {
-        "always" => true,
-        "auto" => atty::is(atty::Stream::Stdout),
-        "never" => false,
-        _ => unreachable!(),
-    };
-
-    let mut status = if use_cli_color {
+    let mut status = if args.cli_color.should_enable() {
         let mut sb = TermcolorStatusBackend::new(chatter_level);
         sb.always_stderr(customizations.always_stderr);
         Box::new(sb) as Box<dyn StatusBackend>
@@ -162,41 +136,41 @@ pub fn v2_main(effective_args: &[OsString]) {
 }
 
 #[allow(clippy::large_enum_variant)]
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Subcommand)]
 enum Commands {
-    #[structopt(name = "build")]
+    #[command(name = "build")]
     /// Build a document
     Build(BuildCommand),
 
-    #[structopt(name = "bundle")]
+    #[command(name = "bundle")]
     /// Commands relating to this document’s TeX file bundle
     Bundle(BundleCommand),
 
-    #[structopt(name = "compile")]
+    #[command(name = "compile")]
     /// Run a standalone (La)TeX compilation
     Compile(crate::compile::CompileOptions),
 
-    #[structopt(name = "dump")]
+    #[command(name = "dump")]
     /// Run a partial compilation and output an intermediate file
     Dump(DumpCommand),
 
-    #[structopt(name = "new")]
+    #[command(name = "new")]
     /// Create a new document project
     New(NewCommand),
 
-    #[structopt(name = "init")]
+    #[command(name = "init")]
     /// Initializes a new document in the current directory
     Init(InitCommand),
 
-    #[structopt(name = "show")]
+    #[command(name = "show")]
     /// Display various useful pieces of information
     Show(ShowCommand),
 
-    #[structopt(name = "watch")]
+    #[command(name = "watch")]
     /// Watch input files and execute commands on change
     Watch(WatchCommand),
 
-    #[structopt(external_subcommand)]
+    #[command(external_subcommand)]
     /// Runs the external command `tectonic-[command]` if one exists.
     External(Vec<String>),
 }
@@ -237,34 +211,34 @@ impl Commands {
 }
 
 /// `build`: Build a document
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct BuildCommand {
     /// Document is untrusted -- disable all known-insecure features
-    #[structopt(long)]
+    #[arg(long)]
     untrusted: bool,
 
     /// Use only resource files cached locally
-    #[structopt(short = "C", long)]
+    #[arg(short = 'C', long)]
     only_cached: bool,
 
     /// Keep the intermediate files generated during processing
-    #[structopt(short, long)]
+    #[arg(short, long)]
     keep_intermediates: bool,
 
     /// Keep the log files generated during processing
-    #[structopt(long)]
+    #[arg(long)]
     keep_logs: bool,
 
     /// Print the engine's chatter during processing
-    #[structopt(long = "print", short)]
+    #[arg(long = "print", short)]
     print_stdout: bool,
 
     /// Open built document using system handler
-    #[structopt(long)]
+    #[arg(long)]
     open: bool,
 
     /// Specify a target to be used by the build
-    #[structopt(long, help = "Specify the target of the build.")]
+    #[arg(long, help = "Specify the target of the build.")]
     target: Option<String>,
 }
 
@@ -341,19 +315,19 @@ impl BuildCommand {
 }
 
 /// `bundle`: Commands relating to Tectonic bundles
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct BundleCommand {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: BundleCommands,
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Subcommand)]
 enum BundleCommands {
-    #[structopt(name = "cat")]
+    #[command(name = "cat")]
     /// Dump the contents of a file in the bundle
     Cat(BundleCatCommand),
 
-    #[structopt(name = "search")]
+    #[command(name = "search")]
     /// Filter the list of filenames contained in the bundle
     Search(BundleSearchCommand),
 }
@@ -407,13 +381,13 @@ fn get_a_bundle(
     }
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 struct BundleCatCommand {
     /// Use only resource files cached locally
-    #[structopt(short = "C", long)]
+    #[arg(short = 'C', long)]
     only_cached: bool,
 
-    #[structopt(help = "The name of the file to dump")]
+    #[arg(help = "The name of the file to dump")]
     filename: String,
 }
 
@@ -432,13 +406,13 @@ impl BundleCatCommand {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 struct BundleSearchCommand {
     /// Use only resource files cached locally
-    #[structopt(short = "C", long)]
+    #[arg(short = 'C', long)]
     only_cached: bool,
 
-    #[structopt(help = "The search term")]
+    #[arg(help = "The search term")]
     term: Option<String>,
 }
 
@@ -469,26 +443,26 @@ impl BundleSearchCommand {
 }
 
 /// `dump`: Run a partial build and dump an intermediate file
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct DumpCommand {
     /// Document is untrusted -- disable all known-insecure features
-    #[structopt(long)]
+    #[arg(long)]
     untrusted: bool,
 
     /// Use only resource files cached locally
-    #[structopt(short = "C", long)]
+    #[arg(short = 'C', long)]
     only_cached: bool,
 
     /// Use the specified output profile for the partial build
-    #[structopt(short = "p", long)]
+    #[arg(short = 'p', long)]
     profile: Option<String>,
 
     /// Dump the file or files whose names end with the argument
-    #[structopt(long = "suffix", short)]
+    #[arg(long = "suffix", short)]
     suffix_mode: bool,
 
     /// The name of the intermediate file to dump
-    #[structopt()]
+    #[arg()]
     filename: String,
 }
 
@@ -567,10 +541,10 @@ impl DumpCommand {
 }
 
 /// `watch`: Watch input files and execute commands on change
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct WatchCommand {
     /// Tectonic commands to execute on build [default: build]
-    #[structopt(long = "exec", short = "x")]
+    #[arg(long = "exec", short = 'x')]
     execute: Vec<String>,
 }
 
@@ -699,10 +673,10 @@ impl WatchCommand {
 }
 
 /// `new`: Create a new document project
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct NewCommand {
     /// The name of the document directory to create.
-    #[structopt(default_value = ".")]
+    #[arg(default_value = ".")]
     path: PathBuf,
 }
 
@@ -731,7 +705,7 @@ impl NewCommand {
 }
 
 /// `init`: Initialize a document project in the current directory.
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct InitCommand {}
 
 impl InitCommand {
@@ -760,15 +734,15 @@ impl InitCommand {
 }
 
 /// `show`: Show various useful pieces of information.
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct ShowCommand {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: ShowCommands,
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 enum ShowCommands {
-    #[structopt(name = "user-cache-dir")]
+    #[command(name = "user-cache-dir")]
     /// Print the location of the default per-user cache directory
     UserCacheDir(ShowUserCacheDirCommand),
 }
@@ -787,7 +761,7 @@ impl ShowCommand {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 struct ShowUserCacheDirCommand {}
 
 impl ShowUserCacheDirCommand {
