@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 use clap::{Parser, ValueEnum};
-use std::{env, process};
+use std::{env, io::IsTerminal, process};
 use tectonic_status_base::plain::PlainStatusBackend;
 
 use tectonic::{
@@ -76,7 +76,7 @@ impl CliColor {
     pub fn should_enable(&self) -> bool {
         match self {
             Self::Always => true,
-            Self::Auto => atty::is(atty::Stream::Stdout),
+            Self::Auto => std::io::stdout().is_terminal(),
             Self::Never => false,
         }
     }

@@ -2432,7 +2432,6 @@ dependencies = [
 name = "tectonic"
 version = "0.0.0-dev.0"
 dependencies = [
- "atty",
  "byte-unit",
  "cfg-if",
  "clap 4.5.1",
