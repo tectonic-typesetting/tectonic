@@ -54,7 +54,7 @@ impl ExecVal {
 
 pub(crate) struct ExecCtx<'a, 'bib, 'cbs> {
     glbl_ctx: &'a mut Bibtex<'bib, 'cbs>,
-    pub _default: HashPointer,
+    pub default: HashPointer,
     pub(crate) lit_stack: Vec<ExecVal>,
     pub mess_with_entries: bool,
     /// Pointer to the current top of the string pool, used to optimize certain string operations
@@ -65,7 +65,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
     pub(crate) fn new(glbl_ctx: &'a mut Bibtex<'bib, 'cbs>) -> ExecCtx<'a, 'bib, 'cbs> {
         ExecCtx {
             glbl_ctx,
-            _default: 0,
+            default: 0,
             lit_stack: Vec::new(),
             mess_with_entries: false,
             bib_str_ptr: 0,
@@ -139,7 +139,7 @@ pub(crate) fn print_lit(
             ctx.write_logs("\n");
         }
         ExecVal::Illegal => {
-            illegl_literal_confusion(ctx);
+            illegal_literal_confusion(ctx);
             return Err(BibtexError::Fatal);
         }
     }
@@ -148,9 +148,9 @@ pub(crate) fn print_lit(
 
 pub(crate) fn print_stk_lit(
     ctx: &mut Bibtex<'_, '_>,
-    val: ExecVal,
     pool: &StringPool,
     hash: &HashData,
+    val: ExecVal,
 ) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => ctx.write_logs(&format!("{} is an integer literal", val)),
@@ -170,7 +170,7 @@ pub(crate) fn print_stk_lit(
             ctx.write_logs("` is a missing field");
         }
         ExecVal::Illegal => {
-            illegl_literal_confusion(ctx);
+            illegal_literal_confusion(ctx);
             return Err(BibtexError::Fatal);
         }
     }
@@ -188,14 +188,14 @@ pub(crate) fn print_wrong_stk_lit(
     match val {
         ExecVal::Illegal => Ok(()),
         _ => {
-            print_stk_lit(ctx, val, pool, hash)?;
+            print_stk_lit(ctx, pool, hash, val)?;
 
             match typ2 {
                 StkType::Integer => ctx.write_logs(", not an integer,"),
                 StkType::String => ctx.write_logs(", not a string,"),
                 StkType::Function => ctx.write_logs(", not a function,"),
                 StkType::Missing | StkType::Illegal => {
-                    illegl_literal_confusion(ctx);
+                    illegal_literal_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
             };
@@ -242,7 +242,7 @@ pub(crate) fn print_bst_name(
     Ok(())
 }
 
-pub fn illegl_literal_confusion(ctx: &mut Bibtex<'_, '_>) {
+pub fn illegal_literal_confusion(ctx: &mut Bibtex<'_, '_>) {
     ctx.write_logs("Illegal literal type");
     print_confusion(ctx);
 }
@@ -671,9 +671,9 @@ fn interp_eq(
         }
         _ if pop1.ty() != pop2.ty() => {
             if pop1.ty() != StkType::Illegal && pop2.ty() != StkType::Illegal {
-                print_stk_lit(ctx, pop1, pool, hash)?;
+                print_stk_lit(ctx, pool, hash, pop1)?;
                 ctx.write_logs(", ");
-                print_stk_lit(ctx, pop2, pool, hash)?;
+                print_stk_lit(ctx, pool, hash, pop2)?;
                 ctx.write_logs("\n---they aren't the same literal types");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
@@ -681,7 +681,7 @@ fn interp_eq(
         }
         _ => {
             if pop1.ty() != StkType::Illegal {
-                print_stk_lit(ctx, pop1, pool, hash)?;
+                print_stk_lit(ctx, pool, hash, pop1)?;
                 ctx.write_logs(", not an integer or a string,");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
@@ -1291,7 +1291,7 @@ fn interp_empty(
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(ctx, pop1, pool, hash)?;
+            print_stk_lit(ctx, pool, hash, pop1)?;
             ctx.write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool, cites)?;
             ctx.push_stack(ExecVal::Integer(0));
@@ -1658,7 +1658,7 @@ fn interp_missing(
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(ctx, pop1, pool, hash)?;
+            print_stk_lit(ctx, pool, hash, pop1)?;
             ctx.write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool, cites)?;
             ctx.push_stack(ExecVal::Integer(0));
@@ -2234,7 +2234,7 @@ pub(crate) fn execute_fn(
                     bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)?;
                     Ok(())
                 } else if default == HashData::undefined() {
-                    execute_fn(ctx, globals, ctx._default)
+                    execute_fn(ctx, globals, ctx.default)
                 } else if default != 0 {
                     execute_fn(ctx, globals, default)
                 } else {
