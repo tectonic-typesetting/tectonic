@@ -242,7 +242,7 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
             logs: Logs::default(),
             bst: None,
             bbl_file: None,
-            bbl_line_num: 0,
+            bbl_line_num: 1,
             impl_fn_num: 0,
             cite_xptr: 0,
             bib_seen: false,
@@ -444,7 +444,8 @@ pub(crate) fn inner_bibtex_main(
         return Ok(History::FatalError);
     }
 
-    if initialize(ctx, globals, aux_file_name)? != 0 {
+    pre_def_certain_strings(ctx, globals)?;
+    if get_the_top_level_aux_file_name(ctx, globals, aux_file_name)? != 0 {
         return Ok(History::FatalError);
     }
 
@@ -491,7 +492,6 @@ pub(crate) fn inner_bibtex_main(
         return Err(BibtexError::NoBst);
     }
 
-    ctx.bbl_line_num = 1;
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.init(BufTy::Base));
@@ -569,31 +569,6 @@ pub(crate) fn get_the_top_level_aux_file_name(
     }
 
     Ok(0)
-}
-
-fn initialize(
-    ctx: &mut Bibtex<'_, '_>,
-    globals: &mut GlobalItems<'_>,
-    aux_file_name: &CStr,
-) -> Result<i32, BibtexError> {
-    globals.pool.set_pool_ptr(0);
-    globals.pool.set_str_ptr(1);
-    globals.pool.set_start(globals.pool.str_ptr(), 0);
-
-    ctx.bib_seen = false;
-    ctx.bst_seen = false;
-    ctx.citation_seen = false;
-    ctx.all_entries = false;
-
-    ctx.entry_seen = false;
-    ctx.read_seen = false;
-    ctx.read_performed = false;
-    ctx.reading_completed = false;
-    ctx.impl_fn_num = 0;
-    globals.buffers.set_init(BufTy::Out, 0);
-
-    pre_def_certain_strings(ctx, globals)?;
-    get_the_top_level_aux_file_name(ctx, globals, aux_file_name)
 }
 
 /// Does our resulting executable link correctly?
