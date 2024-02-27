@@ -2673,7 +2673,7 @@ name = "tectonic_xdv"
 version = "0.0.0-dev.0"
 dependencies = [
  "byteorder",
- "clap 2.34.0",
+ "clap 4.5.1",
 ]
 
 [[package]]
