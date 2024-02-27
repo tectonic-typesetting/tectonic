@@ -5,11 +5,8 @@
 //! "V1" / "rustc-like" Tectonic command-line interface, as well as the
 //! `compile` subcommand of the "V2" / "cargo-like" interface.
 
-use std::{
-    path::{Path, PathBuf},
-    str::FromStr,
-};
-use structopt::StructOpt;
+use clap::Parser;
+use std::path::{Path, PathBuf};
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 
 use tectonic::{
@@ -22,70 +19,70 @@ use tectonic::{
     unstable_opts::{UnstableArg, UnstableOptions},
 };
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 pub struct CompileOptions {
     /// The file to process, or "-" to process the standard input stream
-    #[structopt(name = "input")]
+    #[arg(name = "input")]
     input: String,
 
     /// The name of the "format" file used to initialize the TeX engine
-    #[structopt(long, short, name = "path", default_value = "latex")]
+    #[arg(long, short, name = "path", default_value = "latex")]
     format: String,
 
     /// Use this directory or Zip-format bundle file to find resource files instead of the default
-    #[structopt(takes_value(true), parse(from_os_str), long, short, name = "file_path")]
+    #[arg(long, short, name = "file_path")]
     bundle: Option<PathBuf>,
 
     /// Use only resource files cached locally
-    #[structopt(short = "C", long)]
+    #[arg(short = 'C', long)]
     only_cached: bool,
 
     /// The kind of output to generate
-    #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "fmt"]))]
-    outfmt: String,
+    #[arg(long, name = "format", default_value = "pdf")]
+    outfmt: OutputFormat,
 
     /// Write Makefile-format rules expressing the dependencies of this run to <dest_path>
-    #[structopt(long, name = "dest_path")]
+    #[arg(long, name = "dest_path")]
     makefile_rules: Option<PathBuf>,
 
     /// Which engines to run
-    #[structopt(long, default_value = "default", possible_values(&["default", "tex", "bibtex_first"]))]
-    pass: String,
+    #[arg(long, default_value = "default")]
+    pass: PassSetting,
 
     /// Rerun the TeX engine exactly this many times after the first
-    #[structopt(name = "count", long = "reruns", short = "r")]
+    #[arg(name = "count", long = "reruns", short = 'r')]
     reruns: Option<usize>,
 
     /// Keep the intermediate files generated during processing
-    #[structopt(short, long)]
+    #[arg(short, long)]
     keep_intermediates: bool,
 
     /// Keep the log files generated during processing
-    #[structopt(long)]
+    #[arg(long)]
     keep_logs: bool,
 
     /// Generate SyncTeX data
-    #[structopt(long)]
+    #[arg(long)]
     synctex: bool,
 
     /// Tell the engine that no file at <hide_path> exists, if it tries to read it
-    #[structopt(long, name = "hide_path")]
+    #[arg(long, name = "hide_path")]
     hide: Option<Vec<PathBuf>>,
 
     /// Print the engine's chatter during processing
-    #[structopt(long = "print", short)]
+    #[arg(long = "print", short)]
     print_stdout: bool,
 
     /// The directory in which to place output files [default: the directory containing <input>]
-    #[structopt(name = "outdir", short, long, parse(from_os_str))]
+    #[arg(name = "outdir", short, long)]
     outdir: Option<PathBuf>,
 
     /// Input is untrusted -- disable all known-insecure features
-    #[structopt(long)]
+    #[arg(long)]
     untrusted: bool,
 
     /// Unstable options. Pass -Zhelp to show a list
-    #[structopt(name = "option", short = "Z", number_of_values = 1)]
+    #[arg(name = "option", short = 'Z')]
     unstable: Vec<UnstableArg>,
 }
 
@@ -118,12 +115,9 @@ impl CompileOptions {
             .keep_logs(self.keep_logs)
             .keep_intermediates(self.keep_intermediates)
             .format_cache_path(config.format_cache_path()?)
-            .synctex(self.synctex);
-
-        sess_builder.output_format(OutputFormat::from_str(&self.outfmt).unwrap());
-
-        let pass = PassSetting::from_str(&self.pass).unwrap();
-        sess_builder.pass(pass);
+            .synctex(self.synctex)
+            .output_format(self.outfmt)
+            .pass(self.pass);
 
         if let Some(s) = self.reruns {
             sess_builder.reruns(s);
