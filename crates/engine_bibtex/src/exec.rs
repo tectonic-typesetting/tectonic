@@ -123,13 +123,13 @@ impl<'bib, 'cbs> Deref for ExecCtx<'_, 'bib, 'cbs> {
     type Target = Bibtex<'bib, 'cbs>;
 
     fn deref(&self) -> &Self::Target {
-        &self.glbl_ctx
+        self.glbl_ctx
     }
 }
 
 impl DerefMut for ExecCtx<'_, '_, '_> {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.glbl_ctx
+        self.glbl_ctx
     }
 }
 
