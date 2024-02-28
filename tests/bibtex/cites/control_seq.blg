@@ -1,0 +1,10 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: control_seq.aux
+The style file: ../plain.bst
+Database file #1: control_seq.bib
+Warning--"i j oe OE ae AE a A o O l L} s" isn't a brace-balanced string for entry SequenceExample
+while executing--line 1049 of file ../plain.bst
+Warning--empty publisher in SequenceExample
+Warning--empty year in SequenceExample
+(There were 3 warnings)

@@ -4,7 +4,7 @@ use crate::{
     char_info::LexClass,
     cite::find_cite_locs_for_this_cite_key,
     exec::{check_command_execution, execute_fn, ExecCtx},
-    hash::{FnClass, HashData, HashExtra},
+    hash::{BstFn, HashData, HashExtra},
     log::{
         already_seen_function_print, bad_cross_reference_print,
         bst_err_print_and_look_for_blank_line, bst_id_print, bst_left_brace_print,
@@ -14,7 +14,7 @@ use crate::{
     },
     pool::StringPool,
     scan::{eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
-    Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk,
+    Bibtex, BibtexError, GlobalItems, HashPointer, StrIlk,
 };
 
 macro_rules! eat_bst_white {
@@ -62,6 +62,20 @@ macro_rules! bst_ident {
     };
 }
 
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum BstCommand {
+    Entry,
+    Execute,
+    Function,
+    Integers,
+    Iterate,
+    Macro,
+    Read,
+    Reverse,
+    Sort,
+    Strings,
+}
+
 fn bst_entry_command(
     ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
@@ -90,14 +104,13 @@ fn bst_entry_command(
             ctx,
             globals.hash,
             bst_fn,
-            HashExtra::BstFn(globals.other.num_fields() as i32),
+            HashExtra::BstFn(BstFn::Field(globals.other.num_fields())),
         )?;
         if res.exists {
             already_seen_function_print(ctx, globals.buffers, globals.pool, globals.hash, res.loc)?;
             return Ok(());
         }
 
-        globals.hash.set_ty(res.loc, FnClass::Field);
         globals.other.set_num_fields(globals.other.num_fields() + 1);
 
         eat_bst_white!(ctx, globals, "entry");
@@ -130,14 +143,13 @@ fn bst_entry_command(
             ctx,
             globals.hash,
             bst_fn,
-            HashExtra::BstFn(globals.entries.num_ent_ints() as i32),
+            HashExtra::BstFn(BstFn::IntEntry(globals.entries.num_ent_ints())),
         )?;
         if res.exists {
             already_seen_function_print(ctx, globals.buffers, globals.pool, globals.hash, res.loc)?;
             return Ok(());
         }
 
-        globals.hash.set_ty(res.loc, FnClass::IntEntryVar);
         globals
             .entries
             .set_num_ent_ints(globals.entries.num_ent_ints() + 1);
@@ -166,14 +178,13 @@ fn bst_entry_command(
             ctx,
             globals.hash,
             bst_fn,
-            HashExtra::BstFn(globals.entries.num_ent_strs() as i32),
+            HashExtra::BstFn(BstFn::StrEntry(globals.entries.num_ent_strs())),
         )?;
         if res.exists {
             already_seen_function_print(ctx, globals.buffers, globals.pool, globals.hash, res.loc)?;
             return Ok(());
         }
 
-        globals.hash.set_ty(res.loc, FnClass::StrEntryVar);
         globals
             .entries
             .set_num_ent_strs(globals.entries.num_ent_strs() + 1);
@@ -249,15 +260,17 @@ fn bst_function_command(
     let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
     bst_fn.make_ascii_lowercase();
 
-    let res = globals
-        .pool
-        .lookup_str_insert(ctx, globals.hash, bst_fn, HashExtra::BstFn(0))?;
+    let res = globals.pool.lookup_str_insert(
+        ctx,
+        globals.hash,
+        bst_fn,
+        HashExtra::BstFn(BstFn::Wizard(0)),
+    )?;
     if res.exists {
         already_seen_function_print(ctx, globals.buffers, globals.pool, globals.hash, res.loc)?;
         return Ok(());
     }
 
-    globals.hash.set_ty(res.loc, FnClass::Wizard);
     if globals.hash.text(res.loc) == ctx.s_default {
         ctx.default = res.loc;
     }
@@ -302,15 +315,17 @@ fn bst_integers_command(
         let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
         bst_fn.make_ascii_lowercase();
 
-        let res = globals
-            .pool
-            .lookup_str_insert(ctx, globals.hash, bst_fn, HashExtra::BstFn(0))?;
+        let res = globals.pool.lookup_str_insert(
+            ctx,
+            globals.hash,
+            bst_fn,
+            HashExtra::BstFn(BstFn::IntGlbl(0)),
+        )?;
         if res.exists {
             already_seen_function_print(ctx, globals.buffers, globals.pool, globals.hash, res.loc)?;
             return Ok(());
         }
 
-        globals.hash.set_ty(res.loc, FnClass::IntGlblVar);
         eat_bst_white!(ctx, globals, "integers");
     }
 
@@ -435,9 +450,8 @@ fn bst_macro_command(
     let text = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
     let res2 = globals
         .pool
-        .lookup_str_insert(ctx, globals.hash, text, HashExtra::Text(0))?;
+        .lookup_str_insert(ctx, globals.hash, text, HashExtra::Text)?;
 
-    globals.hash.set_ty(res2.loc, FnClass::StrLit);
     globals.hash.node_mut(res.loc).extra = HashExtra::Macro(globals.hash.text(res2.loc));
     globals
         .buffers
@@ -556,15 +570,19 @@ fn bst_read_command(
             );
 
             if find.lc_found {
-                let cite_loc = globals.hash.ilk_info(find.lc_cite_loc) as CiteNumber;
+                let HashExtra::LcCite(cite_loc) = globals.hash.node(find.lc_cite_loc).extra else {
+                    panic!("LcCite lookup didn't have LcCite extra");
+                };
                 globals
                     .other
                     .set_field(field_ptr, globals.hash.text(cite_loc));
 
                 let field_start = cite_ptr * globals.other.num_fields();
-                let mut parent = globals.hash.ilk_info(cite_loc) as usize
-                    * globals.other.num_fields()
-                    + globals.other.pre_defined_fields();
+                let HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra else {
+                    panic!("LcCite location didn't have Cite extra");
+                };
+                let mut parent =
+                    cite * globals.other.num_fields() + globals.other.pre_defined_fields();
                 for idx in (field_start + globals.other.pre_defined_fields())
                     ..(field_start + globals.other.num_fields())
                 {
@@ -601,12 +619,18 @@ fn bst_read_command(
                 )?;
                 globals.other.set_field(field_ptr, 0);
             } else {
-                if find.cite_loc != globals.hash.ilk_info(find.lc_cite_loc) as CiteNumber {
+                let HashExtra::LcCite(cite_loc) = globals.hash.node(find.lc_cite_loc).extra else {
+                    panic!("LcCite lookup didn't have LcCite extra");
+                };
+                if find.cite_loc != cite_loc {
                     hash_cite_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
 
-                let cite_parent_ptr = globals.hash.ilk_info(find.cite_loc) as CiteNumber;
+                let HashExtra::Cite(cite) = globals.hash.node(find.cite_loc).extra else {
+                    panic!("Cite lookup didn't have Cite extra");
+                };
+                let cite_parent_ptr = cite;
                 if globals.cites.get_type(cite_parent_ptr) == 0 {
                     nonexistent_cross_reference_error(
                         ctx,
@@ -674,9 +698,10 @@ fn bst_read_command(
                     return Err(BibtexError::Fatal);
                 }
 
-                if !find.cite_found
-                    || find.cite_loc != globals.hash.ilk_info(find.lc_cite_loc) as CiteNumber
-                {
+                let HashExtra::LcCite(cite_loc) = globals.hash.node(find.lc_cite_loc).extra else {
+                    panic!("LcCite lookup didn't have LcCite extra");
+                };
+                if !find.cite_found || find.cite_loc != cite_loc {
                     hash_cite_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
@@ -817,7 +842,7 @@ fn bst_strings_command(
             ctx,
             globals.hash,
             bst_fn,
-            HashExtra::BstFn(globals.globals.num_glb_strs()),
+            HashExtra::BstFn(BstFn::StrGlbl(globals.globals.num_glb_strs())),
         )?;
 
         if res.exists {
@@ -825,9 +850,7 @@ fn bst_strings_command(
             return Ok(());
         }
 
-        globals.hash.set_ty(res.loc, FnClass::StrGlblVar);
-
-        if globals.globals.num_glb_strs() as usize == globals.globals.len() {
+        if globals.globals.num_glb_strs() == globals.globals.len() {
             globals.globals.grow();
         }
 
@@ -867,14 +890,15 @@ fn bad_argument_token(
         ctx.write_logs(" is an unknown function");
         bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         Ok(true)
-    } else if hash.ty(res.loc) != FnClass::Builtin && hash.ty(res.loc) != FnClass::Wizard {
+    } else if let HashExtra::BstFn(BstFn::Builtin(_) | BstFn::Wizard(_)) = hash.node(res.loc).extra
+    {
+        Ok(false)
+    } else {
         print_a_token(ctx, buffers);
         ctx.write_logs(" has bad function type");
         print_fn_class(ctx, hash, res.loc);
         bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
         Ok(true)
-    } else {
-        Ok(false)
     }
 }
 
@@ -909,21 +933,20 @@ pub(crate) fn get_bst_command_and_process(
         return Ok(());
     }
 
-    match globals.hash.ilk_info(res.loc) {
-        0 => bst_entry_command(ctx, globals),
-        1 => bst_execute_command(ctx, globals),
-        2 => bst_function_command(ctx, globals),
-        3 => bst_integers_command(ctx, globals),
-        4 => bst_iterate_command(ctx, globals),
-        5 => bst_macro_command(ctx, globals),
-        6 => bst_read_command(ctx, globals),
-        7 => bst_reverse_command(ctx, globals),
-        8 => bst_sort_command(ctx, globals),
-        9 => bst_strings_command(ctx, globals),
-        _ => {
-            ctx.write_logs("Unknown style-file command");
-            print_confusion(ctx);
-            Err(BibtexError::Fatal)
-        }
+    let HashExtra::BstCommand(cmd) = globals.hash.node(res.loc).extra else {
+        panic!("BstCommand lookup didn't have BstCommand extra");
+    };
+
+    match cmd {
+        BstCommand::Entry => bst_entry_command(ctx, globals),
+        BstCommand::Execute => bst_execute_command(ctx, globals),
+        BstCommand::Function => bst_function_command(ctx, globals),
+        BstCommand::Integers => bst_integers_command(ctx, globals),
+        BstCommand::Iterate => bst_iterate_command(ctx, globals),
+        BstCommand::Macro => bst_macro_command(ctx, globals),
+        BstCommand::Read => bst_read_command(ctx, globals),
+        BstCommand::Reverse => bst_reverse_command(ctx, globals),
+        BstCommand::Sort => bst_sort_command(ctx, globals),
+        BstCommand::Strings => bst_strings_command(ctx, globals),
     }
 }
