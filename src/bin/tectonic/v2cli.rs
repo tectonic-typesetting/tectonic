@@ -259,8 +259,8 @@ impl BuildCommand {
         // `--web-bundle` is not actually used for `-X build`,
         // so inform the user instead of ignoring silently.
         if let Some(url) = web_bundle {
-            info!(tectonic_log_source = "cli", "--web-bundle {} ignored", &url);
-            info!(
+            warn!(tectonic_log_source = "cli", "--web-bundle {} ignored", &url);
+            warn!(
                 tectonic_log_source = "cli",
                 "using workspace bundle configuration"
             );
