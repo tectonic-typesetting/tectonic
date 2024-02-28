@@ -556,12 +556,25 @@ pub(crate) fn add_out_pool(
 mod tests {
     use super::*;
     use crate::BibtexConfig;
-    use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, Result};
+    use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, MinimalDriver};
+    use tectonic_io_base::{stack::IoStack, IoProvider};
+    use tectonic_status_base::NoopStatusBackend;
 
-    fn with_cbs<T>(f: impl FnOnce(&mut CoreBridgeState<'_>) -> T) -> Result<T> {
-        CoreBridgeLauncher::new(&mut [], &mut []).with_global_lock(f)
+    fn with_cbs(f: impl FnOnce(&mut CoreBridgeState<'_>)) {
+        let io_list: Vec<&mut dyn IoProvider> = vec![];
+        let io = IoStack::new(io_list);
+        let mut hooks = MinimalDriver::new(io);
+        let mut status = NoopStatusBackend::default();
+        let mut cbl = CoreBridgeLauncher::new(&mut hooks, &mut status);
+        cbl.with_global_lock(|cbs| {
+            f(cbs);
+            Ok(())
+        })
+        .unwrap();
     }
 
+    // TODO: Create context without backend? Use custom backend-like type?
+    //       Implement the relevant interfaces ourself?
     #[test]
     fn test_pool() {
         with_cbs(|cbs| {
@@ -600,6 +613,5 @@ mod tests {
                 Err(LookupErr::DoesntExist)
             );
         })
-        .unwrap()
     }
 }
