@@ -5,7 +5,7 @@ use crate::{
     char_info::LexClass,
     cite::CiteInfo,
     exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
-    hash::{FnClass, HashData},
+    hash::{BstFn, HashData, HashExtra},
     other::OtherData,
     peekable::input_ln,
     pool::StringPool,
@@ -444,11 +444,6 @@ pub(crate) fn bib_id_print(
     }
 }
 
-pub(crate) fn bib_cmd_confusion(ctx: &mut Bibtex<'_, '_>) {
-    ctx.write_logs("Unknown database-file command");
-    print_confusion(ctx);
-}
-
 pub fn cite_key_disappeared_confusion(ctx: &mut Bibtex<'_, '_>) {
     ctx.write_logs("A cite key disappeared");
     print_confusion(ctx);
@@ -531,17 +526,17 @@ pub(crate) fn braces_unbalanced_complaint(
 }
 
 pub(crate) fn print_fn_class(ctx: &mut Bibtex<'_, '_>, hash: &HashData, fn_loc: HashPointer) {
-    let ty = hash.ty(fn_loc);
-    match ty {
-        FnClass::Builtin => ctx.write_logs("built-in"),
-        FnClass::Wizard => ctx.write_logs("wizard-defined"),
-        FnClass::IntLit => ctx.write_logs("integer-literal"),
-        FnClass::StrLit => ctx.write_logs("string-literal"),
-        FnClass::Field => ctx.write_logs("field"),
-        FnClass::IntEntryVar => ctx.write_logs("integer-entry-variable"),
-        FnClass::StrEntryVar => ctx.write_logs("string-entry-variable"),
-        FnClass::IntGlblVar => ctx.write_logs("integer-global-variable"),
-        FnClass::StrGlblVar => ctx.write_logs("string-global-variable"),
+    match hash.node(fn_loc).extra {
+        HashExtra::BstFn(BstFn::Builtin(_)) => ctx.write_logs("built-in"),
+        HashExtra::BstFn(BstFn::Wizard(_)) => ctx.write_logs("wizard-defined"),
+        HashExtra::Integer(_) => ctx.write_logs("integer-literal"),
+        HashExtra::Text => ctx.write_logs("string-literal"),
+        HashExtra::BstFn(BstFn::Field(_)) => ctx.write_logs("field"),
+        HashExtra::BstFn(BstFn::IntEntry(_)) => ctx.write_logs("integer-entry-variable"),
+        HashExtra::BstFn(BstFn::StrEntry(_)) => ctx.write_logs("string-entry-variable"),
+        HashExtra::BstFn(BstFn::IntGlbl(_)) => ctx.write_logs("integer-global-variable"),
+        HashExtra::BstFn(BstFn::StrGlbl(_)) => ctx.write_logs("string-global-variable"),
+        _ => ctx.write_logs("unknown-fn"),
     }
 }
 

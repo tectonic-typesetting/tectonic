@@ -7,7 +7,7 @@ pub(crate) struct GlobalData {
     glb_bib_str_ptr: Vec<StrNumber>,
     global_strs: Vec<ASCIICode>,
     glb_str_end: Vec<usize>,
-    num_glb_strs: i32,
+    num_glb_strs: usize,
 }
 
 impl GlobalData {
@@ -50,11 +50,11 @@ impl GlobalData {
         self.glb_str_end[pos] = val.len();
     }
 
-    pub fn num_glb_strs(&self) -> i32 {
+    pub fn num_glb_strs(&self) -> usize {
         self.num_glb_strs
     }
 
-    pub fn set_num_glb_strs(&mut self, val: i32) {
+    pub fn set_num_glb_strs(&mut self, val: usize) {
         self.num_glb_strs = val;
     }
 

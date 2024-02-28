@@ -1,10 +1,14 @@
 use crate::{
+    auxi::AuxCommand,
+    bibs::BibCommand,
+    bst::BstCommand,
     buffer::{BufTy, GlobalBuffer},
     char_info::LexClass,
     entries::ENT_STR_SIZE,
+    exec::ControlSeq,
     global::GLOB_STR_SIZE,
     hash,
-    hash::{FnClass, HashData, HashExtra},
+    hash::{BstBuiltin, BstFn, HashData, HashExtra},
     log::{output_bbl_line, print_overflow},
     ASCIICode, Bibtex, BibtexError, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk,
     StrNumber,
@@ -283,126 +287,199 @@ pub(crate) fn pre_def_certain_strings(
     let res = pool.lookup_str_insert(ctx, hash, b".aux", HashExtra::FileExt)?;
     ctx.s_aux_extension = hash.text(res.loc);
 
-    pool.lookup_str_insert(ctx, hash, b"\\bibdata", HashExtra::AuxCommand(0))?;
-    pool.lookup_str_insert(ctx, hash, b"\\bibstyle", HashExtra::AuxCommand(1))?;
-    pool.lookup_str_insert(ctx, hash, b"\\citation", HashExtra::AuxCommand(2))?;
-    pool.lookup_str_insert(ctx, hash, b"\\@input", HashExtra::AuxCommand(3))?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"\\bibdata",
+        HashExtra::AuxCommand(AuxCommand::Data),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"\\bibstyle",
+        HashExtra::AuxCommand(AuxCommand::Style),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"\\citation",
+        HashExtra::AuxCommand(AuxCommand::Citation),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"\\@input",
+        HashExtra::AuxCommand(AuxCommand::Input),
+    )?;
 
-    pool.lookup_str_insert(ctx, hash, b"entry", HashExtra::BstCommand(0))?;
-    pool.lookup_str_insert(ctx, hash, b"execute", HashExtra::BstCommand(1))?;
-    pool.lookup_str_insert(ctx, hash, b"function", HashExtra::BstCommand(2))?;
-    pool.lookup_str_insert(ctx, hash, b"integers", HashExtra::BstCommand(3))?;
-    pool.lookup_str_insert(ctx, hash, b"iterate", HashExtra::BstCommand(4))?;
-    pool.lookup_str_insert(ctx, hash, b"macro", HashExtra::BstCommand(5))?;
-    pool.lookup_str_insert(ctx, hash, b"read", HashExtra::BstCommand(6))?;
-    pool.lookup_str_insert(ctx, hash, b"reverse", HashExtra::BstCommand(7))?;
-    pool.lookup_str_insert(ctx, hash, b"sort", HashExtra::BstCommand(8))?;
-    pool.lookup_str_insert(ctx, hash, b"strings", HashExtra::BstCommand(9))?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"entry",
+        HashExtra::BstCommand(BstCommand::Entry),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"execute",
+        HashExtra::BstCommand(BstCommand::Execute),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"function",
+        HashExtra::BstCommand(BstCommand::Function),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"integers",
+        HashExtra::BstCommand(BstCommand::Integers),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"iterate",
+        HashExtra::BstCommand(BstCommand::Iterate),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"macro",
+        HashExtra::BstCommand(BstCommand::Macro),
+    )?;
+    pool.lookup_str_insert(ctx, hash, b"read", HashExtra::BstCommand(BstCommand::Read))?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"reverse",
+        HashExtra::BstCommand(BstCommand::Reverse),
+    )?;
+    pool.lookup_str_insert(ctx, hash, b"sort", HashExtra::BstCommand(BstCommand::Sort))?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"strings",
+        HashExtra::BstCommand(BstCommand::Strings),
+    )?;
 
-    pool.lookup_str_insert(ctx, hash, b"comment", HashExtra::BibCommand(0))?;
-    pool.lookup_str_insert(ctx, hash, b"preamble", HashExtra::BibCommand(1))?;
-    pool.lookup_str_insert(ctx, hash, b"string", HashExtra::BibCommand(2))?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"comment",
+        HashExtra::BibCommand(BibCommand::Comment),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"preamble",
+        HashExtra::BibCommand(BibCommand::Preamble),
+    )?;
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"string",
+        HashExtra::BibCommand(BibCommand::String),
+    )?;
 
-    let mut build_in = |pds: &[ASCIICode], blt_in_num| {
-        let res = pool.lookup_str_insert(ctx, hash, pds, HashExtra::BstFn(blt_in_num))?;
-        hash.set_ty(res.loc, FnClass::Builtin);
+    let mut build_in = |pds: &[ASCIICode], builtin| {
+        let res =
+            pool.lookup_str_insert(ctx, hash, pds, HashExtra::BstFn(BstFn::Builtin(builtin)))?;
         Ok(res.loc)
     };
 
-    build_in(b"=", 0)?;
-    build_in(b">", 1)?;
-    build_in(b"<", 2)?;
-    build_in(b"+", 3)?;
-    build_in(b"-", 4)?;
-    build_in(b"*", 5)?;
-    build_in(b":=", 6)?;
-    build_in(b"add.period$", 7)?;
-    build_in(b"call.type$", 8)?;
-    build_in(b"change.case$", 9)?;
-    build_in(b"chr.to.int$", 10)?;
-    build_in(b"cite$", 11)?;
-    build_in(b"duplicate$", 12)?;
-    build_in(b"empty$", 13)?;
-    build_in(b"format.name$", 14)?;
-    build_in(b"if$", 15)?;
-    build_in(b"int.to.chr$", 16)?;
-    build_in(b"int.to.str$", 17)?;
-    build_in(b"missing$", 18)?;
-    build_in(b"newline$", 19)?;
-    build_in(b"num.names$", 20)?;
-    build_in(b"pop$", 21)?;
-    build_in(b"preamble$", 22)?;
-    build_in(b"purify$", 23)?;
-    build_in(b"quote$", 24)?;
-    let skip_loc = build_in(b"skip$", 25)?;
-    build_in(b"stack$", 26)?;
-    build_in(b"substring$", 27)?;
-    build_in(b"swap$", 28)?;
-    build_in(b"text.length$", 29)?;
-    build_in(b"text.prefix$", 30)?;
-    build_in(b"top$", 31)?;
-    build_in(b"type$", 32)?;
-    build_in(b"warning$", 33)?;
-    build_in(b"while$", 34)?;
-    build_in(b"width$", 35)?;
-    build_in(b"write$", 36)?;
+    build_in(b"=", BstBuiltin::Eq)?;
+    build_in(b">", BstBuiltin::Gt)?;
+    build_in(b"<", BstBuiltin::Lt)?;
+    build_in(b"+", BstBuiltin::Plus)?;
+    build_in(b"-", BstBuiltin::Minus)?;
+    build_in(b"*", BstBuiltin::Concat)?;
+    build_in(b":=", BstBuiltin::Set)?;
+    build_in(b"add.period$", BstBuiltin::AddPeriod)?;
+    build_in(b"call.type$", BstBuiltin::CallType)?;
+    build_in(b"change.case$", BstBuiltin::ChangeCase)?;
+    build_in(b"chr.to.int$", BstBuiltin::ChrToInt)?;
+    build_in(b"cite$", BstBuiltin::Cite)?;
+    build_in(b"duplicate$", BstBuiltin::Duplicate)?;
+    build_in(b"empty$", BstBuiltin::Empty)?;
+    build_in(b"format.name$", BstBuiltin::FormatName)?;
+    build_in(b"if$", BstBuiltin::If)?;
+    build_in(b"int.to.chr$", BstBuiltin::IntToChr)?;
+    build_in(b"int.to.str$", BstBuiltin::IntToStr)?;
+    build_in(b"missing$", BstBuiltin::Missing)?;
+    build_in(b"newline$", BstBuiltin::Newline)?;
+    build_in(b"num.names$", BstBuiltin::NumNames)?;
+    build_in(b"pop$", BstBuiltin::Pop)?;
+    build_in(b"preamble$", BstBuiltin::Preamble)?;
+    build_in(b"purify$", BstBuiltin::Purify)?;
+    build_in(b"quote$", BstBuiltin::Quote)?;
+    let skip_loc = build_in(b"skip$", BstBuiltin::Skip)?;
+    build_in(b"stack$", BstBuiltin::Stack)?;
+    build_in(b"substring$", BstBuiltin::Substring)?;
+    build_in(b"swap$", BstBuiltin::Swap)?;
+    build_in(b"text.length$", BstBuiltin::TextLength)?;
+    build_in(b"text.prefix$", BstBuiltin::TextPrefix)?;
+    build_in(b"top$", BstBuiltin::Top)?;
+    build_in(b"type$", BstBuiltin::Type)?;
+    build_in(b"warning$", BstBuiltin::Warning)?;
+    build_in(b"while$", BstBuiltin::While)?;
+    build_in(b"width$", BstBuiltin::Width)?;
+    build_in(b"write$", BstBuiltin::Write)?;
 
-    let res = pool.lookup_str_insert(ctx, hash, b"", HashExtra::Text(0))?;
-    hash.set_ty(res.loc, FnClass::StrLit);
+    let res = pool.lookup_str_insert(ctx, hash, b"", HashExtra::Text)?;
     ctx.s_null = hash.text(res.loc);
-    let res = pool.lookup_str_insert(ctx, hash, b"default.type", HashExtra::Text(0))?;
-    hash.set_ty(res.loc, FnClass::StrLit);
+    let res = pool.lookup_str_insert(ctx, hash, b"default.type", HashExtra::Text)?;
     ctx.s_default = hash.text(res.loc);
     ctx.b_default = skip_loc;
 
-    pool.lookup_str_insert(ctx, hash, b"i", HashExtra::ControlSeq(0))?;
-    pool.lookup_str_insert(ctx, hash, b"j", HashExtra::ControlSeq(1))?;
-    pool.lookup_str_insert(ctx, hash, b"oe", HashExtra::ControlSeq(2))?;
-    pool.lookup_str_insert(ctx, hash, b"OE", HashExtra::ControlSeq(3))?;
-    pool.lookup_str_insert(ctx, hash, b"ae", HashExtra::ControlSeq(4))?;
-    pool.lookup_str_insert(ctx, hash, b"AE", HashExtra::ControlSeq(5))?;
-    pool.lookup_str_insert(ctx, hash, b"aa", HashExtra::ControlSeq(6))?;
-    pool.lookup_str_insert(ctx, hash, b"AA", HashExtra::ControlSeq(7))?;
-    pool.lookup_str_insert(ctx, hash, b"o", HashExtra::ControlSeq(8))?;
-    pool.lookup_str_insert(ctx, hash, b"O", HashExtra::ControlSeq(9))?;
-    pool.lookup_str_insert(ctx, hash, b"l", HashExtra::ControlSeq(10))?;
-    pool.lookup_str_insert(ctx, hash, b"L", HashExtra::ControlSeq(11))?;
-    pool.lookup_str_insert(ctx, hash, b"ss", HashExtra::ControlSeq(12))?;
+    pool.lookup_str_insert(ctx, hash, b"i", HashExtra::ControlSeq(ControlSeq::LowerI))?;
+    pool.lookup_str_insert(ctx, hash, b"j", HashExtra::ControlSeq(ControlSeq::LowerJ))?;
+    pool.lookup_str_insert(ctx, hash, b"oe", HashExtra::ControlSeq(ControlSeq::LowerOE))?;
+    pool.lookup_str_insert(ctx, hash, b"OE", HashExtra::ControlSeq(ControlSeq::UpperOE))?;
+    pool.lookup_str_insert(ctx, hash, b"ae", HashExtra::ControlSeq(ControlSeq::LowerAE))?;
+    pool.lookup_str_insert(ctx, hash, b"AE", HashExtra::ControlSeq(ControlSeq::UpperAE))?;
+    pool.lookup_str_insert(ctx, hash, b"aa", HashExtra::ControlSeq(ControlSeq::LowerAA))?;
+    pool.lookup_str_insert(ctx, hash, b"AA", HashExtra::ControlSeq(ControlSeq::UpperAA))?;
+    pool.lookup_str_insert(ctx, hash, b"o", HashExtra::ControlSeq(ControlSeq::LowerO))?;
+    pool.lookup_str_insert(ctx, hash, b"O", HashExtra::ControlSeq(ControlSeq::UpperO))?;
+    pool.lookup_str_insert(ctx, hash, b"l", HashExtra::ControlSeq(ControlSeq::LowerL))?;
+    pool.lookup_str_insert(ctx, hash, b"L", HashExtra::ControlSeq(ControlSeq::UpperL))?;
+    pool.lookup_str_insert(ctx, hash, b"ss", HashExtra::ControlSeq(ControlSeq::LowerSS))?;
 
     let num_fields = other.num_fields();
-    let res =
-        pool.lookup_str_insert(ctx, hash, b"crossref", HashExtra::BstFn(num_fields as i32))?;
-    hash.set_ty(res.loc, FnClass::Field);
+    pool.lookup_str_insert(
+        ctx,
+        hash,
+        b"crossref",
+        HashExtra::BstFn(BstFn::Field(num_fields)),
+    )?;
     other.set_crossref_num(num_fields);
     other.set_num_fields(num_fields + 1);
     other.set_pre_defined_fields(num_fields + 1);
 
     let num_ent_strs = entries.num_ent_strs();
-    let res = pool.lookup_str_insert(
+    pool.lookup_str_insert(
         ctx,
         hash,
         b"sort.key$",
-        HashExtra::BstFn(num_ent_strs as i32),
+        HashExtra::BstFn(BstFn::StrEntry(num_ent_strs)),
     )?;
-    hash.set_ty(res.loc, FnClass::StrEntryVar);
     entries.set_sort_key_num(num_ent_strs);
     entries.set_num_ent_strs(num_ent_strs + 1);
 
-    let res = pool.lookup_str_insert(
+    pool.lookup_str_insert(
         ctx,
         hash,
         b"entry.max$",
-        HashExtra::BstFn(ENT_STR_SIZE as i32),
+        HashExtra::BstFn(BstFn::IntGlbl(ENT_STR_SIZE as i32)),
     )?;
-    hash.set_ty(res.loc, FnClass::IntGlblVar);
 
-    let res = pool.lookup_str_insert(
+    pool.lookup_str_insert(
         ctx,
         hash,
         b"global.max$",
-        HashExtra::BstFn(GLOB_STR_SIZE as i32),
+        HashExtra::BstFn(BstFn::IntGlbl(GLOB_STR_SIZE as i32)),
     )?;
-    hash.set_ty(res.loc, FnClass::IntGlblVar);
 
     Ok(())
 }
@@ -479,42 +556,50 @@ pub(crate) fn add_out_pool(
 mod tests {
     use super::*;
     use crate::BibtexConfig;
+    use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, Result};
+
+    fn with_cbs<T>(f: impl FnOnce(&mut CoreBridgeState<'_>) -> T) -> Result<T> {
+        CoreBridgeLauncher::new(&mut [], &mut []).with_global_lock(f)
+    }
 
     #[test]
     fn test_pool() {
-        let mut ctx = Bibtex::new(todo!(), BibtexConfig::default());
-        let mut hash = HashData::new();
-        let mut new_pool = StringPool::new();
-        let res = new_pool
-            .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", StrIlk::Text)
-            .unwrap();
-        assert!(!res.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res.loc)),
-            Ok(b"a cool string" as &[_])
-        );
+        with_cbs(|cbs| {
+            let mut ctx = Bibtex::new(cbs, BibtexConfig::default());
+            let mut hash = HashData::new();
+            let mut new_pool = StringPool::new();
+            let res = new_pool
+                .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", HashExtra::Text)
+                .unwrap();
+            assert!(!res.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res.loc)),
+                Ok(b"a cool string" as &[_])
+            );
 
-        let res2 = new_pool
-            .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", StrIlk::Text)
-            .unwrap();
-        assert!(res2.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res2.loc)),
-            Ok(b"a cool string" as &[_])
-        );
+            let res2 = new_pool
+                .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", HashExtra::Text)
+                .unwrap();
+            assert!(res2.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res2.loc)),
+                Ok(b"a cool string" as &[_])
+            );
 
-        let res3 = new_pool.lookup_str(&hash, b"a cool string", StrIlk::Text);
-        assert!(res3.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res3.loc)),
-            Ok(b"a cool string" as &[_])
-        );
+            let res3 = new_pool.lookup_str(&hash, b"a cool string", StrIlk::Text);
+            assert!(res3.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res3.loc)),
+                Ok(b"a cool string" as &[_])
+            );
 
-        let res4 = new_pool.lookup_str(&hash, b"a bad string", StrIlk::Text);
-        assert!(!res4.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res4.loc)),
-            Err(LookupErr::DoesntExist)
-        );
+            let res4 = new_pool.lookup_str(&hash, b"a bad string", StrIlk::Text);
+            assert!(!res4.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res4.loc)),
+                Err(LookupErr::DoesntExist)
+            );
+        })
+        .unwrap()
     }
 }
