@@ -1,17 +1,17 @@
 use crate::{
-    bibs::{compress_bib_white, eat_bib_white_space, BibData},
+    bibs::{compress_bib_white, eat_bib_white_space, BibCommand, BibData},
     buffer::{BufTy, GlobalBuffer},
     char_info::{IdClass, LexClass},
     cite::{add_database_cite, CiteInfo},
-    exec::ExecCtx,
+    exec::{ControlSeq, ExecCtx},
     hash,
-    hash::{FnClass, HashData, HashExtra},
+    hash::{BstFn, HashData, HashExtra},
     log::{
-        bib_cmd_confusion, bib_err_print, bib_id_print, bib_unbalanced_braces_print,
-        bib_warn_print, braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line,
-        eat_bib_print, eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str,
-        print_confusion, print_recursion_illegal, skip_illegal_stuff_after_token_print,
-        skip_token_print, skip_token_unknown_function_print,
+        bib_err_print, bib_id_print, bib_unbalanced_braces_print, bib_warn_print,
+        braces_unbalanced_complaint, bst_err_print_and_look_for_blank_line, eat_bib_print,
+        eat_bst_print, hash_cite_confusion, macro_warn_print, print_a_pool_str, print_confusion,
+        print_recursion_illegal, skip_illegal_stuff_after_token_print, skip_token_print,
+        skip_token_unknown_function_print,
     },
     other::OtherData,
     peekable::input_ln,
@@ -196,17 +196,9 @@ fn handle_char(
                 return skip_token_print(ctx, buffers, pool);
             }
 
-            let res = {
-                let str = &buffers.buffer(BufTy::Base)
-                    [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
-                let res =
-                    pool.lookup_str_insert(ctx, hash, str, HashExtra::Integer(token_value))?;
-
-                if !res.exists {
-                    hash.set_ty(res.loc, FnClass::IntLit);
-                }
-                Ok(res)
-            }?;
+            let str = &buffers.buffer(BufTy::Base)
+                [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
+            let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Integer(token_value))?;
 
             let char = buffers.at_offset(BufTy::Base, 2);
 
@@ -229,13 +221,9 @@ fn handle_char(
                 return skip_token_print(ctx, buffers, pool);
             }
 
-            let res = {
-                let str = &buffers.buffer(BufTy::Base)
-                    [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
-                let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text(0))?;
-                hash.set_ty(res.loc, FnClass::StrLit);
-                Ok(res)
-            }?;
+            let str = &buffers.buffer(BufTy::Base)
+                [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
+            let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text)?;
 
             buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
@@ -280,18 +268,19 @@ fn handle_char(
 
             let str = format!("'{}", ctx.impl_fn_num);
 
-            let res = {
-                let res = pool.lookup_str_insert(ctx, hash, str.as_bytes(), HashExtra::BstFn(0))?;
+            let res = pool.lookup_str_insert(
+                ctx,
+                hash,
+                str.as_bytes(),
+                HashExtra::BstFn(BstFn::Wizard(0)),
+            )?;
 
-                if res.exists {
-                    ctx.write_logs("Already encountered implicit function");
-                    print_confusion(ctx);
-                    return Err(BibtexError::Fatal);
-                }
-                ctx.impl_fn_num += 1;
-                hash.set_ty(res.loc, FnClass::Wizard);
-                Ok(res)
-            }?;
+            if res.exists {
+                ctx.write_logs("Already encountered implicit function");
+                print_confusion(ctx);
+                return Err(BibtexError::Fatal);
+            }
+            ctx.impl_fn_num += 1;
 
             single_function.push(QUOTE_NEXT_FN);
             single_function.push(res.loc);
@@ -365,7 +354,7 @@ pub(crate) fn scan_fn_def(
 
     single_function.push(HashData::end_of_def());
 
-    hash.node_mut(fn_hash_loc).extra = HashExtra::BstFn(other.wiz_func_len() as i32);
+    hash.node_mut(fn_hash_loc).extra = HashExtra::BstFn(BstFn::Wizard(other.wiz_func_len()));
 
     for ptr in single_function {
         other.push_wiz_func(ptr);
@@ -560,7 +549,7 @@ fn scan_a_field_token_and_eat_white(
     bibs: &mut BibData,
     store_field: bool,
     at_bib_command: bool,
-    command_num: i32,
+    command: BibCommand,
     cur_macro_loc: HashPointer,
     right_outer_delim: ASCIICode,
 ) -> Result<bool, BibtexError> {
@@ -629,9 +618,7 @@ fn scan_a_field_token_and_eat_white(
 
                 let res = pool.lookup_str(hash, str, StrIlk::Macro);
                 let mut store_token = true;
-                if at_bib_command && command_num == 2 /* n_bib_string */ && res.loc ==
-                    cur_macro_loc
-                {
+                if at_bib_command && command == BibCommand::String && res.loc == cur_macro_loc {
                     store_token = false;
                     macro_warn_print(ctx, buffers);
                     ctx.write_logs("used in its own definition\n");
@@ -646,7 +633,9 @@ fn scan_a_field_token_and_eat_white(
                 }
 
                 if store_token {
-                    let strnum = hash.ilk_info(res.loc) as StrNumber;
+                    let HashExtra::Macro(strnum) = hash.node(res.loc).extra else {
+                        panic!("Macro lookup didn't have Macro extra");
+                    };
                     let mut str = pool.get_str(strnum);
 
                     if buffers.offset(BufTy::Ex, 1) == 0
@@ -708,7 +697,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
     cites: &mut CiteInfo,
     store_field: bool,
     at_bib_command: bool,
-    command_num: i32,
+    command: BibCommand,
     cite_out: Option<&mut CiteNumber>,
     cur_macro_loc: HashPointer,
     right_outer_delim: ASCIICode,
@@ -724,7 +713,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
         bibs,
         store_field,
         at_bib_command,
-        command_num,
+        command,
         cur_macro_loc,
         right_outer_delim,
     )? {
@@ -743,7 +732,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
             bibs,
             store_field,
             at_bib_command,
-            command_num,
+            command,
             cur_macro_loc,
             right_outer_delim,
         )? {
@@ -769,36 +758,31 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
         };
 
         let str = &buffers.buffer(BufTy::Ex)[ex_buf_xptr..buffers.offset(BufTy::Ex, 1)];
-        let res = {
-            let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text(0))?;
-
-            hash.set_ty(res.loc, FnClass::StrLit);
-
-            Ok(res)
-        }?;
+        let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text)?;
 
         if at_bib_command {
-            match command_num {
-                1 => bibs.add_preamble(hash.text(res.loc)),
-                2 => hash.node_mut(cur_macro_loc).extra = HashExtra::BibCommand(hash.text(res.loc)),
-                _ => {
-                    // TODO: Replace command_num with an enum
-                    bib_cmd_confusion(ctx);
-                    return Err(BibtexError::Fatal);
+            match command {
+                // TODO: Should this be `unreachable!`? This way will cover errors, but also shouldn't misbehave
+                BibCommand::Comment => (),
+                BibCommand::Preamble => bibs.add_preamble(hash.text(res.loc)),
+                BibCommand::String => {
+                    hash.node_mut(cur_macro_loc).extra = HashExtra::Macro(hash.text(res.loc))
                 }
             }
         } else {
-            let field_ptr =
-                cites.entry_ptr() * other.num_fields() + hash.ilk_info(field_name_loc) as usize;
+            let HashExtra::BstFn(BstFn::Field(field)) = hash.node(field_name_loc).extra else {
+                panic!("field_name_loc wasn't a BstFn::Field");
+            };
+
+            let field_ptr = cites.entry_ptr() * other.num_fields() + field;
             if field_ptr >= other.max_fields() {
                 ctx.write_logs("field_info index is out of range");
                 print_confusion(ctx);
                 return Err(BibtexError::Fatal);
             }
 
-            if other.field(field_ptr) != 0
             /* missing */
-            {
+            if other.field(field_ptr) != 0 {
                 ctx.write_logs("Warning--I'm ignoring ");
                 print_a_pool_str(ctx, cites.get_cite(cites.entry_ptr()), pool)?;
                 ctx.write_logs("'s extra \"");
@@ -807,9 +791,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                 bib_warn_print(ctx, pool, bibs)?;
             } else {
                 other.set_field(field_ptr, hash.text(res.loc));
-                if hash.ilk_info(field_name_loc) as usize == other.crossref_num()
-                    && !ctx.all_entries
-                {
+                if field == other.crossref_num() && !ctx.all_entries {
                     let end = buffers.offset(BufTy::Ex, 1);
                     // Move Ex to Out, at the same position
                     buffers.copy_within(
@@ -825,11 +807,16 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     if let Some(cite_out) = cite_out {
                         *cite_out = lc_res.loc;
                     }
-                    let cite_loc = hash.ilk_info(lc_res.loc) as usize;
+                    let HashExtra::LcCite(cite_loc) = hash.node(lc_res.loc).extra else {
+                        panic!("LcCite lookup didn't have LcCite extra");
+                    };
                     if lc_res.exists {
-                        if hash.ilk_info(cite_loc) as usize >= cites.old_num_cites() {
-                            let old_info = hash.ilk_info(cite_loc) as usize;
-                            cites.set_info(old_info, old_info + 1);
+                        let HashExtra::Cite(cite) = hash.node(cite_loc).extra else {
+                            panic!("LcCite location didn't have Cite extra");
+                        };
+
+                        if cite >= cites.old_num_cites() {
+                            cites.set_info(cite, cite + 1);
                         }
                     } else {
                         let str =
@@ -847,8 +834,12 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                             c_res.loc,
                             lc_res.loc,
                         );
+
+                        let HashExtra::Cite(cite) = hash.node(c_res.loc).extra else {
+                            panic!("Cite lookup didn't have Cite extra");
+                        };
                         cites.set_ptr(new_ptr);
-                        cites.set_info(hash.ilk_info(c_res.loc) as usize, 1);
+                        cites.set_info(cite, 1);
                     }
                 }
             }
@@ -947,18 +938,17 @@ pub(crate) fn name_scan_for_and(
 }
 
 pub(crate) fn von_token_found(
-    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
     name_bf_ptr: &mut BufPointer,
     name_bf_xptr: BufPointer,
-) -> Result<bool, BibtexError> {
+) -> bool {
     while *name_bf_ptr < name_bf_xptr {
         let char = buffers.at(BufTy::Sv, *name_bf_ptr);
         match char {
-            b'A'..=b'Z' => return Ok(false),
-            b'a'..=b'z' => return Ok(true),
+            b'A'..=b'Z' => return false,
+            b'a'..=b'z' => return true,
             b'{' => {
                 let mut nm_brace_level = 1;
                 *name_bf_ptr += 1;
@@ -972,31 +962,46 @@ pub(crate) fn von_token_found(
                     }
                     let str = &buffers.buffer(BufTy::Sv)[name_bf_yptr..*name_bf_ptr];
                     let res = pool.lookup_str(hash, str, StrIlk::ControlSeq);
-                    let ilk = res.exists.then(|| hash.ilk_info(res.loc));
-                    if let Some(ilk) = ilk {
-                        match ilk {
-                            3 | 5 | 7 | 9 | 11 => return Ok(false),
-                            0 | 1 | 2 | 4 | 6 | 8 | 10 | 12 => return Ok(true),
-                            _ => {
-                                ctx.write_logs("Control-sequence hash error");
-                                print_confusion(ctx);
-                                return Err(BibtexError::Fatal);
+                    let ilk = res
+                        .exists
+                        .then(|| {
+                            if let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra {
+                                Some(seq)
+                            } else {
+                                None
                             }
-                        }
+                        })
+                        .flatten();
+                    if let Some(seq) = ilk {
+                        return match seq {
+                            ControlSeq::UpperOE
+                            | ControlSeq::UpperAE
+                            | ControlSeq::UpperAA
+                            | ControlSeq::UpperO
+                            | ControlSeq::UpperL => false,
+                            ControlSeq::LowerI
+                            | ControlSeq::LowerJ
+                            | ControlSeq::LowerOE
+                            | ControlSeq::LowerAE
+                            | ControlSeq::LowerAA
+                            | ControlSeq::LowerO
+                            | ControlSeq::LowerL
+                            | ControlSeq::LowerSS => true,
+                        };
                     }
 
                     while *name_bf_ptr < name_bf_xptr && nm_brace_level > 0 {
                         let char = buffers.at(BufTy::Sv, *name_bf_ptr);
                         match char {
-                            b'A'..=b'Z' => return Ok(false),
-                            b'a'..=b'z' => return Ok(true),
+                            b'A'..=b'Z' => return false,
+                            b'a'..=b'z' => return true,
                             b'}' => nm_brace_level -= 1,
                             b'{' => nm_brace_level += 1,
                             _ => (),
                         }
                         *name_bf_ptr += 1;
                     }
-                    return Ok(false);
+                    return false;
                 } else {
                     while nm_brace_level > 0 && *name_bf_ptr < name_bf_xptr {
                         let char = buffers.at(BufTy::Sv, *name_bf_ptr);
@@ -1014,12 +1019,11 @@ pub(crate) fn von_token_found(
             }
         }
     }
-    Ok(false)
+    false
 }
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn von_name_ends_and_last_name_starts_stuff(
-    ctx: &mut Bibtex<'_, '_>,
     buffers: &GlobalBuffer,
     hash: &HashData,
     pool: &StringPool,
@@ -1028,17 +1032,16 @@ pub(crate) fn von_name_ends_and_last_name_starts_stuff(
     von_end: &mut BufPointer,
     name_bf_ptr: &mut BufPointer,
     name_bf_xptr: &mut BufPointer,
-) -> Result<(), BibtexError> {
+) {
     *von_end = last_end - 1;
     while *von_end > von_start {
         *name_bf_ptr = buffers.name_tok(*von_end - 1);
         *name_bf_xptr = buffers.name_tok(*von_end);
-        if von_token_found(ctx, buffers, hash, pool, name_bf_ptr, *name_bf_xptr)? {
-            return Ok(());
+        if von_token_found(buffers, hash, pool, name_bf_ptr, *name_bf_xptr) {
+            return;
         }
         *von_end -= 1;
     }
-    Ok(())
 }
 
 pub(crate) fn enough_text_chars(

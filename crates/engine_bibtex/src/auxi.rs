@@ -22,6 +22,14 @@ use tectonic_bridge_core::FileFormat;
 
 const AUX_STACK_SIZE: usize = 20;
 
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum AuxCommand {
+    Data,
+    Style,
+    Citation,
+    Input,
+}
+
 pub(crate) struct AuxData {
     aux: Vec<File>,
 }
@@ -270,18 +278,22 @@ fn aux_citation_command(
 
         let lc_res = pool.lookup_str_insert(ctx, hash, lc_cite, HashExtra::LcCite(0))?;
         if lc_res.exists {
+            let HashExtra::LcCite(cite_loc) = hash.node(lc_res.loc).extra else {
+                panic!("LcCite lookup didn't have LcCite extra");
+            };
+
             let cite = &buffers.buffer(BufTy::Base)
                 [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
             let uc_res = pool.lookup_str(hash, cite, StrIlk::Cite);
             if !uc_res.exists {
+                let HashExtra::Cite(cite) = hash.node(cite_loc).extra else {
+                    panic!("LcCite location didn't have a Cite extra");
+                };
+
                 ctx.write_logs("Case mismatch error between cite keys ");
                 print_a_token(ctx, buffers);
                 ctx.write_logs(" and ");
-                print_a_pool_str(
-                    ctx,
-                    cites.get_cite(hash.ilk_info(hash.ilk_info(lc_res.loc) as usize) as usize),
-                    pool,
-                )?;
+                print_a_pool_str(ctx, cites.get_cite(cite), pool)?;
                 ctx.write_logs("\n");
                 aux_err_print(ctx, buffers, aux, pool)?;
                 return Ok(());
@@ -413,43 +425,42 @@ pub(crate) fn get_aux_command_and_process(
         .lookup_str(globals.hash, line, StrIlk::AuxCommand);
 
     if res.exists {
-        match globals.hash.ilk_info(res.loc) {
-            0 => aux_bib_data_command(
+        let HashExtra::AuxCommand(cmd) = globals.hash.node(res.loc).extra else {
+            panic!("AuxCommand lookup didn't have AuxCommand extra");
+        };
+
+        match cmd {
+            AuxCommand::Data => aux_bib_data_command(
                 ctx,
                 globals.buffers,
                 globals.bibs,
                 globals.aux,
                 globals.pool,
                 globals.hash,
-            )?,
-            1 => aux_bib_style_command(
+            ),
+            AuxCommand::Style => aux_bib_style_command(
                 ctx,
                 globals.buffers,
                 globals.aux,
                 globals.pool,
                 globals.hash,
-            )?,
-            2 => aux_citation_command(
+            ),
+            AuxCommand::Citation => aux_citation_command(
                 ctx,
                 globals.buffers,
                 globals.aux,
                 globals.pool,
                 globals.hash,
                 globals.cites,
-            )?,
-            3 => aux_input_command(
+            ),
+            AuxCommand::Input => aux_input_command(
                 ctx,
                 globals.buffers,
                 globals.aux,
                 globals.pool,
                 globals.hash,
-            )?,
-            _ => {
-                ctx.write_logs("Unknown auxiliary-file command");
-                print_confusion(ctx);
-                return Err(BibtexError::Fatal);
-            }
-        }
+            ),
+        }?
     }
     Ok(())
 }
