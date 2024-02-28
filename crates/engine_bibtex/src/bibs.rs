@@ -35,11 +35,11 @@ impl BibData {
     }
 
     pub fn top_file(&self) -> &File {
-        self.bibs.last().unwrap()
+        self.bibs.first().unwrap()
     }
 
     pub fn top_file_mut(&mut self) -> &mut File {
-        self.bibs.last_mut().unwrap()
+        self.bibs.first_mut().unwrap()
     }
 
     pub fn push_file(&mut self, file: File) {
@@ -47,7 +47,7 @@ impl BibData {
     }
 
     pub fn pop_file(&mut self) -> File {
-        self.bibs.pop().unwrap()
+        self.bibs.remove(0)
     }
 
     pub fn add_preamble(&mut self, s: StrNumber) {
