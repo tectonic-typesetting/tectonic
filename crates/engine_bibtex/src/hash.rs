@@ -1,4 +1,7 @@
-use crate::{pool, CiteNumber, HashPointer, StrIlk, StrNumber};
+use crate::{
+    auxi::AuxCommand, bibs::BibCommand, bst::BstCommand, exec::ControlSeq, pool, CiteNumber,
+    FnDefLoc, HashPointer, StrIlk, StrNumber,
+};
 
 pub(crate) const HASH_BASE: usize = 1;
 pub(crate) const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
@@ -58,41 +61,80 @@ const fn compute_hash_prime() -> usize {
     hash_prime
 }
 
-#[derive(Copy, Clone, PartialEq)]
-pub(crate) enum FnClass {
-    Builtin,
-    Wizard,
-    IntLit,
-    StrLit,
-    Field,
-    IntEntryVar,
-    StrEntryVar,
-    IntGlblVar,
-    StrGlblVar,
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub(crate) enum BstBuiltin {
+    Eq,
+    Gt,
+    Lt,
+    Plus,
+    Minus,
+    Concat,
+    Set,
+    AddPeriod,
+    CallType,
+    ChangeCase,
+    ChrToInt,
+    Cite,
+    Duplicate,
+    Empty,
+    FormatName,
+    If,
+    IntToChr,
+    IntToStr,
+    Missing,
+    Newline,
+    NumNames,
+    Pop,
+    Preamble,
+    Purify,
+    Quote,
+    Skip,
+    Stack,
+    Substring,
+    Swap,
+    TextLength,
+    TextPrefix,
+    Top,
+    Type,
+    Warning,
+    While,
+    Width,
+    Write,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum BstFn {
+    Builtin(BstBuiltin),
+    Wizard(FnDefLoc),
+    Field(usize),
+    IntEntry(usize),
+    StrEntry(usize),
+    IntGlbl(i32),
+    StrGlbl(usize),
 }
 
 #[derive(Clone, Debug)]
 pub enum HashExtra {
-    Text(StrNumber),
+    Text,
     Integer(i32),
-    AuxCommand(i32), // TODO: Make Enum
+    AuxCommand(AuxCommand),
     AuxFile,
-    BstCommand(i32), // TODO: Make Enum
+    BstCommand(BstCommand),
     BstFile,
     BibFile,
     FileExt,
     Cite(CiteNumber),
     LcCite(HashPointer),
-    BstFn(i32),
-    BibCommand(StrNumber), // TODO: Make Enum
+    BstFn(BstFn),
+    BibCommand(BibCommand),
     Macro(StrNumber),
-    ControlSeq(i32),
+    ControlSeq(ControlSeq),
 }
 
 impl HashExtra {
     pub(crate) fn kind(&self) -> StrIlk {
         match self {
-            HashExtra::Text(_) => StrIlk::Text,
+            HashExtra::Text => StrIlk::Text,
             HashExtra::Integer(_) => StrIlk::Integer,
             HashExtra::AuxCommand(_) => StrIlk::AuxCommand,
             HashExtra::AuxFile => StrIlk::AuxFile,
@@ -108,30 +150,11 @@ impl HashExtra {
             HashExtra::ControlSeq(_) => StrIlk::ControlSeq,
         }
     }
-
-    fn data_i32(&self) -> i32 {
-        match self {
-            HashExtra::Text(s) => *s as i32,
-            HashExtra::Integer(i) => *i,
-            HashExtra::AuxCommand(c) => *c,
-            HashExtra::AuxFile => todo!(),
-            HashExtra::BstCommand(c) => *c,
-            HashExtra::BstFile => todo!(),
-            HashExtra::BibFile => todo!(),
-            HashExtra::FileExt => todo!(),
-            HashExtra::Cite(c) => *c as i32,
-            HashExtra::LcCite(c) => *c as i32,
-            HashExtra::BstFn(c) => *c,
-            HashExtra::BibCommand(c) => *c as i32,
-            HashExtra::Macro(c) => *c as i32,
-            HashExtra::ControlSeq(c) => *c,
-        }
-    }
 }
 
 impl Default for HashExtra {
     fn default() -> Self {
-        HashExtra::Text(0)
+        HashExtra::Text
     }
 }
 
@@ -151,7 +174,6 @@ impl HashNode {
 // TODO: Split string-pool stuff into string pool, executor stuff into execution context
 pub(crate) struct HashData {
     hash_data: Vec<HashNode>,
-    fn_type: Vec<FnClass>,
     len: usize,
 }
 
@@ -159,7 +181,6 @@ impl HashData {
     pub(crate) fn new() -> HashData {
         HashData {
             hash_data: vec![HashNode::default(); HASH_MAX + 1],
-            fn_type: vec![FnClass::Builtin; HASH_MAX + 1],
             len: HASH_MAX + 1,
         }
     }
@@ -196,14 +217,6 @@ impl HashData {
         self.hash_data[pos].next = val
     }
 
-    pub fn ty(&self, pos: usize) -> FnClass {
-        self.fn_type[pos]
-    }
-
-    pub fn set_ty(&mut self, pos: usize, class: FnClass) {
-        self.fn_type[pos] = class;
-    }
-
     pub fn len(&self) -> usize {
         self.len
     }
@@ -214,9 +227,5 @@ impl HashData {
 
     pub fn prime(&self) -> usize {
         HASH_PRIME
-    }
-
-    pub fn ilk_info(&self, pos: usize) -> i32 {
-        self.node(pos).extra.data_i32()
     }
 }
