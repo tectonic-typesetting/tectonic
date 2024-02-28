@@ -301,11 +301,11 @@ pub(crate) fn print_bib_name(pool: &StringPool, name: StrNumber) -> Result<(), B
     Ok(())
 }
 
-pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_bib_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
     with_log(|log| {
-        out_pool_str(pool, log, bibs.top_file().name)?;
+        out_pool_str(pool, log, name)?;
         let res = pool
-            .try_get_str(bibs.top_file().name)
+            .try_get_str(name)
             .map(|str| str.ends_with(b".bib"))
             .map_err(|_| BibtexError::Fatal)?;
         if !res {
