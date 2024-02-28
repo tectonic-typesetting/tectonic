@@ -133,8 +133,8 @@ mod inner {
         println!();
 
         let dest_dir = include_dir.join("harfbuzz");
-        // CC build process already creates this for us:
-        //fs::create_dir(&dest_dir).expect("error creating dest_dir");
+        // Create the dest_dir if it does not exist
+        fs::create_dir_all(&dest_dir).expect("error creating dest_dir");
 
         for entry in fs::read_dir(&src_dir).expect("failed to read dir") {
             let entry = entry.expect("failed to get dir entry");
