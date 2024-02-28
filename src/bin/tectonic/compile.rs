@@ -84,15 +84,19 @@ pub struct CompileOptions {
     /// Unstable options. Pass -Zhelp to show a list
     #[arg(name = "option", short = 'Z')]
     unstable: Vec<UnstableArg>,
+
+    /// Use this URL to find resource files instead of the default
+    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
+    web_bundle: Option<String>,
 }
 
+// TODO: deprecate v1 interface and move this to v2cli/commands
+
+//impl TectonicCommand for CompileOptions {
 impl CompileOptions {
-    pub fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
-    ) -> Result<i32> {
+    //fn customize(&self, _cc: &mut CommandCustomizations) {}
+
+    pub fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
         // Default to allowing insecure since it would be super duper annoying
@@ -187,12 +191,13 @@ impl CompileOptions {
         }
         if let Some(path) = self.bundle {
             sess_builder.bundle(config.make_local_file_provider(path, status)?);
-        } else if let Some(u) = web_bundle {
+        } else if let Some(u) = self.web_bundle {
             sess_builder.bundle(config.make_cached_url_provider(&u, only_cached, None, status)?);
         } else {
             sess_builder.bundle(config.default_bundle(only_cached, status)?);
         }
         sess_builder.build_date_from_env(deterministic_mode);
+
         run_and_report(sess_builder, status).map(|_| 0)
     }
 }

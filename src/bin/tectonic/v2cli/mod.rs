@@ -138,7 +138,7 @@ pub fn v2_main(effective_args: &[OsString]) {
     let r = match args.command {
         Commands::Build(o) => o.execute(config, &mut *status),
         Commands::Bundle(o) => o.execute(config, &mut *status),
-        Commands::Compile(o) => o.execute(config, &mut *status, args.web_bundle),
+        Commands::Compile(o) => o.execute(config, &mut *status),
         Commands::Dump(o) => o.execute(config, &mut *status),
         Commands::New(o) => o.execute(config, &mut *status),
         Commands::Init(o) => o.execute(config, &mut *status),
