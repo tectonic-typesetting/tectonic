@@ -519,13 +519,14 @@ fn bst_read_command(
     }
 
     ctx.read_performed = true;
-    while globals.bibs.len() != 0 {
+    for idx in 0..globals.bibs.len() {
+        let file = globals.bibs.top_file();
         if ctx.config.verbose {
-            ctx.write_logs(&format!("Database file #{}: ", globals.bibs.len()));
-            print_bib_name(ctx, globals.pool, globals.bibs.top_file().name)?;
+            ctx.write_logs(&format!("Database file #{}: ", idx + 1));
+            print_bib_name(ctx, globals.pool, file.name)?;
         } else {
-            ctx.write_log_file(&format!("Database file #{}: ", globals.bibs.len()));
-            log_pr_bib_name(ctx, globals.bibs, globals.pool)?;
+            ctx.write_log_file(&format!("Database file #{}: ", idx + 1));
+            log_pr_bib_name(ctx, globals.pool, file.name)?;
         }
 
         globals

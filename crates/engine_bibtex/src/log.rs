@@ -248,12 +248,12 @@ pub(crate) fn print_bib_name(
 
 pub(crate) fn log_pr_bib_name(
     ctx: &mut Bibtex<'_, '_>,
-    bibs: &BibData,
     pool: &StringPool,
+    name: StrNumber,
 ) -> Result<(), BibtexError> {
-    out_pool_str(ctx, pool, bibs.top_file().name)?;
+    out_pool_str(ctx, pool, name)?;
     let res = pool
-        .try_get_str(bibs.top_file().name)
+        .try_get_str(name)
         .map(|str| str.ends_with(b".bib"))
         .map_err(|_| BibtexError::Fatal)?;
     if !res {
