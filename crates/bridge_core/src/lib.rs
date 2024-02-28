@@ -1,7 +1,7 @@
 // Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-// #![deny(missing_docs)]
+#![deny(missing_docs)]
 
 //! Core APIs for bridging the C and Rust portions of Tectonic’s processing
 //! backends.
@@ -54,9 +54,11 @@ use tectonic_io_base::{
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
 
+/// The ID of an InputHandle, used for Rust core state
 #[derive(Copy, Clone, PartialEq)]
 pub struct InputId(*mut InputHandle);
 
+/// The ID of an OutputHandle, used for Rust core state
 #[derive(Copy, Clone, PartialEq)]
 pub struct OutputId(*mut OutputHandle);
 
@@ -489,6 +491,7 @@ impl<'a> CoreBridgeState<'a> {
         OutputId(output)
     }
 
+    /// Get a mutable reference to an [`OutputHandle`] associated with an [`OutputId`]
     pub fn get_output(&mut self, id: OutputId) -> &mut OutputHandle {
         self.output_handles
             .iter_mut()
@@ -496,6 +499,7 @@ impl<'a> CoreBridgeState<'a> {
             .unwrap()
     }
 
+    /// Open a new output, provided the output name and whether it is gzipped.
     pub fn output_open(&mut self, name: &str, is_gz: bool) -> Option<OutputId> {
         let io = self.hooks.io();
         let name = normalize_tex_path(name);
@@ -521,6 +525,7 @@ impl<'a> CoreBridgeState<'a> {
         Some(OutputId(&mut **self.output_handles.last_mut().unwrap()))
     }
 
+    /// Open a new stdout output.
     pub fn output_open_stdout(&mut self) -> Option<OutputId> {
         let io = self.hooks.io();
 
@@ -563,6 +568,7 @@ impl<'a> CoreBridgeState<'a> {
         }
     }
 
+    /// Close the provided output, flushing it and performing any necessary handling.
     pub fn output_close(&mut self, id: OutputId) -> bool {
         let mut rv = false;
 
@@ -571,7 +577,6 @@ impl<'a> CoreBridgeState<'a> {
             .iter()
             .position(|o| ptr::addr_eq(&**o, id.0));
         if let Some(pos) = pos {
-            // TODO: How to handle removing IDs? Need a slotmap or some other form of stable ID
             let mut oh = self.output_handles.swap_remove(pos);
             if let Err(e) = oh.flush() {
                 tt_warning!(self.status, "error when closing output {}", oh.name(); e.into());
@@ -588,6 +593,7 @@ impl<'a> CoreBridgeState<'a> {
         InputId(input)
     }
 
+    /// Get a mutable reference to an [`InputHandle`] associated with an [`InputId`]
     pub fn get_input(&mut self, input: InputId) -> &mut InputHandle {
         self.input_handles
             .iter_mut()
@@ -595,6 +601,7 @@ impl<'a> CoreBridgeState<'a> {
             .unwrap()
     }
 
+    /// Open a new input, provided the input name, the file format, and whether it is gzipped.
     pub fn input_open(&mut self, name: &str, format: FileFormat, is_gz: bool) -> Option<InputId> {
         let name = normalize_tex_path(name);
 
@@ -687,6 +694,7 @@ impl<'a> CoreBridgeState<'a> {
         rhandle.ungetc(byte)
     }
 
+    /// Close the provided output, performing any necessary handling.
     pub fn input_close(&mut self, id: InputId) -> bool {
         let pos = self
             .input_handles

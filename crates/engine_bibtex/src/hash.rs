@@ -113,8 +113,9 @@ pub(crate) enum BstFn {
     StrGlbl(usize),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Default, Debug)]
 pub enum HashExtra {
+    #[default]
     Text,
     Integer(i32),
     AuxCommand(AuxCommand),
@@ -149,12 +150,6 @@ impl HashExtra {
             HashExtra::Macro(_) => StrIlk::Macro,
             HashExtra::ControlSeq(_) => StrIlk::ControlSeq,
         }
-    }
-}
-
-impl Default for HashExtra {
-    fn default() -> Self {
-        HashExtra::Text
     }
 }
 
