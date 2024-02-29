@@ -64,12 +64,13 @@ impl FileInfo for TTBFileInfo {
     fn name(&self) -> &str {
         &self.name
     }
+
     fn path(&self) -> &str {
         &self.path
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct TTBFileIndex {
     // Vector of fileinfos.
     // This MUST be sorted by path for search() to work properly!
@@ -130,7 +131,7 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
     type InfoType = TTBFileInfo;
 
     fn iter(&'this self) -> Box<dyn Iterator<Item = &'this TTBFileInfo> + 'this> {
-        return Box::new(self.content.iter());
+        Box::new(self.content.iter())
     }
 
     fn len(&self) -> usize {

@@ -106,7 +106,7 @@ impl IoProvider for TTBNetBundle<TTBFileIndex> {
             return OpenResult::Err(e);
         };
 
-        let info = match self.index.search(name) {
+        let info = match self.search(name) {
             None => return OpenResult::NotAvailable,
             Some(s) => s,
         };

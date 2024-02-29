@@ -17,7 +17,7 @@
 //!   useful for testing and lightweight usage.
 //! - [`zip::ZipBundle`] for a ZIP-format bundle.
 
-use std::{io::Read, path::PathBuf};
+use std::{fmt::Debug, io::Read, path::PathBuf};
 use tectonic_errors::{prelude::bail, Result};
 use tectonic_io_base::{digest::DigestData, InputHandle, IoProvider, OpenResult};
 use tectonic_status_base::StatusBackend;
@@ -44,7 +44,7 @@ const NET_RETRY_ATTEMPTS: usize = 3;
 const NET_RETRY_SLEEP_MS: u64 = 500;
 
 /// Uniquely identifies a file in a bundle.
-pub trait FileInfo: Clone {
+pub trait FileInfo: Clone + Debug {
     /// Return a path to this file, relative to the bundle.
     fn path(&self) -> &str;
 
@@ -55,7 +55,7 @@ pub trait FileInfo: Clone {
 /// Keeps track of
 pub trait FileIndex<'this>
 where
-    Self: Sized + 'this,
+    Self: Sized + 'this + Debug,
 {
     /// The FileInfo this index handles
     type InfoType: FileInfo;

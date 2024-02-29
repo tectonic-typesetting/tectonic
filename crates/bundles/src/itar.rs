@@ -47,7 +47,7 @@ impl FileInfo for ItarFileInfo {
 }
 
 /// A simple FileIndex for compatiblity with [`crate::BundleCache`]
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct ItarFileIndex {
     content: HashMap<String, ItarFileInfo>,
 }

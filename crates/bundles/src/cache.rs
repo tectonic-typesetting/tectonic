@@ -15,7 +15,7 @@ use std::{
     process,
     str::FromStr,
 };
-use tectonic_errors::prelude::*;
+use tectonic_errors::{anyhow::Context, prelude::*};
 use tectonic_io_base::{
     app_dirs,
     digest::{self, DigestData},
@@ -107,7 +107,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
     ) -> Result<Self> {
         // If cache_root is none, use default location.
         let cache_root = match cache_root {
-            None => app_dirs::get_user_cache_dir("bundles")?,
+            None => app_dirs::get_user_cache_dir("bundles").context("while making cache root")?,
             Some(p) => ensure_dir!(inline, p),
         };
 
@@ -123,8 +123,14 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
                     Ok(f) => {
                         let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
                         f.take(digest::DIGEST_LEN as u64)
-                            .read_to_string(&mut digest_text)?;
-                        Some(DigestData::from_str(&digest_text)?)
+                            .read_to_string(&mut digest_text)
+                            .with_context(|| {
+                                format!("while reading hash from {hash_file:?} in cache")
+                            })?;
+                        Some(
+                            DigestData::from_str(&digest_text)
+                                .with_context(|| format!("while reading hash in cache"))?,
+                        )
                     }
                 }
             }
@@ -142,14 +148,19 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
                     // Silently update hash in cache.
                     // We don't need to delete anything, since data is indexed by hash.
                     // TODO: show a warning
-                    file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))?;
+                    file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))
+                        .with_context(|| {
+                            format!("while updating bundle hash in {hash_file:?} in cache")
+                        })?;
                     l
                 } else {
                     l
                 }
             }
             (None, Some(l)) => {
-                file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))?;
+                file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string())).with_context(
+                    || format!("while writing bundle hash to {hash_file:?} in cache"),
+                )?;
                 l
             }
             (Some(h), None) => h, // Bundle is offline, but we're ok.
@@ -179,32 +190,26 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
 
     /// Build a cache path for the given bundle file
     fn get_file_path(&self, info: &T::InfoType) -> PathBuf {
-        return self
-            .cache_root
-            .join(format!("data/{}", self.bundle_hash.to_string()))
-            .join(info.path());
+        let mut out = self.cache_root.clone();
+        out.push(format!("data/{}", self.bundle_hash.to_string()));
+        out.push(info.path());
+        out
     }
 
     /// Build a temporary path for the given bundle file
     /// To ensure safety with multiple instances of tectonic,
     /// files are first downloaded to a known-unique location, then renamed.
     fn get_file_path_tmp(&self, info: &T::InfoType) -> PathBuf {
-        self.cache_root
-            .join(format!("data/{}", self.bundle_hash.to_string(),))
-            .join(format!("{}-tmp-pid{}", &info.path(), process::id()))
+        let mut out = self.cache_root.clone();
+        out.push(format!("data/{}", self.bundle_hash.to_string()));
+        out.push(format!("{}-tmp-pid{}", info.path(), process::id()));
+        out
     }
 
     fn ensure_index(&mut self) -> Result<()> {
         let target = self
             .cache_root
             .join(format!("data/{}.index", self.bundle_hash.to_string()));
-
-        // Download here, then rename to target
-        let tmp_target = self.cache_root.join(format!(
-            "data/{}.index-tmp-pid{}",
-            self.bundle_hash.to_string(),
-            process::id()
-        ));
 
         // We check for two things here:
         // - that the bundle index is initialized
@@ -216,24 +221,48 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         if target.exists() {
             if self.bundle.index().is_initialized() {
                 return Ok(());
-            } else {
-                let mut file = File::open(&tmp_target)?;
-                self.bundle.initialize_index(&mut file)?;
-                fs::rename(&tmp_target, &target)?;
             }
+
+            // Initialize bundle index using cached file
+            let mut file = File::open(&target)
+                .with_context(|| format!("while opening index {target:?} in cache"))?;
+            self.bundle
+                .initialize_index(&mut file)
+                .with_context(|| format!("while inititalizing index using cached {target:?}"))?;
         } else {
-            let mut reader = self.bundle.get_index_reader()?;
-            let mut file = File::create(&target)?;
-            io::copy(&mut reader, &mut file)?;
+            // Download index
+
+            // We first download to a temporary file, rename to target
+            // Makes sure that parallel runs of tectonic don't break the index
+            let tmp_target = self.cache_root.join(format!(
+                "data/{}.index-tmp-pid{}",
+                self.bundle_hash.to_string(),
+                process::id()
+            ));
+
+            let mut reader = self
+                .bundle
+                .get_index_reader()
+                .with_context(|| format!("while reading index in cache"))?;
+            let mut file = File::create(&tmp_target)
+                .with_context(|| format!("while creating index {tmp_target:?} in cache"))?;
+            io::copy(&mut reader, &mut file)
+                .with_context(|| format!("while writing index {tmp_target:?} in cache"))?;
             drop(file);
+
+            fs::rename(&tmp_target, &target).with_context(|| {
+                format!("while renaming index {tmp_target:?} to {target:?} in cache")
+            })?;
 
             if self.bundle.index().is_initialized() {
                 return Ok(());
-            } else {
-                let mut file = File::open(&tmp_target)?;
-                self.bundle.initialize_index(&mut file)?;
-                fs::rename(&tmp_target, &target)?;
             }
+
+            let mut file =
+                File::open(&target).with_context(|| format!("while opening index in cache"))?;
+            self.bundle
+                .initialize_index(&mut file)
+                .with_context(|| format!("while initializing index in cache"))?;
         }
 
         Ok(())
@@ -265,7 +294,10 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         status: &mut dyn StatusBackend,
     ) -> OpenResult<PathBuf> {
         let target = self.get_file_path(&info);
-        fs::create_dir_all(target.parent().unwrap()).unwrap();
+        match fs::create_dir_all(target.parent().unwrap()) {
+            Ok(()) => {}
+            Err(e) => return OpenResult::Err(e.into()),
+        };
 
         // Already in the cache?
         if target.exists() {
