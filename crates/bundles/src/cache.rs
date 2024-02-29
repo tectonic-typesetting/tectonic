@@ -129,7 +129,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
                             })?;
                         Some(
                             DigestData::from_str(&digest_text)
-                                .with_context(|| format!("while reading hash in cache"))?,
+                                .with_context(|| format!("while parsing hash `{digest_text}`"))?,
                         )
                     }
                 }
@@ -243,7 +243,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             let mut reader = self
                 .bundle
                 .get_index_reader()
-                .with_context(|| format!("while reading index in cache"))?;
+                .context("while getting index reader")?;
             let mut file = File::create(&tmp_target)
                 .with_context(|| format!("while creating index {tmp_target:?} in cache"))?;
             io::copy(&mut reader, &mut file)
@@ -258,11 +258,11 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
                 return Ok(());
             }
 
-            let mut file =
-                File::open(&target).with_context(|| format!("while opening index in cache"))?;
+            let mut file = File::open(&target)
+                .with_context(|| format!("while opening index from {target:?} in cache"))?;
             self.bundle
                 .initialize_index(&mut file)
-                .with_context(|| format!("while initializing index in cache"))?;
+                .with_context(|| format!("while initializing index {target:?} in cache"))?;
         }
 
         Ok(())
