@@ -37,6 +37,7 @@ use tectonic_io_base::{
     stdstreams::{BufferedPrimaryIo, GenuineStdoutIo},
     InputHandle, IoProvider, OpenResult, OutputHandle,
 };
+use which::which;
 
 use crate::{
     ctry, errmsg,
@@ -1683,7 +1684,7 @@ impl ProcessingSession {
             Some(RerunReason::Bibtex)
         } else {
             warnings = self.tex_pass(None, status)?;
-            let maybe_biber = self.check_biber_requirement()?;
+            let maybe_biber = self.check_biber_requirement(status)?;
 
             if let Some(biber) = maybe_biber {
                 self.bs.external_tool_pass(&biber, status)?;
@@ -2034,7 +2035,10 @@ impl ProcessingSession {
     /// `loqreq` package to figure out what files `biber` needs. This
     /// functionality should probably become more generic, but I don't have a
     /// great sense as to how widely-used `logreq` is.
-    fn check_biber_requirement(&self) -> Result<Option<ExternalToolPass>> {
+    fn check_biber_requirement(
+        &self,
+        status: &mut dyn StatusBackend,
+    ) -> Result<Option<ExternalToolPass>> {
         // Is there a `.run.xml` file?
 
         let mut run_xml_path = PathBuf::from(&self.primary_input_tex_path);
@@ -2057,9 +2061,35 @@ impl ProcessingSession {
         );
 
         let mut argv = match s {
-            (true, Ok(text)) => text.split_whitespace().map(|x| x.to_owned()).collect(),
+            (true, Ok(text)) if !text.trim().is_empty() => {
+                text.split_whitespace().map(|x| x.to_owned()).collect()
+            }
+            // when `TECTONIC_TEST_FAKE_BIBER` is empty, proceed to discover
+            // the biber binary as follows.
             _ => vec!["biber".to_owned()],
         };
+
+        // Moreover, we allow an override of the biber executable, to cope with
+        // possible version mismatch of the bundled biblatex package, as filed
+        // in issue #893. Since PR #1103, the `tectonic-biber` override can
+        // also be invoked with `tectonic -X biber`.
+        let find_by = |binary_name: &str| -> Option<String> {
+            if let Ok(pathbuf) = which(binary_name) {
+                if let Some(biber_path) = pathbuf.to_str() {
+                    return Some(biber_path.to_owned());
+                }
+            }
+            None
+        };
+
+        let mut use_tectonic_biber_override = false;
+        for binary_name in ["./tectonic-biber", "tectonic-biber"] {
+            if let Some(biber_path) = find_by(binary_name) {
+                argv = vec![biber_path];
+                use_tectonic_biber_override = true;
+                break;
+            }
+        }
 
         let mut extra_requires = HashSet::new();
 
@@ -2227,6 +2257,9 @@ impl ProcessingSession {
             // No biber invocation, in the end.
             None
         } else {
+            if use_tectonic_biber_override {
+                tt_note!(status, "using `tectonic-biber`, found at {}", argv[0]);
+            }
             Some(ExternalToolPass {
                 argv,
                 extra_requires,

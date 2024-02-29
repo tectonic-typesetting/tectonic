@@ -98,6 +98,7 @@ watchexec = "8.0"
 watchexec-filterer-globset = "8.0"
 watchexec-signals = "5.0"
 watchexec-supervisor = "5.0"
+which = "8.0"
 zip = { version = "4.0", default-features = false, features = ["deflate"] }
 clap_complete = "4.5.1"
 walkdir = "2"
