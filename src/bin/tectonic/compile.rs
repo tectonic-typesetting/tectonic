@@ -31,10 +31,6 @@ pub struct CompileOptions {
     #[arg(long, short, name = "path", default_value = "latex")]
     format: String,
 
-    /// Use this URL or path to find resource files instead of the default
-    #[arg(long, short, name = "file_path")]
-    bundle: Option<String>,
-
     /// Use only resource files cached locally
     #[arg(short = 'C', long)]
     only_cached: bool,
@@ -86,6 +82,10 @@ pub struct CompileOptions {
     /// Unstable options. Pass -Zhelp to show a list
     #[arg(name = "option", short = 'Z')]
     unstable: Vec<UnstableArg>,
+
+    /// Use this URL or file to find resource files instead of the default
+    #[arg(long, short)]
+    bundle: Option<String>,
 }
 
 impl CompileOptions {
@@ -93,7 +93,7 @@ impl CompileOptions {
         self,
         config: PersistentConfig,
         status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
+        bundle_override: Option<String>,
     ) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
@@ -193,7 +193,7 @@ impl CompileOptions {
             } else {
                 return Err(errmsg!("\"{source}\" doesn't specify a valid bundle."));
             }
-        } else if let Some(bundle) = web_bundle {
+        } else if let Some(bundle) = bundle_override {
             // TODO: this is ugly.
             // It's probably a good idea to re-design our code so we
             // don't need special cases for tests our source.

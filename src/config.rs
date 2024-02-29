@@ -38,19 +38,19 @@ pub fn is_config_test_mode_activated() -> bool {
     CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst)
 }
 
-pub fn is_test_bundle_wanted(web_bundle: Option<String>) -> bool {
+pub fn is_test_bundle_wanted(bundle: Option<String>) -> bool {
     if !is_config_test_mode_activated() {
         return false;
     }
-    match web_bundle {
+    match bundle {
         None => true,
         Some(x) if x.contains("test-bundle://") => true,
         _ => false,
     }
 }
 
-pub fn maybe_return_test_bundle(web_bundle: Option<String>) -> Result<Box<dyn Bundle>> {
-    if is_test_bundle_wanted(web_bundle) {
+pub fn maybe_return_test_bundle(bundle: Option<String>) -> Result<Box<dyn Bundle>> {
+    if is_test_bundle_wanted(bundle) {
         Ok(Box::<crate::test_util::TestBundle>::default())
     } else {
         Err(ErrorKind::Msg("not asking for the default test bundle".to_owned()).into())

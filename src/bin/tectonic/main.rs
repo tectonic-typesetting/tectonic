@@ -51,12 +51,9 @@ struct CliOptions {
     #[arg(long = "color", name = "when", default_value = "auto")]
     cli_color: CliColor,
 
-    // TODO: this should also accept files, since we have bundle autodetection.
-    // probably just a case of renaming the flag.
-    // TODO add URL validation
-    /// Use this URL to find resource files instead of the default
-    #[arg(long, short, name = "url", overrides_with = "url")]
-    web_bundle: Option<String>,
+    /// Use this file or URL to find resource files instead of the default
+    #[arg(long, short)]
+    bundle: Option<String>,
 
     #[command(flatten)]
     compile: compile::CompileOptions,
@@ -186,7 +183,7 @@ fn main() {
     // all so that we can print out the word "error:" in red. This code
     // parallels various bits of the `error_chain` crate.
 
-    if let Err(e) = args.compile.execute(config, &mut *status, args.web_bundle) {
+    if let Err(e) = args.compile.execute(config, &mut *status, args.bundle) {
         status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }

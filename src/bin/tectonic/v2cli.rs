@@ -53,9 +53,10 @@ struct V2CliOptions {
     cli_color: crate::CliColor,
 
     /// Use this URL to find resource files instead of the default
-    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
+    #[arg(long, short)]
     // TODO add URL validation
-    web_bundle: Option<String>,
+    bundle: Option<String>,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -125,7 +126,7 @@ pub fn v2_main(effective_args: &[OsString]) {
 
     // Now that we've got colorized output, pass off to the inner function.
 
-    let code = match args.command.execute(config, &mut *status, args.web_bundle) {
+    let code = match args.command.execute(config, &mut *status, args.bundle) {
         Ok(c) => c,
         Err(e) => {
             status.report_error(&SyncError::new(e).into());
@@ -195,15 +196,15 @@ impl Commands {
         self,
         config: PersistentConfig,
         status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
+        bundle_override: Option<String>,
     ) -> Result<i32> {
         match self {
-            Commands::Build(o) => o.execute(config, status, web_bundle),
+            Commands::Build(o) => o.execute(config, status, bundle_override),
             Commands::Bundle(o) => o.execute(config, status),
-            Commands::Compile(o) => o.execute(config, status, web_bundle),
+            Commands::Compile(o) => o.execute(config, status, bundle_override),
             Commands::Dump(o) => o.execute(config, status),
-            Commands::New(o) => o.execute(config, status, web_bundle),
-            Commands::Init(o) => o.execute(config, status, web_bundle),
+            Commands::New(o) => o.execute(config, status, bundle_override),
+            Commands::Init(o) => o.execute(config, status, bundle_override),
             Commands::Show(o) => o.execute(config, status),
             Commands::Watch(o) => o.execute(config, status),
             Commands::External(args) => do_external(args),
@@ -250,12 +251,12 @@ impl BuildCommand {
         self,
         config: PersistentConfig,
         status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
+        bundle_override: Option<String>,
     ) -> Result<i32> {
-        // `--web-bundle` is not actually used for `-X build`,
+        // `--bundle` is not actually used for `-X build`,
         // so inform the user instead of ignoring silently.
-        if let Some(url) = web_bundle {
-            tt_note!(status, "--web-bundle {} ignored", &url);
+        if let Some(url) = bundle_override {
+            tt_note!(status, "--bundle {} ignored", &url);
             tt_note!(status, "using workspace bundle configuration");
         }
         let ws = Workspace::open_from_environment()?;
@@ -684,7 +685,7 @@ impl NewCommand {
         self,
         config: PersistentConfig,
         status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
+        bundle_override: Option<String>,
     ) -> Result<i32> {
         tt_note!(
             status,
@@ -694,7 +695,7 @@ impl NewCommand {
 
         let wc = WorkspaceCreator::new(self.path);
         ctry!(
-            wc.create_defaulted(&config, web_bundle);
+            wc.create_defaulted(&config, bundle_override);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)
@@ -712,7 +713,7 @@ impl InitCommand {
         self,
         config: PersistentConfig,
         status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
+        bundle_override: Option<String>,
     ) -> Result<i32> {
         let path = env::current_dir()?;
         tt_note!(
@@ -723,7 +724,7 @@ impl InitCommand {
 
         let wc = WorkspaceCreator::new(path);
         ctry!(
-            wc.create_defaulted(&config, web_bundle);
+            wc.create_defaulted(&config, bundle_override);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)
