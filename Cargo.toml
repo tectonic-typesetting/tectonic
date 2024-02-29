@@ -93,6 +93,7 @@ watchexec = "^3.0"
 watchexec-filterer-globset = "3.0"
 watchexec-signals = "2.0"
 watchexec-supervisor = "1.0"
+which = "^4.4"
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
 time = "0.3.36"
 
