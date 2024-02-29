@@ -17,7 +17,6 @@ use tectonic::{
 };
 
 mod compile;
-mod watch;
 
 #[cfg(feature = "serialization")]
 mod v2cli;
@@ -50,10 +49,6 @@ struct CliOptions {
     /// Enable/disable colorful log output
     #[arg(long = "color", name = "when", default_value = "auto")]
     cli_color: CliColor,
-
-    /// Use this file or URL to find resource files instead of the default
-    #[arg(long, short)]
-    bundle: Option<String>,
 
     #[command(flatten)]
     compile: compile::CompileOptions,
@@ -183,7 +178,7 @@ fn main() {
     // all so that we can print out the word "error:" in red. This code
     // parallels various bits of the `error_chain` crate.
 
-    if let Err(e) = args.compile.execute(config, &mut *status, args.bundle) {
+    if let Err(e) = args.compile.execute(config, &mut *status) {
         status.report_error(&SyncError::new(e).into());
         process::exit(1)
     }

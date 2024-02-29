@@ -84,17 +84,15 @@ pub struct CompileOptions {
     unstable: Vec<UnstableArg>,
 
     /// Use this URL or file to find resource files instead of the default
-    #[arg(long, short)]
+    #[arg(long, short, overrides_with = "bundle", global(true))]
     bundle: Option<String>,
 }
 
+// TODO: deprecate v1 interface and move this to v2cli/commands
+
+//impl TectonicCommand for CompileOptions {
 impl CompileOptions {
-    pub fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        bundle_override: Option<String>,
-    ) -> Result<i32> {
+    pub fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
         // Default to allowing insecure since it would be super duper annoying
@@ -187,13 +185,7 @@ impl CompileOptions {
             tt_note!(status, "using only cached resource files");
         }
 
-        if let Some(source) = self.bundle {
-            if let Some(bundle) = detect_bundle(source.clone(), self.only_cached, None)? {
-                sess_builder.bundle(bundle);
-            } else {
-                return Err(errmsg!("\"{source}\" doesn't specify a valid bundle."));
-            }
-        } else if let Some(bundle) = bundle_override {
+        if let Some(bundle) = self.bundle {
             // TODO: this is ugly.
             // It's probably a good idea to re-design our code so we
             // don't need special cases for tests our source.
@@ -202,9 +194,7 @@ impl CompileOptions {
             } else if let Some(bundle) = detect_bundle(bundle.clone(), self.only_cached, None)? {
                 sess_builder.bundle(bundle);
             } else {
-                return Err(errmsg!(
-                    "web bundle \"{bundle}\" doesn't specify a valid bundle."
-                ));
+                return Err(errmsg!("\"{bundle}\" doesn't specify a valid bundle."));
             }
         } else if let Ok(bundle) = maybe_return_test_bundle(None) {
             // TODO: this is ugly too.
@@ -214,6 +204,7 @@ impl CompileOptions {
         }
 
         sess_builder.build_date_from_env(deterministic_mode);
+
         run_and_report(sess_builder, status).map(|_| 0)
     }
 }
