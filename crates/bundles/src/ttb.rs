@@ -87,14 +87,20 @@ impl TTBFileIndex {
     fn read_filelist_line(&mut self, line: String) -> Result<()> {
         let mut bits = line.split_whitespace();
 
-        if let (Some(start), Some(gzip_len), Some(real_len), Some(path), Some(hash)) = (
-            bits.next(),
-            bits.next(),
-            bits.next(),
-            bits.next(),
-            bits.next(),
-        ) {
-            let (_, name) = path.rsplit_once('/').unwrap();
+        if let (Some(start), Some(gzip_len), Some(real_len), Some(hash)) =
+            (bits.next(), bits.next(), bits.next(), bits.next())
+        {
+            let path = bits.collect::<Vec<&str>>().join(" ");
+            let (_, name) = path.rsplit_once('/').unwrap_or(("", &path));
+
+            // Basic path validation.
+            // TODO: more robust checks
+            if path.starts_with('/')
+                || path.contains("./") // Also catches "/../"
+                || path.contains("//")
+            {
+                bail!("bad bundle file path `{path}`");
+            }
 
             self.content.push(TTBFileInfo {
                 start: start.parse::<u64>()?,
@@ -232,6 +238,10 @@ impl<'this> FileIndex<'this> for TTBFileIndex {
 
             let mut picked: Vec<&TTBFileInfo> = Vec::new();
             for rule in search {
+                // Remove leading slash from rule
+                // (search patterns start with slashes, but paths do not)
+                let rule = &rule[1..];
+
                 for info in &infos {
                     if rule.ends_with("//") {
                         // Match start of patent path
