@@ -267,12 +267,23 @@ pub fn detect_bundle(
 /// low-level reliability problems and was blocked in China. We now use a custom
 /// webservice.
 pub fn get_fallback_bundle_url(format_version: u32) -> String {
+    // Build time environment variables declared in `bundles/build.rs`:
+    let bundle_locked = option_env!("TECTONIC_BUNDLE_LOCKED").unwrap_or("");
+    let bundle_prefix = option_env!("TECTONIC_BUNDLE_PREFIX")
+        .filter(|x| !x.is_empty())
+        .expect("TECTONIC_BUNDLE_PREFIX must be defined at compile time");
+
+    // Simply return the locked url when it is specified:
+    if !bundle_locked.is_empty() {
+        return bundle_locked.to_owned();
+    }
+
     // Format version 32 (TeXLive 2021) was when we introduced versioning to the
     // URL.
     if format_version < 32 {
-        "https://relay.fullyjustified.net/default_bundle.tar".to_owned()
+        format!("{bundle_prefix}/default_bundle.tar")
     } else {
-        format!("https://relay.fullyjustified.net/default_bundle_v{format_version}.tar")
+        format!("{bundle_prefix}/default_bundle_v{format_version}.tar")
     }
 }
 
