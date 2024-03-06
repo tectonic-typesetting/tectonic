@@ -126,9 +126,7 @@ impl FontEnsemble {
             );
 
             let (name, digest_opt) = ih.into_name_digest();
-            common
-                .hooks
-                .event_input_closed(name, digest_opt, common.status);
+            common.hooks.event_input_closed(name, digest_opt);
 
             let ffd = atry!(
                 FontFileData::from_opentype(contents, face_index);

@@ -149,7 +149,7 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
                        "failed to open the default configuration file");
 
     let only_cached = false;
-    let bundle = ctry!(config.default_bundle(only_cached, &mut status);
+    let bundle = ctry!(config.default_bundle(only_cached);
                        "failed to load the default resource bundle");
 
     let format_cache_path = ctry!(config.format_cache_path();

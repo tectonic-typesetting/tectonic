@@ -1,5 +1,6 @@
 use clap::Parser;
 use tectonic::{config::PersistentConfig, errors::Result};
+use tectonic_io_base::app_dirs;
 use tectonic_status_base::StatusBackend;
 
 use crate::v2cli::{CommandCustomizations, TectonicCommand};
@@ -41,9 +42,7 @@ impl ShowUserCacheDirCommand {
     }
 
     fn execute(self, _config: PersistentConfig, _status: &mut dyn StatusBackend) -> Result<i32> {
-        use tectonic_bundles::cache::Cache;
-        let cache = Cache::get_user_default()?;
-        println!("{}", cache.root().display());
+        println!("{}", app_dirs::get_user_cache_dir("")?.display());
         Ok(0)
     }
 }

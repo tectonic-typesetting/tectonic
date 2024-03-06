@@ -7,21 +7,14 @@
 //! `tectonic_docmodel` crate with the actual document-processing capabilities
 //! provided by the processing engines.
 
-use std::{
-    fmt::Write as FmtWrite,
-    fs, io,
-    path::{Path, PathBuf},
-};
+use std::{fmt::Write as FmtWrite, fs, io};
 use tectonic_bridge_core::SecuritySettings;
-use tectonic_bundles::{
-    cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
-};
+use tectonic_bundles::{detect_bundle, Bundle};
 use tectonic_docmodel::{
     document::{BuildTargetType, Document, InputFile},
     workspace::{Workspace, WorkspaceCreator},
 };
 use tectonic_geturl::{DefaultBackend, GetUrlBackend};
-use url::Url;
 
 use crate::{
     config, ctry,
@@ -79,11 +72,7 @@ pub trait DocumentExt {
     ///
     /// This parses [`Document::bundle_loc`] and turns it into the appropriate
     /// bundle backend.
-    fn bundle(
-        &self,
-        setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>>;
+    fn bundle(&self, setup_options: &DocumentSetupOptions) -> Result<Box<dyn Bundle>>;
 
     /// Set up a [`ProcessingSessionBuilder`] for one of the outputs.
     ///
@@ -98,38 +87,16 @@ pub trait DocumentExt {
 }
 
 impl DocumentExt for Document {
-    fn bundle(
-        &self,
-        setup_options: &DocumentSetupOptions,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
-        fn bundle_from_path(p: PathBuf) -> Result<Box<dyn Bundle>> {
-            if p.is_dir() {
-                Ok(Box::new(DirBundle::new(p)))
-            } else {
-                Ok(Box::new(ZipBundle::open(p)?))
-            }
+    fn bundle(&self, setup_options: &DocumentSetupOptions) -> Result<Box<dyn Bundle>> {
+        if let Ok(test_bundle) = config::maybe_return_test_bundle(None) {
+            return Ok(test_bundle);
         }
 
-        if let Ok(test_bundle) = config::maybe_return_test_bundle(None) {
-            Ok(test_bundle)
-        } else if let Ok(url) = Url::parse(&self.bundle_loc) {
-            if url.scheme() != "file" {
-                let mut cache = Cache::get_user_default()?;
-                let bundle = cache.open::<IndexedTarBackend>(
-                    &self.bundle_loc,
-                    setup_options.only_cached,
-                    status,
-                )?;
-                Ok(Box::new(bundle))
-            } else {
-                let file_path = url.to_file_path().map_err(|_| {
-                    io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path")
-                })?;
-                bundle_from_path(file_path)
-            }
-        } else {
-            bundle_from_path(Path::new(&self.bundle_loc).to_owned())
+        let d = detect_bundle(self.bundle_loc.clone(), setup_options.only_cached, None)?;
+
+        match d {
+            Some(b) => Ok(b),
+            None => Err(io::Error::new(io::ErrorKind::InvalidInput, "Could not get bundle").into()),
         }
     }
 
@@ -190,7 +157,7 @@ impl DocumentExt for Document {
         if setup_options.only_cached {
             tt_note!(status, "using only cached resource files");
         }
-        sess_builder.bundle(self.bundle(setup_options, status)?);
+        sess_builder.bundle(self.bundle(setup_options)?);
 
         let mut tex_dir = self.src_dir().to_owned();
         tex_dir.push("src");
@@ -217,25 +184,23 @@ pub trait WorkspaceCreatorExt {
     /// for the main document.
     fn create_defaulted(
         self,
-        config: config::PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
+        config: &config::PersistentConfig,
+        bundle: Option<String>,
     ) -> Result<Workspace>;
 }
 
 impl WorkspaceCreatorExt for WorkspaceCreator {
     fn create_defaulted(
         self,
-        config: config::PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
+        config: &config::PersistentConfig,
+        bundle: Option<String>,
     ) -> Result<Workspace> {
-        let bundle_loc = if config::is_test_bundle_wanted(web_bundle.clone()) {
+        let bundle_loc = if config::is_test_bundle_wanted(bundle.clone()) {
             "test-bundle://".to_owned()
         } else {
-            let unresolved_loc = web_bundle.unwrap_or(config.default_bundle_loc().to_owned());
+            let loc = bundle.unwrap_or(config.default_bundle_loc().to_owned());
             let mut gub = DefaultBackend::default();
-            gub.resolve_url(&unresolved_loc, status)?
+            gub.resolve_url(&loc)?
         };
 
         Ok(self.create(bundle_loc)?)

@@ -135,9 +135,7 @@ fn emit_copied_file(src_tex_path: &str, dest_path: &str, common: &mut Common) ->
     }
 
     let (name, digest_opt) = ih.into_name_digest();
-    common
-        .hooks
-        .event_input_closed(name, digest_opt, common.status);
+    common.hooks.event_input_closed(name, digest_opt);
     Ok(())
 }
 

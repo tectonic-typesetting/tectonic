@@ -45,7 +45,7 @@ The following are the available flags.
 
 | Short | Full                           | Explanation                                                                                            |
 |:------|:-------------------------------|:-------------------------------------------------------------------------------------------------------|
-| `-b`  | `--bundle <file_path>`         | Use this directory or Zip-format bundle file to find resource files instead of the default             |
+| `-b`  | `--bundle <path or url>`         | Use this bundle instead of the default             |
 | `-c`  | `--chatter <level>`            | How much chatter to print when running [default: `default`]  [possible values: `default`, `minimal`]   |
 |       | `--color <when>`               | Enable/disable colorful log output [default: `auto`]  [possible values: `always`, `auto`, `never`]     |
 | `-f`  | `--format <path>`              | The name of the "format" file used to initialize the TeX engine [default: `latex`]                     |
@@ -63,5 +63,4 @@ The following are the available flags.
 |       | `--synctex`                    | Generate SyncTeX data                                                                                  |
 |       | `--untrusted`                  | Input is untrusted — disable all known-insecure features                                               |
 | `-V`  | `--version`                    | Prints version information                                                                             |
-| `-w`  | `--web-bundle <url>`           | Use this URL to find resource files instead of the default                                             |
 | `-Z`  | `-Z <option>...`               | Unstable options. Pass `-Zhelp` to show a list                                                         |

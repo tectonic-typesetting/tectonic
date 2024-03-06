@@ -154,14 +154,14 @@ impl Spx2HtmlEngine {
                 let mut output = hooks.io().output_open_name(asp).must_exist()?;
                 serde_json::to_writer_pretty(&mut output, &ser)?;
                 let (name, digest) = output.into_name_digest();
-                hooks.event_output_closed(name, digest, status);
+                hooks.event_output_closed(name, digest);
             } else if !self.do_not_emit_assets {
                 assets.emit(fonts, &mut common)?;
             }
         }
 
         let (name, digest_opt) = input.into_name_digest();
-        hooks.event_input_closed(name, digest_opt, status);
+        hooks.event_input_closed(name, digest_opt);
         Ok(())
     }
 }

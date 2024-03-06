@@ -1,6 +1,5 @@
 use flate2::{write::GzEncoder, GzBuilder};
 use headers::HeaderMapExt;
-use hyper::header::{self, HeaderValue};
 use hyper::server::Server;
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
@@ -14,11 +13,11 @@ use std::path::Path;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::{env, fs, thread};
-use tectonic::config::PersistentConfig;
 use tectonic::driver::ProcessingSessionBuilder;
 use tectonic::io::OpenResult;
 use tectonic::status::termcolor::TermcolorStatusBackend;
 use tectonic::status::ChatterLevel;
+use tectonic_bundles::detect_bundle;
 use tokio::runtime;
 
 mod util;
@@ -127,19 +126,6 @@ impl TarIndexService {
             req.uri().path(),
             req.headers().typed_get::<headers::Range>(),
         ) {
-            (&Method::HEAD, "/tectonic-default", None) => {
-                self.log_request(TectonicRequest::Head(req.uri().path().to_owned()));
-                let mut resp = Response::builder().status(StatusCode::FOUND);
-                resp.headers_mut().unwrap().insert(
-                    header::LOCATION,
-                    HeaderValue::from_str(&format!(
-                        "http://{}/bundle.tar",
-                        self.local_addr.lock().unwrap().unwrap()
-                    ))
-                    .unwrap(),
-                );
-                Box::pin(async move { resp.body(Body::empty()).unwrap() })
-            }
             (&Method::HEAD, "/bundle.tar", None) => {
                 self.log_request(TectonicRequest::Head(req.uri().path().to_owned()));
                 Box::pin(async move { Response::new(Body::empty()) })
@@ -182,7 +168,7 @@ impl TarIndexService {
 
     fn url(&self) -> String {
         format!(
-            "http://{}/tectonic-default",
+            "http://{}/bundle.tar",
             self.local_addr.lock().unwrap().unwrap()
         )
     }
@@ -269,14 +255,12 @@ fn test_full_session() {
     let requests = run_test(None, |_, url| {
         let tempdir = tempfile::tempdir().unwrap();
 
-        let config = PersistentConfig::default();
-
         let run = |path| {
             let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
             let mut sess_builder = ProcessingSessionBuilder::default();
             sess_builder.bundle(Box::new(
-                config
-                    .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+                detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                    .unwrap()
                     .unwrap(),
             ));
             let input_path = Path::new(path);
@@ -298,11 +282,11 @@ fn test_full_session() {
         run("tests/tex-outputs/redbox_png.tex");
     });
 
-    check_req_count(&requests, TectonicRequest::Index, 1);
+    check_req_count(&requests, TectonicRequest::Index, 4);
     check_req_count(
         &requests,
         TectonicRequest::File(tectonic::digest::DIGEST_NAME.into()),
-        2,
+        3,
     );
     // This file should be cached.
     check_req_count(&requests, TectonicRequest::File("plain.tex".into()), 1);
@@ -326,11 +310,9 @@ fn test_cached_url_provider() {
         let tempdir = tempfile::tempdir().unwrap();
         let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
 
-        let config = PersistentConfig::default();
-
         {
-            let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
                 .unwrap();
 
             match cache.input_open_name("plain.tex", &mut status) {
@@ -343,8 +325,8 @@ fn test_cached_url_provider() {
             }
         }
         {
-            let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
                 .unwrap();
 
             // should be cached
@@ -354,8 +336,8 @@ fn test_cached_url_provider() {
             }
         }
         {
-            let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
                 .unwrap();
 
             // should be cached
@@ -370,8 +352,8 @@ fn test_cached_url_provider() {
             }
         }
         {
-            let mut cache = config
-                .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
+            let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                .unwrap()
                 .unwrap();
 
             // not in index
@@ -382,11 +364,11 @@ fn test_cached_url_provider() {
         }
     });
 
-    check_req_count(&requests, TectonicRequest::Index, 1);
+    check_req_count(&requests, TectonicRequest::Index, 5);
     check_req_count(
         &requests,
         TectonicRequest::File(tectonic::digest::DIGEST_NAME.into()),
-        2,
+        4,
     );
     // This files should be cached.
     check_req_count(&requests, TectonicRequest::File("plain.tex".into()), 1);
@@ -411,14 +393,13 @@ fn test_bundle_update() {
     run_test(Some(tar_index), |service, url| {
         let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
 
-        let config = PersistentConfig::default();
-
         {
             // Run with first tar index.
             {
-                let mut cache = config
-                    .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
-                    .unwrap();
+                let mut cache =
+                    detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                        .unwrap()
+                        .unwrap();
 
                 match cache.input_open_name("only-first.tex", &mut status) {
                     OpenResult::Ok(_) => {}
@@ -438,36 +419,42 @@ fn test_bundle_update() {
                     );
                 builder.finish()
             };
+
+            // We're now using the second bundle's index
             service.set_tar_index(tar_index);
 
             // Run with the new tar index.
             {
-                let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
-
-                let config = PersistentConfig::default();
-
                 {
-                    let mut cache = config
-                        .make_cached_url_provider(url, false, Some(tempdir.path()), &mut status)
-                        .unwrap();
+                    let mut cache =
+                        detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+                            .unwrap()
+                            .unwrap();
 
-                    // This should be cached even thought the bundle does not contain it.
-                    match cache.input_open_name("only-first.tex", &mut status) {
-                        OpenResult::Ok(_) => {}
-                        _ => panic!("Failed to open only-first.tex"),
+                    // This should not be in the bundle
+                    if let OpenResult::Ok(_) = cache.input_open_name("only-first.tex", &mut status)
+                    {
+                        panic!("Found only-first.tex in second bundle")
                     }
 
-                    // Not in index of the first bundle and therefore no digest check.
-                    match cache.input_open_name("only-second.tex", &mut status) {
-                        OpenResult::NotAvailable => {}
-                        _ => panic!("File should not be in the first bundle"),
+                    // This should be in the second bundle
+                    if let OpenResult::NotAvailable =
+                        cache.input_open_name("only-second.tex", &mut status)
+                    {
+                        panic!("File should be in the second bundle")
                     }
+
+                    /*
+                    Removed after cache rework, since the cache now silently updates bundle hashes.
+                    If we ever change that, uncomment this section.
+
                     // File in the first bundle and the second bundle, but not cached yet. Should
                     // trigger a digest check.
                     match cache.input_open_name("file-in-both.tex", &mut status) {
                         OpenResult::Err(_) => {}
                         _ => panic!("Bundle digest changed but no error"),
                     }
+                    */
                 }
             }
         }
@@ -495,10 +482,9 @@ fn test_cache_location_redirect() {
 
     run_test(Some(tar_index), |_, url| {
         let mut status = TermcolorStatusBackend::new(ChatterLevel::Minimal);
-        let config = PersistentConfig::default();
 
-        let mut cache = config
-            .make_cached_url_provider(url, false, None, &mut status)
+        let mut cache = detect_bundle(url.to_owned(), false, Some(tempdir.path().to_owned()))
+            .unwrap()
             .unwrap();
 
         match cache.input_open_name("plain.tex", &mut status) {
@@ -509,9 +495,9 @@ fn test_cache_location_redirect() {
         // the filename of the target location is the SHA256 hash of the file content "simple"
         let expected_file_path = tempdir
             .path()
-            .join("files")
-            .join("a7")
-            .join("a39b72f29718e653e73503210fbb597057b7a1c77d1fe321a1afcff041d4e1");
+            .join("data")
+            .join("0000000000000000000000000000000000000000000000000000000000000000")
+            .join("plain.tex");
 
         if !expected_file_path.exists() {
             panic!("Couldn't find the cached file in the expected location.");

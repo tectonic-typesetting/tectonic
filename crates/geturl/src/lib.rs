@@ -25,7 +25,6 @@
 use cfg_if::cfg_if;
 use std::io::Read;
 use tectonic_errors::Result;
-use tectonic_status_base::StatusBackend;
 
 /// A trait for reading byte ranges from an HTTP resource.
 pub trait RangeReader {
@@ -48,10 +47,10 @@ pub trait GetUrlBackend: Default {
     ///
     /// But we attempt to detect redirects into CDNs/S3/etc and *stop* following
     /// before we get that deep.
-    fn resolve_url(&mut self, url: &str, status: &mut dyn StatusBackend) -> Result<String>;
+    fn resolve_url(&mut self, url: &str) -> Result<String>;
 
     /// Perform an HTTP GET on a URL, returning a readable result.
-    fn get_url(&mut self, url: &str, status: &mut dyn StatusBackend) -> Result<Self::Response>;
+    fn get_url(&mut self, url: &str) -> Result<Self::Response>;
 
     /// Open a range reader that can perform byte-range reads on the specified URL.
     fn open_range_reader(&self, url: &str) -> Self::RangeReader;

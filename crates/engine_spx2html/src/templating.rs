@@ -112,9 +112,7 @@ impl Templating {
         );
 
         let (name, digest_opt) = ih.into_name_digest();
-        common
-            .hooks
-            .event_input_closed(name, digest_opt, common.status);
+        common.hooks.event_input_closed(name, digest_opt);
 
         // Ready to render!
 

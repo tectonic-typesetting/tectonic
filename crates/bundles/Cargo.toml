@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bundles"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Tectonic "bundle" (support file collection) implementations.
@@ -25,6 +25,7 @@ tectonic_geturl = { path = "../geturl", version = "0.0.0-dev.0", default-feature
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
+url = "^2.0"
 
 [features]
 default = ["geturl-reqwest"]
