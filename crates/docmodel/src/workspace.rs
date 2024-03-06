@@ -66,18 +66,33 @@ impl Workspace {
         let mut root_dir = initial_dir.clone();
         root_dir.push("tmp"); // simplifies loop logic
 
+        static TOML_PATHS: &[&str] = &["Tectonic.toml", "tectonic.toml"];
+
+        let mut doc_file: Option<fs::File> = None;
         while root_dir.pop() {
-            root_dir.push("Tectonic.toml");
+            // Try all known config paths
+            for path in TOML_PATHS {
+                root_dir.push(path);
 
-            let mut doc_file = match fs::File::open(&root_dir) {
-                Ok(f) => f,
-                Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
-                    root_dir.pop(); // remove "Tectonic.toml"
-                    continue; // this will pop up one directory and try again
-                }
-                Err(e) => return Err(e.into()),
-            };
+                match fs::File::open(&root_dir) {
+                    Ok(f) => {
+                        // We found a file, use it.
+                        doc_file = Some(f);
+                        break;
+                    }
+                    Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
+                        root_dir.pop(); // remove this path, try next file in array
+                    }
+                    Err(e) => return Err(e.into()),
+                };
+            }
 
+            // If we didn't find a config file in this dir, try the parent.
+            if doc_file.is_none() {
+                continue;
+            }
+
+            let mut doc_file = doc_file.unwrap();
             root_dir.pop();
             let mut doc_build_dir = root_dir.clone();
             doc_build_dir.push("build");
@@ -85,7 +100,6 @@ impl Workspace {
 
             return Ok(Workspace { root_dir, doc });
         }
-
         Err(NoWorkspaceFoundError { initial_dir }.into())
     }
 }
