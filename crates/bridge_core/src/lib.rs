@@ -577,7 +577,7 @@ impl<'a> CoreBridgeState<'a> {
                 rv = true;
             }
             let (name, digest) = oh.into_name_digest();
-            self.hooks.event_output_closed(name, digest, self.status);
+            self.hooks.event_output_closed(name, digest);
         }
 
         rv

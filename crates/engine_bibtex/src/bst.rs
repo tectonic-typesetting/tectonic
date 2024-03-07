@@ -285,15 +285,7 @@ fn bst_function_command(
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
-    scan_fn_def(
-        ctx,
-        globals.buffers,
-        globals.hash,
-        globals.pool,
-        globals.other,
-        res.loc,
-        res.loc,
-    )?;
+    scan_fn_def(ctx, globals, res.loc, res.loc)?;
     Ok(())
 }
 
@@ -440,7 +432,7 @@ fn bst_macro_command(
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
     let init = globals.buffers.init(BufTy::Base);
-    if !Scan::new().chars(&[b'"']).scan_till(globals.buffers, init) {
+    if !Scan::new().chars(b"\"").scan_till(globals.buffers, init) {
         ctx.write_logs("There's no `\"' to end macro definition");
         bst_err_print_and_look_for_blank_line(ctx, globals.buffers, globals.pool)?;
         return Ok(());

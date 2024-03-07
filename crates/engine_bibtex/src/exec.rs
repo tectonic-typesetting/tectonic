@@ -921,8 +921,6 @@ fn interp_gets(
         }
     };
 
-    // TODO: Merge into match below
-
     match &hash.node(f1).extra {
         HashExtra::BstFn(BstFn::IntEntry(_) | BstFn::StrEntry(_)) if !ctx.mess_with_entries => {
             bst_cant_mess_with_entries_print(ctx, pool, cites)?;
