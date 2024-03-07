@@ -105,6 +105,16 @@ fn test_colon() {
 }
 
 #[test]
+fn test_control_sequences() {
+    TestCase::new("control_seq", Some("cites")).go();
+}
+
+#[test]
+fn test_multi_bib() {
+    TestCase::new("multi_file", Some("cites")).go();
+}
+
+#[test]
 fn test_empty_files() {
     TestCase::new("empty", None).test_bbl(false).go()
 }
