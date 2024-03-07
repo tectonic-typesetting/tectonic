@@ -13,11 +13,10 @@ use crate::{
         print_recursion_illegal, skip_illegal_stuff_after_token_print, skip_token_print,
         skip_token_unknown_function_print,
     },
-    other::OtherData,
     peekable::input_ln,
     pool::StringPool,
-    ASCIICode, Bibtex, BibtexError, BufPointer, CiteNumber, FnDefLoc, HashPointer, StrIlk,
-    StrNumber,
+    ASCIICode, Bibtex, BibtexError, BufPointer, CiteNumber, FnDefLoc, GlobalItems, HashPointer,
+    StrIlk, StrNumber,
 };
 
 pub(crate) const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
@@ -175,13 +174,9 @@ pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut Global
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn handle_char(
     ctx: &mut Bibtex<'_, '_>,
-    buffers: &mut GlobalBuffer,
-    hash: &mut HashData,
-    pool: &mut StringPool,
-    other: &mut OtherData,
+    globals: &mut GlobalItems<'_>,
     single_function: &mut Vec<FnDefLoc>,
     wiz_loc: HashPointer,
     char: ASCIICode,
@@ -189,88 +184,106 @@ fn handle_char(
     match char {
         b'#' => {
             let mut token_value = 0;
-            buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+            globals
+                .buffers
+                .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-            if !scan_integer(buffers, &mut token_value) {
+            if !scan_integer(globals.buffers, &mut token_value) {
                 ctx.write_logs("Illegal integer in integer literal");
-                return skip_token_print(ctx, buffers, pool);
+                return skip_token_print(ctx, globals.buffers, globals.pool);
             }
 
-            let str = &buffers.buffer(BufTy::Base)
-                [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
-            let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Integer(token_value))?;
+            let str = &globals.buffers.buffer(BufTy::Base)
+                [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
+            let res = globals.pool.lookup_str_insert(
+                ctx,
+                globals.hash,
+                str,
+                HashExtra::Integer(token_value),
+            )?;
 
-            let char = buffers.at_offset(BufTy::Base, 2);
+            let char = globals.buffers.at_offset(BufTy::Base, 2);
 
-            if buffers.offset(BufTy::Base, 2) < buffers.init(BufTy::Base)
+            if globals.buffers.offset(BufTy::Base, 2) < globals.buffers.init(BufTy::Base)
                 && LexClass::of(char) != LexClass::Whitespace
                 && char != b'}'
                 && char != b'%'
             {
-                return skip_illegal_stuff_after_token_print(ctx, buffers, pool);
+                return skip_illegal_stuff_after_token_print(ctx, globals.buffers, globals.pool);
             }
 
             single_function.push(res.loc);
         }
         b'"' => {
-            buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+            globals
+                .buffers
+                .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-            let init = buffers.init(BufTy::Base);
-            if !Scan::new().chars(&[b'"']).scan_till(buffers, init) {
+            let init = globals.buffers.init(BufTy::Base);
+            if !Scan::new().chars(&[b'"']).scan_till(globals.buffers, init) {
                 ctx.write_logs("No `\"` to end string literal");
-                return skip_token_print(ctx, buffers, pool);
+                return skip_token_print(ctx, globals.buffers, globals.pool);
             }
 
-            let str = &buffers.buffer(BufTy::Base)
-                [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
-            let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text)?;
+            let str = &globals.buffers.buffer(BufTy::Base)
+                [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
+            let res = globals
+                .pool
+                .lookup_str_insert(ctx, globals.hash, str, HashExtra::Text)?;
 
-            buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+            globals
+                .buffers
+                .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-            let char = buffers.at_offset(BufTy::Base, 2);
+            let char = globals.buffers.at_offset(BufTy::Base, 2);
 
-            if buffers.offset(BufTy::Base, 2) < buffers.init(BufTy::Base)
+            if globals.buffers.offset(BufTy::Base, 2) < globals.buffers.init(BufTy::Base)
                 && LexClass::of(char) != LexClass::Whitespace
                 && char != b'}'
                 && char != b'%'
             {
-                return skip_illegal_stuff_after_token_print(ctx, buffers, pool);
+                return skip_illegal_stuff_after_token_print(ctx, globals.buffers, globals.pool);
             }
 
             single_function.push(res.loc);
         }
         b'\'' => {
-            buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+            globals
+                .buffers
+                .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
-            let init = buffers.init(BufTy::Base);
+            let init = globals.buffers.init(BufTy::Base);
             Scan::new()
                 .chars(&[b'}', b'%'])
                 .class(LexClass::Whitespace)
-                .scan_till(buffers, init);
+                .scan_till(globals.buffers, init);
 
-            let range = buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2);
-            buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
+            let range =
+                globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
+            globals.buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
 
-            let str = &buffers.buffer(BufTy::Base)[range];
-            let res = pool.lookup_str(hash, str, StrIlk::BstFn);
+            let str = &globals.buffers.buffer(BufTy::Base)[range];
+            let res = globals.pool.lookup_str(globals.hash, str, StrIlk::BstFn);
 
             if !res.exists {
-                return skip_token_unknown_function_print(ctx, buffers, pool);
+                return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool);
             } else if res.loc == wiz_loc {
-                return print_recursion_illegal(ctx, buffers, pool);
+                return print_recursion_illegal(ctx, globals.buffers, globals.pool);
             }
 
             single_function.push(QUOTE_NEXT_FN);
             single_function.push(res.loc);
         }
         b'{' => {
-            buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+            globals
+                .buffers
+                .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
             let str = format!("'{}", ctx.impl_fn_num);
 
-            let res = pool.lookup_str_insert(
+            let res = globals.pool.lookup_str_insert(
                 ctx,
-                hash,
+                globals.hash,
                 str.as_bytes(),
                 HashExtra::BstFn(BstFn::Wizard(0)),
             )?;
@@ -285,25 +298,26 @@ fn handle_char(
             single_function.push(QUOTE_NEXT_FN);
             single_function.push(res.loc);
 
-            scan_fn_def(ctx, buffers, hash, pool, other, res.loc, wiz_loc)?;
+            scan_fn_def(ctx, globals, res.loc, wiz_loc)?;
         }
         _ => {
-            let init = buffers.init(BufTy::Base);
+            let init = globals.buffers.init(BufTy::Base);
             Scan::new()
                 .chars(&[b'}', b'%'])
                 .class(LexClass::Whitespace)
-                .scan_till(buffers, init);
+                .scan_till(globals.buffers, init);
 
-            let range = buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2);
+            let range =
+                globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
 
-            buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
+            globals.buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
 
-            let str = &buffers.buffer(BufTy::Base)[range];
-            let res = pool.lookup_str(hash, str, StrIlk::BstFn);
+            let str = &globals.buffers.buffer(BufTy::Base)[range];
+            let res = globals.pool.lookup_str(globals.hash, str, StrIlk::BstFn);
             if !res.exists {
-                return skip_token_unknown_function_print(ctx, buffers, pool);
+                return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool);
             } else if res.loc == wiz_loc {
-                return print_recursion_illegal(ctx, buffers, pool);
+                return print_recursion_illegal(ctx, globals.buffers, globals.pool);
             }
 
             single_function.push(res.loc);
@@ -314,53 +328,44 @@ fn handle_char(
 
 pub(crate) fn scan_fn_def(
     ctx: &mut Bibtex<'_, '_>,
-    buffers: &mut GlobalBuffer,
-    hash: &mut HashData,
-    pool: &mut StringPool,
-    other: &mut OtherData,
+    globals: &mut GlobalItems<'_>,
     fn_hash_loc: HashPointer,
     wiz_loc: HashPointer,
 ) -> Result<(), BibtexError> {
     let mut single_function = Vec::new();
 
-    if !eat_bst_white_space(ctx, buffers) {
+    if !eat_bst_white_space(ctx, globals.buffers) {
         eat_bst_print(ctx);
         ctx.write_logs("function");
-        bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
+        bst_err_print_and_look_for_blank_line(ctx, globals.buffers, globals.pool)?;
         return Ok(());
     }
 
-    let mut char = buffers.at_offset(BufTy::Base, 2);
+    let mut char = globals.buffers.at_offset(BufTy::Base, 2);
     while char != b'}' {
-        handle_char(
-            ctx,
-            buffers,
-            hash,
-            pool,
-            other,
-            &mut single_function,
-            wiz_loc,
-            char,
-        )?;
+        handle_char(ctx, globals, &mut single_function, wiz_loc, char)?;
 
-        if !eat_bst_white_space(ctx, buffers) {
+        if !eat_bst_white_space(ctx, globals.buffers) {
             eat_bst_print(ctx);
             ctx.write_logs("function");
-            return bst_err_print_and_look_for_blank_line(ctx, buffers, pool);
+            return bst_err_print_and_look_for_blank_line(ctx, globals.buffers, globals.pool);
         }
 
-        char = buffers.at_offset(BufTy::Base, 2);
+        char = globals.buffers.at_offset(BufTy::Base, 2);
     }
 
     single_function.push(HashData::end_of_def());
 
-    hash.node_mut(fn_hash_loc).extra = HashExtra::BstFn(BstFn::Wizard(other.wiz_func_len()));
+    globals.hash.node_mut(fn_hash_loc).extra =
+        HashExtra::BstFn(BstFn::Wizard(globals.other.wiz_func_len()));
 
     for ptr in single_function {
-        other.push_wiz_func(ptr);
+        globals.other.push_wiz_func(ptr);
     }
 
-    buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
+    globals
+        .buffers
+        .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
     Ok(())
 }
@@ -371,14 +376,14 @@ fn scan_balanced_braces(
     pool: &StringPool,
     bibs: &mut BibData,
     store_field: bool,
-    at_bib_command: bool,
+    bib_command: Option<BibCommand>,
     right_str_delim: ASCIICode,
 ) -> Result<bool, BibtexError> {
     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-        && !compress_bib_white(ctx, buffers, pool, bibs, at_bib_command)?
+        && !compress_bib_white(ctx, buffers, pool, bibs, bib_command)?
     {
         return Ok(false);
     }
@@ -409,7 +414,7 @@ fn scan_balanced_braces(
 
                     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                        && !compress_bib_white(ctx, buffers, pool, bibs, at_bib_command)?
+                        && !compress_bib_white(ctx, buffers, pool, bibs, bib_command)?
                     {
                         return Ok(false);
                     }
@@ -448,7 +453,7 @@ fn scan_balanced_braces(
 
                         if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                             || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                            && !compress_bib_white(ctx, buffers, pool, bibs, at_bib_command)?
+                            && !compress_bib_white(ctx, buffers, pool, bibs, bib_command)?
                         {
                             return Ok(false);
                         }
@@ -459,7 +464,7 @@ fn scan_balanced_braces(
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(ctx, buffers, pool, bibs, at_bib_command)
+                    return bib_unbalanced_braces_print(ctx, buffers, pool, bibs, bib_command)
                         .map(|_| false);
                 }
                 c => {
@@ -478,7 +483,7 @@ fn scan_balanced_braces(
 
                     if (LexClass::of(buffers.at_offset(BufTy::Base, 2)) == LexClass::Whitespace
                         || buffers.offset(BufTy::Base, 2) == buffers.init(BufTy::Base))
-                        && !compress_bib_white(ctx, buffers, pool, bibs, at_bib_command)?
+                        && !compress_bib_white(ctx, buffers, pool, bibs, bib_command)?
                     {
                         return Ok(false);
                     }
@@ -492,8 +497,7 @@ fn scan_balanced_braces(
                     brace_level += 1;
                     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
                     if !eat_bib_white_space(ctx, buffers, bibs) {
-                        return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command)
-                            .map(|_| false);
+                        return eat_bib_print(ctx, buffers, pool, bibs, bib_command).map(|_| false);
                     }
                     while brace_level > 0 {
                         let c = buffers.at_offset(BufTy::Base, 2);
@@ -511,13 +515,13 @@ fn scan_balanced_braces(
                             || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
                             && !eat_bib_white_space(ctx, buffers, bibs)
                         {
-                            return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command)
+                            return eat_bib_print(ctx, buffers, pool, bibs, bib_command)
                                 .map(|_| false);
                         }
                     }
                 }
                 b'}' => {
-                    return bib_unbalanced_braces_print(ctx, buffers, pool, bibs, at_bib_command)
+                    return bib_unbalanced_braces_print(ctx, buffers, pool, bibs, bib_command)
                         .map(|_| false);
                 }
                 _ => {
@@ -528,8 +532,7 @@ fn scan_balanced_braces(
                         .scan_till(buffers, init)
                         && !eat_bib_white_space(ctx, buffers, bibs)
                     {
-                        return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command)
-                            .map(|_| false);
+                        return eat_bib_print(ctx, buffers, pool, bibs, bib_command).map(|_| false);
                     }
                 }
             }
@@ -540,35 +543,46 @@ fn scan_balanced_braces(
     Ok(true)
 }
 
-#[allow(clippy::too_many_arguments)]
 fn scan_a_field_token_and_eat_white(
     ctx: &mut Bibtex<'_, '_>,
-    buffers: &mut GlobalBuffer,
-    hash: &HashData,
-    pool: &StringPool,
-    bibs: &mut BibData,
+    globals: &mut GlobalItems<'_>,
     store_field: bool,
-    at_bib_command: bool,
-    command: BibCommand,
+    command: Option<BibCommand>,
     cur_macro_loc: HashPointer,
     right_outer_delim: ASCIICode,
 ) -> Result<bool, BibtexError> {
-    match buffers.at_offset(BufTy::Base, 2) {
+    match globals.buffers.at_offset(BufTy::Base, 2) {
         b'{' => {
-            if !scan_balanced_braces(ctx, buffers, pool, bibs, store_field, at_bib_command, b'}')? {
+            if !scan_balanced_braces(
+                ctx,
+                globals.buffers,
+                globals.pool,
+                globals.bibs,
+                store_field,
+                command,
+                b'}',
+            )? {
                 return Ok(false);
             }
         }
         b'"' => {
-            if !scan_balanced_braces(ctx, buffers, pool, bibs, store_field, at_bib_command, b'"')? {
+            if !scan_balanced_braces(
+                ctx,
+                globals.buffers,
+                globals.pool,
+                globals.bibs,
+                store_field,
+                command,
+                b'"',
+            )? {
                 return Ok(false);
             }
         }
         b'0'..=b'9' => {
-            let last = buffers.init(BufTy::Base);
+            let last = globals.buffers.init(BufTy::Base);
             if !Scan::new()
                 .not_class(LexClass::Numeric)
-                .scan_till_nonempty(buffers, last)
+                .scan_till_nonempty(globals.buffers, last)
             {
                 ctx.write_logs("A digit disappeared");
                 print_confusion(ctx);
@@ -576,78 +590,92 @@ fn scan_a_field_token_and_eat_white(
             }
 
             if store_field {
-                let range = buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2);
+                let range =
+                    globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
                 let len = range.end - range.start;
 
-                while len >= buffers.len() {
+                while len >= globals.buffers.len() {
                     // TODO: This may change output of a field long enough to fill the buffer twice. OTOH, that is a 40KB field roughly
                     ctx.write_log_file(&format!(
                         "Field filled up at {}, reallocating.\n",
-                        buffers.at_offset(BufTy::Base, 1)
+                        globals.buffers.at_offset(BufTy::Base, 1)
                     ));
-                    buffers.grow_all();
+                    globals.buffers.grow_all();
                 }
 
-                buffers.copy_within(
+                globals.buffers.copy_within(
                     BufTy::Base,
                     BufTy::Ex,
                     range.start,
-                    buffers.offset(BufTy::Ex, 1),
+                    globals.buffers.offset(BufTy::Ex, 1),
                     len,
                 );
 
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + len);
+                globals.buffers.set_offset(
+                    BufTy::Ex,
+                    1,
+                    globals.buffers.offset(BufTy::Ex, 1) + len,
+                );
             }
         }
         _ => {
-            let res = scan_identifier(buffers, b',', right_outer_delim, b'#');
+            let res = scan_identifier(globals.buffers, b',', right_outer_delim, b'#');
             if !matches!(
                 res,
                 ScanRes::WhitespaceAdjacent | ScanRes::SpecifiedCharAdjacent
             ) {
-                bib_id_print(ctx, buffers, res)?;
+                bib_id_print(ctx, globals.buffers, res)?;
                 ctx.write_logs("a field part");
-                bib_err_print(ctx, buffers, pool, bibs, at_bib_command)?;
+                bib_err_print(ctx, globals.buffers, globals.pool, globals.bibs, command)?;
                 return Ok(false);
             }
 
             if store_field {
-                let range = buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2);
-                buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
-                let str = &buffers.buffer(BufTy::Base)[range];
+                let range =
+                    globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
+                globals.buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
+                let str = &globals.buffers.buffer(BufTy::Base)[range];
 
-                let res = pool.lookup_str(hash, str, StrIlk::Macro);
+                let res = globals.pool.lookup_str(globals.hash, str, StrIlk::Macro);
                 let mut store_token = true;
-                if at_bib_command && command == BibCommand::String && res.loc == cur_macro_loc {
+                if command == Some(BibCommand::String) && res.loc == cur_macro_loc {
                     store_token = false;
-                    macro_warn_print(ctx, buffers);
+                    macro_warn_print(ctx, globals.buffers);
                     ctx.write_logs("used in its own definition\n");
-                    bib_warn_print(ctx, pool, bibs)?;
+                    bib_warn_print(ctx, globals.pool, globals.bibs)?;
                 }
 
                 if !res.exists {
                     store_token = false;
-                    macro_warn_print(ctx, buffers);
+                    macro_warn_print(ctx, globals.buffers);
                     ctx.write_logs("undefined\n");
-                    bib_warn_print(ctx, pool, bibs)?;
+                    bib_warn_print(ctx, globals.pool, globals.bibs)?;
                 }
 
                 if store_token {
-                    let HashExtra::Macro(strnum) = hash.node(res.loc).extra else {
+                    let HashExtra::Macro(strnum) = globals.hash.node(res.loc).extra else {
                         panic!("Macro lookup didn't have Macro extra");
                     };
-                    let mut str = pool.get_str(strnum);
+                    let mut str = globals.pool.get_str(strnum);
 
-                    if buffers.offset(BufTy::Ex, 1) == 0
+                    if globals.buffers.offset(BufTy::Ex, 1) == 0
                         && LexClass::of(str[0]) == LexClass::Whitespace
                     {
-                        if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
+                        if globals.buffers.offset(BufTy::Ex, 1) >= globals.buffers.len() {
                             ctx.write_log_file("Field filled up at ' ', reallocating.\n");
-                            buffers.grow_all();
+                            globals.buffers.grow_all();
                         }
 
-                        buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b' ');
-                        buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                        globals.buffers.set_at(
+                            BufTy::Ex,
+                            globals.buffers.offset(BufTy::Ex, 1),
+                            b' ',
+                        );
+                        globals.buffers.set_offset(
+                            BufTy::Ex,
+                            1,
+                            globals.buffers.offset(BufTy::Ex, 1) + 1,
+                        );
 
                         while !str.is_empty() && LexClass::of(str[0]) == LexClass::Whitespace {
                             str = &str[1..];
@@ -661,17 +689,33 @@ fn scan_a_field_token_and_eat_white(
                             |_| String::from("Field filled up at ' ', reallocating.\n")
                         };
 
-                        if buffers.offset(BufTy::Ex, 1) >= buffers.len() {
+                        if globals.buffers.offset(BufTy::Ex, 1) >= globals.buffers.len() {
                             ctx.write_log_file(&msg(c));
-                            buffers.grow_all();
+                            globals.buffers.grow_all();
                         }
 
                         if LexClass::of(c) != LexClass::Whitespace {
-                            buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), c);
-                            buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                            globals.buffers.set_at(
+                                BufTy::Ex,
+                                globals.buffers.offset(BufTy::Ex, 1),
+                                c,
+                            );
+                            globals.buffers.set_offset(
+                                BufTy::Ex,
+                                1,
+                                globals.buffers.offset(BufTy::Ex, 1) + 1,
+                            );
                         } else if c != b' ' {
-                            buffers.set_at(BufTy::Ex, buffers.offset(BufTy::Ex, 1), b' ');
-                            buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                            globals.buffers.set_at(
+                                BufTy::Ex,
+                                globals.buffers.offset(BufTy::Ex, 1),
+                                b' ',
+                            );
+                            globals.buffers.set_offset(
+                                BufTy::Ex,
+                                1,
+                                globals.buffers.offset(BufTy::Ex, 1) + 1,
+                            );
                         }
                     }
                 }
@@ -679,8 +723,9 @@ fn scan_a_field_token_and_eat_white(
         }
     }
 
-    if !eat_bib_white_space(ctx, buffers, bibs) {
-        return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command).map(|_| false);
+    if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
+        return eat_bib_print(ctx, globals.buffers, globals.pool, globals.bibs, command)
+            .map(|_| false);
     }
     Ok(true)
 }
@@ -689,49 +734,38 @@ fn scan_a_field_token_and_eat_white(
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn scan_and_store_the_field_value_and_eat_white(
     ctx: &mut Bibtex<'_, '_>,
-    buffers: &mut GlobalBuffer,
-    hash: &mut HashData,
-    pool: &mut StringPool,
-    bibs: &mut BibData,
-    other: &mut OtherData,
-    cites: &mut CiteInfo,
+    globals: &mut GlobalItems<'_>,
     store_field: bool,
-    at_bib_command: bool,
-    command: BibCommand,
+    command: Option<BibCommand>,
     cite_out: Option<&mut CiteNumber>,
     cur_macro_loc: HashPointer,
     right_outer_delim: ASCIICode,
     field_name_loc: HashPointer,
 ) -> Result<bool, BibtexError> {
     // Consume tokens/strings separated by #
-    buffers.set_offset(BufTy::Ex, 1, 0);
+    globals.buffers.set_offset(BufTy::Ex, 1, 0);
     if !scan_a_field_token_and_eat_white(
         ctx,
-        buffers,
-        hash,
-        pool,
-        bibs,
+        globals,
         store_field,
-        at_bib_command,
         command,
         cur_macro_loc,
         right_outer_delim,
     )? {
         return Ok(false);
     }
-    while buffers.at_offset(BufTy::Base, 2) == b'#' {
-        buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
-        if !eat_bib_white_space(ctx, buffers, bibs) {
-            return eat_bib_print(ctx, buffers, pool, bibs, at_bib_command).map(|_| false);
+    while globals.buffers.at_offset(BufTy::Base, 2) == b'#' {
+        globals
+            .buffers
+            .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
+        if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
+            return eat_bib_print(ctx, globals.buffers, globals.pool, globals.bibs, command)
+                .map(|_| false);
         }
         if !scan_a_field_token_and_eat_white(
             ctx,
-            buffers,
-            hash,
-            pool,
-            bibs,
+            globals,
             store_field,
-            at_bib_command,
             command,
             cur_macro_loc,
             right_outer_delim,
@@ -741,105 +775,131 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
     }
 
     if store_field {
-        if !at_bib_command
-            && buffers.offset(BufTy::Ex, 1) > 0
-            && buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b' '
+        if command.is_none()
+            && globals.buffers.offset(BufTy::Ex, 1) > 0
+            && globals
+                .buffers
+                .at(BufTy::Ex, globals.buffers.offset(BufTy::Ex, 1) - 1)
+                == b' '
         {
-            buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
+            globals
+                .buffers
+                .set_offset(BufTy::Ex, 1, globals.buffers.offset(BufTy::Ex, 1) - 1);
         }
 
-        let ex_buf_xptr = if !at_bib_command
-            && buffers.at(BufTy::Ex, 0) == b' '
-            && buffers.offset(BufTy::Ex, 1) > 0
+        let ex_buf_xptr = if command.is_none()
+            && globals.buffers.at(BufTy::Ex, 0) == b' '
+            && globals.buffers.offset(BufTy::Ex, 1) > 0
         {
             1
         } else {
             0
         };
 
-        let str = &buffers.buffer(BufTy::Ex)[ex_buf_xptr..buffers.offset(BufTy::Ex, 1)];
-        let res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Text)?;
+        let str =
+            &globals.buffers.buffer(BufTy::Ex)[ex_buf_xptr..globals.buffers.offset(BufTy::Ex, 1)];
+        let res = globals
+            .pool
+            .lookup_str_insert(ctx, globals.hash, str, HashExtra::Text)?;
 
-        if at_bib_command {
+        if let Some(command) = command {
             match command {
                 // TODO: Should this be `unreachable!`? This way will cover errors, but also shouldn't misbehave
                 BibCommand::Comment => (),
-                BibCommand::Preamble => bibs.add_preamble(hash.text(res.loc)),
+                BibCommand::Preamble => globals.bibs.add_preamble(globals.hash.text(res.loc)),
                 BibCommand::String => {
-                    hash.node_mut(cur_macro_loc).extra = HashExtra::Macro(hash.text(res.loc))
+                    globals.hash.node_mut(cur_macro_loc).extra =
+                        HashExtra::Macro(globals.hash.text(res.loc))
                 }
             }
         } else {
-            let HashExtra::BstFn(BstFn::Field(field)) = hash.node(field_name_loc).extra else {
+            let HashExtra::BstFn(BstFn::Field(field)) = globals.hash.node(field_name_loc).extra
+            else {
                 panic!("field_name_loc wasn't a BstFn::Field");
             };
 
-            let field_ptr = cites.entry_ptr() * other.num_fields() + field;
-            if field_ptr >= other.max_fields() {
+            let field_ptr = globals.cites.entry_ptr() * globals.other.num_fields() + field;
+            if field_ptr >= globals.other.max_fields() {
                 ctx.write_logs("field_info index is out of range");
                 print_confusion(ctx);
                 return Err(BibtexError::Fatal);
             }
 
             /* missing */
-            if other.field(field_ptr) != 0 {
+            if globals.other.field(field_ptr) != 0 {
                 ctx.write_logs("Warning--I'm ignoring ");
-                print_a_pool_str(ctx, cites.get_cite(cites.entry_ptr()), pool)?;
+                print_a_pool_str(
+                    ctx,
+                    globals.cites.get_cite(globals.cites.entry_ptr()),
+                    globals.pool,
+                )?;
                 ctx.write_logs("'s extra \"");
-                print_a_pool_str(ctx, hash.text(field_name_loc), pool)?;
+                print_a_pool_str(ctx, globals.hash.text(field_name_loc), globals.pool)?;
                 ctx.write_logs("\" field\n");
-                bib_warn_print(ctx, pool, bibs)?;
+                bib_warn_print(ctx, globals.pool, globals.bibs)?;
             } else {
-                other.set_field(field_ptr, hash.text(res.loc));
-                if field == other.crossref_num() && !ctx.all_entries {
-                    let end = buffers.offset(BufTy::Ex, 1);
+                globals
+                    .other
+                    .set_field(field_ptr, globals.hash.text(res.loc));
+                if field == globals.other.crossref_num() && !ctx.all_entries {
+                    let end = globals.buffers.offset(BufTy::Ex, 1);
                     // Move Ex to Out, at the same position
-                    buffers.copy_within(
+                    globals.buffers.copy_within(
                         BufTy::Ex,
                         BufTy::Out,
                         ex_buf_xptr,
                         ex_buf_xptr,
                         end - ex_buf_xptr,
                     );
-                    buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
-                    let str = &buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
-                    let lc_res = pool.lookup_str_insert(ctx, hash, str, HashExtra::LcCite(0))?;
+                    globals.buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
+                    let str = &globals.buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
+                    let lc_res = globals.pool.lookup_str_insert(
+                        ctx,
+                        globals.hash,
+                        str,
+                        HashExtra::LcCite(0),
+                    )?;
                     if let Some(cite_out) = cite_out {
                         *cite_out = lc_res.loc;
                     }
-                    let HashExtra::LcCite(cite_loc) = hash.node(lc_res.loc).extra else {
+                    let HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra else {
                         panic!("LcCite lookup didn't have LcCite extra");
                     };
                     if lc_res.exists {
-                        let HashExtra::Cite(cite) = hash.node(cite_loc).extra else {
+                        let HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra else {
                             panic!("LcCite location didn't have Cite extra");
                         };
 
-                        if cite >= cites.old_num_cites() {
-                            cites.set_info(cite, cite + 1);
+                        if cite >= globals.cites.old_num_cites() {
+                            globals.cites.set_info(cite, cite + 1);
                         }
                     } else {
-                        let str =
-                            &buffers.buffer(BufTy::Ex)[ex_buf_xptr..buffers.offset(BufTy::Ex, 1)];
-                        let c_res = pool.lookup_str_insert(ctx, hash, str, HashExtra::Cite(0))?;
+                        let str = &globals.buffers.buffer(BufTy::Ex)
+                            [ex_buf_xptr..globals.buffers.offset(BufTy::Ex, 1)];
+                        let c_res = globals.pool.lookup_str_insert(
+                            ctx,
+                            globals.hash,
+                            str,
+                            HashExtra::Cite(0),
+                        )?;
                         if c_res.exists {
                             hash_cite_confusion(ctx);
                             return Err(BibtexError::Fatal);
                         }
                         let new_ptr = add_database_cite(
-                            cites,
-                            other,
-                            hash,
-                            cites.ptr(),
+                            globals.cites,
+                            globals.other,
+                            globals.hash,
+                            globals.cites.ptr(),
                             c_res.loc,
                             lc_res.loc,
                         );
 
-                        let HashExtra::Cite(cite) = hash.node(c_res.loc).extra else {
+                        let HashExtra::Cite(cite) = globals.hash.node(c_res.loc).extra else {
                             panic!("Cite lookup didn't have Cite extra");
                         };
-                        cites.set_ptr(new_ptr);
-                        cites.set_info(cite, 1);
+                        globals.cites.set_ptr(new_ptr);
+                        globals.cites.set_info(cite, 1);
                     }
                 }
             }
