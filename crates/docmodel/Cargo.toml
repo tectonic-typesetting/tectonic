@@ -20,7 +20,7 @@ edition = "2018"
 [dependencies]
 serde = { version = "^1.0", features = ["derive"] }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
-toml = { version = "^0.7" }
+toml = { version = "^0.8" }
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
