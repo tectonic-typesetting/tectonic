@@ -285,15 +285,7 @@ fn bst_function_command(
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
-    scan_fn_def(
-        ctx,
-        globals.buffers,
-        globals.hash,
-        globals.pool,
-        globals.other,
-        res.loc,
-        res.loc,
-    )?;
+    scan_fn_def(ctx, globals, res.loc, res.loc)?;
     Ok(())
 }
 

@@ -1,6 +1,6 @@
 use crate::{
     auxi::AuxData,
-    bibs::BibData,
+    bibs::{BibCommand, BibData},
     buffer::{BufTy, GlobalBuffer},
     char_info::LexClass,
     cite::CiteInfo,
@@ -343,13 +343,13 @@ pub(crate) fn bib_err_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
-    at_bib_command: bool,
+    bib_command: Option<BibCommand>,
 ) -> Result<(), BibtexError> {
     ctx.write_logs("-");
     bib_ln_num_print(ctx, pool, bibs)?;
     print_bad_input_line(ctx, buffers);
     print_skipping_whatever_remains(ctx);
-    if at_bib_command {
+    if bib_command.is_some() {
         ctx.write_logs("command\n");
     } else {
         ctx.write_logs("entry\n");
@@ -372,10 +372,10 @@ pub(crate) fn eat_bib_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
-    at_bib_command: bool,
+    bib_command: Option<BibCommand>,
 ) -> Result<(), BibtexError> {
     ctx.write_logs("Illegal end of database file");
-    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, bib_command)
 }
 
 pub(crate) fn bib_one_of_two_print(
@@ -385,13 +385,13 @@ pub(crate) fn bib_one_of_two_print(
     bibs: &BibData,
     char1: ASCIICode,
     char2: ASCIICode,
-    at_bib_command: bool,
+    bib_command: Option<BibCommand>,
 ) -> Result<(), BibtexError> {
     ctx.write_logs(&format!(
         "I was expecting a `{}' or a `{}'",
         char1 as char, char2 as char
     ));
-    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, bib_command)
 }
 
 pub(crate) fn bib_equals_sign_print(
@@ -399,10 +399,10 @@ pub(crate) fn bib_equals_sign_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
-    at_bib_command: bool,
+    bib_command: Option<BibCommand>,
 ) -> Result<(), BibtexError> {
     ctx.write_logs("I was expecting an \"=\"");
-    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, bib_command)
 }
 
 pub(crate) fn bib_unbalanced_braces_print(
@@ -410,10 +410,10 @@ pub(crate) fn bib_unbalanced_braces_print(
     buffers: &GlobalBuffer,
     pool: &StringPool,
     bibs: &BibData,
-    at_bib_command: bool,
+    bib_command: Option<BibCommand>,
 ) -> Result<(), BibtexError> {
     ctx.write_logs("Unbalanced braces");
-    bib_err_print(ctx, buffers, pool, bibs, at_bib_command)
+    bib_err_print(ctx, buffers, pool, bibs, bib_command)
 }
 
 pub(crate) fn macro_warn_print(ctx: &mut Bibtex<'_, '_>, buffers: &GlobalBuffer) {
