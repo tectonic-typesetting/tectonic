@@ -255,7 +255,6 @@ impl StringPool {
         self.make_string(ctx)
     }
 
-    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.strings.len()
     }
