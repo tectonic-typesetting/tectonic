@@ -1786,7 +1786,7 @@ fn interp_purify(
                                     | ControlSeq::UpperOE
                                     | ControlSeq::LowerAE
                                     | ControlSeq::UpperAE
-                                    | ControlSeq::UpperL => {
+                                    | ControlSeq::LowerSS => {
                                         scratch[write_idx] = scratch[old_idx + 1];
                                         write_idx += 1;
                                     }
