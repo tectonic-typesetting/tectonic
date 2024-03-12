@@ -95,6 +95,7 @@ watchexec-signals = "2.0"
 watchexec-supervisor = "1.0"
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
 time = "0.3.36"
+clap_complete = "4.5.1"
 
 [features]
 default = ["geturl-reqwest", "serialization"]

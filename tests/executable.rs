@@ -933,6 +933,19 @@ fn v2_dump_suffix() {
     assert!(saw_first && saw_second);
 }
 
+/// Checks that shell completions are correctly generated
+#[cfg(feature = "serialization")]
+#[test]
+fn v2_show_shell_completions() {
+    let (_tempdir, temppath) = setup_v2();
+    let output = run_tectonic(&temppath, &["-X", "show", "shell-completions", "zsh"]);
+    success_or_panic(&output);
+
+    if !String::from_utf8_lossy(&output.stdout).contains("compdef _nextonic nextonic") {
+        panic!("shell completions generation failed.")
+    }
+}
+
 const SHELL_ESCAPE_TEST_DOC: &str = r"\immediate\write18{mkdir shellwork}
 \immediate\write18{echo 123 >shellwork/persist}
 \ifnum123=\input{shellwork/persist}
