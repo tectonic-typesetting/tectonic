@@ -1,19 +1,21 @@
-use super::{Font, FontManager, FontManagerBackend, FontMaps, NameCollection};
+use super::{
+    base_get_op_size_rec_and_style_flags, Font, FontManager, FontManagerBackend, FontMaps,
+    NameCollection,
+};
 use crate::c_api::fc::sys::{
     FcConfigGetCurrent, FcFalse, FcFontList, FcFontSet, FcFontSetDestroy, FcInit, FcObjectSetBuild,
     FcObjectSetDestroy, FC_FAMILY, FC_FILE, FC_FONTFORMAT, FC_FULLNAME, FC_INDEX, FC_SLANT,
     FC_STYLE, FC_WEIGHT, FC_WIDTH,
 };
-use crate::c_api::font::XeTeXFontBase;
-use crate::c_api::{fc, Fixed, PlatformFontRef, RsFix2D};
+use crate::c_api::{fc, PlatformFontRef};
+use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2::{
     FT_Done_Face, FT_Get_Postscript_Name, FT_Get_Sfnt_Name, FT_Get_Sfnt_Name_Count,
-    FT_Init_FreeType, FT_Library, FT_New_Face, FT_SfntName, FT_Sfnt_Tag, TT_Header, TT_Postscript,
-    FT_IS_SFNT, TT_MAC_ID_ROMAN, TT_OS2, TT_PLATFORM_APPLE_UNICODE, TT_PLATFORM_MACINTOSH,
-    TT_PLATFORM_MICROSOFT,
+    FT_Init_FreeType, FT_Library, FT_New_Face, FT_SfntName, FT_IS_SFNT, TT_MAC_ID_ROMAN,
+    TT_PLATFORM_APPLE_UNICODE, TT_PLATFORM_MACINTOSH, TT_PLATFORM_MICROSOFT,
 };
 use tectonic_bridge_icu::{
     ucnv_close, ucnv_fromUChars, ucnv_open, ucnv_toUChars, UConverter, U_SUCCESS, U_ZERO_ERROR,
@@ -164,64 +166,28 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr {
+    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         if let Ok(str) = font.get::<fc::pat::File>(0) {
-            str
+            Cow::Borrowed(str)
         } else {
-            cstr!("[unknown]")
+            Cow::Borrowed(cstr!("[unknown]"))
         }
     }
 
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
-        let mut xfont = match XeTeXFontBase::new(font.font_ref.clone(), 10.0) {
-            Ok(xfont) => xfont,
-            Err(_) => return,
-        };
+        base_get_op_size_rec_and_style_flags(font);
 
-        let size_rec = FontManager::get_op_size(&mut xfont);
-        if let Some(size_rec) = size_rec {
-            font.op_size_info.design_size = size_rec.design_size;
-            if size_rec.sub_family_id != 0
-                || size_rec.name_code != 0
-                || size_rec.min_size != 0.0
-                || size_rec.max_size != 0.0
-            {
-                font.op_size_info.sub_family_id = size_rec.sub_family_id;
-                font.op_size_info.name_code = size_rec.name_code;
-                font.op_size_info.min_size = size_rec.min_size;
-                font.op_size_info.max_size = size_rec.max_size;
+        if font.weight == 0 && font.width == 0 {
+            let pat = &font.font_ref;
+            if let Ok(weight) = pat.get::<fc::pat::Weight>(0) {
+                font.weight = weight as u16;
             }
-        }
-
-        let os2_table = xfont.get_font_table(FT_Sfnt_Tag::Os2).cast::<TT_OS2>();
-        if !os2_table.is_null() {
-            font.weight = (*os2_table).usWeightClass;
-            font.width = (*os2_table).usWidthClass;
-            let sel = (*os2_table).fsSelection;
-            font.is_reg = (sel & (1 << 6)) != 0;
-            font.is_bold = (sel & (1 << 5)) != 0;
-            font.is_italic = (sel & (1 << 0)) != 0;
-        }
-
-        let head_table = xfont.get_font_table(FT_Sfnt_Tag::Head).cast::<TT_Header>();
-        if !head_table.is_null() {
-            let ms = (*head_table).Mac_Style;
-            if (ms & (1 << 0)) != 0 {
-                font.is_bold = true;
+            if let Ok(width) = pat.get::<fc::pat::Width>(0) {
+                font.width = width as u16;
             }
-            if (ms & (1 << 1)) != 0 {
-                font.is_italic = true;
+            if let Ok(slant) = pat.get::<fc::pat::Slant>(0) {
+                font.slant = slant as i16;
             }
-        }
-
-        let post_table = xfont
-            .get_font_table(FT_Sfnt_Tag::Post)
-            .cast::<TT_Postscript>();
-        if !post_table.is_null() {
-            font.slant = (1000.0
-                * (f64::tan(
-                    RsFix2D((-(*post_table).italic_angle) as Fixed) * std::f64::consts::PI / 180.0,
-                ))) as _;
         }
     }
 
