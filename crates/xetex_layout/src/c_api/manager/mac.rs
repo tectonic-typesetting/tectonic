@@ -145,14 +145,15 @@ impl FontManagerBackend for MacBackend {
             let url = CTFontCopyAttribute(ct_font, kCTFontURLAttribute);
 
             if !url.is_null() {
-                let mut buf = [0u8; libc::PATH_MAX];
+                let mut buf = [0u8; libc::PATH_MAX as usize];
                 if CFURLGetFileSystemRepresentation(
                     url.cast(),
                     true,
                     buf.as_mut_ptr(),
                     libc::PATH_MAX as CFIndex,
                 ) {
-                    path = Cow::Owned(CString::new(buf));
+                    let pos = buf.iter().rposition(|c| **c != 0).unwrap();
+                    path = Cow::Owned(CString::new(buf[..pos]).unwrap());
                 }
                 CFRelease(url);
             }
