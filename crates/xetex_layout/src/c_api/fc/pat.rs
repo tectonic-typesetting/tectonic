@@ -84,6 +84,36 @@ impl PatParam for Index {
     }
 }
 
+pub struct Weight(());
+
+impl PatParam for Weight {
+    type Output<'a> = i32;
+
+    fn get(pat: &Pattern, idx: usize) -> Result<Self::Output<'_>, FcErr> {
+        unsafe { get_int(pat.0.as_ptr(), sys::FC_WEIGHT, idx as libc::c_int) }
+    }
+}
+
+pub struct Width(());
+
+impl PatParam for Width {
+    type Output<'a> = i32;
+
+    fn get(pat: &Pattern, idx: usize) -> Result<Self::Output<'_>, FcErr> {
+        unsafe { get_int(pat.0.as_ptr(), sys::FC_WIDTH, idx as libc::c_int) }
+    }
+}
+
+pub struct Slant(());
+
+impl PatParam for Slant {
+    type Output<'a> = i32;
+
+    fn get(pat: &Pattern, idx: usize) -> Result<Self::Output<'_>, FcErr> {
+        unsafe { get_int(pat.0.as_ptr(), sys::FC_SLANT, idx as libc::c_int) }
+    }
+}
+
 #[derive(Clone, PartialEq, Eq, Hash)]
 #[repr(transparent)]
 pub struct Pattern(NonNull<sys::FcPattern>);
