@@ -1,8 +1,11 @@
-use crate::c_api::{Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont};
+use crate::c_api::font::XeTeXFontBase;
+use crate::c_api::{Fixed, PlatformFontRef, RawPlatformFontRef, RsFix2D, XeTeXFont};
+use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::ptr;
+use tectonic_bridge_freetype2::{FT_Sfnt_Tag, TT_Header, TT_Postscript, TT_OS2};
 use tectonic_bridge_harfbuzz::{hb_font_get_face, hb_ot_layout_get_size_params};
 
 #[cfg(not(target_os = "macos"))]
@@ -105,10 +108,63 @@ pub struct NameCollection {
 pub trait FontManagerBackend {
     unsafe fn initialize(&mut self);
     unsafe fn terminate(&mut self);
-    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr;
+    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
     unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection;
+}
+
+unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
+    let mut xfont = match XeTeXFontBase::new(font.font_ref.clone(), 10.0) {
+        Ok(xfont) => xfont,
+        Err(_) => return,
+    };
+
+    let size_rec = FontManager::get_op_size(&mut xfont);
+    if let Some(size_rec) = size_rec {
+        font.op_size_info.design_size = size_rec.design_size;
+        if size_rec.sub_family_id != 0
+            || size_rec.name_code != 0
+            || size_rec.min_size != 0.0
+            || size_rec.max_size != 0.0
+        {
+            font.op_size_info.sub_family_id = size_rec.sub_family_id;
+            font.op_size_info.name_code = size_rec.name_code;
+            font.op_size_info.min_size = size_rec.min_size;
+            font.op_size_info.max_size = size_rec.max_size;
+        }
+    }
+
+    let os2_table = xfont.get_font_table(FT_Sfnt_Tag::Os2).cast::<TT_OS2>();
+    if !os2_table.is_null() {
+        font.weight = (*os2_table).usWeightClass;
+        font.width = (*os2_table).usWidthClass;
+        let sel = (*os2_table).fsSelection;
+        font.is_reg = (sel & (1 << 6)) != 0;
+        font.is_bold = (sel & (1 << 5)) != 0;
+        font.is_italic = (sel & (1 << 0)) != 0;
+    }
+
+    let head_table = xfont.get_font_table(FT_Sfnt_Tag::Head).cast::<TT_Header>();
+    if !head_table.is_null() {
+        let ms = (*head_table).Mac_Style;
+        if (ms & (1 << 0)) != 0 {
+            font.is_bold = true;
+        }
+        if (ms & (1 << 1)) != 0 {
+            font.is_italic = true;
+        }
+    }
+
+    let post_table = xfont
+        .get_font_table(FT_Sfnt_Tag::Post)
+        .cast::<TT_Postscript>();
+    if !post_table.is_null() {
+        font.slant = (1000.0
+            * (f64::tan(
+                RsFix2D((-(*post_table).italic_angle) as Fixed) * std::f64::consts::PI / 180.0,
+            ))) as _;
+    }
 }
 
 #[derive(Default)]
@@ -709,7 +765,7 @@ impl FontManager {
             .search_for_host_platform_fonts(&mut self.maps, name)
     }
 
-    pub unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> &'a CStr {
+    pub unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         self.backend.get_platform_font_desc(font)
     }
 
