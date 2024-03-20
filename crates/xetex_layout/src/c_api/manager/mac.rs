@@ -151,8 +151,7 @@ impl FontManagerBackend for MacBackend {
                     true,
                     buf.as_mut_ptr(),
                     libc::PATH_MAX as CFIndex,
-                ) != 0
-                {
+                ) {
                     path = Cow::Owned(CString::new(buf));
                 }
                 CFRelease(url);
