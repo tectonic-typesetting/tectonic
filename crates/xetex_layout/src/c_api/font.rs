@@ -739,8 +739,8 @@ impl XeTeXFontBase {
 
         let empty_cascade_list =
             CFArrayCreate(ptr::null(), ptr::null_mut(), 0, &kCFTypeArrayCallBacks);
-        let mut values = &[empty_cascade_list];
-        let mut attribute_keys = &[kCTFontCascadeListAttribute];
+        let mut values = [empty_cascade_list];
+        let mut attribute_keys = [kCTFontCascadeListAttribute];
         let attributes = CFDictionaryCreate(
             ptr::null(),
             attribute_keys.as_mut_ptr().cast(),
