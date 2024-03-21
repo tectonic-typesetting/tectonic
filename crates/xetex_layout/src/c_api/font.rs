@@ -743,8 +743,8 @@ impl XeTeXFontBase {
         let mut attribute_keys = &[kCTFontCascadeListAttribute];
         let attributes = CFDictionaryCreate(
             ptr::null(),
-            &mut (attribute_keys as *const [_]).cast(),
-            &mut (values as *const [_]).cast(),
+            attribute_keys.as_mut_ptr().cast(),
+            values.as_mut_ptr().cast(),
             1,
             &kCFTypeDictionaryKeyCallBacks,
             &kCFTypeDictionaryValueCallBacks,
