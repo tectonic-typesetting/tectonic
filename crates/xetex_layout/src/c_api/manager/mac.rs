@@ -183,7 +183,7 @@ impl FontManagerBackend for MacBackend {
                 CFStringCreateWithCString(ptr::null(), family.as_ptr(), kCFStringEncodingUTF8);
 
             let family_members = find_fonts_with_name(family_str, kCTFontFamilyNameAttribute);
-            if CFArrayGetCount(family_members) > 0 {
+            if !family_members.is_null() && CFArrayGetCount(family_members) > 0 {
                 self.add_fonts_to_caches(maps, family_members);
                 CFRelease(family_members.cast());
                 return;
@@ -205,8 +205,7 @@ impl FontManagerBackend for MacBackend {
         }
 
         let family_members = find_fonts_with_name(name_str, kCTFontFamilyNameAttribute);
-        eprintln!("family_members: {family_members:p}");
-        if CFArrayGetCount(family_members) > 0 {
+        if !family_members.is_null() && CFArrayGetCount(family_members) > 0 {
             self.add_fonts_to_caches(maps, family_members);
             CFRelease(family_members.cast());
             return;
