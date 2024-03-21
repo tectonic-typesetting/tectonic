@@ -17,7 +17,7 @@ use crate::c_api::{
 use libc::{free, strcpy, strlen, strrchr};
 use std::alloc::{alloc, dealloc, Layout};
 use std::cell::UnsafeCell;
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::sync::OnceLock;
 use std::{mem, ptr};
 use tectonic_bridge_core::FileFormat;
@@ -530,12 +530,12 @@ pub struct XeTeXFontBase {
 
     vertical: bool,
 
-    filename: *mut libc::c_char,
+    filename: CString,
     index: u32,
 
     ft_face: FT_Face,
-    backing_data: *mut libc::c_uchar,
-    backing_data2: *mut libc::c_uchar,
+    backing_data: Vec<u8>,
+    backing_data2: Vec<u8>,
     hb_font: *mut hb_font_t,
 
     kind: FontKind,
@@ -564,11 +564,11 @@ impl XeTeXFontBase {
             x_height: 0.0,
             italic_angle: 0.0,
             vertical: false,
-            filename: ptr::null_mut(),
+            filename: CString::new("").unwrap(),
             index: 0,
             ft_face: ptr::null_mut(),
-            backing_data: ptr::null_mut(),
-            backing_data2: ptr::null_mut(),
+            backing_data: Vec::new(),
+            backing_data2: Vec::new(),
             hb_font: ptr::null_mut(),
             kind: FontKind::Mac(descriptor, ptr::null()),
         };
@@ -594,11 +594,11 @@ impl XeTeXFontBase {
             x_height: 0.0,
             italic_angle: 0.0,
             vertical: false,
-            filename: ptr::null_mut(),
+            filename: CString::new("").unwrap(),
             index: 0,
             ft_face: ptr::null_mut(),
-            backing_data: ptr::null_mut(),
-            backing_data2: ptr::null_mut(),
+            backing_data: Vec::new(),
+            backing_data2: Vec::new(),
             hb_font: ptr::null_mut(),
             kind: FontKind::FtFont,
         };
@@ -640,8 +640,8 @@ impl XeTeXFontBase {
         }
 
         let sz = ttstub_input_get_size(handle);
-        self.backing_data = xmalloc(sz).cast();
-        let r = ttstub_input_read(handle, self.backing_data.cast(), sz);
+        self.backing_data = vec![0; sz];
+        let r = ttstub_input_read(handle, self.backing_data.as_mut_ptr().cast(), sz);
         if r < 0 || (r as usize) != sz {
             panic!("failed to read font file");
         }
@@ -649,7 +649,7 @@ impl XeTeXFontBase {
 
         let error = FT_New_Memory_Face(
             ft_lib,
-            self.backing_data,
+            self.backing_data.as_mut_ptr().cast(),
             sz as libc::c_long,
             index as libc::c_long,
             &mut self.ft_face,
@@ -674,8 +674,8 @@ impl XeTeXFontBase {
 
             if !afm_handle.is_null() {
                 let sz = ttstub_input_get_size(afm_handle);
-                self.backing_data2 = xmalloc(sz).cast();
-                let r = ttstub_input_read(handle, self.backing_data2.cast(), sz);
+                self.backing_data2 = vec![0; sz];
+                let r = ttstub_input_read(handle, self.backing_data2.as_mut_ptr().cast(), sz);
 
                 if r < 0 || (r as usize) != sz {
                     panic!("failed to read AFM file");
@@ -683,14 +683,14 @@ impl XeTeXFontBase {
 
                 let mut open_args = FT_Open_Args::default();
                 open_args.flags = FT_OPEN_MEMORY;
-                open_args.memory_base = self.backing_data2;
+                open_args.memory_base = self.backing_data2.as_mut_ptr().cast();
                 open_args.memory_size = sz as libc::c_long;
 
                 FT_Attach_Stream(self.ft_face, &mut open_args);
             }
         }
 
-        self.filename = xstrdup(pathname.as_ptr());
+        self.filename = pathname.to_owned();
         self.index = index as u32;
         self.units_per_em = (*self.ft_face).units_per_EM;
         self.ascent = self.units_to_points((*self.ft_face).ascender as f64) as f32;
@@ -1113,9 +1113,9 @@ impl XeTeXFontBase {
         }
     }
 
-    pub(crate) fn get_filename(&self, index: &mut u32) -> *const libc::c_char {
+    pub(crate) fn get_filename(&self, index: &mut u32) -> &CStr {
         *index = self.index;
-        self.filename
+        &self.filename
     }
 
     pub(crate) unsafe fn get_font_table(&self, tag: FT_Sfnt_Tag) -> *mut () {
@@ -1185,9 +1185,6 @@ impl Drop for XeTeXFontBase {
                 FT_Done_Face(self.ft_face);
             }
             hb_font_destroy(self.hb_font);
-            free(self.backing_data.cast());
-            free(self.backing_data2.cast());
-            free(self.filename.cast());
             #[cfg(target_os = "macos")]
             if let FontKind::Mac(descriptor, font_ref) = self.kind {
                 if !descriptor.is_null() {
