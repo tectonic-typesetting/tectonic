@@ -188,7 +188,6 @@ impl FontManagerBackend for MacBackend {
                 CFRelease(family_members.cast());
                 return;
             }
-            CFRelease(family_members.cast());
 
             let matched = find_font_with_name(family_str, kCTFontFamilyNameAttribute);
             if !matched.is_null() {
@@ -211,7 +210,6 @@ impl FontManagerBackend for MacBackend {
             CFRelease(family_members.cast());
             return;
         }
-        CFRelease(family_members.cast());
 
         let matched = find_font_with_name(name_str, kCTFontFamilyNameAttribute);
         if !matched.is_null() {
