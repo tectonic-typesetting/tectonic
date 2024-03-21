@@ -22,9 +22,6 @@ unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRe
     let mut keys = [key];
     let mut values = [name];
 
-    eprintln!("{:p}", &kCFTypeDictionaryKeyCallBacks);
-    eprintln!("{:p}", &kCFTypeDictionaryValueCallBacks);
-
     let attributes = CFDictionaryCreate(
         ptr::null_mut(),
         keys.as_mut_ptr().cast(),
@@ -208,6 +205,7 @@ impl FontManagerBackend for MacBackend {
         }
 
         let family_members = find_fonts_with_name(name_str, kCTFontFamilyNameAttribute);
+        eprintln!("family_members: {family_members:p}");
         if CFArrayGetCount(family_members) > 0 {
             self.add_fonts_to_caches(maps, family_members);
             CFRelease(family_members.cast());
