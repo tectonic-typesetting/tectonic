@@ -31,8 +31,11 @@ unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRe
         &kCFTypeDictionaryKeyCallBacks,
         &kCFTypeDictionaryValueCallBacks,
     );
+    dbg!();
     let descriptor = CTFontDescriptorCreateWithAttributes(attributes);
+    dbg!();
     CFRelease(attributes.cast());
+    dbg!();
 
     let mandatory_attributes = CFSetCreate(
         ptr::null_mut(),
@@ -40,9 +43,13 @@ unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRe
         1,
         &kCFTypeSetCallBacks,
     );
+    dbg!();
     let matches = CTFontDescriptorCreateMatchingFontDescriptors(descriptor, mandatory_attributes);
+    dbg!();
     CFRelease(mandatory_attributes.cast());
+    dbg!();
     CFRelease(descriptor.cast());
+    dbg!();
     matches
 }
 
