@@ -20,8 +20,8 @@ use std::ptr;
 
 unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRef {
     eprintln!("find_fonts_with_name");
-    let mut keys = &[key];
-    let mut values = &[name];
+    let mut keys = [key];
+    let mut values = [name];
 
     eprintln!("{:p}", &kCFTypeDictionaryKeyCallBacks);
     eprintln!("{:p}", &kCFTypeDictionaryValueCallBacks);
