@@ -19,8 +19,8 @@ use std::ffi::{CStr, CString};
 use std::ptr;
 
 unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRef {
-    let mut keys = &[key];
-    let mut values = &[name];
+    let mut keys = [key];
+    let mut values = [name];
 
     eprintln!("{:p}", &kCFTypeDictionaryKeyCallBacks);
     eprintln!("{:p}", &kCFTypeDictionaryValueCallBacks);
