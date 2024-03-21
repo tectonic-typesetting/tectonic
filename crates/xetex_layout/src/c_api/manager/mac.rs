@@ -126,6 +126,7 @@ impl FontManagerBackend for MacBackend {
     unsafe fn terminate(&mut self) {}
 
     unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
+        eprintln!("MacBackend::get_platform_font_desc");
         let mut path = Cow::Borrowed(cstr!("[unknown]"));
 
         let ct_font = CTFontCreateWithFontDescriptor(*font, 0.0, ptr::null_mut());
@@ -164,10 +165,12 @@ impl FontManagerBackend for MacBackend {
     }
 
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
+        eprintln!("MacBackend::get_op_size_rec_and_style_flags");
         base_get_op_size_rec_and_style_flags(font);
     }
 
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
+        eprintln!("MacBackend::search_for_host_platform_fonts");
         let name_str = CFStringCreateWithCString(ptr::null(), name.as_ptr(), kCFStringEncodingUTF8);
         let matched = find_font_with_name(name_str, kCTFontDisplayNameAttribute);
         if !matched.is_null() {
@@ -222,6 +225,7 @@ impl FontManagerBackend for MacBackend {
     }
 
     unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection {
+        eprintln!("MacBackend::read_names");
         let mut names = NameCollection::default();
 
         let ps_name = CTFontDescriptorCopyAttribute(font, kCTFontNameAttribute);
