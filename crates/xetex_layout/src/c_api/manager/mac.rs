@@ -23,9 +23,6 @@ unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRe
     let mut keys = [key];
     let mut values = [name];
 
-    eprintln!("{:p}", &kCFTypeDictionaryKeyCallBacks);
-    eprintln!("{:p}", &kCFTypeDictionaryValueCallBacks);
-
     let attributes = CFDictionaryCreate(
         ptr::null_mut(),
         keys.as_mut_ptr().cast(),
@@ -34,11 +31,8 @@ unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRe
         &kCFTypeDictionaryKeyCallBacks,
         &kCFTypeDictionaryValueCallBacks,
     );
-    dbg!();
     let descriptor = CTFontDescriptorCreateWithAttributes(attributes);
-    dbg!();
     CFRelease(attributes.cast());
-    dbg!();
 
     let mandatory_attributes = CFSetCreate(
         ptr::null_mut(),
@@ -46,13 +40,9 @@ unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRe
         1,
         &kCFTypeSetCallBacks,
     );
-    dbg!();
     let matches = CTFontDescriptorCreateMatchingFontDescriptors(descriptor, mandatory_attributes);
-    dbg!();
     CFRelease(mandatory_attributes.cast());
-    dbg!();
     CFRelease(descriptor.cast());
-    dbg!();
     matches
 }
 
@@ -193,7 +183,7 @@ impl FontManagerBackend for MacBackend {
             CFRelease(matched.cast());
             return;
         }
-        dbg!();
+        dbg!("A");
 
         let hyph = name.to_bytes().iter().copied().position(|c| c == b'-');
         if let Some(hyph) = hyph {
@@ -207,7 +197,7 @@ impl FontManagerBackend for MacBackend {
                 CFRelease(family_members.cast());
                 return;
             }
-            dbg!();
+            dbg!("B");
 
             let matched = find_font_with_name(family_str, kCTFontFamilyNameAttribute);
             if !matched.is_null() {
@@ -215,7 +205,7 @@ impl FontManagerBackend for MacBackend {
                 CFRelease(matched.cast());
                 return;
             }
-            dbg!();
+            dbg!("C");
         }
 
         let matched = find_font_with_name(name_str, kCTFontNameAttribute);
@@ -224,15 +214,16 @@ impl FontManagerBackend for MacBackend {
             CFRelease(matched.cast());
             return;
         }
-        dbg!();
+        dbg!("D");
 
         let family_members = find_fonts_with_name(name_str, kCTFontFamilyNameAttribute);
+        eprintln!("family_members: {family_members:p}");
         if CFArrayGetCount(family_members) > 0 {
             self.add_fonts_to_caches(maps, family_members);
             CFRelease(family_members.cast());
             return;
         }
-        dbg!();
+        dbg!("E");
 
         let matched = find_font_with_name(name_str, kCTFontFamilyNameAttribute);
         if !matched.is_null() {
@@ -240,7 +231,7 @@ impl FontManagerBackend for MacBackend {
             CFRelease(matched.cast());
             return;
         }
-        dbg!();
+        dbg!("F");
     }
 
     unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection {
