@@ -23,10 +23,13 @@ unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRe
     let mut keys = &[key];
     let mut values = &[name];
 
+    eprintln!("{:p}", &kCFTypeDictionaryKeyCallBacks);
+    eprintln!("{:p}", &kCFTypeDictionaryValueCallBacks);
+
     let attributes = CFDictionaryCreate(
         ptr::null_mut(),
-        &mut (keys as *const [_]).cast(),
-        &mut (values as *const [_]).cast(),
+        keys.as_mut_ptr().cast(),
+        values.as_mut_ptr().cast(),
         1,
         &kCFTypeDictionaryKeyCallBacks,
         &kCFTypeDictionaryValueCallBacks,
