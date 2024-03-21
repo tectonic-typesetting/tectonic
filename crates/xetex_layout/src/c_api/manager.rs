@@ -795,7 +795,11 @@ pub unsafe extern "C" fn findFontByName(
     size: f64,
 ) -> RawPlatformFontRef {
     #[cfg(target_os = "macos")]
-    panic!();
+    return FontManager::with_font_manager(|mgr| {
+        mgr.find_font(name, var, size)
+            .map(|raw| raw)
+            .unwrap_or(ptr::null_mut())
+    });
     #[cfg(not(target_os = "macos"))]
     FontManager::with_font_manager(|mgr| {
         mgr.find_font(name, var, size)
