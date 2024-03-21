@@ -1,9 +1,9 @@
 use super::font::{deleteFont, XeTeXFontBase};
 use crate::c_api::{
-    getReqEngine, xcalloc, xstrdup, FloatPoint, GlyphBBox, PlatformFontRef, XeTeXFont,
-    XeTeXLayoutEngine,
+    getReqEngine, xcalloc, FloatPoint, GlyphBBox, PlatformFontRef, XeTeXFont, XeTeXLayoutEngine,
 };
 use std::cell::Cell;
+use std::ffi::CString;
 use std::{mem, ptr};
 use tectonic_bridge_graphite2::{
     gr_breakBeforeWord, gr_breakNone, gr_breakWord, gr_cinfo_base, gr_cinfo_break_weight,
@@ -447,7 +447,8 @@ pub unsafe extern "C" fn getFontFilename(
     engine: XeTeXLayoutEngine,
     index: *mut u32,
 ) -> *const libc::c_char {
-    xstrdup((*engine).font().get_filename(&mut *index))
+    let str = (*engine).font().get_filename(&mut *index).to_owned();
+    CString::into_raw(str)
 }
 
 #[no_mangle]

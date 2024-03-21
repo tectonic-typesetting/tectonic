@@ -93,7 +93,14 @@ pub const kCFStringEncodingASCII: CFStringEncoding = 0x0600;
 pub const kCFStringEncodingUnicode: CFStringEncoding = 0x0100;
 pub const kCFStringEncodingUTF8: CFStringEncoding = 0x08000100;
 
+#[link(name = "CoreFoundation", kind = "framework")]
 extern "C" {
+    pub fn CFSetCreate(
+        allocator: CFAllocatorRef,
+        values: *mut *const (),
+        num_values: CFIndex,
+        callbacks: *const CFSetCallBacks,
+    ) -> CFSetRef;
     pub fn CFDictionaryCreate(
         allocator: CFAllocatorRef,
         keys: *mut *const (),
@@ -102,22 +109,50 @@ extern "C" {
         key_call_backs: *const CFDictionaryKeyCallBacks,
         value_call_backs: *const CFDictionaryValueCallBacks,
     ) -> CFDictionaryRef;
-    pub fn CTFontDescriptorCreateWithAttributes(attributes: CFDictionaryRef)
-        -> CTFontDescriptorRef;
     pub fn CFRelease(cf: CFTypeRef);
-    pub fn CFSetCreate(
+    pub fn CFArrayGetCount(array: CFArrayRef) -> CFIndex;
+    pub fn CFArrayGetValueAtIndex(array: CFArrayRef, idx: CFIndex) -> *const ();
+    pub fn CFRetain(cf: CFTypeRef) -> CFTypeRef;
+    pub fn CFArrayCreate(
         allocator: CFAllocatorRef,
         values: *mut *const (),
         num_values: CFIndex,
-        callbacks: *const CFSetCallBacks,
-    ) -> CFSetRef;
+        call_backs: *const CFArrayCallBacks,
+    ) -> CFArrayRef;
+    pub fn CFStringGetLength(str: CFStringRef) -> CFIndex;
+    pub fn CFStringGetCStringPtr(str: CFStringRef, enc: CFStringEncoding) -> *const libc::c_char;
+    pub fn CFStringCreateWithCString(
+        alloc: CFAllocatorRef,
+        c_str: *const libc::c_char,
+        encoding: CFStringEncoding,
+    ) -> CFStringRef;
+    pub fn CFStringGetCString(
+        str: CFStringRef,
+        buffer: *mut libc::c_char,
+        buffer_size: CFIndex,
+        encoding: CFStringEncoding,
+    ) -> bool;
+    pub fn CFURLGetFileSystemRepresentation(
+        url: CFURLRef,
+        resolve_against_base: bool,
+        buffer: *mut u8,
+        max_buf_len: CFIndex,
+    ) -> bool;
+
+    pub static kCFTypeDictionaryKeyCallBacks: CFDictionaryKeyCallBacks;
+    pub static kCFTypeDictionaryValueCallBacks: CFDictionaryValueCallBacks;
+    pub static kCFTypeSetCallBacks: CFSetCallBacks;
+    pub static kCFTypeArrayCallBacks: CFArrayCallBacks;
+}
+
+#[link(name = "CoreText", kind = "framework")]
+extern "C" {
+    pub fn CTFontDescriptorCreateWithAttributes(attributes: CFDictionaryRef)
+        -> CTFontDescriptorRef;
     pub fn CTFontDescriptorCreateMatchingFontDescriptors(
         descriptor: CTFontDescriptorRef,
         mandatory_attributes: CFSetRef,
     ) -> CFArrayRef;
-    pub fn CFArrayGetCount(array: CFArrayRef) -> CFIndex;
-    pub fn CFArrayGetValueAtIndex(array: CFArrayRef, idx: CFIndex) -> *const ();
-    pub fn CFRetain(cf: CFTypeRef) -> CFTypeRef;
     pub fn CTFontDescriptorCopyAttribute(
         descriptor: CTFontDescriptorRef,
         attribute: CFStringRef,
@@ -127,49 +162,20 @@ extern "C" {
         size: CGFloat,
         matrix: *const CGAffineTransform,
     ) -> CTFontRef;
-    pub fn CFStringGetCString(
-        str: CFStringRef,
-        buffer: *mut libc::c_char,
-        buffer_size: CFIndex,
-        encoding: CFStringEncoding,
-    ) -> bool;
-    pub fn CFStringGetLength(str: CFStringRef) -> CFIndex;
     pub fn CTFontCopyName(font: CTFontRef, name_key: CFStringRef) -> CFStringRef;
     // TODO: Only define on MACOS_LE_10_6
     pub fn CTFontCopyAttribute(font: CTFontRef, attribute: CFStringRef) -> CFTypeRef;
-    pub fn CFURLGetFileSystemRepresentation(
-        url: CFURLRef,
-        resolve_against_base: bool,
-        buffer: *mut u8,
-        max_buf_len: CFIndex,
-    ) -> bool;
-    pub fn CFArrayCreate(
-        allocator: CFAllocatorRef,
-        values: *mut *const (),
-        num_values: CFIndex,
-        call_backs: *const CFArrayCallBacks,
-    ) -> CFArrayRef;
     pub fn CTFontDescriptorCreateCopyWithAttributes(
         original: CTFontDescriptorRef,
         attributes: CFDictionaryRef,
     ) -> CTFontDescriptorRef;
-    pub fn CFStringGetCStringPtr(str: CFStringRef, enc: CFStringEncoding) -> *const libc::c_char;
     pub fn CTFontCopyLocalizedName(
         font: CTFontRef,
         name_key: CFStringRef,
         actual_lang: *mut CFStringRef,
     ) -> CFStringRef;
-    pub fn CFStringCreateWithCString(
-        alloc: CFAllocatorRef,
-        c_str: *const libc::c_char,
-        encoding: CFStringEncoding,
-    ) -> CFStringRef;
     pub fn CTFontManagerCopyAvailableFontFamilyNames() -> CFArrayRef;
 
-    pub static kCFTypeDictionaryKeyCallBacks: CFDictionaryKeyCallBacks;
-    pub static kCFTypeDictionaryValueCallBacks: CFDictionaryValueCallBacks;
-    pub static kCFTypeSetCallBacks: CFSetCallBacks;
-    pub static kCFTypeArrayCallBacks: CFArrayCallBacks;
     pub static kCTFontNameAttribute: CFStringRef;
     pub static kCTFontFullNameKey: CFStringRef;
     pub static kCTFontFamilyNameKey: CFStringRef;
@@ -179,5 +185,4 @@ extern "C" {
     pub static kCTFontCascadeListAttribute: CFStringRef;
     pub static kCTFontFamilyNameAttribute: CFStringRef;
     pub static kCTFontDisplayNameAttribute: CFStringRef;
-    pub static sharedFontManager: *mut NSFontManager;
 }
