@@ -1,6 +1,7 @@
 use super::font::{deleteFont, XeTeXFontBase};
 use crate::c_api::{
-    getReqEngine, xcalloc, FloatPoint, GlyphBBox, PlatformFontRef, XeTeXFont, XeTeXLayoutEngine,
+    getReqEngine, xcalloc, xmalloc, xstrdup, FloatPoint, GlyphBBox, PlatformFontRef, XeTeXFont,
+    XeTeXLayoutEngine,
 };
 use std::cell::Cell;
 use std::ffi::CString;
@@ -447,8 +448,8 @@ pub unsafe extern "C" fn getFontFilename(
     engine: XeTeXLayoutEngine,
     index: *mut u32,
 ) -> *const libc::c_char {
-    let str = (*engine).font().get_filename(&mut *index).to_owned();
-    CString::into_raw(str)
+    // We can't just `CString::into_raw` because this is freed with `libc::free` currently.
+    xstrdup((*engine).font().get_filename(&mut *index).as_ptr())
 }
 
 #[no_mangle]
