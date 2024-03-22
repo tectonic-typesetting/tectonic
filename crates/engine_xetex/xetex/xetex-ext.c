@@ -469,7 +469,7 @@ readFeatureNumber(const char* s, const char* e, hb_tag_t* f, int* v)
 }
 
 static void*
-loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1)
+loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1)
 {
     XeTeXLayoutEngine engine = NULL;
     hb_tag_t script = HB_TAG_NONE;
@@ -721,7 +721,7 @@ find_native_font(char* uname, int32_t scaled_size)
     char* name = (char*)uname;
     char* varString = NULL;
     char* featString = NULL;
-    PlatformFontRef fontRef;
+    RawPlatformFontRef fontRef;
     XeTeXFont font = NULL;
     int index = 0;
 
@@ -834,7 +834,7 @@ find_native_font(char* uname, int32_t scaled_size)
                         deleteFont(font);
                 } else {
                     if (getReqEngine() == 'O' || getReqEngine() == 'G' ||
-                            getFontTablePtr(font, kGSUB) != NULL || getFontTablePtr(font, kGPOS) != NULL)
+                            hasFontTable(font, kGSUB) || hasFontTable(font, kGPOS))
                         rval = loadOTfont(fontRef, font, scaled_size, featString);
 
                     /* loadOTfont failed or the above check was false */
@@ -1155,7 +1155,7 @@ make_font_def(int32_t f)
     uint8_t filenameLen;
     int fontDefLength;
     char* cp;
-    /* PlatformFontRef fontRef = 0; */
+    /* RawPlatformFontRef fontRef = 0; */
     float extend = 1.0;
     float slant = 0.0;
     float embolden = 0.0;
@@ -2112,7 +2112,7 @@ aat_print_font_name(int what, CFDictionaryRef attributes, int param1, int param2
 void
 print_glyph_name(int32_t font, int32_t gid)
 {
-    const char* s;
+    const char* s = NULL;
     int len = 0;
 #ifdef XETEX_MAC
     if (font_area[font] == AAT_FONT_FLAG) {
@@ -2127,6 +2127,8 @@ print_glyph_name(int32_t font, int32_t gid)
     }
     while (len-- > 0)
         print_char(*s++);
+    if (s)
+    	freeGlyphName(s);
 }
 
 int32_t real_get_native_word_cp(void* pNode, int side)
