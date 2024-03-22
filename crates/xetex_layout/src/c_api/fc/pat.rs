@@ -1,5 +1,5 @@
 use super::{sys, FcErr};
-use std::convert::TryInto;
+use std::convert::{TryFrom, TryInto};
 use std::ffi::CStr;
 use std::ops::Deref;
 use std::ptr;
@@ -136,9 +136,11 @@ impl Pattern {
     }
 }
 
-impl From<*mut sys::FcPattern> for Pattern {
-    fn from(value: *mut sys::FcPattern) -> Self {
-        Pattern(NonNull::new(value).unwrap())
+impl TryFrom<*mut sys::FcPattern> for Pattern {
+    type Error = ();
+
+    fn try_from(value: *mut sys::FcPattern) -> Result<Self, ()> {
+        NonNull::new(value).map(Pattern).ok_or(())
     }
 }
 
