@@ -3,6 +3,7 @@ use crate::c_api::{Fixed, PlatformFontRef, RawPlatformFontRef, RsFix2D, XeTeXFon
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2 as ft;
@@ -820,7 +821,10 @@ pub unsafe extern "C" fn setReqEngine(engine: libc::c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn getFullName(font: RawPlatformFontRef) -> *const libc::c_char {
-    FontManager::with_font_manager(|mgr| mgr.get_full_name(font.into()))
+    match font.try_into() {
+        Ok(font) => FontManager::with_font_manager(|mgr| mgr.get_full_name(font)),
+        Err(_) => ptr::null_mut(),
+    }
 }
 
 #[no_mangle]
@@ -830,5 +834,10 @@ pub unsafe extern "C" fn getDesignSize(font: XeTeXFont) -> f64 {
 
 #[no_mangle]
 pub unsafe extern "C" fn ttxl_platfont_get_desc(font: RawPlatformFontRef) -> *const libc::c_char {
-    FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(&font.into()).as_ptr())
+    match font.try_into() {
+        Ok(font) => {
+            FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(&font).as_ptr())
+        }
+        Err(_) => ptr::null_mut(),
+    }
 }
