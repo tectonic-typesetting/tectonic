@@ -52,11 +52,11 @@ typedef struct {
 } GlyphBBox;
 
 #if !defined(XETEX_MAC)
-typedef FcPattern *PlatformFontRef;
+typedef FcPattern *RawPlatformFontRef;
 #endif
 
 #if defined(XETEX_MAC)
-typedef CTFontDescriptorRef PlatformFontRef;
+typedef CTFontDescriptorRef RawPlatformFontRef;
 #endif
 
 typedef struct {
@@ -89,7 +89,7 @@ int32_t get_cp_code(int32_t font_num, uint32_t code, int32_t side);
  */
 const char *xbasename(const char *name);
 
-XeTeXLayoutEngine createLayoutEngine(PlatformFontRef font_ref,
+XeTeXLayoutEngine createLayoutEngine(RawPlatformFontRef font_ref,
                                      XeTeXFont font,
                                      hb_tag_t script,
                                      char *language,
@@ -105,7 +105,7 @@ void deleteLayoutEngine(XeTeXLayoutEngine this_);
 
 XeTeXFont getFont(XeTeXLayoutEngine engine);
 
-PlatformFontRef getFontRef(XeTeXLayoutEngine engine);
+RawPlatformFontRef getFontRef(XeTeXLayoutEngine engine);
 
 float getExtendFactor(XeTeXLayoutEngine engine);
 
@@ -197,13 +197,11 @@ bool initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t *txt_ptr, uns
 
 int findNextGraphiteBreak(void);
 
-FT_Fixed _get_glyph_advance(FT_Face face, unsigned int gid, bool vertical);
-
 hb_font_funcs_t *_get_font_funcs(void);
 
 hb_blob_t *_get_table(hb_face_t*, hb_tag_t tag, void *user_data);
 
-XeTeXFont createFont(PlatformFontRef font_ref, Fixed point_size);
+XeTeXFont createFont(RawPlatformFontRef font_ref, Fixed point_size);
 
 XeTeXFont createFontFromFile(const char *filename, int index, Fixed point_size);
 
@@ -217,7 +215,7 @@ unsigned int countLanguages(XeTeXFont font, hb_tag_t script);
 
 unsigned int countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language);
 
-void *getFontTablePtr(XeTeXFont font, OTTag table_tag);
+bool hasFontTable(XeTeXFont font, OTTag table_tag);
 
 Fixed getSlant(XeTeXFont font);
 
@@ -234,6 +232,8 @@ hb_tag_t getIndLanguage(XeTeXFont font, hb_tag_t script, unsigned int index);
 hb_tag_t getIndFeature(XeTeXFont font, hb_tag_t script, hb_tag_t language, unsigned int index);
 
 const char *getGlyphName(XeTeXFont font, uint16_t gid, int *len);
+
+void freeGlyphName(char *name);
 
 float ttxl_font_units_to_points(XeTeXFont font, float units);
 
@@ -257,17 +257,17 @@ void terminate_font_manager(void);
 
 void destroy_font_manager(void);
 
-PlatformFontRef findFontByName(const char *name, char *var, double size);
+RawPlatformFontRef findFontByName(const char *name, char *var, double size);
 
 char getReqEngine(void);
 
 void setReqEngine(char engine);
 
-const char *getFullName(PlatformFontRef font);
+const char *getFullName(RawPlatformFontRef font);
 
 double getDesignSize(XeTeXFont font);
 
-const char *ttxl_platfont_get_desc(PlatformFontRef font);
+const char *ttxl_platfont_get_desc(RawPlatformFontRef font);
 
 #ifdef __cplusplus
 } // extern "C"

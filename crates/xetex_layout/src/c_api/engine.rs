@@ -1,10 +1,10 @@
 use super::font::{deleteFont, XeTeXFontBase};
 use crate::c_api::{
-    getReqEngine, xcalloc, xmalloc, xstrdup, FloatPoint, GlyphBBox, PlatformFontRef, XeTeXFont,
-    XeTeXLayoutEngine,
+    getReqEngine, xcalloc, xstrdup, FloatPoint, GlyphBBox, PlatformFontRef, RawPlatformFontRef,
+    XeTeXFont, XeTeXLayoutEngine,
 };
 use std::cell::Cell;
-use std::ffi::CString;
+use std::ffi::CStr;
 use std::{mem, ptr};
 use tectonic_bridge_graphite2::{
     gr_breakBeforeWord, gr_breakNone, gr_breakWord, gr_cinfo_base, gr_cinfo_break_weight,
@@ -51,7 +51,7 @@ pub struct XeTeXLayoutEngineBase {
 impl XeTeXLayoutEngineBase {
     #[no_mangle]
     pub unsafe extern "C" fn createLayoutEngine(
-        font_ref: PlatformFontRef,
+        font_ref: RawPlatformFontRef,
         font: XeTeXFont,
         script: hb_tag_t,
         language: *mut libc::c_char,
@@ -65,7 +65,7 @@ impl XeTeXLayoutEngineBase {
     ) -> XeTeXLayoutEngine {
         let this = Box::new(XeTeXLayoutEngineBase {
             font,
-            font_ref,
+            font_ref: PlatformFontRef::from(font_ref),
             script,
             // For Graphite fonts treat the language as BCP 47 tag, for OpenType we
             // treat it as a OT language tag for backward compatibility with pre-0.9999
@@ -112,8 +112,8 @@ impl XeTeXLayoutEngineBase {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn getFontRef(engine: XeTeXLayoutEngine) -> PlatformFontRef {
-        (*engine).font_ref.clone()
+    pub unsafe extern "C" fn getFontRef(engine: XeTeXLayoutEngine) -> RawPlatformFontRef {
+        (*engine).font_ref.clone().into()
     }
 
     #[no_mangle]
@@ -177,9 +177,7 @@ impl XeTeXLayoutEngineBase {
         glyph_id: u32,
         bbox: *mut GlyphBBox,
     ) {
-        (*engine)
-            .font()
-            .get_glyph_bounds(glyph_id as u16, &mut *bbox);
+        *bbox = (*engine).font_mut().get_glyph_bounds(glyph_id as u16);
         if (*engine).extend != 0.0 {
             (*bbox).x_min *= (*engine).extend;
             (*bbox).x_max *= (*engine).extend;
@@ -201,9 +199,11 @@ impl XeTeXLayoutEngineBase {
         height: *mut f32,
         depth: *mut f32,
     ) {
-        (*engine)
-            .font()
-            .get_glyph_height_depth(glyph_id as u16, height.as_mut(), depth.as_mut());
+        (*engine).font_mut().get_glyph_height_depth(
+            glyph_id as u16,
+            height.as_mut(),
+            depth.as_mut(),
+        );
     }
 
     #[no_mangle]
@@ -214,7 +214,7 @@ impl XeTeXLayoutEngineBase {
         rsb: *mut f32,
     ) {
         (*engine)
-            .font()
+            .font_mut()
             .get_glyph_sidebearings(glyph_id as u16, lsb.as_mut(), rsb.as_mut());
         if (*engine).extend != 0.0 {
             *lsb *= (*engine).extend;
@@ -224,7 +224,7 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn getGlyphItalCorr(engine: XeTeXLayoutEngine, glyph_id: u32) -> f32 {
-        (*engine).extend * (*engine).font().get_glyph_ital_corr(glyph_id as u16)
+        (*engine).extend * (*engine).font_mut().get_glyph_ital_corr(glyph_id as u16)
     }
 
     #[no_mangle]
@@ -249,17 +249,19 @@ impl XeTeXLayoutEngineBase {
         engine: XeTeXLayoutEngine,
         glyph_name: *const libc::c_char,
     ) -> libc::c_int {
-        (*engine).font().map_glyph_to_index(glyph_name) as libc::c_int
+        (*engine)
+            .font()
+            .map_glyph_to_index(CStr::from_ptr(glyph_name)) as libc::c_int
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn usingGraphite(engine: XeTeXLayoutEngine) -> bool {
-        (*engine).shaper != ptr::null_mut() && libc::strcmp(c!("graphite2"), (*engine).shaper) == 0
+        !(*engine).shaper.is_null() && libc::strcmp(c!("graphite2"), (*engine).shaper) == 0
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn usingOpenType(engine: XeTeXLayoutEngine) -> bool {
-        (*engine).shaper != ptr::null_mut() && libc::strcmp(c!("ot"), (*engine).shaper) == 0
+        !(*engine).shaper.is_null() && libc::strcmp(c!("ot"), (*engine).shaper) == 0
     }
 
     #[no_mangle]
@@ -356,7 +358,7 @@ impl XeTeXLayoutEngineBase {
 
         let mut shape_plan = hb_shape_plan_create_cached(
             hb_face,
-            &mut segment_props,
+            &segment_props,
             engine.features,
             engine.n_features as libc::c_uint,
             engine.shaper_list,
@@ -383,7 +385,7 @@ impl XeTeXLayoutEngineBase {
             hb_shape_plan_destroy(shape_plan);
             shape_plan = hb_shape_plan_create(
                 hb_face,
-                &mut segment_props,
+                &segment_props,
                 engine.features,
                 engine.n_features as libc::c_uint,
                 ptr::null_mut(),
@@ -440,6 +442,10 @@ impl XeTeXLayoutEngineBase {
 
     fn font(&self) -> &XeTeXFontBase {
         unsafe { &*self.font }
+    }
+
+    fn font_mut(&mut self) -> &mut XeTeXFontBase {
+        unsafe { &mut *self.font }
     }
 }
 
@@ -822,10 +828,10 @@ pub unsafe extern "C" fn findNextGraphiteBreak() -> libc::c_int {
         while !s.is_null() {
             let ci = gr_seg_cinfo(gr_seg, gr_slot_index(s));
             let bw = gr_cinfo_break_weight(ci);
-            if bw < gr_breakNone && bw >= gr_breakBeforeWord {
+            if (gr_breakBeforeWord..gr_breakNone).contains(&bw) {
                 GR_PREV_SLOT.set(s);
                 ret = gr_cinfo_base(ci) as libc::c_int;
-            } else if bw > gr_breakNone && bw <= gr_breakWord {
+            } else if (gr_breakNone + 1..=gr_breakWord).contains(&bw) {
                 GR_PREV_SLOT.set(gr_slot_next_in_segment(s));
                 ret = (gr_cinfo_base(ci) + 1) as libc::c_int;
             }

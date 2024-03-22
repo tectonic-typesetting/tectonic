@@ -9,14 +9,10 @@ use crate::c_api::fc::sys::{
 };
 use crate::c_api::{fc, PlatformFontRef};
 use std::borrow::Cow;
-use std::cell::{Cell, RefCell};
+use std::cell::Cell;
 use std::ffi::{CStr, CString};
 use std::ptr;
-use tectonic_bridge_freetype2::{
-    FT_Done_Face, FT_Get_Postscript_Name, FT_Get_Sfnt_Name, FT_Get_Sfnt_Name_Count,
-    FT_Init_FreeType, FT_Library, FT_New_Face, FT_SfntName, FT_IS_SFNT, TT_MAC_ID_ROMAN,
-    TT_PLATFORM_APPLE_UNICODE, TT_PLATFORM_MACINTOSH, TT_PLATFORM_MICROSOFT,
-};
+use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_icu::{
     ucnv_close, ucnv_fromUChars, ucnv_open, ucnv_toUChars, UConverter, U_SUCCESS, U_ZERO_ERROR,
 };
@@ -28,14 +24,13 @@ pub const PREFERRED_FAMILY_NAME: libc::c_ushort = 16;
 pub const PREFERRED_SUBFAMILY_NAME: libc::c_ushort = 17;
 
 thread_local! {
-    static FREE_TYPE_LIBRARY: RefCell<FT_Library> = const { RefCell::new(ptr::null_mut()) };
     static MAC_ROMAN_CONV: Cell<*mut UConverter> = const { Cell::new(ptr::null_mut()) };
     static UTF16_BE_CONV: Cell<*mut UConverter> = const { Cell::new(ptr::null_mut()) };
     static UTF8_CONV: Cell<*mut UConverter> = const { Cell::new(ptr::null_mut()) };
 }
 
-unsafe fn convert_to_utf8(conv: *mut UConverter, name: *const u8, len: usize) -> CString {
-    let buf_size = 2 * len + 100;
+unsafe fn convert_to_utf8(conv: *mut UConverter, name: &[u8]) -> CString {
+    let buf_size = 2 * name.len() + 100;
     let mut buffer1 = vec![0; buf_size];
     let mut buffer2 = vec![0; buf_size];
 
@@ -44,8 +39,8 @@ unsafe fn convert_to_utf8(conv: *mut UConverter, name: *const u8, len: usize) ->
         conv,
         buffer1.as_mut_ptr(),
         buf_size as _,
-        name.cast(),
-        len as _,
+        name.as_ptr().cast(),
+        name.len() as i32,
         &mut status,
     );
     let len = ucnv_fromUChars(
@@ -107,12 +102,7 @@ impl FontManagerBackend for FcBackend {
             panic!("fontconfig initialization failed");
         }
 
-        if FREE_TYPE_LIBRARY.with_borrow(|lib| lib.is_null()) {
-            let res = FREE_TYPE_LIBRARY.with_borrow_mut(|lib| FT_Init_FreeType(lib));
-            if res != 0 {
-                panic!("FreeType initialization failed");
-            }
-        }
+        ft::init();
 
         let mut err = U_ZERO_ERROR;
 
@@ -211,7 +201,7 @@ impl FontManagerBackend for FcBackend {
         loop {
             'outer: for f in 0..(*self.all_fonts).nfont as usize {
                 let pat = fc::Pattern::from_raw(*(*self.all_fonts).fonts.add(f)).unwrap();
-                if let Some(_) = maps.platform_ref_to_font.get(&pat) {
+                if maps.platform_ref_to_font.contains_key(&pat) {
                     continue;
                 }
 
@@ -251,7 +241,7 @@ impl FontManagerBackend for FcBackend {
                         if name.to_bytes() == full {
                             let names = self.read_names(pat.clone());
                             maps.add_to_maps(self, pat.clone(), &names);
-                            self.cache_family_members(maps, &*names.family_names);
+                            self.cache_family_members(maps, &names.family_names);
                             found = true;
                             continue 'outer;
                         }
@@ -282,30 +272,28 @@ impl FontManagerBackend for FcBackend {
             Err(_) => return names,
         };
 
-        let mut face = ptr::null_mut();
-        let ret = FREE_TYPE_LIBRARY.with_borrow(|lib| {
-            FT_New_Face(*lib, pathname.as_ptr(), index as libc::c_long, &mut face) != 0
-        });
-        if ret {
-            return names;
-        }
+        let face = match ft::Face::new(pathname, index as usize) {
+            Ok(face) => face,
+            Err(_) => return names,
+        };
 
-        let name = FT_Get_Postscript_Name(face);
-        if name.is_null() {
-            return names;
-        }
-        names.ps_name = Some(CStr::from_ptr(name.cast_mut()).to_owned());
+        let name = match face.get_postscript_name() {
+            Some(name) => name,
+            None => return names,
+        };
 
-        if FT_IS_SFNT(face) {
+        names.ps_name = Some(name.to_owned());
+
+        if face.is_sfnt() {
             let mut family_names = Vec::new();
             let mut sub_family_names = Vec::new();
-            let mut name_rec = FT_SfntName::default();
 
-            for i in 0..FT_Get_Sfnt_Name_Count(face) {
+            for i in 0..face.get_sfnt_name_count() {
                 let mut utf8_name = None;
-                if FT_Get_Sfnt_Name(face, i, &mut name_rec) != 0 {
-                    continue;
-                }
+                let name_rec = match face.get_sfnt_name(i) {
+                    Ok(name) => name,
+                    Err(_) => continue,
+                };
 
                 match name_rec.name_id {
                     FONT_FULL_NAME
@@ -316,37 +304,27 @@ impl FontManagerBackend for FcBackend {
                         let mut preferred_name = false;
                         let roman_conv = MAC_ROMAN_CONV.get();
                         if !roman_conv.is_null()
-                            && name_rec.platform_id == TT_PLATFORM_MACINTOSH
-                            && name_rec.encoding_id == TT_MAC_ID_ROMAN
-                            && name_rec.language_id == 0
+                            && name_rec.platform_id == ft::PlatformId::MACINTOSH
+                            && name_rec.encoding_id == ft::EncodingId::MAC_ROMAN
+                            && name_rec.language_id == ft::LanguageId::MAC_ENGLISH
                         {
-                            utf8_name = Some(convert_to_utf8(
-                                roman_conv,
-                                name_rec.string.cast(),
-                                name_rec.string_len as _,
-                            ));
+                            utf8_name = Some(convert_to_utf8(roman_conv, name_rec.string));
                             preferred_name = true;
-                        } else if name_rec.platform_id == TT_PLATFORM_APPLE_UNICODE
-                            || name_rec.platform_id == TT_PLATFORM_MICROSOFT
+                        } else if name_rec.platform_id == ft::PlatformId::APPLE_UNICODE
+                            || name_rec.platform_id == ft::PlatformId::MICROSOFT
                         {
-                            utf8_name = Some(convert_to_utf8(
-                                UTF16_BE_CONV.get(),
-                                name_rec.string.cast(),
-                                name_rec.string_len as _,
-                            ));
+                            utf8_name = Some(convert_to_utf8(UTF16_BE_CONV.get(), name_rec.string));
                         }
 
                         if let Some(name) = utf8_name {
-                            let name_list;
-
-                            match name_rec.name_id {
-                                FONT_FULL_NAME => name_list = &mut names.full_names,
-                                FONT_FAMILY_NAME => name_list = &mut names.family_names,
-                                FONT_STYLE_NAME => name_list = &mut names.style_names,
-                                PREFERRED_FAMILY_NAME => name_list = &mut family_names,
-                                PREFERRED_SUBFAMILY_NAME => name_list = &mut sub_family_names,
+                            let name_list = match name_rec.name_id {
+                                FONT_FULL_NAME => &mut names.full_names,
+                                FONT_FAMILY_NAME => &mut names.family_names,
+                                FONT_STYLE_NAME => &mut names.style_names,
+                                PREFERRED_FAMILY_NAME => &mut family_names,
+                                PREFERRED_SUBFAMILY_NAME => &mut sub_family_names,
                                 _ => unreachable!(),
-                            }
+                            };
 
                             if preferred_name {
                                 FontManager::prepend_to_list(name_list, name);
@@ -375,8 +353,6 @@ impl FontManagerBackend for FcBackend {
                 FontManager::append_to_list(&mut names.style_names, name);
             }
         }
-
-        FT_Done_Face(face);
 
         names
     }
