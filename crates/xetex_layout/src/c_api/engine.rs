@@ -4,6 +4,7 @@ use crate::c_api::{
     XeTeXFont, XeTeXLayoutEngine,
 };
 use std::cell::Cell;
+use std::convert::TryFrom;
 use std::ffi::CStr;
 use std::{mem, ptr};
 use tectonic_bridge_graphite2::{
@@ -63,9 +64,14 @@ impl XeTeXLayoutEngineBase {
         slant: f32,
         embolden: f32,
     ) -> XeTeXLayoutEngine {
+        let font_ref = match PlatformFontRef::try_from(font_ref) {
+            Ok(fr) => fr,
+            Err(_) => return ptr::null_mut(),
+        };
+
         let this = Box::new(XeTeXLayoutEngineBase {
             font,
-            font_ref: PlatformFontRef::from(font_ref),
+            font_ref,
             script,
             // For Graphite fonts treat the language as BCP 47 tag, for OpenType we
             // treat it as a OT language tag for backward compatibility with pre-0.9999
