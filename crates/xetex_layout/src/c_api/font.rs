@@ -15,6 +15,7 @@ use crate::c_api::{
     RsD2Fix, RsFix2D, SyncPtr, XeTeXFont,
 };
 use libc::{free, strcpy, strlen, strrchr};
+use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
@@ -346,7 +347,12 @@ pub unsafe extern "C" fn _get_table(
 
 #[no_mangle]
 pub unsafe extern "C" fn createFont(font_ref: RawPlatformFontRef, point_size: Fixed) -> XeTeXFont {
-    match XeTeXFontBase::new(font_ref.into(), RsFix2D(point_size) as f32) {
+    let font_ref = match font_ref.try_into() {
+        Ok(fr) => fr,
+        Err(_) => return ptr::null_mut(),
+    };
+
+    match XeTeXFontBase::new(font_ref, RsFix2D(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
     }
