@@ -56,6 +56,7 @@ mod c_api {
     /// cbindgen:ignore
     mod fc;
     mod font;
+    /// cbindgen:ignore
     #[cfg(target_os = "macos")]
     mod mac_core;
     mod manager;
@@ -96,8 +97,10 @@ mod c_api {
     type RawPlatformFontRef = *mut fc::sys::FcPattern;
     #[cfg(target_os = "macos")]
     type RawPlatformFontRef = mac_core::CTFontDescriptorRef;
+    /// cbindgen:ignore
     #[cfg(not(target_os = "macos"))]
     type PlatformFontRef = fc::Pattern;
+    /// cbindgen:ignore
     #[cfg(target_os = "macos")]
     type PlatformFontRef = mac_core::CTFontDescriptorRef;
 
@@ -193,7 +196,6 @@ mod c_api {
         ) -> isize;
         fn ttstub_input_close(handle: *mut InputHandle) -> libc::c_int;
         fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
-        fn xmalloc(s: usize) -> *mut libc::c_char;
         fn xcalloc(elems: usize, s: usize) -> *mut libc::c_char;
         fn getReqEngine() -> libc::c_char;
     }

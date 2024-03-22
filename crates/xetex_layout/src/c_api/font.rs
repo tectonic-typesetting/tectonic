@@ -11,25 +11,17 @@ use crate::c_api::mac_core::{
 };
 use crate::c_api::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xbasename,
-    xcalloc, xmalloc, xstrdup, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RsD2Fix, RsFix2D,
-    SyncPtr, XeTeXFont,
+    xcalloc, xstrdup, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
+    RsD2Fix, RsFix2D, SyncPtr, XeTeXFont,
 };
 use libc::{free, strcpy, strlen, strrchr};
-use std::alloc::{alloc, dealloc, Layout};
-use std::cell::UnsafeCell;
 use std::ffi::{CStr, CString};
+use std::mem::MaybeUninit;
+use std::ptr::NonNull;
 use std::sync::OnceLock;
-use std::{mem, ptr};
+use std::{mem, ptr, slice};
 use tectonic_bridge_core::FileFormat;
-use tectonic_bridge_freetype2::{
-    FT_Attach_Stream, FT_BBox, FT_Done_Face, FT_Done_Glyph, FT_Face, FT_Face_GetCharVariantIndex,
-    FT_Fixed, FT_Get_Advance, FT_Get_Char_Index, FT_Get_First_Char, FT_Get_Glyph,
-    FT_Get_Glyph_Name, FT_Get_Kerning, FT_Get_Name_Index, FT_Get_Next_Char, FT_Get_Sfnt_Table,
-    FT_Glyph_BBox_Mode, FT_Glyph_Format, FT_Glyph_Get_CBox, FT_Init_FreeType, FT_Kerning_Mode,
-    FT_LibraryRec, FT_Load_Glyph, FT_Load_Sfnt_Table, FT_New_Memory_Face, FT_Open_Args,
-    FT_Sfnt_Tag, FT_Vector, TT_Postscript, FT_HAS_GLYPH_NAMES, FT_IS_SCALABLE, FT_IS_SFNT,
-    FT_LOAD_NO_SCALE, FT_LOAD_VERTICAL_LAYOUT, FT_OPEN_MEMORY, TT_OS2,
-};
+use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz::{
     hb_blob_create, hb_blob_t, hb_bool_t, hb_codepoint_t, hb_face_create_for_tables,
     hb_face_destroy, hb_face_set_index, hb_face_set_upem, hb_face_t, hb_font_create,
@@ -54,9 +46,18 @@ pub unsafe extern "C" fn _get_nominal_glyph(
     gid: *mut hb_codepoint_t,
     _: *mut (),
 ) -> hb_bool_t {
-    let face = font_data as FT_Face;
-    *gid = FT_Get_Char_Index(face, ch as libc::c_ulong);
-    return (*gid != 0) as hb_bool_t;
+    let face = &*font_data.cast::<ft::Face>();
+    let out = match face.get_char_index(ch) {
+        Some(cc) => {
+            *gid = cc.get();
+            true
+        }
+        None => {
+            *gid = 0;
+            false
+        }
+    };
+    out as hb_bool_t
 }
 
 pub unsafe extern "C" fn _get_variation_glyph(
@@ -67,33 +68,39 @@ pub unsafe extern "C" fn _get_variation_glyph(
     gid: *mut hb_codepoint_t,
     _: *mut (),
 ) -> hb_bool_t {
-    let face = font_data as FT_Face;
-    *gid = FT_Face_GetCharVariantIndex(face, ch as libc::c_ulong, vs as libc::c_ulong);
-    return (*gid != 0) as hb_bool_t;
+    let face = &*font_data.cast::<ft::Face>();
+    let out = match face.get_char_variant_index(ch, vs) {
+        Some(i) => {
+            *gid = i.get();
+            true
+        }
+        None => {
+            *gid = 0;
+            false
+        }
+    };
+    out as hb_bool_t
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn _get_glyph_advance(
-    face: FT_Face,
+pub extern "C" fn _get_glyph_advance(
+    face: &ft::Face,
     gid: libc::c_uint,
     vertical: bool,
-) -> FT_Fixed {
-    let mut flags = FT_LOAD_NO_SCALE;
-
-    if vertical {
-        flags |= FT_LOAD_VERTICAL_LAYOUT
-    }
-
-    let mut advance = 0;
-    let error = FT_Get_Advance(face, gid, flags, &mut advance);
-    if error != 0 {
-        advance = 0;
-    }
-    if vertical {
-        advance = -advance;
-    }
-
-    advance
+) -> ft::Fixed {
+    let out = match face.get_advance(
+        gid,
+        ft::LoadFlags::NO_SCALE | ft::LoadFlags::VERTICAL_LAYOUT,
+    ) {
+        Ok(advance) => {
+            if vertical {
+                -advance
+            } else {
+                advance
+            }
+        }
+        Err(_) => 0,
+    };
+    out as ft::Fixed
 }
 
 pub unsafe extern "C" fn _get_glyph_h_advance(
@@ -102,7 +109,7 @@ pub unsafe extern "C" fn _get_glyph_h_advance(
     gid: hb_codepoint_t,
     _: *mut (),
 ) -> hb_position_t {
-    _get_glyph_advance(font_data as FT_Face, gid, false) as hb_position_t
+    _get_glyph_advance(&*font_data.cast::<ft::Face>(), gid, false) as hb_position_t
 }
 
 pub unsafe extern "C" fn _get_glyph_v_advance(
@@ -111,7 +118,7 @@ pub unsafe extern "C" fn _get_glyph_v_advance(
     gid: hb_codepoint_t,
     _: *mut (),
 ) -> hb_position_t {
-    _get_glyph_advance(font_data as FT_Face, gid, true) as hb_position_t
+    _get_glyph_advance(&*font_data.cast::<ft::Face>(), gid, true) as hb_position_t
 }
 
 pub unsafe extern "C" fn _get_glyph_h_origin(
@@ -162,14 +169,11 @@ pub unsafe extern "C" fn _get_glyph_h_kerning(
     gid2: hb_codepoint_t,
     _: *mut (),
 ) -> hb_position_t {
-    let face = font_data as FT_Face;
+    let face = &*font_data.cast::<ft::Face>();
 
-    let mut kerning = FT_Vector::default();
-    let error = FT_Get_Kerning(face, gid1, gid2, FT_Kerning_Mode::Unscaled, &mut kerning);
-    if error != 0 {
-        0
-    } else {
-        kerning.x as hb_position_t
+    match face.get_kerning(gid1, gid2, ft::KerningMode::Unscaled) {
+        Ok(vec) => vec.x as hb_position_t,
+        Err(_) => 0,
     }
 }
 
@@ -190,17 +194,19 @@ pub unsafe extern "C" fn _get_glyph_extents(
     extents: *mut hb_glyph_extents_t,
     _: *mut (),
 ) -> hb_bool_t {
-    let face = font_data as FT_Face;
+    let face = &mut *font_data.cast::<ft::Face>();
 
-    let error = FT_Load_Glyph(face, gid, FT_LOAD_NO_SCALE) != 0;
-    if !error {
-        (*extents).x_bearing = (*(*face).glyph).metrics.horiBearingX as hb_position_t;
-        (*extents).y_bearing = (*(*face).glyph).metrics.horiBearingY as hb_position_t;
-        (*extents).width = (*(*face).glyph).metrics.width as hb_position_t;
-        (*extents).height = -(*(*face).glyph).metrics.height as hb_position_t;
-    }
+    let out = if face.load_glyph(gid, ft::LoadFlags::NO_SCALE).is_ok() {
+        (*extents).x_bearing = face.glyph().metrics().horiBearingX as hb_position_t;
+        (*extents).y_bearing = face.glyph().metrics().horiBearingY as hb_position_t;
+        (*extents).width = face.glyph().metrics().width as hb_position_t;
+        (*extents).height = -face.glyph().metrics().height as hb_position_t;
+        true
+    } else {
+        false
+    };
 
-    (!error) as hb_bool_t
+    out as hb_bool_t
 }
 
 pub unsafe extern "C" fn _get_glyph_contour_point(
@@ -212,19 +218,20 @@ pub unsafe extern "C" fn _get_glyph_contour_point(
     y: *mut hb_position_t,
     _: *mut (),
 ) -> hb_bool_t {
-    let face = font_data as FT_Face;
+    let face = &mut *font_data.cast::<ft::Face>();
 
-    let error = FT_Load_Glyph(face, gid, FT_LOAD_NO_SCALE) != 0;
-    (if !error
-        && (*(*face).glyph).format == FT_Glyph_Format::Outline
-        && point_index < ((*(*face).glyph).outline.n_points as u32)
+    let error = face.load_glyph(gid, ft::LoadFlags::NO_SCALE).is_err();
+    let out = if !error
+        && face.glyph().format() == ft::GlyphFormat::Outline
+        && point_index < (face.glyph().outline().n_points as u32)
     {
-        *x = (*(*(*face).glyph).outline.points.add(point_index as usize)).x as hb_position_t;
-        *y = (*(*(*face).glyph).outline.points.add(point_index as usize)).y as hb_position_t;
+        *x = (*face.glyph().outline().points.add(point_index as usize)).x as hb_position_t;
+        *y = (*face.glyph().outline().points.add(point_index as usize)).y as hb_position_t;
         true
     } else {
         false
-    }) as hb_bool_t
+    };
+    out as hb_bool_t
 }
 
 pub unsafe extern "C" fn _get_glyph_name(
@@ -235,14 +242,15 @@ pub unsafe extern "C" fn _get_glyph_name(
     size: libc::c_uint,
     _: *mut (),
 ) -> hb_bool_t {
-    let face = font_data as FT_Face;
+    let face = &*font_data.cast::<ft::Face>();
+    let buf = slice::from_raw_parts_mut(name.cast::<MaybeUninit<u8>>(), size as usize);
 
-    let ret = !FT_Get_Glyph_Name(face, gid, name.cast(), size);
-    if ret != 0 && (size != 0) && (*name == 0) {
-        false as hb_bool_t
-    } else {
-        ret
-    }
+    let out = match face.get_glyph_name(gid, buf) {
+        Ok(_) if size != 0 && *name == 0 => false,
+        Err(_) => false,
+        Ok(_) => true,
+    };
+    out as hb_bool_t
 }
 
 #[no_mangle]
@@ -317,44 +325,28 @@ pub unsafe extern "C" fn _get_table(
     user_data: *mut (),
 ) -> *mut hb_blob_t {
     unsafe extern "C" fn table_free(ptr: *mut ()) {
-        let ptr = Box::from_raw(ptr.cast::<(usize, *mut u8)>());
-        dealloc(ptr.1.cast(), Layout::array::<libc::c_char>(ptr.0).unwrap())
+        let _ = Box::from_raw(ptr.cast::<Vec<u8>>());
     }
 
-    let face = user_data as FT_Face;
-
-    let mut length = 0;
-    let error =
-        FT_Load_Sfnt_Table(face, tag as libc::c_ulong, 0, ptr::null_mut(), &mut length) != 0;
+    let face = &*user_data.cast::<ft::Face>();
 
     let mut blob = ptr::null_mut();
-    if !error {
-        let table = alloc(Layout::array::<libc::c_char>(length as usize).unwrap());
-        if !table.is_null() {
-            let error = FT_Load_Sfnt_Table(face, tag as libc::c_ulong, 0, table, &mut length) != 0;
-            if !error {
-                blob = hb_blob_create(
-                    table.cast(),
-                    length as libc::c_uint,
-                    hb_memory_mode_t::Writable,
-                    Box::into_raw(Box::new((length as usize, table))).cast(),
-                    Some(table_free),
-                );
-            } else {
-                dealloc(
-                    table,
-                    Layout::array::<libc::c_char>(length as usize).unwrap(),
-                );
-            }
-        }
+    if let Ok(mut table) = face.load_sfnt_table(ft::TableTag::Other(tag)) {
+        blob = hb_blob_create(
+            table.as_mut_ptr().cast(),
+            table.len() as libc::c_uint,
+            hb_memory_mode_t::Writable,
+            Box::into_raw(Box::new(table)).cast(),
+            Some(table_free),
+        );
     }
 
     blob
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn createFont(font_ref: PlatformFontRef, point_size: Fixed) -> XeTeXFont {
-    match XeTeXFontBase::new(font_ref, RsFix2D(point_size) as f32) {
+pub unsafe extern "C" fn createFont(font_ref: RawPlatformFontRef, point_size: Fixed) -> XeTeXFont {
+    match XeTeXFontBase::new(font_ref.into(), RsFix2D(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
     }
@@ -390,9 +382,6 @@ pub unsafe extern "C" fn getLargerScriptListTable(
 ) -> libc::c_uint {
     let face = hb_font_get_face((*font).get_hb_font());
 
-    let sl_sub;
-    let sl_pos;
-
     let mut script_count_sub = hb_ot_layout_table_get_script_tags(
         face,
         HB_OT_TAG_GSUB,
@@ -400,7 +389,7 @@ pub unsafe extern "C" fn getLargerScriptListTable(
         ptr::null_mut(),
         ptr::null_mut(),
     );
-    sl_sub = xcalloc(script_count_sub as usize, mem::size_of::<*mut hb_tag_t>()).cast();
+    let sl_sub = xcalloc(script_count_sub as usize, mem::size_of::<*mut hb_tag_t>()).cast();
     hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, 0, &mut script_count_sub, sl_sub);
 
     let mut script_count_pos = hb_ot_layout_table_get_script_tags(
@@ -410,7 +399,7 @@ pub unsafe extern "C" fn getLargerScriptListTable(
         ptr::null_mut(),
         ptr::null_mut(),
     );
-    sl_pos = xcalloc(script_count_pos as usize, mem::size_of::<*mut hb_tag_t>()).cast();
+    let sl_pos = xcalloc(script_count_pos as usize, mem::size_of::<*mut hb_tag_t>()).cast();
     hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GPOS, 0, &mut script_count_pos, sl_pos);
 
     if script_count_sub > script_count_pos {
@@ -485,8 +474,8 @@ pub unsafe extern "C" fn countFeatures(
         } else {
             HB_OT_TAG_GPOS
         };
-        if hb_ot_layout_table_find_script(face, table_tag, script, &mut script_idx) != 0 {
-            if hb_ot_layout_script_select_language(
+        if hb_ot_layout_table_find_script(face, table_tag, script, &mut script_idx) != 0
+            && (hb_ot_layout_script_select_language(
                 face,
                 table_tag,
                 script_idx,
@@ -494,18 +483,17 @@ pub unsafe extern "C" fn countFeatures(
                 &language,
                 &mut lang_idx,
             ) != 0
-                || language == 0
-            {
-                rval += hb_ot_layout_language_get_feature_tags(
-                    face,
-                    table_tag,
-                    script_idx,
-                    lang_idx,
-                    0,
-                    ptr::null_mut(),
-                    ptr::null_mut(),
-                );
-            }
+                || language == 0)
+        {
+            rval += hb_ot_layout_language_get_feature_tags(
+                face,
+                table_tag,
+                script_idx,
+                lang_idx,
+                0,
+                ptr::null_mut(),
+                ptr::null_mut(),
+            );
         }
     }
     rval
@@ -533,9 +521,7 @@ pub struct XeTeXFontBase {
     filename: CString,
     index: u32,
 
-    ft_face: FT_Face,
-    backing_data: Vec<u8>,
-    backing_data2: Vec<u8>,
+    ft_face: Option<ft::Face>,
     hb_font: *mut hb_font_t,
 
     kind: FontKind,
@@ -566,9 +552,7 @@ impl XeTeXFontBase {
             vertical: false,
             filename: CString::new("").unwrap(),
             index: 0,
-            ft_face: ptr::null_mut(),
-            backing_data: Vec::new(),
-            backing_data2: Vec::new(),
+            ft_face: None,
             hb_font: ptr::null_mut(),
             kind: FontKind::Mac(descriptor, ptr::null()),
         };
@@ -596,9 +580,7 @@ impl XeTeXFontBase {
             vertical: false,
             filename: CString::new("").unwrap(),
             index: 0,
-            ft_face: ptr::null_mut(),
-            backing_data: Vec::new(),
-            backing_data2: Vec::new(),
+            ft_face: None,
             hb_font: ptr::null_mut(),
             kind: FontKind::FtFont,
         };
@@ -615,19 +597,6 @@ impl XeTeXFontBase {
     }
 
     unsafe fn initialize_ft(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
-        static FREE_TYPE_LIBRARY: OnceLock<SyncPtr<FT_LibraryRec>> = OnceLock::new();
-
-        let ft_lib = FREE_TYPE_LIBRARY
-            .get_or_init(|| {
-                let mut lib = ptr::null_mut();
-                let error = FT_Init_FreeType(&mut lib);
-                if error != 0 {
-                    panic!("FreeType initialization failed, error {}", error);
-                }
-                SyncPtr(lib)
-            })
-            .0;
-
         let mut handle = ttstub_input_open(pathname.as_ptr(), FileFormat::OpenType, 0);
         if handle.is_null() {
             handle = ttstub_input_open(pathname.as_ptr(), FileFormat::TrueType, 0);
@@ -640,25 +609,24 @@ impl XeTeXFontBase {
         }
 
         let sz = ttstub_input_get_size(handle);
-        self.backing_data = vec![0; sz];
-        let r = ttstub_input_read(handle, self.backing_data.as_mut_ptr().cast(), sz);
+        let mut backing_data = vec![0; sz];
+        let r = ttstub_input_read(handle, backing_data.as_mut_ptr().cast(), sz);
         if r < 0 || (r as usize) != sz {
             panic!("failed to read font file");
         }
         ttstub_input_close(handle);
 
-        let error = FT_New_Memory_Face(
-            ft_lib,
-            self.backing_data.as_mut_ptr().cast(),
-            sz as libc::c_long,
-            index as libc::c_long,
-            &mut self.ft_face,
-        ) != 0;
-        if error || !FT_IS_SCALABLE(self.ft_face) {
+        self.ft_face = match ft::Face::new_memory(backing_data, index as usize) {
+            Ok(face) => Some(face),
+            Err(_) => return 1,
+        };
+
+        if !self.ft_face().is_scalable() {
             return 1;
         }
 
-        if index == 0 && !FT_IS_SFNT(self.ft_face) {
+        if index == 0 && !self.ft_face().is_sfnt() {
+            // TODO: All this should use normal string manip
             let afm = xstrdup(xbasename(pathname.as_ptr()));
             let p = strrchr(afm, b'.' as libc::c_int);
             if !p.is_null()
@@ -674,48 +642,55 @@ impl XeTeXFontBase {
 
             if !afm_handle.is_null() {
                 let sz = ttstub_input_get_size(afm_handle);
-                self.backing_data2 = vec![0; sz];
-                let r = ttstub_input_read(handle, self.backing_data2.as_mut_ptr().cast(), sz);
+                let mut backing_data2 = vec![0; sz];
+                let r = ttstub_input_read(handle, backing_data2.as_mut_ptr().cast(), sz);
 
                 if r < 0 || (r as usize) != sz {
                     panic!("failed to read AFM file");
                 }
 
-                let mut open_args = FT_Open_Args::default();
-                open_args.flags = FT_OPEN_MEMORY;
-                open_args.memory_base = self.backing_data2.as_mut_ptr().cast();
-                open_args.memory_size = sz as libc::c_long;
-
-                FT_Attach_Stream(self.ft_face, &mut open_args);
+                self.ft_face_mut().attach_stream_mem(backing_data2).unwrap();
             }
         }
 
         self.filename = pathname.to_owned();
         self.index = index as u32;
-        self.units_per_em = (*self.ft_face).units_per_EM;
-        self.ascent = self.units_to_points((*self.ft_face).ascender as f64) as f32;
-        self.descent = self.units_to_points((*self.ft_face).descender as f64) as f32;
+        self.units_per_em = self.ft_face().units_per_em();
+        self.ascent = self.units_to_points(self.ft_face().ascender() as f64) as f32;
+        self.descent = self.units_to_points(self.ft_face().descender() as f64) as f32;
 
-        let post_table = self
-            .get_font_table(FT_Sfnt_Tag::Post)
-            .cast::<TT_Postscript>();
-        if !post_table.is_null() {
-            self.italic_angle = RsFix2D((*post_table).italic_angle as Fixed) as f32;
+        let post_table = self.get_font_table(ft::SfntTag::Post);
+        if let Some(table) = post_table {
+            self.italic_angle =
+                RsFix2D(table.cast::<ft::tables::Postscript>().as_ref().italic_angle as Fixed)
+                    as f32;
         }
 
-        let os2_table = self.get_font_table(FT_Sfnt_Tag::Os2).cast::<TT_OS2>();
-        if !os2_table.is_null() {
-            self.cap_height = self.units_to_points((*os2_table).sCapHeight as f64) as f32;
-            self.x_height = self.units_to_points((*os2_table).sxHeight as f64) as f32;
+        let os2_table = self.get_font_table(ft::SfntTag::Os2);
+        if let Some(table) = os2_table {
+            let table = table.cast::<ft::tables::OS2>().as_ref();
+            self.cap_height = self.units_to_points(table.sCapHeight as f64) as f32;
+            self.x_height = self.units_to_points(table.sxHeight as f64) as f32;
         }
 
-        let hb_face = hb_face_create_for_tables(_get_table, self.ft_face.cast(), None);
+        let hb_face = hb_face_create_for_tables(
+            _get_table,
+            // TODO: This is UB city
+            ptr::from_mut(self.ft_face_mut()).cast(),
+            None,
+        );
         hb_face_set_index(hb_face, index as libc::c_uint);
         hb_face_set_upem(hb_face, self.units_per_em as libc::c_uint);
         self.hb_font = hb_font_create(hb_face);
         hb_face_destroy(hb_face);
 
-        hb_font_set_funcs(self.hb_font, _get_font_funcs(), self.ft_face.cast(), None);
+        hb_font_set_funcs(
+            self.hb_font,
+            _get_font_funcs(),
+            // TODO: This is UB city
+            ptr::from_mut(self.ft_face_mut()).cast(),
+            None,
+        );
         hb_font_set_scale(
             self.hb_font,
             self.units_per_em as libc::c_int,
@@ -724,11 +699,6 @@ impl XeTeXFontBase {
         hb_font_set_ppem(self.hb_font, 0, 0);
 
         0
-    }
-
-    #[cfg(not(target_os = "macos"))]
-    pub unsafe fn initialize(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
-        self.initialize_ft(pathname, index)
     }
 
     #[cfg(target_os = "macos")]
@@ -770,8 +740,11 @@ impl XeTeXFontBase {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn getFontTablePtr(font: XeTeXFont, table_tag: OTTag) -> *mut () {
-        (*font).get_font_table_ot(table_tag)
+    pub unsafe extern "C" fn hasFontTable(font: XeTeXFont, table_tag: OTTag) -> bool {
+        // TODO: has_font_table for efficiency
+        (*font)
+            .load_font_table(ft::TableTag::Other(table_tag))
+            .is_some()
     }
 
     #[no_mangle]
@@ -945,7 +918,21 @@ impl XeTeXFontBase {
         gid: u16,
         len: *mut libc::c_int,
     ) -> *const libc::c_char {
-        (*font).get_glyph_name(gid, &mut *len)
+        match (*font).get_glyph_name(gid) {
+            Some(out) => {
+                *len = out.as_bytes().len() as libc::c_int;
+                CString::into_raw(out)
+            }
+            None => {
+                *len = 0;
+                ptr::null()
+            }
+        }
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn freeGlyphName(name: *mut libc::c_char) {
+        let _ = CString::from_raw(name);
     }
 
     #[no_mangle]
@@ -963,40 +950,35 @@ impl XeTeXFontBase {
         (*font).point_size()
     }
 
-    pub(crate) unsafe fn get_glyph_name(
-        &self,
-        gid: u16,
-        len: &mut libc::c_int,
-    ) -> *const libc::c_char {
-        if FT_HAS_GLYPH_NAMES(self.ft_face) {
-            thread_local! {
-                static BUFFER: UnsafeCell<[u8; 256]> = UnsafeCell::new([0; 256]);
-            }
+    fn ft_face(&self) -> &ft::Face {
+        self.ft_face.as_ref().unwrap()
+    }
 
-            FT_Get_Glyph_Name(
-                self.ft_face,
-                gid as libc::c_uint,
-                BUFFER.with(|b| b.get()).cast(),
-                256,
-            );
-            *len = strlen(BUFFER.with(|b| b.get()).cast()) as libc::c_int;
-            BUFFER.with(|b| b.get()).cast()
+    fn ft_face_mut(&mut self) -> &mut ft::Face {
+        self.ft_face.as_mut().unwrap()
+    }
+
+    pub(crate) fn get_glyph_name(&self, gid: u16) -> Option<CString> {
+        if self.ft_face().has_glyph_names() {
+            let mut buf = vec![0u8; 256];
+            self.ft_face().get_glyph_name(gid as u32, &mut buf).unwrap();
+
+            let pos = buf.iter().rposition(|c| *c != 0).unwrap();
+            CString::new(&buf[..pos]).ok()
         } else {
-            *len = 0;
-            ptr::null()
+            None
         }
     }
 
-    pub(crate) unsafe fn get_glyph_sidebearings(
-        &self,
+    pub(crate) fn get_glyph_sidebearings(
+        &mut self,
         gid: GlyphID,
         lsb: Option<&mut f32>,
         rsb: Option<&mut f32>,
     ) {
         let width = self.get_glyph_width(gid as u32);
 
-        let mut bbox = GlyphBBox::default();
-        self.get_glyph_bounds(gid, &mut bbox);
+        let bbox = self.get_glyph_bounds(gid);
 
         if let Some(lsb) = lsb {
             *lsb = bbox.x_min;
@@ -1006,10 +988,9 @@ impl XeTeXFontBase {
         }
     }
 
-    pub(crate) unsafe fn get_glyph_ital_corr(&self, gid: GlyphID) -> f32 {
+    pub(crate) fn get_glyph_ital_corr(&mut self, gid: GlyphID) -> f32 {
         let width = self.get_glyph_width(gid as u32);
-        let mut bbox = GlyphBBox::default();
-        self.get_glyph_bounds(gid, &mut bbox);
+        let bbox = self.get_glyph_bounds(gid);
 
         if bbox.x_max > width {
             bbox.x_max - width
@@ -1018,93 +999,69 @@ impl XeTeXFontBase {
         }
     }
 
-    pub(crate) unsafe fn map_char_to_glyph(&self, ch: UChar32) -> GlyphID {
-        FT_Get_Char_Index(self.ft_face, ch as libc::c_ulong) as GlyphID
+    pub(crate) fn map_char_to_glyph(&self, ch: UChar32) -> GlyphID {
+        match self.ft_face().get_char_index(ch as u32) {
+            Some(val) => val.get() as GlyphID,
+            None => 0,
+        }
     }
 
-    pub(crate) unsafe fn get_first_char_code(&self) -> UChar32 {
-        let mut gindex = 0;
-        FT_Get_First_Char(self.ft_face, &mut gindex) as UChar32
+    pub(crate) fn get_first_char_code(&self) -> UChar32 {
+        self.ft_face().get_first_char().0 as UChar32
     }
 
-    pub(crate) unsafe fn get_last_char_code(&self) -> UChar32 {
-        let mut gindex = 0;
-        let mut ch = FT_Get_First_Char(self.ft_face, &mut gindex);
+    pub(crate) fn get_last_char_code(&self) -> UChar32 {
+        let ft_face = self.ft_face();
+
+        let (mut ch, mut index) = ft_face.get_first_char();
         let mut prev = ch;
-        while gindex != 0 {
+        while index != 0 {
             prev = ch;
-            ch = FT_Get_Next_Char(self.ft_face, ch, &mut gindex);
+            (ch, index) = ft_face.get_next_char(ch);
         }
         prev as UChar32
     }
 
-    pub(crate) unsafe fn map_glyph_to_index(&self, glyph_name: *const libc::c_char) -> GlyphID {
-        FT_Get_Name_Index(self.ft_face, glyph_name) as GlyphID
-    }
-
-    pub(crate) unsafe fn get_font_table_ot(&self, tag: OTTag) -> *mut () {
-        let mut tmp_len = 0;
-        let error = FT_Load_Sfnt_Table(
-            self.ft_face,
-            tag as libc::c_ulong,
-            0,
-            ptr::null_mut(),
-            &mut tmp_len,
-        );
-        if error != 0 {
-            return ptr::null_mut();
-        }
-
-        let table = xmalloc(tmp_len as usize);
-        if !table.is_null() {
-            let error = FT_Load_Sfnt_Table(
-                self.ft_face,
-                tag as libc::c_ulong,
-                0,
-                table.cast(),
-                &mut tmp_len,
-            );
-            if error != 0 {
-                free(table.cast());
-                return ptr::null_mut();
-            }
-        }
-
-        table.cast()
-    }
-
-    pub(crate) unsafe fn get_glyph_bounds(&self, gid: GlyphID, bbox: &mut GlyphBBox) {
-        bbox.x_min = 0.0;
-        bbox.y_min = 0.0;
-        bbox.x_max = 0.0;
-        bbox.y_max = 0.0;
-
-        let error = FT_Load_Glyph(self.ft_face, gid as libc::c_uint, FT_LOAD_NO_SCALE);
-        if error != 0 {
-            return;
-        }
-
-        let mut glyph = ptr::null_mut();
-        let error = FT_Get_Glyph((*self.ft_face).glyph, &mut glyph);
-        if error == 0 {
-            let mut ft_bbox = FT_BBox::default();
-            FT_Glyph_Get_CBox(glyph, FT_Glyph_BBox_Mode::Unscaled, &mut ft_bbox);
-            bbox.x_min = self.units_to_points(ft_bbox.xMin as f64) as f32;
-            bbox.y_min = self.units_to_points(ft_bbox.yMin as f64) as f32;
-            bbox.x_max = self.units_to_points(ft_bbox.xMax as f64) as f32;
-            bbox.y_max = self.units_to_points(ft_bbox.yMax as f64) as f32;
-            FT_Done_Glyph(glyph);
+    pub(crate) fn map_glyph_to_index(&self, glyph_name: &CStr) -> GlyphID {
+        match self.ft_face().get_name_index(glyph_name) {
+            Some(index) => index.get() as u16,
+            None => 0,
         }
     }
 
-    pub(crate) unsafe fn get_glyph_height_depth(
-        &self,
+    pub(crate) fn load_font_table(&self, tag: ft::TableTag) -> Option<Vec<u8>> {
+        self.ft_face().load_sfnt_table(tag).ok()
+    }
+
+    pub(crate) fn get_glyph_bounds(&mut self, gid: GlyphID) -> GlyphBBox {
+        let mut bbox = GlyphBBox::default();
+
+        if self
+            .ft_face_mut()
+            .load_glyph(gid as u32, ft::LoadFlags::NO_SCALE)
+            .is_err()
+        {
+            return bbox;
+        }
+
+        if let Ok(glyph) = self.ft_face().glyph().get_glyph() {
+            let ft_bbox = glyph.get_cbox(ft::BBoxMode::Unscaled);
+            bbox.x_min = self.units_to_points(ft_bbox.x_min as f64) as f32;
+            bbox.y_min = self.units_to_points(ft_bbox.y_min as f64) as f32;
+            bbox.x_max = self.units_to_points(ft_bbox.x_max as f64) as f32;
+            bbox.y_max = self.units_to_points(ft_bbox.y_max as f64) as f32;
+        }
+
+        bbox
+    }
+
+    pub(crate) fn get_glyph_height_depth(
+        &mut self,
         gid: GlyphID,
         height: Option<&mut f32>,
         depth: Option<&mut f32>,
     ) {
-        let mut bbox = GlyphBBox::default();
-        self.get_glyph_bounds(gid, &mut bbox);
+        let bbox = self.get_glyph_bounds(gid);
         if let Some(height) = height {
             *height = bbox.y_max;
         }
@@ -1118,20 +1075,20 @@ impl XeTeXFontBase {
         &self.filename
     }
 
-    pub(crate) unsafe fn get_font_table(&self, tag: FT_Sfnt_Tag) -> *mut () {
-        FT_Get_Sfnt_Table(self.ft_face, tag)
+    pub(crate) fn get_font_table(&self, tag: ft::SfntTag) -> Option<NonNull<()>> {
+        self.ft_face().get_sfnt_table(tag)
     }
 
     pub(crate) fn italic_angle(&self) -> f32 {
         self.italic_angle
     }
 
-    pub(crate) unsafe fn get_num_glyphs(&self) -> u32 {
-        (*self.ft_face).num_glyphs as u32
+    pub(crate) fn get_num_glyphs(&self) -> usize {
+        self.ft_face().num_glyphs()
     }
 
-    pub(crate) unsafe fn get_glyph_width(&self, gid: u32) -> f32 {
-        self.units_to_points(_get_glyph_advance(self.ft_face, gid, false) as f64) as f32
+    pub(crate) fn get_glyph_width(&self, gid: u32) -> f32 {
+        self.units_to_points(_get_glyph_advance(self.ft_face(), gid, false) as f64) as f32
     }
 
     pub(crate) fn layout_dir_vertical(&self) -> bool {
@@ -1181,9 +1138,6 @@ impl XeTeXFontBase {
 impl Drop for XeTeXFontBase {
     fn drop(&mut self) {
         unsafe {
-            if !self.ft_face.is_null() {
-                FT_Done_Face(self.ft_face);
-            }
             hb_font_destroy(self.hb_font);
             #[cfg(target_os = "macos")]
             if let FontKind::Mac(descriptor, font_ref) = self.kind {
@@ -1215,7 +1169,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     index: *mut u32,
 ) -> *const libc::c_char {
     use std::cell::Cell;
-    use tectonic_bridge_freetype2::{FT_Get_Postscript_Name, FT_Library, FT_New_Face};
+    use tectonic_bridge_freetype2::sys::{FT_Get_Postscript_Name, FT_Library, FT_New_Face};
 
     thread_local! {
         static FREE_TYPE_LIBRARY: Cell<FT_Library> = const { Cell::new(ptr::null_mut()) };
