@@ -5,7 +5,7 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::ptr;
-use tectonic_bridge_freetype2::{FT_Sfnt_Tag, TT_Header, TT_Postscript, TT_OS2};
+use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz::{hb_font_get_face, hb_ot_layout_get_size_params};
 
 #[cfg(not(target_os = "macos"))]
@@ -14,7 +14,7 @@ mod fc;
 mod mac;
 
 thread_local! {
-    static LOADED_FONT_DESIGN_SIZE: Cell<Fixed> = Cell::new(0);
+    static LOADED_FONT_DESIGN_SIZE: Cell<Fixed> = const { Cell::new(0) };
 }
 
 #[no_mangle]
@@ -135,19 +135,21 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
         }
     }
 
-    let os2_table = xfont.get_font_table(FT_Sfnt_Tag::Os2).cast::<TT_OS2>();
-    if !os2_table.is_null() {
-        font.weight = (*os2_table).usWeightClass;
-        font.width = (*os2_table).usWidthClass;
-        let sel = (*os2_table).fsSelection;
+    let os2_table = xfont.get_font_table(ft::SfntTag::Os2);
+    if let Some(table) = os2_table {
+        let table = table.cast::<ft::tables::OS2>().as_ref();
+        font.weight = table.usWeightClass;
+        font.width = table.usWidthClass;
+        let sel = table.fsSelection;
         font.is_reg = (sel & (1 << 6)) != 0;
         font.is_bold = (sel & (1 << 5)) != 0;
         font.is_italic = (sel & (1 << 0)) != 0;
     }
 
-    let head_table = xfont.get_font_table(FT_Sfnt_Tag::Head).cast::<TT_Header>();
-    if !head_table.is_null() {
-        let ms = (*head_table).Mac_Style;
+    let head_table = xfont.get_font_table(ft::SfntTag::Head);
+    if let Some(table) = head_table {
+        let table = table.cast::<ft::tables::Header>().as_ref();
+        let ms = table.Mac_Style;
         if (ms & (1 << 0)) != 0 {
             font.is_bold = true;
         }
@@ -156,14 +158,12 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
         }
     }
 
-    let post_table = xfont
-        .get_font_table(FT_Sfnt_Tag::Post)
-        .cast::<TT_Postscript>();
-    if !post_table.is_null() {
+    let post_table = xfont.get_font_table(ft::SfntTag::Post);
+    if let Some(table) = post_table {
+        let table = table.cast::<ft::tables::Postscript>().as_ref();
         font.slant = (1000.0
-            * (f64::tan(
-                RsFix2D((-(*post_table).italic_angle) as Fixed) * std::f64::consts::PI / 180.0,
-            ))) as _;
+            * (f64::tan(RsFix2D((-table.italic_angle) as Fixed) * std::f64::consts::PI / 180.0)))
+            as _;
     }
 }
 
@@ -380,7 +380,7 @@ impl FontManager {
             if let Some(&found_fam) = self.maps.name_to_family.get(name_str) {
                 // look for a family member with the "regular" bit set in OS/2
                 let mut reg_fonts = 0;
-                for (_, &found) in &(*found_fam).styles {
+                for &found in (*found_fam).styles.values() {
                     if (*found).is_reg {
                         if reg_fonts == 0 {
                             font = found;
@@ -458,16 +458,16 @@ impl FontManager {
                         cp = &cp[1..];
                     }
                     pt_size = 0.0;
-                    while cp.first().is_some_and(|&c| c >= b'0' && c <= b'9') {
+                    while cp.first().is_some_and(|c| c.is_ascii_digit()) {
                         pt_size = pt_size * 10.0 + (cp[0] - b'0') as f64;
                         cp = &cp[1..];
                     }
                     if cp.first() == Some(&b'.') {
                         let mut dec = 1.0;
                         cp = &cp[1..];
-                        while cp.first().is_some_and(|&c| c >= b'0' && c <= b'9') {
+                        while cp.first().is_some_and(|c| c.is_ascii_digit()) {
                             dec *= 10.0;
-                            pt_size = pt_size + (cp[0] - b'0') as f64 / dec;
+                            pt_size += (cp[0] - b'0') as f64 / dec;
                             cp = &cp[1..];
                         }
                     }
@@ -528,7 +528,7 @@ impl FontManager {
                 {
                     // try again using the bold flag, as we can't trust weight values
                     let mut new_best = ptr::null_mut::<Font>();
-                    for (_, &style) in &(*parent).styles {
+                    for &style in (*parent).styles.values() {
                         if (*style).is_bold == (*font).is_bold
                             && new_best.is_null()
                             && (*style).is_italic != (*font).is_italic
@@ -545,8 +545,8 @@ impl FontManager {
                 if best_match == font {
                     // maybe slant values weren't present; try the style bits as a fallback
                     best_match = ptr::null_mut();
-                    for (_, &style) in &(*parent).styles {
-                        if (*style).is_italic == !(*font).is_italic {
+                    for &style in (*parent).styles.values() {
+                        if (*style).is_italic != (*font).is_italic {
                             if (*parent).min_weight != (*parent).max_weight {
                                 // weight info was available, so try to match that
                                 if best_match.is_null()
@@ -583,7 +583,7 @@ impl FontManager {
                     );
                     if (*parent).min_slant == (*parent).max_slant {
                         let mut new_best = ptr::null_mut::<Font>();
-                        for (_, &style) in &(*parent).styles {
+                        for &style in (*parent).styles.values() {
                             if (*style).is_italic == (*font).is_italic
                                 && new_best.is_null()
                                 && Self::weight_and_width_diff(&*style, &*best_match)
@@ -598,7 +598,7 @@ impl FontManager {
                     }
                 }
                 if best_match == font && (*font).is_bold {
-                    for (_, &style) in &(*parent).styles {
+                    for &style in (*parent).styles.values() {
                         if (*style).is_italic == (*font).is_italic && (*style).is_bold {
                             best_match = style;
                             break;
@@ -620,7 +620,7 @@ impl FontManager {
             );
             if best_mismatch > 0.0 {
                 let mut best_match = font;
-                for (_, &style) in &(*parent).styles {
+                for &style in (*parent).styles.values() {
                     if (*style).op_size_info.sub_family_id != (*font).op_size_info.sub_family_id {
                         continue;
                     }
@@ -702,7 +702,7 @@ impl FontManager {
         slant: libc::c_int,
     ) -> *mut Font {
         let mut best_match = None;
-        for (_, &font) in &family.styles {
+        for &font in family.styles.values() {
             best_match = match best_match {
                 None => Some(font),
                 Some(best) => {
@@ -819,8 +819,8 @@ pub unsafe extern "C" fn setReqEngine(engine: libc::c_char) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn getFullName(font: PlatformFontRef) -> *const libc::c_char {
-    FontManager::with_font_manager(|mgr| mgr.get_full_name(font))
+pub unsafe extern "C" fn getFullName(font: RawPlatformFontRef) -> *const libc::c_char {
+    FontManager::with_font_manager(|mgr| mgr.get_full_name(font.into()))
 }
 
 #[no_mangle]
@@ -829,6 +829,6 @@ pub unsafe extern "C" fn getDesignSize(font: XeTeXFont) -> f64 {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn ttxl_platfont_get_desc(font: PlatformFontRef) -> *const libc::c_char {
-    FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(&font).as_ptr())
+pub unsafe extern "C" fn ttxl_platfont_get_desc(font: RawPlatformFontRef) -> *const libc::c_char {
+    FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(&font.into()).as_ptr())
 }

@@ -22,7 +22,7 @@ unsafe fn get_int(
     ty: *const libc::c_char,
     idx: libc::c_int,
 ) -> Result<i32, FcErr> {
-    let mut int = 0;
+    let mut int: libc::c_int = 0;
     match unsafe { sys::FcPatternGetInteger(pat, ty, idx, &mut int) }.try_into() {
         Ok(err) => Err(err),
         Err(_) => Ok(int as i32),
@@ -133,6 +133,18 @@ impl Pattern {
 
     pub fn get<T: PatParam>(&self, idx: usize) -> Result<T::Output<'_>, FcErr> {
         T::get(self, idx)
+    }
+}
+
+impl From<*mut sys::FcPattern> for Pattern {
+    fn from(value: *mut sys::FcPattern) -> Self {
+        Pattern(NonNull::new(value).unwrap())
+    }
+}
+
+impl From<Pattern> for *mut sys::FcPattern {
+    fn from(value: Pattern) -> Self {
+        value.0.as_ptr()
     }
 }
 
