@@ -88,10 +88,12 @@ pub extern "C" fn _get_glyph_advance(
     gid: libc::c_uint,
     vertical: bool,
 ) -> ft::Fixed {
-    let out = match face.get_advance(
-        gid,
-        ft::LoadFlags::NO_SCALE | ft::LoadFlags::VERTICAL_LAYOUT,
-    ) {
+    let flags = if vertical {
+        ft::LoadFlags::NO_SCALE | ft::LoadFlags::VERTICAL_LAYOUT
+    } else {
+        ft::LoadFlags::NO_SCALE
+    };
+    let out = match face.get_advance(gid, flags) {
         Ok(advance) => {
             if vertical {
                 -advance
@@ -527,7 +529,8 @@ pub struct XeTeXFontBase {
     filename: CString,
     index: u32,
 
-    ft_face: Option<ft::Face>,
+    // Boxed to preserve address
+    ft_face: Option<Box<ft::Face>>,
     hb_font: *mut hb_font_t,
 
     kind: FontKind,
@@ -623,7 +626,7 @@ impl XeTeXFontBase {
         ttstub_input_close(handle);
 
         self.ft_face = match ft::Face::new_memory(backing_data, index as usize) {
-            Ok(face) => Some(face),
+            Ok(face) => Some(Box::new(face)),
             Err(_) => return 1,
         };
 
