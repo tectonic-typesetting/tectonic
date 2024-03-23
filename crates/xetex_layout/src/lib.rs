@@ -172,11 +172,26 @@ mod c_api {
     /// Return NAME with any leading path stripped off. This returns a
     /// pointer into NAME.  For example, `basename("/foo/bar.baz")`
     /// returns `"bar.baz"`.
-    #[no_mangle]
-    pub unsafe extern "C" fn xbasename(name: *const libc::c_char) -> *const libc::c_char {
-        let str = CStr::from_ptr(name);
-        let pos = str.to_bytes().iter().rposition(|p| *p == b'/').unwrap_or(0);
-        name.add(pos)
+    fn xbasename(name: &CStr) -> &CStr {
+        let pos = name
+            .to_bytes()
+            .iter()
+            .rposition(|p| *p == b'/')
+            .unwrap_or(0);
+        &name[pos..]
+    }
+
+    fn strrchr(str: &mut CStr, c: u8) -> Option<&mut CStr> {
+        let pos = str
+            .to_bytes()
+            .iter()
+            .rposition(|p| *p == c)
+            .unwrap_or(usize::MAX);
+        if pos == usize::MAX {
+            None
+        } else {
+            Some(&str[pos..])
+        }
     }
 
     /// cbindgen:ignore
