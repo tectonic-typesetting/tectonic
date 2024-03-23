@@ -158,8 +158,11 @@ impl FontManagerBackend for MacBackend {
                     buf.as_mut_ptr(),
                     libc::PATH_MAX as CFIndex,
                 ) {
-                    let pos = buf.iter().rposition(|c| *c != 0).unwrap();
-                    path = Cow::Owned(CString::new(&buf[..pos]).unwrap());
+                    path = Cow::Owned(
+                        CStr::from_bytes_until_nul(&buf)
+                            .map(CStr::to_owned)
+                            .unwrap(),
+                    );
                 }
                 CFRelease(url);
             }
