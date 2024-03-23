@@ -1214,10 +1214,10 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                         let face = ft::Face::new(pathname, i);
                         if let Ok(face) = face {
                             let ps_name2 = face.get_postscript_name();
-                            if (ps_name1.is_null() && ps_name2.is_null())
+                            if (ps_name1.is_null() && ps_name2.is_none())
                                 || (!ps_name1.is_null()
-                                    && !ps_name2.is_null()
-                                    && libc::strcmp(ps_name1, ps_name2) == 0)
+                                    && ps_name2.is_some()
+                                    && libc::strcmp(ps_name1, ps_name2.unwrap().as_ptr()) == 0)
                             {
                                 *index = i as u32;
                                 break;
