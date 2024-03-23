@@ -1176,8 +1176,6 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     ct_font_ref: CTFontRef,
     index: *mut u32,
 ) -> *const libc::c_char {
-    use std::cell::Cell;
-
     let mut url = ptr::null();
 
     #[cfg(feature = "MACOS_LE_10_6")]
