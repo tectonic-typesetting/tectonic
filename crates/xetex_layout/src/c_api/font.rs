@@ -972,8 +972,7 @@ impl XeTeXFontBase {
             let mut buf = vec![0u8; 256];
             self.ft_face().get_glyph_name(gid as u32, &mut buf).unwrap();
 
-            let pos = buf.iter().rposition(|c| *c != 0).unwrap();
-            CString::new(&buf[..pos]).ok()
+            CStr::from_bytes_until_nul(&buf).map(CStr::to_owned).ok()
         } else {
             None
         }
@@ -1178,11 +1177,6 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     index: *mut u32,
 ) -> *const libc::c_char {
     use std::cell::Cell;
-    use tectonic_bridge_freetype2::sys::{FT_Get_Postscript_Name, FT_Library, FT_New_Face};
-
-    thread_local! {
-        static FREE_TYPE_LIBRARY: Cell<FT_Library> = const { Cell::new(ptr::null_mut()) };
-    }
 
     let mut url = ptr::null();
 
@@ -1209,52 +1203,31 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
             pathname.as_mut_ptr(),
             libc::PATH_MAX as CFIndex,
         ) {
-            let mut face = ptr::null_mut();
-
+            let pathname = CStr::from_bytes_until_nul(&pathname).unwrap();
             *index = 0;
 
-            if FREE_TYPE_LIBRARY.get().is_null() {
-                let mut library = ptr::null_mut();
-                let error = FT_Init_FreeType(&mut library);
-                if error != 0 {
-                    panic!("FreeType initialization failed; error {}", error);
-                } else {
-                    FREE_TYPE_LIBRARY.set(library);
-                }
-            }
-
-            let error = FT_New_Face(
-                FREE_TYPE_LIBRARY.get(),
-                pathname.as_ptr().cast(),
-                0,
-                &mut face,
-            );
-            if error == 0 && (*face).num_faces > 1 {
-                let num_faces = (*face).num_faces;
-                let ps_name1 = getNameFromCTFont(ct_font_ref, kCTFontPostScriptNameKey);
-                *index = 0xFFFFFFFF;
-                FT_Done_Face(face);
-                for i in 0..num_faces {
-                    let error = FT_New_Face(
-                        FREE_TYPE_LIBRARY.get(),
-                        pathname.as_ptr().cast(),
-                        i,
-                        &mut face,
-                    );
-                    if error == 0 {
-                        let ps_name2 = FT_Get_Postscript_Name(face);
-                        if (ps_name1.is_null() && ps_name2.is_null())
-                            || (!ps_name1.is_null()
-                                && !ps_name2.is_null()
-                                && libc::strcmp(ps_name1, ps_name2) == 0)
-                        {
-                            *index = i as u32;
-                            break;
+            let face = ft::Face::new(pathname, 0);
+            if let Ok(face) = face {
+                if face.num_faces() > 1 {
+                    let num_faces = face.num_faces();
+                    let ps_name1 = getNameFromCTFont(ct_font_ref, kCTFontPostScriptNameKey);
+                    *index = 0xFFFFFFFF;
+                    for i in 0..num_faces {
+                        let face = ft::Face::new(pathname, i);
+                        if let Ok(face) = face {
+                            let ps_name2 = face.get_postscript_name();
+                            if (ps_name1.is_null() && ps_name2.is_null())
+                                || (!ps_name1.is_null()
+                                    && !ps_name2.is_null()
+                                    && libc::strcmp(ps_name1, ps_name2) == 0)
+                            {
+                                *index = i as u32;
+                                break;
+                            }
                         }
-                        FT_Done_Face(face);
                     }
+                    free(ps_name1.cast::<libc::c_void>().cast_mut());
                 }
-                free(ps_name1.cast::<libc::c_void>().cast_mut());
             }
 
             if *index != 0xFFFFFFFF {
