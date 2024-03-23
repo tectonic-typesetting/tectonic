@@ -271,6 +271,10 @@ impl Face {
         self.inner().num_glyphs as usize
     }
 
+    pub fn num_faces(&self) -> usize {
+        self.inner().num_faces as usize
+    }
+
     pub fn glyph(&self) -> GlyphSlot<'_> {
         GlyphSlot(unsafe { &*self.inner().glyph })
     }
