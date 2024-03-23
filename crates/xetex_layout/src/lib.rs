@@ -48,8 +48,6 @@ mod c_api {
     use std::collections::BTreeMap;
     use std::ffi::CStr;
     use std::sync::Mutex;
-    use tectonic_bridge_core::FileFormat;
-    use tectonic_io_base::InputHandle;
 
     mod engine;
     #[cfg(not(target_os = "macos"))]
@@ -182,23 +180,30 @@ mod c_api {
     }
 
     /// cbindgen:ignore
-    extern "C" {
-        fn ttstub_input_open(
-            path: *const libc::c_char,
-            format: FileFormat,
-            is_gz: libc::c_int,
-        ) -> *mut InputHandle;
-        fn ttstub_input_get_size(handle: *mut InputHandle) -> usize;
-        fn ttstub_input_read(
-            handle: *mut InputHandle,
-            data: *mut libc::c_char,
-            len: usize,
-        ) -> isize;
-        fn ttstub_input_close(handle: *mut InputHandle) -> libc::c_int;
-        fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
-        fn xcalloc(elems: usize, s: usize) -> *mut libc::c_char;
-        fn getReqEngine() -> libc::c_char;
+    mod ext {
+        use tectonic_bridge_core::FileFormat;
+        use tectonic_io_base::InputHandle;
+
+        #[allow(improper_ctypes)]
+        extern "C" {
+            pub fn ttstub_input_open(
+                path: *const libc::c_char,
+                format: FileFormat,
+                is_gz: libc::c_int,
+            ) -> *mut InputHandle;
+            pub fn ttstub_input_get_size(handle: *mut InputHandle) -> usize;
+            pub fn ttstub_input_read(
+                handle: *mut InputHandle,
+                data: *mut libc::c_char,
+                len: usize,
+            ) -> isize;
+            pub fn ttstub_input_close(handle: *mut InputHandle) -> libc::c_int;
+            pub fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
+            pub fn xcalloc(elems: usize, s: usize) -> *mut libc::c_char;
+            pub fn getReqEngine() -> libc::c_char;
+        }
     }
+    pub use ext::*;
 }
 
 /// Does our resulting executable link correctly?
