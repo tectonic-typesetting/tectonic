@@ -1199,7 +1199,7 @@ make_font_def(int32_t f)
         XeTeXLayoutEngine engine;
 
         engine = (XeTeXLayoutEngine)font_layout_engine[f];
-        /* fontRef = */ getFontRef(engine);
+        /* fontRef = getFontRef(engine); */
         filename = getFontFilename(engine, &index);
         assert(filename);
 
