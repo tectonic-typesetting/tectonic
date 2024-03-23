@@ -1,7 +1,7 @@
 use super::font::{deleteFont, XeTeXFontBase};
 use crate::c_api::{
-    getReqEngine, xcalloc, xstrdup, FloatPoint, GlyphBBox, PlatformFontRef, RawPlatformFontRef,
-    XeTeXFont, XeTeXLayoutEngine,
+    getReqEngine, xcalloc, xstrdup, FloatPoint, GlyphBBox, RawPlatformFontRef, XeTeXFont,
+    XeTeXLayoutEngine,
 };
 use std::cell::Cell;
 use std::ffi::CStr;
@@ -31,14 +31,13 @@ use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 #[repr(C)]
 pub struct XeTeXLayoutEngineBase {
     font: *mut XeTeXFontBase,
-    // font_ref: PlatformFontRef,
     script: hb_tag_t,
     language: hb_language_t,
     features: *const hb_feature_t,
     /// the requested shapers
     shaper_list: *mut *const libc::c_char,
     shaper_list_to_free: bool,
-    /// the actually used shaper    
+    /// the actually used shaper
     shaper: *mut libc::c_char,
     n_features: libc::c_int,
     rgb_value: u32,
@@ -65,7 +64,6 @@ impl XeTeXLayoutEngineBase {
     ) -> XeTeXLayoutEngine {
         let this = Box::new(XeTeXLayoutEngineBase {
             font,
-            // font_ref,
             script,
             // For Graphite fonts treat the language as BCP 47 tag, for OpenType we
             // treat it as a OT language tag for backward compatibility with pre-0.9999
@@ -110,11 +108,6 @@ impl XeTeXLayoutEngineBase {
     pub unsafe extern "C" fn getFont(engine: XeTeXLayoutEngine) -> XeTeXFont {
         (*engine).font
     }
-
-    // #[no_mangle]
-    // pub unsafe extern "C" fn getFontRef(engine: XeTeXLayoutEngine) -> RawPlatformFontRef {
-    //     (*engine).font_ref.clone().into()
-    // }
 
     #[no_mangle]
     pub unsafe extern "C" fn getExtendFactor(engine: XeTeXLayoutEngine) -> f32 {
