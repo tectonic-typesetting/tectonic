@@ -10,11 +10,11 @@ use crate::c_api::mac_core::{
     CTFontDescriptorRef, CTFontRef,
 };
 use crate::c_api::{
-    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xbasename,
-    xcalloc, xstrdup, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
+    strrchr, ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read,
+    xbasename, xcalloc, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
     RsD2Fix, RsFix2D, SyncPtr, XeTeXFont,
 };
-use libc::{free, strcpy, strlen, strrchr};
+use libc::{free, strcpy, strlen};
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
@@ -124,7 +124,7 @@ pub unsafe extern "C" fn _get_glyph_v_advance(
     _get_glyph_advance(&*font_data.cast::<ft::Face>(), gid, true) as hb_position_t
 }
 
-pub unsafe extern "C" fn _get_glyph_h_origin(
+pub extern "C" fn _get_glyph_h_origin(
     _: *mut hb_font_t,
     _: *mut (),
     _: hb_codepoint_t,
@@ -135,7 +135,7 @@ pub unsafe extern "C" fn _get_glyph_h_origin(
     true as hb_bool_t
 }
 
-pub unsafe extern "C" fn _get_glyph_v_origin(
+pub extern "C" fn _get_glyph_v_origin(
     _: *mut hb_font_t,
     _: *mut (),
     _: hb_codepoint_t,
@@ -180,7 +180,7 @@ pub unsafe extern "C" fn _get_glyph_h_kerning(
     }
 }
 
-pub unsafe extern "C" fn _get_glyph_v_kerning(
+pub extern "C" fn _get_glyph_v_kerning(
     _: *mut hb_font_t,
     _: *mut (),
     _: hb_codepoint_t,
@@ -636,8 +636,16 @@ impl XeTeXFontBase {
 
         if index == 0 && !self.ft_face().is_sfnt() {
             // TODO: All this should use normal string manip
-            let afm = xstrdup(xbasename(pathname.as_ptr()));
-            let p = strrchr(afm, b'.' as libc::c_int);
+            let mut afm = xbasename(pathname).to_owned();
+            let p = strrchr(&mut afm, b'.');
+            if let Some(p) = p {
+                if p.to_bytes().len() == 4
+                    && p.to_bytes()[1].to_ascii_lowercase() == b'p'
+                    && p.to_bytes()[2].to_ascii_lowercase() == b'f'
+                {
+                    todo!()
+                }
+            }
             if !p.is_null()
                 && strlen(p) == 4
                 && (*p.add(1) as u8).to_ascii_lowercase() == b'p'
