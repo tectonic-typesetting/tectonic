@@ -89,7 +89,7 @@ int32_t get_cp_code(int32_t font_num, uint32_t code, int32_t side);
  */
 const char *xbasename(const char *name);
 
-XeTeXLayoutEngine createLayoutEngine(RawPlatformFontRef font_ref,
+XeTeXLayoutEngine createLayoutEngine(RawPlatformFontRef _font_ref,
                                      XeTeXFont font,
                                      hb_tag_t script,
                                      char *language,
@@ -104,8 +104,6 @@ XeTeXLayoutEngine createLayoutEngine(RawPlatformFontRef font_ref,
 void deleteLayoutEngine(XeTeXLayoutEngine this_);
 
 XeTeXFont getFont(XeTeXLayoutEngine engine);
-
-RawPlatformFontRef getFontRef(XeTeXLayoutEngine engine);
 
 float getExtendFactor(XeTeXLayoutEngine engine);
 
