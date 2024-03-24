@@ -169,31 +169,6 @@ mod c_api {
         .unwrap_or(0)
     }
 
-    /// Return NAME with any leading path stripped off. This returns a
-    /// pointer into NAME.  For example, `basename("/foo/bar.baz")`
-    /// returns `"bar.baz"`.
-    fn xbasename(name: &CStr) -> &CStr {
-        let pos = name
-            .to_bytes()
-            .iter()
-            .rposition(|p| *p == b'/')
-            .unwrap_or(0);
-        &name[pos..]
-    }
-
-    fn strrchr(str: &mut CStr, c: u8) -> Option<&mut CStr> {
-        let pos = str
-            .to_bytes()
-            .iter()
-            .rposition(|p| *p == c)
-            .unwrap_or(usize::MAX);
-        if pos == usize::MAX {
-            None
-        } else {
-            Some(&str[pos..])
-        }
-    }
-
     /// cbindgen:ignore
     mod ext {
         use tectonic_bridge_core::FileFormat;
