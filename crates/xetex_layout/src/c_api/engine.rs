@@ -14,7 +14,7 @@ use tectonic_bridge_graphite2::{
     gr_seg_destroy, gr_seg_first_slot, gr_seg_last_slot, gr_segment, gr_slot, gr_slot_index,
     gr_slot_next_in_segment,
 };
-use tectonic_bridge_harfbuzz::{
+use tectonic_bridge_harfbuzz::sys::{
     hb_buffer_add_utf16, hb_buffer_content_type_t, hb_buffer_create, hb_buffer_destroy,
     hb_buffer_get_glyph_infos, hb_buffer_get_glyph_positions, hb_buffer_get_length,
     hb_buffer_get_script, hb_buffer_get_segment_properties, hb_buffer_guess_segment_properties,
