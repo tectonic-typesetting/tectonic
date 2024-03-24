@@ -2,7 +2,7 @@
 
 use std::convert::TryFrom;
 use std::marker::PhantomData;
-use std::ptr;
+use std::{ptr, slice};
 
 pub const FT_LOAD_NO_SCALE: i32 = 1 << 0;
 pub const FT_LOAD_VERTICAL_LAYOUT: i32 = 1 << 4;
@@ -307,11 +307,17 @@ pub struct FT_Outline {
     pub n_contours: libc::c_short,
     pub n_points: libc::c_short,
 
-    pub points: *mut FT_Vector,
+    points: *mut FT_Vector,
     pub tags: *mut libc::c_char,
     pub contours: *mut libc::c_short,
 
     pub flags: libc::c_int,
+}
+
+impl FT_Outline {
+    fn points(&self) -> &[FT_Vector] {
+        unsafe { slice::from_raw_parts(self.points, self.n_points as usize) }
+    }
 }
 
 #[repr(C)]
