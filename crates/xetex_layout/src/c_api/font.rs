@@ -10,11 +10,10 @@ use crate::c_api::mac_core::{
     CTFontDescriptorRef, CTFontRef,
 };
 use crate::c_api::{
-    strrchr, ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read,
-    xbasename, xcalloc, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
+    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read,
+    xcalloc, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
     RsD2Fix, RsFix2D, SyncPtr, XeTeXFont,
 };
-use libc::{free, strcpy, strlen};
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
@@ -635,27 +634,21 @@ impl XeTeXFontBase {
         }
 
         if index == 0 && !self.ft_face().is_sfnt() {
-            // TODO: All this should use normal string manip
-            let mut afm = xbasename(pathname).to_owned();
-            let p = strrchr(&mut afm, b'.');
-            if let Some(p) = p {
-                if p.to_bytes().len() == 4
-                    && p.to_bytes()[1].to_ascii_lowercase() == b'p'
-                    && p.to_bytes()[2].to_ascii_lowercase() == b'f'
+            let pathname = pathname.to_bytes();
+            let mut afm = pathname.rsplit(|c| *c == b'/').next().unwrap_or(pathname).to_vec();
+            let file_ty = afm.rsplit_mut(|c| *c == b'.')
+                .next();
+            if let Some(file_ty) = file_ty {
+                if file_ty.len() == 4
+                    && file_ty[1].to_ascii_lowercase() == b'p'
+                    && file_ty[2].to_ascii_lowercase() == b'f'
                 {
-                    todo!()
+                    file_ty.copy_from_slice(b".afm");
                 }
             }
-            if !p.is_null()
-                && strlen(p) == 4
-                && (*p.add(1) as u8).to_ascii_lowercase() == b'p'
-                && (*p.add(2) as u8).to_ascii_lowercase() == b'f'
-            {
-                strcpy(p, c!(".afm"));
-            }
+            afm.push(0);
 
-            let afm_handle = ttstub_input_open(afm, FileFormat::Afm, 0);
-            free(afm.cast());
+            let afm_handle = ttstub_input_open(afm.as_ptr().cast(), FileFormat::Afm, 0);
 
             if !afm_handle.is_null() {
                 let sz = ttstub_input_get_size(afm_handle);
