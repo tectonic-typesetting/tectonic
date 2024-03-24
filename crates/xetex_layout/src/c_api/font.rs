@@ -10,33 +10,27 @@ use crate::c_api::mac_core::{
     CTFontDescriptorRef, CTFontRef,
 };
 use crate::c_api::{
-    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read,
-    xcalloc, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
-    RsD2Fix, RsFix2D, SyncPtr, XeTeXFont,
+    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xcalloc,
+    Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef, RsD2Fix, RsFix2D,
+    XeTeXFont,
 };
+use std::cell::RefCell;
 use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
+use std::rc::Rc;
 use std::sync::OnceLock;
 use std::{mem, ptr, slice};
 use tectonic_bridge_core::FileFormat;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
 use tectonic_bridge_harfbuzz::sys::{
-    hb_blob_create, hb_blob_t, hb_bool_t, hb_codepoint_t, hb_face_create_for_tables,
-    hb_face_destroy, hb_face_set_index, hb_face_set_upem, hb_face_t, hb_font_create,
-    hb_font_destroy, hb_font_funcs_create, hb_font_funcs_set_glyph_contour_point_func,
-    hb_font_funcs_set_glyph_extents_func, hb_font_funcs_set_glyph_h_advance_func,
-    hb_font_funcs_set_glyph_h_kerning_func, hb_font_funcs_set_glyph_h_origin_func,
-    hb_font_funcs_set_glyph_name_func, hb_font_funcs_set_glyph_v_advance_func,
-    hb_font_funcs_set_glyph_v_kerning_func, hb_font_funcs_set_glyph_v_origin_func,
-    hb_font_funcs_set_nominal_glyph_func, hb_font_funcs_set_variation_glyph_func, hb_font_funcs_t,
-    hb_font_get_face, hb_font_set_funcs, hb_font_set_ppem, hb_font_set_scale, hb_font_t,
-    hb_glyph_extents_t, hb_memory_mode_t, hb_ot_layout_language_get_feature_tags,
-    hb_ot_layout_script_get_language_tags, hb_ot_layout_script_select_language,
-    hb_ot_layout_table_find_script, hb_ot_layout_table_get_script_tags, hb_position_t, hb_tag_t,
-    HB_OT_TAG_GPOS, HB_OT_TAG_GSUB,
+    hb_blob_create, hb_blob_t, hb_bool_t, hb_codepoint_t, hb_face_t, hb_font_destroy,
+    hb_font_get_face, hb_font_t, hb_glyph_extents_t, hb_memory_mode_t,
+    hb_ot_layout_language_get_feature_tags, hb_ot_layout_script_get_language_tags,
+    hb_ot_layout_script_select_language, hb_ot_layout_table_find_script,
+    hb_ot_layout_table_get_script_tags, hb_position_t, hb_tag_t, HB_OT_TAG_GPOS, HB_OT_TAG_GSUB,
 };
 use tectonic_bridge_icu::UChar32;
 
@@ -186,8 +180,8 @@ pub extern "C" fn _get_glyph_v_kerning(
     _: hb_codepoint_t,
     _: hb_codepoint_t,
     _: *mut (),
-) -> hb_bool_t {
-    false as hb_bool_t
+) -> hb_position_t {
+    0
 }
 
 pub unsafe extern "C" fn _get_glyph_extents(
@@ -256,69 +250,101 @@ pub unsafe extern "C" fn _get_glyph_name(
     out as hb_bool_t
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn _get_font_funcs() -> *mut hb_font_funcs_t {
-    static FONTS: OnceLock<SyncPtr<hb_font_funcs_t>> = OnceLock::new();
+pub fn _get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
+    static FONTS: OnceLock<hb::FontFuncs<Rc<RefCell<ft::Face>>>> = OnceLock::new();
 
     FONTS
         .get_or_init(|| {
-            let funcs = hb_font_funcs_create();
+            let mut funcs = hb::FontFuncs::<Rc<RefCell<ft::Face>>>::new();
 
-            hb_font_funcs_set_nominal_glyph_func(funcs, _get_nominal_glyph, ptr::null_mut(), None);
-            hb_font_funcs_set_variation_glyph_func(
-                funcs,
-                _get_variation_glyph,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_h_advance_func(
-                funcs,
-                _get_glyph_h_advance,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_v_advance_func(
-                funcs,
-                _get_glyph_v_advance,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_h_origin_func(
-                funcs,
-                _get_glyph_h_origin,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_v_origin_func(
-                funcs,
-                _get_glyph_v_origin,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_h_kerning_func(
-                funcs,
-                _get_glyph_h_kerning,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_v_kerning_func(
-                funcs,
-                _get_glyph_v_kerning,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_extents_func(funcs, _get_glyph_extents, ptr::null_mut(), None);
-            hb_font_funcs_set_glyph_contour_point_func(
-                funcs,
-                _get_glyph_contour_point,
-                ptr::null_mut(),
-                None,
-            );
-            hb_font_funcs_set_glyph_name_func(funcs, _get_glyph_name, ptr::null_mut(), None);
+            funcs.nominal_glyph_func(|_, face, ch| {
+                face.borrow().get_char_index(ch).map(|cc| cc.get())
+            });
+            funcs.variation_glyph_func(|_, face, ch, vs| {
+                face.borrow()
+                    .get_char_variant_index(ch, vs)
+                    .map(|cc| cc.get())
+            });
+            funcs.glyph_h_advance(|_, face, gid| {
+                _get_glyph_advance(&face.borrow(), gid, false) as hb::Position
+            });
+            funcs.glyph_v_advance(|_, face, gid| {
+                _get_glyph_advance(&face.borrow(), gid, true) as hb::Position
+            });
+            funcs.glyph_h_origin(|_, _, _| Some((0, 0)));
+            funcs.glyph_v_origin(|_, _, _| {
+                Some((0, 0))
 
-            SyncPtr(funcs)
+                // TODO
+                // Keep the code below for reference, for now we want to keep vertical
+                // origin at (0, 0) for compatibility with pre-0.9999.
+                // Reconsider this (e.g. using BASE table) when we get around overhauling
+                // the text directionality model and implementing real vertical typesetting.
+
+                /*
+                FT_Face face = (FT_Face) font_data;
+                FT_Error error;
+
+                error = FT_Load_Glyph (face, gid, FT_LOAD_NO_SCALE);
+                if (!error) {
+                    *x = face->glyph->metrics.horiBearingX -   face->glyph->metrics.vertBearingX;
+                    *y = face->glyph->metrics.horiBearingY - (-face->glyph->metrics.vertBearingY);
+                }
+
+                return !error;
+                 */
+            });
+            funcs.glyph_h_kerning(|_, face, gid1, gid2| {
+                match face
+                    .borrow()
+                    .get_kerning(gid1, gid2, ft::KerningMode::Unscaled)
+                {
+                    Ok(vec) => vec.x as hb::Position,
+                    Err(_) => 0,
+                }
+            });
+            funcs.glyph_v_kerning(|_, _, _, _| 0);
+            funcs.glyph_extents(|_, face, gid| {
+                let mut face = face.borrow_mut();
+                if face.load_glyph(gid, ft::LoadFlags::NO_SCALE).is_ok() {
+                    Some(hb::GlyphExtents {
+                        x_bearing: face.glyph().metrics().horiBearingX as hb::Position,
+                        y_bearing: face.glyph().metrics().horiBearingY as hb::Position,
+                        width: face.glyph().metrics().width as hb::Position,
+                        height: face.glyph().metrics().height as hb::Position,
+                    })
+                } else {
+                    None
+                }
+            });
+            funcs.glyph_contour_point(|_, face, gid, point_index| {
+                let mut face = face.borrow_mut();
+
+                let error = face.load_glyph(gid, ft::LoadFlags::NO_SCALE).is_err();
+                if !error
+                    && face.glyph().format() == ft::GlyphFormat::Outline
+                    && point_index < (face.glyph().outline().n_points as u32)
+                {
+                    let x =
+                        (*face.glyph().outline().points()[point_index as usize]).x as hb::Position;
+                    let y =
+                        (*face.glyph().outline().points()[point_index as usize]).y as hb::Position;
+                    Some((x, y))
+                } else {
+                    None
+                }
+            });
+            funcs.glyph_name(
+                |_, face, gid, buf| match face.borrow().get_glyph_name(gid, buf) {
+                    Ok(str) if str.to_bytes().len() > 0 && str.to_bytes()[0] == 0 => 0,
+                    Err(_) => 0,
+                    Ok(str) => str.to_bytes().len(),
+                },
+            );
+
+            funcs
         })
-        .0
+        .clone()
 }
 
 #[no_mangle]
@@ -388,7 +414,7 @@ pub unsafe extern "C" fn getLargerScriptListTable(
     font: XeTeXFont,
     script_list: *mut *mut hb_tag_t,
 ) -> libc::c_uint {
-    let face = hb_font_get_face((*font).get_hb_font());
+    let face = (*font).get_hb_font().get_face();
 
     let mut script_count_sub = hb_ot_layout_table_get_script_tags(
         face,
@@ -432,7 +458,7 @@ pub unsafe extern "C" fn countScripts(font: XeTeXFont) -> libc::c_uint {
 pub unsafe extern "C" fn countLanguages(font: XeTeXFont, script: hb_tag_t) -> libc::c_uint {
     let mut rval = 0;
 
-    let face = hb_font_get_face((*font).get_hb_font());
+    let face = (*font).get_hb_font().get_face();
 
     let mut script_list = ptr::null_mut();
     let count = getLargerScriptListTable(font, &mut script_list);
@@ -471,7 +497,7 @@ pub unsafe extern "C" fn countFeatures(
 ) -> libc::c_uint {
     let mut rval = 0;
 
-    let face = hb_font_get_face((*font).get_hb_font());
+    let face = (*font).get_hb_font().get_face();
 
     for i in 0..2 {
         let mut script_idx = 0;
@@ -636,9 +662,12 @@ impl XeTeXFontBase {
 
         if index == 0 && !self.ft_face().is_sfnt() {
             let pathname = pathname.to_bytes();
-            let mut afm = pathname.rsplit(|c| *c == b'/').next().unwrap_or(pathname).to_vec();
-            let file_ty = afm.rsplit_mut(|c| *c == b'.')
-                .next();
+            let mut afm = pathname
+                .rsplit(|c| *c == b'/')
+                .next()
+                .unwrap_or(pathname)
+                .to_vec();
+            let file_ty = afm.rsplit_mut(|c| *c == b'.').next();
             if let Some(file_ty) = file_ty {
                 if file_ty.len() == 4
                     && file_ty[1].to_ascii_lowercase() == b'p'
@@ -684,7 +713,7 @@ impl XeTeXFontBase {
             self.x_height = self.units_to_points(table.sxHeight as f64) as f32;
         }
 
-        let hb_face = hb::Face::new_tables(|face, tag| {
+        let mut hb_face = hb::Face::new_tables(|face, tag| {
             if let Ok(mut table) = self.ft_face().load_sfnt_table(ft::TableTag::Other(tag)) {
                 Some(hb::Blob::new(table))
             } else {
@@ -692,27 +721,16 @@ impl XeTeXFontBase {
             }
         });
 
-        face.set_index(index);
-        face.set_upem()
+        hb_face.set_index(self.index);
+        hb_face.set_upem(self.units_per_em as u32);
 
-        hb_face_set_index(hb_face, index as libc::c_uint);
-        hb_face_set_upem(hb_face, self.units_per_em as libc::c_uint);
-        self.hb_font = Some(hb::Font::new(hb_face));
-        hb_face_destroy(hb_face);
+        let mut hb_font = hb::Font::new(hb_face);
 
-        hb_font_set_funcs(
-            self.hb_font,
-            _get_font_funcs(),
-            // TODO: This is UB city
-            ptr::from_mut(self.ft_face_mut()).cast(),
-            None,
-        );
-        hb_font_set_scale(
-            self.hb_font,
-            self.units_per_em as libc::c_int,
-            self.units_per_em as libc::c_int,
-        );
-        hb_font_set_ppem(self.hb_font, 0, 0);
+        hb_font.set_funcs(_get_font_funcs(), self.ft_face_mut());
+        hb_font.set_scale(self.units_per_em as i32, self.units_per_em as i32);
+        hb_font.set_ppem(0, 0);
+
+        self.hb_font = Some(hb_font);
 
         0
     }
@@ -1134,8 +1152,8 @@ impl XeTeXFontBase {
         self.x_height
     }
 
-    pub(crate) fn get_hb_font(&self) -> *mut hb_font_t {
-        self.hb_font
+    pub(crate) fn get_hb_font(&self) -> &hb::Font {
+        self.hb_font.as_ref().unwrap()
     }
 
     /* Tectonic: these are modified from the base XeTeX code to use doubles;
