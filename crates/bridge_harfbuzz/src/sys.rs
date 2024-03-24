@@ -93,7 +93,7 @@ pub type hb_font_get_glyph_name_func_t = unsafe extern "C" fn(
     user_data: *mut (),
 ) -> hb_bool_t;
 pub type hb_reference_table_func_t =
-unsafe extern "C" fn(face: *mut hb_face_t, tag: hb_tag_t, user_data: *mut ()) -> *mut hb_blob_t;
+    unsafe extern "C" fn(face: *mut hb_face_t, tag: hb_tag_t, user_data: *mut ()) -> *mut hb_blob_t;
 pub type hb_unicode_decompose_compatibility_func_t = unsafe extern "C" fn(
     ufuncs: *mut hb_unicode_funcs_t,
     u: hb_codepoint_t,
@@ -122,6 +122,7 @@ pub struct hb_shape_plan_t(());
 #[repr(C)]
 pub struct hb_unicode_funcs_t(());
 
+#[derive(Clone, Debug, Default)]
 #[repr(C)]
 pub struct hb_glyph_extents_t {
     pub x_bearing: hb_position_t,
