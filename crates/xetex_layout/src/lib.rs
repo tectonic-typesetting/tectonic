@@ -46,7 +46,6 @@ mod c_api {
     use crate::c_api::engine::XeTeXLayoutEngineBase;
     use crate::c_api::font::XeTeXFontBase;
     use std::collections::BTreeMap;
-    use std::ffi::CStr;
     use std::sync::Mutex;
 
     mod engine;
