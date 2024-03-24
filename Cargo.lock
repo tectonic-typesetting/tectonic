@@ -538,7 +538,7 @@ dependencies = [
  "libz-sys",
  "openssl-sys",
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "windows-sys 0.59.0",
 ]
 
@@ -1725,7 +1725,7 @@ dependencies = [
  "cc",
  "libc",
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2031,7 +2031,7 @@ dependencies = [
  "libc",
  "openssl-src",
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -2089,6 +2089,12 @@ checksum = "1f2a05b18d44e2957b88f96ba460715e295bc1d7510468a2f3d3b44535d26c24"
 dependencies = [
  "regex",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "pathdiff"
@@ -3066,6 +3072,8 @@ dependencies = [
 name = "tectonic_bridge_icu"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
+ "paste",
  "tectonic_dep_support",
 ]
 
@@ -3101,7 +3109,7 @@ name = "tectonic_dep_support"
 version = "0.0.0-dev.0"
 dependencies = [
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (git+https://github.com/CraftSpider/vcpkg-rs/?branch=expose-version)",
 ]
 
 [[package]]
@@ -3783,6 +3791,11 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "vcpkg"
+version = "0.2.15"
+source = "git+https://github.com/CraftSpider/vcpkg-rs/?branch=expose-version#f83718047eaaf22fc2aaabb9a8d2fc24984c9db1"
 
 [[package]]
 name = "version_check"
