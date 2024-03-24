@@ -259,7 +259,7 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn isOpenTypeMathFont(engine: XeTeXLayoutEngine) -> bool {
-        hb_ot_math_has_data(hb_font_get_face((*engine).font().get_hb_font())) != 0
+        hb_ot_math_has_data((*engine).font().get_hb_font().get_face()) != 0
     }
 
     #[no_mangle]
