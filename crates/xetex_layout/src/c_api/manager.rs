@@ -7,7 +7,7 @@ use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2 as ft;
-use tectonic_bridge_harfbuzz::{hb_font_get_face, hb_ot_layout_get_size_params};
+use tectonic_bridge_harfbuzz::sys::{hb_font_get_face, hb_ot_layout_get_size_params};
 
 #[cfg(not(target_os = "macos"))]
 mod fc;
