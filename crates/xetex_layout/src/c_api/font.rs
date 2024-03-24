@@ -22,7 +22,8 @@ use std::sync::OnceLock;
 use std::{mem, ptr, slice};
 use tectonic_bridge_core::FileFormat;
 use tectonic_bridge_freetype2 as ft;
-use tectonic_bridge_harfbuzz::{
+use tectonic_bridge_harfbuzz as hb;
+use tectonic_bridge_harfbuzz::sys::{
     hb_blob_create, hb_blob_t, hb_bool_t, hb_codepoint_t, hb_face_create_for_tables,
     hb_face_destroy, hb_face_set_index, hb_face_set_upem, hb_face_t, hb_font_create,
     hb_font_destroy, hb_font_funcs_create, hb_font_funcs_set_glyph_contour_point_func,
@@ -530,7 +531,7 @@ pub struct XeTeXFontBase {
 
     // Boxed to preserve address
     ft_face: Option<Box<ft::Face>>,
-    hb_font: *mut hb_font_t,
+    hb_font: Option<hb::Font>,
 
     kind: FontKind,
 }
@@ -589,7 +590,7 @@ impl XeTeXFontBase {
             filename: CString::new("").unwrap(),
             index: 0,
             ft_face: None,
-            hb_font: ptr::null_mut(),
+            hb_font: None,
             kind: FontKind::FtFont,
         };
         let status = if let Some(path) = path {
@@ -683,15 +684,20 @@ impl XeTeXFontBase {
             self.x_height = self.units_to_points(table.sxHeight as f64) as f32;
         }
 
-        let hb_face = hb_face_create_for_tables(
-            _get_table,
-            // TODO: This is UB city
-            ptr::from_mut(self.ft_face_mut()).cast(),
-            None,
-        );
+        let hb_face = hb::Face::new_tables(|face, tag| {
+            if let Ok(mut table) = self.ft_face().load_sfnt_table(ft::TableTag::Other(tag)) {
+                Some(hb::Blob::new(table))
+            } else {
+                None
+            }
+        });
+
+        face.set_index(index);
+        face.set_upem()
+
         hb_face_set_index(hb_face, index as libc::c_uint);
         hb_face_set_upem(hb_face, self.units_per_em as libc::c_uint);
-        self.hb_font = hb_font_create(hb_face);
+        self.hb_font = Some(hb::Font::new(hb_face));
         hb_face_destroy(hb_face);
 
         hb_font_set_funcs(
