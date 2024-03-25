@@ -745,17 +745,14 @@ impl FontManager {
 
         let face = hb_font.get_face();
 
-        if let Some(params) = face.get_ot_layout_size_params() {
-            let mut size_rec = OpSizeRec::default();
-            size_rec.sub_family_id = params.subfamily_id;
-            size_rec.name_code = params.subfamily_name_id;
-            size_rec.design_size = params.design_size as f64 * 72.27 / 72.0 / 10.0;
-            size_rec.min_size = params.start as f64 * 72.27 / 72.0 / 10.0;
-            size_rec.max_size = params.end as f64 * 72.27 / 72.0 / 10.0;
-            Some(size_rec)
-        } else {
-            None
-        }
+        face.get_ot_layout_size_params().map(|params| OpSizeRec {
+            sub_family_id: params.subfamily_id,
+            name_code: params.subfamily_name_id,
+            design_size: params.design_size as f64 * 72.27 / 72.0 / 10.0,
+            min_size: params.start as f64 * 72.27 / 72.0 / 10.0,
+
+            max_size: params.end as f64 * 72.27 / 72.0 / 10.0,
+        })
     }
 
     pub unsafe fn search_for_host_platform_fonts(&mut self, name: &CStr) {
