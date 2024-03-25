@@ -9,7 +9,6 @@ pub const HB_TAG_NONE: u32 = hb_tag(b"\0\0\0\0");
 pub const HB_OT_TAG_GSUB: u32 = hb_tag(b"GSUB");
 pub const HB_OT_TAG_GPOS: u32 = hb_tag(b"GPOS");
 
-// TODO: This is an enum
 pub type hb_script_t = u32;
 
 pub const HB_SCRIPT_INVALID: u32 = HB_TAG_NONE;

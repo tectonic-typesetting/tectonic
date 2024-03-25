@@ -315,7 +315,7 @@ pub struct FT_Outline {
 }
 
 impl FT_Outline {
-    fn points(&self) -> &[FT_Vector] {
+    pub fn points(&self) -> &[FT_Vector] {
         unsafe { slice::from_raw_parts(self.points, self.n_points as usize) }
     }
 }
