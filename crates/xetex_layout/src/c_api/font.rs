@@ -128,7 +128,7 @@ pub fn get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
             });
             funcs.glyph_name(
                 |_, face, gid, buf| match face.borrow().get_glyph_name(gid, buf) {
-                    Ok(str) if str.to_bytes().len() > 0 && str.to_bytes()[0] == 0 => 0,
+                    Ok(str) if !str.to_bytes().is_empty() && str.to_bytes()[0] == 0 => 0,
                     Err(_) => 0,
                     Ok(str) => str.to_bytes().len(),
                 },
