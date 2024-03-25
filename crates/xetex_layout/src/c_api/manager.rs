@@ -7,7 +7,6 @@ use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2 as ft;
-use tectonic_bridge_harfbuzz::sys::{hb_font_get_face, hb_ot_layout_get_size_params};
 
 #[cfg(not(target_os = "macos"))]
 mod fc;
@@ -732,29 +731,17 @@ impl FontManager {
     }
 
     pub unsafe fn get_op_size(font: XeTeXFont) -> Option<OpSizeRec> {
-        let hb_font = (*font).get_hb_font();
-        if hb_font.is_null() {
-            return None;
-        }
+        let hb_font = (*font).try_get_hb_font()?;
 
-        let face = hb_font_get_face(hb_font);
-        let mut size_rec = OpSizeRec::default();
+        let face = hb_font.get_face();
 
-        let mut design_size = 0;
-        let mut min_size = 0;
-        let mut max_size = 0;
-        let ok = hb_ot_layout_get_size_params(
-            face,
-            &mut design_size,
-            &mut size_rec.sub_family_id,
-            &mut size_rec.name_code,
-            &mut min_size,
-            &mut max_size,
-        );
-        if ok != 0 {
-            size_rec.design_size = design_size as f64 * 72.27 / 72.0 / 10.0;
-            size_rec.min_size = min_size as f64 * 72.27 / 72.0 / 10.0;
-            size_rec.max_size = max_size as f64 * 72.27 / 72.0 / 10.0;
+        if let Some(params) = face.get_ot_layout_size_params() {
+            let mut size_rec = OpSizeRec::default();
+            size_rec.sub_family_id = params.subfamily_id;
+            size_rec.name_code = params.subfamily_name_id;
+            size_rec.design_size = params.design_size as f64 * 72.27 / 72.0 / 10.0;
+            size_rec.min_size = params.start as f64 * 72.27 / 72.0 / 10.0;
+            size_rec.max_size = params.end as f64 * 72.27 / 72.0 / 10.0;
             Some(size_rec)
         } else {
             None
