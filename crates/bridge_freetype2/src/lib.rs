@@ -170,19 +170,19 @@ impl<'a> From<sys::FT_SfntName> for SfntName<'a> {
     }
 }
 
-pub struct Glyph(sys::FT_Glyph);
+pub struct Glyph(NonNull<sys::FT_GlyphRec>);
 
 impl Glyph {
     pub fn get_cbox(&self, mode: BBoxMode) -> BBox {
         let mut ft_bbox = BBox::default();
-        unsafe { sys::FT_Glyph_Get_CBox(self.0, mode, &mut ft_bbox) };
+        unsafe { sys::FT_Glyph_Get_CBox(self.0.as_ptr(), mode, &mut ft_bbox) };
         ft_bbox
     }
 }
 
 impl Drop for Glyph {
     fn drop(&mut self) {
-        unsafe { sys::FT_Done_Glyph(self.0) }
+        unsafe { sys::FT_Done_Glyph(self.0.as_ptr()) }
     }
 }
 
@@ -192,7 +192,7 @@ impl GlyphSlot<'_> {
     pub fn get_glyph(&self) -> Result<Glyph, Error> {
         let mut ptr = ptr::null_mut();
         let err = unsafe { sys::FT_Get_Glyph(ptr::from_ref(self.0).cast_mut(), &mut ptr) };
-        Error::or_else(err, || Glyph(ptr))
+        Error::or_else(err, || Glyph(NonNull::new(ptr).unwrap()))
     }
 
     pub fn metrics(&self) -> &GlyphMetrics {
@@ -208,7 +208,7 @@ impl GlyphSlot<'_> {
     }
 }
 
-pub struct Face(sys::FT_Face, Vec<Vec<u8>>);
+pub struct Face(NonNull<sys::FT_FaceRec>, Vec<Vec<u8>>);
 
 impl Face {
     pub fn new(path: &CStr, index: usize) -> Result<Face, Error> {
@@ -221,7 +221,7 @@ impl Face {
                 &mut raw_face,
             )
         };
-        Error::or_else(err, || Face(raw_face, Vec::new()))
+        Error::or_else(err, || Face(NonNull::new(raw_face).unwrap(), Vec::new()))
     }
 
     pub fn new_memory(mut data: Vec<u8>, index: usize) -> Result<Face, Error> {
@@ -236,23 +236,23 @@ impl Face {
             )
         };
 
-        Error::or_else(err, || Face(raw_face, vec![data]))
+        Error::or_else(err, || Face(NonNull::new(raw_face).unwrap(), vec![data]))
     }
 
     fn inner(&self) -> &sys::FT_FaceRec {
-        unsafe { &*self.0 }
+        unsafe { self.0.as_ref() }
     }
 
     pub fn is_scalable(&self) -> bool {
-        unsafe { sys::FT_IS_SCALABLE(self.0) }
+        unsafe { sys::FT_IS_SCALABLE(self.0.as_ptr()) }
     }
 
     pub fn is_sfnt(&self) -> bool {
-        unsafe { sys::FT_IS_SFNT(self.0) }
+        unsafe { sys::FT_IS_SFNT(self.0.as_ptr()) }
     }
 
     pub fn has_glyph_names(&self) -> bool {
-        unsafe { sys::FT_HAS_GLYPH_NAMES(self.0) }
+        unsafe { sys::FT_HAS_GLYPH_NAMES(self.0.as_ptr()) }
     }
 
     pub fn units_per_em(&self) -> u16 {
@@ -282,31 +282,37 @@ impl Face {
     pub fn get_advance(&self, index: u32, flags: LoadFlags) -> Result<i64, Error> {
         let mut advance = 0;
         let err = unsafe {
-            sys::FT_Get_Advance(self.0, index as libc::c_uint, flags.as_i32(), &mut advance)
+            sys::FT_Get_Advance(
+                self.0.as_ptr(),
+                index as libc::c_uint,
+                flags.as_i32(),
+                &mut advance,
+            )
         };
         Error::or_else(err, || advance as i64)
     }
 
     pub fn get_first_char(&self) -> (u32, u32) {
         let mut index = 0;
-        let code = unsafe { sys::FT_Get_First_Char(self.0, &mut index) };
+        let code = unsafe { sys::FT_Get_First_Char(self.0.as_ptr(), &mut index) };
         (code as u32, index as u32)
     }
 
     pub fn get_next_char(&self, char: u32) -> (u32, u32) {
         let mut index = 0;
-        let code = unsafe { sys::FT_Get_Next_Char(self.0, char as libc::c_ulong, &mut index) };
+        let code =
+            unsafe { sys::FT_Get_Next_Char(self.0.as_ptr(), char as libc::c_ulong, &mut index) };
         (code as u32, index as u32)
     }
 
     pub fn get_char_index(&self, char: u32) -> Option<NonZeroU32> {
-        NonZeroU32::new(unsafe { sys::FT_Get_Char_Index(self.0, char as libc::c_ulong) })
+        NonZeroU32::new(unsafe { sys::FT_Get_Char_Index(self.0.as_ptr(), char as libc::c_ulong) })
     }
 
     pub fn get_char_variant_index(&self, char: u32, variant: u32) -> Option<NonZeroU32> {
         NonZeroU32::new(unsafe {
             sys::FT_Face_GetCharVariantIndex(
-                self.0,
+                self.0.as_ptr(),
                 char as libc::c_ulong,
                 variant as libc::c_ulong,
             )
@@ -315,7 +321,7 @@ impl Face {
 
     pub fn get_kerning(&self, left: u32, right: u32, mode: KerningMode) -> Result<Vector, Error> {
         let mut vector = Vector::default();
-        let err = unsafe { sys::FT_Get_Kerning(self.0, left, right, mode, &mut vector) };
+        let err = unsafe { sys::FT_Get_Kerning(self.0.as_ptr(), left, right, mode, &mut vector) };
         Error::or_else(err, || vector)
     }
 
@@ -326,7 +332,7 @@ impl Face {
     ) -> Result<&'a CStr, Error> {
         let err = unsafe {
             sys::FT_Get_Glyph_Name(
-                self.0,
+                self.0.as_ptr(),
                 index as libc::c_uint,
                 buf.as_mut_ptr().cast(),
                 buf.len() as libc::c_uint,
@@ -336,41 +342,42 @@ impl Face {
     }
 
     pub fn get_name_index(&self, name: &CStr) -> Option<NonZeroU32> {
-        NonZeroU32::new(unsafe { sys::FT_Get_Name_Index(self.0, name.as_ptr()) as u32 })
+        NonZeroU32::new(unsafe { sys::FT_Get_Name_Index(self.0.as_ptr(), name.as_ptr()) as u32 })
     }
 
     pub fn get_postscript_name(&self) -> Option<&CStr> {
         unsafe {
-            sys::FT_Get_Postscript_Name(self.0)
+            sys::FT_Get_Postscript_Name(self.0.as_ptr())
                 .as_ref()
                 .map(|ptr| CStr::from_ptr(ptr))
         }
     }
 
     pub fn get_sfnt_name_count(&self) -> u32 {
-        unsafe { sys::FT_Get_Sfnt_Name_Count(self.0) as u32 }
+        unsafe { sys::FT_Get_Sfnt_Name_Count(self.0.as_ptr()) as u32 }
     }
 
     pub fn get_sfnt_name(&self, idx: u32) -> Result<SfntName, Error> {
         let mut name = sys::FT_SfntName::default();
-        let err = unsafe { sys::FT_Get_Sfnt_Name(self.0, idx as libc::c_uint, &mut name) };
+        let err = unsafe { sys::FT_Get_Sfnt_Name(self.0.as_ptr(), idx as libc::c_uint, &mut name) };
         Error::or_else(err, || SfntName::from(name))
     }
 
     pub fn load_glyph(&mut self, index: u32, flags: LoadFlags) -> Result<(), Error> {
-        let err = unsafe { sys::FT_Load_Glyph(self.0, index as libc::c_uint, flags.as_i32()) };
+        let err =
+            unsafe { sys::FT_Load_Glyph(self.0.as_ptr(), index as libc::c_uint, flags.as_i32()) };
         Error::or_else(err, || ())
     }
 
     pub fn get_sfnt_table(&self, tag: SfntTag) -> Option<NonNull<()>> {
-        NonNull::new(unsafe { sys::FT_Get_Sfnt_Table(self.0, tag) })
+        NonNull::new(unsafe { sys::FT_Get_Sfnt_Table(self.0.as_ptr(), tag) })
     }
 
     pub fn load_sfnt_table(&self, tag: TableTag) -> Result<Vec<u8>, Error> {
         let mut len = 0;
         let err = unsafe {
             sys::FT_Load_Sfnt_Table(
-                self.0,
+                self.0.as_ptr(),
                 tag.as_u32() as libc::c_ulong,
                 0,
                 ptr::null_mut(),
@@ -383,7 +390,7 @@ impl Face {
 
         let err = unsafe {
             sys::FT_Load_Sfnt_Table(
-                self.0,
+                self.0.as_ptr(),
                 tag.as_u32() as libc::c_ulong,
                 0,
                 buf.as_mut_ptr().cast(),
@@ -400,13 +407,13 @@ impl Face {
         oa.memory_base = stream.as_mut_ptr().cast();
         oa.memory_size = stream.len() as libc::c_long;
         self.1.push(stream);
-        let err = unsafe { sys::FT_Attach_Stream(self.0, &mut oa) };
+        let err = unsafe { sys::FT_Attach_Stream(self.0.as_ptr(), &mut oa) };
         Error::or_else(err, || ())
     }
 }
 
 impl Drop for Face {
     fn drop(&mut self) {
-        unsafe { sys::FT_Done_Face(self.0) };
+        unsafe { sys::FT_Done_Face(self.0.as_ptr()) };
     }
 }
