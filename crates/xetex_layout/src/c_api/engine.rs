@@ -4,8 +4,8 @@ use crate::c_api::{
     XeTeXLayoutEngine,
 };
 use std::cell::Cell;
-use std::ffi::CStr;
-use std::{mem, ptr};
+use std::ffi::{CStr, CString};
+use std::{mem, ptr, slice};
 use tectonic_bridge_graphite2::{
     gr_breakBeforeWord, gr_breakNone, gr_breakWord, gr_cinfo_base, gr_cinfo_break_weight,
     gr_encform, gr_face_featureval_for_lang, gr_face_find_fref, gr_face_fref, gr_face_n_fref,
@@ -14,37 +14,26 @@ use tectonic_bridge_graphite2::{
     gr_seg_destroy, gr_seg_first_slot, gr_seg_last_slot, gr_segment, gr_slot, gr_slot_index,
     gr_slot_next_in_segment,
 };
-use tectonic_bridge_harfbuzz::sys::{
-    hb_buffer_add_utf16, hb_buffer_content_type_t, hb_buffer_create, hb_buffer_destroy,
-    hb_buffer_get_glyph_infos, hb_buffer_get_glyph_positions, hb_buffer_get_length,
-    hb_buffer_get_script, hb_buffer_get_segment_properties, hb_buffer_guess_segment_properties,
-    hb_buffer_reset, hb_buffer_set_content_type, hb_buffer_set_direction, hb_buffer_set_language,
-    hb_buffer_set_script, hb_buffer_t, hb_direction_t, hb_feature_t, hb_font_get_face,
-    hb_font_get_ptem, hb_font_t, hb_graphite2_face_get_gr_face, hb_language_from_string,
-    hb_language_t, hb_language_to_string, hb_ot_math_has_data, hb_ot_tag_to_language,
-    hb_ot_tag_to_script, hb_script_get_horizontal_direction, hb_segment_properties_t,
-    hb_shape_plan_create, hb_shape_plan_create_cached, hb_shape_plan_destroy,
-    hb_shape_plan_execute, hb_shape_plan_get_shaper, hb_tag_from_string, hb_tag_t,
-};
+use tectonic_bridge_harfbuzz as hb;
+use tectonic_bridge_harfbuzz::sys::{hb_font_t, hb_tag_t};
 use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
 #[repr(C)]
 pub struct XeTeXLayoutEngineBase {
     font: *mut XeTeXFontBase,
-    script: hb_tag_t,
-    language: hb_language_t,
-    features: *const hb_feature_t,
+    script: hb::Tag,
+    language: &'static hb::Language,
+    features: &'static [hb::Feature],
     /// the requested shapers
     shaper_list: *mut *const libc::c_char,
     shaper_list_to_free: bool,
     /// the actually used shaper
     shaper: *mut libc::c_char,
-    n_features: libc::c_int,
     rgb_value: u32,
     extend: f32,
     slant: f32,
     embolden: f32,
-    hb_buffer: *mut hb_buffer_t,
+    hb_buffer: hb::OwnBuffer,
 }
 
 impl XeTeXLayoutEngineBase {
@@ -54,7 +43,7 @@ impl XeTeXLayoutEngineBase {
         font: XeTeXFont,
         script: hb_tag_t,
         language: *mut libc::c_char,
-        features: *mut hb_feature_t,
+        features: *mut hb::Feature,
         n_features: libc::c_int,
         shapers: *mut *const libc::c_char,
         rgb_value: u32,
@@ -62,30 +51,29 @@ impl XeTeXLayoutEngineBase {
         slant: f32,
         embolden: f32,
     ) -> XeTeXLayoutEngine {
+        let language = CString::from_raw(language);
+        let features = slice::from_raw_parts(features, n_features as usize);
         let this = Box::new(XeTeXLayoutEngineBase {
             font,
-            script,
+            script: hb::Tag::new(script),
             // For Graphite fonts treat the language as BCP 47 tag, for OpenType we
             // treat it as a OT language tag for backward compatibility with pre-0.9999
             // XeTeX.
             language: if getReqEngine() as u8 == b'G' {
-                hb_language_from_string(language, -1)
+                hb::Language::from_cstr(&language)
             } else {
-                hb_ot_tag_to_language(hb_tag_from_string(language, -1))
+                hb::Tag::from_cstr(&language).to_language()
             },
             features,
             shaper_list: shapers,
             shaper_list_to_free: false,
             shaper: ptr::null_mut(),
-            n_features,
             rgb_value,
             extend,
             slant,
             embolden,
-            hb_buffer: hb_buffer_create(),
+            hb_buffer: hb::OwnBuffer::new(),
         });
-
-        libc::free(language.cast());
 
         Box::into_raw(this)
     }
@@ -93,7 +81,6 @@ impl XeTeXLayoutEngineBase {
     #[no_mangle]
     pub unsafe extern "C" fn deleteLayoutEngine(this: XeTeXLayoutEngine) {
         let this = &mut *this;
-        hb_buffer_destroy(this.hb_buffer);
         deleteFont(this.font);
         libc::free(this.shaper.cast());
         if this.shaper_list_to_free {
@@ -151,8 +138,8 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn getDefaultDirection(engine: XeTeXLayoutEngine) -> libc::c_int {
-        let script = hb_buffer_get_script((*engine).hb_buffer);
-        if hb_script_get_horizontal_direction(script) == hb_direction_t::Rtl {
+        let script = (*engine).hb_buffer.get_script();
+        if script.get_horizontal_direction() == hb::Direction::Rtl {
             UBIDI_DEFAULT_RTL as libc::c_int
         } else {
             UBIDI_DEFAULT_LTR as libc::c_int
@@ -259,12 +246,12 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn isOpenTypeMathFont(engine: XeTeXLayoutEngine) -> bool {
-        hb_ot_math_has_data((*engine).font().get_hb_font().get_face()) != 0
+        (*engine).font().get_hb_font().get_face().has_ot_math_data()
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn ttxl_get_hb_font(engine: XeTeXLayoutEngine) -> *mut hb_font_t {
-        (*engine).font().get_hb_font()
+        (*engine).font().get_hb_font().as_ptr()
     }
 
     #[no_mangle]
@@ -276,21 +263,22 @@ impl XeTeXLayoutEngineBase {
         max: i32,
         rtl: bool,
     ) -> libc::c_int {
+        let chars = slice::from_raw_parts(chars, max as usize);
         let engine = &mut *engine;
 
-        let hb_font = engine.font().get_hb_font();
-        let hb_face = hb_font_get_face(hb_font);
+        let hb_font = (*engine.font).get_hb_font();
+        let hb_face = hb_font.get_face();
 
-        let direction = if engine.font().layout_dir_vertical() {
-            hb_direction_t::Ttb
+        let direction = if (*engine.font).layout_dir_vertical() {
+            hb::Direction::Ttb
         } else if rtl {
-            hb_direction_t::Rtl
+            hb::Direction::Rtl
         } else {
-            hb_direction_t::Ltr
+            hb::Direction::Ltr
         };
 
-        let script = hb_ot_tag_to_script(engine.script);
-        hb_buffer_reset(engine.hb_buffer);
+        let script = engine.script.to_script();
+        engine.hb_buffer.reset();
         // TODO: figure out cfg for harfbuzz versions below 2.5
         // if hb_version_atleast(2, 5, 0) == 0 {
         //     #[derive(Copy, Clone)]
@@ -328,14 +316,15 @@ impl XeTeXLayoutEngineBase {
         //     hb_buffer_set_unicode_funcs(engine.hb_buffer, funcs.0);
         // }
 
-        hb_buffer_add_utf16(engine.hb_buffer, chars, max, offset as libc::c_uint, count);
-        hb_buffer_set_direction(engine.hb_buffer, direction);
-        hb_buffer_set_script(engine.hb_buffer, script);
-        hb_buffer_set_language(engine.hb_buffer, engine.language);
+        engine
+            .hb_buffer
+            .add_utf16(chars, offset as usize, count as usize);
+        engine.hb_buffer.set_direction(direction);
+        engine.hb_buffer.set_script(script);
+        engine.hb_buffer.set_language(engine.language);
 
-        hb_buffer_guess_segment_properties(engine.hb_buffer);
-        let mut segment_props = hb_segment_properties_t::default();
-        hb_buffer_get_segment_properties(engine.hb_buffer, &mut segment_props);
+        engine.hb_buffer.guess_segment_properties();
+        let segment_props = engine.hb_buffer.get_segment_properties();
 
         if engine.shaper_list.is_null() {
             // HarfBuzz gives graphite2 shaper a priority, so that for hybrid
@@ -349,59 +338,42 @@ impl XeTeXLayoutEngineBase {
             engine.shaper_list_to_free = true;
         }
 
-        let mut shape_plan = hb_shape_plan_create_cached(
+        let mut shape_plan = hb::OwnShapePlan::new_cached(
             hb_face,
             &segment_props,
             engine.features,
-            engine.n_features as libc::c_uint,
             engine.shaper_list,
         );
-        let res = hb_shape_plan_execute(
-            shape_plan,
-            hb_font,
-            engine.hb_buffer,
-            engine.features,
-            engine.n_features as libc::c_uint,
-        );
+        let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
 
         if !engine.shaper.is_null() {
             libc::free(engine.shaper.cast());
             engine.shaper = ptr::null_mut();
         }
 
-        if res != 0 {
-            engine.shaper = libc::strdup(hb_shape_plan_get_shaper(shape_plan));
-            hb_buffer_set_content_type(engine.hb_buffer, hb_buffer_content_type_t::Glyphs);
+        if res {
+            engine.shaper = libc::strdup(shape_plan.get_shaper().as_ptr());
+            engine
+                .hb_buffer
+                .set_content_type(hb::BufferContentType::Glyphs);
         } else {
             // all selected shapers failed, retrying with default
             // we don't use _cached here as the cached plain will always fail.
-            hb_shape_plan_destroy(shape_plan);
-            shape_plan = hb_shape_plan_create(
-                hb_face,
-                &segment_props,
-                engine.features,
-                engine.n_features as libc::c_uint,
-                ptr::null_mut(),
-            );
-            let res = hb_shape_plan_execute(
-                shape_plan,
-                hb_font,
-                engine.hb_buffer,
-                engine.features,
-                engine.n_features as libc::c_uint,
-            );
+            shape_plan =
+                hb::OwnShapePlan::new(hb_face, &segment_props, engine.features, ptr::null_mut());
+            let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
 
-            if res != 0 {
-                engine.shaper = libc::strdup(hb_shape_plan_get_shaper(shape_plan));
-                hb_buffer_set_content_type(engine.hb_buffer, hb_buffer_content_type_t::Glyphs);
+            if res {
+                engine.shaper = libc::strdup(shape_plan.get_shaper().as_ptr());
+                engine
+                    .hb_buffer
+                    .set_content_type(hb::BufferContentType::Glyphs);
             } else {
                 panic!("all shapers failed");
             }
         }
 
-        hb_shape_plan_destroy(shape_plan);
-
-        let glyph_count = hb_buffer_get_length(engine.hb_buffer);
+        let glyph_count = engine.hb_buffer.len();
 
         #[cfg(feature = "debug")]
         {
@@ -453,24 +425,22 @@ pub unsafe extern "C" fn getFontFilename(
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) {
-    let glyph_count = hb_buffer_get_length((*engine).hb_buffer);
-    let hb_glyphs = hb_buffer_get_glyph_infos((*engine).hb_buffer, ptr::null_mut());
+    let hb_glyphs = (*engine).hb_buffer.get_glyph_info();
 
-    for i in 0..glyph_count as usize {
-        *glyphs.add(i) = (*hb_glyphs.add(i)).codepoint;
+    for (idx, glyph) in hb_glyphs.iter().enumerate() {
+        *glyphs.add(idx) = glyph.codepoint;
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32) {
-    let glyph_count = hb_buffer_get_length((*engine).hb_buffer);
-    let hb_positions = hb_buffer_get_glyph_positions((*engine).hb_buffer, ptr::null_mut());
+    let hb_positions = (*engine).hb_buffer.get_glyph_position();
 
-    for i in 0..glyph_count as usize {
+    for (i, pos) in hb_positions.iter().enumerate() {
         let advance = if (*engine).font().layout_dir_vertical() {
-            (*hb_positions.add(i)).y_advance
+            pos.y_advance
         } else {
-            (*hb_positions.add(i)).x_advance
+            pos.x_advance
         };
 
         *advances.add(i) = (*engine).font().units_to_points(advance as f64) as f32;
@@ -479,40 +449,35 @@ pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint) {
-    let glyph_count = hb_buffer_get_length((*engine).hb_buffer);
-    let hb_positions = hb_buffer_get_glyph_positions((*engine).hb_buffer, ptr::null_mut());
+    let hb_positions = (*engine).hb_buffer.get_glyph_position();
 
     let mut x: f32 = 0.0;
     let mut y: f32 = 0.0;
     let font = (*engine).font();
 
     if font.layout_dir_vertical() {
-        for i in 0..glyph_count as usize {
-            let pos = &*hb_positions.add(i);
-
+        for (i, pos) in hb_positions.iter().enumerate() {
             (*positions.add(i)).x = -font.units_to_points((x + pos.y_offset as f32) as f64) as f32;
             (*positions.add(i)).y = font.units_to_points((y - pos.x_offset as f32) as f64) as f32;
             x += pos.y_advance as f32;
             y += pos.x_advance as f32;
         }
 
-        (*positions.add(glyph_count as usize)).x = -font.units_to_points(x as f64) as f32;
-        (*positions.add(glyph_count as usize)).y = font.units_to_points(y as f64) as f32;
+        (*positions.add(hb_positions.len())).x = -font.units_to_points(x as f64) as f32;
+        (*positions.add(hb_positions.len())).y = font.units_to_points(y as f64) as f32;
     } else {
-        for i in 0..glyph_count as usize {
-            let pos = &*hb_positions.add(i);
-
+        for (i, pos) in hb_positions.iter().enumerate() {
             (*positions.add(i)).x = font.units_to_points((x + pos.x_offset as f32) as f64) as f32;
             (*positions.add(i)).y = -font.units_to_points((y + pos.y_offset as f32) as f64) as f32; /* negative is upwards */
             x += pos.x_advance as f32;
             y += pos.y_advance as f32;
         }
-        (*positions.add(glyph_count as usize)).x = font.units_to_points(x as f64) as f32;
-        (*positions.add(glyph_count as usize)).y = -font.units_to_points(y as f64) as f32;
+        (*positions.add(hb_positions.len())).x = font.units_to_points(x as f64) as f32;
+        (*positions.add(hb_positions.len())).y = -font.units_to_points(y as f64) as f32;
     }
 
     if (*engine).extend != 1.0 || (*engine).slant != 0.0 {
-        for i in 0..=glyph_count as usize {
+        for i in 0..=hb_positions.len() {
             let pos = &mut *positions.add(i);
             pos.x = pos.x * (*engine).extend - pos.y * (*engine).slant;
         }
@@ -521,8 +486,8 @@ pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions:
 
 #[no_mangle]
 pub unsafe extern "C" fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32 {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if gr_face.is_null() {
         0
@@ -533,8 +498,8 @@ pub unsafe extern "C" fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32
 
 #[no_mangle]
 pub unsafe extern "C" fn getGraphiteFeatureCode(engine: XeTeXLayoutEngine, index: u32) -> u32 {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_fref(gr_face, index as u16);
@@ -549,8 +514,8 @@ pub unsafe extern "C" fn countGraphiteFeatureSettings(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> u32 {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_find_fref(gr_face, feature_id);
@@ -566,8 +531,8 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingCode(
     feature_id: u32,
     index: u32,
 ) -> u32 {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_find_fref(gr_face, feature_id);
@@ -577,23 +542,20 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingCode(
     }
 }
 
-unsafe fn tag_from_lang(lang: hb_language_t) -> u32 {
-    let str = hb_language_to_string(lang);
-    hb_tag_from_string(str, libc::strlen(str) as libc::c_int)
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn getGraphiteFeatureDefaultSetting(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> u32 {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_find_fref(gr_face, feature_id);
-        let feature_values =
-            gr_face_featureval_for_lang(gr_face, tag_from_lang((*engine).language));
+        let feature_values = gr_face_featureval_for_lang(
+            gr_face,
+            hb::Tag::from_cstr((*engine).language.to_string()).to_raw(),
+        );
 
         gr_fref_feature_value(feature, feature_values) as u32
     } else {
@@ -606,8 +568,8 @@ pub unsafe extern "C" fn getGraphiteFeatureLabel(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> *const libc::c_char {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_find_fref(gr_face, feature_id);
@@ -626,8 +588,8 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingLabel(
     feature_id: u32,
     setting_id: u32,
 ) -> *const libc::c_char {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_find_fref(gr_face, feature_id);
@@ -697,8 +659,8 @@ pub unsafe extern "C" fn findGraphiteFeatureNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         for i in 0..gr_face_n_fref(gr_face) {
@@ -728,8 +690,8 @@ pub unsafe extern "C" fn findGraphiteFeatureSettingNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
-    let hb_face = hb_font_get_face((*engine).font().get_hb_font());
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
+    let hb_face = (*engine).font().get_hb_font().get_face();
+    let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_find_fref(gr_face, id);
@@ -766,9 +728,9 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     txt_len: libc::c_uint,
 ) -> bool {
     let hb_font = (*engine).font().get_hb_font();
-    let hb_face = hb_font_get_face(hb_font);
-    let gr_face = hb_graphite2_face_get_gr_face(hb_face);
-    let gr_font = gr_make_font(hb_font_get_ptem(hb_font), gr_face);
+    let hb_face = hb_font.get_face();
+    let gr_face = hb_face.get_gr_face();
+    let gr_font = gr_make_font(hb_font.get_ptem(), gr_face);
 
     if !gr_face.is_null() && !gr_font.is_null() {
         let gr_seg = GR_SEGMENT.get();
@@ -779,21 +741,23 @@ pub unsafe extern "C" fn initGraphiteBreaking(
             GR_PREV_SLOT.set(ptr::null());
         }
 
-        let gr_feature_values =
-            gr_face_featureval_for_lang(gr_face, tag_from_lang((*engine).language));
+        let gr_feature_values = gr_face_featureval_for_lang(
+            gr_face,
+            hb::Tag::from_cstr((*engine).language.to_string()).to_raw(),
+        );
 
         let features = (*engine).features;
-        for i in (0..(*engine).n_features as usize).rev() {
-            let fref = gr_face_find_fref(gr_face, (*features.add(i)).tag);
+        for i in (0..(*engine).features.len()).rev() {
+            let fref = gr_face_find_fref(gr_face, features[i].tag);
             if !fref.is_null() {
-                gr_fref_set_feature_value(fref, (*features.add(i)).value as u16, gr_feature_values);
+                gr_fref_set_feature_value(fref, features[i].value as u16, gr_feature_values);
             }
         }
 
         GR_SEGMENT.set(gr_make_seg(
             gr_font,
             gr_face,
-            (*engine).script,
+            (*engine).script.to_raw(),
             gr_feature_values,
             gr_encform::utf16,
             txt_ptr.cast(),
