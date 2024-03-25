@@ -511,6 +511,8 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
         char* tmpShapers[] = {shapers[0]};
         /* create a default engine so we can query the font for Graphite features;
          * because of font caching, it's cheap to discard this and create the real one later */
+        // TODO: this engine is never dropped, but doing so would invalidate `font`
+        //        language is always NULL here
         engine = createLayoutEngine(fontRef, font, script, language,
                 features, nFeatures, tmpShapers, rgbValue, extend, slant, embolden);
 
@@ -1293,7 +1295,7 @@ make_font_def(int32_t f)
         cp += 4;
     }
 
-    free((char*) filename);
+    freeFontFilename((char*) filename);
 
     return fontDefLength;
 }
