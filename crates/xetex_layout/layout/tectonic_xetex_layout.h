@@ -1,59 +1,263 @@
-/****************************************************************************\
- Part of the XeTeX typesetting system
- Copyright (c) 1994-2008 by SIL International
- Copyright (c) 2009 by Jonathan Kew
- Copyright (c) 2012-2015 by Khaled Hosny
+#ifndef XETEX_LAYOUT_BINDINGS_H
+#define XETEX_LAYOUT_BINDINGS_H
 
- SIL Author(s): Jonathan Kew
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include "harfbuzz/hb.h"
+#include "harfbuzz/hb-ft.h"
+#ifdef XETEX_MAC
+#include <ApplicationServices/ApplicationServices.h>
+#else
+#include <fontconfig/fontconfig.h>
+#endif
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+typedef struct XeTeXFont_rec* XeTeXFont;
+typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
+#define LEFT_SIDE 0
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE
-FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#define RIGHT_SIDE 1
 
-Except as contained in this notice, the name of the copyright holders
-shall not be used in advertising or otherwise to promote the sale,
-use or other dealings in this Software without prior written
-authorization from the copyright holders.
-\****************************************************************************/
+#if !defined(XETEX_MAC)
+#define FONT_FAMILY_NAME 1
+#endif
 
-/* Formerly known as [xetex-]XeTeXLayoutInterface.h */
+#if !defined(XETEX_MAC)
+#define FONT_STYLE_NAME 2
+#endif
 
-#ifndef XETEX_LAYOUT_INTERFACE_H
-#define XETEX_LAYOUT_INTERFACE_H 1
+#if !defined(XETEX_MAC)
+#define FONT_FULL_NAME 4
+#endif
 
-#include "tectonic_bridge_core.h"
-#include "layout_bindings.h"
+#if !defined(XETEX_MAC)
+#define PREFERRED_FAMILY_NAME 16
+#endif
 
-/* Set up our types */
+#if !defined(XETEX_MAC)
+#define PREFERRED_SUBFAMILY_NAME 17
+#endif
 
-//#ifdef XETEX_MAC
-//
-//#include <ApplicationServices/ApplicationServices.h>
-//typedef CTFontDescriptorRef PlatformFontRef;
-//
-//#else /* XETEX_MAC */
-//
-//#include <fontconfig/fontconfig.h>
-//typedef FcPattern* PlatformFontRef;
-//typedef int32_t Fixed; /* macOS defines Fixed in system headers */
-//
-//#endif /* XETEX_MAC */
+#if !defined(XETEX_MAC)
+typedef int32_t Fixed;
+#endif
 
-typedef uint16_t GlyphID;
+typedef struct {
+  float xMin;
+  float yMin;
+  float xMax;
+  float yMax;
+} GlyphBBox;
 
-#endif /* XETEX_LAYOUT_INTERFACE_H */
+#if !defined(XETEX_MAC)
+typedef FcPattern *RawPlatformFontRef;
+#endif
+
+#if defined(XETEX_MAC)
+typedef CTFontDescriptorRef RawPlatformFontRef;
+#endif
+
+typedef struct {
+  float x;
+  float y;
+} FloatPoint;
+
+typedef uint32_t OTTag;
+
+#ifdef __cplusplus
+extern "C" {
+#endif // __cplusplus
+
+double RsFix2D(Fixed f);
+
+Fixed RsD2Fix(double d);
+
+int32_t getCachedGlyphBBox(uint16_t font_id, uint16_t glyph_id, GlyphBBox *bbox);
+
+void cacheGlyphBBox(uint16_t font_id, uint16_t glyph_id, const GlyphBBox *bbox);
+
+void set_cp_code(int32_t font_num, uint32_t code, int32_t side, int32_t value);
+
+int32_t get_cp_code(int32_t font_num, uint32_t code, int32_t side);
+
+XeTeXLayoutEngine createLayoutEngine(RawPlatformFontRef _font_ref,
+                                     XeTeXFont font,
+                                     hb_tag_t script,
+                                     char *language,
+                                     hb_feature_t *features,
+                                     int n_features,
+                                     const char **shapers,
+                                     uint32_t rgb_value,
+                                     float extend,
+                                     float slant,
+                                     float embolden);
+
+void deleteLayoutEngine(XeTeXLayoutEngine this_);
+
+XeTeXFont getFont(XeTeXLayoutEngine engine);
+
+float getExtendFactor(XeTeXLayoutEngine engine);
+
+float getSlantFactor(XeTeXLayoutEngine engine);
+
+float getEmboldenFactor(XeTeXLayoutEngine engine);
+
+float getPointSize(XeTeXLayoutEngine engine);
+
+void getAscentAndDescent(XeTeXLayoutEngine engine, float *ascent, float *descent);
+
+void getCapAndXHeight(XeTeXLayoutEngine engine, float *capheight, float *xheight);
+
+int getDefaultDirection(XeTeXLayoutEngine engine);
+
+uint32_t getRgbValue(XeTeXLayoutEngine engine);
+
+void getGlyphBounds(XeTeXLayoutEngine engine, uint32_t glyph_id, GlyphBBox *bbox);
+
+float getGlyphWidthFromEngine(XeTeXLayoutEngine engine, uint32_t glyph_id);
+
+void getGlyphHeightDepth(XeTeXLayoutEngine engine, uint32_t glyph_id, float *height, float *depth);
+
+void getGlyphSidebearings(XeTeXLayoutEngine engine, uint32_t glyph_id, float *lsb, float *rsb);
+
+float getGlyphItalCorr(XeTeXLayoutEngine engine, uint32_t glyph_id);
+
+uint32_t mapCharToGlyph(XeTeXLayoutEngine engine, uint32_t char_code);
+
+int getFontCharRange(XeTeXLayoutEngine engine, int req_first);
+
+int mapGlyphToIndex(XeTeXLayoutEngine engine, const char *glyph_name);
+
+bool usingGraphite(XeTeXLayoutEngine engine);
+
+bool usingOpenType(XeTeXLayoutEngine engine);
+
+bool isOpenTypeMathFont(XeTeXLayoutEngine engine);
+
+hb_font_t *ttxl_get_hb_font(XeTeXLayoutEngine engine);
+
+int layoutChars(XeTeXLayoutEngine engine,
+                uint16_t *chars,
+                int32_t offset,
+                int32_t count,
+                int32_t max,
+                bool rtl);
+
+const char *getFontFilename(XeTeXLayoutEngine engine, uint32_t *index);
+
+void freeFontFilename(const char *filename);
+
+void getGlyphs(XeTeXLayoutEngine engine, uint32_t *glyphs);
+
+void getGlyphAdvances(XeTeXLayoutEngine engine, float *advances);
+
+void getGlyphPositions(XeTeXLayoutEngine engine, FloatPoint *positions);
+
+uint32_t countGraphiteFeatures(XeTeXLayoutEngine engine);
+
+uint32_t getGraphiteFeatureCode(XeTeXLayoutEngine engine, uint32_t index);
+
+uint32_t countGraphiteFeatureSettings(XeTeXLayoutEngine engine, uint32_t feature_id);
+
+uint32_t getGraphiteFeatureSettingCode(XeTeXLayoutEngine engine,
+                                       uint32_t feature_id,
+                                       uint32_t index);
+
+uint32_t getGraphiteFeatureDefaultSetting(XeTeXLayoutEngine engine, uint32_t feature_id);
+
+const char *getGraphiteFeatureLabel(XeTeXLayoutEngine engine, uint32_t feature_id);
+
+const char *getGraphiteFeatureSettingLabel(XeTeXLayoutEngine engine,
+                                           uint32_t feature_id,
+                                           uint32_t setting_id);
+
+bool findGraphiteFeature(XeTeXLayoutEngine engine,
+                         const char *s,
+                         const char *e,
+                         hb_tag_t *f,
+                         int *v);
+
+long findGraphiteFeatureNamed(XeTeXLayoutEngine engine, const char *name, int namelength);
+
+long findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine,
+                                     uint32_t id,
+                                     const char *name,
+                                     int namelength);
+
+bool initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t *txt_ptr, unsigned int txt_len);
+
+int findNextGraphiteBreak(void);
+
+XeTeXFont createFont(RawPlatformFontRef font_ref, Fixed point_size);
+
+XeTeXFont createFontFromFile(const char *filename, int index, Fixed point_size);
+
+void deleteFont(XeTeXFont font);
+
+unsigned int countScripts(XeTeXFont font);
+
+unsigned int countLanguages(XeTeXFont font, hb_tag_t script);
+
+unsigned int countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language);
+
+bool hasFontTable(XeTeXFont font, OTTag table_tag);
+
+Fixed getSlant(XeTeXFont font);
+
+unsigned int countGlyphs(XeTeXFont font);
+
+float getGlyphWidth(XeTeXFont font, uint32_t gid);
+
+void setFontLayoutDir(XeTeXFont font, int vertical);
+
+hb_tag_t getIndScript(XeTeXFont font, unsigned int index);
+
+hb_tag_t getIndLanguage(XeTeXFont font, hb_tag_t script, unsigned int index);
+
+hb_tag_t getIndFeature(XeTeXFont font, hb_tag_t script, hb_tag_t language, unsigned int index);
+
+const char *getGlyphName(XeTeXFont font, uint16_t gid, int *len);
+
+void freeGlyphName(char *name);
+
+float ttxl_font_units_to_points(XeTeXFont font, float units);
+
+float ttxl_font_points_to_units(XeTeXFont font, float points);
+
+float ttxl_font_get_point_size(XeTeXFont font);
+
+#if defined(XETEX_MAC)
+const char *getNameFromCTFont(CTFontRef ct_font_ref, CFStringRef name_key);
+#endif
+
+#if defined(XETEX_MAC)
+const char *getFileNameFromCTFont(CTFontRef ct_font_ref, uint32_t *index);
+#endif
+
+Fixed get_loaded_font_design_size(void);
+
+void set_loaded_font_design_size(Fixed val);
+
+void terminate_font_manager(void);
+
+void destroy_font_manager(void);
+
+RawPlatformFontRef findFontByName(const char *name, char *var, double size);
+
+char getReqEngine(void);
+
+void setReqEngine(char engine);
+
+const char *getFullName(RawPlatformFontRef font);
+
+double getDesignSize(XeTeXFont font);
+
+const char *ttxl_platfont_get_desc(RawPlatformFontRef font);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif // __cplusplus
+
+#endif /* XETEX_LAYOUT_BINDINGS_H */
