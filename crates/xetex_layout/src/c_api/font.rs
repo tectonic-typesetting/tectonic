@@ -10,9 +10,8 @@ use crate::c_api::mac_core::{
     CTFontDescriptorRef, CTFontRef,
 };
 use crate::c_api::{
-    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, xcalloc,
-    Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef, RsD2Fix, RsFix2D,
-    XeTeXFont,
+    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, Fixed,
+    GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef, RsD2Fix, RsFix2D, XeTeXFont,
 };
 use std::cell::RefCell;
 use std::convert::TryInto;
@@ -21,16 +20,13 @@ use std::mem::MaybeUninit;
 use std::ptr::NonNull;
 use std::rc::Rc;
 use std::sync::OnceLock;
-use std::{mem, ptr, slice};
+use std::{ptr, slice};
 use tectonic_bridge_core::FileFormat;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
 use tectonic_bridge_harfbuzz::sys::{
-    hb_blob_create, hb_blob_t, hb_bool_t, hb_codepoint_t, hb_face_t, hb_font_destroy,
-    hb_font_get_face, hb_font_t, hb_glyph_extents_t, hb_memory_mode_t,
-    hb_ot_layout_language_get_feature_tags, hb_ot_layout_script_get_language_tags,
-    hb_ot_layout_script_select_language, hb_ot_layout_table_find_script,
-    hb_ot_layout_table_get_script_tags, hb_position_t, hb_tag_t, HB_OT_TAG_GPOS, HB_OT_TAG_GSUB,
+    hb_blob_create, hb_blob_t, hb_bool_t, hb_codepoint_t, hb_face_t, hb_font_t, hb_glyph_extents_t,
+    hb_memory_mode_t, hb_position_t, hb_tag_t,
 };
 use tectonic_bridge_icu::UChar32;
 
@@ -222,8 +218,8 @@ pub unsafe extern "C" fn _get_glyph_contour_point(
         && face.glyph().format() == ft::GlyphFormat::Outline
         && point_index < (face.glyph().outline().n_points as u32)
     {
-        *x = (*face.glyph().outline().points.add(point_index as usize)).x as hb_position_t;
-        *y = (*face.glyph().outline().points.add(point_index as usize)).y as hb_position_t;
+        *x = face.glyph().outline().points()[point_index as usize].x as hb_position_t;
+        *y = face.glyph().outline().points()[point_index as usize].y as hb_position_t;
         true
     } else {
         false
@@ -250,7 +246,7 @@ pub unsafe extern "C" fn _get_glyph_name(
     out as hb_bool_t
 }
 
-pub fn _get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
+pub fn get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
     static FONTS: OnceLock<hb::FontFuncs<Rc<RefCell<ft::Face>>>> = OnceLock::new();
 
     FONTS
@@ -325,10 +321,8 @@ pub fn _get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
                     && face.glyph().format() == ft::GlyphFormat::Outline
                     && point_index < (face.glyph().outline().n_points as u32)
                 {
-                    let x =
-                        (*face.glyph().outline().points()[point_index as usize]).x as hb::Position;
-                    let y =
-                        (*face.glyph().outline().points()[point_index as usize]).y as hb::Position;
+                    let x = face.glyph().outline().points()[point_index as usize].x as hb::Position;
+                    let y = face.glyph().outline().points()[point_index as usize].y as hb::Position;
                     Some((x, y))
                 } else {
                     None
@@ -409,84 +403,39 @@ pub unsafe extern "C" fn deleteFont(font: XeTeXFont) {
     let _ = Box::from_raw(font);
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn getLargerScriptListTable(
-    font: XeTeXFont,
-    script_list: *mut *mut hb_tag_t,
-) -> libc::c_uint {
-    let face = (*font).get_hb_font().get_face();
+pub fn get_larger_script_list_table(font: &XeTeXFontBase) -> Vec<hb::Tag> {
+    let face = font.get_hb_font().get_face();
 
-    let mut script_count_sub = hb_ot_layout_table_get_script_tags(
-        face,
-        HB_OT_TAG_GSUB,
-        0,
-        ptr::null_mut(),
-        ptr::null_mut(),
-    );
-    let sl_sub = xcalloc(script_count_sub as usize, mem::size_of::<*mut hb_tag_t>()).cast();
-    hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GSUB, 0, &mut script_count_sub, sl_sub);
+    let sl_sub = face.get_ot_layout_script_tags(hb::GTag::GSub);
+    let sl_pos = face.get_ot_layout_script_tags(hb::GTag::GPos);
 
-    let mut script_count_pos = hb_ot_layout_table_get_script_tags(
-        face,
-        HB_OT_TAG_GPOS,
-        0,
-        ptr::null_mut(),
-        ptr::null_mut(),
-    );
-    let sl_pos = xcalloc(script_count_pos as usize, mem::size_of::<*mut hb_tag_t>()).cast();
-    hb_ot_layout_table_get_script_tags(face, HB_OT_TAG_GPOS, 0, &mut script_count_pos, sl_pos);
-
-    if script_count_sub > script_count_pos {
-        if !script_list.is_null() {
-            *script_list = sl_sub;
-        }
-        script_count_sub
+    if sl_sub.len() > sl_pos.len() {
+        sl_sub
     } else {
-        if !script_list.is_null() {
-            *script_list = sl_pos;
-        }
-        script_count_pos
+        sl_pos
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn countScripts(font: XeTeXFont) -> libc::c_uint {
-    getLargerScriptListTable(font, ptr::null_mut())
+    get_larger_script_list_table(&*font).len() as libc::c_uint
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn countLanguages(font: XeTeXFont, script: hb_tag_t) -> libc::c_uint {
-    let mut rval = 0;
-
     let face = (*font).get_hb_font().get_face();
 
-    let mut script_list = ptr::null_mut();
-    let count = getLargerScriptListTable(font, &mut script_list);
-    if !script_list.is_null() {
-        for i in 0..count {
-            if *script_list.add(i as usize) == script {
-                rval += hb_ot_layout_script_get_language_tags(
-                    face,
-                    HB_OT_TAG_GSUB,
-                    i,
-                    0,
-                    ptr::null_mut(),
-                    ptr::null_mut(),
-                );
-                rval += hb_ot_layout_script_get_language_tags(
-                    face,
-                    HB_OT_TAG_GPOS,
-                    i,
-                    0,
-                    ptr::null_mut(),
-                    ptr::null_mut(),
-                );
-                break;
-            }
+    let script_list = get_larger_script_list_table(&*font);
+    let mut rval = 0;
+    for (i, script_i) in script_list.iter().enumerate() {
+        if script_i.to_raw() == script {
+            rval += face.get_ot_layout_script_language_tags_len(hb::GTag::GSub, i);
+            rval += face.get_ot_layout_script_language_tags_len(hb::GTag::GPos, i);
+            break;
         }
     }
 
-    rval
+    rval as libc::c_uint
 }
 
 #[no_mangle]
@@ -495,42 +444,29 @@ pub unsafe extern "C" fn countFeatures(
     script: hb_tag_t,
     language: hb_tag_t,
 ) -> libc::c_uint {
-    let mut rval = 0;
+    let script = hb::Tag::new(script);
+    let language = hb::Tag::new(language);
 
     let face = (*font).get_hb_font().get_face();
 
+    let mut rval = 0;
     for i in 0..2 {
-        let mut script_idx = 0;
-        let mut lang_idx = 0;
-
         let table_tag = if i == 0 {
-            HB_OT_TAG_GSUB
+            hb::GTag::GSub
         } else {
-            HB_OT_TAG_GPOS
+            hb::GTag::GPos
         };
-        if hb_ot_layout_table_find_script(face, table_tag, script, &mut script_idx) != 0
-            && (hb_ot_layout_script_select_language(
-                face,
-                table_tag,
-                script_idx,
-                1,
-                &language,
-                &mut lang_idx,
-            ) != 0
-                || language == 0)
-        {
-            rval += hb_ot_layout_language_get_feature_tags(
-                face,
-                table_tag,
-                script_idx,
-                lang_idx,
-                0,
-                ptr::null_mut(),
-                ptr::null_mut(),
-            );
+        if let Some(script_idx) = face.find_ot_layout_script(table_tag, script) {
+            let lang = face.select_ot_layout_language(table_tag, script_idx, &[language]);
+            let lang_idx = lang.unwrap_or(0);
+
+            if lang.is_ok() || language == hb::Tag::new(0) {
+                rval +=
+                    face.get_ot_layout_language_feature_tags_len(table_tag, script_idx, lang_idx);
+            }
         }
     }
-    rval
+    rval as libc::c_uint
 }
 
 enum FontKind {
@@ -556,8 +492,8 @@ pub struct XeTeXFontBase {
     index: u32,
 
     // Boxed to preserve address
-    ft_face: Option<Box<ft::Face>>,
-    hb_font: Option<hb::Font>,
+    ft_face: Option<Rc<RefCell<ft::Face>>>,
+    hb_font: Option<hb::OwnFont>,
 
     kind: FontKind,
 }
@@ -652,7 +588,7 @@ impl XeTeXFontBase {
         ttstub_input_close(handle);
 
         self.ft_face = match ft::Face::new_memory(backing_data, index as usize) {
-            Ok(face) => Some(Box::new(face)),
+            Ok(face) => Some(Rc::new(RefCell::new(face))),
             Err(_) => return 1,
         };
 
@@ -695,9 +631,12 @@ impl XeTeXFontBase {
 
         self.filename = pathname.to_owned();
         self.index = index as u32;
-        self.units_per_em = self.ft_face().units_per_em();
-        self.ascent = self.units_to_points(self.ft_face().ascender() as f64) as f32;
-        self.descent = self.units_to_points(self.ft_face().descender() as f64) as f32;
+        let upe = { self.ft_face().units_per_em() };
+        self.units_per_em = upe;
+        let a = { self.ft_face().ascender() } as f64;
+        self.ascent = self.units_to_points(a) as f32;
+        let d = { self.ft_face().descender() } as f64;
+        self.descent = self.units_to_points(d) as f32;
 
         let post_table = self.get_font_table(ft::SfntTag::Post);
         if let Some(table) = post_table {
@@ -713,8 +652,12 @@ impl XeTeXFontBase {
             self.x_height = self.units_to_points(table.sxHeight as f64) as f32;
         }
 
-        let mut hb_face = hb::Face::new_tables(|face, tag| {
-            if let Ok(mut table) = self.ft_face().load_sfnt_table(ft::TableTag::Other(tag)) {
+        let ft_face = Rc::clone(self.ft_face.as_ref().unwrap());
+        let mut hb_face = hb::OwnFace::new_tables(move |_, tag| {
+            if let Ok(table) = ft_face
+                .borrow()
+                .load_sfnt_table(ft::TableTag::Other(tag.to_raw()))
+            {
                 Some(hb::Blob::new(table))
             } else {
                 None
@@ -724,9 +667,9 @@ impl XeTeXFontBase {
         hb_face.set_index(self.index);
         hb_face.set_upem(self.units_per_em as u32);
 
-        let mut hb_font = hb::Font::new(hb_face);
+        let mut hb_font = hb::OwnFont::new(&hb_face);
 
-        hb_font.set_funcs(_get_font_funcs(), self.ft_face_mut());
+        hb_font.set_funcs(get_font_funcs(), Rc::clone(self.ft_face.as_ref().unwrap()));
         hb_font.set_scale(self.units_per_em as i32, self.units_per_em as i32);
         hb_font.set_ppem(0, 0);
 
@@ -805,11 +748,9 @@ impl XeTeXFontBase {
     #[no_mangle]
     pub unsafe extern "C" fn getIndScript(font: XeTeXFont, index: libc::c_uint) -> hb_tag_t {
         let mut rval = 0;
-        let mut script_list = ptr::null_mut();
-
-        let script_count = getLargerScriptListTable(font, &mut script_list);
-        if !script_list.is_null() && index < script_count {
-            rval = *script_list.add(index as usize);
+        let script_list = get_larger_script_list_table(&*font);
+        if (index as usize) < script_list.len() {
+            rval = script_list[index as usize].to_raw();
         }
 
         rval
@@ -821,65 +762,28 @@ impl XeTeXFontBase {
         script: hb_tag_t,
         index: libc::c_uint,
     ) -> hb_tag_t {
-        let mut rval = 0;
-        let face = hb_font_get_face((*font).get_hb_font());
-        let mut script_list = ptr::null_mut();
+        let index = index as usize;
+        let mut rval = hb::Tag::new(0);
+        let face = (*font).get_hb_font().get_face();
 
-        let script_count = getLargerScriptListTable(font, &mut script_list);
-        if !script_list.is_null() {
-            for i in 0..script_count {
-                if *script_list.add(i as usize) == script {
-                    let mut lang_count = hb_ot_layout_script_get_language_tags(
-                        face,
-                        HB_OT_TAG_GSUB,
-                        i,
-                        0,
-                        ptr::null_mut(),
-                        ptr::null_mut(),
-                    );
-                    let mut lang_list = vec![0, lang_count];
-                    hb_ot_layout_script_get_language_tags(
-                        face,
-                        HB_OT_TAG_GSUB,
-                        i,
-                        0,
-                        &mut lang_count,
-                        lang_list.as_mut_ptr(),
-                    );
+        let script_list = get_larger_script_list_table(&*font);
+        for (i, script_i) in script_list.iter().enumerate() {
+            if script_i.to_raw() == script {
+                let lang_list = face.get_ot_layout_script_language_tags(hb::GTag::GSub, i);
+                if index < lang_list.len() {
+                    rval = lang_list[index];
+                    break;
+                }
 
-                    if index < lang_count {
-                        rval = lang_list[index as usize];
-                        break;
-                    }
-
-                    lang_count = hb_ot_layout_script_get_language_tags(
-                        face,
-                        HB_OT_TAG_GPOS,
-                        i,
-                        0,
-                        ptr::null_mut(),
-                        ptr::null_mut(),
-                    );
-                    lang_list.resize(lang_count as usize, 0);
-
-                    hb_ot_layout_script_get_language_tags(
-                        face,
-                        HB_OT_TAG_GPOS,
-                        i,
-                        0,
-                        &mut lang_count,
-                        lang_list.as_mut_ptr(),
-                    );
-
-                    if index < lang_count {
-                        rval = lang_list[index as usize];
-                        break;
-                    }
+                let lang_list = face.get_ot_layout_script_language_tags(hb::GTag::GPos, i);
+                if index < lang_list.len() {
+                    rval = lang_list[index];
+                    break;
                 }
             }
         }
 
-        rval
+        rval.to_raw()
     }
 
     #[no_mangle]
@@ -889,61 +793,37 @@ impl XeTeXFontBase {
         language: hb_tag_t,
         mut index: libc::c_uint,
     ) -> hb_tag_t {
-        let mut rval = 0;
+        let script = hb::Tag::new(script);
+        let language = hb::Tag::new(language);
+        let face = (*font).get_hb_font().get_face();
 
-        let face = hb_font_get_face((*font).get_hb_font());
-
+        let mut rval = hb::Tag::new(0);
         for i in 0..2 {
-            let mut script_index = 0;
-            let mut lang_index = 0;
             let table_tag = if i == 0 {
-                HB_OT_TAG_GSUB
+                hb::GTag::GSub
             } else {
-                HB_OT_TAG_GPOS
+                hb::GTag::GPos
             };
 
-            if hb_ot_layout_table_find_script(face, table_tag, script, &mut script_index) != 0
-                && (hb_ot_layout_script_select_language(
-                    face,
-                    table_tag,
-                    script_index,
-                    1,
-                    &language,
-                    &mut lang_index,
-                ) != 0
-                    || language == 0)
-            {
-                let mut feat_count = hb_ot_layout_language_get_feature_tags(
-                    face,
-                    table_tag,
-                    script_index,
-                    lang_index,
-                    0,
-                    ptr::null_mut(),
-                    ptr::null_mut(),
-                );
-                let mut feat_list = vec![0; feat_count as usize];
+            if let Some(script_idx) = face.find_ot_layout_script(table_tag, script) {
+                let lang = face.select_ot_layout_language(table_tag, script_idx, &[language]);
+                let lang_idx = lang.unwrap_or(0);
 
-                hb_ot_layout_language_get_feature_tags(
-                    face,
-                    table_tag,
-                    script_index,
-                    lang_index,
-                    0,
-                    &mut feat_count,
-                    feat_list.as_mut_ptr(),
-                );
+                if lang.is_ok() || language == hb::Tag::new(0) {
+                    let feat_list =
+                        face.get_ot_layout_language_feature_tags(table_tag, script_idx, lang_idx);
 
-                if index < feat_count {
-                    rval = feat_list[index as usize];
-                    break;
+                    if (index as usize) < feat_list.len() {
+                        rval = feat_list[index as usize];
+                        break;
+                    }
+
+                    index -= feat_list.len() as libc::c_uint;
                 }
-
-                index -= feat_count;
             }
         }
 
-        rval
+        rval.to_raw()
     }
 
     #[no_mangle]
@@ -984,12 +864,12 @@ impl XeTeXFontBase {
         (*font).point_size()
     }
 
-    fn ft_face(&self) -> &ft::Face {
-        self.ft_face.as_ref().unwrap()
+    fn ft_face(&self) -> std::cell::Ref<'_, ft::Face> {
+        self.ft_face.as_ref().unwrap().borrow()
     }
 
-    fn ft_face_mut(&mut self) -> &mut ft::Face {
-        self.ft_face.as_mut().unwrap()
+    fn ft_face_mut(&mut self) -> std::cell::RefMut<'_, ft::Face> {
+        self.ft_face.as_mut().unwrap().borrow_mut()
     }
 
     pub(crate) fn get_glyph_name(&self, gid: u16) -> Option<CString> {
@@ -1121,7 +1001,7 @@ impl XeTeXFontBase {
     }
 
     pub(crate) fn get_glyph_width(&self, gid: u32) -> f32 {
-        self.units_to_points(_get_glyph_advance(self.ft_face(), gid, false) as f64) as f32
+        self.units_to_points(_get_glyph_advance(&self.ft_face(), gid, false) as f64) as f32
     }
 
     pub(crate) fn layout_dir_vertical(&self) -> bool {
@@ -1156,6 +1036,10 @@ impl XeTeXFontBase {
         self.hb_font.as_ref().unwrap()
     }
 
+    pub(crate) fn try_get_hb_font(&self) -> Option<&hb::Font> {
+        self.hb_font.as_deref()
+    }
+
     /* Tectonic: these are modified from the base XeTeX code to use doubles;
      * otherwise roundoff errors can accumulate leading to differences in the
      * XDV outputs. */
@@ -1170,16 +1054,13 @@ impl XeTeXFontBase {
 
 impl Drop for XeTeXFontBase {
     fn drop(&mut self) {
-        unsafe {
-            hb_font_destroy(self.hb_font);
-            #[cfg(target_os = "macos")]
-            if let FontKind::Mac(descriptor, font_ref) = self.kind {
-                if !descriptor.is_null() {
-                    CFRelease(descriptor.cast());
-                }
-                if !font_ref.is_null() {
-                    CFRelease(font_ref.cast());
-                }
+        #[cfg(target_os = "macos")]
+        if let FontKind::Mac(descriptor, font_ref) = self.kind {
+            if !descriptor.is_null() {
+                unsafe { CFRelease(descriptor.cast()) };
+            }
+            if !font_ref.is_null() {
+                unsafe { CFRelease(font_ref.cast()) };
             }
         }
     }

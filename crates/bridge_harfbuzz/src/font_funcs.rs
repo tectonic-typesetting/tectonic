@@ -1,5 +1,4 @@
 use super::*;
-use std::slice;
 
 unsafe extern "C" fn nominal_glyph_func<T, F: Fn(&mut Font, &T, Codepoint) -> Option<Codepoint>>(
     font: *mut sys::hb_font_t,
@@ -8,11 +7,11 @@ unsafe extern "C" fn nominal_glyph_func<T, F: Fn(&mut Font, &T, Codepoint) -> Op
     gid: *mut Codepoint,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
-    match func(&mut font, data, ch) {
+    match func(font, data, ch) {
         Some(val) => {
             *gid = val;
             true as sys::hb_bool_t
@@ -35,11 +34,11 @@ unsafe extern "C" fn variation_glyph_func<
     gid: *mut Codepoint,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
-    match func(&mut font, data, ch, vs) {
+    match func(font, data, ch, vs) {
         Some(val) => {
             *gid = val;
             true as sys::hb_bool_t
@@ -57,10 +56,10 @@ unsafe extern "C" fn glyph_advance<T, F: Fn(&mut Font, &T, Codepoint) -> Positio
     gid: Codepoint,
     user_data: *mut (),
 ) -> Position {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
-    func(&mut font, data, gid)
+    func(font, data, gid)
 }
 
 unsafe extern "C" fn glyph_origin<
@@ -74,11 +73,11 @@ unsafe extern "C" fn glyph_origin<
     y: *mut Position,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
-    match func(&mut font, data, gid) {
+    match func(font, data, gid) {
         Some(val) => {
             *x = val.0;
             *y = val.1;
@@ -99,10 +98,10 @@ unsafe extern "C" fn glyph_kerning<T, F: Fn(&mut Font, &T, Codepoint, Codepoint)
     gid2: Codepoint,
     user_data: *mut (),
 ) -> Position {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
-    func(&mut font, data, gid1, gid2)
+    func(font, data, gid1, gid2)
 }
 
 unsafe extern "C" fn glyph_extents<T, F: Fn(&mut Font, &T, Codepoint) -> Option<GlyphExtents>>(
@@ -112,10 +111,10 @@ unsafe extern "C" fn glyph_extents<T, F: Fn(&mut Font, &T, Codepoint) -> Option<
     extents: *mut GlyphExtents,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
-    match func(&mut font, data, gid) {
+    match func(font, data, gid) {
         Some(out) => {
             *extents = out;
             true as sys::hb_bool_t
@@ -139,10 +138,10 @@ unsafe extern "C" fn glyph_contour_point<
     y: *mut Position,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
-    match func(&mut font, data, gid, index as u32) {
+    match func(font, data, gid, index as u32) {
         Some(val) => {
             *x = val.0;
             *y = val.1;
@@ -164,7 +163,7 @@ unsafe extern "C" fn glyph_name<T, F: Fn(&mut Font, &T, Codepoint, &mut [u8]) ->
     size: libc::c_uint,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let mut font = Font(font);
+    let font = &mut *font.cast();
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
@@ -175,7 +174,7 @@ unsafe extern "C" fn glyph_name<T, F: Fn(&mut Font, &T, Codepoint, &mut [u8]) ->
         slice::from_raw_parts_mut(name.cast::<u8>(), size as usize)
     };
 
-    match func(&mut font, data, gid, name) {
+    match func(font, data, gid, name) {
         0 => false as sys::hb_bool_t,
         _ => true as sys::hb_bool_t,
     }
