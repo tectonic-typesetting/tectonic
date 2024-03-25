@@ -58,10 +58,6 @@ mod c_api {
     mod mac_core;
     mod manager;
 
-    pub(crate) struct SyncPtr<T>(*mut T);
-    unsafe impl<T> Send for SyncPtr<T> {}
-    unsafe impl<T> Sync for SyncPtr<T> {}
-
     #[derive(Copy, Clone, PartialEq, Debug)]
     #[repr(C)]
     pub struct FloatPoint {
