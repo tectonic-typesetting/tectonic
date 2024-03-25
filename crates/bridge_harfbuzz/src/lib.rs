@@ -4,7 +4,7 @@
 //! This crate exists to export the Harfbuzz *C/C++* API into the Cargo framework, as well as
 //! provide bindings to other tectonic crates.
 
-#![allow(non_camel_case_types)]
+#![allow(clippy::unnecessary_cast)]
 
 use std::convert::Infallible;
 use std::ffi::CStr;
@@ -72,31 +72,34 @@ impl Tag {
         Script(unsafe { sys::hb_ot_tag_to_script(self.0) })
     }
 
-    pub fn to_language(&self) -> &'static Language {
-        unsafe { &*sys::hb_ot_tag_to_language(self.0).cast() }
+    pub fn to_language(&self) -> Language {
+        Language(unsafe { sys::hb_ot_tag_to_language(self.0) })
     }
 }
 
-pub struct Language(Infallible);
+#[derive(Copy, Clone)]
+pub struct Language(*mut sys::hb_language_impl_t);
 
 impl Language {
-    fn as_ptr(&self) -> *mut sys::hb_language_impl_t {
-        ptr::from_ref(self).cast_mut().cast()
+    pub fn from_string(str: &str) -> Language {
+        Language(unsafe {
+            sys::hb_language_from_string(str.as_ptr().cast(), str.len() as libc::c_int)
+        })
     }
 
-    pub fn from_string(str: &str) -> &'static Language {
-        unsafe {
-            &*sys::hb_language_from_string(str.as_ptr().cast(), str.len() as libc::c_int).cast()
-        }
-    }
-
-    pub fn from_cstr(str: &CStr) -> &'static Language {
-        unsafe { &*sys::hb_language_from_string(str.as_ptr(), -1).cast() }
+    pub fn from_cstr(str: &CStr) -> Language {
+        Language(unsafe { sys::hb_language_from_string(str.as_ptr(), -1) })
     }
 
     pub fn to_string(&self) -> &CStr {
-        let ptr = unsafe { sys::hb_language_to_string(self.as_ptr()) };
+        let ptr = unsafe { sys::hb_language_to_string(self.0) };
         unsafe { CStr::from_ptr(ptr) }
+    }
+}
+
+impl Default for Language {
+    fn default() -> Language {
+        Language(unsafe { sys::hb_language_from_string(ptr::null(), -1) })
     }
 }
 
@@ -113,6 +116,10 @@ impl Buffer {
 
     pub fn len(&self) -> usize {
         unsafe { sys::hb_buffer_get_length(self.as_ptr()) as usize }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn get_glyph_info(&self) -> &[GlyphInfo] {
@@ -145,8 +152,8 @@ impl Buffer {
         unsafe { sys::hb_buffer_set_direction(self.as_ptr_mut(), direction) }
     }
 
-    pub fn set_language(&mut self, lang: &Language) {
-        unsafe { sys::hb_buffer_set_language(self.as_ptr_mut(), lang.as_ptr()) }
+    pub fn set_language(&mut self, lang: Language) {
+        unsafe { sys::hb_buffer_set_language(self.as_ptr_mut(), lang.0) }
     }
 
     pub fn set_script(&mut self, script: Script) {
@@ -179,6 +186,12 @@ pub struct OwnBuffer(*mut Buffer);
 impl OwnBuffer {
     pub fn new() -> OwnBuffer {
         OwnBuffer(unsafe { sys::hb_buffer_create().cast() })
+    }
+}
+
+impl Default for OwnBuffer {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -536,6 +549,10 @@ pub struct Font(Infallible);
 
 impl Font {
     // TODO: Encapsulate enough this can be made non-public
+    /// # Safety
+    ///
+    /// The returned pointer is only valid for the lifetime of this `Font`, and mutating through
+    /// the pointer is UB.
     pub unsafe fn as_ptr(&self) -> *mut sys::hb_font_t {
         ptr::from_ref(self).cast_mut().cast()
     }
@@ -640,8 +657,11 @@ impl OwnShapePlan {
         face: &Face,
         props: &SegmentProperties,
         features: &[Feature],
-        shaper_list: *const *const libc::c_char,
+        shaper_list: Option<&[*const libc::c_char]>,
     ) -> OwnShapePlan {
+        if let Some(list) = shaper_list {
+            assert!(list.last().unwrap().is_null());
+        }
         OwnShapePlan(
             unsafe {
                 sys::hb_shape_plan_create(
@@ -649,7 +669,7 @@ impl OwnShapePlan {
                     props,
                     features.as_ptr(),
                     features.len() as libc::c_uint,
-                    shaper_list,
+                    shaper_list.map(|s| s.as_ptr()).unwrap_or(ptr::null_mut()),
                 )
             }
             .cast(),
@@ -660,8 +680,11 @@ impl OwnShapePlan {
         face: &Face,
         props: &SegmentProperties,
         features: &[Feature],
-        shaper_list: *const *const libc::c_char,
+        shaper_list: Option<&[*const libc::c_char]>,
     ) -> OwnShapePlan {
+        if let Some(list) = shaper_list {
+            assert!(list.last().unwrap().is_null());
+        }
         OwnShapePlan(
             unsafe {
                 sys::hb_shape_plan_create_cached(
@@ -669,7 +692,7 @@ impl OwnShapePlan {
                     props,
                     features.as_ptr(),
                     features.len() as libc::c_uint,
-                    shaper_list,
+                    shaper_list.map(|s| s.as_ptr()).unwrap_or(ptr::null_mut()),
                 )
             }
             .cast(),
