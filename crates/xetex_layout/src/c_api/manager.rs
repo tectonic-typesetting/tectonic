@@ -41,11 +41,12 @@ pub struct OpSizeRec {
     name_code: libc::c_uint,
 }
 
+#[allow(dead_code)]
 pub struct Font {
     full_name: Option<CString>,
     ps_name: CString,
-    family_name: Option<CString>,
-    style_name: Option<CString>,
+    family_name: CString,
+    style_name: CString,
     parent: *mut Family,
     font_ref: PlatformFontRef,
     op_size_info: OpSizeRec,
@@ -58,12 +59,17 @@ pub struct Font {
 }
 
 impl Font {
-    fn new(font_ref: PlatformFontRef, ps_name: CString) -> Font {
+    fn new(
+        font_ref: PlatformFontRef,
+        ps_name: CString,
+        family_name: CString,
+        style_name: CString,
+    ) -> Font {
         let mut out = Font {
             full_name: None,
             ps_name,
-            family_name: None,
-            style_name: None,
+            family_name,
+            style_name,
             parent: ptr::null_mut(),
             font_ref,
             op_size_info: OpSizeRec::default(),
@@ -196,26 +202,30 @@ impl FontMaps {
             return;
         }
 
-        let font = Box::leak(Box::new(Font::new(pfont.clone(), ps_name.to_owned())));
+        let family_name = if !names.family_names.is_empty() {
+            names.family_names[0].clone()
+        } else {
+            ps_name.to_owned()
+        };
+
+        let style_name = if !names.style_names.is_empty() {
+            names.style_names[0].clone()
+        } else {
+            CString::default()
+        };
+
+        let font = Box::leak(Box::new(Font::new(
+            pfont.clone(),
+            ps_name.to_owned(),
+            family_name,
+            style_name,
+        )));
         backend.get_op_size_rec_and_style_flags(font);
         self.ps_name_to_font.insert(font.ps_name.clone(), font);
         self.platform_ref_to_font.insert(pfont, font);
 
         if !names.full_names.is_empty() {
             font.full_name = Some(names.full_names[0].clone());
-        }
-        // TODO: make family_name not an option
-        if !names.family_names.is_empty() {
-            font.family_name = Some(names.family_names[0].clone());
-        } else {
-            font.family_name = Some(ps_name.to_owned());
-        }
-
-        // TODO make style_name not an option
-        if !names.style_names.is_empty() {
-            font.style_name = Some(names.style_names[0].clone());
-        } else {
-            font.style_name = Some(CString::default());
         }
 
         for i in &names.family_names {
@@ -797,12 +807,12 @@ pub unsafe extern "C" fn findFontByName(
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn getReqEngine() -> libc::c_char {
+pub extern "C" fn getReqEngine() -> libc::c_char {
     FontManager::with_font_manager(|mgr| mgr.get_req_engine())
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn setReqEngine(engine: libc::c_char) {
+pub extern "C" fn setReqEngine(engine: libc::c_char) {
     FontManager::with_font_manager(|mgr| mgr.set_req_engine(engine))
 }
 

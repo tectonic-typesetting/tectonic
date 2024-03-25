@@ -354,3 +354,9 @@ impl<T> Clone for FontFuncs<T> {
         FontFuncs(self.0, PhantomData)
     }
 }
+
+impl<T> Default for FontFuncs<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
