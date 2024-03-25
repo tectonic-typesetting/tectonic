@@ -183,9 +183,6 @@ mod c_api {
                 len: usize,
             ) -> isize;
             pub fn ttstub_input_close(handle: *mut InputHandle) -> libc::c_int;
-            pub fn xstrdup(s: *const libc::c_char) -> *mut libc::c_char;
-            pub fn xcalloc(elems: usize, s: usize) -> *mut libc::c_char;
-            pub fn getReqEngine() -> libc::c_char;
         }
     }
     pub use ext::*;

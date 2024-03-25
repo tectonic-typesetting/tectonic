@@ -1,11 +1,10 @@
 use super::font::{deleteFont, XeTeXFontBase};
-use crate::c_api::{
-    getReqEngine, xcalloc, xstrdup, FloatPoint, GlyphBBox, RawPlatformFontRef, XeTeXFont,
-    XeTeXLayoutEngine,
-};
+use crate::c_api::manager::getReqEngine;
+use crate::c_api::{FloatPoint, GlyphBBox, RawPlatformFontRef, XeTeXFont, XeTeXLayoutEngine};
+use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::{CStr, CString};
-use std::{mem, ptr, slice};
+use std::{ptr, slice};
 use tectonic_bridge_graphite2::{
     gr_breakBeforeWord, gr_breakNone, gr_breakWord, gr_cinfo_base, gr_cinfo_break_weight,
     gr_encform, gr_face_featureval_for_lang, gr_face_find_fref, gr_face_fref, gr_face_n_fref,
@@ -15,18 +14,16 @@ use tectonic_bridge_graphite2::{
     gr_slot_next_in_segment,
 };
 use tectonic_bridge_harfbuzz as hb;
-use tectonic_bridge_harfbuzz::sys::{hb_font_t, hb_tag_t};
 use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
 #[repr(C)]
 pub struct XeTeXLayoutEngineBase {
     font: *mut XeTeXFontBase,
     script: hb::Tag,
-    language: &'static hb::Language,
+    language: hb::Language,
     features: &'static [hb::Feature],
     /// the requested shapers
-    shaper_list: *mut *const libc::c_char,
-    shaper_list_to_free: bool,
+    shaper_list: Cow<'static, [*const libc::c_char]>,
     /// the actually used shaper
     shaper: *mut libc::c_char,
     rgb_value: u32,
@@ -41,7 +38,7 @@ impl XeTeXLayoutEngineBase {
     pub unsafe extern "C" fn createLayoutEngine(
         _font_ref: RawPlatformFontRef,
         font: XeTeXFont,
-        script: hb_tag_t,
+        script: hb::Tag,
         language: *mut libc::c_char,
         features: *mut hb::Feature,
         n_features: libc::c_int,
@@ -51,22 +48,43 @@ impl XeTeXLayoutEngineBase {
         slant: f32,
         embolden: f32,
     ) -> XeTeXLayoutEngine {
-        let language = CString::from_raw(language);
-        let features = slice::from_raw_parts(features, n_features as usize);
+        let language = if !language.is_null() {
+            Some(CString::from_raw(language))
+        } else {
+            None
+        };
+        let features = if !features.is_null() {
+            slice::from_raw_parts(features, n_features as usize)
+        } else {
+            &[]
+        };
+        let shaper_list = Cow::Borrowed(if !shapers.is_null() {
+            let mut len = 0;
+            while !(*shapers.add(len)).is_null() {
+                len += 1;
+            }
+            slice::from_raw_parts(shapers, len)
+        } else {
+            &[]
+        });
+
         let this = Box::new(XeTeXLayoutEngineBase {
             font,
-            script: hb::Tag::new(script),
+            script,
             // For Graphite fonts treat the language as BCP 47 tag, for OpenType we
             // treat it as a OT language tag for backward compatibility with pre-0.9999
             // XeTeX.
             language: if getReqEngine() as u8 == b'G' {
-                hb::Language::from_cstr(&language)
+                language
+                    .map(|lang| hb::Language::from_cstr(&lang))
+                    .unwrap_or_default()
             } else {
-                hb::Tag::from_cstr(&language).to_language()
+                language
+                    .map(|lang| hb::Tag::from_cstr(&lang).to_language())
+                    .unwrap_or_default()
             },
             features,
-            shaper_list: shapers,
-            shaper_list_to_free: false,
+            shaper_list,
             shaper: ptr::null_mut(),
             rgb_value,
             extend,
@@ -83,11 +101,7 @@ impl XeTeXLayoutEngineBase {
         let this = &mut *this;
         deleteFont(this.font);
         libc::free(this.shaper.cast());
-        if this.shaper_list_to_free {
-            libc::free(this.shaper_list.cast());
-            this.shaper_list_to_free = false;
-            this.shaper_list = ptr::null_mut();
-        }
+        this.shaper_list = Cow::Borrowed(&[]);
         let _ = Box::from_raw(this);
     }
 
@@ -250,8 +264,8 @@ impl XeTeXLayoutEngineBase {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn ttxl_get_hb_font(engine: XeTeXLayoutEngine) -> *mut hb_font_t {
-        (*engine).font().get_hb_font().as_ptr()
+    pub unsafe extern "C" fn ttxl_get_hb_font(engine: XeTeXLayoutEngine) -> *mut hb::Font {
+        ptr::from_ref((*engine).font().get_hb_font()).cast_mut()
     }
 
     #[no_mangle]
@@ -326,23 +340,20 @@ impl XeTeXLayoutEngineBase {
         engine.hb_buffer.guess_segment_properties();
         let segment_props = engine.hb_buffer.get_segment_properties();
 
-        if engine.shaper_list.is_null() {
+        if let Cow::Borrowed(&[]) = engine.shaper_list {
             // HarfBuzz gives graphite2 shaper a priority, so that for hybrid
             // Graphite/OpenType fonts, Graphite will be used. However, pre-0.9999
             // XeTeX preferred OpenType over Graphite, so we are doing the same
             // here for sake of backward compatibility. Since "ot" shaper never
             // fails, we set the shaper list to just include it.
-            engine.shaper_list = xcalloc(2, mem::size_of::<*const libc::c_char>()).cast();
-            *engine.shaper_list = c!("ot");
-            *engine.shaper_list.add(1) = ptr::null();
-            engine.shaper_list_to_free = true;
+            engine.shaper_list = Cow::Owned(vec![c!("ot"), ptr::null()]);
         }
 
         let mut shape_plan = hb::OwnShapePlan::new_cached(
             hb_face,
             &segment_props,
             engine.features,
-            engine.shaper_list,
+            Some(&engine.shaper_list),
         );
         let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
 
@@ -359,8 +370,7 @@ impl XeTeXLayoutEngineBase {
         } else {
             // all selected shapers failed, retrying with default
             // we don't use _cached here as the cached plain will always fail.
-            shape_plan =
-                hb::OwnShapePlan::new(hb_face, &segment_props, engine.features, ptr::null_mut());
+            shape_plan = hb::OwnShapePlan::new(hb_face, &segment_props, engine.features, None);
             let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
 
             if res {
@@ -420,7 +430,16 @@ pub unsafe extern "C" fn getFontFilename(
     index: *mut u32,
 ) -> *const libc::c_char {
     // We can't just `CString::into_raw` because this is freed with `libc::free` currently.
-    xstrdup((*engine).font().get_filename(&mut *index).as_ptr())
+    (*engine)
+        .font()
+        .get_filename(&mut *index)
+        .to_owned()
+        .into_raw()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn freeFontFilename(filename: *const libc::c_char) {
+    let _ = CString::from_raw(filename.cast_mut());
 }
 
 #[no_mangle]
@@ -611,13 +630,13 @@ pub unsafe extern "C" fn findGraphiteFeature(
     engine: XeTeXLayoutEngine,
     s: *const libc::c_char,
     e: *const libc::c_char,
-    f: *mut hb_tag_t,
+    f: *mut hb::Tag,
     v: *mut libc::c_int,
 ) -> bool {
     let mut s = s.cast::<u8>();
     let e = e.cast::<u8>();
 
-    *f = 0;
+    *f = hb::Tag::new(0);
     *v = 0;
 
     while *s == b' ' || *s == b'\t' {
@@ -629,7 +648,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
     }
 
     let tmp = findGraphiteFeatureNamed(engine, s.cast(), cp.byte_offset_from(s) as libc::c_int);
-    *f = tmp as hb_tag_t;
+    *f = hb::Tag::new(tmp as _);
     if tmp == -1 {
         return false;
     }
@@ -645,7 +664,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
 
     *v = findGraphiteFeatureSettingNamed(
         engine,
-        *f,
+        (*f).to_raw(),
         cp.cast(),
         e.byte_offset_from(cp) as libc::c_int,
     ) as libc::c_int;

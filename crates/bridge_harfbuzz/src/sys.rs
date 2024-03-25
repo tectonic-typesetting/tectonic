@@ -1,3 +1,5 @@
+#![allow(non_camel_case_types)]
+
 use std::ptr;
 use tectonic_bridge_graphite2::gr_face;
 
