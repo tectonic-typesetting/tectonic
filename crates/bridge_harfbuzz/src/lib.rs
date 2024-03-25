@@ -322,6 +322,7 @@ impl Face {
                 out.as_mut_ptr().cast(),
             )
         };
+        assert_eq!(len as usize, out.len());
         out
     }
 
@@ -371,6 +372,7 @@ impl Face {
                 out.as_mut_ptr().cast(),
             )
         };
+        assert_eq!(len as usize, out.len());
         out
     }
 
@@ -434,6 +436,7 @@ impl Face {
                 out.as_mut_ptr().cast(),
             )
         };
+        assert_eq!(len as usize, out.len());
         out
     }
 
@@ -548,12 +551,7 @@ impl Drop for OwnFace {
 pub struct Font(Infallible);
 
 impl Font {
-    // TODO: Encapsulate enough this can be made non-public
-    /// # Safety
-    ///
-    /// The returned pointer is only valid for the lifetime of this `Font`, and mutating through
-    /// the pointer is UB.
-    pub unsafe fn as_ptr(&self) -> *mut sys::hb_font_t {
+    fn as_ptr(&self) -> *mut sys::hb_font_t {
         ptr::from_ref(self).cast_mut().cast()
     }
 
