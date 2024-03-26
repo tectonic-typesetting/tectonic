@@ -849,22 +849,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     ct_font_ref: CTFontRef,
     index: *mut u32,
 ) -> *const libc::c_char {
-    let mut url = ptr::null();
-
-    #[cfg(feature = "MACOS_LE_10_6")]
-    {
-        let mut status;
-        let ats_font = CTFontGetPlatformFont(ct_font_ref, ptr::null_mut());
-        let mut fs_ref = 0;
-        status = ATSFontGetFileReference(ats_font, &mut fsref);
-        if status == noErr {
-            url = CFUrlCreateFromFSRef(ptr::null_mut(), &mut fs_ref);
-        }
-    }
-    #[cfg(not(feature = "MACOS_LE_10_6"))]
-    {
-        url = CTFontCopyAttribute(ct_font_ref, kCTFontURLAttribute);
-    }
+    let url = CTFontCopyAttribute(ct_font_ref, kCTFontURLAttribute);
 
     if !url.is_null() {
         let mut pathname = [0u8; libc::PATH_MAX as usize];
