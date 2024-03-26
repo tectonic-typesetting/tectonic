@@ -136,18 +136,6 @@ impl FontManagerBackend for MacBackend {
 
         let ct_font = CTFontCreateWithFontDescriptor(*font, 0.0, ptr::null_mut());
         if !ct_font.is_null() {
-            #[cfg(feature = "MACOS_LE_10_6")]
-            let url = {
-                let mut fsref = ptr::null();
-                let ats_font = CTFontGetPlatformFont(ct_font, ptr::null_mut());
-                let status = ATSFontGetFileReference(ats_font, &mut fsref);
-                if status == noErr {
-                    CFURLCreateFromFSRef(ptr::null_mut(), &mut fsref)
-                } else {
-                    ptr::null_mut()
-                }
-            };
-            #[cfg(not(feature = "MACOS_LE_10_6"))]
             let url = CTFontCopyAttribute(ct_font, kCTFontURLAttribute);
 
             if !url.is_null() {
