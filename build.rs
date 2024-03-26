@@ -8,6 +8,7 @@ fn main() {
     // what environment variable CARGO_TARGET_@TARGET@_RUNNER to check when
     // they want to spawn off executables.
 
+    println!("cargo:rerun-if-changed=build.rs");
     let target = env::var("TARGET").unwrap();
     println!("cargo:rustc-env=TARGET={target}");
 }
