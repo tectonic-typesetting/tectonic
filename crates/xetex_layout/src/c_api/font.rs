@@ -2,12 +2,12 @@
 use crate::c_api::fc;
 #[cfg(target_os = "macos")]
 use crate::c_api::mac_core::{
-    cf_to_cstr, kCFStringEncodingUTF8, kCFTypeArrayCallBacks, kCFTypeDictionaryKeyCallBacks,
+    cf_to_cstr, kCFTypeArrayCallBacks, kCFTypeDictionaryKeyCallBacks,
     kCFTypeDictionaryValueCallBacks, kCTFontCascadeListAttribute, kCTFontPostScriptNameKey,
-    kCTFontURLAttribute, CFArrayCreate, CFDictionaryCreate, CFIndex, CFRelease, CFStringGetCString,
-    CFStringGetLength, CFStringRef, CFURLGetFileSystemRepresentation, CGFloat, CTFontCopyAttribute,
-    CTFontCopyName, CTFontCreateWithFontDescriptor, CTFontDescriptorCreateCopyWithAttributes,
-    CTFontDescriptorRef, CTFontRef,
+    kCTFontURLAttribute, CFArrayCreate, CFDictionaryCreate, CFIndex, CFRelease, CFStringRef,
+    CFURLGetFileSystemRepresentation, CGFloat, CTFontCopyAttribute, CTFontCopyName,
+    CTFontCreateWithFontDescriptor, CTFontDescriptorCreateCopyWithAttributes, CTFontDescriptorRef,
+    CTFontRef,
 };
 use crate::c_api::{
     ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, Fixed,
@@ -293,7 +293,7 @@ impl XeTeXFontBase {
             filename: CString::new("").unwrap(),
             index: 0,
             ft_face: None,
-            hb_font: ptr::null_mut(),
+            hb_font: None,
             kind: FontKind::Mac(descriptor, ptr::null()),
         };
         let status = out.initialize_mac();
@@ -897,7 +897,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
                             }
                         }
                     }
-                    free(ps_name1.cast::<libc::c_void>().cast_mut());
+                    libc::free(ps_name1.cast::<libc::c_void>().cast_mut());
                 }
             }
 
