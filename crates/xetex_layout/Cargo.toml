@@ -31,7 +31,6 @@ libc = "0.2"
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
-os_info = "3"
 
 [features]
 external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
