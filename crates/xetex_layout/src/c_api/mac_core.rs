@@ -163,7 +163,6 @@ extern "C" {
         matrix: *const CGAffineTransform,
     ) -> CTFontRef;
     pub fn CTFontCopyName(font: CTFontRef, name_key: CFStringRef) -> CFStringRef;
-    // TODO: Only define on MACOS_LE_10_6
     pub fn CTFontCopyAttribute(font: CTFontRef, attribute: CFStringRef) -> CFTypeRef;
     pub fn CTFontDescriptorCreateCopyWithAttributes(
         original: CTFontDescriptorRef,
