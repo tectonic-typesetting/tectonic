@@ -63,7 +63,7 @@ impl XeTeXLayoutEngineBase {
             while !(*shapers.add(len)).is_null() {
                 len += 1;
             }
-            slice::from_raw_parts(shapers, len)
+            slice::from_raw_parts(shapers, len + 1)
         } else {
             &[]
         });
