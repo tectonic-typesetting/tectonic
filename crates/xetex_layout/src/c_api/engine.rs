@@ -429,7 +429,6 @@ pub unsafe extern "C" fn getFontFilename(
     engine: XeTeXLayoutEngine,
     index: *mut u32,
 ) -> *const libc::c_char {
-    // We can't just `CString::into_raw` because this is freed with `libc::free` currently.
     (*engine)
         .font()
         .get_filename(&mut *index)
