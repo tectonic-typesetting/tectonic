@@ -227,7 +227,7 @@ pub unsafe extern "C" fn countFeatures(
         };
         if let Some(script_idx) = face.find_ot_layout_script(table_tag, script) {
             let lang = face.select_ot_layout_language(table_tag, script_idx, &[language]);
-            let lang_idx = lang.unwrap_or(0);
+            let lang_idx = lang.unwrap_or_else(|idx| idx);
 
             if lang.is_ok() || language == hb::Tag::new(0) {
                 rval +=
@@ -574,7 +574,7 @@ impl XeTeXFontBase {
 
             if let Some(script_idx) = face.find_ot_layout_script(table_tag, script) {
                 let lang = face.select_ot_layout_language(table_tag, script_idx, &[language]);
-                let lang_idx = lang.unwrap_or(0);
+                let lang_idx = lang.unwrap_or_else(|idx| idx);
 
                 if lang.is_ok() || language == hb::Tag::new(0) {
                     let feat_list =
