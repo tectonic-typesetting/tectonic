@@ -132,6 +132,7 @@ pub struct hb_glyph_extents_t {
     pub height: hb_position_t,
 }
 
+#[derive(Clone, Debug)]
 #[repr(C)]
 pub struct hb_feature_t {
     pub tag: hb_tag_t,
