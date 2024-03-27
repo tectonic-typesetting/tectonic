@@ -260,7 +260,6 @@ pub struct XeTeXFontBase {
     filename: CString,
     index: u32,
 
-    // Boxed to preserve address
     ft_face: Option<Rc<RefCell<ft::Face>>>,
     hb_font: Option<hb::OwnFont>,
 
