@@ -338,3 +338,8 @@ fn tectoniccodatokens_ok() {
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
 }
+
+#[test]
+fn xetex_ot_builtins() {
+    TestCase::new("xetex_ot_builtins").check_pdf(true).go()
+}
