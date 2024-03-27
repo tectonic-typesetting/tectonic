@@ -7,7 +7,6 @@ use std::{
     fs,
     path::{Path, PathBuf},
     str::FromStr,
-    string::ToString,
 };
 use tectonic_errors::{Error, Result};
 use thiserror::Error as ThisError;

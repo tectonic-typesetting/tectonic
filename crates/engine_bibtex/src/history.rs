@@ -9,7 +9,7 @@ pub enum History {
 }
 
 thread_local! {
-    static HISTORY: Cell<History> = Cell::new(History::Spotless);
+    static HISTORY: Cell<History> = const { Cell::new(History::Spotless) };
 }
 
 pub(crate) fn reset() {
