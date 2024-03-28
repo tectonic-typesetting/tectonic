@@ -126,7 +126,7 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
         Err(_) => return,
     };
 
-    let size_rec = FontManager::get_op_size(&mut xfont);
+    let size_rec = FontManager::get_op_size(&xfont);
     if let Some(size_rec) = size_rec {
         font.op_size_info.design_size = size_rec.design_size;
         if size_rec.sub_family_id != 0
@@ -668,7 +668,7 @@ impl FontManager {
         name.as_ptr()
     }
 
-    pub unsafe fn get_design_size(&self, font: XeTeXFont) -> f64 {
+    pub fn get_design_size(&self, font: &XeTeXFontBase) -> f64 {
         let size_rec = Self::get_op_size(font);
         match size_rec {
             None => 10.0,
@@ -740,8 +740,8 @@ impl FontManager {
         list.insert(0, str.into());
     }
 
-    pub unsafe fn get_op_size(font: XeTeXFont) -> Option<OpSizeRec> {
-        let hb_font = (*font).try_get_hb_font()?;
+    pub fn get_op_size(font: &XeTeXFontBase) -> Option<OpSizeRec> {
+        let hb_font = font.try_get_hb_font()?;
 
         let face = hb_font.get_face();
 
@@ -823,7 +823,7 @@ pub unsafe extern "C" fn getFullName(font: RawPlatformFontRef) -> *const libc::c
 
 #[no_mangle]
 pub unsafe extern "C" fn getDesignSize(font: XeTeXFont) -> f64 {
-    FontManager::with_font_manager(|mgr| mgr.get_design_size(font))
+    FontManager::with_font_manager(|mgr| mgr.get_design_size(&*font))
 }
 
 #[no_mangle]

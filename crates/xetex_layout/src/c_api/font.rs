@@ -105,7 +105,7 @@ pub fn get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
                         x_bearing: face.glyph().metrics().horiBearingX as hb::Position,
                         y_bearing: face.glyph().metrics().horiBearingY as hb::Position,
                         width: face.glyph().metrics().width as hb::Position,
-                        height: face.glyph().metrics().height as hb::Position,
+                        height: -face.glyph().metrics().height as hb::Position,
                     })
                 } else {
                     None
@@ -373,11 +373,11 @@ impl XeTeXFontBase {
                 .to_vec();
             let file_ty = afm.rsplit_mut(|c| *c == b'.').next();
             if let Some(file_ty) = file_ty {
-                if file_ty.len() == 4
-                    && file_ty[1].to_ascii_lowercase() == b'p'
-                    && file_ty[2].to_ascii_lowercase() == b'f'
+                if file_ty.len() == 3
+                    && file_ty[0].to_ascii_lowercase() == b'p'
+                    && file_ty[1].to_ascii_lowercase() == b'f'
                 {
-                    file_ty.copy_from_slice(b".afm");
+                    file_ty.copy_from_slice(b"afm");
                 }
             }
             afm.push(0);
