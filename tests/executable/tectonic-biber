@@ -1,0 +1,8 @@
+#! /bin/sh
+# Copyright 2021 the Tetonic Project
+# Licensed under the MIT License.
+
+# A stand-in for biber for our testing framework.
+
+echo "tectonic-biber says success and makes a file"
+echo 456 >biberout.qqq
