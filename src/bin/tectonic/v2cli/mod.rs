@@ -7,7 +7,6 @@
 use clap::{Parser, Subcommand};
 use std::{env, ffi::OsString, fs, path::Path, path::PathBuf, process};
 use tectonic::{
-    self,
     config::PersistentConfig,
     errors::{Result, SyncError},
     status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},

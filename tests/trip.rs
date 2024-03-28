@@ -14,8 +14,6 @@
 //! variable to "1", but that's an annoying solution. So, we use a global mutex
 //! to achieve the same effect. Classy.
 
-use std::default::Default;
-
 use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::TexEngine;

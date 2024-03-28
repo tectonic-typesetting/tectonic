@@ -13,7 +13,6 @@
 use flate2::read::GzDecoder;
 use std::{
     collections::HashSet,
-    default::Default,
     env,
     fs::File,
     io::{Read, Write},
