@@ -15,7 +15,7 @@
 //! For an example of how to use this module, see `src/bin/tectonic/main.rs`,
 //! which contains tectonic's main CLI program.
 
-use byte_unit::Byte;
+use byte_unit::{Byte, UnitType};
 use quick_xml::{events::Event, NsReader};
 use std::{
     collections::{HashMap, HashSet},
@@ -1638,11 +1638,11 @@ impl ProcessingSession {
             }
 
             let real_path = root.join(name);
-            let byte_len = Byte::from_bytes(file.data.len() as u128);
+            let byte_len = Byte::from_u128(file.data.len() as u128).unwrap();
             status.note_highlighted(
                 "Writing ",
                 &format!("`{}`", real_path.display()),
-                &format!(" ({})", byte_len.get_appropriate_unit(true)),
+                &format!(" ({})", byte_len.get_appropriate_unit(UnitType::Binary)),
             );
 
             let mut f = File::create(&real_path)?;

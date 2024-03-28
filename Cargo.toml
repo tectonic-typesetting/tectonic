@@ -17,11 +17,11 @@ repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "CARGO_README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
 categories = [
-  "command-line-interface",
-  "parser-implementations",
-  "rendering",
-  "science",
-  "text-processing",
+    "command-line-interface",
+    "parser-implementations",
+    "rendering",
+    "science",
+    "text-processing",
 ]
 license = "MIT"
 edition = "2018"
@@ -33,27 +33,27 @@ codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 
 [workspace]
 members = [
-  "crates/bridge_flate",
-  "crates/bridge_freetype2",
-  "crates/bridge_graphite2",
-  "crates/bridge_harfbuzz",
-  "crates/bridge_icu",
-  "crates/bundles",
-  "crates/cfg_support",
-  "crates/dep_support",
-  "crates/docmodel",
-  "crates/engine_bibtex",
-  "crates/engine_spx2html",
-  "crates/engine_xdvipdfmx",
-  "crates/engine_xetex",
-  "crates/errors",
-  "crates/geturl",
-  "crates/io_base",
-  "crates/pdf_io",
-  "crates/status_base",
-  "crates/xdv",
-  "crates/xetex_format",
-  "crates/xetex_layout",
+    "crates/bridge_flate",
+    "crates/bridge_freetype2",
+    "crates/bridge_graphite2",
+    "crates/bridge_harfbuzz",
+    "crates/bridge_icu",
+    "crates/bundles",
+    "crates/cfg_support",
+    "crates/dep_support",
+    "crates/docmodel",
+    "crates/engine_bibtex",
+    "crates/engine_spx2html",
+    "crates/engine_xdvipdfmx",
+    "crates/engine_xetex",
+    "crates/errors",
+    "crates/geturl",
+    "crates/io_base",
+    "crates/pdf_io",
+    "crates/status_base",
+    "crates/xdv",
+    "crates/xetex_format",
+    "crates/xetex_layout",
 ]
 
 [lib]
@@ -61,7 +61,7 @@ name = "tectonic"
 crate-type = ["rlib"]
 
 [dependencies]
-byte-unit = "^4.0"
+byte-unit = "^5.0"
 cfg-if = "1.0"
 error-chain = "^0.12"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
@@ -69,8 +69,8 @@ fs2 = "^0.4"
 lazy_static = "^1.4"
 libc = "^0.2"
 md-5 = "^0.10"
-open = "^4.0"
-quick-xml = "^0.28"
+open = "^5.0"
+quick-xml = "^0.31"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.10"
 clap = { version = "4.5.1", features = ["derive"] }
@@ -90,11 +90,12 @@ tectonic_xetex_layout = { path = "crates/xetex_layout", version = "0.0.0-dev.0" 
 tempfile = "^3.1"
 termcolor = "^1.1"
 tokio = "^1.0"
-toml = { version = "^0.7", optional = true }
+toml = { version = "^0.8", optional = true }
 url = "^2.0"
-watchexec = "^2.3.0"
-watchexec-filterer-globset = "1.2"
-watchexec-signals = "1.0"
+watchexec = "^3.0"
+watchexec-filterer-globset = "3.0"
+watchexec-signals = "2.0"
+watchexec-supervisor = "1.0"
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
 
 [features]
@@ -114,8 +115,8 @@ geturl-curl = ["tectonic_bundles/geturl-curl", "tectonic_geturl/curl"]
 geturl-reqwest = ["tectonic_bundles/geturl-reqwest", "tectonic_geturl/reqwest"]
 
 native-tls-vendored = [
-  "tectonic_bundles/native-tls-vendored",
-  "tectonic_geturl/native-tls-vendored",
+    "tectonic_bundles/native-tls-vendored",
+    "tectonic_geturl/native-tls-vendored",
 ]
 
 # developer feature to compile with the necessary flags for profiling tectonic.
@@ -124,8 +125,10 @@ profile = []
 [dev-dependencies]
 filetime = "^0.2"
 futures = "0.3"
-headers = "0.3"
-hyper = { version = "0.14", features = ["server"] }
+headers = "0.4"
+http-body-util = "0.1.0"
+hyper = { version = "1.0.0", features = ["server", "http1", "http2"] }
+hyper-util = { version = "0.1", features = ["server", "http1", "http2", "tokio"] }
 tempfile = "^3.1"
 
 [package.metadata.vcpkg]
@@ -139,21 +142,21 @@ overlay-triplets-path = "dist/vcpkg-triplets"
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
 aarch64-apple-darwin = { triplet = "arm64-osx", install = [
-  "freetype",
-  "harfbuzz[graphite2]",
-  "icu",
+    "freetype",
+    "harfbuzz[graphite2]",
+    "icu",
 ] }
 x86_64-unknown-linux-gnu = { install = [
-  "fontconfig",
-  "freetype",
-  "harfbuzz[graphite2]",
-  "icu",
+    "fontconfig",
+    "freetype",
+    "harfbuzz[graphite2]",
+    "icu",
 ] }
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
-  "fontconfig",
-  "freetype",
-  "harfbuzz[graphite2]",
-  "icu",
+    "fontconfig",
+    "freetype",
+    "harfbuzz[graphite2]",
+    "icu",
 ] }
 
 [package.metadata.internal_dep_versions]
