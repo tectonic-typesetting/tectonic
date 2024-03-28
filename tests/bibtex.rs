@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 use std::collections::HashSet;
-use std::default::Default;
 use std::path::PathBuf;
 
 use tectonic::io::{FilesystemIo, IoProvider, IoStack, MemoryIo};

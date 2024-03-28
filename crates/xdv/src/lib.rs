@@ -5,11 +5,11 @@
 
 //! A decoder for the XDV and SPX file formats used by Tectonic and XeTeX.
 //!
-//! Both of these file formats are derived from the venerable “device
-//! independent” (DVI) format used by TeX. The XDV format (name presumably
-//! meaning something like “XeTeX DVI” or “extended DVI”) adds a few codes
+//! Both of these file formats are derived from the venerable "device
+//! independent" (DVI) format used by TeX. The XDV format (name presumably
+//! meaning something like "XeTeX DVI" or "extended DVI") adds a few codes
 //! needed to express native fonts in the output. The SPX format
-//! (“semantically-paginated XDV”) is essentially the same as XDV, but
+//! ("semantically-paginated XDV") is essentially the same as XDV, but
 //! expresses output that is not paginated for print — this is what Tectonic
 //! uses to produce its HTML output.
 
@@ -217,7 +217,7 @@ pub enum FileType {
     /// Traditional XDV.
     Xdv,
 
-    /// Tectonic’s SPX (“semanticallly-paginated XDV”).
+    /// Tectonic’s SPX ("semanticallly-paginated XDV").
     Spx,
 }
 
@@ -281,7 +281,7 @@ impl<T: XdvEvents> XdvParser<T> {
 
     /// Parse an entire XDV/SPX stream.
     ///
-    /// Returns the input “events” variable and the number of bytes that were
+    /// Returns the input "events" variable and the number of bytes that were
     /// processed.
     ///
     /// Because the `io::Read` trait is used, the event result type must
@@ -302,7 +302,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// seekable, and starts by processing the expected "postamble" structure of
     /// the file which provides summary information about the stream contents.
     ///
-    /// Returns the input “events” variable.
+    /// Returns the input "events" variable.
     ///
     /// Because traits from `std::io` are used, the event result type must
     /// implement `From<std::io::Error>` as well as `From<XdvError>`.

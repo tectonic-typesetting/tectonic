@@ -4,11 +4,11 @@
 
 [package]
 name = "tectonic"
-version = "0.15.0"
+version = "0.15.0+20240328"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
-extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
+extension to the classic "Web2C" implementation of TeX and uses the TeXLive distribution
 of support files.
 """
 homepage = "https://tectonic-typesetting.github.io/"
@@ -61,7 +61,6 @@ name = "tectonic"
 crate-type = ["rlib"]
 
 [dependencies]
-atty = "0.2"
 byte-unit = "^4.0"
 cfg-if = "1.0"
 error-chain = "^0.12"
@@ -74,7 +73,7 @@ open = "^4.0"
 quick-xml = "^0.28"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.10"
-structopt = "0.3"
+clap = { version = "4.5.1", features = ["derive"] }
 tectonic_bridge_core = { path = "crates/bridge_core", version =">=0.4.0,<1"}
 tectonic_bundles = { path = "crates/bundles", version =">=0.3.0,<1", default-features = false }
 tectonic_docmodel = { path = "crates/docmodel", version =">=0.2.0,<1", optional = true }

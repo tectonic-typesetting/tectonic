@@ -133,7 +133,7 @@ macro_rules! errmsg {
     };
 }
 
-/// “Chained try” — like `try!`, but with the ability to add context to the error message.
+/// "Chained try" — like `try!`, but with the ability to add context to the error message.
 #[macro_export]
 macro_rules! ctry {
     ($op:expr ; $( $chain_fmt_args:expr ),*) => {{

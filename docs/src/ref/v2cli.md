@@ -1,11 +1,11 @@
-# “V2” (Prototype) Command-Line Interface
+# "V2" (Prototype) Command-Line Interface
 
-The “V2” command-line interface to Tectonic is a substantially new interface to
+The "V2" command-line interface to Tectonic is a substantially new interface to
 the Tectonic engine introduced in the 0.4.x release series.
 
-In short, the V2 interface is “[cargo]-like”, with a variety of subcommands
+In short, the V2 interface is "[cargo]-like", with a variety of subcommands
 anchored around a [Tectonic.toml] file defining a document to build. For
-comparison, the original (“V1”) interface is more “[rustc]-like”, offering a
+comparison, the original ("V1") interface is more "[rustc]-like", offering a
 single primary workflow with lots of options controlling its behavior.
 
 [cargo]: https://doc.rust-lang.org/cargo/

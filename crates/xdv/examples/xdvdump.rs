@@ -3,10 +3,12 @@
 
 //! Parse an XDV/SPX file and dump some stats about its contents.
 
-use clap::{crate_version, App, Arg};
+use clap::parser::ValueSource;
+use clap::{crate_version, Arg, Command};
 use std::fmt::{Display, Error as FmtError, Formatter};
 use std::fs::File;
 use std::io;
+use std::path::PathBuf;
 use std::process;
 use std::str;
 use tectonic_xdv::{FileType, XdvError};
@@ -142,23 +144,23 @@ impl tectonic_xdv::XdvEvents for Stats {
 }
 
 fn main() {
-    let matches = App::new("xdvdump")
+    let matches = Command::new("xdvdump")
         .version(crate_version!())
         .about("Parse an XDV or SPX file and report some stats about its contents")
         .arg(
-            Arg::with_name("seek")
+            Arg::new("seek")
                 .long("seek")
                 .help("Seek around the file, parsing the trailers first"),
         )
         .arg(
-            Arg::with_name("PATH")
+            Arg::new("PATH")
                 .help("The path to the XDV or SPX file")
                 .required(true)
                 .index(1),
         )
         .get_matches();
 
-    let path = matches.value_of_os("PATH").unwrap();
+    let path: &PathBuf = matches.get_one("PATH").unwrap();
 
     let file = match File::open(path) {
         Ok(f) => f,
@@ -172,7 +174,11 @@ fn main() {
         }
     };
 
-    if matches.is_present("seek") {
+    if matches
+        .value_source("seek")
+        .map(|x| x == ValueSource::CommandLine)
+        .unwrap_or(false)
+    {
         match tectonic_xdv::XdvParser::process_with_seeks(file, Stats::new()) {
             Ok(x) => x,
             Err(e) => {

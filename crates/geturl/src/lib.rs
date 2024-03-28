@@ -6,7 +6,7 @@
 //! A simple, pluggable interface for HTTP GETs and range requests.
 //!
 //! At the moment, there are three backends that might be available:
-//! 1. A “null” backend that is always available, but does nothing and always
+//! 1. A "null" backend that is always available, but does nothing and always
 //!    fails.
 //! 2. A backend based on [reqwest](https://docs.rs/reqwest/).
 //! 3. A backend based on [curl](https://docs.rs/curl/).

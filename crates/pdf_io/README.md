@@ -13,7 +13,7 @@ providing only a C API*.
 - [Main Git repository](https://github.com/tectonic-typesetting/tectonic/).
 
 This crate depends on [libpng], which it attempts to find externally using
-[pkg-config] or [vcpkg]. It should be possible to create another “bridge” crate
+[pkg-config] or [vcpkg]. It should be possible to create another "bridge" crate
 so that this external dependency could be avoided, but this hasn’t been done
 yet.
 
