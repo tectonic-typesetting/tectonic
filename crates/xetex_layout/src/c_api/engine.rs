@@ -452,26 +452,28 @@ pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) 
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32) {
-    let hb_positions = (*engine).hb_buffer.get_glyph_position();
+    let engine = &*engine;
+    let hb_positions = engine.hb_buffer.get_glyph_position();
 
     for (i, pos) in hb_positions.iter().enumerate() {
-        let advance = if (*engine).font().layout_dir_vertical() {
+        let advance = if engine.font().layout_dir_vertical() {
             pos.y_advance
         } else {
             pos.x_advance
         };
 
-        *advances.add(i) = (*engine).font().units_to_points(advance as f64) as f32;
+        *advances.add(i) = engine.font().units_to_points(advance as f64) as f32;
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint) {
-    let hb_positions = (*engine).hb_buffer.get_glyph_position();
+    let engine = &mut *engine;
+    let hb_positions = engine.hb_buffer.get_glyph_position();
 
     let mut x: f32 = 0.0;
     let mut y: f32 = 0.0;
-    let font = (*engine).font();
+    let font = engine.font();
 
     if font.layout_dir_vertical() {
         for (i, pos) in hb_positions.iter().enumerate() {
@@ -494,10 +496,10 @@ pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions:
         (*positions.add(hb_positions.len())).y = -font.units_to_points(y as f64) as f32;
     }
 
-    if (*engine).extend != 1.0 || (*engine).slant != 0.0 {
+    if engine.extend != 1.0 || engine.slant != 0.0 {
         for i in 0..=hb_positions.len() {
             let pos = &mut *positions.add(i);
-            pos.x = pos.x * (*engine).extend - pos.y * (*engine).slant;
+            pos.x = pos.x * engine.extend - pos.y * engine.slant;
         }
     }
 }
@@ -565,14 +567,15 @@ pub unsafe extern "C" fn getGraphiteFeatureDefaultSetting(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> u32 {
-    let hb_face = (*engine).font().get_hb_font().get_face();
+    let engine = &*engine;
+    let hb_face = engine.font().get_hb_font().get_face();
     let gr_face = hb_face.get_gr_face();
 
     if !gr_face.is_null() {
         let feature = gr_face_find_fref(gr_face, feature_id);
         let feature_values = gr_face_featureval_for_lang(
             gr_face,
-            hb::Tag::from_cstr((*engine).language.to_string()).to_raw(),
+            hb::Tag::from_cstr(engine.language.to_string()).to_raw(),
         );
 
         gr_fref_feature_value(feature, feature_values) as u32
@@ -745,7 +748,8 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     txt_ptr: *const u16,
     txt_len: libc::c_uint,
 ) -> bool {
-    let hb_font = (*engine).font().get_hb_font();
+    let engine = &*engine;
+    let hb_font = engine.font().get_hb_font();
     let hb_face = hb_font.get_face();
     let gr_face = hb_face.get_gr_face();
     let gr_font = gr_make_font(hb_font.get_ptem(), gr_face);
@@ -761,11 +765,11 @@ pub unsafe extern "C" fn initGraphiteBreaking(
 
         let gr_feature_values = gr_face_featureval_for_lang(
             gr_face,
-            hb::Tag::from_cstr((*engine).language.to_string()).to_raw(),
+            hb::Tag::from_cstr(engine.language.to_string()).to_raw(),
         );
 
-        let features = (*engine).features;
-        for i in (0..(*engine).features.len()).rev() {
+        let features = engine.features;
+        for i in (0..engine.features.len()).rev() {
             let fref = gr_face_find_fref(gr_face, features[i].tag);
             if !fref.is_null() {
                 gr_fref_set_feature_value(fref, features[i].value as u16, gr_feature_values);
@@ -775,7 +779,7 @@ pub unsafe extern "C" fn initGraphiteBreaking(
         GR_SEGMENT.set(gr_make_seg(
             gr_font,
             gr_face,
-            (*engine).script.to_raw(),
+            engine.script.to_raw(),
             gr_feature_values,
             gr_encform::utf16,
             txt_ptr.cast(),
