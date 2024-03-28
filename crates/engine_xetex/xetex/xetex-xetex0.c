@@ -11350,9 +11350,9 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (s >= 0)
         actual_size = s;
     else if (s != -1000)
-        actual_size = xn_over_d(loaded_font_design_size, -(int32_t) s, 1000);
+        actual_size = xn_over_d(get_loaded_font_design_size(), -(int32_t) s, 1000);
     else
-        actual_size = loaded_font_design_size;
+        actual_size = get_loaded_font_design_size();
 
     if (pool_ptr + name_length > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
@@ -11416,7 +11416,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_check[font_ptr].s1 = 0;
     font_check[font_ptr].s0 = 0;
     font_glue[font_ptr] = TEX_NULL;
-    font_dsize[font_ptr] = loaded_font_design_size;
+    font_dsize[font_ptr] = get_loaded_font_design_size();
     font_size[font_ptr] = actual_size;
 
     if (native_font_type_flag == AAT_FONT_FLAG)
