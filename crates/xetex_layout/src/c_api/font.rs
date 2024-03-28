@@ -373,11 +373,11 @@ impl XeTeXFontBase {
                 .to_vec();
             let file_ty = afm.rsplit_mut(|c| *c == b'.').next();
             if let Some(file_ty) = file_ty {
-                if file_ty.len() == 4
-                    && file_ty[1].to_ascii_lowercase() == b'p'
-                    && file_ty[2].to_ascii_lowercase() == b'f'
+                if file_ty.len() == 3
+                    && file_ty[0].to_ascii_lowercase() == b'p'
+                    && file_ty[1].to_ascii_lowercase() == b'f'
                 {
-                    file_ty.copy_from_slice(b".afm");
+                    file_ty.copy_from_slice(b"afm");
                 }
             }
             afm.push(0);
