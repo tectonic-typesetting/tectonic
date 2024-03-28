@@ -14,6 +14,12 @@ binary will save you time and, possibly, headaches.
 
 [install]: ../installation/index.md
 
+If you use the [Nix] package manager, we provide a community maintained
+`flake.nix` with the package definition and a fully configured development
+environment. Please refer to the [Using Nix](#using-nix) section for more
+instructions.
+
+[Nix]: https://nixos.org/
 
 ## Basic Prerequisites
 
@@ -173,3 +179,23 @@ environment variables are set up properly. Read [The Cargo Book][cargo-book] for
 vastly more information about where you can go from there.
 
 [cargo-book]: https://doc.rust-lang.org/cargo/index.html
+
+## Using Nix
+
+If you have a working Nix installation [configured] with the experimental
+features `flakes` and `nix-command`, you can easily pull in the necessary
+dependencies with the following commands at the project root:
+
+- `nix develop` to enter a sub-shell with the development environments
+- `nix build` for a reproducible build of the tectonic package
+- `nix profile install` to install the package in your local nix profile
+
+The package definition is inherited from the community maintained repository
+[nixpkgs], with local overrides defined in `flake.nix` at the root of
+Tectonic's source repo. The nixpkgs definition also takes care of some
+packaging related issues, such as bundling with the correct version of `biber`
+to avoid [incompatibilities][biber-mismatch].
+
+[configured]: https://nixos.org/manual/nix/stable/command-ref/conf-file#conf-experimental-features
+[nixpkgs]: https://github.com/NixOS/nixpkgs
+[biber-mismatch]: https://github.com/tectonic-typesetting/tectonic/issues/893

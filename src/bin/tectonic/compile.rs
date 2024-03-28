@@ -22,7 +22,7 @@ use tectonic::{
 #[derive(Debug, Parser)]
 pub struct CompileOptions {
     /// The file to process, or "-" to process the standard input stream
-    #[arg(name = "input")]
+    #[arg(name = "input", value_hint = clap::ValueHint::FilePath)]
     input: String,
 
     /// The name of the "format" file used to initialize the TeX engine
