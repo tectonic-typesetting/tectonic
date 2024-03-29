@@ -43,17 +43,15 @@ struct V2CliOptions {
     #[arg(long = "color", name = "when", default_value = "auto")]
     cli_color: crate::CliColor,
 
-    /// Use this URL to find resource files instead of the default
-    // TODO add URL validation
+    /// Use this URL or file to find resource files instead of the default
     #[arg(
         long,
         short,
-        name = "url",
-        overrides_with = "url", 
+        overrides_with = "bundle",
         // This is inherited by some subcommands
         global(true)
     )]
-    web_bundle: Option<String>,
+    bundle: Option<String>,
 
     /// The command to run
     #[command(subcommand)]

@@ -23,7 +23,7 @@ fn get_a_bundle(
             let doc = ws.first_document();
             let mut options: DocumentSetupOptions = Default::default();
             options.only_cached(only_cached);
-            doc.bundle(&options, status)
+            doc.bundle(&options)
         }
 
         Err(e) => {
@@ -37,7 +37,6 @@ fn get_a_bundle(
                 Ok(Box::new(tectonic_bundles::get_fallback_bundle(
                     tectonic_engine_xetex::FORMAT_SERIAL,
                     only_cached,
-                    status,
                 )?))
             }
         }
@@ -119,8 +118,8 @@ impl BundleSearchCommand {
     }
 
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        let mut bundle = get_a_bundle(config, self.only_cached, status)?;
-        let files = bundle.all_files(status)?;
+        let bundle = get_a_bundle(config, self.only_cached, status)?;
+        let files = bundle.all_files();
 
         // Is there a better way to do this?
         let filter: Box<dyn Fn(&str) -> bool> = if let Some(t) = self.term {

@@ -2404,6 +2404,7 @@ dependencies = [
  "tectonic_geturl",
  "tectonic_io_base",
  "tectonic_status_base",
+ "url",
  "zip",
 ]
 

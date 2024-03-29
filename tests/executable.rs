@@ -634,14 +634,14 @@ fn stdin_content() {
 
 /// Test various web bundle overrides for the v1 CLI & `-X compile`
 #[test]
-fn web_bundle_overrides() {
+fn bundle_overrides() {
     let filename = "subdirectory/content/1.tex";
     let fmt_arg: &str = &get_plain_format_arg();
     let tempdir = setup_and_copy_files(&[filename]);
     let temppath = tempdir.path().to_owned();
 
-    let arg_bad_bundle = ["--web-bundle", "bad-bundle"];
-    let arg_good_bundle = ["--web-bundle", "test-bundle://"];
+    let arg_bad_bundle = ["--bundle", "bad-bundle"];
+    let arg_good_bundle = ["--bundle", "test-bundle://"];
 
     // test with a bad bundle
     let output = run_tectonic(
@@ -707,8 +707,8 @@ fn web_bundle_overrides() {
 #[cfg(feature = "serialization")]
 #[test]
 fn v2_bundle_overrides() {
-    let arg_bad_bundle = ["--web-bundle", "bad-bundle"];
-    let arg_good_bundle = ["--web-bundle", "test-bundle://"];
+    let arg_bad_bundle = ["--bundle", "bad-bundle"];
+    let arg_good_bundle = ["--bundle", "test-bundle://"];
 
     // test `-X command`
     for command in ["new", "init"] {
@@ -759,7 +759,7 @@ fn v2_bundle_overrides() {
     // test `-X build`
     let (_tempdir, temppath) = setup_v2();
 
-    // `--web-bundle` is ignored
+    // `--bundle` is ignored
     let output = run_tectonic(
         &temppath,
         &[&arg_bad_bundle[..], &["-X"], &["build"]].concat(),
