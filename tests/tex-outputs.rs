@@ -199,6 +199,13 @@ fn file_encoding() {
         .go()
 }
 
+#[test]
+fn utf8_chars() {
+    TestCase::new("utf8_chars")
+        .expect(Ok(TexOutcome::Warnings))
+        .go();
+}
+
 /// An issue triggered by a bug in how the I/O subsystem reported file offsets
 /// after an ungetc() call.
 #[test]
