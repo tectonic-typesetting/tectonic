@@ -1,5 +1,5 @@
 use crate::c_api::font::XeTeXFontBase;
-use crate::c_api::{Fixed, PlatformFontRef, RawPlatformFontRef, RsFix2D, XeTeXFont};
+use crate::c_api::{fix_to_d, Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont};
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
@@ -168,7 +168,7 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
     if let Some(table) = post_table {
         let table = table.cast::<ft::tables::Postscript>().as_ref();
         font.slant = (1000.0
-            * (f64::tan(RsFix2D((-table.italic_angle) as Fixed) * std::f64::consts::PI / 180.0)))
+            * (f64::tan(fix_to_d((-table.italic_angle) as Fixed) * std::f64::consts::PI / 180.0)))
             as _;
     }
 }
