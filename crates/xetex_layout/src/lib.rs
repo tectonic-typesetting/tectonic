@@ -97,13 +97,11 @@ mod c_api {
     #[cfg(target_os = "macos")]
     type PlatformFontRef = mac_core::CTFontDescriptorRef;
 
-    #[no_mangle]
-    pub extern "C" fn RsFix2D(f: Fixed) -> f64 {
+    fn fix_to_d(f: Fixed) -> f64 {
         f as f64 / 65536.0
     }
 
-    #[no_mangle]
-    pub extern "C" fn RsD2Fix(d: f64) -> Fixed {
+    fn d_to_fix(d: f64) -> Fixed {
         (d * 65536.0 + 0.5) as Fixed
     }
 
