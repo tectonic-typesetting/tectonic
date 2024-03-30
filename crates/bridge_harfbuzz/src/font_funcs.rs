@@ -84,8 +84,6 @@ unsafe extern "C" fn glyph_origin<
             true as sys::hb_bool_t
         }
         None => {
-            debug_assert_eq!(*x, 0);
-            debug_assert_eq!(*y, 0);
             *x = 0;
             *y = 0;
             false as sys::hb_bool_t
@@ -150,8 +148,6 @@ unsafe extern "C" fn glyph_contour_point<
             true as sys::hb_bool_t
         }
         None => {
-            debug_assert_eq!(*x, 0);
-            debug_assert_eq!(*y, 0);
             *x = 0;
             *y = 0;
             false as sys::hb_bool_t
