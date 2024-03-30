@@ -121,7 +121,7 @@ pub trait FontManagerBackend {
 }
 
 unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
-    let mut xfont = match XeTeXFontBase::new(font.font_ref.clone(), 10.0) {
+    let xfont = match XeTeXFontBase::new(font.font_ref.clone(), 10.0) {
         Ok(xfont) => xfont,
         Err(_) => return,
     };
