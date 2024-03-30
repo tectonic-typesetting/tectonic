@@ -10,8 +10,9 @@ use crate::c_api::mac_core::{
     CTFontRef,
 };
 use crate::c_api::{
-    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, Fixed,
-    GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef, RsD2Fix, RsFix2D, XeTeXFont,
+    d_to_fix, fix_to_d, ttstub_input_close, ttstub_input_get_size, ttstub_input_open,
+    ttstub_input_read, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
+    XeTeXFont,
 };
 use std::cell::RefCell;
 use std::convert::TryInto;
@@ -146,7 +147,7 @@ pub unsafe extern "C" fn createFont(font_ref: RawPlatformFontRef, point_size: Fi
         Err(_) => return ptr::null_mut(),
     };
 
-    match XeTeXFontBase::new(font_ref, RsFix2D(point_size) as f32) {
+    match XeTeXFontBase::new(font_ref, fix_to_d(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
     }
@@ -164,7 +165,7 @@ pub unsafe extern "C" fn createFontFromFile(
         Some(CStr::from_ptr(filename))
     };
 
-    match XeTeXFontBase::new_path_index(filename, index, RsFix2D(point_size) as f32) {
+    match XeTeXFontBase::new_path_index(filename, index, fix_to_d(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
     }
@@ -409,7 +410,7 @@ impl XeTeXFontBase {
         let post_table = self.get_font_table(ft::SfntTag::Post);
         if let Some(table) = post_table {
             self.italic_angle =
-                RsFix2D(table.cast::<ft::tables::Postscript>().as_ref().italic_angle as Fixed)
+                fix_to_d(table.cast::<ft::tables::Postscript>().as_ref().italic_angle as Fixed)
                     as f32;
         }
 
@@ -495,7 +496,7 @@ impl XeTeXFontBase {
     #[no_mangle]
     pub unsafe extern "C" fn getSlant(font: XeTeXFont) -> Fixed {
         let angle = (*font).italic_angle() as f64;
-        RsD2Fix(f64::tan(-angle * std::f64::consts::PI / 180.0))
+        d_to_fix(f64::tan(-angle * std::f64::consts::PI / 180.0))
     }
 
     #[no_mangle]
