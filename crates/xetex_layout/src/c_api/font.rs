@@ -105,7 +105,7 @@ pub fn get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
                         x_bearing: face.glyph().metrics().horiBearingX as hb::Position,
                         y_bearing: face.glyph().metrics().horiBearingY as hb::Position,
                         width: face.glyph().metrics().width as hb::Position,
-                        height: face.glyph().metrics().height as hb::Position,
+                        height: -face.glyph().metrics().height as hb::Position,
                     })
                 } else {
                     None
