@@ -658,6 +658,10 @@ impl<CB: CacheBackend> IoProvider for CachingBundle<CB> {
             InputOrigin::Other,
         ))
     }
+
+    fn input_path(&mut self, name: &str, status: &mut dyn StatusBackend) -> OpenResult<PathBuf> {
+        self.ensure_file_availability(name, status)
+    }
 }
 
 impl<CB: CacheBackend> Bundle for CachingBundle<CB> {
