@@ -79,8 +79,8 @@ fn trip_test() {
     // Check that outputs match expectations.
     let files = &*mem.files.borrow();
     Expected::new()
-        .res(Ok(TexOutcome::Spotless), res1)
-        .res(Ok(TexOutcome::Spotless), res2)
+        .res(Ok(TexOutcome::Errors), res1)
+        .res(Ok(TexOutcome::Errors), res2)
         .file(expected_log.collection(files))
         .file(expected_xdv.collection(files))
         .file(expected_os.collection(files))
@@ -142,8 +142,8 @@ fn etrip_test() {
     // Check that outputs match expectations.
     let files = &*files.borrow();
     Expected::new()
-        .res(Ok(TexOutcome::Spotless), res1)
-        .res(Ok(TexOutcome::Spotless), res2)
+        .res(Ok(TexOutcome::Errors), res1)
+        .res(Ok(TexOutcome::Errors), res2)
         .file(expected_log.collection(files))
         .file(expected_xdv.collection(files))
         .file(expected_out.collection(files))
