@@ -513,7 +513,7 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
          * because of font caching, it's cheap to discard this and create the real one later */
         // TODO: this engine is never dropped, but doing so would invalidate `font`
         //        language is always NULL here
-        engine = createLayoutEngine(fontRef, font, script, language,
+        engine = createLayoutEngine(font, script, language,
                 features, nFeatures, tmpShapers, rgbValue, extend, slant, embolden);
 
         if (engine == NULL)
@@ -654,7 +654,7 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
     if ((loaded_font_flags & FONT_FLAGS_VERTICAL) != 0)
         setFontLayoutDir(font, 1);
 
-    engine = createLayoutEngine(fontRef, font, script, language,
+    engine = createLayoutEngine(font, script, language,
                     features, nFeatures, shapers, rgbValue, extend, slant, embolden);
 
     if (!engine) {

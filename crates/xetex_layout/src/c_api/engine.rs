@@ -1,6 +1,6 @@
-use super::font::{deleteFont, XeTeXFontBase};
+use super::font::XeTeXFontBase;
 use crate::c_api::manager::getReqEngine;
-use crate::c_api::{FloatPoint, GlyphBBox, RawPlatformFontRef, XeTeXFont, XeTeXLayoutEngine};
+use crate::c_api::{FloatPoint, GlyphBBox, XeTeXFont, XeTeXLayoutEngine};
 use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::{CStr, CString};
@@ -18,14 +18,14 @@ use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
 #[repr(C)]
 pub struct XeTeXLayoutEngineBase {
-    font: *mut XeTeXFontBase,
+    font: Box<XeTeXFontBase>,
     script: hb::Tag,
     language: hb::Language,
     features: &'static [hb::Feature],
     /// the requested shapers
     shaper_list: Cow<'static, [*const libc::c_char]>,
     /// the actually used shaper
-    shaper: *mut libc::c_char,
+    shaper: Option<CString>,
     rgb_value: u32,
     extend: f32,
     slant: f32,
@@ -36,7 +36,6 @@ pub struct XeTeXLayoutEngineBase {
 impl XeTeXLayoutEngineBase {
     #[no_mangle]
     pub unsafe extern "C" fn createLayoutEngine(
-        _font_ref: RawPlatformFontRef,
         font: XeTeXFont,
         script: hb::Tag,
         language: *mut libc::c_char,
@@ -48,6 +47,8 @@ impl XeTeXLayoutEngineBase {
         slant: f32,
         embolden: f32,
     ) -> XeTeXLayoutEngine {
+        let font = Box::from_raw(font);
+
         let language = if !language.is_null() {
             Some(CString::from_raw(language))
         } else {
@@ -85,7 +86,7 @@ impl XeTeXLayoutEngineBase {
             },
             features,
             shaper_list,
-            shaper: ptr::null_mut(),
+            shaper: None,
             rgb_value,
             extend,
             slant,
@@ -98,16 +99,12 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn deleteLayoutEngine(this: XeTeXLayoutEngine) {
-        let this = &mut *this;
-        deleteFont(this.font);
-        libc::free(this.shaper.cast());
-        this.shaper_list = Cow::Borrowed(&[]);
         let _ = Box::from_raw(this);
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn getFont(engine: XeTeXLayoutEngine) -> XeTeXFont {
-        (*engine).font
+        (*engine).font_mut()
     }
 
     #[no_mangle]
@@ -250,12 +247,18 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn usingGraphite(engine: XeTeXLayoutEngine) -> bool {
-        !(*engine).shaper.is_null() && libc::strcmp(c!("graphite2"), (*engine).shaper) == 0
+        match &(*engine).shaper {
+            Some(shaper) => shaper.to_bytes() == b"graphite2",
+            None => false,
+        }
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn usingOpenType(engine: XeTeXLayoutEngine) -> bool {
-        !(*engine).shaper.is_null() && libc::strcmp(c!("ot"), (*engine).shaper) == 0
+        match &(*engine).shaper {
+            Some(shaper) => shaper.to_bytes() == b"ot",
+            None => false,
+        }
     }
 
     #[no_mangle]
@@ -280,10 +283,10 @@ impl XeTeXLayoutEngineBase {
         let chars = slice::from_raw_parts(chars, max as usize);
         let engine = &mut *engine;
 
-        let hb_font = (*engine.font).get_hb_font();
+        let hb_font = engine.font.get_hb_font();
         let hb_face = hb_font.get_face();
 
-        let direction = if (*engine.font).layout_dir_vertical() {
+        let direction = if engine.font.layout_dir_vertical() {
             hb::Direction::Ttb
         } else if rtl {
             hb::Direction::Rtl
@@ -357,13 +360,10 @@ impl XeTeXLayoutEngineBase {
         );
         let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
 
-        if !engine.shaper.is_null() {
-            libc::free(engine.shaper.cast());
-            engine.shaper = ptr::null_mut();
-        }
+        engine.shaper = None;
 
         if res {
-            engine.shaper = libc::strdup(shape_plan.get_shaper().as_ptr());
+            engine.shaper = Some(shape_plan.get_shaper().to_owned());
             engine
                 .hb_buffer
                 .set_content_type(hb::BufferContentType::Glyphs);
@@ -374,7 +374,7 @@ impl XeTeXLayoutEngineBase {
             let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
 
             if res {
-                engine.shaper = libc::strdup(shape_plan.get_shaper().as_ptr());
+                engine.shaper = Some(shape_plan.get_shaper().to_owned());
                 engine
                     .hb_buffer
                     .set_content_type(hb::BufferContentType::Glyphs);
@@ -416,11 +416,11 @@ impl XeTeXLayoutEngineBase {
     }
 
     fn font(&self) -> &XeTeXFontBase {
-        unsafe { &*self.font }
+        &self.font
     }
 
     fn font_mut(&mut self) -> &mut XeTeXFontBase {
-        unsafe { &mut *self.font }
+        &mut self.font
     }
 }
 
