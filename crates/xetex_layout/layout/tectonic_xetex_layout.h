@@ -40,9 +40,7 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 #define PREFERRED_SUBFAMILY_NAME 17
 #endif
 
-#if !defined(XETEX_MAC)
-typedef int32_t Fixed;
-#endif
+typedef struct hb_font_t hb_font_t;
 
 typedef struct {
   float xMin;
@@ -50,6 +48,11 @@ typedef struct {
   float xMax;
   float yMax;
 } GlyphBBox;
+
+typedef struct {
+  float x;
+  float y;
+} FloatPoint;
 
 #if !defined(XETEX_MAC)
 typedef FcPattern *RawPlatformFontRef;
@@ -59,20 +62,15 @@ typedef FcPattern *RawPlatformFontRef;
 typedef CTFontDescriptorRef RawPlatformFontRef;
 #endif
 
-typedef struct {
-  float x;
-  float y;
-} FloatPoint;
+#if !defined(XETEX_MAC)
+typedef int32_t Fixed;
+#endif
 
 typedef uint32_t OTTag;
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
-
-double RsFix2D(Fixed f);
-
-Fixed RsD2Fix(double d);
 
 int32_t getCachedGlyphBBox(uint16_t font_id, uint16_t glyph_id, GlyphBBox *bbox);
 
@@ -82,8 +80,7 @@ void set_cp_code(int32_t font_num, uint32_t code, int32_t side, int32_t value);
 
 int32_t get_cp_code(int32_t font_num, uint32_t code, int32_t side);
 
-XeTeXLayoutEngine createLayoutEngine(RawPlatformFontRef _font_ref,
-                                     XeTeXFont font,
+XeTeXLayoutEngine createLayoutEngine(XeTeXFont font,
                                      hb_tag_t script,
                                      char *language,
                                      hb_feature_t *features,
