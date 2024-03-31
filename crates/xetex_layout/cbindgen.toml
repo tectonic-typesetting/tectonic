@@ -16,6 +16,7 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;"""
 [export.rename]
 "Tag" = "hb_tag_t"
 "Feature" = "hb_feature_t"
+"Font" = "hb_font_t"
 
 [defines]
 "target_os = macos" = "XETEX_MAC"
