@@ -5,8 +5,9 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 
 use tectonic::io::{FilesystemIo, IoProvider, IoStack, MemoryIo};
-use tectonic::BibtexEngine;
+use tectonic::{errors::Result, BibtexEngine};
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
+use tectonic_engine_xetex::TexOutcome;
 use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
@@ -17,6 +18,7 @@ struct TestCase {
     stem: String,
     subdir: Option<String>,
     test_bbl: bool,
+    expected_result: Result<TexOutcome>,
 }
 
 impl TestCase {
@@ -25,6 +27,7 @@ impl TestCase {
             stem: stem.to_owned(),
             subdir: subdir.map(String::from),
             test_bbl: true,
+            expected_result: Ok(TexOutcome::Spotless),
         }
     }
 
@@ -41,7 +44,7 @@ impl TestCase {
         p
     }
 
-    fn go(&mut self) {
+    fn go(self) {
         util::set_test_root();
 
         let mut p = self.test_dir();
@@ -68,7 +71,7 @@ impl TestCase {
 
         let files = mem.files.borrow();
 
-        let mut expect = Expected::new();
+        let mut expect = Expected::new().res(self.expected_result, res);
 
         if self.test_bbl {
             expect =
@@ -78,8 +81,6 @@ impl TestCase {
         expect
             .file(ExpectedFile::read_with_extension(&mut p, "blg").collection(&files))
             .finish();
-
-        res.unwrap();
     }
 }
 

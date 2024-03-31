@@ -11,6 +11,7 @@
 #![allow(dead_code)]
 
 use flate2::read::GzDecoder;
+use std::fmt::Debug;
 use std::{
     collections::HashSet,
     env,
@@ -18,10 +19,13 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
 };
+use tectonic::errors::DefinitelySame;
 use tectonic::{errors::Result, io::memory::MemoryFileCollection};
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
+use tectonic_engine_xetex::TexOutcome;
 
 pub use tectonic::test_util::test_path;
+use tectonic_errors::prelude::StdResult;
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
@@ -99,13 +103,26 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
 /// Convenience structure for comparing expected and actual output in various
 /// tests.
 #[must_use = "Expectations do nothing if not `finish`ed"]
-pub struct Expected<'a> {
+pub struct Expected<'a, E> {
+    result: Option<(StdResult<TexOutcome, E>, StdResult<TexOutcome, E>)>,
     files: Vec<ExpectedFile<'a>>,
 }
 
-impl<'a> Expected<'a> {
+impl<'a, E: DefinitelySame + Debug> Expected<'a, E> {
     pub fn new() -> Self {
-        Expected { files: Vec::new() }
+        Expected {
+            result: None,
+            files: Vec::new(),
+        }
+    }
+
+    pub fn res(
+        mut self,
+        expected: StdResult<TexOutcome, E>,
+        found: StdResult<TexOutcome, E>,
+    ) -> Self {
+        self.result = Some((expected, found));
+        self
     }
 
     pub fn file(mut self, file: ExpectedFile<'a>) -> Self {
@@ -115,6 +132,14 @@ impl<'a> Expected<'a> {
 
     pub fn finish(&self) {
         let mut failures = Vec::new();
+        if let Some((expected, found)) = &self.result {
+            if !found.definitely_same(expected) {
+                failures.push(format!(
+                    "Expected engine result {:?}, got {:?}",
+                    expected, found
+                ));
+            }
+        }
         for file in &self.files {
             if let Err(msg) = file.finish() {
                 failures.push(msg);

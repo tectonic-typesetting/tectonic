@@ -201,6 +201,22 @@ pub trait DefinitelySame {
 //    }
 //}
 
+impl DefinitelySame for Error {
+    fn definitely_same(&self, other: &Self) -> bool {
+        if !self.0.definitely_same(&other.0) {
+            return false;
+        }
+        self.1.definitely_same(&other.1)
+    }
+}
+
+impl DefinitelySame for error_chain::State {
+    fn definitely_same(&self, other: &Self) -> bool {
+        // We ignore backtraces
+        self.next_error.definitely_same(&other.next_error)
+    }
+}
+
 impl DefinitelySame for ErrorKind {
     fn definitely_same(&self, other: &Self) -> bool {
         match self {
@@ -230,6 +246,23 @@ impl DefinitelySame for NewError {
     /// Hack alert! We only compare stringifications.
     fn definitely_same(&self, other: &Self) -> bool {
         self.to_string() == other.to_string()
+    }
+}
+
+impl DefinitelySame for Box<dyn std::error::Error + Send> {
+    /// Hack alert! We only compare stringifications.
+    fn definitely_same(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
+}
+
+impl<T: DefinitelySame> DefinitelySame for Option<T> {
+    fn definitely_same(&self, other: &Self) -> bool {
+        match (self, other) {
+            (None, None) => true,
+            (Some(a), Some(b)) => a.definitely_same(b),
+            _ => false,
+        }
     }
 }
 

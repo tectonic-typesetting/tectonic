@@ -40,17 +40,17 @@ impl TestCase {
         }
     }
 
-    fn check_synctex(&mut self, check_synctex: bool) -> &mut Self {
+    fn check_synctex(mut self, check_synctex: bool) -> Self {
         self.check_synctex = check_synctex;
         self
     }
 
-    fn check_pdf(&mut self, check_pdf: bool) -> &mut Self {
+    fn check_pdf(mut self, check_pdf: bool) -> Self {
         self.check_pdf = check_pdf;
         self
     }
 
-    fn with_fs(&mut self, path: &Path) -> &mut Self {
+    fn with_fs(mut self, path: &Path) -> Self {
         self.extra_io.push(Box::new(FilesystemIo::new(
             path,
             false,
@@ -60,21 +60,21 @@ impl TestCase {
         self
     }
 
-    fn with_unstables(&mut self, unstables: UnstableOptions) -> &mut Self {
+    fn with_unstables(mut self, unstables: UnstableOptions) -> Self {
         self.unstables = unstables;
         self
     }
 
-    fn expect(&mut self, result: Result<TexOutcome>) -> &mut Self {
+    fn expect(mut self, result: Result<TexOutcome>) -> Self {
         self.expected_result = result;
         self
     }
 
-    fn expect_msg(&mut self, msg: &str) -> &mut Self {
+    fn expect_msg(self, msg: &str) -> Self {
         self.expect(Err(anyhow!("{}", msg)))
     }
 
-    fn go(&mut self) {
+    fn go(mut self) {
         util::set_test_root();
 
         let expect_xdv = self.expected_result.is_ok();
@@ -147,19 +147,13 @@ impl TestCase {
             tex_res
         };
 
-        if !res.definitely_same(&self.expected_result) {
-            eprintln!(
-                "expected TeX result {:?}, got {:?}",
-                self.expected_result, res
-            );
-            panic!("the TeX engine returned an unexpected result code");
-        }
-
         // Check that outputs match expectations.
 
         let files = mem.files.borrow();
 
-        let mut expect = Expected::new().file(expected_log.collection(&files));
+        let mut expect = Expected::new()
+            .res(self.expected_result, res)
+            .file(expected_log.collection(&files));
 
         if expect_xdv {
             expect =
