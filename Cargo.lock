@@ -2439,6 +2439,7 @@ dependencies = [
  "tectonic_bridge_core",
  "tectonic_errors",
  "tectonic_io_base",
+ "tectonic_status_base",
 ]
 
 [[package]]
