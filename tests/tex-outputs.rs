@@ -125,7 +125,7 @@ impl TestCase {
                 .shell_escape(self.unstables.shell_escape)
                 .process(&mut launcher, "plain.fmt", &texname);
 
-            if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
+            if self.check_pdf && tex_res.definitely_same(&self.expected_result) {
                 let mut engine = XdvipdfmxEngine::default();
 
                 engine
