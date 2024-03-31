@@ -553,50 +553,64 @@ pub(crate) fn add_out_pool(
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
-    // use crate::BibtexConfig;
-    // use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, DriverHooks, MinimalDriver};
+    use super::*;
+    use crate::BibtexConfig;
+    use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, MinimalDriver};
+    use tectonic_io_base::{stack::IoStack, IoProvider};
+    use tectonic_status_base::NoopStatusBackend;
+
+    fn with_cbs(f: impl FnOnce(&mut CoreBridgeState<'_>)) {
+        let io_list: Vec<&mut dyn IoProvider> = vec![];
+        let io = IoStack::new(io_list);
+        let mut hooks = MinimalDriver::new(io);
+        let mut status = NoopStatusBackend::default();
+        let mut cbl = CoreBridgeLauncher::new(&mut hooks, &mut status);
+        cbl.with_global_lock(|cbs| {
+            f(cbs);
+            Ok(())
+        })
+        .unwrap();
+    }
 
     // TODO: Create context without backend? Use custom backend-like type?
     //       Implement the relevant interfaces ourself?
-    // #[test]
-    // fn test_pool() {
-    //     with_cbs(|cbs| {
-    //         let mut ctx = Bibtex::new(cbs, BibtexConfig::default());
-    //         let mut hash = HashData::new();
-    //         let mut new_pool = StringPool::new();
-    //         let res = new_pool
-    //             .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", HashExtra::Text)
-    //             .unwrap();
-    //         assert!(!res.exists);
-    //         assert_eq!(
-    //             new_pool.try_get_str(hash.text(res.loc)),
-    //             Ok(b"a cool string" as &[_])
-    //         );
-    //
-    //         let res2 = new_pool
-    //             .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", HashExtra::Text)
-    //             .unwrap();
-    //         assert!(res2.exists);
-    //         assert_eq!(
-    //             new_pool.try_get_str(hash.text(res2.loc)),
-    //             Ok(b"a cool string" as &[_])
-    //         );
-    //
-    //         let res3 = new_pool.lookup_str(&hash, b"a cool string", StrIlk::Text);
-    //         assert!(res3.exists);
-    //         assert_eq!(
-    //             new_pool.try_get_str(hash.text(res3.loc)),
-    //             Ok(b"a cool string" as &[_])
-    //         );
-    //
-    //         let res4 = new_pool.lookup_str(&hash, b"a bad string", StrIlk::Text);
-    //         assert!(!res4.exists);
-    //         assert_eq!(
-    //             new_pool.try_get_str(hash.text(res4.loc)),
-    //             Err(LookupErr::DoesntExist)
-    //         );
-    //     })
-    //     .unwrap()
-    // }
+    #[test]
+    fn test_pool() {
+        with_cbs(|cbs| {
+            let mut ctx = Bibtex::new(cbs, BibtexConfig::default());
+            let mut hash = HashData::new();
+            let mut new_pool = StringPool::new();
+            let res = new_pool
+                .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", HashExtra::Text)
+                .unwrap();
+            assert!(!res.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res.loc)),
+                Ok(b"a cool string" as &[_])
+            );
+
+            let res2 = new_pool
+                .lookup_str_insert(&mut ctx, &mut hash, b"a cool string", HashExtra::Text)
+                .unwrap();
+            assert!(res2.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res2.loc)),
+                Ok(b"a cool string" as &[_])
+            );
+
+            let res3 = new_pool.lookup_str(&hash, b"a cool string", StrIlk::Text);
+            assert!(res3.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res3.loc)),
+                Ok(b"a cool string" as &[_])
+            );
+
+            let res4 = new_pool.lookup_str(&hash, b"a bad string", StrIlk::Text);
+            assert!(!res4.exists);
+            assert_eq!(
+                new_pool.try_get_str(hash.text(res4.loc)),
+                Err(LookupErr::DoesntExist)
+            );
+        })
+    }
 }
