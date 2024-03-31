@@ -176,7 +176,7 @@ impl<'a> ExpectedFile<'a> {
             .unwrap_or_else(|_| panic!("couldn't get path relative to test root {:?}", path))
             .to_str()
             .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", path))
-            .replace(|c| std::path::is_separator(c), "_");
+            .replace(std::path::is_separator, "_");
 
         let mut f = File::open(path).unwrap_or_else(|_| panic!("failed to open {:?}", path));
         let mut contents = Vec::new();
@@ -214,7 +214,7 @@ impl<'a> ExpectedFile<'a> {
             .unwrap_or_else(|_| panic!("couldn't get path relative to test root {:?}", pbase))
             .to_str()
             .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", pbase))
-            .replace(|c| std::path::is_separator(c), "_");
+            .replace(std::path::is_separator, "_");
 
         let mut dec = GzDecoder::new(File::open(&pbase).unwrap());
         let mut contents = Vec::new();

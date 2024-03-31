@@ -22,7 +22,7 @@ struct TestCase {
 
 impl TestCase {
     fn new(parts: &'static [&'static str]) -> Self {
-        assert!(parts.len() >= 1);
+        assert!(!parts.is_empty());
         TestCase {
             parts,
             test_bbl: true,
@@ -71,7 +71,7 @@ impl TestCase {
 
         // Check that outputs match expectations.
 
-        p.push(&self.parts[self.parts.len() - 1]);
+        p.push(self.parts[self.parts.len() - 1]);
 
         let files = mem.files.borrow();
 
