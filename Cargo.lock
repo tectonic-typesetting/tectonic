@@ -2339,6 +2339,7 @@ dependencies = [
  "watchexec",
  "watchexec-filterer-globset",
  "watchexec-signals",
+ "which",
  "zip",
 ]
 
