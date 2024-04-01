@@ -84,4 +84,5 @@ extern "C" {
     pub fn gr_cinfo_break_weight(p: *const gr_char_info) -> libc::c_int;
     pub fn gr_cinfo_base(p: *const gr_char_info) -> libc::size_t;
     pub fn gr_featureval_destroy(features: *mut gr_feature_val);
+    pub fn gr_font_destroy(font: *mut gr_font);
 }
