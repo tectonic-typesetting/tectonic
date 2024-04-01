@@ -27,7 +27,7 @@ pub use sys::hb_memory_mode_t as MemoryMode;
 pub use sys::hb_ot_name_id_t as OtNameId;
 pub use sys::hb_position_t as Position;
 pub use sys::hb_segment_properties_t as SegmentProperties;
-use tectonic_bridge_graphite2::gr_face;
+use tectonic_bridge_graphite2 as gr;
 
 /// Import something from our bridge crates so that we ensure that we actually
 /// link with them, to pull in the symbols defined in the C APIs.
@@ -486,8 +486,12 @@ impl Face {
         }
     }
 
-    pub fn get_gr_face(&self) -> *mut gr_face {
-        unsafe { sys::hb_graphite2_face_get_gr_face(self.as_ptr()) }
+    pub fn gr_face(&self) -> Option<&gr::Face> {
+        unsafe {
+            sys::hb_graphite2_face_get_gr_face(self.as_ptr())
+                .cast::<gr::Face>()
+                .as_ref()
+        }
     }
 
     pub fn set_index(&mut self, index: u32) {
