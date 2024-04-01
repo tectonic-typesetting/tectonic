@@ -1,7 +1,6 @@
 #![allow(non_camel_case_types)]
 
 use std::ptr;
-use tectonic_bridge_graphite2::gr_face;
 
 const fn hb_tag(text: &[u8; 4]) -> u32 {
     u32::from_be_bytes(*text)
@@ -348,7 +347,7 @@ extern "C" {
         feature_count: *mut libc::c_uint,
         feature_tags: *mut hb_tag_t,
     ) -> libc::c_uint;
-    pub fn hb_graphite2_face_get_gr_face(face: *mut hb_face_t) -> *mut gr_face;
+    pub fn hb_graphite2_face_get_gr_face(face: *mut hb_face_t) -> *mut ();
     pub fn hb_language_from_string(str: *const libc::c_char, len: libc::c_int) -> hb_language_t;
     pub fn hb_tag_from_string(str: *const libc::c_char, len: libc::c_int) -> hb_tag_t;
     pub fn hb_ot_tag_to_language(tag: hb_tag_t) -> hb_language_t;
