@@ -1,17 +1,17 @@
 use clap::Parser;
-use std::{convert::Infallible, env, path::PathBuf, sync::Arc};
+use std::{env, path::PathBuf, sync::Arc};
 use tectonic::{config::PersistentConfig, errors::Result, tt_error};
 use tectonic_status_base::StatusBackend;
 use tokio::runtime;
+use watchexec::command::Program;
 use watchexec::{
-    action::{Action, Outcome, PreSpawn},
     command::{Command, Shell},
-    config::InitConfig,
-    event::ProcessEnd,
-    Watchexec,
+    Id, Watchexec,
 };
 use watchexec_filterer_globset::GlobsetFilterer;
 use watchexec_signals::Signal;
+use watchexec_supervisor::job::{CommandState, Job, Ticket};
+use watchexec_supervisor::ProcessEnd;
 
 use crate::v2cli::{CommandCustomizations, TectonicCommand};
 
@@ -48,31 +48,35 @@ impl WatchCommand {
         let mut cmds = Vec::new();
 
         #[cfg(windows)]
-        let shell = Shell::Cmd;
+        let shell = Shell::cmd();
         #[cfg(unix)]
-        let shell = Shell::Unix("bash".to_string());
+        let shell = Shell::new("bash");
 
         for x in self.execute.iter() {
             let x = x.trim();
             if !x.is_empty() {
-                let cmd = Command::Shell {
-                    shell: shell.clone(),
-                    args: vec![],
-                    command: format!("\"{exe_name}\" -X {}", x),
+                let cmd = Command {
+                    program: Program::Shell {
+                        shell: shell.clone(),
+                        command: format!("\"{exe_name}\" -X {}", x),
+                        args: vec![],
+                    },
+                    options: Default::default(),
                 };
-                cmds.push(cmd)
+                cmds.push((Id::default(), Arc::new(cmd)))
             }
         }
 
         if cmds.is_empty() {
-            cmds.push(Command::Exec {
-                prog: exe_name,
-                args: vec!["-X".to_string(), "build".to_string()],
-            });
+            let cmd = Command {
+                program: Program::Exec {
+                    prog: exe_name.into(),
+                    args: vec!["-X".to_string(), "build".to_string()],
+                },
+                options: Default::default(),
+            };
+            cmds.push((Id::default(), Arc::new(cmd)));
         }
-
-        let mut runtime_config = watchexec::config::RuntimeConfig::default();
-        runtime_config.commands(cmds);
 
         let current_dir = env::current_dir()?;
 
@@ -87,14 +91,39 @@ impl WatchCommand {
         .await
         .unwrap();
 
-        runtime_config
-            .pathset([&current_dir])
-            .filterer(Arc::new(filter))
-            .on_pre_spawn(|pre_spawn: PreSpawn| async move {
-                println!("[Running `{}`]", pre_spawn.command);
-                Ok::<_, Infallible>(())
+        async fn end_task(end: Ticket, job: Job) {
+            end.await;
+            job.run(|ctx| match ctx.current {
+                CommandState::Finished {
+                    status: ProcessEnd::Success,
+                    ..
+                } => {
+                    println!("[Finished Running. Exit Status: 0]")
+                }
+                CommandState::Finished {
+                    status: ProcessEnd::ExitError(err),
+                    ..
+                } => {
+                    println!("[Finished Running. Exit Status: {}]", err.get())
+                }
+                _ => (),
             })
-            .on_action(|action: Action| async move {
+            .await;
+        }
+
+        let cmds = Arc::new(cmds);
+        let exec_handler = Watchexec::new_async(move |mut action| {
+            let cmds = Arc::clone(&cmds);
+            Box::new(async move {
+                if action.get_job(cmds[0].0).is_none() {
+                    for (id, cmd) in &*cmds {
+                        let job = action.get_or_create_job(*id, || Arc::clone(cmd));
+                        job.set_spawn_hook(|_, ctx| {
+                            println!("[Running `{}`]", ctx.command);
+                        });
+                    }
+                }
+
                 for event in &*action.events {
                     let is_kill = event.signals().any(|signal| {
                         matches!(
@@ -105,36 +134,27 @@ impl WatchCommand {
                                 | Signal::ForceStop
                         )
                     });
-                    if is_kill {
-                        action.outcome(Outcome::Exit);
-                        return Ok::<_, Infallible>(());
-                    }
 
-                    for complete in event.completions() {
-                        match complete {
-                            Some(ProcessEnd::Success) => {
-                                println!("[Finished Running. Exit Status: 0]")
-                            }
-                            Some(ProcessEnd::ExitError(err)) => {
-                                println!("[Finished Running. Exit Status: {}]", err.get())
-                            }
-                            _ => (),
-                        }
+                    if is_kill {
+                        action.list_jobs().for_each(|(_, job)| {
+                            job.stop();
+                        });
+                        return action;
                     }
 
                     let paths = event.paths().collect::<Vec<_>>();
                     if !paths.is_empty() {
-                        action.outcome(Outcome::IfRunning(
-                            Box::new(Outcome::DoNothing),
-                            Box::new(Outcome::Start),
-                        ));
-                        return Ok(());
+                        for (_, job) in action.list_jobs() {
+                            job.start().await;
+                            let end = job.to_wait();
+                            tokio::spawn(end_task(end, job));
+                        }
+                        return action;
                     }
                 }
-                Ok(())
-            });
-
-        let exec_handler = Watchexec::new(InitConfig::default(), runtime_config);
+                action
+            })
+        });
 
         match exec_handler {
             Err(e) => {
@@ -146,6 +166,10 @@ impl WatchCommand {
                 Ok(1)
             }
             Ok(exec_handler) => {
+                exec_handler
+                    .config
+                    .pathset([&current_dir])
+                    .filterer(Arc::new(filter));
                 exec_handler.main().await.unwrap().unwrap();
                 Ok(0)
             }

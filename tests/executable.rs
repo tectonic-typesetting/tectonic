@@ -1058,7 +1058,7 @@ fn extra_search_paths() {
 #[cfg(all(feature = "serialization", not(target_arch = "mips")))]
 #[test]
 fn v2_watch_succeeds() {
-    if KCOV_WORDS.len() > 0 {
+    if KCOV_WORDS.len() > 0 || env::var("TECTONIC_KCOV_RUN").is_ok() {
         return; // See run_tectonic_until() for an explanation of why this test must be skipped
     }
 
@@ -1107,8 +1107,8 @@ fn v2_watch_succeeds() {
     // success_or_panic(&output);
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    println!("stdout:\n{}", stdout);
-    println!("stderr:\n{}", stderr);
+    println!("-- stdout --\n{}\n-- end stdout --", stdout);
+    println!("-- stderr --\n{}\n-- end stderr --", stderr);
 
     thread.join().unwrap();
 
