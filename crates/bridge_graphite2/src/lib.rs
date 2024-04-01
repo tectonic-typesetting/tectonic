@@ -6,91 +6,196 @@
 //!
 //! [Tectonic]: https://tectonic-typesetting.github.io/
 
-#![allow(nonstandard_style)]
+use std::convert::Infallible;
+use std::mem::ManuallyDrop;
+use std::ops::{Deref, DerefMut};
+use std::ptr;
+use std::ptr::NonNull;
 
-pub const gr_breakNone: libc::c_int = 0;
-pub const gr_breakWord: libc::c_int = 15;
-pub const gr_breakBeforeWord: libc::c_int = -15;
+pub mod sys;
 
-#[repr(C)]
-pub struct gr_face(());
+pub struct Label(usize, NonNull<u8>);
 
-#[repr(C)]
-pub struct gr_feature_ref(());
+impl Label {
+    pub fn as_bytes(&self) -> &[u8] {
+        unsafe { std::slice::from_raw_parts(self.1.as_ptr(), self.0) }
+    }
 
-#[repr(C)]
-pub struct gr_feature_val(());
+    pub fn as_str(&self) -> &str {
+        unsafe { std::str::from_utf8_unchecked(self.as_bytes()) }
+    }
 
-#[repr(C)]
-pub struct gr_font(());
-
-#[repr(C)]
-pub struct gr_segment(());
-
-#[repr(C)]
-pub struct gr_slot(());
-
-#[repr(C)]
-pub struct gr_char_info(());
-
-#[repr(C)]
-pub enum gr_encform {
-    utf8,
-    utf16,
-    utf32,
+    pub fn into_raw(self) -> *mut u8 {
+        let this = ManuallyDrop::new(self);
+        this.1.as_ptr()
+    }
 }
 
-extern "C" {
-    pub fn gr_face_n_fref(pFace: *const gr_face) -> libc::c_ushort;
-    pub fn gr_face_fref(pFace: *const gr_face, i: u16) -> *const gr_feature_ref;
-    pub fn gr_fref_id(pfeatureref: *const gr_feature_ref) -> u32;
-    pub fn gr_face_find_fref(pFace: *const gr_face, featId: u32) -> *const gr_feature_ref;
-    pub fn gr_fref_n_values(pfeatureref: *const gr_feature_ref) -> u16;
-    pub fn gr_fref_value(pfeatureref: *const gr_feature_ref, settingno: u16) -> i16;
-    pub fn gr_face_featureval_for_lang(pFace: *const gr_face, langname: u32)
-        -> *mut gr_feature_val;
-    pub fn gr_fref_feature_value(
-        pfeatureref: *const gr_feature_ref,
-        feats: *const gr_feature_val,
-    ) -> u16;
-    pub fn gr_fref_label(
-        pfeatureref: *const gr_feature_ref,
-        langId: *mut u16,
-        utf: gr_encform,
-        length: *mut u32,
-    ) -> *mut libc::c_void;
-    pub fn gr_fref_value_label(
-        pfeatureref: *const gr_feature_ref,
-        setting: u16,
-        lang_id: *mut u16,
-        utf: gr_encform,
-        length: *mut u32,
-    ) -> *mut libc::c_void;
-    pub fn gr_label_destroy(label: *mut libc::c_void);
-    pub fn gr_make_font(ppm: f32, face: *const gr_face) -> *mut gr_font;
-    pub fn gr_seg_destroy(p: *mut gr_segment);
-    pub fn gr_fref_set_feature_value(
-        pfeatureref: *const gr_feature_ref,
-        val: u16,
-        pDest: *mut gr_feature_val,
-    ) -> libc::c_int;
-    pub fn gr_make_seg(
-        font: *const gr_font,
-        face: *const gr_face,
-        script: u32,
-        pFeats: *const gr_feature_val,
-        enc: gr_encform,
-        pStart: *const libc::c_void,
-        nChars: libc::size_t,
-        dir: libc::c_int,
-    ) -> *mut gr_segment;
-    pub fn gr_seg_first_slot(pSeg: *mut gr_segment) -> *const gr_slot;
-    pub fn gr_seg_last_slot(pSeg: *mut gr_segment) -> *const gr_slot;
-    pub fn gr_slot_next_in_segment(p: *const gr_slot) -> *const gr_slot;
-    pub fn gr_seg_cinfo(pSeg: *const gr_segment, index: libc::c_uint) -> *const gr_char_info;
-    pub fn gr_slot_index(p: *const gr_slot) -> libc::c_uint;
-    pub fn gr_cinfo_break_weight(p: *const gr_char_info) -> libc::c_int;
-    pub fn gr_cinfo_base(p: *const gr_char_info) -> libc::size_t;
+impl Drop for Label {
+    fn drop(&mut self) {
+        unsafe { sys::gr_label_destroy(self.1.cast().as_ptr()) }
+    }
+}
+
+pub struct FeatureRef(Infallible);
+
+impl FeatureRef {
+    fn as_ptr(&self) -> *const sys::gr_feature_ref {
+        ptr::from_ref(self).cast()
+    }
+
+    pub fn id(&self) -> u32 {
+        unsafe { sys::gr_fref_id(self.as_ptr()) }
+    }
+
+    pub fn num_values(&self) -> usize {
+        unsafe { sys::gr_fref_n_values(self.as_ptr()) as usize }
+    }
+
+    pub fn value(&self, idx: usize) -> i16 {
+        unsafe { sys::gr_fref_value(self.as_ptr(), idx as u16) }
+    }
+
+    pub fn feat_value(&self, feat: &FeatureVal) -> u16 {
+        unsafe { sys::gr_fref_feature_value(self.as_ptr(), feat.as_ptr()) }
+    }
+
+    pub fn set_feat_value(&self, feat: &mut FeatureVal, value: u16) -> Result<(), ()> {
+        let res =
+            unsafe { sys::gr_fref_set_feature_value(self.as_ptr(), value, feat.as_ptr_mut()) };
+        if res != 0 {
+            Ok(())
+        } else {
+            Err(())
+        }
+    }
+
+    pub fn label(&self, lang_id: u16) -> Option<Label> {
+        let mut actual_id = lang_id;
+        let mut len = 0;
+        let ptr = unsafe {
+            sys::gr_fref_label(
+                self.as_ptr(),
+                &mut actual_id,
+                sys::gr_encform::utf8,
+                &mut len,
+            )
+        };
+        NonNull::new(ptr.cast()).map(|ptr| Label(len as usize, ptr))
+    }
+
+    pub fn value_label(&self, idx: usize, lang_id: u16) -> Option<Label> {
+        let mut actual_id = lang_id;
+        let mut len = 0;
+        let ptr = unsafe {
+            sys::gr_fref_value_label(
+                self.as_ptr(),
+                idx as u16,
+                &mut actual_id,
+                sys::gr_encform::utf8,
+                &mut len,
+            )
+        };
+        NonNull::new(ptr.cast()).map(|ptr| Label(len as usize, ptr))
+    }
+}
+
+pub struct FeatureVal(Infallible);
+
+impl FeatureVal {
+    pub fn as_ptr(&self) -> *const sys::gr_feature_val {
+        ptr::from_ref(self).cast()
+    }
+
+    fn as_ptr_mut(&mut self) -> *mut sys::gr_feature_val {
+        ptr::from_mut(self).cast()
+    }
+}
+
+pub struct OwnFeatureVal(NonNull<FeatureVal>);
+
+impl Deref for OwnFeatureVal {
+    type Target = FeatureVal;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { self.0.as_ref() }
+    }
+}
+
+impl DerefMut for OwnFeatureVal {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { self.0.as_mut() }
+    }
+}
+
+impl Drop for OwnFeatureVal {
+    fn drop(&mut self) {
+        unsafe { sys::gr_featureval_destroy(self.0.cast().as_ptr()) }
+    }
+}
+
+pub struct Face(Infallible);
+
+impl Face {
+    pub fn as_ptr(&self) -> *const sys::gr_face {
+        ptr::from_ref(self).cast()
+    }
+
+    pub fn num_feature_refs(&self) -> usize {
+        unsafe { sys::gr_face_n_fref(self.as_ptr()) as usize }
+    }
+
+    pub fn feature_ref(&self, idx: usize) -> Option<&FeatureRef> {
+        unsafe {
+            sys::gr_face_fref(self.as_ptr(), idx as u16)
+                .cast::<FeatureRef>()
+                .as_ref()
+        }
+    }
+
+    pub fn find_feature_ref(&self, feat_id: u32) -> Option<&FeatureRef> {
+        unsafe {
+            sys::gr_face_find_fref(self.as_ptr(), feat_id)
+                .cast::<FeatureRef>()
+                .as_ref()
+        }
+    }
+
+    pub fn feature_val_for_lang(&self, lang: u32) -> OwnFeatureVal {
+        let ptr = unsafe { sys::gr_face_featureval_for_lang(self.as_ptr(), lang) };
+        OwnFeatureVal(NonNull::new(ptr.cast()).unwrap())
+    }
+}
+
+pub struct Font(Infallible);
+
+impl Font {
+    pub fn as_ptr(&self) -> *const sys::gr_font {
+        ptr::from_ref(self).cast()
+    }
+}
+
+pub struct OwnFont(NonNull<Font>);
+
+impl OwnFont {
+    pub fn new(pt_size: f32, face: &Face) -> Option<OwnFont> {
+        let ptr = unsafe { sys::gr_make_font(pt_size, face.as_ptr()) };
+        NonNull::new(ptr.cast()).map(OwnFont)
+    }
+}
+
+impl Deref for OwnFont {
+    type Target = Font;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { self.0.as_ref() }
+    }
+}
+
+impl DerefMut for OwnFont {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { self.0.as_mut() }
+    }
 }
 
 #[test]
