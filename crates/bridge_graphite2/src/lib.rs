@@ -14,6 +14,8 @@ use std::ptr::NonNull;
 
 pub mod sys;
 
+pub use sys::gr_encform as EncForm;
+
 pub struct Label(usize, NonNull<u8>);
 
 impl Label {
@@ -197,6 +199,106 @@ impl DerefMut for OwnFont {
         unsafe { self.0.as_mut() }
     }
 }
+
+impl Drop for OwnFont {
+    fn drop(&mut self) {
+        unsafe { sys::gr_font_destroy(self.0.cast().as_ptr()) }
+    }
+}
+
+pub trait StrEnc {
+    fn enc(&self) -> EncForm;
+    fn as_ptr(&self) -> *const ();
+    fn len(&self) -> usize;
+}
+
+impl StrEnc for str {
+    fn enc(&self) -> EncForm {
+        EncForm::utf8
+    }
+
+    fn as_ptr(&self) -> *const () {
+        self.as_ptr().cast()
+    }
+
+    fn len(&self) -> usize {
+        self.len()
+    }
+}
+
+impl StrEnc for (*const u16, usize) {
+    fn enc(&self) -> EncForm {
+        EncForm::utf16
+    }
+
+    fn as_ptr(&self) -> *const () {
+        self.0.cast()
+    }
+
+    fn len(&self) -> usize {
+        self.1
+    }
+}
+
+pub struct Segment(Infallible);
+
+impl Segment {
+    fn as_ptr(&self) -> *const sys::gr_segment {
+        ptr::from_ref(self).cast()
+    }
+
+    pub fn first_slot(&self) -> &Slot {
+        unsafe { &*sys::gr_seg_first_slot(self.as_ptr().cast_mut()).cast() }
+    }
+}
+
+pub struct OwnSegment(NonNull<Segment>);
+
+impl OwnSegment {
+    pub fn new<S: ?Sized + StrEnc>(
+        font: &Font,
+        face: &Face,
+        script: u32,
+        features: &FeatureVal,
+        s: &S,
+    ) -> Option<OwnSegment> {
+        let ptr = unsafe {
+            sys::gr_make_seg(
+                font.as_ptr(),
+                face.as_ptr(),
+                script,
+                features.as_ptr(),
+                s.enc(),
+                s.as_ptr().cast(),
+                s.len(),
+                0,
+            )
+        };
+        NonNull::new(ptr.cast()).map(OwnSegment)
+    }
+}
+
+impl Deref for OwnSegment {
+    type Target = Segment;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe { self.0.as_ref() }
+    }
+}
+
+impl DerefMut for OwnSegment {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        unsafe { self.0.as_mut() }
+    }
+}
+
+impl Drop for OwnSegment {
+    fn drop(&mut self) {
+        unsafe { sys::gr_seg_destroy(self.0.cast().as_ptr()) }
+    }
+}
+
+pub struct Slot(Infallible);
 
 #[test]
 fn linkage() {}
