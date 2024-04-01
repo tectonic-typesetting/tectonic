@@ -30,3 +30,4 @@ tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 tectonic_bridge_core = "thiscommit:2021-01-17:fohCh1sh"
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
 tectonic_io_base = "0d9169ef44b2652d6d70308a83022bfd60358e71"
+tectonic_status_base = "0d9169ef44b2652d6d70308a83022bfd60358e71"
