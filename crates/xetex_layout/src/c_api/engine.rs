@@ -708,7 +708,7 @@ pub unsafe extern "C" fn findGraphiteFeatureSettingNamed(
 }
 
 thread_local! {
-    pub static GR_SEGMENT: Cell<*mut gr_segment> = const { Cell::new(ptr::null_mut()) };
+    pub static GR_SEGMENT: Cell<Option<gr::OwnSegment>> = const { Cell::new(None) };
     pub static GR_PREV_SLOT: Cell<*const gr_slot> = const { Cell::new(ptr::null()) };
     pub static GR_TEXT_LEN: Cell<libc::c_uint> = const { Cell::new(0) };
 }
@@ -729,11 +729,8 @@ pub unsafe extern "C" fn initGraphiteBreaking(
         return false;
     };
 
-    let gr_seg = GR_SEGMENT.get();
-
-    if !gr_seg.is_null() {
-        gr_seg_destroy(gr_seg);
-        GR_SEGMENT.set(ptr::null_mut());
+    let gr_seg = GR_SEGMENT.take();
+    if gr_seg.is_some() {
         GR_PREV_SLOT.set(ptr::null());
     }
 
@@ -748,17 +745,16 @@ pub unsafe extern "C" fn initGraphiteBreaking(
         }
     }
 
-    GR_SEGMENT.set(gr_make_seg(
-        (*gr_font).as_ptr(),
-        gr_face.as_ptr(),
+    let gr_seg = gr::OwnSegment::new(
+        &gr_font,
+        gr_face,
         engine.script.to_raw(),
-        gr_feature_values.as_ptr(),
-        gr_encform::utf16,
-        txt_ptr.cast(),
-        txt_len as libc::size_t,
-        0,
-    ));
-    GR_PREV_SLOT.set(gr_seg_first_slot(gr_seg));
+        &gr_feature_values,
+        &(txt_ptr, txt_len as usize),
+    )
+    .unwrap();
+    GR_PREV_SLOT.set(gr_seg.first_slot());
+    GR_SEGMENT.set(Some(gr_seg));
     GR_TEXT_LEN.set(txt_len);
 
     true
