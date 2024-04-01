@@ -6,11 +6,6 @@ use std::cell::Cell;
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
 use tectonic_bridge_graphite2 as gr;
-use tectonic_bridge_graphite2::sys::{
-    gr_breakBeforeWord, gr_breakNone, gr_breakWord, gr_cinfo_base, gr_cinfo_break_weight,
-    gr_encform, gr_make_seg, gr_seg_cinfo, gr_seg_destroy, gr_seg_first_slot, gr_seg_last_slot,
-    gr_segment, gr_slot, gr_slot_index, gr_slot_next_in_segment,
-};
 use tectonic_bridge_harfbuzz as hb;
 use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
@@ -707,9 +702,10 @@ pub unsafe extern "C" fn findGraphiteFeatureSettingNamed(
     -1
 }
 
+// TODO: Move these into the engine or such
 thread_local! {
     pub static GR_SEGMENT: Cell<Option<gr::OwnSegment>> = const { Cell::new(None) };
-    pub static GR_PREV_SLOT: Cell<*const gr_slot> = const { Cell::new(ptr::null()) };
+    pub static GR_PREV_SLOT: Cell<Option<gr::Slot>> = const { Cell::new(None) };
     pub static GR_TEXT_LEN: Cell<libc::c_uint> = const { Cell::new(0) };
 }
 
@@ -731,7 +727,8 @@ pub unsafe extern "C" fn initGraphiteBreaking(
 
     let gr_seg = GR_SEGMENT.take();
     if gr_seg.is_some() {
-        GR_PREV_SLOT.set(ptr::null());
+        drop(gr_seg);
+        GR_PREV_SLOT.set(None);
     }
 
     let mut gr_feature_values =
@@ -753,7 +750,7 @@ pub unsafe extern "C" fn initGraphiteBreaking(
         &(txt_ptr, txt_len as usize),
     )
     .unwrap();
-    GR_PREV_SLOT.set(gr_seg.first_slot());
+    GR_PREV_SLOT.set(Some(gr_seg.first_slot()));
     GR_SEGMENT.set(Some(gr_seg));
     GR_TEXT_LEN.set(txt_len);
 
@@ -762,38 +759,44 @@ pub unsafe extern "C" fn initGraphiteBreaking(
 
 #[no_mangle]
 pub unsafe extern "C" fn findNextGraphiteBreak() -> libc::c_int {
-    let gr_seg = GR_SEGMENT.get();
-    let gr_prev_slot = GR_PREV_SLOT.get();
+    let Some(gr_seg) = GR_SEGMENT.take() else {
+        return -1;
+    };
+    let Some(gr_prev_slot) = GR_PREV_SLOT.take() else {
+        return -1;
+    };
 
-    if !gr_seg.is_null() && !gr_prev_slot.is_null() && gr_prev_slot != gr_seg_last_slot(gr_seg) {
-        let mut s = gr_slot_next_in_segment(gr_prev_slot);
+    let out = if gr_prev_slot != gr_seg.last_slot() {
+        let mut s = gr_seg.next(&gr_prev_slot);
         let mut ret = -1;
 
-        while !s.is_null() {
-            let ci = gr_seg_cinfo(gr_seg, gr_slot_index(s));
-            let bw = gr_cinfo_break_weight(ci);
-            if (gr_breakBeforeWord..gr_breakNone).contains(&bw) {
-                GR_PREV_SLOT.set(s);
-                ret = gr_cinfo_base(ci) as libc::c_int;
-            } else if (gr_breakNone + 1..=gr_breakWord).contains(&bw) {
-                GR_PREV_SLOT.set(gr_slot_next_in_segment(s));
-                ret = (gr_cinfo_base(ci) + 1) as libc::c_int;
+        while let Some(slot) = s {
+            let ci = gr_seg.cinfo(gr_seg.index(&slot));
+            let bw = ci.break_weight();
+            if (gr::BREAK_BEFORE_WORD..gr::BREAK_NONE).contains(&bw) {
+                GR_PREV_SLOT.set(Some(slot.clone()));
+                ret = ci.base() as libc::c_int;
+            } else if (gr::BREAK_NONE + 1..=gr::BREAK_WORD).contains(&bw) {
+                GR_PREV_SLOT.set(gr_seg.next(&slot));
+                ret = (ci.base() + 1) as libc::c_int;
             }
 
             if ret != -1 {
                 break;
             }
 
-            s = gr_slot_next_in_segment(s);
+            s = gr_seg.next(&slot);
         }
 
         if ret == -1 {
-            GR_PREV_SLOT.set(gr_seg_last_slot(gr_seg));
+            GR_PREV_SLOT.set(Some(gr_seg.last_slot()));
             GR_TEXT_LEN.get() as libc::c_int
         } else {
             ret
         }
     } else {
         -1
-    }
+    };
+    GR_SEGMENT.set(Some(gr_seg));
+    out
 }
