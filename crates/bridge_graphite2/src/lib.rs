@@ -16,6 +16,10 @@ pub mod sys;
 
 pub use sys::gr_encform as EncForm;
 
+pub const BREAK_NONE: i32 = sys::gr_breakNone as i32;
+pub const BREAK_BEFORE_WORD: i32 = sys::gr_breakBeforeWord as i32;
+pub const BREAK_WORD: i32 = sys::gr_breakWord as i32;
+
 pub struct Label(usize, NonNull<u8>);
 
 impl Label {
@@ -247,8 +251,30 @@ impl Segment {
         ptr::from_ref(self).cast()
     }
 
-    pub fn first_slot(&self) -> &Slot {
-        unsafe { &*sys::gr_seg_first_slot(self.as_ptr().cast_mut()).cast() }
+    pub fn first_slot(&self) -> Slot {
+        let ptr = unsafe { sys::gr_seg_first_slot(self.as_ptr().cast_mut()) };
+        Slot(NonNull::from(self), NonNull::new(ptr.cast_mut()).unwrap())
+    }
+
+    pub fn last_slot(&self) -> Slot {
+        let ptr = unsafe { sys::gr_seg_last_slot(self.as_ptr().cast_mut()) };
+        Slot(NonNull::from(self), NonNull::new(ptr.cast_mut()).unwrap())
+    }
+
+    pub fn cinfo(&self, idx: usize) -> &CharInfo {
+        let ptr = unsafe { sys::gr_seg_cinfo(self.as_ptr(), idx as u32) }.cast::<CharInfo>();
+        unsafe { ptr.as_ref() }.unwrap()
+    }
+
+    pub fn next(&self, slot: &Slot) -> Option<Slot> {
+        assert_eq!(self.as_ptr().cast_mut(), slot.0.as_ptr().cast());
+        let ptr = unsafe { sys::gr_slot_next_in_segment(slot.as_ptr()) };
+        NonNull::new(ptr.cast_mut()).map(|ptr| Slot(NonNull::from(self), ptr))
+    }
+
+    pub fn index(&self, slot: &Slot) -> usize {
+        assert_eq!(self.as_ptr().cast_mut(), slot.0.as_ptr().cast());
+        unsafe { sys::gr_slot_index(slot.as_ptr()) as usize }
     }
 }
 
@@ -298,7 +324,30 @@ impl Drop for OwnSegment {
     }
 }
 
-pub struct Slot(Infallible);
+#[derive(Clone, PartialEq)]
+pub struct Slot(NonNull<Segment>, NonNull<sys::gr_slot>);
+
+impl Slot {
+    fn as_ptr(&self) -> *const sys::gr_slot {
+        self.1.as_ptr()
+    }
+}
+
+pub struct CharInfo(Infallible);
+
+impl CharInfo {
+    fn as_ptr(&self) -> *const sys::gr_char_info {
+        ptr::from_ref(self).cast()
+    }
+
+    pub fn break_weight(&self) -> i32 {
+        unsafe { sys::gr_cinfo_break_weight(self.as_ptr()) as i32 }
+    }
+
+    pub fn base(&self) -> usize {
+        unsafe { sys::gr_cinfo_base(self.as_ptr()) }
+    }
+}
 
 #[test]
 fn linkage() {}
