@@ -6,6 +6,8 @@
 //!
 //! [Tectonic]: https://tectonic-typesetting.github.io/
 
+#![allow(clippy::unnecessary_cast)]
+
 use std::convert::Infallible;
 use std::mem::ManuallyDrop;
 use std::ops::{Deref, DerefMut};
@@ -19,6 +21,8 @@ pub use sys::gr_encform as EncForm;
 pub const BREAK_NONE: i32 = sys::gr_breakNone as i32;
 pub const BREAK_BEFORE_WORD: i32 = sys::gr_breakBeforeWord as i32;
 pub const BREAK_WORD: i32 = sys::gr_breakWord as i32;
+
+pub struct FeatErr(());
 
 pub struct Label(usize, NonNull<u8>);
 
@@ -66,13 +70,13 @@ impl FeatureRef {
         unsafe { sys::gr_fref_feature_value(self.as_ptr(), feat.as_ptr()) }
     }
 
-    pub fn set_feat_value(&self, feat: &mut FeatureVal, value: u16) -> Result<(), ()> {
+    pub fn set_feat_value(&self, feat: &mut FeatureVal, value: u16) -> Result<(), FeatErr> {
         let res =
             unsafe { sys::gr_fref_set_feature_value(self.as_ptr(), value, feat.as_ptr_mut()) };
         if res != 0 {
             Ok(())
         } else {
-            Err(())
+            Err(FeatErr(()))
         }
     }
 
@@ -210,7 +214,15 @@ impl Drop for OwnFont {
     }
 }
 
-pub trait StrEnc {
+mod sealed {
+    pub trait Sealed {}
+
+    impl Sealed for str {}
+    impl Sealed for (*const u16, usize) {}
+}
+
+#[allow(clippy::len_without_is_empty)]
+pub trait StrEnc: sealed::Sealed {
     fn enc(&self) -> EncForm;
     fn as_ptr(&self) -> *const ();
     fn len(&self) -> usize;
