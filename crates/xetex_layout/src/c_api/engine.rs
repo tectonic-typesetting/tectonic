@@ -5,13 +5,11 @@ use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
-use tectonic_bridge_graphite2::{
+use tectonic_bridge_graphite2 as gr;
+use tectonic_bridge_graphite2::sys::{
     gr_breakBeforeWord, gr_breakNone, gr_breakWord, gr_cinfo_base, gr_cinfo_break_weight,
-    gr_encform, gr_face_featureval_for_lang, gr_face_find_fref, gr_face_fref, gr_face_n_fref,
-    gr_fref_feature_value, gr_fref_id, gr_fref_label, gr_fref_n_values, gr_fref_set_feature_value,
-    gr_fref_value, gr_fref_value_label, gr_label_destroy, gr_make_font, gr_make_seg, gr_seg_cinfo,
-    gr_seg_destroy, gr_seg_first_slot, gr_seg_last_slot, gr_segment, gr_slot, gr_slot_index,
-    gr_slot_next_in_segment,
+    gr_encform, gr_make_seg, gr_seg_cinfo, gr_seg_destroy, gr_seg_first_slot, gr_seg_last_slot,
+    gr_segment, gr_slot, gr_slot_index, gr_slot_next_in_segment,
 };
 use tectonic_bridge_harfbuzz as hb;
 use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
@@ -507,25 +505,18 @@ pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions:
 #[no_mangle]
 pub unsafe extern "C" fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32 {
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
-
-    if gr_face.is_null() {
-        0
-    } else {
-        gr_face_n_fref(gr_face) as u32
+    match hb_face.gr_face() {
+        Some(face) => face.num_feature_refs() as u32,
+        None => 0,
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn getGraphiteFeatureCode(engine: XeTeXLayoutEngine, index: u32) -> u32 {
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
-
-    if !gr_face.is_null() {
-        let feature = gr_face_fref(gr_face, index as u16);
-        gr_fref_id(feature)
-    } else {
-        0
+    match hb_face.gr_face() {
+        Some(face) => face.feature_ref(index as usize).unwrap().id(),
+        None => 0,
     }
 }
 
@@ -535,13 +526,9 @@ pub unsafe extern "C" fn countGraphiteFeatureSettings(
     feature_id: u32,
 ) -> u32 {
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
-
-    if !gr_face.is_null() {
-        let feature = gr_face_find_fref(gr_face, feature_id);
-        gr_fref_n_values(feature) as u32
-    } else {
-        0
+    match hb_face.gr_face() {
+        Some(face) => face.find_feature_ref(feature_id).unwrap().num_values() as u32,
+        None => 0,
     }
 }
 
@@ -552,13 +539,12 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingCode(
     index: u32,
 ) -> u32 {
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
-
-    if !gr_face.is_null() {
-        let feature = gr_face_find_fref(gr_face, feature_id);
-        gr_fref_value(feature, index as u16) as u32
-    } else {
-        0
+    match hb_face.gr_face() {
+        Some(face) => face
+            .find_feature_ref(feature_id)
+            .unwrap()
+            .value(index as usize) as u32,
+        None => 0,
     }
 }
 
@@ -569,18 +555,16 @@ pub unsafe extern "C" fn getGraphiteFeatureDefaultSetting(
 ) -> u32 {
     let engine = &*engine;
     let hb_face = engine.font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
 
-    if !gr_face.is_null() {
-        let feature = gr_face_find_fref(gr_face, feature_id);
-        let feature_values = gr_face_featureval_for_lang(
-            gr_face,
-            hb::Tag::from_cstr(engine.language.to_string()).to_raw(),
-        );
+    match hb_face.gr_face() {
+        Some(face) => {
+            let feat = face.find_feature_ref(feature_id).unwrap();
+            let feature_values =
+                face.feature_val_for_lang(hb::Tag::from_cstr(engine.language.to_string()).to_raw());
 
-        gr_fref_feature_value(feature, feature_values) as u32
-    } else {
-        0
+            feat.feat_value(&feature_values) as u32
+        }
+        None => 0,
     }
 }
 
@@ -590,16 +574,14 @@ pub unsafe extern "C" fn getGraphiteFeatureLabel(
     feature_id: u32,
 ) -> *const libc::c_char {
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
+    match hb_face.gr_face() {
+        Some(face) => {
+            let feature = face.find_feature_ref(feature_id).unwrap();
+            let lang_id = 0x409;
 
-    if !gr_face.is_null() {
-        let feature = gr_face_find_fref(gr_face, feature_id);
-        let mut len = 0;
-        let mut lang_id = 0x409;
-
-        gr_fref_label(feature, &mut lang_id, gr_encform::utf8, &mut len).cast()
-    } else {
-        ptr::null()
+            feature.label(lang_id).unwrap().into_raw().cast()
+        }
+        None => ptr::null_mut(),
     }
 }
 
@@ -610,17 +592,16 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingLabel(
     setting_id: u32,
 ) -> *const libc::c_char {
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
 
-    if !gr_face.is_null() {
-        let feature = gr_face_find_fref(gr_face, feature_id);
-        for i in 0..gr_fref_n_values(feature) {
-            if setting_id == gr_fref_value(feature, i) as u32 {
-                let mut len = 0;
-                let mut lang_id = 0x409;
-                return gr_fref_value_label(feature, i, &mut lang_id, gr_encform::utf8, &mut len)
-                    .cast();
-            }
+    let Some(gr_face) = hb_face.gr_face() else {
+        return ptr::null();
+    };
+
+    let feature = gr_face.find_feature_ref(feature_id).unwrap();
+    for i in 0..feature.num_values() {
+        if setting_id == feature.value(i) as u32 {
+            let lang_id = 0x409;
+            return feature.value_label(i, lang_id).unwrap().into_raw().cast();
         }
     }
 
@@ -680,24 +661,20 @@ pub unsafe extern "C" fn findGraphiteFeatureNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
+    let name = slice::from_raw_parts(name.cast::<u8>(), namelength as usize);
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
 
-    if !gr_face.is_null() {
-        for i in 0..gr_face_n_fref(gr_face) {
-            let feature = gr_face_fref(gr_face, i);
-            let mut len = 0;
-            let mut lang_id = 0x409;
+    let Some(gr_face) = hb_face.gr_face() else {
+        return -1;
+    };
 
-            let label = gr_fref_label(feature, &mut lang_id, gr_encform::utf8, &mut len).cast();
+    for i in 0..gr_face.num_feature_refs() {
+        let feature = gr_face.feature_ref(i).unwrap();
+        let lang_id = 0x409;
+        let label = feature.label(lang_id).unwrap();
 
-            if libc::strncmp(label, name, namelength as libc::size_t) == 0 {
-                let out = gr_fref_id(feature);
-                gr_label_destroy(label.cast());
-                return out as libc::c_long;
-            } else {
-                gr_label_destroy(label.cast());
-            }
+        if label.as_bytes() == name {
+            return feature.id() as libc::c_long;
         }
     }
 
@@ -711,25 +688,19 @@ pub unsafe extern "C" fn findGraphiteFeatureSettingNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
+    let name = slice::from_raw_parts(name.cast(), namelength as usize);
     let hb_face = (*engine).font().get_hb_font().get_face();
-    let gr_face = hb_face.get_gr_face();
+    let Some(gr_face) = hb_face.gr_face() else {
+        return -1;
+    };
 
-    if !gr_face.is_null() {
-        let feature = gr_face_find_fref(gr_face, id);
-        for i in 0..gr_fref_n_values(feature) {
-            let mut len = 0;
-            let mut lang_id = 0x409;
+    let feature = gr_face.find_feature_ref(id).unwrap();
+    for i in 0..feature.num_values() {
+        let lang_id = 0x409;
+        let label = feature.value_label(i, lang_id).unwrap();
 
-            let label =
-                gr_fref_value_label(feature, i, &mut lang_id, gr_encform::utf8, &mut len).cast();
-
-            if libc::strncmp(label, name, namelength as libc::size_t) == 0 {
-                let out = gr_fref_value(feature, i);
-                gr_label_destroy(label.cast());
-                return out as libc::c_long;
-            } else {
-                gr_label_destroy(label.cast());
-            }
+        if label.as_bytes() == name {
+            return feature.value(i) as libc::c_long;
         }
     }
 
@@ -751,48 +722,46 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     let engine = &*engine;
     let hb_font = engine.font().get_hb_font();
     let hb_face = hb_font.get_face();
-    let gr_face = hb_face.get_gr_face();
-    let gr_font = gr_make_font(hb_font.get_ptem(), gr_face);
+    let Some(gr_face) = hb_face.gr_face() else {
+        return false;
+    };
+    let Some(gr_font) = gr::OwnFont::new(hb_font.get_ptem(), gr_face) else {
+        return false;
+    };
 
-    if !gr_face.is_null() && !gr_font.is_null() {
-        let gr_seg = GR_SEGMENT.get();
+    let gr_seg = GR_SEGMENT.get();
 
-        if !gr_seg.is_null() {
-            gr_seg_destroy(gr_seg);
-            GR_SEGMENT.set(ptr::null_mut());
-            GR_PREV_SLOT.set(ptr::null());
-        }
-
-        let gr_feature_values = gr_face_featureval_for_lang(
-            gr_face,
-            hb::Tag::from_cstr(engine.language.to_string()).to_raw(),
-        );
-
-        let features = engine.features;
-        for i in (0..engine.features.len()).rev() {
-            let fref = gr_face_find_fref(gr_face, features[i].tag);
-            if !fref.is_null() {
-                gr_fref_set_feature_value(fref, features[i].value as u16, gr_feature_values);
-            }
-        }
-
-        GR_SEGMENT.set(gr_make_seg(
-            gr_font,
-            gr_face,
-            engine.script.to_raw(),
-            gr_feature_values,
-            gr_encform::utf16,
-            txt_ptr.cast(),
-            txt_len as libc::size_t,
-            0,
-        ));
-        GR_PREV_SLOT.set(gr_seg_first_slot(gr_seg));
-        GR_TEXT_LEN.set(txt_len);
-
-        true
-    } else {
-        false
+    if !gr_seg.is_null() {
+        gr_seg_destroy(gr_seg);
+        GR_SEGMENT.set(ptr::null_mut());
+        GR_PREV_SLOT.set(ptr::null());
     }
+
+    let mut gr_feature_values =
+        gr_face.feature_val_for_lang(hb::Tag::from_cstr(engine.language.to_string()).to_raw());
+
+    let features = engine.features;
+    for i in (0..engine.features.len()).rev() {
+        let fref = gr_face.find_feature_ref(features[i].tag);
+        if let Some(fref) = fref {
+            let _ = fref.set_feat_value(&mut gr_feature_values, features[i].value as u16);
+        }
+    }
+
+    GR_SEGMENT.set(gr_make_seg(
+        (*gr_font).as_ptr(),
+        gr_face.as_ptr(),
+        engine.script.to_raw(),
+        gr_feature_values.as_ptr(),
+        gr_encform::utf16,
+        txt_ptr.cast(),
+        txt_len as libc::size_t,
+        0,
+    ));
+    GR_PREV_SLOT.set(gr_seg_first_slot(gr_seg));
+    GR_TEXT_LEN.set(txt_len);
+
+    true
 }
 
 #[no_mangle]
