@@ -508,11 +508,13 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
     }
 
     if (reqEngine == 'G') {
+    	// TODO: This may also be invalidated after the if
         char* tmpShapers[] = {shapers[0]};
         /* create a default engine so we can query the font for Graphite features;
          * because of font caching, it's cheap to discard this and create the real one later */
         // TODO: this engine is never dropped, but doing so would invalidate `font`
-        //        language is always NULL here
+        //       `language` is always NULL here
+        //       This whole 'temp engine' is sketchy.
         engine = createLayoutEngine(font, script, language,
                 features, nFeatures, tmpShapers, rgbValue, extend, slant, embolden);
 
