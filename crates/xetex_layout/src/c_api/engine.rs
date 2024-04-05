@@ -1,7 +1,6 @@
 use super::font::XeTeXFontBase;
 use crate::c_api::manager::getReqEngine;
 use crate::c_api::{FloatPoint, GlyphBBox, XeTeXFont, XeTeXLayoutEngine};
-use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
@@ -14,9 +13,9 @@ pub struct XeTeXLayoutEngineBase {
     font: Box<XeTeXFontBase>,
     script: hb::Tag,
     language: hb::Language,
-    features: &'static [hb::Feature],
+    features: Box<[hb::Feature]>,
     /// the requested shapers
-    shaper_list: Cow<'static, [*const libc::c_char]>,
+    shaper_list: Vec<*const libc::c_char>,
     /// the actually used shaper
     shaper: Option<CString>,
     rgb_value: u32,
@@ -48,19 +47,20 @@ impl XeTeXLayoutEngineBase {
             None
         };
         let features = if !features.is_null() {
-            slice::from_raw_parts(features, n_features as usize)
+            Box::from_raw(ptr::slice_from_raw_parts_mut(features, n_features as usize))
         } else {
-            &[]
+            Box::new([])
         };
-        let shaper_list = Cow::Borrowed(if !shapers.is_null() {
+        let shaper_list = if !shapers.is_null() {
             let mut len = 0;
             while !(*shapers.add(len)).is_null() {
                 len += 1;
             }
-            slice::from_raw_parts(shapers, len + 1)
+            len += 1;
+            Vec::from_raw_parts(shapers, len, len)
         } else {
-            &[]
-        });
+            Vec::new()
+        };
 
         let this = Box::new(XeTeXLayoutEngineBase {
             font,
@@ -336,22 +336,22 @@ impl XeTeXLayoutEngineBase {
         engine.hb_buffer.guess_segment_properties();
         let segment_props = engine.hb_buffer.get_segment_properties();
 
-        if let Cow::Borrowed(&[]) = engine.shaper_list {
+        if engine.shaper_list.is_empty() {
             // HarfBuzz gives graphite2 shaper a priority, so that for hybrid
             // Graphite/OpenType fonts, Graphite will be used. However, pre-0.9999
             // XeTeX preferred OpenType over Graphite, so we are doing the same
             // here for sake of backward compatibility. Since "ot" shaper never
             // fails, we set the shaper list to just include it.
-            engine.shaper_list = Cow::Owned(vec![c!("ot"), ptr::null()]);
+            engine.shaper_list = vec![c!("ot"), ptr::null()];
         }
 
         let mut shape_plan = hb::OwnShapePlan::new_cached(
             hb_face,
             &segment_props,
-            engine.features,
+            &engine.features,
             Some(&engine.shaper_list),
         );
-        let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
+        let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, &engine.features);
 
         engine.shaper = None;
 
@@ -363,8 +363,8 @@ impl XeTeXLayoutEngineBase {
         } else {
             // all selected shapers failed, retrying with default
             // we don't use _cached here as the cached plain will always fail.
-            shape_plan = hb::OwnShapePlan::new(hb_face, &segment_props, engine.features, None);
-            let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, engine.features);
+            shape_plan = hb::OwnShapePlan::new(hb_face, &segment_props, &engine.features, None);
+            let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, &engine.features);
 
             if res {
                 engine.shaper = Some(shape_plan.get_shaper().to_owned());
@@ -734,7 +734,7 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     let mut gr_feature_values =
         gr_face.feature_val_for_lang(hb::Tag::from_cstr(engine.language.to_string()).to_raw());
 
-    let features = engine.features;
+    let features = &engine.features;
     for i in (0..engine.features.len()).rev() {
         let fref = gr_face.find_feature_ref(features[i].tag);
         if let Some(fref) = fref {
