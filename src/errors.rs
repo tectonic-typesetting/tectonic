@@ -213,6 +213,7 @@ impl DefinitelySame for Error {
 impl DefinitelySame for error_chain::State {
     fn definitely_same(&self, other: &Self) -> bool {
         // We ignore backtraces
+        // We have to remove the Send bounds, which current Rust makes a bit annoying
         self.next_error.definitely_same(&other.next_error)
     }
 }
@@ -411,5 +412,56 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.with_instance(|i| std::fmt::Debug::fmt(&i, f))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use error_chain::{ChainedError, State};
+    use std::error::Error as StdError;
+
+    #[test]
+    fn test_def_same_option() {
+        let a = Some(Box::from(NewError::msg("A")));
+        let b = Some(Box::from(NewError::msg("A")));
+
+        assert!(a.definitely_same(&b));
+        assert!(b.definitely_same(&a));
+
+        let b = Some(Box::from(NewError::msg("B")));
+        assert!(!a.definitely_same(&b));
+
+        let b = None;
+        let c = None;
+        assert!(!a.definitely_same(&b));
+        assert!(b.definitely_same(&c));
+    }
+
+    #[test]
+    fn test_def_same_err() {
+        let a = Error::new(ErrorKind::Msg(String::from("A")), State::default());
+        let b = Error::new(ErrorKind::Msg(String::from("A")), State::default());
+
+        // Different backtraces but should be same
+        assert!(a.definitely_same(&b));
+
+        let b = Error::new(ErrorKind::BadLength(0, 0), State::default());
+        assert!(!a.definitely_same(&b));
+
+        let a = Error::new(ErrorKind::NewStyle(NewError::msg("A")), State::default());
+        assert!(!a.definitely_same(&b));
+
+        let b = Error::new(ErrorKind::NewStyle(NewError::msg("A")), State::default());
+        assert!(a.definitely_same(&b));
+    }
+
+    #[test]
+    fn test_def_same_box_err() {
+        let a: Box<dyn StdError + Send> = Box::from(NewError::msg("A"));
+        let b: Box<dyn StdError + Send> = Box::from(NewError::msg("B"));
+
+        assert!(a.definitely_same(&a));
+        assert!(!a.definitely_same(&b));
     }
 }
