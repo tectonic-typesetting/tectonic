@@ -91,6 +91,17 @@ XeTeXLayoutEngine createLayoutEngine(XeTeXFont font,
                                      float slant,
                                      float embolden);
 
+XeTeXLayoutEngine createLayoutEngineBorrowed(XeTeXFont font,
+                                             hb_tag_t script,
+                                             char *language,
+                                             hb_feature_t *features,
+                                             int n_features,
+                                             const char **shapers,
+                                             uint32_t rgb_value,
+                                             float extend,
+                                             float slant,
+                                             float embolden);
+
 void deleteLayoutEngine(XeTeXLayoutEngine this_);
 
 XeTeXFont getFont(XeTeXLayoutEngine engine);
