@@ -90,6 +90,8 @@ fn main() {
 
     std::fs::copy(&main_header_src, &main_header_dest).expect("failed to copy main header");
 
+    println!("cargo:rerun-if-changed=layout/tectonic_xetex_layout.h");
+
     // Cargo exposes this as the environment variable DEP_XXX_INCLUDE_PATH,
     // where XXX is the "links" setting in Cargo.toml. This is the key element
     // that allows us to have a network of crates containing both C/C++ and Rust
