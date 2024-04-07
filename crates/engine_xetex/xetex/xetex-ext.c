@@ -508,14 +508,12 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
     }
 
     if (reqEngine == 'G') {
-    	// TODO: This may also be invalidated after the if
-        char* tmpShapers[] = {shapers[0]};
+        char** tmpShapers = xmalloc(sizeof(char*) * 2);
+        tmpShapers[0] = shapers[0];
+        tmpShapers[1] = NULL;
         /* create a default engine so we can query the font for Graphite features;
          * because of font caching, it's cheap to discard this and create the real one later */
-        // TODO: this engine is never dropped, but doing so would invalidate `font`
-        //       `language` is always NULL here
-        //       This whole 'temp engine' is sketchy.
-        engine = createLayoutEngine(font, script, language,
+        engine = createLayoutEngineBorrowed(font, script, language,
                 features, nFeatures, tmpShapers, rgbValue, extend, slant, embolden);
 
         if (engine == NULL)
@@ -643,6 +641,10 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
         shapers = (char**) xrealloc(shapers, (nShapers + 1) * sizeof(char *));
         shapers[nShapers] = NULL;
     }
+
+	if (engine) {
+		deleteLayoutEngine(engine);
+	}
 
     if (embolden != 0.0)
         embolden = embolden * Fix2D(scaled_size) / 100.0;
