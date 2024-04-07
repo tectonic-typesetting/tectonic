@@ -1,16 +1,43 @@
 use super::font::XeTeXFontBase;
 use crate::c_api::manager::getReqEngine;
 use crate::c_api::{FloatPoint, GlyphBBox, XeTeXFont, XeTeXLayoutEngine};
+use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::{CStr, CString};
+use std::ops::{Deref, DerefMut};
 use std::{ptr, slice};
 use tectonic_bridge_graphite2 as gr;
 use tectonic_bridge_harfbuzz as hb;
 use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
+pub enum MaybeBorrow<'a, T> {
+    Owned(Box<T>),
+    Borrowed(&'a mut T),
+}
+
+impl<T> Deref for MaybeBorrow<'_, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            MaybeBorrow::Owned(val) => val,
+            MaybeBorrow::Borrowed(val) => val,
+        }
+    }
+}
+
+impl<T> DerefMut for MaybeBorrow<'_, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        match self {
+            MaybeBorrow::Owned(val) => val,
+            MaybeBorrow::Borrowed(val) => val,
+        }
+    }
+}
+
 #[repr(C)]
 pub struct XeTeXLayoutEngineBase {
-    font: Box<XeTeXFontBase>,
+    font: MaybeBorrow<'static, XeTeXFontBase>,
     script: hb::Tag,
     language: hb::Language,
     features: Box<[hb::Feature]>,
@@ -26,43 +53,18 @@ pub struct XeTeXLayoutEngineBase {
 }
 
 impl XeTeXLayoutEngineBase {
-    #[no_mangle]
-    pub unsafe extern "C" fn createLayoutEngine(
-        font: XeTeXFont,
+    pub fn new(
+        font: MaybeBorrow<'static, XeTeXFontBase>,
         script: hb::Tag,
-        language: *mut libc::c_char,
-        features: *mut hb::Feature,
-        n_features: libc::c_int,
-        shapers: *mut *const libc::c_char,
+        language: Option<Cow<'static, CStr>>,
+        features: Box<[hb::Feature]>,
+        shaper_list: Vec<*const libc::c_char>,
         rgb_value: u32,
         extend: f32,
         slant: f32,
         embolden: f32,
-    ) -> XeTeXLayoutEngine {
-        let font = Box::from_raw(font);
-
-        let language = if !language.is_null() {
-            Some(CString::from_raw(language))
-        } else {
-            None
-        };
-        let features = if !features.is_null() {
-            Box::from_raw(ptr::slice_from_raw_parts_mut(features, n_features as usize))
-        } else {
-            Box::new([])
-        };
-        let shaper_list = if !shapers.is_null() {
-            let mut len = 0;
-            while !(*shapers.add(len)).is_null() {
-                len += 1;
-            }
-            len += 1;
-            Vec::from_raw_parts(shapers, len, len)
-        } else {
-            Vec::new()
-        };
-
-        let this = Box::new(XeTeXLayoutEngineBase {
+    ) -> XeTeXLayoutEngineBase {
+        XeTeXLayoutEngineBase {
             font,
             script,
             // For Graphite fonts treat the language as BCP 47 tag, for OpenType we
@@ -85,7 +87,109 @@ impl XeTeXLayoutEngineBase {
             slant,
             embolden,
             hb_buffer: hb::OwnBuffer::new(),
-        });
+        }
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn createLayoutEngine(
+        font: XeTeXFont,
+        script: hb::Tag,
+        language: *mut libc::c_char,
+        features: *mut hb::Feature,
+        n_features: libc::c_int,
+        shapers: *mut *const libc::c_char,
+        rgb_value: u32,
+        extend: f32,
+        slant: f32,
+        embolden: f32,
+    ) -> XeTeXLayoutEngine {
+        let font = Box::from_raw(font);
+
+        let language = if !language.is_null() {
+            Some(Cow::Owned(CString::from_raw(language)))
+        } else {
+            None
+        };
+        let features = if !features.is_null() {
+            Box::from_raw(ptr::slice_from_raw_parts_mut(features, n_features as usize))
+        } else {
+            Box::new([])
+        };
+        let shaper_list = if !shapers.is_null() {
+            let mut len = 0;
+            while !(*shapers.add(len)).is_null() {
+                len += 1;
+            }
+            len += 1;
+            Vec::from_raw_parts(shapers, len, len)
+        } else {
+            Vec::new()
+        };
+
+        let this = Box::new(XeTeXLayoutEngineBase::new(
+            MaybeBorrow::Owned(font),
+            script,
+            language,
+            features,
+            shaper_list,
+            rgb_value,
+            extend,
+            slant,
+            embolden,
+        ));
+
+        Box::into_raw(this)
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn createLayoutEngineBorrowed(
+        font: XeTeXFont,
+        script: hb::Tag,
+        language: *mut libc::c_char,
+        features: *mut hb::Feature,
+        n_features: libc::c_int,
+        shapers: *mut *const libc::c_char,
+        rgb_value: u32,
+        extend: f32,
+        slant: f32,
+        embolden: f32,
+    ) -> XeTeXLayoutEngine {
+        let font = &mut *font;
+
+        let language = if !language.is_null() {
+            Some(Cow::Borrowed(CStr::from_ptr(language)))
+        } else {
+            None
+        };
+        let features: Box<[_]> = if !features.is_null() {
+            let len = n_features as usize;
+            // Clone the slice - we don't own it and it may be realloced at any time.
+            Box::from(slice::from_raw_parts(features, len))
+        } else {
+            Box::new([])
+        };
+        let shaper_list = if !shapers.is_null() {
+            let mut len = 0;
+            while !(*shapers.add(len)).is_null() {
+                len += 1;
+            }
+            len += 1;
+            Vec::from_raw_parts(shapers, len, len)
+        } else {
+            Vec::new()
+        };
+
+        let this = Box::new(XeTeXLayoutEngineBase::new(
+            MaybeBorrow::Borrowed(font),
+            script,
+            language,
+            features,
+            shaper_list,
+            rgb_value,
+            extend,
+            slant,
+            embolden,
+        ));
 
         Box::into_raw(this)
     }
@@ -563,19 +667,25 @@ pub unsafe extern "C" fn getGraphiteFeatureDefaultSetting(
     }
 }
 
+fn get_graphite_feature_label(
+    engine: &XeTeXLayoutEngineBase,
+    feature_id: u32,
+) -> Option<gr::Label> {
+    let face = engine.font().get_hb_font().get_face().gr_face()?;
+    let feature = face.find_feature_ref(feature_id)?;
+    let lang_id = 0x409;
+    let label = feature.label(lang_id)?;
+    println!("Label: {}", label.as_str());
+    Some(label)
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn getGraphiteFeatureLabel(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> *const libc::c_char {
-    let hb_face = (*engine).font().get_hb_font().get_face();
-    match hb_face.gr_face() {
-        Some(face) => {
-            let feature = face.find_feature_ref(feature_id).unwrap();
-            let lang_id = 0x409;
-
-            feature.label(lang_id).unwrap().into_raw().cast()
-        }
+    match get_graphite_feature_label(&*engine, feature_id) {
+        Some(label) => label.into_raw().cast(),
         None => ptr::null_mut(),
     }
 }
@@ -611,6 +721,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
     f: *mut hb::Tag,
     v: *mut libc::c_int,
 ) -> bool {
+    dbg!("findGraphiteFeature");
     let mut s = s.cast::<u8>();
     let e = e.cast::<u8>();
 
