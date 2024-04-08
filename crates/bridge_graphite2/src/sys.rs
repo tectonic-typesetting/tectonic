@@ -27,7 +27,7 @@ pub struct gr_char_info(());
 
 #[repr(C)]
 pub enum gr_encform {
-    utf8,
+    utf8 = 1,
     utf16,
     utf32,
 }
