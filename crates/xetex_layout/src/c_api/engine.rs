@@ -610,13 +610,20 @@ pub unsafe extern "C" fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32
     }
 }
 
+fn get_graphite_feature_code(engine: &XeTeXLayoutEngineBase, index: u32) -> Option<u32> {
+    let id = engine
+        .font()
+        .get_hb_font()
+        .get_face()
+        .gr_face()?
+        .feature_ref(index as usize)?
+        .id();
+    Some(id)
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn getGraphiteFeatureCode(engine: XeTeXLayoutEngine, index: u32) -> u32 {
-    let hb_face = (*engine).font().get_hb_font().get_face();
-    match hb_face.gr_face() {
-        Some(face) => face.feature_ref(index as usize).unwrap().id(),
-        None => 0,
-    }
+    get_graphite_feature_code(&*engine, index).unwrap_or(0)
 }
 
 #[no_mangle]
@@ -675,7 +682,6 @@ fn get_graphite_feature_label(
     let feature = face.find_feature_ref(feature_id)?;
     let lang_id = 0x409;
     let label = feature.label(lang_id)?;
-    println!("Label: {}", label.as_str());
     Some(label)
 }
 
@@ -690,27 +696,72 @@ pub unsafe extern "C" fn getGraphiteFeatureLabel(
     }
 }
 
+fn get_graphite_feature_setting_label(
+    engine: &XeTeXLayoutEngineBase,
+    feature_id: u32,
+    setting_id: u32,
+) -> Option<gr::Label> {
+    let face = engine.font().get_hb_font().get_face().gr_face()?;
+
+    let feature = face.find_feature_ref(feature_id)?;
+    for i in 0..feature.num_values() {
+        if setting_id == feature.value(i) as u32 {
+            let lang_id = 0x409;
+            return feature.value_label(i, lang_id);
+        }
+    }
+
+    None
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn getGraphiteFeatureSettingLabel(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
     setting_id: u32,
 ) -> *const libc::c_char {
-    let hb_face = (*engine).font().get_hb_font().get_face();
+    match get_graphite_feature_setting_label(&*engine, feature_id, setting_id) {
+        Some(label) => label.into_raw().cast(),
+        None => ptr::null(),
+    }
+}
 
-    let Some(gr_face) = hb_face.gr_face() else {
-        return ptr::null();
-    };
+fn find_graphite_feature(
+    engine: &XeTeXLayoutEngineBase,
+    str: &[u8],
+    tag: &mut hb::Tag,
+    v: &mut libc::c_int,
+) -> bool {
+    *tag = hb::Tag::new(0);
+    *v = 0;
 
-    let feature = gr_face.find_feature_ref(feature_id).unwrap();
-    for i in 0..feature.num_values() {
-        if setting_id == feature.value(i) as u32 {
-            let lang_id = 0x409;
-            return feature.value_label(i, lang_id).unwrap().into_raw().cast();
-        }
+    let mut idx = 0;
+    while str[idx] == b' ' || str[idx] == b'\t' {
+        idx += 1;
+    }
+    while str.get(idx).is_some_and(|c| *c != b'=') {
+        idx += 1;
     }
 
-    ptr::null()
+    match find_graphite_feature_named(engine, &str[..idx]) {
+        Some(val) => *tag = hb::Tag::new(val),
+        None => return false,
+    }
+
+    idx += 1;
+    while idx < str.len() && (str[idx] == b' ' || str[idx] == b'\t') {
+        idx += 1;
+    }
+
+    if idx >= str.len() {
+        return false;
+    }
+
+    *v = find_graphite_feature_setting_named(engine, tag.to_raw(), &str[idx..])
+        .map(|i| i as libc::c_int)
+        .unwrap_or(-1);
+
+    *v != -1
 }
 
 #[no_mangle]
@@ -721,44 +772,26 @@ pub unsafe extern "C" fn findGraphiteFeature(
     f: *mut hb::Tag,
     v: *mut libc::c_int,
 ) -> bool {
-    dbg!("findGraphiteFeature");
-    let mut s = s.cast::<u8>();
-    let e = e.cast::<u8>();
+    let len = e.byte_offset_from(s).unsigned_abs();
+    let str = slice::from_raw_parts(s.cast(), len);
+    find_graphite_feature(&*engine, str, &mut *f, &mut *v)
+}
 
-    *f = hb::Tag::new(0);
-    *v = 0;
+pub fn find_graphite_feature_named(engine: &XeTeXLayoutEngineBase, name: &[u8]) -> Option<u32> {
+    let gr_face = engine.font().get_hb_font().get_face().gr_face()?;
 
-    while *s == b' ' || *s == b'\t' {
-        s = s.add(1);
-    }
-    let mut cp = s;
-    while cp < e && *cp != b'=' {
-        cp = cp.add(1);
-    }
+    for i in 0..gr_face.num_feature_refs() {
+        let feature = gr_face.feature_ref(i).unwrap();
+        let lang_id = 0x409;
+        let label = feature.label(lang_id)?;
 
-    let tmp = findGraphiteFeatureNamed(engine, s.cast(), cp.byte_offset_from(s) as libc::c_int);
-    *f = hb::Tag::new(tmp as _);
-    if tmp == -1 {
-        return false;
+        if &label.as_bytes()[..name.len()] == name {
+            println!("Returning {i}");
+            return Some(dbg!(feature.id()));
+        }
     }
 
-    cp = cp.add(1);
-    while cp < e && (*cp == b' ' || *cp == b'\t') {
-        cp = cp.add(1);
-    }
-
-    if cp == e {
-        return false;
-    }
-
-    *v = findGraphiteFeatureSettingNamed(
-        engine,
-        (*f).to_raw(),
-        cp.cast(),
-        e.byte_offset_from(cp) as libc::c_int,
-    ) as libc::c_int;
-
-    *v != -1
+    None
 }
 
 #[no_mangle]
@@ -767,24 +800,32 @@ pub unsafe extern "C" fn findGraphiteFeatureNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
-    let name = slice::from_raw_parts(name.cast::<u8>(), namelength as usize);
-    let hb_face = (*engine).font().get_hb_font().get_face();
-
-    let Some(gr_face) = hb_face.gr_face() else {
+    let name = if !name.is_null() && namelength > 0 {
+        slice::from_raw_parts(name.cast::<u8>(), namelength as usize)
+    } else {
         return -1;
     };
+    find_graphite_feature_named(&*engine, name)
+        .map(|i| i as libc::c_long)
+        .unwrap_or(-1)
+}
 
-    for i in 0..gr_face.num_feature_refs() {
-        let feature = gr_face.feature_ref(i).unwrap();
+fn find_graphite_feature_setting_named(
+    engine: &XeTeXLayoutEngineBase,
+    id: u32,
+    name: &[u8],
+) -> Option<i16> {
+    let face = engine.font().get_hb_font().get_face().gr_face()?;
+
+    let feature = face.find_feature_ref(id)?;
+    for i in 0..feature.num_values() {
         let lang_id = 0x409;
-        let label = feature.label(lang_id).unwrap();
-
-        if label.as_bytes() == name {
-            return feature.id() as libc::c_long;
+        let label = feature.value_label(i, lang_id)?;
+        if &label.as_bytes()[..name.len()] == name {
+            return Some(feature.value(i));
         }
     }
-
-    -1
+    None
 }
 
 #[no_mangle]
@@ -794,23 +835,15 @@ pub unsafe extern "C" fn findGraphiteFeatureSettingNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
-    let name = slice::from_raw_parts(name.cast(), namelength as usize);
-    let hb_face = (*engine).font().get_hb_font().get_face();
-    let Some(gr_face) = hb_face.gr_face() else {
+    let name = if !name.is_null() && namelength > 0 {
+        slice::from_raw_parts(name.cast(), namelength as usize)
+    } else {
         return -1;
     };
 
-    let feature = gr_face.find_feature_ref(id).unwrap();
-    for i in 0..feature.num_values() {
-        let lang_id = 0x409;
-        let label = feature.value_label(i, lang_id).unwrap();
-
-        if label.as_bytes() == name {
-            return feature.value(i) as libc::c_long;
-        }
-    }
-
-    -1
+    find_graphite_feature_setting_named(&*engine, id, name)
+        .map(|i| i as libc::c_long)
+        .unwrap_or(-1)
 }
 
 // TODO: Move these into the engine or such
