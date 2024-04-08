@@ -626,16 +626,38 @@ pub unsafe extern "C" fn getGraphiteFeatureCode(engine: XeTeXLayoutEngine, index
     get_graphite_feature_code(&*engine, index).unwrap_or(0)
 }
 
+fn count_graphite_feature_settings(engine: &XeTeXLayoutEngineBase, feature_id: u32) -> Option<u32> {
+    let out = engine
+        .font()
+        .get_hb_font()
+        .get_face()
+        .gr_face()?
+        .find_feature_ref(feature_id)?
+        .num_values() as u32;
+    Some(out)
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn countGraphiteFeatureSettings(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> u32 {
-    let hb_face = (*engine).font().get_hb_font().get_face();
-    match hb_face.gr_face() {
-        Some(face) => face.find_feature_ref(feature_id).unwrap().num_values() as u32,
-        None => 0,
-    }
+    count_graphite_feature_settings(&*engine, feature_id).unwrap_or(0)
+}
+
+fn get_graphite_feature_setting_code(
+    engine: &XeTeXLayoutEngineBase,
+    feature_id: u32,
+    index: u32,
+) -> Option<u32> {
+    let out = engine
+        .font()
+        .get_hb_font()
+        .get_face()
+        .gr_face()?
+        .find_feature_ref(feature_id)?
+        .value(index as usize) as u32;
+    Some(out)
 }
 
 #[no_mangle]
@@ -644,14 +666,24 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingCode(
     feature_id: u32,
     index: u32,
 ) -> u32 {
-    let hb_face = (*engine).font().get_hb_font().get_face();
-    match hb_face.gr_face() {
-        Some(face) => face
-            .find_feature_ref(feature_id)
-            .unwrap()
-            .value(index as usize) as u32,
-        None => 0,
-    }
+    get_graphite_feature_setting_code(&*engine, feature_id, index).unwrap_or(0)
+}
+
+fn get_graphite_feature_default_setting(
+    engine: &XeTeXLayoutEngineBase,
+    feature_id: u32,
+) -> Option<u32> {
+    let face = engine.font().get_hb_font().get_face().gr_face()?;
+    let feat = face.find_feature_ref(feature_id)?;
+    let lang = engine
+        .language
+        .to_string()
+        .map(hb::Tag::from_cstr)
+        .map(hb::Tag::to_raw)
+        .unwrap_or(0);
+    let feature_values = face.feature_val_for_lang(lang);
+    let out = feat.feat_value(&feature_values) as u32;
+    Some(out)
 }
 
 #[no_mangle]
@@ -659,19 +691,7 @@ pub unsafe extern "C" fn getGraphiteFeatureDefaultSetting(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> u32 {
-    let engine = &*engine;
-    let hb_face = engine.font().get_hb_font().get_face();
-
-    match hb_face.gr_face() {
-        Some(face) => {
-            let feat = face.find_feature_ref(feature_id).unwrap();
-            let feature_values =
-                face.feature_val_for_lang(hb::Tag::from_cstr(engine.language.to_string()).to_raw());
-
-            feat.feat_value(&feature_values) as u32
-        }
-        None => 0,
-    }
+    get_graphite_feature_default_setting(&*engine, feature_id).unwrap_or(0)
 }
 
 fn get_graphite_feature_label(
@@ -781,7 +801,7 @@ pub fn find_graphite_feature_named(engine: &XeTeXLayoutEngineBase, name: &[u8]) 
     let gr_face = engine.font().get_hb_font().get_face().gr_face()?;
 
     for i in 0..gr_face.num_feature_refs() {
-        let feature = gr_face.feature_ref(i).unwrap();
+        let feature = gr_face.feature_ref(i)?;
         let lang_id = 0x409;
         let label = feature.label(lang_id)?;
 
@@ -875,8 +895,13 @@ pub unsafe extern "C" fn initGraphiteBreaking(
         GR_PREV_SLOT.set(None);
     }
 
-    let mut gr_feature_values =
-        gr_face.feature_val_for_lang(hb::Tag::from_cstr(engine.language.to_string()).to_raw());
+    let lang = engine
+        .language
+        .to_string()
+        .map(hb::Tag::from_cstr)
+        .map(hb::Tag::to_raw)
+        .unwrap_or(0);
+    let mut gr_feature_values = gr_face.feature_val_for_lang(lang);
 
     let features = &engine.features;
     for i in (0..engine.features.len()).rev() {
