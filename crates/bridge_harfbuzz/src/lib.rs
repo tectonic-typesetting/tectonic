@@ -56,7 +56,7 @@ impl Script {
 pub struct Tag(sys::hb_tag_t);
 
 impl Tag {
-    pub fn new(val: sys::hb_tag_t) -> Tag {
+    pub fn new(val: u32) -> Tag {
         Tag(val)
     }
 
@@ -64,15 +64,15 @@ impl Tag {
         Tag(unsafe { sys::hb_tag_from_string(val.as_ptr(), -1) })
     }
 
-    pub fn to_raw(&self) -> sys::hb_tag_t {
+    pub fn to_raw(self) -> u32 {
         self.0
     }
 
-    pub fn to_script(&self) -> Script {
+    pub fn to_script(self) -> Script {
         Script(unsafe { sys::hb_ot_tag_to_script(self.0) })
     }
 
-    pub fn to_language(&self) -> Language {
+    pub fn to_language(self) -> Language {
         Language(unsafe { sys::hb_ot_tag_to_language(self.0) })
     }
 }
@@ -91,14 +91,20 @@ impl Language {
         Language(unsafe { sys::hb_language_from_string(str.as_ptr(), -1) })
     }
 
-    pub fn to_string(&self) -> &CStr {
+    pub fn to_string(&self) -> Option<&CStr> {
         let ptr = unsafe { sys::hb_language_to_string(self.0) };
-        unsafe { CStr::from_ptr(ptr) }
+        // ptr may be null if we have HB_LANGUAGE_INVALID
+        if ptr.is_null() {
+            None
+        } else {
+            Some(unsafe { CStr::from_ptr(ptr) })
+        }
     }
 }
 
 impl Default for Language {
     fn default() -> Language {
+        // This gets HB_LANGUAGE_INVALID
         Language(unsafe { sys::hb_language_from_string(ptr::null(), -1) })
     }
 }
