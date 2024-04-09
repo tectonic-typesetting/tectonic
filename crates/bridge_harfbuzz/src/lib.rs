@@ -60,6 +60,7 @@ impl Tag {
         Tag(val)
     }
 
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(val: &str) -> Tag {
         Tag(unsafe { sys::hb_tag_from_string(val.as_ptr().cast(), val.len() as libc::c_int) })
     }
