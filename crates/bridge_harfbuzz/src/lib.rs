@@ -60,6 +60,10 @@ impl Tag {
         Tag(val)
     }
 
+    pub fn from_str(val: &str) -> Tag {
+        Tag(unsafe { sys::hb_tag_from_string(val.as_ptr().cast(), val.len() as libc::c_int) })
+    }
+
     pub fn from_cstr(val: &CStr) -> Tag {
         Tag(unsafe { sys::hb_tag_from_string(val.as_ptr(), -1) })
     }
