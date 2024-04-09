@@ -53,6 +53,7 @@ pub struct XeTeXLayoutEngineBase {
 }
 
 impl XeTeXLayoutEngineBase {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         font: MaybeBorrow<'static, XeTeXFontBase>,
         script: hb::Tag,
@@ -807,9 +808,7 @@ pub fn find_graphite_feature_named(engine: &XeTeXLayoutEngineBase, name: &[u8]) 
         let lang_id = 0x409;
         let label = feature.label(lang_id)?;
 
-        if &label.as_bytes()[..name.len()] == name {
-            return Some(feature.id());
-        } else if feature.id() == tag {
+        if &label.as_bytes()[..name.len()] == name || feature.id() == tag {
             return Some(feature.id());
         }
     }
@@ -846,9 +845,7 @@ fn find_graphite_feature_setting_named(
     for i in 0..feature.num_values() {
         let lang_id = 0x409;
         let label = feature.value_label(i, lang_id)?;
-        if &label.as_bytes()[..name.len()] == name {
-            return Some(feature.value(i));
-        } else if feature.id() == tag {
+        if &label.as_bytes()[..name.len()] == name || feature.id() == tag {
             return Some(feature.value(i));
         }
     }
