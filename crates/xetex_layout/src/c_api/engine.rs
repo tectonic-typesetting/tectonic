@@ -800,14 +800,17 @@ pub unsafe extern "C" fn findGraphiteFeature(
 pub fn find_graphite_feature_named(engine: &XeTeXLayoutEngineBase, name: &[u8]) -> Option<u32> {
     let gr_face = engine.font().get_hb_font().get_face().gr_face()?;
 
+    let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
+
     for i in 0..gr_face.num_feature_refs() {
         let feature = gr_face.feature_ref(i)?;
         let lang_id = 0x409;
         let label = feature.label(lang_id)?;
 
         if &label.as_bytes()[..name.len()] == name {
-            println!("Returning {i}");
-            return Some(dbg!(feature.id()));
+            return Some(feature.id());
+        } else if feature.id() == tag {
+            return Some(feature.id());
         }
     }
 
@@ -837,11 +840,15 @@ fn find_graphite_feature_setting_named(
 ) -> Option<i16> {
     let face = engine.font().get_hb_font().get_face().gr_face()?;
 
+    let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
+
     let feature = face.find_feature_ref(id)?;
     for i in 0..feature.num_values() {
         let lang_id = 0x409;
         let label = feature.value_label(i, lang_id)?;
         if &label.as_bytes()[..name.len()] == name {
+            return Some(feature.value(i));
+        } else if feature.id() == tag {
             return Some(feature.value(i));
         }
     }
