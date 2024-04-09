@@ -506,7 +506,7 @@ impl FontManager {
 
             libc::strncpy(
                 variant,
-                var_str.as_bytes() as *const [u8] as *const libc::c_char,
+                ptr::from_ref(var_str.as_bytes()).cast::<libc::c_char>(),
                 var_str.len(),
             );
             *variant.add(var_str.len()) = 0;
