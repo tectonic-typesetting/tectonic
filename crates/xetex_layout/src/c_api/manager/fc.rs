@@ -45,7 +45,7 @@ unsafe fn convert_to_utf8(conv: *mut UConverter, name: &[u8]) -> CString {
     );
     let len = ucnv_fromUChars(
         UTF8_CONV.get(),
-        buffer2.as_mut_ptr() as _,
+        buffer2.as_mut_ptr().cast(),
         buf_size as _,
         buffer1.as_ptr(),
         len,
