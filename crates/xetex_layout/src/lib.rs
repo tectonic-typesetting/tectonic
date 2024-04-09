@@ -31,14 +31,16 @@ macro_rules! cstr {
     ($lit:literal) => {
         // SAFETY: C string passed to from_ptr guaranteed to end with a null due to concat!
         unsafe {
-            ::std::ffi::CStr::from_ptr(concat!($lit, "\0") as *const str as *const ::libc::c_char)
+            ::std::ffi::CStr::from_ptr(
+                ::std::ptr::from_ref(concat!($lit, "\0")).cast::<::libc::c_char>(),
+            )
         }
     };
 }
 
 macro_rules! c {
     ($lit:literal) => {
-        concat!($lit, "\0") as *const str as *const libc::c_char
+        ::std::ptr::from_ref(concat!($lit, "\0")).cast::<::libc::c_char>()
     };
 }
 
