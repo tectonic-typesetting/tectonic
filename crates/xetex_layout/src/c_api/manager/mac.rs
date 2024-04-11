@@ -1,13 +1,12 @@
+use crate::c_api::mac_core::sys::{
+    kCFStringEncodingUTF8, kCTFontDisplayNameAttribute, kCTFontFamilyNameAttribute,
+    kCTFontNameAttribute, kCTFontURLAttribute, CFArrayGetCount, CFIndex, CFRelease,
+    CFStringCreateWithCString, CFURLGetFileSystemRepresentation, CTFontCopyAttribute,
+    CTFontCreateWithFontDescriptor, CTFontDescriptorCopyAttribute, CTFontDescriptorRef,
+};
 use crate::c_api::mac_core::{
-    cf_to_cstr, kCFStringEncodingUTF8, kCFTypeDictionaryKeyCallBacks,
-    kCFTypeDictionaryValueCallBacks, kCFTypeSetCallBacks, kCTFontDisplayNameAttribute,
-    kCTFontFamilyNameAttribute, kCTFontFamilyNameKey, kCTFontFullNameKey, kCTFontNameAttribute,
-    kCTFontStyleNameKey, kCTFontURLAttribute, CFArrayGetCount, CFArrayGetValueAtIndex, CFArrayRef,
-    CFDictionaryCreate, CFIndex, CFRelease, CFRetain, CFSetCreate, CFStringCreateWithCString,
-    CFStringRef, CFURLGetFileSystemRepresentation, CTFontCopyAttribute, CTFontCopyLocalizedName,
-    CTFontCopyName, CTFontCreateWithFontDescriptor, CTFontDescriptorCopyAttribute,
-    CTFontDescriptorCreateMatchingFontDescriptors, CTFontDescriptorCreateWithAttributes,
-    CTFontDescriptorRef, CTFontManagerCopyAvailableFontFamilyNames, CTFontRef,
+    CFArray, CFDictionary, CFSet, CFString, CFType, CFUrl, CTFont, CTFontDescriptor, CoreType,
+    FontAttribute, FontNameKey,
 };
 use crate::c_api::manager::{
     base_get_op_size_rec_and_style_flags, Font, FontManager, FontManagerBackend, FontMaps,
@@ -18,61 +17,32 @@ use std::borrow::Cow;
 use std::ffi::{CStr, CString};
 use std::ptr;
 
-unsafe fn find_fonts_with_name(name: CFStringRef, key: CFStringRef) -> CFArrayRef {
-    let mut keys = [key];
-    let mut values = [name];
+fn find_fonts_with_name(name: CFString, key: FontAttribute) -> CFArray<CTFontDescriptor> {
+    let attributes = CFDictionary::new(&[(key.to_str(), name.into_ty())]);
+    let descriptor = CTFontDescriptor::new_with_attrs(&attributes);
 
-    let attributes = CFDictionaryCreate(
-        ptr::null_mut(),
-        keys.as_mut_ptr().cast(),
-        values.as_mut_ptr().cast(),
-        1,
-        &kCFTypeDictionaryKeyCallBacks,
-        &kCFTypeDictionaryValueCallBacks,
-    );
-    let descriptor = CTFontDescriptorCreateWithAttributes(attributes);
-    CFRelease(attributes.cast());
-
-    let mandatory_attributes = CFSetCreate(
-        ptr::null_mut(),
-        keys.as_mut_ptr().cast(),
-        1,
-        &kCFTypeSetCallBacks,
-    );
-    let matches = CTFontDescriptorCreateMatchingFontDescriptors(descriptor, mandatory_attributes);
-    CFRelease(mandatory_attributes.cast());
-    CFRelease(descriptor.cast());
-    matches
+    let mandatory_attributes = CFSet::new(&[key]);
+    descriptor.matching_font_descriptors(&mandatory_attributes)
 }
 
-unsafe fn find_font_with_name(name: CFStringRef, key: CFStringRef) -> CTFontDescriptorRef {
+fn find_font_with_name(name: CFString, key: FontAttribute) -> Option<CTFontDescriptor> {
     let matches = find_fonts_with_name(name, key);
 
-    let mut matched = ptr::null();
-    if !matches.is_null() {
-        if CFArrayGetCount(matches) != 0 {
-            matched = CFArrayGetValueAtIndex(matches, 0);
-            CFRetain(matched);
-        }
-        CFRelease(matches.cast());
+    let mut matched = None;
+    if !matches.is_empty() {
+        matched = Some(matches[0].clone());
     }
-    matched.cast()
+    matched
 }
 
-unsafe fn append_name_to_list(
-    font: CTFontRef,
-    name_list: &mut Vec<CString>,
-    name_key: CFStringRef,
-) {
-    let name = CTFontCopyName(font, name_key);
-    if !name.is_null() {
-        FontManager::append_to_list(name_list, cf_to_cstr(name));
-        CFRelease(name.cast());
+fn append_name_to_list(font: &CTFont, name_list: &mut Vec<CString>, name_key: FontNameKey) {
+    let name = font.name(name_key);
+    if let Some(name) = name {
+        FontManager::append_to_list(name_list, name.as_cstr());
     }
-    let name = CTFontCopyLocalizedName(font, name_key, ptr::null_mut());
-    if !name.is_null() {
-        FontManager::append_to_list(name_list, cf_to_cstr(name));
-        CFRelease(name.cast());
+    let name = font.localized_name(name_key);
+    if let Some(name) = name {
+        FontManager::append_to_list(name_list, name.as_cstr());
     }
 }
 
@@ -83,39 +53,32 @@ impl MacBackend {
         MacBackend {}
     }
 
-    unsafe fn add_fonts_to_caches(&self, maps: &mut FontMaps, members: CFArrayRef) {
-        for i in 0..CFArrayGetCount(members) {
-            let font = CFArrayGetValueAtIndex(members, i).cast();
-            let names = self.read_names(font);
+    unsafe fn add_fonts_to_caches(&self, maps: &mut FontMaps, members: CFArray<CTFontDescriptor>) {
+        for i in 0..members.len() {
+            let font = &members[i];
+            let names = self.read_names(font.clone());
             maps.add_to_maps(self, font, &names)
         }
     }
 
-    unsafe fn add_font_and_siblings_to_caches(
-        &self,
-        maps: &mut FontMaps,
-        font: CTFontDescriptorRef,
-    ) {
-        let font = CTFontCreateWithFontDescriptor(font, 10.0, ptr::null_mut());
-        if font.is_null() {
-            return;
-        }
-
-        let family = CTFontCopyAttribute(font, kCTFontFamilyNameAttribute);
-        CFRelease(font.cast());
-        let matched = find_fonts_with_name(family.cast(), kCTFontFamilyNameAttribute);
-        CFRelease(family.cast());
+    unsafe fn add_font_and_siblings_to_caches(&self, maps: &mut FontMaps, font: &CTFontDescriptor) {
+        let font = CTFont::new_descriptor(font, 10.0);
+        let family = font
+            .attr(FontAttribute::FamilyName)
+            .unwrap()
+            .downcast::<CFString>()
+            .unwrap();
+        let matched = find_fonts_with_name(family, FontAttribute::FamilyName);
         self.add_fonts_to_caches(maps, matched);
-        CFRelease(matched.cast());
     }
 
-    unsafe fn add_family_to_caches(&self, maps: &mut FontMaps, family: CTFontDescriptorRef) {
-        let name_str = CTFontDescriptorCopyAttribute(family, kCTFontFamilyNameAttribute);
-        if !name_str.is_null() {
-            let members = find_fonts_with_name(name_str.cast(), kCTFontFamilyNameAttribute);
-            CFRelease(name_str);
+    unsafe fn add_family_to_caches(&self, maps: &mut FontMaps, family: CTFontDescriptor) {
+        let name_str = family
+            .attr(FontAttribute::FamilyName)
+            .and_then(|ty| ty.downcast::<CFString>().ok());
+        if let Some(name_str) = name_str {
+            let members = find_fonts_with_name(name_str.cast(), FontAttribute::FamilyName);
             self.add_fonts_to_caches(maps, members);
-            CFRelease(members.cast());
         }
     }
 }
@@ -125,30 +88,18 @@ impl FontManagerBackend for MacBackend {
 
     unsafe fn terminate(&mut self) {}
 
-    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
+    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         let mut path = Cow::Borrowed(cstr!("[unknown]"));
 
-        let ct_font = CTFontCreateWithFontDescriptor(*font, 0.0, ptr::null_mut());
-        if !ct_font.is_null() {
-            let url = CTFontCopyAttribute(ct_font, kCTFontURLAttribute);
+        let ct_font = CTFont::new_descriptor(font, 0.0);
+        let url = ct_font
+            .attr(FontAttribute::URL)
+            .and_then(|ty| ty.downcast::<CFUrl>().ok());
 
-            if !url.is_null() {
-                let mut buf = [0u8; libc::PATH_MAX as usize];
-                if CFURLGetFileSystemRepresentation(
-                    url.cast(),
-                    true,
-                    buf.as_mut_ptr(),
-                    libc::PATH_MAX as CFIndex,
-                ) {
-                    path = Cow::Owned(
-                        CStr::from_bytes_until_nul(&buf)
-                            .map(CStr::to_owned)
-                            .unwrap(),
-                    );
-                }
-                CFRelease(url);
+        if let Some(url) = url {
+            if let Some(fs_path) = url.fs_representation() {
+                path = Cow::Owned(fs_path);
             }
-            CFRelease(ct_font.cast());
         }
 
         path
@@ -159,73 +110,65 @@ impl FontManagerBackend for MacBackend {
     }
 
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
-        let name_str = CFStringCreateWithCString(ptr::null(), name.as_ptr(), kCFStringEncodingUTF8);
-        let matched = find_font_with_name(name_str, kCTFontDisplayNameAttribute);
-        if !matched.is_null() {
-            self.add_font_and_siblings_to_caches(maps, matched);
-            CFRelease(matched.cast());
+        let name_str = CFString::new(name);
+        let matched = find_font_with_name(name_str, FontAttribute::DisplayName);
+        if let Some(matched) = matched {
+            self.add_font_and_siblings_to_caches(maps, &matched);
             return;
         }
 
         let hyph = name.to_bytes().iter().copied().position(|c| c == b'-');
         if let Some(hyph) = hyph {
             let family = CString::new(&name.to_bytes()[..hyph]).unwrap();
-            let family_str =
-                CFStringCreateWithCString(ptr::null(), family.as_ptr(), kCFStringEncodingUTF8);
-
-            let family_members = find_fonts_with_name(family_str, kCTFontFamilyNameAttribute);
-            if !family_members.is_null() && CFArrayGetCount(family_members) > 0 {
+            let family_str = CFString::new(&family);
+            let family_members =
+                find_fonts_with_name(family_str.clone(), FontAttribute::FamilyName);
+            if !family_members.is_null() && !family_members.is_empty() {
                 self.add_fonts_to_caches(maps, family_members);
-                CFRelease(family_members.cast());
                 return;
             }
 
-            let matched = find_font_with_name(family_str, kCTFontFamilyNameAttribute);
+            let matched = find_font_with_name(family_str, FontAttribute::FamilyName);
             if !matched.is_null() {
                 self.add_family_to_caches(maps, matched);
-                CFRelease(matched.cast());
                 return;
             }
         }
 
-        let matched = find_font_with_name(name_str, kCTFontNameAttribute);
+        let matched = find_font_with_name(name_str, FontAttribute::Name);
         if !matched.is_null() {
             self.add_font_and_siblings_to_caches(maps, matched);
-            CFRelease(matched.cast());
             return;
         }
 
-        let family_members = find_fonts_with_name(name_str, kCTFontFamilyNameAttribute);
-        if !family_members.is_null() && CFArrayGetCount(family_members) > 0 {
+        let family_members = find_fonts_with_name(name_str, FontAttribute::FamilyName);
+        if !family_members.is_null() && !family_members.is_empty() {
             self.add_fonts_to_caches(maps, family_members);
-            CFRelease(family_members.cast());
             return;
         }
 
-        let matched = find_font_with_name(name_str, kCTFontFamilyNameAttribute);
+        let matched = find_font_with_name(name_str, FontAttribute::FamilyName);
         if !matched.is_null() {
             self.add_family_to_caches(maps, matched);
-            CFRelease(matched.cast());
             return;
         }
     }
 
-    unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection {
+    fn read_names(&self, font: PlatformFontRef) -> NameCollection {
         let mut names = NameCollection::default();
 
-        let ps_name = CTFontDescriptorCopyAttribute(font, kCTFontNameAttribute);
-        if ps_name.is_null() {
-            return names;
-        }
+        let ps_name = match font.attr(FontAttribute::Name) {
+            Some(ps_name) => ps_name,
+            None => return names,
+        };
+        let ps_name = ps_name.downcast::<CFString>().unwrap();
 
-        names.ps_name = Some(cf_to_cstr(ps_name.cast()));
-        CFRelease(ps_name);
+        names.ps_name = Some(ps_name.get_cstring());
 
-        let font = CTFontCreateWithFontDescriptor(font, 0.0, ptr::null());
-        append_name_to_list(font, &mut names.full_names, kCTFontFullNameKey);
-        append_name_to_list(font, &mut names.family_names, kCTFontFamilyNameKey);
-        append_name_to_list(font, &mut names.style_names, kCTFontStyleNameKey);
-        CFRelease(font.cast());
+        let font = CTFont::new_descriptor(&font, 0.0);
+        append_name_to_list(&font, &mut names.full_names, FontNameKey::Full);
+        append_name_to_list(&font, &mut names.family_names, FontNameKey::Family);
+        append_name_to_list(&font, &mut names.style_names, FontNameKey::Style);
 
         names
     }
