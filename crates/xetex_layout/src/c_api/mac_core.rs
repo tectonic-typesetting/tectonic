@@ -1,187 +1,101 @@
 use std::ffi::{CStr, CString};
+use std::mem::ManuallyDrop;
+use std::ops::Index;
+use std::ptr::NonNull;
 
-// TODO: Split into sys and helpers
-pub(crate) unsafe fn cf_to_cstr(cf_str: CFStringRef) -> CString {
-    let cstr = CFStringGetCStringPtr(cf_str, kCFStringEncodingUTF8);
-    if cstr.is_null() {
-        let mut len = CFStringGetLength(cf_str);
-        len = len * 6 + 1;
-        let mut buf = vec![0; len as usize];
-        if CFStringGetCString(
-            cf_str.cast(),
-            buf.as_mut_ptr().cast(),
-            len,
-            kCFStringEncodingUTF8,
-        ) {
-            let buf = buf.into_iter().take_while(|&c| c != 0).collect::<Vec<_>>();
-            CString::new(buf).unwrap()
-        } else {
-            panic!("Invalid C String")
-        }
-    } else {
-        CStr::from_ptr(cstr).to_owned()
+pub mod sys;
+
+#[macro_use]
+mod macros;
+mod array;
+mod dict;
+mod font;
+mod font_desc;
+mod set;
+mod string;
+mod url;
+
+pub use array::CFArray;
+pub use dict::CFDictionary;
+pub use font::{CTFont, FontAttribute, FontNameKey};
+pub use font_desc::CTFontDescriptor;
+pub use set::CFSet;
+pub use string::CFString;
+pub use url::CFUrl;
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct CFTypeId(libc::c_ulong);
+
+impl CFTypeId {
+    pub fn of<T: CoreType>() -> CFTypeId {
+        T::type_id()
+    }
+
+    pub fn of_val<T: CoreType>(val: &T) -> CFTypeId {
+        CFTypeId(unsafe { sys::CFGetTypeID(val.as_type_ref().cast()) })
     }
 }
 
-#[repr(C)]
-pub struct CFAllocator(());
+#[derive(Debug)]
+#[repr(transparent)]
+pub struct CFType(NonNull<()>);
 
-#[repr(C)]
-pub struct CFDictionaryKeyCallBacks(());
-
-#[repr(C)]
-pub struct CFDictionaryValueCallBacks(());
-
-#[repr(C)]
-pub struct CFSetCallBacks(());
-
-#[repr(C)]
-pub struct CFArrayCallBacks(());
-
-#[repr(C)]
-pub struct CFDictionary(());
-
-#[repr(C)]
-pub struct CFSet(());
-
-#[repr(C)]
-pub struct CFArray(());
-
-#[repr(C)]
-pub struct CTFontDescriptor(());
-
-#[repr(C)]
-pub struct CTFont(());
-
-#[repr(C)]
-pub struct CFString(());
-
-#[repr(C)]
-pub struct CFURL(());
-
-#[repr(C)]
-pub struct CGAffineTransform {
-    a: CGFloat,
-    b: CGFloat,
-    c: CGFloat,
-    d: CGFloat,
-    tx: CGFloat,
-    ty: CGFloat,
+impl CFType {
+    pub fn downcast<T: CoreType>(self) -> Result<T, Self> {
+        if CFTypeId::of_val(&self) == CFTypeId::of::<T>() {
+            let this = ManuallyDrop::new(self);
+            Ok(T::new_owned(this.0.cast()))
+        } else {
+            Err(self)
+        }
+    }
 }
 
-#[repr(C)]
-pub struct NSFontManager(());
+unsafe impl CoreType for CFType {
+    type SysTy = ();
 
-pub type CTFontDescriptorRef = *const CTFontDescriptor;
-pub type CFDictionaryRef = *const CFDictionary;
-pub type CFIndex = isize;
-pub type CFTypeRef = *const ();
-pub type CFAllocatorRef = *const CFAllocator;
-pub type CFSetRef = *const CFSet;
-pub type CFArrayRef = *const CFArray;
-pub type CTFontRef = *const CTFont;
-pub type CFStringRef = *const CFString;
-pub type CFURLRef = *const CFURL;
-pub type CFStringEncoding = u32;
-#[cfg(target_os = "watchos")]
-pub type CGFloat = f32;
-#[cfg(not(target_os = "watchos"))]
-pub type CGFloat = f64;
+    fn type_id() -> CFTypeId {
+        CFTypeId(0)
+    }
 
-pub const kCFStringEncodingMacRoman: CFStringEncoding = 0;
-pub const kCFStringEncodingASCII: CFStringEncoding = 0x0600;
-pub const kCFStringEncodingUnicode: CFStringEncoding = 0x0100;
-pub const kCFStringEncodingUTF8: CFStringEncoding = 0x08000100;
+    fn new_owned(ptr: NonNull<Self::SysTy>) -> Self {
+        CFType(ptr)
+    }
 
-#[link(name = "CoreFoundation", kind = "framework")]
-extern "C" {
-    pub fn CFSetCreate(
-        allocator: CFAllocatorRef,
-        values: *mut *const (),
-        num_values: CFIndex,
-        callbacks: *const CFSetCallBacks,
-    ) -> CFSetRef;
-    pub fn CFDictionaryCreate(
-        allocator: CFAllocatorRef,
-        keys: *mut *const (),
-        values: *mut *const (),
-        num_values: CFIndex,
-        key_call_backs: *const CFDictionaryKeyCallBacks,
-        value_call_backs: *const CFDictionaryValueCallBacks,
-    ) -> CFDictionaryRef;
-    pub fn CFRelease(cf: CFTypeRef);
-    pub fn CFArrayGetCount(array: CFArrayRef) -> CFIndex;
-    pub fn CFArrayGetValueAtIndex(array: CFArrayRef, idx: CFIndex) -> *const ();
-    pub fn CFRetain(cf: CFTypeRef) -> CFTypeRef;
-    pub fn CFArrayCreate(
-        allocator: CFAllocatorRef,
-        values: *mut *const (),
-        num_values: CFIndex,
-        call_backs: *const CFArrayCallBacks,
-    ) -> CFArrayRef;
-    pub fn CFStringGetLength(str: CFStringRef) -> CFIndex;
-    pub fn CFStringGetCStringPtr(str: CFStringRef, enc: CFStringEncoding) -> *const libc::c_char;
-    pub fn CFStringCreateWithCString(
-        alloc: CFAllocatorRef,
-        c_str: *const libc::c_char,
-        encoding: CFStringEncoding,
-    ) -> CFStringRef;
-    pub fn CFStringGetCString(
-        str: CFStringRef,
-        buffer: *mut libc::c_char,
-        buffer_size: CFIndex,
-        encoding: CFStringEncoding,
-    ) -> bool;
-    pub fn CFURLGetFileSystemRepresentation(
-        url: CFURLRef,
-        resolve_against_base: bool,
-        buffer: *mut u8,
-        max_buf_len: CFIndex,
-    ) -> bool;
+    fn new_borrowed(ptr: NonNull<Self::SysTy>) -> Self {
+        unsafe { sys::CFRetain(ptr.as_ptr()) };
+        CFType::new_owned(ptr)
+    }
 
-    pub static kCFTypeDictionaryKeyCallBacks: CFDictionaryKeyCallBacks;
-    pub static kCFTypeDictionaryValueCallBacks: CFDictionaryValueCallBacks;
-    pub static kCFTypeSetCallBacks: CFSetCallBacks;
-    pub static kCFTypeArrayCallBacks: CFArrayCallBacks;
+    fn as_type_ref(&self) -> *const Self::SysTy {
+        self.0.as_ptr().cast_const()
+    }
+
+    fn into_ty(self) -> CFType {
+        self
+    }
 }
 
-#[link(name = "CoreText", kind = "framework")]
-extern "C" {
-    pub fn CTFontDescriptorCreateWithAttributes(attributes: CFDictionaryRef)
-        -> CTFontDescriptorRef;
-    pub fn CTFontDescriptorCreateMatchingFontDescriptors(
-        descriptor: CTFontDescriptorRef,
-        mandatory_attributes: CFSetRef,
-    ) -> CFArrayRef;
-    pub fn CTFontDescriptorCopyAttribute(
-        descriptor: CTFontDescriptorRef,
-        attribute: CFStringRef,
-    ) -> CFTypeRef;
-    pub fn CTFontCreateWithFontDescriptor(
-        descriptor: CTFontDescriptorRef,
-        size: CGFloat,
-        matrix: *const CGAffineTransform,
-    ) -> CTFontRef;
-    pub fn CTFontCopyName(font: CTFontRef, name_key: CFStringRef) -> CFStringRef;
-    pub fn CTFontCopyAttribute(font: CTFontRef, attribute: CFStringRef) -> CFTypeRef;
-    pub fn CTFontDescriptorCreateCopyWithAttributes(
-        original: CTFontDescriptorRef,
-        attributes: CFDictionaryRef,
-    ) -> CTFontDescriptorRef;
-    pub fn CTFontCopyLocalizedName(
-        font: CTFontRef,
-        name_key: CFStringRef,
-        actual_lang: *mut CFStringRef,
-    ) -> CFStringRef;
-    pub fn CTFontManagerCopyAvailableFontFamilyNames() -> CFArrayRef;
+impl Drop for CFType {
+    fn drop(&mut self) {
+        unsafe { sys::CFRelease(self.0.as_ptr()) }
+    }
+}
 
-    pub static kCTFontNameAttribute: CFStringRef;
-    pub static kCTFontFullNameKey: CFStringRef;
-    pub static kCTFontFamilyNameKey: CFStringRef;
-    pub static kCTFontStyleNameKey: CFStringRef;
-    pub static kCTFontURLAttribute: CFStringRef;
-    pub static kCTFontPostScriptNameKey: CFStringRef;
-    pub static kCTFontCascadeListAttribute: CFStringRef;
-    pub static kCTFontFamilyNameAttribute: CFStringRef;
-    pub static kCTFontDisplayNameAttribute: CFStringRef;
+/// # Safety
+///
+/// Types that implement this trait must be equivalent to a CFTypeRef - they must be pointer-sized
+/// and have an equivalent repr.
+pub unsafe trait CoreType: Sized {
+    type SysTy;
+
+    fn type_id() -> CFTypeId;
+
+    fn new_owned(ptr: NonNull<Self::SysTy>) -> Self;
+
+    fn new_borrowed(ptr: NonNull<Self::SysTy>) -> Self;
+
+    fn as_type_ref(&self) -> *const Self::SysTy;
+
+    fn into_ty(self) -> CFType;
 }
