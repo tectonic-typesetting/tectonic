@@ -7,6 +7,8 @@ use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2 as ft;
+#[cfg(target_os = "macos")]
+use tectonic_mac_core::CoreType;
 
 #[cfg(not(target_os = "macos"))]
 mod fc;
@@ -114,10 +116,10 @@ pub struct NameCollection {
 pub trait FontManagerBackend {
     unsafe fn initialize(&mut self);
     unsafe fn terminate(&mut self);
-    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
+    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
-    unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection;
+    fn read_names(&self, font: PlatformFontRef) -> NameCollection;
 }
 
 unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
@@ -729,13 +731,13 @@ impl FontManager {
         best_match.unwrap_or(ptr::null_mut())
     }
 
-    pub unsafe fn append_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
+    pub fn append_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
         if !list.iter().any(|s| **s == *str.as_ref()) {
             list.push(str.into())
         }
     }
 
-    pub unsafe fn prepend_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
+    pub fn prepend_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
         *list = list.drain(..).filter(|s| **s != *str.as_ref()).collect();
         list.insert(0, str.into());
     }
@@ -792,7 +794,7 @@ pub unsafe extern "C" fn findFontByName(
     #[cfg(target_os = "macos")]
     return FontManager::with_font_manager(|mgr| {
         mgr.find_font(name, var, size)
-            .map(|raw| raw)
+            .map(tectonic_mac_core::CTFontDescriptor::into_type_ref)
             .unwrap_or(ptr::null_mut())
     });
     #[cfg(not(target_os = "macos"))]
@@ -815,7 +817,14 @@ pub extern "C" fn setReqEngine(engine: libc::c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn getFullName(font: RawPlatformFontRef) -> *const libc::c_char {
-    match font.try_into() {
+    #[cfg(target_os = "macos")]
+    let font = ptr::NonNull::new(font.cast_mut())
+        .map(PlatformFontRef::new_borrowed)
+        .ok_or(());
+    #[cfg(not(target_os = "macos"))]
+    let font = font.try_into();
+
+    match font {
         Ok(font) => FontManager::with_font_manager(|mgr| mgr.get_full_name(font)),
         Err(_) => ptr::null_mut(),
     }
@@ -828,7 +837,13 @@ pub unsafe extern "C" fn getDesignSize(font: XeTeXFont) -> f64 {
 
 #[no_mangle]
 pub unsafe extern "C" fn ttxl_platfont_get_desc(font: RawPlatformFontRef) -> *const libc::c_char {
-    match font.try_into() {
+    #[cfg(target_os = "macos")]
+    let font = ptr::NonNull::new(font.cast_mut())
+        .map(PlatformFontRef::new_borrowed)
+        .ok_or(());
+    #[cfg(not(target_os = "macos"))]
+    let font = font.try_into();
+    match font {
         Ok(font) => {
             FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(&font).as_ptr())
         }
