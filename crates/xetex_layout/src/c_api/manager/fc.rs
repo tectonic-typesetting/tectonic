@@ -156,7 +156,7 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
+    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         if let Ok(str) = font.get::<fc::pat::File>(0) {
             Cow::Borrowed(str)
         } else {
@@ -259,7 +259,7 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    unsafe fn read_names(&self, pat: PlatformFontRef) -> NameCollection {
+    fn read_names(&self, pat: PlatformFontRef) -> NameCollection {
         let mut names = NameCollection::default();
 
         let pathname = match pat.get::<fc::pat::File>(0) {
@@ -308,12 +308,15 @@ impl FontManagerBackend for FcBackend {
                             && name_rec.encoding_id == ft::EncodingId::MAC_ROMAN
                             && name_rec.language_id == ft::LanguageId::MAC_ENGLISH
                         {
-                            utf8_name = Some(convert_to_utf8(roman_conv, name_rec.string));
+                            utf8_name =
+                                Some(unsafe { convert_to_utf8(roman_conv, name_rec.string) });
                             preferred_name = true;
                         } else if name_rec.platform_id == ft::PlatformId::APPLE_UNICODE
                             || name_rec.platform_id == ft::PlatformId::MICROSOFT
                         {
-                            utf8_name = Some(convert_to_utf8(UTF16_BE_CONV.get(), name_rec.string));
+                            utf8_name = Some(unsafe {
+                                convert_to_utf8(UTF16_BE_CONV.get(), name_rec.string)
+                            });
                         }
 
                         if let Some(name) = utf8_name {
