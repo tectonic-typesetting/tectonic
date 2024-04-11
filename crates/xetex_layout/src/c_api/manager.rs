@@ -114,10 +114,10 @@ pub struct NameCollection {
 pub trait FontManagerBackend {
     unsafe fn initialize(&mut self);
     unsafe fn terminate(&mut self);
-    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
+    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
     unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
-    unsafe fn read_names(&self, font: PlatformFontRef) -> NameCollection;
+    fn read_names(&self, font: PlatformFontRef) -> NameCollection;
 }
 
 unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
@@ -729,13 +729,13 @@ impl FontManager {
         best_match.unwrap_or(ptr::null_mut())
     }
 
-    pub unsafe fn append_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
+    pub fn append_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
         if !list.iter().any(|s| **s == *str.as_ref()) {
             list.push(str.into())
         }
     }
 
-    pub unsafe fn prepend_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
+    pub fn prepend_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
         *list = list.drain(..).filter(|s| **s != *str.as_ref()).collect();
         list.insert(0, str.into());
     }

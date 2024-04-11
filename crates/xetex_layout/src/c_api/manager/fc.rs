@@ -156,7 +156,7 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
+    fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         if let Ok(str) = font.get::<fc::pat::File>(0) {
             Cow::Borrowed(str)
         } else {
@@ -259,7 +259,7 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    unsafe fn read_names(&self, pat: PlatformFontRef) -> NameCollection {
+    fn read_names(&self, pat: PlatformFontRef) -> NameCollection {
         let mut names = NameCollection::default();
 
         let pathname = match pat.get::<fc::pat::File>(0) {
