@@ -1,5 +1,6 @@
 macro_rules! cfty {
     ($sysname:ident $name:ident $(<$($phantom:ident),+>)? : $id_fn:ident) => {
+        #[derive(PartialEq, Eq, Hash)]
         #[repr(transparent)]
         pub struct $name<$($($phantom),*)*>(std::ptr::NonNull<$crate::sys::$sysname> $($(, PhantomData<$phantom>)*)*);
 
