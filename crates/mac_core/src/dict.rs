@@ -1,6 +1,6 @@
-use crate::c_api::mac_core::{sys, CFType, CoreType};
+use super::{sys, CoreType};
 use std::marker::PhantomData;
-use std::mem::{ManuallyDrop, MaybeUninit};
+use std::mem::MaybeUninit;
 use std::ptr::NonNull;
 use std::{mem, ptr};
 
@@ -22,7 +22,7 @@ impl<T> AsPtr for Vec<T> {
 
 impl<T, const N: usize> AsPtr for [T; N] {
     fn as_ptr(&self) -> *const () {
-        <&[T]>::as_ptr(self).cast()
+        <[T]>::as_ptr(self).cast()
     }
 
     fn len(&self) -> usize {
@@ -34,23 +34,28 @@ pub trait Pairs {
     type Keys: AsPtr;
     type Values: AsPtr;
 
-    fn as_pairs(self) -> (Self::Keys, Self::Values);
+    fn into_pairs(self) -> (Self::Keys, Self::Values);
 }
 
 impl<K, V, const N: usize> Pairs for [(K, V); N] {
     type Keys = [K; N];
     type Values = [V; N];
 
-    fn as_pairs(self) -> (Self::Keys, Self::Values) {
-        let mut keys: [MaybeUninit<K>; N] = [MaybeUninit::uninit(); N];
-        let mut values: [MaybeUninit<V>; N] = [MaybeUninit::uninit(); N];
+    fn into_pairs(self) -> (Self::Keys, Self::Values) {
+        let mut keys: [MaybeUninit<K>; N] = unsafe { MaybeUninit::uninit().assume_init() };
+        let mut values: [MaybeUninit<V>; N] = unsafe { MaybeUninit::uninit().assume_init() };
 
         for (idx, (key, val)) in self.into_iter().enumerate() {
             keys[idx].write(key);
             values[idx].write(val);
         }
 
-        unsafe { (mem::transmute(keys), mem::transmute(values)) }
+        unsafe {
+            (
+                mem::transmute_copy::<_, [K; N]>(&keys),
+                mem::transmute_copy::<_, [V; N]>(&values),
+            )
+        }
     }
 }
 
@@ -58,7 +63,7 @@ impl<K, V> Pairs for Vec<(K, V)> {
     type Keys = Vec<K>;
     type Values = Vec<V>;
 
-    fn as_pairs(self) -> (Self::Keys, Self::Values) {
+    fn into_pairs(self) -> (Self::Keys, Self::Values) {
         self.into_iter().unzip()
     }
 }
@@ -69,7 +74,7 @@ cfty! {
 
 impl<K: CoreType, V: CoreType> CFDictionary<K, V> {
     pub fn new<P: Pairs>(pairs: P) -> CFDictionary<K, V> {
-        let (keys, values) = pairs.as_pairs();
+        let (keys, values) = pairs.into_pairs();
 
         let ptr = unsafe {
             sys::CFDictionaryCreate(

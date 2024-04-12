@@ -1,6 +1,4 @@
-use crate::c_api::mac_core::{
-    sys, CFArray, CFDictionary, CFSet, CFString, CFType, CoreType, FontAttribute,
-};
+use super::{sys, CFArray, CFDictionary, CFSet, CFString, CFType, CoreType, FontAttribute};
 use std::ptr::NonNull;
 
 cfty! {
@@ -10,6 +8,13 @@ cfty! {
 impl CTFontDescriptor {
     pub fn new_with_attrs(attrs: &CFDictionary<CFString, CFType>) -> CTFontDescriptor {
         let ptr = unsafe { sys::CTFontDescriptorCreateWithAttributes(attrs.as_type_ref()) };
+        CTFontDescriptor::new_owned(NonNull::new(ptr.cast_mut()).unwrap())
+    }
+
+    pub fn copy_with_attrs(&self, attrs: &CFDictionary<CFString, CFType>) -> CTFontDescriptor {
+        let ptr = unsafe {
+            sys::CTFontDescriptorCreateCopyWithAttributes(self.as_type_ref(), attrs.as_type_ref())
+        };
         CTFontDescriptor::new_owned(NonNull::new(ptr.cast_mut()).unwrap())
     }
 
