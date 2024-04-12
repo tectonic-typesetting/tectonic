@@ -1,7 +1,7 @@
 #[cfg(not(target_os = "macos"))]
 use crate::c_api::fc;
 use crate::c_api::{
-    d_to_fix, fix_to_d, ttstub_input_close, ttstub_input_get_size, ttstub_input_open,
+    d_to_fix, fix_to_d, raw_to_rs, ttstub_input_close, ttstub_input_get_size, ttstub_input_open,
     ttstub_input_read, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
     XeTeXFont,
 };
@@ -140,9 +140,9 @@ pub fn get_font_funcs() -> hb::FontFuncs<Rc<RefCell<ft::Face>>> {
 
 #[no_mangle]
 pub unsafe extern "C" fn createFont(font_ref: RawPlatformFontRef, point_size: Fixed) -> XeTeXFont {
-    let font_ref = match font_ref.try_into() {
-        Ok(fr) => fr,
-        Err(_) => return ptr::null_mut(),
+    let font_ref = match raw_to_rs(font_ref) {
+        Some(fr) => fr,
+        None => return ptr::null_mut(),
     };
 
     match XeTeXFontBase::new(font_ref, fix_to_d(point_size) as f32) {

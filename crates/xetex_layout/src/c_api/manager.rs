@@ -1,14 +1,11 @@
 use crate::c_api::font::XeTeXFontBase;
-use crate::c_api::{fix_to_d, Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont};
+use crate::c_api::{fix_to_d, raw_to_rs, Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont};
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2 as ft;
-#[cfg(target_os = "macos")]
-use tectonic_mac_core::CoreType;
 
 #[cfg(not(target_os = "macos"))]
 mod fc;
@@ -817,16 +814,9 @@ pub extern "C" fn setReqEngine(engine: libc::c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn getFullName(font: RawPlatformFontRef) -> *const libc::c_char {
-    #[cfg(target_os = "macos")]
-    let font = ptr::NonNull::new(font.cast_mut())
-        .map(PlatformFontRef::new_borrowed)
-        .ok_or(());
-    #[cfg(not(target_os = "macos"))]
-    let font = font.try_into();
-
-    match font {
-        Ok(font) => FontManager::with_font_manager(|mgr| mgr.get_full_name(font)),
-        Err(_) => ptr::null_mut(),
+    match raw_to_rs(font) {
+        Some(font) => FontManager::with_font_manager(|mgr| mgr.get_full_name(font)),
+        None => ptr::null_mut(),
     }
 }
 
@@ -837,16 +827,10 @@ pub unsafe extern "C" fn getDesignSize(font: XeTeXFont) -> f64 {
 
 #[no_mangle]
 pub unsafe extern "C" fn ttxl_platfont_get_desc(font: RawPlatformFontRef) -> *const libc::c_char {
-    #[cfg(target_os = "macos")]
-    let font = ptr::NonNull::new(font.cast_mut())
-        .map(PlatformFontRef::new_borrowed)
-        .ok_or(());
-    #[cfg(not(target_os = "macos"))]
-    let font = font.try_into();
-    match font {
-        Ok(font) => {
+    match raw_to_rs(font) {
+        Some(font) => {
             FontManager::with_font_manager(|mgr| mgr.get_platform_font_desc(&font).as_ptr())
         }
-        Err(_) => ptr::null_mut(),
+        None => ptr::null_mut(),
     }
 }
