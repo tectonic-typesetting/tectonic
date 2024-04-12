@@ -6,7 +6,6 @@ use crate::c_api::{
     XeTeXFont,
 };
 use std::cell::RefCell;
-use std::convert::TryInto;
 use std::ffi::{CStr, CString};
 use std::ptr;
 use std::ptr::NonNull;
@@ -276,7 +275,7 @@ impl XeTeXFontBase {
 
     #[cfg(target_os = "macos")]
     pub(crate) unsafe fn new(
-        descriptor: CTFontDescriptor,
+        descriptor: PlatformFontRef,
         point_size: f32,
     ) -> Result<XeTeXFontBase, i32> {
         let mut out = XeTeXFontBase {
