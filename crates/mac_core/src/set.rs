@@ -1,4 +1,4 @@
-use crate::c_api::mac_core::{sys, CFType, CoreType};
+use super::{sys, CoreType};
 use std::marker::PhantomData;
 use std::ptr;
 use std::ptr::NonNull;

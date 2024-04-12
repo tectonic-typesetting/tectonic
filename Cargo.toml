@@ -53,6 +53,7 @@ members = [
     "crates/errors",
     "crates/geturl",
     "crates/io_base",
+    "crates/mac_core",
     "crates/pdf_io",
     "crates/status_base",
     "crates/xdv",
