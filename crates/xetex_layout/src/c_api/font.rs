@@ -20,8 +20,8 @@ use tectonic_bridge_icu::UChar32;
 use tectonic_mac_core::sys::CTFontRef;
 #[cfg(target_os = "macos")]
 use tectonic_mac_core::{
-    CFArray, CFDictionary, CFString, CFUrl, CTFont, CTFontDescriptor, CoreType, FontAttribute,
-    FontNameKey,
+    CFArray, CFDictionary, CFString, CFType, CFUrl, CTFont, CTFontDescriptor, CoreType,
+    FontAttribute, FontNameKey,
 };
 
 fn get_glyph_advance(face: &ft::Face, gid: libc::c_uint, vertical: bool) -> ft::Fixed {
@@ -451,7 +451,7 @@ impl XeTeXFontBase {
             return 1;
         };
 
-        let empty_cascade_list = CFArray::empty();
+        let empty_cascade_list = CFArray::<CFType>::empty();
         let attributes =
             CFDictionary::new([(FontAttribute::CascadeList.to_str(), empty_cascade_list)]);
 
