@@ -1,0 +1,8 @@
+[package]
+name = "tectonic_mac_core"
+license = "MIT"
+version = "0.0.0-dev.0"
+edition = "2021"
+
+[dependencies]
+libc = "0.2"

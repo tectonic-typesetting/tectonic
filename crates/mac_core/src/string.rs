@@ -1,4 +1,4 @@
-use super::{sys, CFType, CoreType};
+use super::{sys, CoreType};
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
 use std::ptr;
