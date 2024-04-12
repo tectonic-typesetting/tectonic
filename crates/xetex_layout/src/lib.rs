@@ -48,6 +48,7 @@ mod c_api {
     use crate::c_api::engine::XeTeXLayoutEngineBase;
     use crate::c_api::font::XeTeXFontBase;
     use std::collections::BTreeMap;
+    use std::ptr;
     use std::sync::Mutex;
 
     mod engine;
@@ -102,6 +103,20 @@ mod c_api {
 
     fn d_to_fix(d: f64) -> Fixed {
         (d * 65536.0 + 0.5) as Fixed
+    }
+
+    fn raw_to_rs(font: RawPlatformFontRef) -> Option<PlatformFontRef> {
+        #[cfg(target_os = "macos")]
+        let out = {
+            use tectonic_mac_core::CoreType;
+            ptr::NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
+        };
+        #[cfg(not(target_os = "macos"))]
+        let out = {
+            use std::convert::TryInto;
+            font.try_into().ok()
+        };
+        out
     }
 
     /// key is combined value representing (font_id << 16) + glyph
