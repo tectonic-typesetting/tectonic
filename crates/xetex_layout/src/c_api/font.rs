@@ -1,14 +1,5 @@
 #[cfg(not(target_os = "macos"))]
 use crate::c_api::fc;
-#[cfg(target_os = "macos")]
-use crate::c_api::mac_core::{
-    cf_to_cstr, kCFTypeArrayCallBacks, kCFTypeDictionaryKeyCallBacks,
-    kCFTypeDictionaryValueCallBacks, kCTFontCascadeListAttribute, kCTFontPostScriptNameKey,
-    kCTFontURLAttribute, CFArrayCreate, CFDictionaryCreate, CFIndex, CFRelease, CFStringRef,
-    CFURLGetFileSystemRepresentation, CGFloat, CTFontCopyAttribute, CTFontCopyName,
-    CTFontCreateWithFontDescriptor, CTFontDescriptorCreateCopyWithAttributes, CTFontDescriptorRef,
-    CTFontRef,
-};
 use crate::c_api::{
     d_to_fix, fix_to_d, ttstub_input_close, ttstub_input_get_size, ttstub_input_open,
     ttstub_input_read, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
@@ -25,6 +16,13 @@ use tectonic_bridge_core::FileFormat;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
 use tectonic_bridge_icu::UChar32;
+#[cfg(target_os = "macos")]
+use tectonic_mac_core::sys::CTFontRef;
+#[cfg(target_os = "macos")]
+use tectonic_mac_core::{
+    CFArray, CFDictionary, CFString, CFUrl, CTFont, CTFontDescriptor, CoreType, FontAttribute,
+    FontNameKey,
+};
 
 fn get_glyph_advance(face: &ft::Face, gid: libc::c_uint, vertical: bool) -> ft::Fixed {
     let flags = if vertical {
@@ -242,7 +240,7 @@ pub unsafe extern "C" fn countFeatures(
 enum FontKind {
     FtFont,
     #[cfg(target_os = "macos")]
-    Mac(CTFontDescriptorRef, CTFontRef),
+    Mac(CTFontDescriptor, CTFont),
 }
 
 /// cbindgen:rename-all=camelCase
@@ -278,7 +276,7 @@ impl XeTeXFontBase {
 
     #[cfg(target_os = "macos")]
     pub(crate) unsafe fn new(
-        descriptor: CTFontDescriptorRef,
+        descriptor: CTFontDescriptor,
         point_size: f32,
     ) -> Result<XeTeXFontBase, i32> {
         let mut out = XeTeXFontBase {
@@ -453,36 +451,15 @@ impl XeTeXFontBase {
             return 1;
         };
 
-        let empty_cascade_list =
-            CFArrayCreate(ptr::null(), ptr::null_mut(), 0, &kCFTypeArrayCallBacks);
-        let mut values = [empty_cascade_list];
-        let mut attribute_keys = [kCTFontCascadeListAttribute];
-        let attributes = CFDictionaryCreate(
-            ptr::null(),
-            attribute_keys.as_mut_ptr().cast(),
-            values.as_mut_ptr().cast(),
-            1,
-            &kCFTypeDictionaryKeyCallBacks,
-            &kCFTypeDictionaryValueCallBacks,
-        );
-        CFRelease(empty_cascade_list.cast());
+        let empty_cascade_list = CFArray::empty();
+        let attributes =
+            CFDictionary::new(&[(FontAttribute::CascadeList.to_str(), empty_cascade_list)]);
 
-        *descriptor = CTFontDescriptorCreateCopyWithAttributes(*descriptor, attributes);
-        CFRelease(attributes.cast());
-        *font_ref = CTFontCreateWithFontDescriptor(
-            *descriptor,
-            (self.point_size * 72.0 / 72.27) as CGFloat,
-            ptr::null(),
-        );
-        if !font_ref.is_null() {
-            let mut index = 0;
-            let pathname = CStr::from_ptr(getFileNameFromCTFont(*font_ref, &mut index));
-            self.initialize_ft(pathname, index as libc::c_int)
-        } else {
-            CFRelease((*descriptor).cast());
-            *descriptor = ptr::null();
-            1
-        }
+        *descriptor = descriptor.copy_with_attrs(&attributes);
+        *font_ref = CTFont::new_descriptor(descriptor, self.point_size as f64 * 72.0 / 72.27);
+        let mut index = 0;
+        let pathname = get_file_name_from_ct_font(font_ref, &mut index).unwrap();
+        self.initialize_ft(&pathname, index as libc::c_int)
     }
 
     #[no_mangle]
@@ -819,84 +796,63 @@ impl XeTeXFontBase {
     }
 }
 
-impl Drop for XeTeXFontBase {
-    fn drop(&mut self) {
-        #[cfg(target_os = "macos")]
-        if let FontKind::Mac(descriptor, font_ref) = self.kind {
-            if !descriptor.is_null() {
-                unsafe { CFRelease(descriptor.cast()) };
-            }
-            if !font_ref.is_null() {
-                unsafe { CFRelease(font_ref.cast()) };
-            }
-        }
-    }
+#[cfg(target_os = "macos")]
+pub fn get_name_from_ct_font(ct_font: &CTFont, name_key: FontNameKey) -> Option<CFString> {
+    ct_font.name(name_key)
 }
 
 #[cfg(target_os = "macos")]
-#[no_mangle]
-pub unsafe extern "C" fn getNameFromCTFont(
-    ct_font_ref: CTFontRef,
-    name_key: CFStringRef,
-) -> *const libc::c_char {
-    let name = CTFontCopyName(ct_font_ref, name_key);
-    cf_to_cstr(name).into_raw()
+fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CString> {
+    let url = ct_font
+        .attr(FontAttribute::URL)
+        .and_then(|t| t.downcast::<CFUrl>().ok())?;
+
+    let pathname = url.fs_representation()?;
+    *index = 0;
+
+    let face = ft::Face::new(&pathname, 0);
+    if let Ok(face) = face {
+        if face.num_faces() > 1 {
+            let num_faces = face.num_faces();
+            let ps_name1 = ct_font.name(FontNameKey::PostScript);
+            *index = 0xFFFFFFFF;
+            for i in 0..num_faces {
+                let face = ft::Face::new(&pathname, i);
+                if let Ok(face) = face {
+                    let ps_name2 = face.get_postscript_name();
+                    match (&ps_name1, ps_name2) {
+                        (None, None) => {
+                            *index = i as u32;
+                            break;
+                        }
+                        (Some(name1), Some(name2)) if name1.as_str() == name2 => {
+                            *index = i as u32;
+                            break;
+                        }
+                        _ => (),
+                    }
+                }
+            }
+        }
+    }
+
+    if *index != 0xFFFFFFFF {
+        Some(pathname)
+    } else {
+        None
+    }
 }
 
 #[cfg(target_os = "macos")]
 #[no_mangle]
 pub unsafe extern "C" fn getFileNameFromCTFont(
-    ct_font_ref: CTFontRef,
+    ct_font: CTFontRef,
     index: *mut u32,
 ) -> *const libc::c_char {
-    let url = CTFontCopyAttribute(ct_font_ref, kCTFontURLAttribute);
-
-    if !url.is_null() {
-        let mut pathname = [0u8; libc::PATH_MAX as usize];
-        let ret = if CFURLGetFileSystemRepresentation(
-            url.cast(),
-            true,
-            pathname.as_mut_ptr(),
-            libc::PATH_MAX as CFIndex,
-        ) {
-            let pathname = CStr::from_bytes_until_nul(&pathname).unwrap();
-            *index = 0;
-
-            let face = ft::Face::new(pathname, 0);
-            if let Ok(face) = face {
-                if face.num_faces() > 1 {
-                    let num_faces = face.num_faces();
-                    let ps_name1 = getNameFromCTFont(ct_font_ref, kCTFontPostScriptNameKey);
-                    *index = 0xFFFFFFFF;
-                    for i in 0..num_faces {
-                        let face = ft::Face::new(pathname, i);
-                        if let Ok(face) = face {
-                            let ps_name2 = face.get_postscript_name();
-                            if (ps_name1.is_null() && ps_name2.is_none())
-                                || (!ps_name1.is_null()
-                                    && ps_name2.is_some()
-                                    && libc::strcmp(ps_name1, ps_name2.unwrap().as_ptr()) == 0)
-                            {
-                                *index = i as u32;
-                                break;
-                            }
-                        }
-                    }
-                    libc::free(ps_name1.cast::<libc::c_void>().cast_mut());
-                }
-            }
-
-            if *index != 0xFFFFFFFF {
-                libc::strdup(pathname.as_ptr().cast())
-            } else {
-                ptr::null()
-            }
-        } else {
-            ptr::null()
-        };
-        CFRelease(url);
-        ret
-    } else {
-        ptr::null()
-    }
+    get_file_name_from_ct_font(
+        &CTFont::new_borrowed(NonNull::new(ct_font.cast_mut()).unwrap()),
+        &mut *index,
+    )
+    .map(CString::into_raw)
+    .unwrap_or(ptr::null_mut())
 }

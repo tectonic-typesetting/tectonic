@@ -55,9 +55,6 @@ mod c_api {
     /// cbindgen:ignore
     mod fc;
     mod font;
-    /// cbindgen:ignore
-    #[cfg(target_os = "macos")]
-    mod mac_core;
     mod manager;
 
     #[derive(Copy, Clone, PartialEq, Debug)]
@@ -91,13 +88,13 @@ mod c_api {
     #[cfg(not(target_os = "macos"))]
     type RawPlatformFontRef = *mut fc::sys::FcPattern;
     #[cfg(target_os = "macos")]
-    type RawPlatformFontRef = mac_core::sys::CTFontDescriptorRef;
+    type RawPlatformFontRef = tectonic_mac_core::sys::CTFontDescriptorRef;
     /// cbindgen:ignore
     #[cfg(not(target_os = "macos"))]
     type PlatformFontRef = fc::Pattern;
     /// cbindgen:ignore
     #[cfg(target_os = "macos")]
-    type PlatformFontRef = mac_core::CTFontDescriptor;
+    type PlatformFontRef = tectonic_mac_core::CTFontDescriptor;
 
     fn fix_to_d(f: Fixed) -> f64 {
         f as f64 / 65536.0

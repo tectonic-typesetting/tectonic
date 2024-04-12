@@ -1,13 +1,3 @@
-use crate::c_api::mac_core::sys::{
-    kCFStringEncodingUTF8, kCTFontDisplayNameAttribute, kCTFontFamilyNameAttribute,
-    kCTFontNameAttribute, kCTFontURLAttribute, CFArrayGetCount, CFIndex, CFRelease,
-    CFStringCreateWithCString, CFURLGetFileSystemRepresentation, CTFontCopyAttribute,
-    CTFontCreateWithFontDescriptor, CTFontDescriptorCopyAttribute, CTFontDescriptorRef,
-};
-use crate::c_api::mac_core::{
-    CFArray, CFDictionary, CFSet, CFString, CFType, CFUrl, CTFont, CTFontDescriptor, CoreType,
-    FontAttribute, FontNameKey,
-};
 use crate::c_api::manager::{
     base_get_op_size_rec_and_style_flags, Font, FontManager, FontManagerBackend, FontMaps,
     NameCollection,
@@ -15,13 +5,16 @@ use crate::c_api::manager::{
 use crate::c_api::PlatformFontRef;
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
-use std::ptr;
+use tectonic_mac_core::{
+    CFArray, CFDictionary, CFSet, CFString, CFUrl, CTFont, CTFontDescriptor, CoreType,
+    FontAttribute, FontNameKey,
+};
 
 fn find_fonts_with_name(name: CFString, key: FontAttribute) -> CFArray<CTFontDescriptor> {
     let attributes = CFDictionary::new(&[(key.to_str(), name.into_ty())]);
     let descriptor = CTFontDescriptor::new_with_attrs(&attributes);
 
-    let mandatory_attributes = CFSet::new(&[key]);
+    let mandatory_attributes = CFSet::new(&[key.to_str()]);
     descriptor.matching_font_descriptors(&mandatory_attributes)
 }
 
@@ -57,7 +50,7 @@ impl MacBackend {
         for i in 0..members.len() {
             let font = &members[i];
             let names = self.read_names(font.clone());
-            maps.add_to_maps(self, font, &names)
+            maps.add_to_maps(self, font.clone(), &names)
         }
     }
 
@@ -111,7 +104,7 @@ impl FontManagerBackend for MacBackend {
 
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
         let name_str = CFString::new(name);
-        let matched = find_font_with_name(name_str, FontAttribute::DisplayName);
+        let matched = find_font_with_name(name_str.clone(), FontAttribute::DisplayName);
         if let Some(matched) = matched {
             self.add_font_and_siblings_to_caches(maps, &matched);
             return;
@@ -120,35 +113,35 @@ impl FontManagerBackend for MacBackend {
         let hyph = name.to_bytes().iter().copied().position(|c| c == b'-');
         if let Some(hyph) = hyph {
             let family = CString::new(&name.to_bytes()[..hyph]).unwrap();
-            let family_str = CFString::new(&family);
+            let family_str = CFString::new(&*family);
             let family_members =
                 find_fonts_with_name(family_str.clone(), FontAttribute::FamilyName);
-            if !family_members.is_null() && !family_members.is_empty() {
+            if !family_members.is_empty() {
                 self.add_fonts_to_caches(maps, family_members);
                 return;
             }
 
             let matched = find_font_with_name(family_str, FontAttribute::FamilyName);
-            if !matched.is_null() {
+            if let Some(matched) = matched {
                 self.add_family_to_caches(maps, matched);
                 return;
             }
         }
 
-        let matched = find_font_with_name(name_str, FontAttribute::Name);
-        if !matched.is_null() {
-            self.add_font_and_siblings_to_caches(maps, matched);
+        let matched = find_font_with_name(name_str.clone(), FontAttribute::Name);
+        if let Some(matched) = matched {
+            self.add_font_and_siblings_to_caches(maps, &matched);
             return;
         }
 
-        let family_members = find_fonts_with_name(name_str, FontAttribute::FamilyName);
-        if !family_members.is_null() && !family_members.is_empty() {
+        let family_members = find_fonts_with_name(name_str.clone(), FontAttribute::FamilyName);
+        if !family_members.is_empty() {
             self.add_fonts_to_caches(maps, family_members);
             return;
         }
 
         let matched = find_font_with_name(name_str, FontAttribute::FamilyName);
-        if !matched.is_null() {
+        if let Some(matched) = matched {
             self.add_family_to_caches(maps, matched);
             return;
         }

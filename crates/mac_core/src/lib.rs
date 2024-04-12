@@ -1,6 +1,6 @@
-use std::ffi::{CStr, CString};
+#![cfg(target_os = "macos")]
+
 use std::mem::ManuallyDrop;
-use std::ops::Index;
 use std::ptr::NonNull;
 
 pub mod sys;
@@ -96,6 +96,11 @@ pub unsafe trait CoreType: Sized {
     fn new_borrowed(ptr: NonNull<Self::SysTy>) -> Self;
 
     fn as_type_ref(&self) -> *const Self::SysTy;
+
+    fn into_type_ref(self) -> *const Self::SysTy {
+        let this = ManuallyDrop::new(self);
+        this.as_type_ref()
+    }
 
     fn into_ty(self) -> CFType;
 }
