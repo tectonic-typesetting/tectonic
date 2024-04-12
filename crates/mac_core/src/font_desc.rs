@@ -28,7 +28,9 @@ impl CTFontDescriptor {
                 mandatory.as_type_ref(),
             )
         };
-        CFArray::new_owned(NonNull::new(ptr.cast_mut()).unwrap())
+        NonNull::new(ptr.cast_mut())
+            .map(CFArray::new_owned)
+            .unwrap_or_else(CFArray::empty)
     }
 
     pub fn attr(&self, attr: FontAttribute) -> Option<CFType> {
