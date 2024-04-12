@@ -240,7 +240,7 @@ pub unsafe extern "C" fn countFeatures(
 enum FontKind {
     FtFont,
     #[cfg(target_os = "macos")]
-    Mac(CTFontDescriptor, CTFont),
+    Mac(CTFontDescriptor, Option<CTFont>),
 }
 
 /// cbindgen:rename-all=camelCase
@@ -292,7 +292,7 @@ impl XeTeXFontBase {
             index: 0,
             ft_face: None,
             hb_font: None,
-            kind: FontKind::Mac(descriptor, ptr::null()),
+            kind: FontKind::Mac(descriptor, None),
         };
         let status = out.initialize_mac();
         if status != 0 {
@@ -453,12 +453,15 @@ impl XeTeXFontBase {
 
         let empty_cascade_list = CFArray::empty();
         let attributes =
-            CFDictionary::new(&[(FontAttribute::CascadeList.to_str(), empty_cascade_list)]);
+            CFDictionary::new([(FontAttribute::CascadeList.to_str(), empty_cascade_list)]);
 
         *descriptor = descriptor.copy_with_attrs(&attributes);
-        *font_ref = CTFont::new_descriptor(descriptor, self.point_size as f64 * 72.0 / 72.27);
+        *font_ref = Some(CTFont::new_descriptor(
+            descriptor,
+            self.point_size as f64 * 72.0 / 72.27,
+        ));
         let mut index = 0;
-        let pathname = get_file_name_from_ct_font(font_ref, &mut index).unwrap();
+        let pathname = get_file_name_from_ct_font(font_ref.as_ref().unwrap(), &mut index).unwrap();
         self.initialize_ft(&pathname, index as libc::c_int)
     }
 
@@ -825,7 +828,7 @@ fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CStri
                             *index = i as u32;
                             break;
                         }
-                        (Some(name1), Some(name2)) if name1.as_str() == name2 => {
+                        (Some(name1), Some(name2)) if &*name1.as_cstr() == name2 => {
                             *index = i as u32;
                             break;
                         }
