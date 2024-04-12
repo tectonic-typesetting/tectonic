@@ -790,6 +790,7 @@ pub unsafe extern "C" fn findFontByName(
 ) -> RawPlatformFontRef {
     #[cfg(target_os = "macos")]
     return FontManager::with_font_manager(|mgr| {
+        use tectonic_mac_core::CoreType;
         mgr.find_font(name, var, size)
             .map(tectonic_mac_core::CTFontDescriptor::into_type_ref)
             .unwrap_or(ptr::null_mut())
