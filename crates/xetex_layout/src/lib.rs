@@ -48,7 +48,6 @@ mod c_api {
     use crate::c_api::engine::XeTeXLayoutEngineBase;
     use crate::c_api::font::XeTeXFontBase;
     use std::collections::BTreeMap;
-    use std::ptr;
     use std::sync::Mutex;
 
     mod engine;
@@ -109,7 +108,7 @@ mod c_api {
         #[cfg(target_os = "macos")]
         let out = {
             use tectonic_mac_core::CoreType;
-            ptr::NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
+            std::ptr::NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
         };
         #[cfg(not(target_os = "macos"))]
         let out = {
