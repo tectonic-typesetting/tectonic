@@ -1,6 +1,5 @@
-use super::{sys, CFType, CoreType};
+use super::{sys, CoreType};
 use std::marker::PhantomData;
-use std::mem::ManuallyDrop;
 use std::ops::Index;
 use std::ptr;
 use std::ptr::NonNull;
@@ -10,6 +9,18 @@ cfty! {
 }
 
 impl<T: CoreType> CFArray<T> {
+    pub fn empty() -> CFArray<T> {
+        let ptr = unsafe {
+            sys::CFArrayCreate(
+                ptr::null_mut(),
+                ptr::null_mut(),
+                0,
+                &sys::kCFTypeArrayCallBacks,
+            )
+        };
+        CFArray::new_owned(NonNull::new(ptr.cast_mut()).unwrap())
+    }
+
     pub fn new(values: &[T]) -> CFArray<T> {
         let ptr = unsafe {
             sys::CFArrayCreate(
@@ -19,7 +30,7 @@ impl<T: CoreType> CFArray<T> {
                 &sys::kCFTypeArrayCallBacks,
             )
         };
-        unsafe { CFArray::new_owned(NonNull::new(ptr.cast_mut()).unwrap()) }
+        CFArray::new_owned(NonNull::new(ptr.cast_mut()).unwrap())
     }
 
     pub fn len(&self) -> usize {
