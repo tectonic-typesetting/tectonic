@@ -11,7 +11,7 @@ use tectonic_mac_core::{
 };
 
 fn find_fonts_with_name(name: CFString, key: FontAttribute) -> CFArray<CTFontDescriptor> {
-    let attributes = CFDictionary::new(&[(key.to_str(), name.into_ty())]);
+    let attributes = CFDictionary::new([(key.to_str(), name.into_ty())]);
     let descriptor = CTFontDescriptor::new_with_attrs(&attributes);
 
     let mandatory_attributes = CFSet::new(&[key.to_str()]);
@@ -70,7 +70,7 @@ impl MacBackend {
             .attr(FontAttribute::FamilyName)
             .and_then(|ty| ty.downcast::<CFString>().ok());
         if let Some(name_str) = name_str {
-            let members = find_fonts_with_name(name_str.cast(), FontAttribute::FamilyName);
+            let members = find_fonts_with_name(name_str, FontAttribute::FamilyName);
             self.add_fonts_to_caches(maps, members);
         }
     }
