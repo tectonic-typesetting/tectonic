@@ -60,7 +60,7 @@ steps:
   displayName: cargo build for $(TARGET)
 
 - ${{ if parameters.testIt }}:
-  - bash: cargo test --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT"
+  - bash: cargo test --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -- --nocapture
     displayName: cargo test
   - bash: |
       artifact_dir="$(Build.ArtifactStagingDirectory)/test_failures"
