@@ -854,10 +854,13 @@ fn find_graphite_feature_setting_named(
         eprintln!("i: {i}");
         let lang_id = 0x409;
         let label = feature.value_label(i, lang_id)?;
+        eprintln!("Label: {}", label.as_str());
         if &label.as_bytes()[..name.len()] == name || feature.id() == tag {
+            eprintln!("Returning");
             return Some(feature.value(i));
         }
     }
+    eprintln!("Not found");
     None
 }
 
