@@ -91,6 +91,7 @@ impl FeatureRef {
                 &mut len,
             )
         };
+        eprintln!("Label: {:p}/{}", ptr, len);
         NonNull::new(ptr.cast()).map(|ptr| Label(len as usize, ptr))
     }
 
