@@ -793,6 +793,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
     f: *mut hb::Tag,
     v: *mut libc::c_int,
 ) -> bool {
+    eprintln!("findGraphiteFeature({engine:p}, {s:p}, {e:p}, {f:p}, {v:p})");
     let len = e.byte_offset_from(s).unsigned_abs();
     let str = slice::from_raw_parts(s.cast(), len);
     find_graphite_feature(&*engine, str, &mut *f, &mut *v)
@@ -822,6 +823,7 @@ pub unsafe extern "C" fn findGraphiteFeatureNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
+    eprintln!("findGraphiteFeatureNamed({engine:p}, {name:p}, {namelength})");
     let name = if !name.is_null() && namelength > 0 {
         slice::from_raw_parts(name.cast::<u8>(), namelength as usize)
     } else {
@@ -859,6 +861,7 @@ pub unsafe extern "C" fn findGraphiteFeatureSettingNamed(
     name: *const libc::c_char,
     namelength: libc::c_int,
 ) -> libc::c_long {
+    eprintln!("findGraphiteFeatureSettingNamed({engine:p}, {id}, {name:p}, {namelength})");
     let name = if !name.is_null() && namelength > 0 {
         slice::from_raw_parts(name.cast(), namelength as usize)
     } else {
