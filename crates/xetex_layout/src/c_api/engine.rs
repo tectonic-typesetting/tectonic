@@ -796,15 +796,19 @@ pub unsafe extern "C" fn findGraphiteFeature(
     eprintln!("findGraphiteFeature({engine:p}, {s:p}, {e:p}, {f:p}, {v:p})");
     let len = e.byte_offset_from(s).unsigned_abs();
     let str = slice::from_raw_parts(s.cast(), len);
+    eprintln!("str: {}", std::str::from_utf8(str).unwrap());
     find_graphite_feature(&*engine, str, &mut *f, &mut *v)
 }
 
 pub fn find_graphite_feature_named(engine: &XeTeXLayoutEngineBase, name: &[u8]) -> Option<u32> {
+    eprintln!("find_graphite_feature_named");
     let gr_face = engine.font().get_hb_font().get_face().gr_face()?;
 
     let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
+    eprintln!("tag: {}", tag);
 
     for i in 0..gr_face.num_feature_refs() {
+        eprintln!("i: {}", i);
         let feature = gr_face.feature_ref(i)?;
         let lang_id = 0x409;
         let label = feature.label(lang_id)?;
@@ -839,12 +843,15 @@ fn find_graphite_feature_setting_named(
     id: u32,
     name: &[u8],
 ) -> Option<i16> {
+    eprintln!("find_graphite_feature_setting_named");
     let face = engine.font().get_hb_font().get_face().gr_face()?;
 
     let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
+    eprintln!("tag: {tag}");
 
     let feature = face.find_feature_ref(id)?;
     for i in 0..feature.num_values() {
+        eprintln!("i: {i}");
         let lang_id = 0x409;
         let label = feature.value_label(i, lang_id)?;
         if &label.as_bytes()[..name.len()] == name || feature.id() == tag {
