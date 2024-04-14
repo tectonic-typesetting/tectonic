@@ -197,6 +197,7 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn deleteLayoutEngine(this: XeTeXLayoutEngine) {
+        eprintln!("deleteLayoutEngine");
         let _ = Box::from_raw(this);
     }
 
@@ -326,6 +327,7 @@ impl XeTeXLayoutEngineBase {
         engine: XeTeXLayoutEngine,
         req_first: libc::c_int,
     ) -> libc::c_int {
+        eprintln!("getFontCharRange");
         if req_first != 0 {
             (*engine).font().get_first_char_code() as libc::c_int
         } else {
@@ -338,6 +340,7 @@ impl XeTeXLayoutEngineBase {
         engine: XeTeXLayoutEngine,
         glyph_name: *const libc::c_char,
     ) -> libc::c_int {
+        eprintln!("mapGlyphToIndex");
         (*engine)
             .font()
             .map_glyph_to_index(CStr::from_ptr(glyph_name)) as libc::c_int
@@ -345,6 +348,7 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn usingGraphite(engine: XeTeXLayoutEngine) -> bool {
+        eprintln!("usingGraphite");
         match &(*engine).shaper {
             Some(shaper) => shaper.to_bytes() == b"graphite2",
             None => false,
@@ -378,6 +382,7 @@ impl XeTeXLayoutEngineBase {
         max: i32,
         rtl: bool,
     ) -> libc::c_int {
+        eprintln!("layoutChars");
         let chars = slice::from_raw_parts(chars, max as usize);
         let engine = &mut *engine;
 
@@ -527,6 +532,7 @@ pub unsafe extern "C" fn getFontFilename(
     engine: XeTeXLayoutEngine,
     index: *mut u32,
 ) -> *const libc::c_char {
+    eprintln!("getFontFilename");
     (*engine)
         .font()
         .get_filename(&mut *index)
@@ -536,11 +542,13 @@ pub unsafe extern "C" fn getFontFilename(
 
 #[no_mangle]
 pub unsafe extern "C" fn freeFontFilename(filename: *const libc::c_char) {
+    eprintln!("freeFontFilename");
     let _ = CString::from_raw(filename.cast_mut());
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) {
+    eprintln!("getGlyphs");
     let hb_glyphs = (*engine).hb_buffer.get_glyph_info();
 
     for (idx, glyph) in hb_glyphs.iter().enumerate() {
@@ -550,6 +558,7 @@ pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) 
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32) {
+    eprintln!("getGlyphAdvances");
     let engine = &*engine;
     let hb_positions = engine.hb_buffer.get_glyph_position();
 
@@ -566,6 +575,7 @@ pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint) {
+    eprintln!("getGlyphPositions");
     let engine = &mut *engine;
     let hb_positions = engine.hb_buffer.get_glyph_position();
 
@@ -667,6 +677,7 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingCode(
     feature_id: u32,
     index: u32,
 ) -> u32 {
+    eprintln!("getGraphiteFeatureSettingCode");
     get_graphite_feature_setting_code(&*engine, feature_id, index).unwrap_or(0)
 }
 
@@ -692,6 +703,7 @@ pub unsafe extern "C" fn getGraphiteFeatureDefaultSetting(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> u32 {
+    eprintln!("getGraphiteFeatureDefaultSetting");
     get_graphite_feature_default_setting(&*engine, feature_id).unwrap_or(0)
 }
 
@@ -711,6 +723,7 @@ pub unsafe extern "C" fn getGraphiteFeatureLabel(
     engine: XeTeXLayoutEngine,
     feature_id: u32,
 ) -> *const libc::c_char {
+    eprintln!("getGraphiteFeatureLabel");
     match get_graphite_feature_label(&*engine, feature_id) {
         Some(label) => label.into_raw().cast(),
         None => ptr::null_mut(),
@@ -741,6 +754,7 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingLabel(
     feature_id: u32,
     setting_id: u32,
 ) -> *const libc::c_char {
+    eprintln!("getGraphiteFeatureSettingLabel");
     match get_graphite_feature_setting_label(&*engine, feature_id, setting_id) {
         Some(label) => label.into_raw().cast(),
         None => ptr::null(),
@@ -793,6 +807,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
     f: *mut hb::Tag,
     v: *mut libc::c_int,
 ) -> bool {
+    eprintln!("findGraphiteFeature");
     let len = e.byte_offset_from(s).unsigned_abs();
     let str = slice::from_raw_parts(s.cast(), len);
     find_graphite_feature(&*engine, str, &mut *f, &mut *v)
@@ -846,8 +861,7 @@ fn find_graphite_feature_setting_named(
         let lang_id = 0x409;
         let label = feature.value_label(i, lang_id)?;
         if &label.as_bytes()[..name.len()] == name || feature.id() == tag {
-            eprintln!("Returning");
-            return Some(dbg!(feature.value(i)));
+            return Some(feature.value(i));
         }
     }
     None
@@ -884,6 +898,7 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     txt_ptr: *const u16,
     txt_len: libc::c_uint,
 ) -> bool {
+    eprintln!("initGraphiteBreaking");
     let engine = &*engine;
     let hb_font = engine.font().get_hb_font();
     let hb_face = hb_font.get_face();
@@ -933,6 +948,7 @@ pub unsafe extern "C" fn initGraphiteBreaking(
 
 #[no_mangle]
 pub unsafe extern "C" fn findNextGraphiteBreak() -> libc::c_int {
+    eprintln!("findNextGraphiteBreak");
     let Some(gr_seg) = GR_SEGMENT.take() else {
         return -1;
     };
