@@ -508,13 +508,11 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
     }
 
     if (reqEngine == 'G') {
-        char** tmpShapers = xmalloc(sizeof(char*) * 2);
-        tmpShapers[0] = shapers[0];
-        tmpShapers[1] = NULL;
+    	static char* graphiteShaper[] = {"graphite2", NULL};
         /* create a default engine so we can query the font for Graphite features;
          * because of font caching, it's cheap to discard this and create the real one later */
-        engine = createLayoutEngineBorrowed(font, script, language,
-                features, nFeatures, tmpShapers, rgbValue, extend, slant, embolden);
+        engine = createLayoutEngineBorrowed(font, script, NULL,
+                features, nFeatures, graphiteShaper, rgbValue, extend, slant, embolden);
 
         if (engine == NULL)
             return NULL;

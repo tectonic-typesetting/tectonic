@@ -175,7 +175,7 @@ impl XeTeXLayoutEngineBase {
                 len += 1;
             }
             len += 1;
-            Vec::from_raw_parts(shapers, len, len)
+            slice::from_raw_parts(shapers, len).to_vec()
         } else {
             Vec::new()
         };
