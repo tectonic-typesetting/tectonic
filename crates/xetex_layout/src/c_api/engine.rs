@@ -175,7 +175,7 @@ impl XeTeXLayoutEngineBase {
                 len += 1;
             }
             len += 1;
-            Vec::from_raw_parts(shapers, len, len)
+            slice::from_raw_parts(shapers, len).to_vec()
         } else {
             Vec::new()
         };
@@ -197,7 +197,10 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn deleteLayoutEngine(this: XeTeXLayoutEngine) {
-        eprintln!("deleteLayoutEngine");
+        eprintln!("deleteLayoutEngine({:p})", this);
+        eprintln!("Font: {:p}", &*(*this).font);
+        eprintln!("Features: {:p}", &*(*this).features);
+        eprintln!("Shapers: {:p}", &*(*this).shaper_list);
         let _ = Box::from_raw(this);
     }
 
