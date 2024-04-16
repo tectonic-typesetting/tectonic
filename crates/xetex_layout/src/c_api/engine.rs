@@ -107,12 +107,13 @@ impl XeTeXLayoutEngineBase {
         let font = Box::from_raw(font);
 
         let language = if !language.is_null() {
-            Some(Cow::Owned(CString::from_raw(language)))
+            Some(Cow::Owned(CStr::from_ptr(language).to_owned()))
         } else {
             None
         };
-        let features = if !features.is_null() {
-            Box::from_raw(ptr::slice_from_raw_parts_mut(features, n_features as usize))
+        let features: Box<[_]> = if !features.is_null() {
+            let len = n_features as usize;
+            Box::from(slice::from_raw_parts(features, len))
         } else {
             Box::new([])
         };
@@ -122,7 +123,7 @@ impl XeTeXLayoutEngineBase {
                 len += 1;
             }
             len += 1;
-            Vec::from_raw_parts(shapers, len, len)
+            slice::from_raw_parts(shapers, len).to_vec()
         } else {
             Vec::new()
         };

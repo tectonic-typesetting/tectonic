@@ -659,11 +659,18 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
     engine = createLayoutEngine(font, script, language,
                     features, nFeatures, shapers, rgbValue, extend, slant, embolden);
 
-    if (!engine) {
-        // only free these if creation failed, otherwise the engine now owns them
+    // The layout engine clones all these - this is temporary to avoid using
+    // different alloc/dealloc
+    if (features) {
         free(features);
+    }
+    if (shapers) {
         free(shapers);
-    } else {
+    }
+    if (language) {
+        free(language);
+    }
+    if (engine) {
         native_font_type_flag = OTGR_FONT_FLAG;
     }
 
