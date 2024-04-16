@@ -352,7 +352,7 @@ fn the_letter_a() {
 }
 
 #[test]
-fn test_g_builtins() {
+fn xetex_g_builtins() {
     TestCase::new("xetex_g_builtins").check_pdf(true).go()
 }
 
