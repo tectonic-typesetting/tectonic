@@ -233,6 +233,11 @@ fn otf_basic() {
 }
 
 #[test]
+fn graphite_basic() {
+    TestCase::new("graphite_basic").go()
+}
+
+#[test]
 fn prim_creationdate() {
     TestCase::new("prim_creationdate").go()
 }
@@ -344,6 +349,11 @@ fn tectoniccodatokens_ok() {
 #[test]
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
+}
+
+#[test]
+fn test_g_builtins() {
+    TestCase::new("xetex_g_builtins").check_pdf(true).go()
 }
 
 #[test]
