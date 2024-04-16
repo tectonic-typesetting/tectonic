@@ -1645,6 +1645,10 @@ impl ProcessingSession {
                 &format!(" ({})", byte_len.get_appropriate_unit(UnitType::Binary)),
             );
 
+            if let Some(parent) = real_path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
+
             let mut f = File::create(&real_path)?;
             f.write_all(&file.data)?;
             summ.got_written_to_disk = true;
