@@ -201,6 +201,23 @@ pub trait DefinitelySame {
 //    }
 //}
 
+impl DefinitelySame for Error {
+    fn definitely_same(&self, other: &Self) -> bool {
+        if !self.0.definitely_same(&other.0) {
+            return false;
+        }
+        self.1.definitely_same(&other.1)
+    }
+}
+
+impl DefinitelySame for error_chain::State {
+    fn definitely_same(&self, other: &Self) -> bool {
+        // We ignore backtraces
+        // We have to remove the Send bounds, which current Rust makes a bit annoying
+        self.next_error.definitely_same(&other.next_error)
+    }
+}
+
 impl DefinitelySame for ErrorKind {
     fn definitely_same(&self, other: &Self) -> bool {
         match self {
@@ -230,6 +247,23 @@ impl DefinitelySame for NewError {
     /// Hack alert! We only compare stringifications.
     fn definitely_same(&self, other: &Self) -> bool {
         self.to_string() == other.to_string()
+    }
+}
+
+impl DefinitelySame for Box<dyn std::error::Error + Send> {
+    /// Hack alert! We only compare stringifications.
+    fn definitely_same(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
+}
+
+impl<T: DefinitelySame> DefinitelySame for Option<T> {
+    fn definitely_same(&self, other: &Self) -> bool {
+        match (self, other) {
+            (None, None) => true,
+            (Some(a), Some(b)) => a.definitely_same(b),
+            _ => false,
+        }
     }
 }
 
@@ -378,5 +412,56 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.with_instance(|i| std::fmt::Debug::fmt(&i, f))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use error_chain::{ChainedError, State};
+    use std::error::Error as StdError;
+
+    #[test]
+    fn test_def_same_option() {
+        let a = Some(Box::from(NewError::msg("A")));
+        let b = Some(Box::from(NewError::msg("A")));
+
+        assert!(a.definitely_same(&b));
+        assert!(b.definitely_same(&a));
+
+        let b = Some(Box::from(NewError::msg("B")));
+        assert!(!a.definitely_same(&b));
+
+        let b = None;
+        let c = None;
+        assert!(!a.definitely_same(&b));
+        assert!(b.definitely_same(&c));
+    }
+
+    #[test]
+    fn test_def_same_err() {
+        let a = Error::new(ErrorKind::Msg(String::from("A")), State::default());
+        let b = Error::new(ErrorKind::Msg(String::from("A")), State::default());
+
+        // Different backtraces but should be same
+        assert!(a.definitely_same(&b));
+
+        let b = Error::new(ErrorKind::BadLength(0, 0), State::default());
+        assert!(!a.definitely_same(&b));
+
+        let a = Error::new(ErrorKind::NewStyle(NewError::msg("A")), State::default());
+        assert!(!a.definitely_same(&b));
+
+        let b = Error::new(ErrorKind::NewStyle(NewError::msg("A")), State::default());
+        assert!(a.definitely_same(&b));
+    }
+
+    #[test]
+    fn test_def_same_box_err() {
+        let a: Box<dyn StdError + Send> = Box::from(NewError::msg("A"));
+        let b: Box<dyn StdError + Send> = Box::from(NewError::msg("B"));
+
+        assert!(a.definitely_same(&a));
+        assert!(!a.definitely_same(&b));
     }
 }

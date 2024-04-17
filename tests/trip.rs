@@ -18,6 +18,7 @@ use tectonic::io::testing::SingleInputFileIo;
 use tectonic::io::{FilesystemPrimaryInputIo, IoProvider, IoStack, MemoryIo};
 use tectonic::TexEngine;
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
+use tectonic_engine_xetex::TexOutcome;
 use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
@@ -50,7 +51,7 @@ fn trip_test() {
     let mut mem = MemoryIo::new(true);
 
     // First engine pass -- make the format file.
-    {
+    let res1 = {
         let io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
@@ -60,11 +61,10 @@ fn trip_test() {
             .halt_on_error_mode(false)
             .initex_mode(true)
             .process(&mut launcher, "INITEX", "trip")
-            .unwrap();
-    }
+    };
 
     // Second pass -- process it
-    {
+    let res2 = {
         let io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
@@ -74,12 +74,13 @@ fn trip_test() {
             .halt_on_error_mode(false)
             .initex_mode(false)
             .process(&mut launcher, "trip.fmt", "trip")
-            .unwrap();
-    }
+    };
 
     // Check that outputs match expectations.
     let files = &*mem.files.borrow();
     Expected::new()
+        .res(Ok(TexOutcome::Errors), res1)
+        .res(Ok(TexOutcome::Errors), res2)
         .file(expected_log.collection(files))
         .file(expected_xdv.collection(files))
         .file(expected_os.collection(files))
@@ -113,7 +114,7 @@ fn etrip_test() {
     let files = mem.files.clone();
 
     // First engine pass -- make the format file.
-    {
+    let res1 = {
         let io = IoStack::new(vec![&mut mem as &mut dyn IoProvider, &mut tex, &mut tfm]);
         let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
@@ -123,11 +124,10 @@ fn etrip_test() {
             .halt_on_error_mode(false)
             .initex_mode(true)
             .process(&mut launcher, "INITEX", "etrip")
-            .unwrap();
-    }
+    };
 
     // Second pass -- process it
-    {
+    let res2 = {
         let io = IoStack::new(vec![&mut mem, &mut tex, &mut tfm]);
         let mut hooks = MinimalDriver::new(io);
         let mut status = NoopStatusBackend::default();
@@ -137,12 +137,13 @@ fn etrip_test() {
             .halt_on_error_mode(false)
             .initex_mode(false)
             .process(&mut launcher, "etrip.fmt", "etrip")
-            .unwrap();
-    }
+    };
 
     // Check that outputs match expectations.
     let files = &*files.borrow();
     Expected::new()
+        .res(Ok(TexOutcome::Errors), res1)
+        .res(Ok(TexOutcome::Errors), res2)
         .file(expected_log.collection(files))
         .file(expected_xdv.collection(files))
         .file(expected_out.collection(files))

@@ -11,6 +11,7 @@
 #![allow(dead_code)]
 
 use flate2::read::GzDecoder;
+use std::fmt::Debug;
 use std::{
     collections::HashSet,
     env,
@@ -18,10 +19,13 @@ use std::{
     io::{Read, Write},
     path::{Path, PathBuf},
 };
+use tectonic::errors::DefinitelySame;
 use tectonic::{errors::Result, io::memory::MemoryFileCollection};
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
+use tectonic_engine_xetex::TexOutcome;
 
 pub use tectonic::test_util::test_path;
+use tectonic_errors::prelude::StdResult;
 
 /// Set the magic environment variable that enables the testing infrastructure
 /// embedded in the main Tectonic crate. This function is separated out from
@@ -99,13 +103,26 @@ pub fn ensure_plain_format() -> Result<PathBuf> {
 /// Convenience structure for comparing expected and actual output in various
 /// tests.
 #[must_use = "Expectations do nothing if not `finish`ed"]
-pub struct Expected<'a> {
+pub struct Expected<'a, E> {
+    result: Vec<(StdResult<TexOutcome, E>, StdResult<TexOutcome, E>)>,
     files: Vec<ExpectedFile<'a>>,
 }
 
-impl<'a> Expected<'a> {
+impl<'a, E: DefinitelySame + Debug> Expected<'a, E> {
     pub fn new() -> Self {
-        Expected { files: Vec::new() }
+        Expected {
+            result: Vec::new(),
+            files: Vec::new(),
+        }
+    }
+
+    pub fn res(
+        mut self,
+        expected: StdResult<TexOutcome, E>,
+        found: StdResult<TexOutcome, E>,
+    ) -> Self {
+        self.result.push((expected, found));
+        self
     }
 
     pub fn file(mut self, file: ExpectedFile<'a>) -> Self {
@@ -115,6 +132,14 @@ impl<'a> Expected<'a> {
 
     pub fn finish(&self) {
         let mut failures = Vec::new();
+        for (expected, found) in &self.result {
+            if !found.definitely_same(expected) {
+                failures.push(format!(
+                    "Expected engine result {:?}, got {:?}",
+                    expected, found
+                ));
+            }
+        }
         for file in &self.files {
             if let Err(msg) = file.finish() {
                 failures.push(msg);
@@ -128,6 +153,7 @@ impl<'a> Expected<'a> {
 
 pub struct ExpectedFile<'a> {
     name: String,
+    expect_name: String,
     contents: Vec<u8>,
     gzipped: bool,
 
@@ -137,12 +163,20 @@ pub struct ExpectedFile<'a> {
 impl<'a> ExpectedFile<'a> {
     pub fn read<P: AsRef<Path>>(path: P) -> Self {
         let path = path.as_ref();
+
+        let root = test_path(&[]);
         let name = path
             .file_name()
             .unwrap_or_else(|| panic!("couldn't get file name of {:?}", path))
             .to_str()
             .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", path))
             .to_owned();
+        let expect_name = path
+            .strip_prefix(root)
+            .unwrap_or_else(|_| panic!("couldn't get path relative to test root {:?}", path))
+            .to_str()
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", path))
+            .replace(std::path::is_separator, "_");
 
         let mut f = File::open(path).unwrap_or_else(|_| panic!("failed to open {:?}", path));
         let mut contents = Vec::new();
@@ -150,6 +184,7 @@ impl<'a> ExpectedFile<'a> {
 
         ExpectedFile {
             name,
+            expect_name,
             contents,
             gzipped: false,
 
@@ -166,7 +201,20 @@ impl<'a> ExpectedFile<'a> {
     /// fill in the absolute paths of the output files (cf. #720)
     pub fn read_with_extension_rooted_gz(pbase: &mut PathBuf, extension: &str) -> Self {
         pbase.set_extension(extension);
-        let name = pbase.file_name().unwrap().to_str().unwrap().to_owned();
+
+        let root = test_path(&[]);
+        let name = pbase
+            .file_name()
+            .unwrap_or_else(|| panic!("couldn't get file name of {:?}", pbase))
+            .to_str()
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", pbase))
+            .to_owned();
+        let expect_name = pbase
+            .strip_prefix(root)
+            .unwrap_or_else(|_| panic!("couldn't get path relative to test root {:?}", pbase))
+            .to_str()
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", pbase))
+            .replace(std::path::is_separator, "_");
 
         let mut dec = GzDecoder::new(File::open(&pbase).unwrap());
         let mut contents = Vec::new();
@@ -191,6 +239,7 @@ impl<'a> ExpectedFile<'a> {
 
         ExpectedFile {
             name,
+            expect_name,
             contents,
             gzipped: true,
 
@@ -217,7 +266,7 @@ impl<'a> ExpectedFile<'a> {
         // changed without being able to do diffs, etc. So, write out the
         // buffers.
         {
-            let mut n = self.name.clone();
+            let mut n = self.expect_name.clone();
             n.push_str(".expected");
             let mut f = File::create(&n)
                 .map_err(|_| format!("failed to create {} for test failure diagnosis", n))?;
@@ -225,7 +274,7 @@ impl<'a> ExpectedFile<'a> {
                 .map_err(|_| format!("failed to write {} for test failure diagnosis", n))?;
         }
         {
-            let mut n = self.name.clone();
+            let mut n = self.expect_name.clone();
             n.push_str(".observed");
             let mut f = File::create(&n)
                 .map_err(|_| format!("failed to create {} for test failure diagnosis", n))?;
