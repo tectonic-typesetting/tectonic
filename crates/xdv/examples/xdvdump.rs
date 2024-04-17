@@ -154,6 +154,7 @@ fn main() {
         )
         .arg(
             Arg::new("PATH")
+                .value_parser(clap::value_parser!(PathBuf))
                 .help("The path to the XDV or SPX file")
                 .required(true)
                 .index(1),

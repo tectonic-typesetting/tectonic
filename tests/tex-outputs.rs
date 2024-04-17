@@ -199,6 +199,16 @@ fn file_encoding() {
         .go()
 }
 
+// Works around an issue where old (~2.7) Harfbuzz lays out glyphs differently.
+// Remove this once all external Harfbuzz versions don't exhibit the glyph-swapping behavior.
+#[cfg(not(any(feature = "external-harfbuzz", target_arch = "x86")))]
+#[test]
+fn utf8_chars() {
+    TestCase::new("utf8_chars")
+        .expect(Ok(TexOutcome::Warnings))
+        .go();
+}
+
 /// An issue triggered by a bug in how the I/O subsystem reported file offsets
 /// after an ungetc() call.
 #[test]
@@ -223,6 +233,11 @@ fn otf_basic() {
     TestCase::new("otf_basic")
         .expect(Ok(TexOutcome::Warnings))
         .go()
+}
+
+#[test]
+fn graphite_basic() {
+    TestCase::new("graphite_basic").go()
 }
 
 #[test]
@@ -337,4 +352,14 @@ fn tectoniccodatokens_ok() {
 #[test]
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
+}
+
+#[test]
+fn xetex_g_builtins() {
+    TestCase::new("xetex_g_builtins").check_pdf(true).go()
+}
+
+#[test]
+fn xetex_ot_builtins() {
+    TestCase::new("xetex_ot_builtins").check_pdf(true).go()
 }

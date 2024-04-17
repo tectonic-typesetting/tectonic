@@ -494,7 +494,14 @@ getGraphiteFeatureSettingCode(XeTeXLayoutEngine engine, uint32_t featureID, uint
     return rval;
 }
 
-#define tag_from_lang(x) hb_tag_from_string(hb_language_to_string(x), strlen(hb_language_to_string(x)))
+hb_tag_t tag_from_lang(hb_language_t lang) {
+	const char* str = hb_language_to_string(lang);
+	if (str) {
+		return hb_tag_from_string(str, strlen(str));
+	} else {
+		return 0;
+	}
+}
 
 uint32_t
 getGraphiteFeatureDefaultSetting(XeTeXLayoutEngine engine, uint32_t featureID)
@@ -595,17 +602,15 @@ findGraphiteFeatureNamed(XeTeXLayoutEngine engine, const char* name, int namelen
     gr_face* grFace = hb_graphite2_face_get_gr_face(hbFace);
 
     if (grFace != NULL) {
+    	hb_tag_t tag = hb_tag_from_string(name, namelength);
         for (int i = 0; i < gr_face_n_fref(grFace); i++) {
             const gr_feature_ref* feature = gr_face_fref(grFace, i);
             uint32_t len = 0;
             uint16_t langID = 0x409;
 
-            // the first call is to get the length of the string
-            gr_fref_label(feature, &langID, gr_utf8, &len);
-            char* label = (char*) xmalloc(len);
-            label = (char*) gr_fref_label(feature, &langID, gr_utf8, &len);
+            char* label = (char*)gr_fref_label(feature, &langID, gr_utf8, &len);
 
-            if (strncmp(label, name, namelength) == 0) {
+            if (gr_fref_id(feature) == tag || strncmp(label, name, namelength) == 0) {
                 rval = gr_fref_id(feature);
                 gr_label_destroy(label);
                 break;
@@ -627,17 +632,15 @@ findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine, uint32_t id, const cha
     gr_face* grFace = hb_graphite2_face_get_gr_face(hbFace);
 
     if (grFace != NULL) {
+    	hb_tag_t tag = hb_tag_from_string(name, namelength);
         const gr_feature_ref* feature = gr_face_find_fref(grFace, id);
         for (int i = 0; i < gr_fref_n_values(feature); i++) {
             uint32_t len = 0;
             uint16_t langID = 0x409;
 
-            // the first call is to get the length of the string
-            gr_fref_value_label(feature, i, &langID, gr_utf8, &len);
-            char* label = (char*) xmalloc(len);
-            label = (char*) gr_fref_value_label(feature, i, &langID, gr_utf8, &len);
+            char* label = (char*)gr_fref_value_label(feature, i, &langID, gr_utf8, &len);
 
-            if (strncmp(label, name, namelength) == 0) {
+            if (gr_fref_id(feature) == tag || strncmp(label, name, namelength) == 0) {
                 rval = gr_fref_value(feature, i);
                 gr_label_destroy(label);
                 break;
