@@ -1,20 +1,8 @@
-# tectonic_errors 0.2.1 (2023-05-18)
+# See elsewhere for changelog
 
-- Tidy up recent Clippy warnings.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_errors 0.2.0 (2021-06-03)
-
-The only change in this release is to add a helpful `tectonic_errors::prelude`
-module, which makes it easy to get all of the names you need without getting
-compiler warnings about the ones that you don't end up using.
-
-
-# tectonic_errors 0.1.0 (2021-01-15)
-
-Initial release. A new crate providing a generic boxed error type for Tectonic.
-
-We need a boxed error type because we have a bunch of optional dependencies, and
-we can't abstract around their errors without boxing them.
-
-Strongly derived from [Cranko](https://github.com/pkgw/cranko).
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/errors/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

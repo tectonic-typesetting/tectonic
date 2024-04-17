@@ -17,7 +17,7 @@ use tectonic_bundles::{
     cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
 };
 use tectonic_docmodel::{
-    document::{BuildTargetType, Document},
+    document::{BuildTargetType, Document, InputFile},
     workspace::{Workspace, WorkspaceCreator},
 };
 use tectonic_geturl::{DefaultBackend, GetUrlBackend};
@@ -151,14 +151,16 @@ impl DocumentExt for Document {
         };
 
         let mut input_buffer = String::new();
-        if !profile.preamble_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.preamble_file)?;
-        }
-        if !profile.index_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.index_file)?;
-        }
-        if !profile.postamble_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.postamble_file)?;
+
+        for input in &profile.inputs {
+            match input {
+                InputFile::Inline(s) => {
+                    writeln!(input_buffer, "{}", s)?;
+                }
+                InputFile::File(f) => {
+                    writeln!(input_buffer, "\\input{{{}}}", f)?;
+                }
+            };
         }
 
         let mut sess_builder =

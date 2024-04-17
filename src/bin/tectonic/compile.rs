@@ -5,11 +5,8 @@
 //! "V1" / "rustc-like" Tectonic command-line interface, as well as the
 //! `compile` subcommand of the "V2" / "cargo-like" interface.
 
-use std::{
-    path::{Path, PathBuf},
-    str::FromStr,
-};
-use structopt::StructOpt;
+use clap::Parser;
+use std::path::{Path, PathBuf};
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 
 use tectonic::{
@@ -22,80 +19,84 @@ use tectonic::{
     unstable_opts::{UnstableArg, UnstableOptions},
 };
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 pub struct CompileOptions {
     /// The file to process, or "-" to process the standard input stream
-    #[structopt(name = "input")]
+    #[arg(name = "input")]
     input: String,
 
     /// The name of the "format" file used to initialize the TeX engine
-    #[structopt(long, short, name = "path", default_value = "latex")]
+    #[arg(long, short, name = "path", default_value = "latex")]
     format: String,
 
     /// Use this directory or Zip-format bundle file to find resource files instead of the default
-    #[structopt(takes_value(true), parse(from_os_str), long, short, name = "file_path")]
+    #[arg(long, short, name = "file_path")]
     bundle: Option<PathBuf>,
 
     /// Use only resource files cached locally
-    #[structopt(short = "C", long)]
+    #[arg(short = 'C', long)]
     only_cached: bool,
 
     /// The kind of output to generate
-    #[structopt(long, name = "format", default_value = "pdf", possible_values(&["pdf", "html", "xdv", "aux", "fmt"]))]
-    outfmt: String,
+    #[arg(long, name = "format", default_value = "pdf")]
+    outfmt: OutputFormat,
 
     /// Write Makefile-format rules expressing the dependencies of this run to <dest_path>
-    #[structopt(long, name = "dest_path")]
+    #[arg(long, name = "dest_path")]
     makefile_rules: Option<PathBuf>,
 
     /// Which engines to run
-    #[structopt(long, default_value = "default", possible_values(&["default", "tex", "bibtex_first"]))]
-    pass: String,
+    #[arg(long, default_value = "default")]
+    pass: PassSetting,
 
     /// Rerun the TeX engine exactly this many times after the first
-    #[structopt(name = "count", long = "reruns", short = "r")]
+    #[arg(name = "count", long = "reruns", short = 'r')]
     reruns: Option<usize>,
 
     /// Keep the intermediate files generated during processing
-    #[structopt(short, long)]
+    #[arg(short, long)]
     keep_intermediates: bool,
 
     /// Keep the log files generated during processing
-    #[structopt(long)]
+    #[arg(long)]
     keep_logs: bool,
 
     /// Generate SyncTeX data
-    #[structopt(long)]
+    #[arg(long)]
     synctex: bool,
 
     /// Tell the engine that no file at <hide_path> exists, if it tries to read it
-    #[structopt(long, name = "hide_path")]
+    #[arg(long, name = "hide_path")]
     hide: Option<Vec<PathBuf>>,
 
     /// Print the engine's chatter during processing
-    #[structopt(long = "print", short)]
+    #[arg(long = "print", short)]
     print_stdout: bool,
 
     /// The directory in which to place output files [default: the directory containing <input>]
-    #[structopt(name = "outdir", short, long, parse(from_os_str))]
+    #[arg(name = "outdir", short, long)]
     outdir: Option<PathBuf>,
 
     /// Input is untrusted -- disable all known-insecure features
-    #[structopt(long)]
+    #[arg(long)]
     untrusted: bool,
 
     /// Unstable options. Pass -Zhelp to show a list
-    #[structopt(name = "option", short = "Z", number_of_values = 1)]
+    #[arg(name = "option", short = 'Z')]
     unstable: Vec<UnstableArg>,
+
+    /// Use this URL to find resource files instead of the default
+    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
+    web_bundle: Option<String>,
 }
 
+// TODO: deprecate v1 interface and move this to v2cli/commands
+
+//impl TectonicCommand for CompileOptions {
 impl CompileOptions {
-    pub fn execute(
-        self,
-        config: PersistentConfig,
-        status: &mut dyn StatusBackend,
-        web_bundle: Option<String>,
-    ) -> Result<i32> {
+    //fn customize(&self, _cc: &mut CommandCustomizations) {}
+
+    pub fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
         // Default to allowing insecure since it would be super duper annoying
@@ -118,12 +119,9 @@ impl CompileOptions {
             .keep_logs(self.keep_logs)
             .keep_intermediates(self.keep_intermediates)
             .format_cache_path(config.format_cache_path()?)
-            .synctex(self.synctex);
-
-        sess_builder.output_format(OutputFormat::from_str(&self.outfmt).unwrap());
-
-        let pass = PassSetting::from_str(&self.pass).unwrap();
-        sess_builder.pass(pass);
+            .synctex(self.synctex)
+            .output_format(self.outfmt)
+            .pass(self.pass);
 
         if let Some(s) = self.reruns {
             sess_builder.reruns(s);
@@ -193,12 +191,13 @@ impl CompileOptions {
         }
         if let Some(path) = self.bundle {
             sess_builder.bundle(config.make_local_file_provider(path, status)?);
-        } else if let Some(u) = web_bundle {
+        } else if let Some(u) = self.web_bundle {
             sess_builder.bundle(config.make_cached_url_provider(&u, only_cached, None, status)?);
         } else {
             sess_builder.bundle(config.default_bundle(only_cached, status)?);
         }
         sess_builder.build_date_from_env(deterministic_mode);
+
         run_and_report(sess_builder, status).map(|_| 0)
     }
 }

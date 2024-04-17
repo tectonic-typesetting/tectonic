@@ -16,7 +16,6 @@
 /// way to implement that option.
 use std::{
     collections::{HashMap, HashSet},
-    default::Default,
     str::FromStr,
 };
 
