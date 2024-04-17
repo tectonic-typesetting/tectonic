@@ -199,6 +199,9 @@ fn file_encoding() {
         .go()
 }
 
+// Works around an issue where old (~2.7) Harfbuzz lays out glyphs differently.
+// Remove this once all external Harfbuzz versions don't exhibit the glyph-swapping behavior.
+#[cfg(not(feature = "external-harfbuzz"))]
 #[test]
 fn utf8_chars() {
     TestCase::new("utf8_chars")
