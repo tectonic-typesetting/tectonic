@@ -1,8 +1,11 @@
 use crate::c_api::font::XeTeXFontBase;
-use crate::c_api::{fix_to_d, raw_to_rs, Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont};
+use crate::c_api::{
+    d_to_fix, fix_to_d, raw_to_rs, Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont,
+};
 use std::borrow::Cow;
-use std::cell::{Cell, RefCell};
+use std::cell::RefCell;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
 use tectonic_bridge_freetype2 as ft;
@@ -12,23 +15,20 @@ mod fc;
 #[cfg(target_os = "macos")]
 mod mac;
 
-thread_local! {
-    static LOADED_FONT_DESIGN_SIZE: Cell<Fixed> = const { Cell::new(0) };
-}
-
 #[no_mangle]
 pub extern "C" fn get_loaded_font_design_size() -> Fixed {
-    LOADED_FONT_DESIGN_SIZE.get()
+    FontManager::with_font_manager(|mgr| mgr.loaded_font_design_size)
 }
 
 #[no_mangle]
 pub extern "C" fn set_loaded_font_design_size(val: Fixed) {
-    LOADED_FONT_DESIGN_SIZE.set(val);
+    FontManager::with_font_manager(|mgr| {
+        mgr.loaded_font_design_size = val;
+    });
 }
 
 thread_local! {
     static FONT_MGR: RefCell<Option<FontManager>> = const { RefCell::new(None) };
-    static REQ_ENGINE: Cell<libc::c_char> = const { Cell::new(0) };
 }
 
 #[derive(Default)]
@@ -140,9 +140,9 @@ fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
         }
     }
 
-    let os2_table = xfont.get_font_table(ft::SfntTag::Os2);
+    let ft_face = xfont.ft_face();
+    let os2_table = ft_face.get_sfnt_table::<ft::Os2>();
     if let Some(table) = os2_table {
-        let table = unsafe { table.cast::<ft::tables::OS2>().as_ref() };
         font.weight = table.usWeightClass;
         font.width = table.usWidthClass;
         let sel = table.fsSelection;
@@ -151,9 +151,8 @@ fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
         font.is_italic = (sel & (1 << 0)) != 0;
     }
 
-    let head_table = xfont.get_font_table(ft::SfntTag::Head);
+    let head_table = ft_face.get_sfnt_table::<ft::Header>();
     if let Some(table) = head_table {
-        let table = unsafe { table.cast::<ft::tables::Header>().as_ref() };
         let ms = table.Mac_Style;
         if (ms & (1 << 0)) != 0 {
             font.is_bold = true;
@@ -163,9 +162,8 @@ fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
         }
     }
 
-    let post_table = xfont.get_font_table(ft::SfntTag::Post);
+    let post_table = ft_face.get_sfnt_table::<ft::Postscript>();
     if let Some(table) = post_table {
-        let table = unsafe { table.cast::<ft::tables::Postscript>().as_ref() };
         font.slant = (1000.0
             * (f64::tan(fix_to_d((-table.italic_angle) as Fixed) * std::f64::consts::PI / 180.0)))
             as _;
@@ -288,9 +286,34 @@ impl FontMaps {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+#[repr(u8)]
+pub enum Engine {
+    Default = 0,
+    Apple = b'A',
+    OpenType = b'O',
+    Graphite = b'G',
+}
+
+impl TryFrom<u8> for Engine {
+    type Error = ();
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => Engine::Default,
+            b'A' => Engine::Apple,
+            b'O' => Engine::OpenType,
+            b'G' => Engine::Graphite,
+            _ => return Err(()),
+        })
+    }
+}
+
 pub struct FontManager {
     backend: Box<dyn FontManagerBackend>,
     maps: FontMaps,
+    req_engine: Engine,
+    loaded_font_design_size: Fixed,
 }
 
 impl FontManager {
@@ -312,6 +335,8 @@ impl FontManager {
             *mgr = Some(FontManager {
                 backend,
                 maps: Default::default(),
+                req_engine: Engine::Default,
+                loaded_font_design_size: 0,
             })
         });
     }
@@ -346,7 +371,7 @@ impl FontManager {
     ) -> Option<PlatformFontRef> {
         let mut font = None;
         let mut dsize = 10.0;
-        LOADED_FONT_DESIGN_SIZE.set(655360);
+        self.loaded_font_design_size = 655360;
 
         for pass in 0..2 {
             // try full name as given
@@ -439,29 +464,29 @@ impl FontManager {
             }
         }
 
-        let mut font = &self.maps.fonts[font?];
+        let mut font_pos = font?;
 
-        let parent = &self.maps.families[font.parent];
+        let parent_pos = self.maps.fonts[font_pos].parent;
 
         // if there are variant requests, try to apply them
         // and delete B, I, and S=... codes from the string, just retain /engine option
-        REQ_ENGINE.set(0);
+        self.req_engine = Engine::Default;
         let mut req_bold = false;
         let mut req_ital = false;
         if let Some(variant) = variant {
             let mut var_str = String::new();
             let mut cp = &*variant;
             while !cp.is_empty() {
-                const VARIANTS: &[(&[u8], u8, &str)] = &[
-                    (b"AAT", b'A', "AAT"),
-                    (b"ICU", b'O', "OT"),
-                    (b"OT", b'O', "OT"),
-                    (b"GR", b'G', "GR"),
+                const VARIANTS: &[(&[u8], Engine, &str)] = &[
+                    (b"AAT", Engine::Apple, "AAT"),
+                    (b"ICU", Engine::OpenType, "OT"),
+                    (b"OT", Engine::OpenType, "OT"),
+                    (b"GR", Engine::Graphite, "GR"),
                 ];
 
                 let any_var = VARIANTS.iter().any(|&(cmp, engine, var)| {
-                    if cp.starts_with(b"AAT") {
-                        REQ_ENGINE.set(engine as libc::c_char);
+                    if cp.starts_with(cmp) {
+                        self.req_engine = engine;
                         cp = &cp[cmp.len()..];
                         if var_str.chars().last().is_some_and(|c| c != '/') {
                             var_str.push_str(var);
@@ -519,33 +544,34 @@ impl FontManager {
             variant[var_str.len()] = 0;
 
             if req_ital {
-                let mut best_match = font;
+                let font = &self.maps.fonts[font_pos];
+                let parent = &self.maps.families[parent_pos];
+                let mut best_match_pos = font_pos;
                 if font.slant < parent.max_slant {
                     // try for a face with more slant
-                    best_match = self
+                    best_match_pos = self
                         .best_match_from_family(
                             parent,
                             font.weight as libc::c_int,
                             font.width as libc::c_int,
                             parent.max_slant as libc::c_int,
                         )
-                        .map(|pos| &self.maps.fonts[pos])
-                        .unwrap_or(best_match);
+                        .unwrap_or(best_match_pos);
                 }
 
-                if ptr::addr_eq(best_match, font) && font.slant > parent.min_slant {
+                if best_match_pos == font_pos && font.slant > parent.min_slant {
                     // maybe the slant is negated, or maybe this was something like "Times-Italic/I"
-                    best_match = self
+                    best_match_pos = self
                         .best_match_from_family(
                             parent,
                             font.weight as libc::c_int,
                             font.width as libc::c_int,
                             parent.min_slant as libc::c_int,
                         )
-                        .map(|pos| &self.maps.fonts[pos])
-                        .unwrap_or(best_match);
+                        .unwrap_or(best_match_pos);
                 }
 
+                let best_match = &self.maps.fonts[best_match_pos];
                 if parent.min_weight == parent.max_weight && best_match.is_bold != font.is_bold {
                     // try again using the bold flag, as we can't trust weight values
                     let mut new_best = None;
@@ -555,16 +581,16 @@ impl FontManager {
                             && new_best.is_none()
                             && style.is_italic != font.is_italic
                         {
-                            new_best = Some(style);
+                            new_best = Some(style_pos);
                             break;
                         }
                     }
                     if let Some(new_best) = new_best {
-                        best_match = new_best;
+                        best_match_pos = new_best;
                     }
                 }
 
-                if ptr::addr_eq(best_match, font) {
+                if best_match_pos == font_pos {
                     let mut new_best = None;
                     // maybe slant values weren't present; try the style bits as a fallback
                     for &style_pos in parent.styles.values() {
@@ -574,14 +600,17 @@ impl FontManager {
                                 // weight info was available, so try to match that
                                 if new_best.is_none()
                                     || Self::weight_and_width_diff(style, font)
-                                        < Self::weight_and_width_diff(new_best.unwrap(), font)
+                                        < Self::weight_and_width_diff(
+                                            &self.maps.fonts[new_best.unwrap()],
+                                            font,
+                                        )
                                 {
-                                    new_best = Some(style);
+                                    new_best = Some(style_pos);
                                 }
                             } else {
                                 // no weight info, so try matching style bits
                                 if new_best.is_none() && style.is_bold == font.is_bold {
-                                    new_best = Some(style);
+                                    new_best = Some(style_pos);
                                     break; // found a match, no need to look further as we can't distinguish!
                                 }
                             }
@@ -589,15 +618,17 @@ impl FontManager {
                     }
 
                     if let Some(new_best) = new_best {
-                        best_match = new_best;
+                        best_match_pos = new_best;
                     }
                 }
 
-                font = best_match;
+                font_pos = best_match_pos;
             }
 
             if req_bold {
-                let mut best_match = font;
+                let font = &self.maps.fonts[font_pos];
+                let parent = &self.maps.families[parent_pos];
+                let mut best_match = font_pos;
                 if font.weight < parent.max_weight {
                     best_match = self
                         .best_match_from_family(
@@ -607,7 +638,6 @@ impl FontManager {
                             font.width as libc::c_int,
                             font.slant as libc::c_int,
                         )
-                        .map(|pos| &self.maps.fonts[pos])
                         .unwrap_or(best_match);
                     if parent.min_slant == parent.max_slant {
                         let mut new_best = None;
@@ -615,13 +645,15 @@ impl FontManager {
                             let style = &self.maps.fonts[style_pos];
                             if style.is_italic == font.is_italic
                                 && (new_best.is_none()
-                                    || Self::weight_and_width_diff(style, best_match)
-                                        < Self::weight_and_width_diff(
-                                            new_best.unwrap(),
-                                            best_match,
-                                        ))
+                                    || Self::weight_and_width_diff(
+                                        style,
+                                        &self.maps.fonts[best_match],
+                                    ) < Self::weight_and_width_diff(
+                                        &self.maps.fonts[new_best.unwrap()],
+                                        &self.maps.fonts[best_match],
+                                    ))
                             {
-                                new_best = Some(style);
+                                new_best = Some(style_pos);
                             }
                         }
                         if let Some(new_best) = new_best {
@@ -629,16 +661,16 @@ impl FontManager {
                         }
                     }
                 }
-                if ptr::addr_eq(best_match, font) && font.is_bold {
+                if best_match == font_pos && font.is_bold {
                     for &style_pos in parent.styles.values() {
                         let style = &self.maps.fonts[style_pos];
                         if style.is_italic == font.is_italic && style.is_bold {
-                            best_match = style;
+                            best_match = style_pos;
                             break;
                         }
                     }
                 }
-                font = best_match;
+                font_pos = best_match;
             }
         }
 
@@ -646,13 +678,15 @@ impl FontManager {
             pt_size = dsize;
         }
 
+        let font = &self.maps.fonts[font_pos];
+        let parent = &self.maps.families[parent_pos];
         if font.op_size_info.sub_family_id != 0 && pt_size > 0.0 {
             let mut best_mismatch = f64::max(
                 font.op_size_info.min_size - pt_size,
                 pt_size - font.op_size_info.max_size,
             );
             if best_mismatch > 0.0 {
-                let mut best_match = font;
+                let mut best_match = font_pos;
                 for &style_pos in parent.styles.values() {
                     let style = &self.maps.fonts[style_pos];
                     if style.op_size_info.sub_family_id != font.op_size_info.sub_family_id {
@@ -663,19 +697,20 @@ impl FontManager {
                         pt_size - style.op_size_info.max_size,
                     );
                     if mismatch < best_mismatch {
-                        best_match = style;
+                        best_match = style_pos;
                         best_mismatch = mismatch;
                     }
                     if best_mismatch <= 0.0 {
                         break;
                     }
                 }
-                font = best_match;
+                font_pos = best_match;
             }
         }
 
+        let font = &self.maps.fonts[font_pos];
         if font.op_size_info.design_size != 0.0 {
-            LOADED_FONT_DESIGN_SIZE.set((font.op_size_info.design_size * 65536.0 + 0.5) as Fixed);
+            self.loaded_font_design_size = d_to_fix(font.op_size_info.design_size);
         }
 
         Some(font.font_ref.clone())
@@ -790,12 +825,12 @@ impl FontManager {
         self.backend.get_platform_font_desc(font)
     }
 
-    pub fn get_req_engine(&self) -> libc::c_char {
-        REQ_ENGINE.get()
+    pub fn get_req_engine(&self) -> Engine {
+        self.req_engine
     }
 
-    pub fn set_req_engine(&mut self, engine: libc::c_char) {
-        REQ_ENGINE.set(engine);
+    pub fn set_req_engine(&mut self, engine: Engine) {
+        self.req_engine = engine;
     }
 }
 
@@ -840,12 +875,14 @@ pub unsafe extern "C" fn findFontByName(
 
 #[no_mangle]
 pub extern "C" fn getReqEngine() -> libc::c_char {
-    FontManager::with_font_manager(|mgr| mgr.get_req_engine())
+    FontManager::with_font_manager(|mgr| mgr.get_req_engine() as libc::c_char)
 }
 
 #[no_mangle]
 pub extern "C" fn setReqEngine(engine: libc::c_char) {
-    FontManager::with_font_manager(|mgr| mgr.set_req_engine(engine))
+    FontManager::with_font_manager(|mgr| {
+        mgr.set_req_engine(Engine::try_from(engine as u8).unwrap())
+    })
 }
 
 #[no_mangle]
