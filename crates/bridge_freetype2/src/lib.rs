@@ -208,6 +208,41 @@ impl GlyphSlot<'_> {
     }
 }
 
+pub trait Table {
+    type Table;
+    fn tag() -> SfntTag;
+}
+
+pub struct Os2(());
+
+impl Table for Os2 {
+    type Table = tables::OS2;
+
+    fn tag() -> SfntTag {
+        SfntTag::Os2
+    }
+}
+
+pub struct Header(());
+
+impl Table for Header {
+    type Table = tables::Header;
+
+    fn tag() -> SfntTag {
+        SfntTag::Head
+    }
+}
+
+pub struct Postscript(());
+
+impl Table for Postscript {
+    type Table = tables::Postscript;
+
+    fn tag() -> SfntTag {
+        SfntTag::Post
+    }
+}
+
 pub struct Face(NonNull<sys::FT_FaceRec>, Vec<Vec<u8>>);
 
 impl Face {
@@ -369,8 +404,13 @@ impl Face {
         Error::or_else(err, || ())
     }
 
-    pub fn get_sfnt_table(&self, tag: SfntTag) -> Option<NonNull<()>> {
+    pub fn get_sfnt_table_dyn(&self, tag: SfntTag) -> Option<NonNull<()>> {
         NonNull::new(unsafe { sys::FT_Get_Sfnt_Table(self.0.as_ptr(), tag) })
+    }
+
+    pub fn get_sfnt_table<T: Table>(&self) -> Option<&T::Table> {
+        let ptr = unsafe { sys::FT_Get_Sfnt_Table(self.0.as_ptr(), T::tag()) };
+        unsafe { ptr.cast::<T::Table>().as_ref() }
     }
 
     pub fn load_sfnt_table(&self, tag: TableTag) -> Result<Vec<u8>, Error> {
