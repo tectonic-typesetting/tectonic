@@ -2,7 +2,6 @@ use super::font::XeTeXFontBase;
 use crate::c_api::manager::getReqEngine;
 use crate::c_api::{FloatPoint, GlyphBBox, XeTeXFont, XeTeXLayoutEngine};
 use std::borrow::Cow;
-use std::cell::Cell;
 use std::ffi::{CStr, CString};
 use std::ops::{Deref, DerefMut};
 use std::{ptr, slice};
@@ -35,6 +34,12 @@ impl<T> DerefMut for MaybeBorrow<'_, T> {
     }
 }
 
+pub struct GrBreak {
+    segment: gr::OwnSegment,
+    slot: gr::Slot,
+    text_len: libc::c_uint,
+}
+
 #[repr(C)]
 pub struct XeTeXLayoutEngineBase {
     font: MaybeBorrow<'static, XeTeXFontBase>,
@@ -50,6 +55,7 @@ pub struct XeTeXLayoutEngineBase {
     slant: f32,
     embolden: f32,
     hb_buffer: hb::OwnBuffer,
+    gr_breaking: Option<GrBreak>,
 }
 
 impl XeTeXLayoutEngineBase {
@@ -88,6 +94,7 @@ impl XeTeXLayoutEngineBase {
             slant,
             embolden,
             hb_buffer: hb::OwnBuffer::new(),
+            gr_breaking: None,
         }
     }
 
@@ -871,20 +878,16 @@ pub unsafe extern "C" fn findGraphiteFeatureSettingNamed(
         .unwrap_or(-1)
 }
 
-// TODO: Move these into the engine or such
-thread_local! {
-    pub static GR_SEGMENT: Cell<Option<gr::OwnSegment>> = const { Cell::new(None) };
-    pub static GR_PREV_SLOT: Cell<Option<gr::Slot>> = const { Cell::new(None) };
-    pub static GR_TEXT_LEN: Cell<libc::c_uint> = const { Cell::new(0) };
-}
-
 #[no_mangle]
 pub unsafe extern "C" fn initGraphiteBreaking(
     engine: XeTeXLayoutEngine,
     txt_ptr: *const u16,
     txt_len: libc::c_uint,
 ) -> bool {
-    let engine = &*engine;
+    let engine = &mut *engine;
+
+    engine.gr_breaking = None;
+
     let hb_font = engine.font().get_hb_font();
     let hb_face = hb_font.get_face();
     let Some(gr_face) = hb_face.gr_face() else {
@@ -893,12 +896,6 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     let Some(gr_font) = gr::OwnFont::new(hb_font.get_ptem(), gr_face) else {
         return false;
     };
-
-    let gr_seg = GR_SEGMENT.take();
-    if gr_seg.is_some() {
-        drop(gr_seg);
-        GR_PREV_SLOT.set(None);
-    }
 
     let lang = engine
         .language
@@ -924,34 +921,35 @@ pub unsafe extern "C" fn initGraphiteBreaking(
         &(txt_ptr, txt_len as usize),
     )
     .unwrap();
-    GR_PREV_SLOT.set(Some(gr_seg.first_slot()));
-    GR_SEGMENT.set(Some(gr_seg));
-    GR_TEXT_LEN.set(txt_len);
+
+    engine.gr_breaking = Some(GrBreak {
+        slot: gr_seg.first_slot(),
+        segment: gr_seg,
+        text_len: txt_len,
+    });
 
     true
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn findNextGraphiteBreak() -> libc::c_int {
-    let Some(gr_seg) = GR_SEGMENT.take() else {
-        return -1;
-    };
-    let Some(gr_prev_slot) = GR_PREV_SLOT.take() else {
+pub unsafe extern "C" fn findNextGraphiteBreak(engine: XeTeXLayoutEngine) -> libc::c_int {
+    let engine = &mut *engine;
+    let Some(breaking) = &mut engine.gr_breaking else {
         return -1;
     };
 
-    let out = if gr_prev_slot != gr_seg.last_slot() {
-        let mut s = gr_seg.next(&gr_prev_slot);
+    if breaking.slot != breaking.segment.last_slot() {
+        let mut s = breaking.segment.next(&breaking.slot);
         let mut ret = -1;
 
         while let Some(slot) = s {
-            let ci = gr_seg.cinfo(gr_seg.index(&slot));
+            let ci = breaking.segment.cinfo(breaking.segment.index(&slot));
             let bw = ci.break_weight();
             if (gr::BREAK_BEFORE_WORD..gr::BREAK_NONE).contains(&bw) {
-                GR_PREV_SLOT.set(Some(slot.clone()));
+                breaking.slot = slot.clone();
                 ret = ci.base() as libc::c_int;
             } else if (gr::BREAK_NONE + 1..=gr::BREAK_WORD).contains(&bw) {
-                GR_PREV_SLOT.set(gr_seg.next(&slot));
+                breaking.slot = breaking.segment.next(&slot).unwrap();
                 ret = (ci.base() + 1) as libc::c_int;
             }
 
@@ -959,18 +957,16 @@ pub unsafe extern "C" fn findNextGraphiteBreak() -> libc::c_int {
                 break;
             }
 
-            s = gr_seg.next(&slot);
+            s = breaking.segment.next(&slot);
         }
 
         if ret == -1 {
-            GR_PREV_SLOT.set(Some(gr_seg.last_slot()));
-            GR_TEXT_LEN.get() as libc::c_int
+            breaking.slot = breaking.segment.last_slot();
+            breaking.text_len as libc::c_int
         } else {
             ret
         }
     } else {
         -1
-    };
-    GR_SEGMENT.set(Some(gr_seg));
-    out
+    }
 }
