@@ -8,7 +8,7 @@ use std::ops::{Deref, DerefMut};
 use std::{ptr, slice};
 use tectonic_bridge_graphite2 as gr;
 use tectonic_bridge_harfbuzz as hb;
-use tectonic_bridge_icu::{UChar32, UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
+use tectonic_bridge_icu::{UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
 pub enum MaybeBorrow<'a, T> {
     Owned(Box<T>),
@@ -319,7 +319,7 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn mapCharToGlyph(engine: XeTeXLayoutEngine, char_code: u32) -> u32 {
-        (*engine).font().map_char_to_glyph(char_code as UChar32) as u32
+        (*engine).font().map_char_to_glyph(char_code) as u32
     }
 
     #[no_mangle]
