@@ -111,8 +111,8 @@ pub struct NameCollection {
 }
 
 pub trait FontManagerBackend {
-    unsafe fn initialize(&mut self);
-    unsafe fn terminate(&mut self);
+    fn initialize(&mut self);
+    fn terminate(&mut self);
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
     fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
@@ -306,7 +306,7 @@ impl FontManager {
             backend = Box::new(fc::FcBackend::new());
         }
 
-        unsafe { backend.initialize() };
+        backend.initialize();
 
         FONT_MGR.with_borrow_mut(|mgr| {
             *mgr = Some(FontManager {
@@ -327,7 +327,7 @@ impl FontManager {
     pub fn terminate() {
         FONT_MGR.with_borrow_mut(|mgr| {
             if let Some(mgr) = mgr {
-                unsafe { mgr.backend.terminate() };
+                mgr.backend.terminate();
             }
         })
     }
