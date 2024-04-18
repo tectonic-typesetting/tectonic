@@ -855,6 +855,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     ct_font: CTFontRef,
     index: *mut u32,
 ) -> *const libc::c_char {
+    use std::ptr::NonNull;
     get_file_name_from_ct_font(
         &CTFont::new_borrowed(NonNull::new(ct_font.cast_mut()).unwrap()),
         &mut *index,
