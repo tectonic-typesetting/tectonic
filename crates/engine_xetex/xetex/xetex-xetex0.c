@@ -11494,7 +11494,7 @@ void do_locale_linebreaks(int32_t s, int32_t len)
         offs = 0;
         do {
             prevOffs = offs;
-            offs = linebreak_next();
+            offs = linebreak_next(main_f);
             if (offs > 0) {
                 if (prevOffs != 0) {
                     if (use_penalty) {
