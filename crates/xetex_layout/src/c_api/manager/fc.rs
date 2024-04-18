@@ -6,11 +6,8 @@ use crate::c_api::{fc, PlatformFontRef};
 use std::borrow::Cow;
 use std::cell::Cell;
 use std::ffi::{CStr, CString};
-use std::ptr;
 use tectonic_bridge_freetype2 as ft;
-use tectonic_bridge_icu::{
-    ucnv_close, ucnv_fromUChars, ucnv_open, ucnv_toUChars, UConverter, U_SUCCESS, U_ZERO_ERROR,
-};
+use tectonic_bridge_icu as icu;
 
 pub const FONT_FAMILY_NAME: libc::c_ushort = 1;
 pub const FONT_STYLE_NAME: libc::c_ushort = 2;
@@ -19,36 +16,17 @@ pub const PREFERRED_FAMILY_NAME: libc::c_ushort = 16;
 pub const PREFERRED_SUBFAMILY_NAME: libc::c_ushort = 17;
 
 thread_local! {
-    static MAC_ROMAN_CONV: Cell<*mut UConverter> = const { Cell::new(ptr::null_mut()) };
-    static UTF16_BE_CONV: Cell<*mut UConverter> = const { Cell::new(ptr::null_mut()) };
-    static UTF8_CONV: Cell<*mut UConverter> = const { Cell::new(ptr::null_mut()) };
+    static MAC_ROMAN_CONV: Cell<Option<icu::Converter>> = const { Cell::new(None) };
+    static UTF16_BE_CONV: Cell<Option<icu::Converter>> = const { Cell::new(None) };
+    static UTF8_CONV: Cell<Option<icu::Converter>> = const { Cell::new(None) };
 }
 
-unsafe fn convert_to_utf8(conv: *mut UConverter, name: &[u8]) -> CString {
-    let buf_size = 2 * name.len() + 100;
-    let mut buffer1 = vec![0; buf_size];
-    let mut buffer2 = vec![0; buf_size];
-
-    let mut status = U_ZERO_ERROR;
-    let len = ucnv_toUChars(
-        conv,
-        buffer1.as_mut_ptr(),
-        buf_size as _,
-        name.as_ptr().cast(),
-        name.len() as i32,
-        &mut status,
-    );
-    let len = ucnv_fromUChars(
-        UTF8_CONV.get(),
-        buffer2.as_mut_ptr().cast(),
-        buf_size as _,
-        buffer1.as_ptr(),
-        len,
-        &mut status,
-    ) as usize;
-    buffer2[len] = 0;
-    buffer2.truncate(len + 1);
-    CString::from_vec_with_nul(buffer2).unwrap()
+fn convert_to_utf8(conv: &icu::Converter, name: &[u8]) -> CString {
+    let buffer1 = conv.to_uchars(name).unwrap();
+    let utf8_conv = UTF8_CONV.take().unwrap();
+    let buffer2 = utf8_conv.from_uchars(&buffer1).unwrap();
+    UTF8_CONV.set(Some(utf8_conv));
+    CString::new(buffer2).unwrap()
 }
 
 pub struct FcBackend {
@@ -91,24 +69,20 @@ impl FcBackend {
 }
 
 impl FontManagerBackend for FcBackend {
-    unsafe fn initialize(&mut self) {
+    fn initialize(&mut self) {
         if !fc::init() {
             panic!("fontconfig initialization failed");
         }
         ft::init();
 
-        let mut err = U_ZERO_ERROR;
-
-        MAC_ROMAN_CONV.set(ucnv_open(c!("macintosh"), &mut err));
-        if !U_SUCCESS(err) {
-            err = U_ZERO_ERROR;
-            MAC_ROMAN_CONV.set(ptr::null_mut());
-        }
-
-        UTF16_BE_CONV.set(ucnv_open(c!("UTF16BE"), &mut err));
-        UTF8_CONV.set(ucnv_open(c!("UTF8"), &mut err));
-        if !U_SUCCESS(err) {
-            panic!("cannot read font names");
+        MAC_ROMAN_CONV.set(icu::Converter::new(cstr!("macintosh")).ok());
+        UTF16_BE_CONV.set(icu::Converter::new(cstr!("UTF16BE")).ok());
+        let utf8_conv = icu::Converter::new(cstr!("UTF8")).ok();
+        match utf8_conv {
+            Some(conv) => {
+                UTF8_CONV.set(Some(conv));
+            }
+            None => panic!("cannot read font names"),
         }
 
         let pat = fc::OwnPattern::from_name(cstr!(":outline=true")).unwrap();
@@ -117,21 +91,11 @@ impl FontManagerBackend for FcBackend {
         self.cached_all = false;
     }
 
-    unsafe fn terminate(&mut self) {
+    fn terminate(&mut self) {
         self.all_fonts = None;
-
-        if !MAC_ROMAN_CONV.get().is_null() {
-            ucnv_close(MAC_ROMAN_CONV.get());
-            MAC_ROMAN_CONV.set(ptr::null_mut());
-        }
-        if !UTF16_BE_CONV.get().is_null() {
-            ucnv_close(UTF16_BE_CONV.get());
-            UTF16_BE_CONV.set(ptr::null_mut());
-        }
-        if !UTF8_CONV.get().is_null() {
-            ucnv_close(UTF8_CONV.get());
-            UTF8_CONV.set(ptr::null_mut());
-        }
+        MAC_ROMAN_CONV.set(None);
+        UTF16_BE_CONV.set(None);
+        UTF8_CONV.set(None);
     }
 
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
@@ -280,21 +244,24 @@ impl FontManagerBackend for FcBackend {
                     | PREFERRED_FAMILY_NAME
                     | PREFERRED_SUBFAMILY_NAME => {
                         let mut preferred_name = false;
-                        let roman_conv = MAC_ROMAN_CONV.get();
-                        if !roman_conv.is_null()
+                        let roman_conv = MAC_ROMAN_CONV.take();
+                        if !roman_conv.is_none()
                             && name_rec.platform_id == ft::PlatformId::MACINTOSH
                             && name_rec.encoding_id == ft::EncodingId::MAC_ROMAN
                             && name_rec.language_id == ft::LanguageId::MAC_ENGLISH
                         {
-                            utf8_name =
-                                Some(unsafe { convert_to_utf8(roman_conv, name_rec.string) });
+                            utf8_name = Some(convert_to_utf8(
+                                roman_conv.as_ref().unwrap(),
+                                name_rec.string,
+                            ));
                             preferred_name = true;
+                            MAC_ROMAN_CONV.set(roman_conv);
                         } else if name_rec.platform_id == ft::PlatformId::APPLE_UNICODE
                             || name_rec.platform_id == ft::PlatformId::MICROSOFT
                         {
-                            utf8_name = Some(unsafe {
-                                convert_to_utf8(UTF16_BE_CONV.get(), name_rec.string)
-                            });
+                            let utf16_conv = UTF16_BE_CONV.take().unwrap();
+                            utf8_name = Some(convert_to_utf8(&utf16_conv, name_rec.string));
+                            UTF16_BE_CONV.set(Some(utf16_conv));
                         }
 
                         if let Some(name) = utf8_name {
