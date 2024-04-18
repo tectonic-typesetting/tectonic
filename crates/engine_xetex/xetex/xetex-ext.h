@@ -107,7 +107,7 @@ typedef struct {
 BEGIN_EXTERN_C
 
 void linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength);
-int linebreak_next(void);
+int linebreak_next(int f);
 int get_encoding_mode_and_info(int32_t* info);
 void print_utf8_str(const unsigned char* str, int len);
 void print_chars(const unsigned short* str, int len);
