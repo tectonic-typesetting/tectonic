@@ -815,6 +815,14 @@ pub unsafe extern "C" fn findFontByName(
     var: *mut libc::c_char,
     size: f64,
 ) -> RawPlatformFontRef {
+    let name = CStr::from_ptr(name);
+    let var = if var.is_null() {
+        None
+    } else {
+        let len = CStr::from_ptr(var).to_bytes().len();
+        Some(slice::from_raw_parts_mut(var.cast(), len))
+    };
+
     #[cfg(target_os = "macos")]
     return FontManager::with_font_manager(|mgr| {
         use tectonic_mac_core::CoreType;
@@ -824,13 +832,7 @@ pub unsafe extern "C" fn findFontByName(
     });
     #[cfg(not(target_os = "macos"))]
     FontManager::with_font_manager(|mgr| {
-        let var = if var.is_null() {
-            None
-        } else {
-            let len = CStr::from_ptr(var).to_bytes().len();
-            Some(slice::from_raw_parts_mut(var.cast(), len))
-        };
-        mgr.find_font(CStr::from_ptr(name), var, size)
+        mgr.find_font(name, var, size)
             .map(super::fc::Pattern::into_raw)
             .unwrap_or(ptr::null_mut())
     })
