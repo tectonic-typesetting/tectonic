@@ -14,7 +14,6 @@ use std::sync::OnceLock;
 use tectonic_bridge_core::FileFormat;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
-use tectonic_bridge_icu::UChar32;
 #[cfg(target_os = "macos")]
 use tectonic_mac_core::sys::CTFontRef;
 #[cfg(target_os = "macos")]
@@ -654,18 +653,18 @@ impl XeTeXFontBase {
         }
     }
 
-    pub(crate) fn map_char_to_glyph(&self, ch: UChar32) -> GlyphID {
-        match self.ft_face().get_char_index(ch as u32) {
+    pub(crate) fn map_char_to_glyph(&self, ch: u32) -> GlyphID {
+        match self.ft_face().get_char_index(ch) {
             Some(val) => val.get() as GlyphID,
             None => 0,
         }
     }
 
-    pub(crate) fn get_first_char_code(&self) -> UChar32 {
-        self.ft_face().get_first_char().0 as UChar32
+    pub(crate) fn get_first_char_code(&self) -> u32 {
+        self.ft_face().get_first_char().0
     }
 
-    pub(crate) fn get_last_char_code(&self) -> UChar32 {
+    pub(crate) fn get_last_char_code(&self) -> u32 {
         let ft_face = self.ft_face();
 
         let (mut ch, mut index) = ft_face.get_first_char();
@@ -674,7 +673,7 @@ impl XeTeXFontBase {
             prev = ch;
             (ch, index) = ft_face.get_next_char(ch);
         }
-        prev as UChar32
+        prev
     }
 
     pub(crate) fn map_glyph_to_index(&self, glyph_name: &CStr) -> GlyphID {
