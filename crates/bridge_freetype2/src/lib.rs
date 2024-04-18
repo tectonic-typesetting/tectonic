@@ -1,17 +1,19 @@
 // Copyright 2020 the Tectonic Project
 // Licensed under the MIT License.
 
-//! This crate exists to export the FreeType2 *C* API into the Cargo framework, as well as provide
+//! This crate exists to export the `FreeType2` *C* API into the Cargo framework, as well as provide
 //! bindings to other tectonic crates.
 
+#![deny(clippy::undocumented_unsafe_blocks)]
 #![allow(clippy::unnecessary_cast)]
 
 use std::ffi::CStr;
+use std::marker::PhantomData;
 use std::mem::MaybeUninit;
 use std::num::NonZeroU32;
 use std::ops::BitOr;
 use std::ptr::NonNull;
-use std::sync::OnceLock;
+use std::sync::{Mutex, OnceLock};
 use std::{ptr, slice};
 
 mod sys;
@@ -46,15 +48,22 @@ impl ByteLike for u8 {}
 impl ByteLike for MaybeUninit<u8> {}
 
 pub(crate) struct SyncPtr<T>(*mut T);
+
+// SAFETY: It is on the user of `SyncPtr` to only use the pointer in a Send-safe way
 unsafe impl<T> Send for SyncPtr<T> {}
+// SAFETY: It is on the user of `SyncPtr` to only use the pointer in a Sync-safe way
 unsafe impl<T> Sync for SyncPtr<T> {}
 
+// FT_Library can be used from many threads as long as a Mutex protects FT_New_Face and FT_Done_Face
+// - https://sourceforge.net/projects/freetype/files/freetype2/2.6/
 static FREE_TYPE_LIBRARY: OnceLock<SyncPtr<sys::FT_LibraryRec>> = OnceLock::new();
+static FACE_MUTEX: Mutex<()> = Mutex::new(());
 
 fn ft_lib() -> sys::FT_Library {
     FREE_TYPE_LIBRARY
         .get_or_init(|| {
             let mut lib = ptr::null_mut();
+            // SAFETY: FreeType initialization is always sound
             let error = unsafe { sys::FT_Init_FreeType(&mut lib) };
             if error != 0 {
                 panic!("FreeType initialization failed, error {}", error);
@@ -162,6 +171,8 @@ impl<'a> From<sys::FT_SfntName> for SfntName<'a> {
             language_id: LanguageId(value.language_id as u16),
             name_id: value.name_id as u16,
             string: if !value.string.is_null() {
+                // SAFETY: If non-null, the value in `string` is guaranteed to be allocated and
+                //         initialized to a length of `string_len`.
                 unsafe { slice::from_raw_parts(value.string, value.string_len as usize) }
             } else {
                 &[]
@@ -175,6 +186,7 @@ pub struct Glyph(NonNull<sys::FT_GlyphRec>);
 impl Glyph {
     pub fn get_cbox(&self, mode: BBoxMode) -> BBox {
         let mut ft_bbox = BBox::default();
+        // SAFETY: Our internal pointer is guaranteed valid
         unsafe { sys::FT_Glyph_Get_CBox(self.0.as_ptr(), mode, &mut ft_bbox) };
         ft_bbox
     }
@@ -182,40 +194,57 @@ impl Glyph {
 
 impl Drop for Glyph {
     fn drop(&mut self) {
+        // SAFETY: Our internal pointer is guaranteed valid, we own the pointer
         unsafe { sys::FT_Done_Glyph(self.0.as_ptr()) }
     }
 }
 
-pub struct GlyphSlot<'a>(&'a sys::FT_GlyphSlotRec);
+pub struct GlyphSlot<'a>(
+    NonNull<sys::FT_GlyphSlotRec>,
+    PhantomData<&'a sys::FT_GlyphSlotRec>,
+);
 
 impl GlyphSlot<'_> {
+    fn as_ref(&self) -> &sys::FT_GlyphSlotRec {
+        // SAFETY: Internal pointer is guaranteed valid
+        //         GlyphSlot is !Send+!Sync, so no C code can violate this reference.
+        unsafe { self.0.as_ref() }
+    }
+
     pub fn get_glyph(&self) -> Result<Glyph, Error> {
         let mut ptr = ptr::null_mut();
-        let err = unsafe { sys::FT_Get_Glyph(ptr::from_ref(self.0).cast_mut(), &mut ptr) };
+        // SAFETY: Internal pointer is guaranteed valid.
+        let err = unsafe { sys::FT_Get_Glyph(self.0.as_ptr(), &mut ptr) };
         Error::or_else(err, || Glyph(NonNull::new(ptr).unwrap()))
     }
 
     pub fn metrics(&self) -> &GlyphMetrics {
-        &self.0.metrics
+        &self.as_ref().metrics
     }
 
     pub fn format(&self) -> GlyphFormat {
-        self.0.format
+        self.as_ref().format
     }
 
     pub fn outline(&self) -> &Outline {
-        &self.0.outline
+        &self.as_ref().outline
     }
 }
 
-pub trait Table {
+/// Trait for marker types that represent different sfnt tables you can read from a [`Face`].
+///
+/// # Safety
+///
+/// Code may assume that the `SfntTag` returned by `tag` is valid to read as an instance of `table`.
+pub unsafe trait Table {
     type Table;
     fn tag() -> SfntTag;
 }
 
 pub struct Os2(());
 
-impl Table for Os2 {
+// SAFETY: SfntTag::Os2 == tables::OS2
+unsafe impl Table for Os2 {
     type Table = tables::OS2;
 
     fn tag() -> SfntTag {
@@ -225,7 +254,8 @@ impl Table for Os2 {
 
 pub struct Header(());
 
-impl Table for Header {
+// SAFETY: SfntTag::Head == tables::Header
+unsafe impl Table for Header {
     type Table = tables::Header;
 
     fn tag() -> SfntTag {
@@ -235,7 +265,8 @@ impl Table for Header {
 
 pub struct Postscript(());
 
-impl Table for Postscript {
+// SAFETY: SfntTag::Post == tables::Postscript
+unsafe impl Table for Postscript {
     type Table = tables::Postscript;
 
     fn tag() -> SfntTag {
@@ -247,7 +278,10 @@ pub struct Face(NonNull<sys::FT_FaceRec>, Vec<Vec<u8>>);
 
 impl Face {
     pub fn new(path: &CStr, index: usize) -> Result<Face, Error> {
+        let _l = FACE_MUTEX.lock();
         let mut raw_face = ptr::null_mut();
+        // SAFETY: We hold the FACE_MUTEX lock, so calls to FT_New_Face are guaranteed safe
+        //         with our global library instance.
         let err = unsafe {
             sys::FT_New_Face(
                 ft_lib(),
@@ -256,11 +290,15 @@ impl Face {
                 &mut raw_face,
             )
         };
+        drop(_l);
         Error::or_else(err, || Face(NonNull::new(raw_face).unwrap(), Vec::new()))
     }
 
     pub fn new_memory(mut data: Vec<u8>, index: usize) -> Result<Face, Error> {
+        let _l = FACE_MUTEX.lock();
         let mut raw_face = ptr::null_mut();
+        // SAFETY: We hold the FACE_MUTEX lock, so calls to FT_New_Memory_Face are guaranteed safe
+        //         with our global library instance.
         let err = unsafe {
             sys::FT_New_Memory_Face(
                 ft_lib(),
@@ -270,24 +308,26 @@ impl Face {
                 &mut raw_face,
             )
         };
-
+        drop(_l);
         Error::or_else(err, || Face(NonNull::new(raw_face).unwrap(), vec![data]))
     }
 
     fn inner(&self) -> &sys::FT_FaceRec {
+        // SAFETY: Internal pointer is guaranteed valid
+        //         Faces are !Send+!Sync - as such, we know no C code will violate this reference
         unsafe { self.0.as_ref() }
     }
 
     pub fn is_scalable(&self) -> bool {
-        unsafe { sys::FT_IS_SCALABLE(self.0.as_ptr()) }
+        self.inner().face_flags & sys::FT_FACE_FLAG_SCALABLE != 0
     }
 
     pub fn is_sfnt(&self) -> bool {
-        unsafe { sys::FT_IS_SFNT(self.0.as_ptr()) }
+        self.inner().face_flags & sys::FT_FACE_FLAG_SFNT != 0
     }
 
     pub fn has_glyph_names(&self) -> bool {
-        unsafe { sys::FT_HAS_GLYPH_NAMES(self.0.as_ptr()) }
+        self.inner().face_flags & sys::FT_FACE_FLAG_GLYPH_NAMES != 0
     }
 
     pub fn units_per_em(&self) -> u16 {
@@ -311,11 +351,12 @@ impl Face {
     }
 
     pub fn glyph(&self) -> GlyphSlot<'_> {
-        GlyphSlot(unsafe { &*self.inner().glyph })
+        GlyphSlot(NonNull::new(self.inner().glyph).unwrap(), PhantomData)
     }
 
     pub fn get_advance(&self, index: u32, flags: LoadFlags) -> Result<i64, Error> {
         let mut advance = 0;
+        // SAFETY: Out internal pointer is guaranteed valid
         let err = unsafe {
             sys::FT_Get_Advance(
                 self.0.as_ptr(),
@@ -329,22 +370,26 @@ impl Face {
 
     pub fn get_first_char(&self) -> (u32, u32) {
         let mut index = 0;
+        // SAFETY: Our internal pointer is guaranteed valid
         let code = unsafe { sys::FT_Get_First_Char(self.0.as_ptr(), &mut index) };
         (code as u32, index as u32)
     }
 
     pub fn get_next_char(&self, char: u32) -> (u32, u32) {
         let mut index = 0;
+        // SAFETY: Our internal pointer is guaranteed valid
         let code =
             unsafe { sys::FT_Get_Next_Char(self.0.as_ptr(), char as libc::c_ulong, &mut index) };
         (code as u32, index as u32)
     }
 
     pub fn get_char_index(&self, char: u32) -> Option<NonZeroU32> {
+        // SAFETY: Our internal pointer is guaranteed valid
         NonZeroU32::new(unsafe { sys::FT_Get_Char_Index(self.0.as_ptr(), char as libc::c_ulong) })
     }
 
     pub fn get_char_variant_index(&self, char: u32, variant: u32) -> Option<NonZeroU32> {
+        // SAFETY: Our internal pointer is guaranteed valid
         NonZeroU32::new(unsafe {
             sys::FT_Face_GetCharVariantIndex(
                 self.0.as_ptr(),
@@ -356,15 +401,13 @@ impl Face {
 
     pub fn get_kerning(&self, left: u32, right: u32, mode: KerningMode) -> Result<Vector, Error> {
         let mut vector = Vector::default();
+        // SAFETY: Our internal pointer is guaranteed valid
         let err = unsafe { sys::FT_Get_Kerning(self.0.as_ptr(), left, right, mode, &mut vector) };
         Error::or_else(err, || vector)
     }
 
-    pub fn get_glyph_name<'a, T: ByteLike>(
-        &self,
-        index: u32,
-        buf: &'a mut [T],
-    ) -> Result<&'a CStr, Error> {
+    pub fn get_glyph_name<'a>(&self, index: u32, buf: &'a mut [u8]) -> Result<&'a CStr, Error> {
+        // SAFETY: Our internal pointer is guaranteed valid
         let err = unsafe {
             sys::FT_Get_Glyph_Name(
                 self.0.as_ptr(),
@@ -373,48 +416,62 @@ impl Face {
                 buf.len() as libc::c_uint,
             )
         };
-        Error::or_else(err, || unsafe { CStr::from_ptr(buf.as_ptr().cast()) })
+        Error::or_else(err, move || CStr::from_bytes_until_nul(buf).unwrap())
     }
 
     pub fn get_name_index(&self, name: &CStr) -> Option<NonZeroU32> {
+        // SAFETY: Our internal pointer is guaranteed valid, name is valid for the length of this
+        //         method call and not retained.
         NonZeroU32::new(unsafe { sys::FT_Get_Name_Index(self.0.as_ptr(), name.as_ptr()) as u32 })
     }
 
     pub fn get_postscript_name(&self) -> Option<&CStr> {
-        unsafe {
-            sys::FT_Get_Postscript_Name(self.0.as_ptr())
-                .as_ref()
-                .map(|ptr| CStr::from_ptr(ptr))
+        // SAFETY: Our internal pointer is guaranteed valid
+        let ptr = unsafe { sys::FT_Get_Postscript_Name(self.0.as_ptr()) };
+        if ptr.is_null() {
+            None
+        } else {
+            // SAFETY: If a non-null pointer was returned, it is guaranteed to contain a
+            //         nul-terminated C-string
+            Some(unsafe { CStr::from_ptr(ptr) })
         }
     }
 
     pub fn get_sfnt_name_count(&self) -> u32 {
+        // SAFETY: Our internal pointer is guaranteed valid
         unsafe { sys::FT_Get_Sfnt_Name_Count(self.0.as_ptr()) as u32 }
     }
 
-    pub fn get_sfnt_name(&self, idx: u32) -> Result<SfntName, Error> {
+    pub fn get_sfnt_name(&self, idx: u32) -> Result<SfntName<'_>, Error> {
         let mut name = sys::FT_SfntName::default();
+        // SAFETY: Our internal pointer is guaranteed valid
         let err = unsafe { sys::FT_Get_Sfnt_Name(self.0.as_ptr(), idx as libc::c_uint, &mut name) };
         Error::or_else(err, || SfntName::from(name))
     }
 
     pub fn load_glyph(&mut self, index: u32, flags: LoadFlags) -> Result<(), Error> {
+        // SAFETY: Our internal pointer is guaranteed valid
         let err =
             unsafe { sys::FT_Load_Glyph(self.0.as_ptr(), index as libc::c_uint, flags.as_i32()) };
         Error::or_else(err, || ())
     }
 
     pub fn get_sfnt_table_dyn(&self, tag: SfntTag) -> Option<NonNull<()>> {
+        // SAFETY: Our internal pointer is guaranteed valid
         NonNull::new(unsafe { sys::FT_Get_Sfnt_Table(self.0.as_ptr(), tag) })
     }
 
     pub fn get_sfnt_table<T: Table>(&self) -> Option<&T::Table> {
+        // SAFETY: Our internal pointer is guaranteed valid
         let ptr = unsafe { sys::FT_Get_Sfnt_Table(self.0.as_ptr(), T::tag()) };
+        // SAFETY: Per the guarantees of `Table`, the pointer returned by FT_Get_Sfnt_Table is a
+        //         valid `T::Table` if non-null.
         unsafe { ptr.cast::<T::Table>().as_ref() }
     }
 
     pub fn load_sfnt_table(&self, tag: TableTag) -> Result<Vec<u8>, Error> {
         let mut len = 0;
+        // SAFETY: Our internal pointer is guaranteed valid
         let err = unsafe {
             sys::FT_Load_Sfnt_Table(
                 self.0.as_ptr(),
@@ -428,6 +485,9 @@ impl Face {
 
         let mut buf = vec![0u8; len as usize];
 
+        // SAFETY: Our internal pointer is guaranteed valid. We know from previously calling the
+        //         method with the same tag that buffer is of sufficient length to hold the returned
+        //         table.
         let err = unsafe {
             sys::FT_Load_Sfnt_Table(
                 self.0.as_ptr(),
@@ -447,6 +507,9 @@ impl Face {
         oa.memory_base = stream.as_mut_ptr().cast();
         oa.memory_size = stream.len() as libc::c_long;
         self.1.push(stream);
+        // SAFETY: Our internal pointer is guaranteed valid
+        //         We ensure above that the attached stream will not be dropped until after
+        //         FT_Done_Face is called.
         let err = unsafe { sys::FT_Attach_Stream(self.0.as_ptr(), &mut oa) };
         Error::or_else(err, || ())
     }
@@ -454,6 +517,11 @@ impl Face {
 
 impl Drop for Face {
     fn drop(&mut self) {
+        let _l = FACE_MUTEX.lock();
+        // SAFETY: We hold the FACE_MUTEX lock, so calls to FT_Done_Face are guaranteed safe
+        //         with our global library instance.
+        //         Our pointer is owned and guaranteed valid.
         unsafe { sys::FT_Done_Face(self.0.as_ptr()) };
+        drop(_l);
     }
 }
