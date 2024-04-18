@@ -8,7 +8,6 @@
 
 #![allow(clippy::unnecessary_cast)]
 
-use std::convert::Infallible;
 use std::mem::ManuallyDrop;
 use std::ops::{Deref, DerefMut};
 use std::ptr;
@@ -47,7 +46,7 @@ impl Drop for Label {
     }
 }
 
-pub struct FeatureRef(Infallible);
+pub struct FeatureRef(());
 
 impl FeatureRef {
     fn as_ptr(&self) -> *const sys::gr_feature_ref {
@@ -110,7 +109,7 @@ impl FeatureRef {
     }
 }
 
-pub struct FeatureVal(Infallible);
+pub struct FeatureVal(());
 
 impl FeatureVal {
     pub fn as_ptr(&self) -> *const sys::gr_feature_val {
@@ -144,7 +143,7 @@ impl Drop for OwnFeatureVal {
     }
 }
 
-pub struct Face(Infallible);
+pub struct Face(());
 
 impl Face {
     pub fn as_ptr(&self) -> *const sys::gr_face {
@@ -177,7 +176,7 @@ impl Face {
     }
 }
 
-pub struct Font(Infallible);
+pub struct Font(());
 
 impl Font {
     pub fn as_ptr(&self) -> *const sys::gr_font {
@@ -256,7 +255,7 @@ impl StrEnc for (*const u16, usize) {
     }
 }
 
-pub struct Segment(Infallible);
+pub struct Segment(());
 
 impl Segment {
     fn as_ptr(&self) -> *const sys::gr_segment {
@@ -345,7 +344,7 @@ impl Slot {
     }
 }
 
-pub struct CharInfo(Infallible);
+pub struct CharInfo(());
 
 impl CharInfo {
     fn as_ptr(&self) -> *const sys::gr_char_info {
