@@ -77,10 +77,6 @@ impl MacBackend {
 }
 
 impl FontManagerBackend for MacBackend {
-    fn initialize(&mut self) {}
-
-    fn terminate(&mut self) {}
-
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         let mut path = Cow::Borrowed(cstr!("[unknown]"));
 

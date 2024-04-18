@@ -248,8 +248,6 @@ Fixed get_loaded_font_design_size(void);
 
 void set_loaded_font_design_size(Fixed val);
 
-void terminate_font_manager(void);
-
 void destroy_font_manager(void);
 
 RawPlatformFontRef findFontByName(const char *name, char *var, double size);
