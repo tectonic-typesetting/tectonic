@@ -429,7 +429,7 @@ impl FontManager {
                     font = self.best_match_from_family(family, 80, 100, 0);
                 }
 
-                if !font.is_none() {
+                if font.is_some() {
                     break;
                 }
             }
@@ -450,7 +450,7 @@ impl FontManager {
         let mut req_ital = false;
         if let Some(variant) = variant {
             let mut var_str = String::new();
-            let mut cp = &variant[..];
+            let mut cp = &*variant;
             while !cp.is_empty() {
                 const VARIANTS: &[(&[u8], u8, &str)] = &[
                     (b"AAT", b'A', "AAT"),
