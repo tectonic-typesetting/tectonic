@@ -499,7 +499,7 @@ impl Face {
 
     pub fn gr_face(&self) -> Option<gr::FaceRef<'_>> {
         let ptr = unsafe { sys::hb_graphite2_face_get_gr_face(self.as_ptr()) };
-        unsafe { NonNull::new(ptr).map(|ptr| unsafe { gr::FaceRef::from_raw(ptr) }) }
+        NonNull::new(ptr).map(|ptr| unsafe { gr::FaceRef::from_raw(ptr) })
     }
 
     pub fn set_index(&mut self, index: u32) {
