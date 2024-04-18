@@ -8,7 +8,6 @@ use crate::c_api::{
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::ptr;
-use std::ptr::NonNull;
 use std::rc::Rc;
 use std::sync::OnceLock;
 use tectonic_bridge_core::FileFormat;
@@ -400,18 +399,28 @@ impl XeTeXFontBase {
         let d = { self.ft_face().descender() } as f64;
         self.descent = self.units_to_points(d) as f32;
 
-        let post_table = self.get_font_table(ft::SfntTag::Post);
-        if let Some(table) = post_table {
-            let table = unsafe { table.cast::<ft::tables::Postscript>().as_ref() };
-            self.italic_angle = fix_to_d(table.italic_angle as Fixed) as f32;
-        }
+        let ft_face = self.ft_face();
+        let post_table = ft_face.get_sfnt_table::<ft::Postscript>();
+        let ia = if let Some(table) = post_table {
+            fix_to_d(table.italic_angle as Fixed) as f32
+        } else {
+            self.italic_angle
+        };
+        drop(ft_face);
+        self.italic_angle = ia;
 
-        let os2_table = self.get_font_table(ft::SfntTag::Os2);
-        if let Some(table) = os2_table {
-            let table = unsafe { table.cast::<ft::tables::OS2>().as_ref() };
-            self.cap_height = self.units_to_points(table.sCapHeight as f64) as f32;
-            self.x_height = self.units_to_points(table.sxHeight as f64) as f32;
-        }
+        let ft_face = self.ft_face();
+        let os2_table = ft_face.get_sfnt_table::<ft::Os2>();
+        let (ch, xh) = if let Some(table) = os2_table {
+            let ch = self.units_to_points(table.sCapHeight as f64) as f32;
+            let xh = self.units_to_points(table.sxHeight as f64) as f32;
+            (ch, xh)
+        } else {
+            (self.cap_height, self.x_height)
+        };
+        drop(ft_face);
+        self.cap_height = ch;
+        self.x_height = xh;
 
         let ft_face = Rc::clone(self.ft_face.as_ref().unwrap());
         let mut hb_face = hb::OwnFace::new_tables(move |_, tag| {
@@ -605,7 +614,7 @@ impl XeTeXFontBase {
         (*font).point_size()
     }
 
-    fn ft_face(&self) -> std::cell::Ref<'_, ft::Face> {
+    pub(crate) fn ft_face(&self) -> std::cell::Ref<'_, ft::Face> {
         self.ft_face.as_ref().unwrap().borrow()
     }
 
@@ -729,9 +738,9 @@ impl XeTeXFontBase {
         &self.filename
     }
 
-    pub(crate) fn get_font_table(&self, tag: ft::SfntTag) -> Option<NonNull<()>> {
-        self.ft_face().get_sfnt_table(tag)
-    }
+    // pub(crate) fn get_font_table<T: ft::Table>(&self) -> Option<&T::Table> {
+    //     self.ft_face().get_sfnt_table::<T>()
+    // }
 
     pub(crate) fn italic_angle(&self) -> f32 {
         self.italic_angle
