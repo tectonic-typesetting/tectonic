@@ -46,7 +46,7 @@ impl MacBackend {
         MacBackend {}
     }
 
-    unsafe fn add_fonts_to_caches(&self, maps: &mut FontMaps, members: CFArray<CTFontDescriptor>) {
+    fn add_fonts_to_caches(&self, maps: &mut FontMaps, members: CFArray<CTFontDescriptor>) {
         for i in 0..members.len() {
             let font = &members[i];
             let names = self.read_names(font.clone());
@@ -54,7 +54,7 @@ impl MacBackend {
         }
     }
 
-    unsafe fn add_font_and_siblings_to_caches(&self, maps: &mut FontMaps, font: &CTFontDescriptor) {
+    fn add_font_and_siblings_to_caches(&self, maps: &mut FontMaps, font: &CTFontDescriptor) {
         let font = CTFont::new_descriptor(font, 10.0);
         let family = font
             .attr(FontAttribute::FamilyName)
@@ -65,7 +65,7 @@ impl MacBackend {
         self.add_fonts_to_caches(maps, matched);
     }
 
-    unsafe fn add_family_to_caches(&self, maps: &mut FontMaps, family: CTFontDescriptor) {
+    fn add_family_to_caches(&self, maps: &mut FontMaps, family: CTFontDescriptor) {
         let name_str = family
             .attr(FontAttribute::FamilyName)
             .and_then(|ty| ty.downcast::<CFString>().ok());
@@ -98,7 +98,7 @@ impl FontManagerBackend for MacBackend {
         path
     }
 
-    unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
+    fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
         base_get_op_size_rec_and_style_flags(font);
     }
 

@@ -266,7 +266,7 @@ pub struct XeTeXFontBase {
 
 impl XeTeXFontBase {
     #[cfg(not(target_os = "macos"))]
-    pub(crate) unsafe fn new(font: PlatformFontRef, point_size: f32) -> Result<XeTeXFontBase, i32> {
+    pub(crate) fn new(font: PlatformFontRef, point_size: f32) -> Result<XeTeXFontBase, i32> {
         let path = font.get::<fc::pat::File>(0).ok();
         let index = font.get::<fc::pat::Index>(0).unwrap_or(0);
 
@@ -274,10 +274,7 @@ impl XeTeXFontBase {
     }
 
     #[cfg(target_os = "macos")]
-    pub(crate) unsafe fn new(
-        descriptor: PlatformFontRef,
-        point_size: f32,
-    ) -> Result<XeTeXFontBase, i32> {
+    pub(crate) fn new(descriptor: PlatformFontRef, point_size: f32) -> Result<XeTeXFontBase, i32> {
         let mut out = XeTeXFontBase {
             units_per_em: 0,
             point_size,
@@ -301,7 +298,7 @@ impl XeTeXFontBase {
         }
     }
 
-    pub(crate) unsafe fn new_path_index(
+    pub(crate) fn new_path_index(
         path: Option<&CStr>,
         index: libc::c_int,
         point_size: f32,
@@ -333,25 +330,25 @@ impl XeTeXFontBase {
         }
     }
 
-    unsafe fn initialize_ft(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
-        let mut handle = ttstub_input_open(pathname.as_ptr(), FileFormat::OpenType, 0);
+    fn initialize_ft(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
+        let mut handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::OpenType, 0) };
         if handle.is_null() {
-            handle = ttstub_input_open(pathname.as_ptr(), FileFormat::TrueType, 0);
+            handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::TrueType, 0) };
         }
         if handle.is_null() {
-            handle = ttstub_input_open(pathname.as_ptr(), FileFormat::Type1, 0);
+            handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::Type1, 0) };
         }
         if handle.is_null() {
             return 1;
         }
 
-        let sz = ttstub_input_get_size(handle);
+        let sz = unsafe { ttstub_input_get_size(handle) };
         let mut backing_data = vec![0; sz];
-        let r = ttstub_input_read(handle, backing_data.as_mut_ptr().cast(), sz);
+        let r = unsafe { ttstub_input_read(handle, backing_data.as_mut_ptr().cast(), sz) };
         if r < 0 || (r as usize) != sz {
             panic!("failed to read font file");
         }
-        ttstub_input_close(handle);
+        unsafe { ttstub_input_close(handle) };
 
         self.ft_face = match ft::Face::new_memory(backing_data, index as usize) {
             Ok(face) => Some(Rc::new(RefCell::new(face))),
@@ -380,12 +377,12 @@ impl XeTeXFontBase {
             }
             afm.push(0);
 
-            let afm_handle = ttstub_input_open(afm.as_ptr().cast(), FileFormat::Afm, 0);
+            let afm_handle = unsafe { ttstub_input_open(afm.as_ptr().cast(), FileFormat::Afm, 0) };
 
             if !afm_handle.is_null() {
-                let sz = ttstub_input_get_size(afm_handle);
+                let sz = unsafe { ttstub_input_get_size(afm_handle) };
                 let mut backing_data2 = vec![0; sz];
-                let r = ttstub_input_read(handle, backing_data2.as_mut_ptr().cast(), sz);
+                let r = unsafe { ttstub_input_read(handle, backing_data2.as_mut_ptr().cast(), sz) };
 
                 if r < 0 || (r as usize) != sz {
                     panic!("failed to read AFM file");
@@ -406,14 +403,13 @@ impl XeTeXFontBase {
 
         let post_table = self.get_font_table(ft::SfntTag::Post);
         if let Some(table) = post_table {
-            self.italic_angle =
-                fix_to_d(table.cast::<ft::tables::Postscript>().as_ref().italic_angle as Fixed)
-                    as f32;
+            let table = unsafe { table.cast::<ft::tables::Postscript>().as_ref() };
+            self.italic_angle = fix_to_d(table.italic_angle as Fixed) as f32;
         }
 
         let os2_table = self.get_font_table(ft::SfntTag::Os2);
         if let Some(table) = os2_table {
-            let table = table.cast::<ft::tables::OS2>().as_ref();
+            let table = unsafe { table.cast::<ft::tables::OS2>().as_ref() };
             self.cap_height = self.units_to_points(table.sCapHeight as f64) as f32;
             self.x_height = self.units_to_points(table.sxHeight as f64) as f32;
         }
@@ -445,7 +441,7 @@ impl XeTeXFontBase {
     }
 
     #[cfg(target_os = "macos")]
-    pub unsafe fn initialize_mac(&mut self) -> i32 {
+    pub fn initialize_mac(&mut self) -> i32 {
         let FontKind::Mac(descriptor, font_ref) = &mut self.kind else {
             return 1;
         };
