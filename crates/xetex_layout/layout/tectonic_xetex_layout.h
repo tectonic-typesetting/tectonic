@@ -196,7 +196,7 @@ long findGraphiteFeatureSettingNamed(XeTeXLayoutEngine engine,
 
 bool initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t *txt_ptr, unsigned int txt_len);
 
-int findNextGraphiteBreak(void);
+int findNextGraphiteBreak(XeTeXLayoutEngine engine);
 
 XeTeXFont createFont(RawPlatformFontRef font_ref, Fixed point_size);
 
@@ -237,11 +237,7 @@ float ttxl_font_points_to_units(XeTeXFont font, float points);
 float ttxl_font_get_point_size(XeTeXFont font);
 
 #if defined(XETEX_MAC)
-const char *getNameFromCTFont(CTFontRef ct_font_ref, CFStringRef name_key);
-#endif
-
-#if defined(XETEX_MAC)
-const char *getFileNameFromCTFont(CTFontRef ct_font_ref, uint32_t *index);
+const char *getFileNameFromCTFont(CTFontRef ct_font, uint32_t *index);
 #endif
 
 Fixed get_loaded_font_design_size(void);
