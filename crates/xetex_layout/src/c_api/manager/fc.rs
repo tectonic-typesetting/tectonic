@@ -2,11 +2,6 @@ use super::{
     base_get_op_size_rec_and_style_flags, Font, FontManager, FontManagerBackend, FontMaps,
     NameCollection,
 };
-use crate::c_api::fc::sys::{
-    FcConfigGetCurrent, FcFalse, FcFontList, FcFontSet, FcFontSetDestroy, FcInit, FcObjectSetBuild,
-    FcObjectSetDestroy, FC_FAMILY, FC_FILE, FC_FONTFORMAT, FC_FULLNAME, FC_INDEX, FC_SLANT,
-    FC_STYLE, FC_WEIGHT, FC_WIDTH,
-};
 use crate::c_api::{fc, PlatformFontRef};
 use std::borrow::Cow;
 use std::cell::Cell;
@@ -57,25 +52,24 @@ unsafe fn convert_to_utf8(conv: *mut UConverter, name: &[u8]) -> CString {
 }
 
 pub struct FcBackend {
-    all_fonts: *mut FcFontSet,
+    all_fonts: Option<fc::OwnFontSet>,
     cached_all: bool,
 }
 
 impl FcBackend {
     pub fn new() -> FcBackend {
         FcBackend {
-            all_fonts: ptr::null_mut(),
+            all_fonts: None,
             cached_all: false,
         }
     }
 
-    unsafe fn cache_family_members(&mut self, maps: &mut FontMaps, names: &[CString]) {
+    fn cache_family_members(&mut self, maps: &mut FontMaps, names: &[CString]) {
         if names.is_empty() {
             return;
         }
 
-        'outer: for f in 0..(*self.all_fonts).nfont as usize {
-            let pat = fc::Pattern::from_raw(*(*self.all_fonts).fonts.add(f)).unwrap();
+        'outer: for pat in self.all_fonts.as_ref().unwrap().fonts() {
             if maps.platform_ref_to_font.contains_key(&pat) {
                 continue;
             }
@@ -98,10 +92,9 @@ impl FcBackend {
 
 impl FontManagerBackend for FcBackend {
     unsafe fn initialize(&mut self) {
-        if FcInit() == FcFalse {
+        if !fc::init() {
             panic!("fontconfig initialization failed");
         }
-
         ft::init();
 
         let mut err = U_ZERO_ERROR;
@@ -119,28 +112,13 @@ impl FontManagerBackend for FcBackend {
         }
 
         let pat = fc::OwnPattern::from_name(cstr!(":outline=true")).unwrap();
-        let os = FcObjectSetBuild(
-            FC_FAMILY,
-            FC_STYLE,
-            FC_FILE,
-            FC_INDEX,
-            FC_FULLNAME,
-            FC_WEIGHT,
-            FC_WIDTH,
-            FC_SLANT,
-            FC_FONTFORMAT,
-            ptr::null::<()>(),
-        );
-        self.all_fonts = FcFontList(FcConfigGetCurrent(), pat.as_raw(), os);
-        FcObjectSetDestroy(os);
+        let os = fc::OwnObjectSet::new();
+        self.all_fonts = Some(fc::OwnFontSet::new(&pat, &os));
         self.cached_all = false;
     }
 
     unsafe fn terminate(&mut self) {
-        if !self.all_fonts.is_null() {
-            FcFontSetDestroy(self.all_fonts);
-            self.all_fonts = ptr::null_mut();
-        }
+        self.all_fonts = None;
 
         if !MAC_ROMAN_CONV.get().is_null() {
             ucnv_close(MAC_ROMAN_CONV.get());
@@ -181,7 +159,7 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
+    fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
         if self.cached_all {
             return;
         }
@@ -199,8 +177,8 @@ impl FontManagerBackend for FcBackend {
 
         let mut found = false;
         loop {
-            'outer: for f in 0..(*self.all_fonts).nfont as usize {
-                let pat = fc::Pattern::from_raw(*(*self.all_fonts).fonts.add(f)).unwrap();
+            'outer: for pos in 0..self.all_fonts.as_ref().unwrap().fonts().len() {
+                let pat = &self.all_fonts.as_ref().unwrap().fonts()[pos];
                 if maps.platform_ref_to_font.contains_key(&pat) {
                     continue;
                 }

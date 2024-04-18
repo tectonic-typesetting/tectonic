@@ -102,7 +102,7 @@ impl FontManagerBackend for MacBackend {
         base_get_op_size_rec_and_style_flags(font);
     }
 
-    unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
+    fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr) {
         let name_str = CFString::new(name);
         let matched = find_font_with_name(name_str.clone(), FontAttribute::DisplayName);
         if let Some(matched) = matched {

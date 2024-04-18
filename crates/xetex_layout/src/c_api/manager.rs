@@ -115,7 +115,7 @@ pub trait FontManagerBackend {
     unsafe fn terminate(&mut self);
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
     fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
-    unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
+    fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
     fn read_names(&self, font: PlatformFontRef) -> NameCollection;
 }
 
@@ -435,7 +435,7 @@ impl FontManager {
             }
 
             if pass == 0 {
-                unsafe { self.search_for_host_platform_fonts(name) }
+                self.search_for_host_platform_fonts(name);
             }
         }
 
@@ -781,7 +781,7 @@ impl FontManager {
         })
     }
 
-    pub unsafe fn search_for_host_platform_fonts(&mut self, name: &CStr) {
+    pub fn search_for_host_platform_fonts(&mut self, name: &CStr) {
         self.backend
             .search_for_host_platform_fonts(&mut self.maps, name)
     }

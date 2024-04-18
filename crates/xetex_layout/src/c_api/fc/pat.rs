@@ -155,6 +155,7 @@ pub struct OwnPattern(Pattern);
 
 impl OwnPattern {
     pub fn from_name(name: &CStr) -> Option<OwnPattern> {
+        super::init();
         let raw = unsafe { sys::FcNameParse(name.as_ptr()) };
         NonNull::new(raw).map(Pattern).map(OwnPattern)
     }
