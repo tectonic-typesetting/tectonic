@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
-use std::ptr;
+use std::{ptr, slice};
 use tectonic_bridge_freetype2 as ft;
 
 #[cfg(not(target_os = "macos"))]
@@ -46,7 +46,7 @@ pub struct Font {
     ps_name: CString,
     family_name: CString,
     style_name: CString,
-    parent: *mut Family,
+    parent: usize,
     font_ref: PlatformFontRef,
     op_size_info: OpSizeRec,
     weight: u16,
@@ -69,7 +69,7 @@ impl Font {
             ps_name,
             family_name,
             style_name,
-            parent: ptr::null_mut(),
+            parent: usize::MAX,
             font_ref,
             op_size_info: OpSizeRec::default(),
             weight: 0,
@@ -87,7 +87,7 @@ impl Font {
 
 #[derive(Default)]
 pub struct Family {
-    styles: HashMap<CString, *mut Font>,
+    styles: HashMap<CString, usize>,
     min_weight: u16,
     max_weight: u16,
     min_width: u16,
@@ -114,12 +114,12 @@ pub trait FontManagerBackend {
     unsafe fn initialize(&mut self);
     unsafe fn terminate(&mut self);
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
-    unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
+    fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     unsafe fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
     fn read_names(&self, font: PlatformFontRef) -> NameCollection;
 }
 
-unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
+fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
     let xfont = match XeTeXFontBase::new(font.font_ref.clone(), 10.0) {
         Ok(xfont) => xfont,
         Err(_) => return,
@@ -142,7 +142,7 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
 
     let os2_table = xfont.get_font_table(ft::SfntTag::Os2);
     if let Some(table) = os2_table {
-        let table = table.cast::<ft::tables::OS2>().as_ref();
+        let table = unsafe { table.cast::<ft::tables::OS2>().as_ref() };
         font.weight = table.usWeightClass;
         font.width = table.usWidthClass;
         let sel = table.fsSelection;
@@ -153,7 +153,7 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
 
     let head_table = xfont.get_font_table(ft::SfntTag::Head);
     if let Some(table) = head_table {
-        let table = table.cast::<ft::tables::Header>().as_ref();
+        let table = unsafe { table.cast::<ft::tables::Header>().as_ref() };
         let ms = table.Mac_Style;
         if (ms & (1 << 0)) != 0 {
             font.is_bold = true;
@@ -165,7 +165,7 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
 
     let post_table = xfont.get_font_table(ft::SfntTag::Post);
     if let Some(table) = post_table {
-        let table = table.cast::<ft::tables::Postscript>().as_ref();
+        let table = unsafe { table.cast::<ft::tables::Postscript>().as_ref() };
         font.slant = (1000.0
             * (f64::tan(fix_to_d((-table.italic_angle) as Fixed) * std::f64::consts::PI / 180.0)))
             as _;
@@ -174,14 +174,17 @@ unsafe fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
 
 #[derive(Default)]
 pub struct FontMaps {
-    name_to_font: HashMap<CString, *mut Font>,
-    name_to_family: HashMap<CString, *mut Family>,
-    platform_ref_to_font: HashMap<PlatformFontRef, *mut Font>,
-    ps_name_to_font: HashMap<CString, *mut Font>,
+    fonts: Vec<Font>,
+    families: Vec<Family>,
+
+    name_to_font: HashMap<CString, usize>,
+    name_to_family: HashMap<CString, usize>,
+    platform_ref_to_font: HashMap<PlatformFontRef, usize>,
+    ps_name_to_font: HashMap<CString, usize>,
 }
 
 impl FontMaps {
-    pub unsafe fn add_to_maps(
+    pub fn add_to_maps(
         &mut self,
         backend: &dyn FontManagerBackend,
         pfont: PlatformFontRef,
@@ -213,15 +216,13 @@ impl FontMaps {
             CString::default()
         };
 
-        let font = Box::leak(Box::new(Font::new(
-            pfont.clone(),
-            ps_name.to_owned(),
-            family_name,
-            style_name,
-        )));
-        backend.get_op_size_rec_and_style_flags(font);
-        self.ps_name_to_font.insert(font.ps_name.clone(), font);
-        self.platform_ref_to_font.insert(pfont, font);
+        let mut font = Font::new(pfont.clone(), ps_name.to_owned(), family_name, style_name);
+        backend.get_op_size_rec_and_style_flags(&mut font);
+        self.fonts.push(font);
+        let font_pos = self.fonts.len() - 1;
+        let font = &mut self.fonts[font_pos];
+        self.ps_name_to_font.insert(font.ps_name.clone(), font_pos);
+        self.platform_ref_to_font.insert(pfont, font_pos);
 
         if !names.full_names.is_empty() {
             font.full_name = Some(names.full_names[0].clone());
@@ -229,38 +230,41 @@ impl FontMaps {
 
         for i in &names.family_names {
             let fam = self.name_to_family.get(i).copied();
-            let family = match fam {
+            let (family, fam_pos) = match fam {
                 None => {
-                    let family = Box::leak(Box::new(Family::new()));
+                    let mut family = Family::new();
                     family.min_weight = font.weight;
                     family.max_weight = font.weight;
                     family.min_width = font.width;
                     family.max_width = font.width;
                     family.min_slant = font.slant;
                     family.max_slant = font.slant;
-                    self.name_to_family.insert(i.clone(), family);
-                    family
+                    self.families.push(family);
+                    let fam_pos = self.families.len() - 1;
+                    let family = &mut self.families[fam_pos];
+                    self.name_to_family.insert(i.clone(), fam_pos);
+                    (family, fam_pos)
                 }
-                Some(fam) => {
-                    let family = &mut *fam;
+                Some(fam_pos) => {
+                    let family = &mut self.families[fam_pos];
                     family.min_weight = u16::min(family.min_weight, font.weight);
                     family.max_weight = u16::max(family.max_weight, font.weight);
                     family.min_width = u16::min(family.min_width, font.width);
                     family.max_width = u16::max(family.max_width, font.width);
                     family.min_slant = i16::min(family.min_slant, font.slant);
                     family.max_slant = i16::max(family.max_slant, font.slant);
-                    family
+                    (family, fam_pos)
                 }
             };
 
-            if font.parent.is_null() {
-                font.parent = family;
+            if font.parent == usize::MAX {
+                font.parent = fam_pos;
             }
 
             for style in &names.style_names {
                 let f = family.styles.get(style);
                 if f.is_none() {
-                    family.styles.insert(style.clone(), font);
+                    family.styles.insert(style.clone(), font_pos);
                 }
                 /*
                 else if (iFont->second != thisFont)
@@ -273,7 +277,7 @@ impl FontMaps {
         for i in &names.full_names {
             let f = self.name_to_font.get(i);
             if f.is_none() {
-                self.name_to_font.insert(i.clone(), font);
+                self.name_to_font.insert(i.clone(), font_pos);
             }
             /*
             else if (iFont->second != thisFont)
@@ -334,28 +338,28 @@ impl FontManager {
         })
     }
 
-    pub unsafe fn find_font(
+    pub fn find_font(
         &mut self,
-        name: *const libc::c_char,
-        variant: *mut libc::c_char,
+        name: &CStr,
+        variant: Option<&mut [u8]>,
         mut pt_size: f64,
     ) -> Option<PlatformFontRef> {
-        let name_str = CStr::from_ptr(name);
-        let mut font = ptr::null_mut();
+        let mut font = None;
         let mut dsize = 10.0;
         LOADED_FONT_DESIGN_SIZE.set(655360);
 
         for pass in 0..2 {
             // try full name as given
-            if let Some(&found) = self.maps.name_to_font.get(name_str) {
-                font = found;
-                if (*font).op_size_info.design_size != 0.0 {
-                    dsize = (*font).op_size_info.design_size
+            if let Some(&font_pos) = self.maps.name_to_font.get(name) {
+                let temp_font = &self.maps.fonts[font_pos];
+                font = Some(font_pos);
+                if temp_font.op_size_info.design_size != 0.0 {
+                    dsize = temp_font.op_size_info.design_size
                 }
                 break;
             }
 
-            let bytes = name_str.to_bytes();
+            let bytes = name.to_bytes();
             let split = bytes
                 .iter()
                 .position(|c| *c == b'-')
@@ -364,12 +368,14 @@ impl FontManager {
             // if there's a hyphen, split there and try Family-Style
             if let Some((family, style)) = split {
                 let family = CString::new(family).unwrap();
-                if let Some(&found_fam) = self.maps.name_to_family.get(&family) {
+                if let Some(&fam_pos) = self.maps.name_to_family.get(&family) {
                     let style = CString::new(style).unwrap();
-                    if let Some(&found) = (*found_fam).styles.get(&style) {
-                        font = found;
-                        if (*font).op_size_info.design_size != 0.0 {
-                            dsize = (*font).op_size_info.design_size;
+                    let temp_fam = &self.maps.families[fam_pos];
+                    if let Some(&font_pos) = temp_fam.styles.get(&style) {
+                        let temp_font = &self.maps.fonts[font_pos];
+                        font = Some(font_pos);
+                        if temp_font.op_size_info.design_size != 0.0 {
+                            dsize = temp_font.op_size_info.design_size;
                         }
                         break;
                     }
@@ -377,22 +383,25 @@ impl FontManager {
             }
 
             // try as PostScript name
-            if let Some(&found) = self.maps.ps_name_to_font.get(name_str) {
-                font = found;
-                if (*font).op_size_info.design_size != 0.0 {
-                    dsize = (*font).op_size_info.design_size;
+            if let Some(&font_pos) = self.maps.ps_name_to_font.get(name) {
+                let temp_font = &self.maps.fonts[font_pos];
+                font = Some(font_pos);
+                if temp_font.op_size_info.design_size != 0.0 {
+                    dsize = temp_font.op_size_info.design_size;
                 }
                 break;
             }
 
             // try for the name as a family name
-            if let Some(&found_fam) = self.maps.name_to_family.get(name_str) {
+            if let Some(&fam_pos) = self.maps.name_to_family.get(name) {
+                let family = &self.maps.families[fam_pos];
                 // look for a family member with the "regular" bit set in OS/2
                 let mut reg_fonts = 0;
-                for &found in (*found_fam).styles.values() {
-                    if (*found).is_reg {
+                for &font_pos in family.styles.values() {
+                    let temp_font = &self.maps.fonts[font_pos];
+                    if temp_font.is_reg {
                         if reg_fonts == 0 {
-                            font = found;
+                            font = Some(font_pos);
                         }
                         reg_fonts += 1;
                     }
@@ -400,45 +409,48 @@ impl FontManager {
 
                 // families with Ornament or similar fonts may flag those as Regular,
                 // which confuses the search above... so try some known names
-                if font.is_null() || reg_fonts > 1 {
+                if font.is_none() || reg_fonts > 1 {
                     // try for style "Regular", "Plain", "Normal", "Roman"
-                    for name in [c!("Regular"), c!("Plain"), c!("Normal"), c!("Roman")] {
-                        if let Some(&found) = (*found_fam).styles.get(CStr::from_ptr(name)) {
-                            font = found;
+                    for name in [
+                        cstr!("Regular"),
+                        cstr!("Plain"),
+                        cstr!("Normal"),
+                        cstr!("Roman"),
+                    ] {
+                        if let Some(&font_pos) = family.styles.get(name) {
+                            font = Some(font_pos);
                             break;
                         }
                     }
                 }
 
-                if font.is_null() {
+                if font.is_none() {
                     // look through the family for the (weight, width, slant) nearest to (80, 100, 0)
-                    font = Self::best_match_from_family(&*found_fam, 80, 100, 0);
+                    font = self.best_match_from_family(family, 80, 100, 0);
                 }
 
-                if !font.is_null() {
+                if !font.is_none() {
                     break;
                 }
             }
 
             if pass == 0 {
-                self.search_for_host_platform_fonts(name_str)
+                unsafe { self.search_for_host_platform_fonts(name) }
             }
         }
 
-        if font.is_null() {
-            return None;
-        }
+        let mut font = &self.maps.fonts[font?];
 
-        let parent = (*font).parent;
+        let parent = &self.maps.families[font.parent];
 
         // if there are variant requests, try to apply them
         // and delete B, I, and S=... codes from the string, just retain /engine option
         REQ_ENGINE.set(0);
         let mut req_bold = false;
         let mut req_ital = false;
-        if !variant.is_null() {
+        if let Some(variant) = variant {
             let mut var_str = String::new();
-            let mut cp = CStr::from_ptr(variant).to_bytes();
+            let mut cp = &variant[..];
             while !cp.is_empty() {
                 const VARIANTS: &[(&[u8], u8, &str)] = &[
                     (b"AAT", b'A', "AAT"),
@@ -503,112 +515,124 @@ impl FontManager {
                 }
             }
 
-            libc::strncpy(
-                variant,
-                ptr::from_ref(var_str.as_bytes()).cast::<libc::c_char>(),
-                var_str.len(),
-            );
-            *variant.add(var_str.len()) = 0;
+            variant[..var_str.len()].copy_from_slice(var_str.as_bytes());
+            variant[var_str.len()] = 0;
 
             if req_ital {
                 let mut best_match = font;
-                if (*font).slant < (*parent).max_slant {
+                if font.slant < parent.max_slant {
                     // try for a face with more slant
-                    best_match = Self::best_match_from_family(
-                        &*parent,
-                        (*font).weight as libc::c_int,
-                        (*font).width as libc::c_int,
-                        (*parent).max_slant as libc::c_int,
-                    );
+                    best_match = self
+                        .best_match_from_family(
+                            parent,
+                            font.weight as libc::c_int,
+                            font.width as libc::c_int,
+                            parent.max_slant as libc::c_int,
+                        )
+                        .map(|pos| &self.maps.fonts[pos])
+                        .unwrap_or(best_match);
                 }
 
-                if best_match == font && (*font).slant > (*parent).min_slant {
+                if ptr::addr_eq(best_match, font) && font.slant > parent.min_slant {
                     // maybe the slant is negated, or maybe this was something like "Times-Italic/I"
-                    best_match = Self::best_match_from_family(
-                        &*parent,
-                        (*font).weight as libc::c_int,
-                        (*font).width as libc::c_int,
-                        (*parent).min_slant as libc::c_int,
-                    );
+                    best_match = self
+                        .best_match_from_family(
+                            parent,
+                            font.weight as libc::c_int,
+                            font.width as libc::c_int,
+                            parent.min_slant as libc::c_int,
+                        )
+                        .map(|pos| &self.maps.fonts[pos])
+                        .unwrap_or(best_match);
                 }
 
-                if (*parent).min_weight == (*parent).max_weight
-                    && (*best_match).is_bold != (*font).is_bold
-                {
+                if parent.min_weight == parent.max_weight && best_match.is_bold != font.is_bold {
                     // try again using the bold flag, as we can't trust weight values
-                    let mut new_best = ptr::null_mut::<Font>();
-                    for &style in (*parent).styles.values() {
-                        if (*style).is_bold == (*font).is_bold
-                            && new_best.is_null()
-                            && (*style).is_italic != (*font).is_italic
+                    let mut new_best = None;
+                    for &style_pos in parent.styles.values() {
+                        let style = &self.maps.fonts[style_pos];
+                        if style.is_bold == font.is_bold
+                            && new_best.is_none()
+                            && style.is_italic != font.is_italic
                         {
-                            new_best = style;
+                            new_best = Some(style);
                             break;
                         }
                     }
-                    if !new_best.is_null() {
+                    if let Some(new_best) = new_best {
                         best_match = new_best;
                     }
                 }
 
-                if best_match == font {
+                if ptr::addr_eq(best_match, font) {
+                    let mut new_best = None;
                     // maybe slant values weren't present; try the style bits as a fallback
-                    best_match = ptr::null_mut();
-                    for &style in (*parent).styles.values() {
-                        if (*style).is_italic != (*font).is_italic {
-                            if (*parent).min_weight != (*parent).max_weight {
+                    for &style_pos in parent.styles.values() {
+                        let style = &self.maps.fonts[style_pos];
+                        if style.is_italic != font.is_italic {
+                            if parent.min_weight != parent.max_weight {
                                 // weight info was available, so try to match that
-                                if best_match.is_null()
-                                    || Self::weight_and_width_diff(&*style, &*font)
-                                        < Self::weight_and_width_diff(&*best_match, &*font)
+                                if new_best.is_none()
+                                    || Self::weight_and_width_diff(style, font)
+                                        < Self::weight_and_width_diff(new_best.unwrap(), font)
                                 {
-                                    best_match = style;
+                                    new_best = Some(style);
                                 }
                             } else {
                                 // no weight info, so try matching style bits
-                                if best_match.is_null() && (*style).is_bold == (*font).is_bold {
-                                    best_match = style;
+                                if new_best.is_none() && style.is_bold == font.is_bold {
+                                    new_best = Some(style);
                                     break; // found a match, no need to look further as we can't distinguish!
                                 }
                             }
                         }
                     }
+
+                    if let Some(new_best) = new_best {
+                        best_match = new_best;
+                    }
                 }
 
-                if !best_match.is_null() {
-                    font = best_match;
-                }
+                font = best_match;
             }
 
             if req_bold {
                 let mut best_match = font;
-                if (*font).weight < (*parent).max_weight {
-                    best_match = Self::best_match_from_family(
-                        &*parent,
-                        ((*font).weight + ((*parent).max_weight - ((*parent).min_weight)) / 2 + 1)
-                            as libc::c_int,
-                        (*font).width as libc::c_int,
-                        (*font).slant as libc::c_int,
-                    );
-                    if (*parent).min_slant == (*parent).max_slant {
-                        let mut new_best = ptr::null_mut::<Font>();
-                        for &style in (*parent).styles.values() {
-                            if (*style).is_italic == (*font).is_italic
-                                && new_best.is_null()
-                                && Self::weight_and_width_diff(&*style, &*best_match)
-                                    < Self::weight_and_width_diff(&*new_best, &*best_match)
+                if font.weight < parent.max_weight {
+                    best_match = self
+                        .best_match_from_family(
+                            parent,
+                            (font.weight + (parent.max_weight - (parent.min_weight)) / 2 + 1)
+                                as libc::c_int,
+                            font.width as libc::c_int,
+                            font.slant as libc::c_int,
+                        )
+                        .map(|pos| &self.maps.fonts[pos])
+                        .unwrap_or(best_match);
+                    if parent.min_slant == parent.max_slant {
+                        let mut new_best = None;
+                        for &style_pos in parent.styles.values() {
+                            let style = &self.maps.fonts[style_pos];
+                            if style.is_italic == font.is_italic
+                                && (new_best.is_none()
+                                    || Self::weight_and_width_diff(style, best_match)
+                                        < Self::weight_and_width_diff(
+                                            new_best.unwrap(),
+                                            best_match,
+                                        ))
                             {
-                                new_best = style;
+                                new_best = Some(style);
                             }
                         }
-                        if !new_best.is_null() {
+                        if let Some(new_best) = new_best {
                             best_match = new_best;
                         }
                     }
                 }
-                if best_match == font && (*font).is_bold {
-                    for &style in (*parent).styles.values() {
-                        if (*style).is_italic == (*font).is_italic && (*style).is_bold {
+                if ptr::addr_eq(best_match, font) && font.is_bold {
+                    for &style_pos in parent.styles.values() {
+                        let style = &self.maps.fonts[style_pos];
+                        if style.is_italic == font.is_italic && style.is_bold {
                             best_match = style;
                             break;
                         }
@@ -622,20 +646,21 @@ impl FontManager {
             pt_size = dsize;
         }
 
-        if !font.is_null() && (*font).op_size_info.sub_family_id != 0 && pt_size > 0.0 {
+        if font.op_size_info.sub_family_id != 0 && pt_size > 0.0 {
             let mut best_mismatch = f64::max(
-                (*font).op_size_info.min_size - pt_size,
-                pt_size - (*font).op_size_info.max_size,
+                font.op_size_info.min_size - pt_size,
+                pt_size - font.op_size_info.max_size,
             );
             if best_mismatch > 0.0 {
                 let mut best_match = font;
-                for &style in (*parent).styles.values() {
-                    if (*style).op_size_info.sub_family_id != (*font).op_size_info.sub_family_id {
+                for &style_pos in parent.styles.values() {
+                    let style = &self.maps.fonts[style_pos];
+                    if style.op_size_info.sub_family_id != font.op_size_info.sub_family_id {
                         continue;
                     }
                     let mismatch = f64::max(
-                        (*style).op_size_info.min_size - pt_size,
-                        pt_size - (*style).op_size_info.max_size,
+                        style.op_size_info.min_size - pt_size,
+                        pt_size - style.op_size_info.max_size,
                     );
                     if mismatch < best_mismatch {
                         best_match = style;
@@ -649,21 +674,21 @@ impl FontManager {
             }
         }
 
-        if !font.is_null() && (*font).op_size_info.design_size != 0.0 {
-            LOADED_FONT_DESIGN_SIZE
-                .set(((*font).op_size_info.design_size * 65536.0 + 0.5) as Fixed);
+        if font.op_size_info.design_size != 0.0 {
+            LOADED_FONT_DESIGN_SIZE.set((font.op_size_info.design_size * 65536.0 + 0.5) as Fixed);
         }
 
-        Some((*font).font_ref.clone())
+        Some(font.font_ref.clone())
     }
 
-    pub unsafe fn get_full_name(&self, font: PlatformFontRef) -> *const libc::c_char {
-        let font = *self
+    pub fn get_full_name(&self, font: PlatformFontRef) -> *const libc::c_char {
+        let font_pos = *self
             .maps
             .platform_ref_to_font
             .get(&font)
             .unwrap_or_else(|| panic!("internal error {} in FontManager", 2));
-        let name = (*font).full_name.as_ref().unwrap_or(&(*font).ps_name);
+        let font = &self.maps.fonts[font_pos];
+        let name = font.full_name.as_ref().unwrap_or(&font.ps_name);
         name.as_ptr()
     }
 
@@ -704,28 +729,30 @@ impl FontManager {
             + wid_diff as u32) as libc::c_int
     }
 
-    pub unsafe fn best_match_from_family(
+    pub fn best_match_from_family(
+        &self,
         family: &Family,
         wt: libc::c_int,
         wd: libc::c_int,
         slant: libc::c_int,
-    ) -> *mut Font {
+    ) -> Option<usize> {
         let mut best_match = None;
-        for &font in family.styles.values() {
+        for &font_pos in family.styles.values() {
+            let font = &self.maps.fonts[font_pos];
             best_match = match best_match {
-                None => Some(font),
-                Some(best) => {
-                    if Self::style_diff(&*font, wt, wd, slant)
-                        < Self::style_diff(&*best, wt, wd, slant)
+                None => Some(font_pos),
+                Some(best_pos) => {
+                    let best = &self.maps.fonts[best_pos];
+                    if Self::style_diff(font, wt, wd, slant) < Self::style_diff(best, wt, wd, slant)
                     {
-                        Some(font)
+                        Some(font_pos)
                     } else {
-                        Some(best)
+                        Some(best_pos)
                     }
                 }
             };
         }
-        best_match.unwrap_or(ptr::null_mut())
+        best_match
     }
 
     pub fn append_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
@@ -759,7 +786,7 @@ impl FontManager {
             .search_for_host_platform_fonts(&mut self.maps, name)
     }
 
-    pub unsafe fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
+    pub fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         self.backend.get_platform_font_desc(font)
     }
 
@@ -797,7 +824,13 @@ pub unsafe extern "C" fn findFontByName(
     });
     #[cfg(not(target_os = "macos"))]
     FontManager::with_font_manager(|mgr| {
-        mgr.find_font(name, var, size)
+        let var = if var.is_null() {
+            None
+        } else {
+            let len = CStr::from_ptr(var).to_bytes().len();
+            Some(slice::from_raw_parts_mut(var.cast(), len))
+        };
+        mgr.find_font(CStr::from_ptr(name), var, size)
             .map(super::fc::Pattern::into_raw)
             .unwrap_or(ptr::null_mut())
     })
