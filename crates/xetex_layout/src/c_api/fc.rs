@@ -5,6 +5,7 @@ mod object_set;
 pub mod pat;
 pub mod sys;
 
+#[allow(unused_imports)]
 pub use font_set::{FontSet, OwnFontSet};
 pub use object_set::{ObjectSet, OwnObjectSet};
 pub use pat::{OwnPattern, Pattern};

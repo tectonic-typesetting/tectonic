@@ -5,7 +5,7 @@
 //! use different font-finding and layout frameworks depending on the target
 //! platform.
 //!
-//! Specifically, on macOS we use CoreText. On all other platforms, including
+//! Specifically, on macOS we use `CoreText`. On all other platforms, including
 //! Windows, we use Fontconfig to discover fonts.
 
 use std::{env, path::PathBuf};

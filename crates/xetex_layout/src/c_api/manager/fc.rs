@@ -48,7 +48,7 @@ impl FcBackend {
         }
 
         'outer: for pat in self.all_fonts.as_ref().unwrap().fonts() {
-            if maps.platform_ref_to_font.contains_key(&pat) {
+            if maps.platform_ref_to_font.contains_key(pat) {
                 continue;
             }
 
@@ -143,7 +143,7 @@ impl FontManagerBackend for FcBackend {
         loop {
             'outer: for pos in 0..self.all_fonts.as_ref().unwrap().fonts().len() {
                 let pat = &self.all_fonts.as_ref().unwrap().fonts()[pos];
-                if maps.platform_ref_to_font.contains_key(&pat) {
+                if maps.platform_ref_to_font.contains_key(pat) {
                     continue;
                 }
 
@@ -245,7 +245,7 @@ impl FontManagerBackend for FcBackend {
                     | PREFERRED_SUBFAMILY_NAME => {
                         let mut preferred_name = false;
                         let roman_conv = MAC_ROMAN_CONV.take();
-                        if !roman_conv.is_none()
+                        if roman_conv.is_some()
                             && name_rec.platform_id == ft::PlatformId::MACINTOSH
                             && name_rec.encoding_id == ft::EncodingId::MAC_ROMAN
                             && name_rec.language_id == ft::LanguageId::MAC_ENGLISH
