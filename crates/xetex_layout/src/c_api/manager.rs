@@ -111,8 +111,6 @@ pub struct NameCollection {
 }
 
 pub trait FontManagerBackend {
-    fn initialize(&mut self);
-    fn terminate(&mut self);
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
     fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
     fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
@@ -318,7 +316,7 @@ pub struct FontManager {
 
 impl FontManager {
     fn init_font_manager() {
-        let mut backend: Box<dyn FontManagerBackend>;
+        let backend: Box<dyn FontManagerBackend>;
 
         #[cfg(target_os = "macos")]
         {
@@ -328,8 +326,6 @@ impl FontManager {
         {
             backend = Box::new(fc::FcBackend::new());
         }
-
-        backend.initialize();
 
         FONT_MGR.with_borrow_mut(|mgr| {
             *mgr = Some(FontManager {
@@ -347,14 +343,6 @@ impl FontManager {
             Self::init_font_manager();
         }
         FONT_MGR.with_borrow_mut(|mgr| f(mgr.as_mut().unwrap()))
-    }
-
-    pub fn terminate() {
-        FONT_MGR.with_borrow_mut(|mgr| {
-            if let Some(mgr) = mgr {
-                mgr.backend.terminate();
-            }
-        })
     }
 
     pub fn destroy() {
@@ -832,11 +820,6 @@ impl FontManager {
     pub fn set_req_engine(&mut self, engine: Engine) {
         self.req_engine = engine;
     }
-}
-
-#[no_mangle]
-pub unsafe extern "C" fn terminate_font_manager() {
-    FontManager::terminate();
 }
 
 #[no_mangle]
