@@ -35,7 +35,7 @@ impl<T> DerefMut for MaybeBorrow<'_, T> {
 }
 
 pub struct GrBreak {
-    segment: gr::OwnSegment,
+    segment: gr::Segment,
     slot: gr::Slot,
     text_len: libc::c_uint,
 }
@@ -691,7 +691,7 @@ fn get_graphite_feature_default_setting(
         .map(hb::Tag::to_raw)
         .unwrap_or(0);
     let feature_values = face.feature_val_for_lang(lang);
-    let out = feat.feat_value(&feature_values) as u32;
+    let out = feat.feat_value(feature_values.as_ref()) as u32;
     Some(out)
 }
 
@@ -893,7 +893,7 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     let Some(gr_face) = hb_face.gr_face() else {
         return false;
     };
-    let Some(gr_font) = gr::OwnFont::new(hb_font.get_ptem(), gr_face) else {
+    let Some(gr_font) = gr::Font::new(hb_font.get_ptem(), gr_face) else {
         return false;
     };
 
@@ -909,21 +909,21 @@ pub unsafe extern "C" fn initGraphiteBreaking(
     for i in (0..engine.features.len()).rev() {
         let fref = gr_face.find_feature_ref(features[i].tag);
         if let Some(fref) = fref {
-            let _ = fref.set_feat_value(&mut gr_feature_values, features[i].value as u16);
+            let _ = fref.set_feat_value(gr_feature_values.as_mut(), features[i].value as u16);
         }
     }
 
-    let gr_seg = gr::OwnSegment::new(
-        &gr_font,
+    let gr_seg = gr::Segment::new(
+        gr_font.as_ref(),
         gr_face,
         engine.script.to_raw(),
-        &gr_feature_values,
+        gr_feature_values.as_ref(),
         &(txt_ptr, txt_len as usize),
     )
     .unwrap();
 
     engine.gr_breaking = Some(GrBreak {
-        slot: gr_seg.first_slot(),
+        slot: gr_seg.as_ref().first_slot(),
         segment: gr_seg,
         text_len: txt_len,
     });
@@ -938,18 +938,19 @@ pub unsafe extern "C" fn findNextGraphiteBreak(engine: XeTeXLayoutEngine) -> lib
         return -1;
     };
 
-    if breaking.slot != breaking.segment.last_slot() {
-        let mut s = breaking.segment.next(&breaking.slot);
+    let segment = breaking.segment.as_ref();
+    if breaking.slot != segment.last_slot() {
+        let mut s = segment.next(&breaking.slot);
         let mut ret = -1;
 
         while let Some(slot) = s {
-            let ci = breaking.segment.cinfo(breaking.segment.index(&slot));
+            let ci = segment.cinfo(segment.index(&slot));
             let bw = ci.break_weight();
             if (gr::BREAK_BEFORE_WORD..gr::BREAK_NONE).contains(&bw) {
                 breaking.slot = slot.clone();
                 ret = ci.base() as libc::c_int;
             } else if (gr::BREAK_NONE + 1..=gr::BREAK_WORD).contains(&bw) {
-                breaking.slot = breaking.segment.next(&slot).unwrap();
+                breaking.slot = segment.next(&slot).unwrap();
                 ret = (ci.base() + 1) as libc::c_int;
             }
 
@@ -957,11 +958,11 @@ pub unsafe extern "C" fn findNextGraphiteBreak(engine: XeTeXLayoutEngine) -> lib
                 break;
             }
 
-            s = breaking.segment.next(&slot);
+            s = segment.next(&slot);
         }
 
         if ret == -1 {
-            breaking.slot = breaking.segment.last_slot();
+            breaking.slot = segment.last_slot();
             breaking.text_len as libc::c_int
         } else {
             ret
