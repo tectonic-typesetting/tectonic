@@ -118,7 +118,7 @@ mod c_api {
         out
     }
 
-    /// key is combined value representing (font_id << 16) + glyph
+    /// key is combined value representing `(font_id << 16) + glyph`
     /// value is glyph bounding box in TeX points
     static GLYPH_BOXES: Mutex<BTreeMap<u32, GlyphBBox>> = Mutex::new(BTreeMap::new());
 
