@@ -6,7 +6,6 @@
 
 #![allow(clippy::unnecessary_cast)]
 
-use std::convert::Infallible;
 use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
@@ -114,7 +113,7 @@ impl Default for Language {
     }
 }
 
-pub struct Buffer(Infallible);
+pub struct Buffer(());
 
 impl Buffer {
     fn as_ptr(&self) -> *mut sys::hb_buffer_t {
@@ -262,7 +261,7 @@ pub struct LayoutSizeParams {
     pub end: u32,
 }
 
-pub struct Face(Infallible);
+pub struct Face(());
 
 impl Face {
     fn as_ptr(&self) -> *mut sys::hb_face_t {
@@ -563,7 +562,7 @@ impl Drop for OwnFace {
     }
 }
 
-pub struct Font(Infallible);
+pub struct Font(());
 
 impl Font {
     fn as_ptr(&self) -> *mut sys::hb_font_t {
@@ -634,7 +633,7 @@ impl Drop for OwnFont {
     }
 }
 
-pub struct ShapePlan(Infallible);
+pub struct ShapePlan(());
 
 impl ShapePlan {
     fn as_ptr(&self) -> *mut sys::hb_shape_plan_t {
