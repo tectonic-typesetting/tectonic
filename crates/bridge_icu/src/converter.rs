@@ -7,6 +7,7 @@ pub struct Converter(NonNull<sys::UConverter>);
 impl Converter {
     pub fn new(name: &CStr) -> Result<Converter, IcuErr> {
         let mut err = sys::U_ZERO_ERROR;
+        // SAFETY: This doesn't expec the C-string to live longer than the call.
         let ptr = unsafe { sys::ucnv_open(name.as_ptr(), &mut err) };
         if sys::U_SUCCESS(err) {
             Ok(Converter(NonNull::new(ptr).unwrap()))
@@ -20,6 +21,7 @@ impl Converter {
     }
 
     pub fn max_char_size(&self) -> u8 {
+        // SAFETY: Contained pointer guaranteed valid
         unsafe { sys::ucnv_getMaxCharSize(self.as_ptr()) as u8 }
     }
 
@@ -27,6 +29,7 @@ impl Converter {
     pub fn to_uchars(&self, encoded: &[u8]) -> Result<Vec<u16>, IcuErr> {
         let mut buffer = vec![0; encoded.len() * 2];
         let mut err = sys::U_ZERO_ERROR;
+        // SAFETY: Contained pointer guaranteed valid
         let len = unsafe {
             sys::ucnv_toUChars(
                 self.as_ptr(),
@@ -49,6 +52,7 @@ impl Converter {
     pub fn from_uchars(&self, chars: &[u16]) -> Result<Vec<u8>, IcuErr> {
         let mut buffer = vec![0u8; (chars.len() + 10) * self.max_char_size() as usize];
         let mut err = sys::U_ZERO_ERROR;
+        // SAFETY: Contained pointer guaranteed valid
         let len = unsafe {
             sys::ucnv_fromUChars(
                 self.as_ptr(),
@@ -70,6 +74,7 @@ impl Converter {
 
 impl Drop for Converter {
     fn drop(&mut self) {
+        // SAFETY: Contained pointer guaranteed valid, and we have ownership.
         unsafe { sys::ucnv_close(self.0.as_ptr()) }
     }
 }
