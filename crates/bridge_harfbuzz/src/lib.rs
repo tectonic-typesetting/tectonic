@@ -9,6 +9,7 @@
 use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ops::{Deref, DerefMut};
+use std::ptr::NonNull;
 use std::{ptr, slice};
 
 mod font_funcs;
@@ -496,12 +497,9 @@ impl Face {
         }
     }
 
-    pub fn gr_face(&self) -> Option<&gr::Face> {
-        unsafe {
-            sys::hb_graphite2_face_get_gr_face(self.as_ptr())
-                .cast::<gr::Face>()
-                .as_ref()
-        }
+    pub fn gr_face(&self) -> Option<gr::FaceRef<'_>> {
+        let ptr = unsafe { sys::hb_graphite2_face_get_gr_face(self.as_ptr()) };
+        unsafe { NonNull::new(ptr).map(|ptr| unsafe { gr::FaceRef::from_raw(ptr) }) }
     }
 
     pub fn set_index(&mut self, index: u32) {
