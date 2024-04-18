@@ -164,7 +164,7 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    unsafe fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
+    fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
         base_get_op_size_rec_and_style_flags(font);
 
         if font.weight == 0 && font.width == 0 {
