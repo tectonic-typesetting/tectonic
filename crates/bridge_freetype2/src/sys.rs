@@ -21,18 +21,6 @@ pub const TT_MAC_ID_ROMAN: libc::c_ushort = 0;
 
 pub const TT_MAC_LANGID_ENGLISH: libc::c_ushort = 0;
 
-pub(crate) unsafe fn FT_IS_SCALABLE(face: FT_Face) -> bool {
-    ((*face).face_flags & FT_FACE_FLAG_SCALABLE) != 0
-}
-
-pub unsafe fn FT_IS_SFNT(face: FT_Face) -> bool {
-    ((*face).face_flags & FT_FACE_FLAG_SFNT) != 0
-}
-
-pub(crate) unsafe fn FT_HAS_GLYPH_NAMES(face: FT_Face) -> bool {
-    (*face).face_flags & FT_FACE_FLAG_GLYPH_NAMES != 0
-}
-
 #[repr(C)]
 pub enum FT_Kerning_Mode {
     Default = 0,
@@ -316,6 +304,7 @@ pub struct FT_Outline {
 
 impl FT_Outline {
     pub fn points(&self) -> &[FT_Vector] {
+        // SAFETY: `points` guaranteed allocated and initialized up to `n_points`
         unsafe { slice::from_raw_parts(self.points, self.n_points as usize) }
     }
 }
