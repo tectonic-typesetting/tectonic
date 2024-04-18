@@ -1,9 +1,17 @@
 use std::convert::TryFrom;
 
+mod font_set;
+mod object_set;
 pub mod pat;
 pub mod sys;
 
+pub use font_set::{FontSet, OwnFontSet};
+pub use object_set::{ObjectSet, OwnObjectSet};
 pub use pat::{OwnPattern, Pattern};
+
+pub fn init() -> bool {
+    (unsafe { sys::FcInit() }) == sys::FcTrue
+}
 
 #[derive(Debug, PartialEq)]
 pub enum FcErr {
