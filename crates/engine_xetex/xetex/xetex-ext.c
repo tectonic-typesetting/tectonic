@@ -113,12 +113,14 @@ linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength)
 }
 
 int
-linebreak_next(void)
+linebreak_next(int f)
 {
     if (brkIter != NULL)
         return ubrk_next((UBreakIterator*)brkIter);
-    else
-        return findNextGraphiteBreak();
+    else {
+    	XeTeXLayoutEngine engine = (XeTeXLayoutEngine) font_layout_engine[f];
+        return findNextGraphiteBreak(engine);
+	}
 }
 
 int
