@@ -54,7 +54,7 @@ pub struct XeTeXLayoutEngineBase {
     extend: f32,
     slant: f32,
     embolden: f32,
-    hb_buffer: hb::OwnBuffer,
+    hb_buffer: hb::Buffer,
     gr_breaking: Option<GrBreak>,
 }
 
@@ -93,7 +93,7 @@ impl XeTeXLayoutEngineBase {
             extend,
             slant,
             embolden,
-            hb_buffer: hb::OwnBuffer::new(),
+            hb_buffer: hb::Buffer::new(),
             gr_breaking: None,
         }
     }
@@ -255,7 +255,7 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn getDefaultDirection(engine: XeTeXLayoutEngine) -> libc::c_int {
-        let script = (*engine).hb_buffer.get_script();
+        let script = (*engine).hb_buffer.as_ref().get_script();
         if script.get_horizontal_direction() == hb::Direction::Rtl {
             UBIDI_DEFAULT_RTL as libc::c_int
         } else {
@@ -373,8 +373,10 @@ impl XeTeXLayoutEngineBase {
     }
 
     #[no_mangle]
-    pub unsafe extern "C" fn ttxl_get_hb_font(engine: XeTeXLayoutEngine) -> *mut hb::Font {
-        ptr::from_ref((*engine).font().get_hb_font()).cast_mut()
+    pub unsafe extern "C" fn ttxl_get_hb_font(
+        engine: XeTeXLayoutEngine,
+    ) -> *mut hb::sys::hb_font_t {
+        (*engine).font().get_hb_font().as_ptr()
     }
 
     #[no_mangle]
@@ -401,7 +403,7 @@ impl XeTeXLayoutEngineBase {
         };
 
         let script = engine.script.to_script();
-        engine.hb_buffer.reset();
+        engine.hb_buffer.as_mut().reset();
         // TODO: figure out cfg for harfbuzz versions below 2.5
         // if hb_version_atleast(2, 5, 0) == 0 {
         //     #[derive(Copy, Clone)]
@@ -441,13 +443,14 @@ impl XeTeXLayoutEngineBase {
 
         engine
             .hb_buffer
+            .as_mut()
             .add_utf16(chars, offset as usize, count as usize);
-        engine.hb_buffer.set_direction(direction);
-        engine.hb_buffer.set_script(script);
-        engine.hb_buffer.set_language(engine.language);
+        engine.hb_buffer.as_mut().set_direction(direction);
+        engine.hb_buffer.as_mut().set_script(script);
+        engine.hb_buffer.as_mut().set_language(engine.language);
 
-        engine.hb_buffer.guess_segment_properties();
-        let segment_props = engine.hb_buffer.get_segment_properties();
+        engine.hb_buffer.as_mut().guess_segment_properties();
+        let segment_props = engine.hb_buffer.as_mut().get_segment_properties();
 
         if engine.shaper_list.is_empty() {
             // HarfBuzz gives graphite2 shaper a priority, so that for hybrid
@@ -458,38 +461,45 @@ impl XeTeXLayoutEngineBase {
             engine.shaper_list = vec![c!("ot"), ptr::null()];
         }
 
-        let mut shape_plan = hb::OwnShapePlan::new_cached(
+        let mut shape_plan = hb::ShapePlan::new_cached(
             hb_face,
             &segment_props,
             &engine.features,
             Some(&engine.shaper_list),
         );
-        let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, &engine.features);
+        let res = shape_plan
+            .as_mut()
+            .execute(hb_font, engine.hb_buffer.as_mut(), &engine.features);
 
         engine.shaper = None;
 
         if res {
-            engine.shaper = Some(shape_plan.get_shaper().to_owned());
+            engine.shaper = Some(shape_plan.as_ref().get_shaper().to_owned());
             engine
                 .hb_buffer
+                .as_mut()
                 .set_content_type(hb::BufferContentType::Glyphs);
         } else {
             // all selected shapers failed, retrying with default
             // we don't use _cached here as the cached plain will always fail.
-            shape_plan = hb::OwnShapePlan::new(hb_face, &segment_props, &engine.features, None);
-            let res = shape_plan.execute(hb_font, &mut engine.hb_buffer, &engine.features);
+            shape_plan = hb::ShapePlan::new(hb_face, &segment_props, &engine.features, None);
+            let res =
+                shape_plan
+                    .as_mut()
+                    .execute(hb_font, engine.hb_buffer.as_mut(), &engine.features);
 
             if res {
-                engine.shaper = Some(shape_plan.get_shaper().to_owned());
+                engine.shaper = Some(shape_plan.as_ref().get_shaper().to_owned());
                 engine
                     .hb_buffer
+                    .as_mut()
                     .set_content_type(hb::BufferContentType::Glyphs);
             } else {
                 panic!("all shapers failed");
             }
         }
 
-        let glyph_count = engine.hb_buffer.len();
+        let glyph_count = engine.hb_buffer.as_ref().len();
 
         #[cfg(feature = "debug")]
         {
@@ -549,7 +559,7 @@ pub unsafe extern "C" fn freeFontFilename(filename: *const libc::c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) {
-    let hb_glyphs = (*engine).hb_buffer.get_glyph_info();
+    let hb_glyphs = (*engine).hb_buffer.as_ref().get_glyph_info();
 
     for (idx, glyph) in hb_glyphs.iter().enumerate() {
         *glyphs.add(idx) = glyph.codepoint;
@@ -559,7 +569,7 @@ pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32) {
     let engine = &*engine;
-    let hb_positions = engine.hb_buffer.get_glyph_position();
+    let hb_positions = engine.hb_buffer.as_ref().get_glyph_position();
 
     for (i, pos) in hb_positions.iter().enumerate() {
         let advance = if engine.font().layout_dir_vertical() {
@@ -575,7 +585,7 @@ pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint) {
     let engine = &mut *engine;
-    let hb_positions = engine.hb_buffer.get_glyph_position();
+    let hb_positions = engine.hb_buffer.as_ref().get_glyph_position();
 
     let mut x: f32 = 0.0;
     let mut y: f32 = 0.0;
