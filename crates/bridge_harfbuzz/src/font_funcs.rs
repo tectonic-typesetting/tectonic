@@ -1,6 +1,9 @@
 use super::*;
 
-unsafe extern "C" fn nominal_glyph_func<T, F: Fn(&mut Font, &T, Codepoint) -> Option<Codepoint>>(
+unsafe extern "C" fn nominal_glyph_func<
+    T,
+    F: Fn(&mut FontRef, &T, Codepoint) -> Option<Codepoint>,
+>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     ch: Codepoint,
@@ -25,7 +28,7 @@ unsafe extern "C" fn nominal_glyph_func<T, F: Fn(&mut Font, &T, Codepoint) -> Op
 
 unsafe extern "C" fn variation_glyph_func<
     T,
-    F: Fn(&mut Font, &T, Codepoint, Codepoint) -> Option<Codepoint>,
+    F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Option<Codepoint>,
 >(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
@@ -50,7 +53,7 @@ unsafe extern "C" fn variation_glyph_func<
     }
 }
 
-unsafe extern "C" fn glyph_advance<T, F: Fn(&mut Font, &T, Codepoint) -> Position>(
+unsafe extern "C" fn glyph_advance<T, F: Fn(&mut FontRef, &T, Codepoint) -> Position>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid: Codepoint,
@@ -64,7 +67,7 @@ unsafe extern "C" fn glyph_advance<T, F: Fn(&mut Font, &T, Codepoint) -> Positio
 
 unsafe extern "C" fn glyph_origin<
     T,
-    F: Fn(&mut Font, &T, Codepoint) -> Option<(Position, Position)>,
+    F: Fn(&mut FontRef, &T, Codepoint) -> Option<(Position, Position)>,
 >(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
@@ -91,7 +94,7 @@ unsafe extern "C" fn glyph_origin<
     }
 }
 
-unsafe extern "C" fn glyph_kerning<T, F: Fn(&mut Font, &T, Codepoint, Codepoint) -> Position>(
+unsafe extern "C" fn glyph_kerning<T, F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Position>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid1: Codepoint,
@@ -104,7 +107,10 @@ unsafe extern "C" fn glyph_kerning<T, F: Fn(&mut Font, &T, Codepoint, Codepoint)
     func(font, data, gid1, gid2)
 }
 
-unsafe extern "C" fn glyph_extents<T, F: Fn(&mut Font, &T, Codepoint) -> Option<GlyphExtents>>(
+unsafe extern "C" fn glyph_extents<
+    T,
+    F: Fn(&mut FontRef, &T, Codepoint) -> Option<GlyphExtents>,
+>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid: Codepoint,
@@ -128,7 +134,7 @@ unsafe extern "C" fn glyph_extents<T, F: Fn(&mut Font, &T, Codepoint) -> Option<
 
 unsafe extern "C" fn glyph_contour_point<
     T,
-    F: Fn(&mut Font, &T, Codepoint, u32) -> Option<(Position, Position)>,
+    F: Fn(&mut FontRef, &T, Codepoint, u32) -> Option<(Position, Position)>,
 >(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
@@ -155,7 +161,7 @@ unsafe extern "C" fn glyph_contour_point<
     }
 }
 
-unsafe extern "C" fn glyph_name<T, F: Fn(&mut Font, &T, Codepoint, &mut [u8]) -> usize>(
+unsafe extern "C" fn glyph_name<T, F: Fn(&mut FontRef, &T, Codepoint, &mut [u8]) -> usize>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid: Codepoint,
@@ -180,23 +186,36 @@ unsafe extern "C" fn glyph_name<T, F: Fn(&mut Font, &T, Codepoint, &mut [u8]) ->
     }
 }
 
-pub struct FontFuncs<T>(*mut sys::hb_font_funcs_t, PhantomData<T>);
+pub struct FontFuncsRef<'a, T>(
+    NonNull<sys::hb_font_funcs_t>,
+    PhantomData<(&'a sys::hb_font_funcs_t, T)>,
+);
 
-unsafe impl<T> Send for FontFuncs<T> {}
-unsafe impl<T> Sync for FontFuncs<T> {}
+impl<'a, T> FontFuncsRef<'a, T> {
+    pub(crate) fn as_ptr(&self) -> *mut sys::hb_font_funcs_t {
+        self.0.as_ptr()
+    }
+}
 
-impl<T> FontFuncs<T> {
-    pub fn new() -> FontFuncs<T> {
-        FontFuncs(unsafe { sys::hb_font_funcs_create() }, PhantomData)
+pub struct FontFuncsMut<'a, T>(
+    FontFuncsRef<'a, T>,
+    PhantomData<&'a mut sys::hb_font_funcs_t>,
+);
+
+impl<'a, T> FontFuncsMut<'a, T> {
+    fn as_mut_ptr(&self) -> *mut sys::hb_font_funcs_t {
+        self.0.as_ptr()
     }
 
     pub fn nominal_glyph_func<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint) -> Option<Codepoint> + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint) -> Option<Codepoint> + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //
         unsafe {
             sys::hb_font_funcs_set_nominal_glyph_func(
-                self.0,
+                self.as_mut_ptr(),
                 nominal_glyph_func::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -206,11 +225,11 @@ impl<T> FontFuncs<T> {
 
     pub fn variation_glyph_func<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint, Codepoint) -> Option<Codepoint> + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Option<Codepoint> + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_variation_glyph_func(
-                self.0,
+                self.as_mut_ptr(),
                 variation_glyph_func::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -220,11 +239,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_h_advance<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint) -> Position + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint) -> Position + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_h_advance_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_advance::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -234,11 +253,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_v_advance<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint) -> Position + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint) -> Position + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_v_advance_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_advance::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -248,11 +267,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_h_origin<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint) -> Option<(Position, Position)> + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint) -> Option<(Position, Position)> + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_h_origin_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_origin::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -262,11 +281,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_v_origin<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint) -> Option<(Position, Position)> + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint) -> Option<(Position, Position)> + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_v_origin_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_origin::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -276,11 +295,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_h_kerning<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint, Codepoint) -> Position + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Position + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_h_kerning_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_kerning::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -290,11 +309,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_v_kerning<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint, Codepoint) -> Position + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Position + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_v_kerning_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_kerning::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -304,11 +323,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_extents<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint) -> Option<GlyphExtents> + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint) -> Option<GlyphExtents> + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_extents_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_extents::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -318,11 +337,11 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_contour_point<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint, u32) -> Option<(Position, Position)> + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint, u32) -> Option<(Position, Position)> + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_contour_point_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_contour_point::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
@@ -332,25 +351,50 @@ impl<T> FontFuncs<T> {
 
     pub fn glyph_name<F>(&mut self, f: F)
     where
-        F: Fn(&mut Font, &T, Codepoint, &mut [u8]) -> usize + 'static,
+        F: Fn(&mut FontRef, &T, Codepoint, &mut [u8]) -> usize + 'static,
     {
         unsafe {
             sys::hb_font_funcs_set_glyph_name_func(
-                self.0,
+                self.as_mut_ptr(),
                 glyph_name::<T, F>,
                 Box::into_raw(Box::new(f)).cast(),
                 Some(dealloc::<F>),
             )
         }
     }
+}
 
-    pub(crate) fn into_raw(self) -> *mut sys::hb_font_funcs_t {
-        self.0
+impl<'a, T> Deref for FontFuncsMut<'a, T> {
+    type Target = FontFuncsRef<'a, T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+pub struct FontFuncs<T>(NonNull<sys::hb_font_funcs_t>, PhantomData<T>);
+
+unsafe impl<T> Send for FontFuncs<T> {}
+unsafe impl<T> Sync for FontFuncs<T> {}
+
+impl<T> FontFuncs<T> {
+    pub fn new() -> FontFuncs<T> {
+        let ptr = unsafe { sys::hb_font_funcs_create() };
+        FontFuncs(NonNull::new(ptr).unwrap(), PhantomData)
+    }
+
+    pub fn as_ref(&self) -> FontFuncsRef<'_, T> {
+        FontFuncsRef(self.0, PhantomData)
+    }
+
+    pub fn as_mut(&mut self) -> FontFuncsMut<'_, T> {
+        FontFuncsMut(self.as_ref(), PhantomData)
     }
 }
 
 impl<T> Clone for FontFuncs<T> {
     fn clone(&self) -> Self {
+        unsafe { sys::hb_font_funcs_reference(self.0.as_ptr()) };
         FontFuncs(self.0, PhantomData)
     }
 }
@@ -358,5 +402,11 @@ impl<T> Clone for FontFuncs<T> {
 impl<T> Default for FontFuncs<T> {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl<T> Drop for FontFuncs<T> {
+    fn drop(&mut self) {
+        unsafe { sys::hb_font_funcs_destroy(self.0.as_ptr()) }
     }
 }
