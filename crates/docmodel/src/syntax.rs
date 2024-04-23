@@ -8,6 +8,7 @@
 
 use crate::document::{BuildTargetType, InputFile, OutputProfile};
 use serde::{Deserialize, Serialize, Serializer};
+use std::path::PathBuf;
 
 // This file is an exercise in Rust type conversion.
 //
@@ -29,6 +30,7 @@ pub struct TomlDocument {
 pub struct TomlDocSection {
     pub name: String,
     pub bundle: String,
+    pub extra_paths: Option<Vec<PathBuf>>,
     pub metadata: Option<toml::Value>,
 }
 

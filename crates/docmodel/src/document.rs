@@ -53,6 +53,10 @@ pub struct Document {
     /// Either a URL or a local path.
     pub bundle_loc: String,
 
+    /// Extra local search paths for this document.
+    /// May be absolute or relative to src_dir.
+    pub extra_paths: Vec<PathBuf>,
+
     /// The different outputs that are created from the document source. These
     /// may have different formats (e.g., PDF and HTML) or the same format but
     /// different settings (e.g., PDF with A4 paper and PDF with US Letter
@@ -98,6 +102,7 @@ impl Document {
             build_dir: build_dir.into(),
             name: doc.doc.name,
             bundle_loc: doc.doc.bundle,
+            extra_paths: doc.doc.extra_paths.unwrap_or_default(),
             metadata: doc.doc.metadata,
             outputs,
         })
@@ -116,10 +121,17 @@ impl Document {
             .map(syntax::TomlOutputProfile::from)
             .collect();
 
+        let extra_paths = if self.extra_paths.is_empty() {
+            None
+        } else {
+            Some(self.extra_paths.clone())
+        };
+
         let doc = syntax::TomlDocument {
             doc: syntax::TomlDocSection {
                 name: self.name.clone(),
                 bundle: self.bundle_loc.clone(),
+                extra_paths,
                 metadata: None,
             },
             outputs,
@@ -246,7 +258,11 @@ pub enum InputFile {
 impl Document {
     /// Create a new in-memory Document, based on the settings of a
     /// WorkspaceCreator object.
-    pub(crate) fn create_for(wc: &WorkspaceCreator, bundle_loc: String) -> Result<Self> {
+    pub(crate) fn create_for(
+        wc: &WorkspaceCreator,
+        bundle_loc: String,
+        extra_paths: Vec<PathBuf>,
+    ) -> Result<Self> {
         let src_dir = wc.root_dir.clone();
 
         let mut build_dir = src_dir.clone();
@@ -288,6 +304,7 @@ impl Document {
             build_dir,
             name,
             bundle_loc,
+            extra_paths,
             outputs: crate::document::default_outputs(),
             metadata: None,
         })
