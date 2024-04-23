@@ -4,6 +4,7 @@
 //! This crate exists to export the Harfbuzz *C/C++* API into the Cargo framework, as well as
 //! provide bindings to other tectonic crates.
 
+#![deny(clippy::undocumented_unsafe_blocks)]
 #![allow(clippy::unnecessary_cast)]
 
 use std::ffi::CStr;
@@ -658,7 +659,7 @@ pub struct ShapePlanMut<'a>(ShapePlanRef<'a>, PhantomData<&'a mut sys::hb_shape_
 
 impl ShapePlanMut<'_> {
     fn as_ptr_mut(&mut self) -> *mut sys::hb_shape_plan_t {
-        ptr::from_mut(self).cast()
+        self.0.as_ptr()
     }
 
     pub fn execute(
