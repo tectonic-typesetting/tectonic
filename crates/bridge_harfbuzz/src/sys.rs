@@ -436,4 +436,6 @@ extern "C" {
         range_start: *mut libc::c_uint,
         range_end: *mut libc::c_uint,
     ) -> hb_bool_t;
+    pub fn hb_font_funcs_destroy(ffuncs: *mut hb_font_funcs_t);
+    pub fn hb_font_funcs_reference(ffuncs: *mut hb_font_funcs_t) -> *mut hb_font_funcs_t;
 }
