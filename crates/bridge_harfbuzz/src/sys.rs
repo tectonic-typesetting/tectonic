@@ -438,4 +438,5 @@ extern "C" {
     ) -> hb_bool_t;
     pub fn hb_font_funcs_destroy(ffuncs: *mut hb_font_funcs_t);
     pub fn hb_font_funcs_reference(ffuncs: *mut hb_font_funcs_t) -> *mut hb_font_funcs_t;
+    pub fn hb_font_funcs_make_immutable(ffuncs: *mut hb_font_funcs_t);
 }
