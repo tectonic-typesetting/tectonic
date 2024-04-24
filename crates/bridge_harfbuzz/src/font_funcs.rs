@@ -1,8 +1,9 @@
 use super::*;
+use std::mem::ManuallyDrop;
 
 unsafe extern "C" fn nominal_glyph_func<
     T,
-    F: Fn(&mut FontRef, &T, Codepoint) -> Option<Codepoint>,
+    F: Fn(FontRef<'_>, &T, Codepoint) -> Option<Codepoint>,
 >(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
@@ -10,7 +11,7 @@ unsafe extern "C" fn nominal_glyph_func<
     gid: *mut Codepoint,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
@@ -28,7 +29,7 @@ unsafe extern "C" fn nominal_glyph_func<
 
 unsafe extern "C" fn variation_glyph_func<
     T,
-    F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Option<Codepoint>,
+    F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Option<Codepoint>,
 >(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
@@ -37,7 +38,7 @@ unsafe extern "C" fn variation_glyph_func<
     gid: *mut Codepoint,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
@@ -53,13 +54,13 @@ unsafe extern "C" fn variation_glyph_func<
     }
 }
 
-unsafe extern "C" fn glyph_advance<T, F: Fn(&mut FontRef, &T, Codepoint) -> Position>(
+unsafe extern "C" fn glyph_advance<T, F: Fn(FontRef<'_>, &T, Codepoint) -> Position>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid: Codepoint,
     user_data: *mut (),
 ) -> Position {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
     func(font, data, gid)
@@ -67,7 +68,7 @@ unsafe extern "C" fn glyph_advance<T, F: Fn(&mut FontRef, &T, Codepoint) -> Posi
 
 unsafe extern "C" fn glyph_origin<
     T,
-    F: Fn(&mut FontRef, &T, Codepoint) -> Option<(Position, Position)>,
+    F: Fn(FontRef<'_>, &T, Codepoint) -> Option<(Position, Position)>,
 >(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
@@ -76,7 +77,7 @@ unsafe extern "C" fn glyph_origin<
     y: *mut Position,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
@@ -94,30 +95,27 @@ unsafe extern "C" fn glyph_origin<
     }
 }
 
-unsafe extern "C" fn glyph_kerning<T, F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Position>(
+unsafe extern "C" fn glyph_kerning<T, F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Position>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid1: Codepoint,
     gid2: Codepoint,
     user_data: *mut (),
 ) -> Position {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
     func(font, data, gid1, gid2)
 }
 
-unsafe extern "C" fn glyph_extents<
-    T,
-    F: Fn(&mut FontRef, &T, Codepoint) -> Option<GlyphExtents>,
->(
+unsafe extern "C" fn glyph_extents<T, F: Fn(FontRef<'_>, &T, Codepoint) -> Option<GlyphExtents>>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid: Codepoint,
     extents: *mut GlyphExtents,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
     match func(font, data, gid) {
@@ -134,7 +132,7 @@ unsafe extern "C" fn glyph_extents<
 
 unsafe extern "C" fn glyph_contour_point<
     T,
-    F: Fn(&mut FontRef, &T, Codepoint, u32) -> Option<(Position, Position)>,
+    F: Fn(FontRef<'_>, &T, Codepoint, u32) -> Option<(Position, Position)>,
 >(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
@@ -144,7 +142,7 @@ unsafe extern "C" fn glyph_contour_point<
     y: *mut Position,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
     match func(font, data, gid, index as u32) {
@@ -161,7 +159,7 @@ unsafe extern "C" fn glyph_contour_point<
     }
 }
 
-unsafe extern "C" fn glyph_name<T, F: Fn(&mut FontRef, &T, Codepoint, &mut [u8]) -> usize>(
+unsafe extern "C" fn glyph_name<T, F: Fn(FontRef<'_>, &T, Codepoint, &mut [u8]) -> usize>(
     font: *mut sys::hb_font_t,
     font_data: *mut (),
     gid: Codepoint,
@@ -169,7 +167,7 @@ unsafe extern "C" fn glyph_name<T, F: Fn(&mut FontRef, &T, Codepoint, &mut [u8])
     size: libc::c_uint,
     user_data: *mut (),
 ) -> sys::hb_bool_t {
-    let font = &mut *font.cast();
+    let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
 
@@ -209,10 +207,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn nominal_glyph_func<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint) -> Option<Codepoint> + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint) -> Option<Codepoint> + 'static,
     {
         // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
-        //
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_nominal_glyph_func(
                 self.as_mut_ptr(),
@@ -225,8 +223,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn variation_glyph_func<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Option<Codepoint> + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Option<Codepoint> + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_variation_glyph_func(
                 self.as_mut_ptr(),
@@ -239,8 +239,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_h_advance<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint) -> Position + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint) -> Position + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_h_advance_func(
                 self.as_mut_ptr(),
@@ -253,8 +255,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_v_advance<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint) -> Position + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint) -> Position + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_v_advance_func(
                 self.as_mut_ptr(),
@@ -267,8 +271,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_h_origin<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint) -> Option<(Position, Position)> + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint) -> Option<(Position, Position)> + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_h_origin_func(
                 self.as_mut_ptr(),
@@ -281,8 +287,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_v_origin<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint) -> Option<(Position, Position)> + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint) -> Option<(Position, Position)> + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_v_origin_func(
                 self.as_mut_ptr(),
@@ -295,8 +303,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_h_kerning<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Position + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Position + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_h_kerning_func(
                 self.as_mut_ptr(),
@@ -309,8 +319,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_v_kerning<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint, Codepoint) -> Position + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Position + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_v_kerning_func(
                 self.as_mut_ptr(),
@@ -323,8 +335,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_extents<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint) -> Option<GlyphExtents> + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint) -> Option<GlyphExtents> + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_extents_func(
                 self.as_mut_ptr(),
@@ -337,8 +351,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_contour_point<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint, u32) -> Option<(Position, Position)> + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint, u32) -> Option<(Position, Position)> + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_contour_point_func(
                 self.as_mut_ptr(),
@@ -351,8 +367,10 @@ impl<'a, T> FontFuncsMut<'a, T> {
 
     pub fn glyph_name<F>(&mut self, f: F)
     where
-        F: Fn(&mut FontRef, &T, Codepoint, &mut [u8]) -> usize + 'static,
+        F: Fn(FontRef<'_>, &T, Codepoint, &mut [u8]) -> usize + 'static,
     {
+        // SAFETY: Internal pointer guaranteed valid. Ownership of closure is passed to Harfbuzz,
+        //         and deallocated by the dealloc function
         unsafe {
             sys::hb_font_funcs_set_glyph_name_func(
                 self.as_mut_ptr(),
@@ -374,11 +392,9 @@ impl<'a, T> Deref for FontFuncsMut<'a, T> {
 
 pub struct FontFuncs<T>(NonNull<sys::hb_font_funcs_t>, PhantomData<T>);
 
-unsafe impl<T> Send for FontFuncs<T> {}
-unsafe impl<T> Sync for FontFuncs<T> {}
-
 impl<T> FontFuncs<T> {
     pub fn new() -> FontFuncs<T> {
+        // SAFETY: This is always safe to call
         let ptr = unsafe { sys::hb_font_funcs_create() };
         FontFuncs(NonNull::new(ptr).unwrap(), PhantomData)
     }
@@ -390,10 +406,19 @@ impl<T> FontFuncs<T> {
     pub fn as_mut(&mut self) -> FontFuncsMut<'_, T> {
         FontFuncsMut(self.as_ref(), PhantomData)
     }
+
+    pub fn make_immutable(self) -> ImmutFontFuncs<T> {
+        let this = ManuallyDrop::new(self);
+        // SAFETY: Internal pointer guaranteed valid. This cannot cause clones to exhibit UB -
+        //         unexpected behavior, perhaps, when mutable references stop working, but not UB.
+        unsafe { sys::hb_font_funcs_make_immutable(this.0.as_ptr()) };
+        ImmutFontFuncs(this.0, this.1)
+    }
 }
 
 impl<T> Clone for FontFuncs<T> {
     fn clone(&self) -> Self {
+        // SAFETY: Internal pointer guaranteed valid.
         unsafe { sys::hb_font_funcs_reference(self.0.as_ptr()) };
         FontFuncs(self.0, PhantomData)
     }
@@ -407,6 +432,41 @@ impl<T> Default for FontFuncs<T> {
 
 impl<T> Drop for FontFuncs<T> {
     fn drop(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid, we own the pointer.
         unsafe { sys::hb_font_funcs_destroy(self.0.as_ptr()) }
     }
 }
+
+pub struct ImmutFontFuncs<T>(NonNull<sys::hb_font_funcs_t>, PhantomData<T>);
+
+impl<T> ImmutFontFuncs<T> {
+    pub fn as_ref(&self) -> FontFuncsRef<'_, T> {
+        FontFuncsRef(self.0, PhantomData)
+    }
+}
+
+impl<T> Clone for ImmutFontFuncs<T> {
+    fn clone(&self) -> Self {
+        // SAFETY: Internal pointer guaranteed valid.
+        unsafe { sys::hb_font_funcs_reference(self.0.as_ptr()) };
+        ImmutFontFuncs(self.0, PhantomData)
+    }
+}
+
+impl<T> Drop for ImmutFontFuncs<T> {
+    fn drop(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid, we own the pointer.
+        unsafe { sys::hb_font_funcs_destroy(self.0.as_ptr()) }
+    }
+}
+
+// SAFETY: ImmutFontFuncs is gained by calling `make_immutable` on a FontFuncs object, which renders
+//         future attempts to change the value no-ops. This in turn means the object becomes safe to
+//         send to other threads. The contained data isn't bound because it is tied to the font,
+//         which is not Send or Sync and as such will not use the data across threads.
+unsafe impl<T> Send for ImmutFontFuncs<T> {}
+// SAFETY: ImmutFontFuncs is gained by calling `make_immutable` on a FontFuncs object, which renders
+//         future attempts to change the value no-ops. This in turn means the object becomes safe to
+//         reference from other threads. The contained data isn't bound because it is tied to the font,
+//         which is not Send or Sync and as such will not use the data across threads.
+unsafe impl<T> Sync for ImmutFontFuncs<T> {}

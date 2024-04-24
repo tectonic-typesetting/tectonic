@@ -17,7 +17,7 @@ use tectonic_bridge_graphite2 as gr;
 mod font_funcs;
 pub mod sys;
 
-pub use font_funcs::{FontFuncs, FontFuncsMut, FontFuncsRef};
+pub use font_funcs::{FontFuncs, FontFuncsMut, FontFuncsRef, ImmutFontFuncs};
 pub use sys::hb_buffer_content_type_t as BufferContentType;
 pub use sys::hb_codepoint_t as Codepoint;
 pub use sys::hb_direction_t as Direction;
@@ -38,6 +38,7 @@ mod linkage {
 }
 
 unsafe extern "C" fn dealloc<T: 'static>(user_data: *mut ()) {
+    // SAFETY: Soundness precondition - this is only called on pointers created by `Box::into_raw`
     let _ = unsafe { Box::from_raw(user_data.cast::<T>()) };
 }
 
@@ -48,6 +49,7 @@ impl Script {
     pub const INVALID: Script = Script(sys::HB_SCRIPT_INVALID);
 
     pub fn get_horizontal_direction(&self) -> Direction {
+        // SAFETY: This is always safe to call
         unsafe { sys::hb_script_get_horizontal_direction(self.0) }
     }
 }
@@ -63,10 +65,13 @@ impl Tag {
 
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(val: &str) -> Tag {
+        // SAFETY: The provided string is not used past this call, and not read past len
         Tag(unsafe { sys::hb_tag_from_string(val.as_ptr().cast(), val.len() as libc::c_int) })
     }
 
     pub fn from_cstr(val: &CStr) -> Tag {
+        // SAFETY: The provided string is not used past this call, and not read past the terminating
+        //         null
         Tag(unsafe { sys::hb_tag_from_string(val.as_ptr(), -1) })
     }
 
@@ -75,10 +80,12 @@ impl Tag {
     }
 
     pub fn to_script(self) -> Script {
+        // SAFETY: This is always safe to call
         Script(unsafe { sys::hb_ot_tag_to_script(self.0) })
     }
 
     pub fn to_language(self) -> Language {
+        // SAFETY: This is always safe to call
         Language(unsafe { sys::hb_ot_tag_to_language(self.0) })
     }
 }
@@ -88,21 +95,26 @@ pub struct Language(*mut sys::hb_language_impl_t);
 
 impl Language {
     pub fn from_string(str: &str) -> Language {
+        // SAFETY: The provided string is not used past this call, and not read past len
         Language(unsafe {
             sys::hb_language_from_string(str.as_ptr().cast(), str.len() as libc::c_int)
         })
     }
 
     pub fn from_cstr(str: &CStr) -> Language {
+        // SAFETY: The provided string is not used past this call, and not read past the terminating
+        //         null
         Language(unsafe { sys::hb_language_from_string(str.as_ptr(), -1) })
     }
 
     pub fn to_string(&self) -> Option<&CStr> {
+        // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_language_to_string(self.0) };
         // ptr may be null if we have HB_LANGUAGE_INVALID
         if ptr.is_null() {
             None
         } else {
+            // SAFETY: Pointer returned by hb_language_to_string is a valid C-string if non-null
             Some(unsafe { CStr::from_ptr(ptr) })
         }
     }
@@ -111,6 +123,7 @@ impl Language {
 impl Default for Language {
     fn default() -> Language {
         // This gets HB_LANGUAGE_INVALID
+        // SAFETY: This function is safe to call with null and will return a marker value
         Language(unsafe { sys::hb_language_from_string(ptr::null(), -1) })
     }
 }
@@ -124,6 +137,7 @@ impl<'a> BufferRef<'a> {
     }
 
     pub fn len(self) -> usize {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_get_length(self.as_ptr()) as usize }
     }
 
@@ -133,22 +147,34 @@ impl<'a> BufferRef<'a> {
 
     pub fn get_glyph_info(self) -> &'a [GlyphInfo] {
         let mut len = 0;
+        // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_buffer_get_glyph_infos(self.as_ptr(), &mut len) };
+        // FIXME(CraftSpider): This isn't fully sound unless we never allow `hb_buffer_reference` -
+        //       currently it's fine, but we may need to either bite the cost of cloning, force
+        //       refcounting to be on the Rust side, or do something... weird.
+        // SAFETY: Returned pointer is to an array of length `len`, and is valid as long as contents
+        //         of the buffer aren't modified
         unsafe { slice::from_raw_parts(ptr, len as usize) }
     }
 
     pub fn get_glyph_position(self) -> &'a [GlyphPosition] {
         let mut len = 0;
+        // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_buffer_get_glyph_positions(self.as_ptr(), &mut len) };
+        // FIXME(CraftSpider): See get_glyph_info
+        // SAFETY: Returned pointer is to an array of length `len`, and is valid as long as contents
+        //         of the buffer aren't modified
         unsafe { slice::from_raw_parts(ptr, len as usize) }
     }
 
     pub fn get_script(self) -> Script {
+        // SAFETY: Internal pointer guaranteed valid
         Script(unsafe { sys::hb_buffer_get_script(self.as_ptr()) })
     }
 
     pub fn get_segment_properties(self) -> SegmentProperties {
         let mut props = SegmentProperties::default();
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_get_segment_properties(self.as_ptr(), &mut props) };
         props
     }
@@ -162,22 +188,28 @@ impl BufferMut<'_> {
     }
 
     pub fn set_content_type(&mut self, content: BufferContentType) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_content_type(self.as_ptr_mut(), content) }
     }
 
     pub fn set_direction(&mut self, direction: Direction) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_direction(self.as_ptr_mut(), direction) }
     }
 
     pub fn set_language(&mut self, lang: Language) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_language(self.as_ptr_mut(), lang.0) }
     }
 
     pub fn set_script(&mut self, script: Script) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_script(self.as_ptr_mut(), script.0) }
     }
 
     pub fn add_utf16(&mut self, text: &[u16], offset: usize, len: usize) {
+        // SAFETY: Internal pointer guaranteed valid. Provided text isn't held past this call,
+        //         and only accessed from [offset..offset+len] in UTF16 chars.
         unsafe {
             sys::hb_buffer_add_utf16(
                 self.as_ptr_mut(),
@@ -190,10 +222,12 @@ impl BufferMut<'_> {
     }
 
     pub fn guess_segment_properties(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_guess_segment_properties(self.as_ptr_mut()) }
     }
 
     pub fn reset(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_reset(self.as_ptr_mut()) }
     }
 }
@@ -210,6 +244,7 @@ pub struct Buffer(NonNull<sys::hb_buffer_t>);
 
 impl Buffer {
     pub fn new() -> Buffer {
+        // SAFETY: This is always safe to call
         let ptr = unsafe { sys::hb_buffer_create() };
         Buffer(NonNull::new(ptr).unwrap())
     }
@@ -231,6 +266,7 @@ impl Default for Buffer {
 
 impl Drop for Buffer {
     fn drop(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid, we own the pointer.
         unsafe { sys::hb_buffer_destroy(self.0.as_ptr()) }
     }
 }
@@ -238,18 +274,25 @@ impl Drop for Buffer {
 pub struct Blob(NonNull<sys::hb_blob_t>);
 
 impl Blob {
-    pub fn new(mut data: Vec<u8>) -> Blob {
-        unsafe extern "C" fn data_free(ptr: *mut ()) {
-            let _ = Box::from_raw(ptr.cast::<Vec<u8>>());
+    pub fn new(data: Vec<u8>) -> Blob {
+        unsafe extern "C" fn blob_dealloc(ptr: *mut ()) {
+            let slice = Box::from_raw(ptr.cast::<(*mut (), usize)>());
+            let _ = Box::from_raw(ptr::slice_from_raw_parts_mut(slice.0.cast::<u8>(), slice.1));
         }
 
+        let len = data.len();
+        let data = Box::into_raw(data.into_boxed_slice());
+        let slice_data = Box::into_raw(Box::new((data.cast::<u8>(), len)));
+        // SAFETY: The provided pointer is never referenced after being creating from Box::into_raw.
+        //         The pointer will live as long as the blob, and be deallocated by blob_dealloc
+        //         once the blob is destroyed.
         let raw = unsafe {
             sys::hb_blob_create(
-                data.as_mut_ptr().cast(),
-                data.len() as libc::c_uint,
+                data.cast(),
+                len as libc::c_uint,
                 MemoryMode::Writable,
-                Box::into_raw(Box::new(data)).cast(),
-                Some(data_free),
+                slice_data.cast(),
+                Some(blob_dealloc),
             )
         };
 
@@ -275,11 +318,16 @@ pub struct LayoutSizeParams {
 pub struct FaceRef<'a>(NonNull<sys::hb_face_t>, PhantomData<&'a sys::hb_face_t>);
 
 impl<'a> FaceRef<'a> {
+    unsafe fn from_raw(ptr: NonNull<sys::hb_face_t>) -> FaceRef<'a> {
+        FaceRef(ptr, PhantomData)
+    }
+
     fn as_ptr(self) -> *mut sys::hb_face_t {
         self.0.as_ptr()
     }
 
     pub fn has_ot_math_data(self) -> bool {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_ot_math_has_data(self.as_ptr()) != 0 }
     }
 
@@ -290,6 +338,7 @@ impl<'a> FaceRef<'a> {
         let mut start = 0;
         let mut end = 0;
 
+        // SAFETY: Internal pointer guaranteed valid
         let res = unsafe {
             sys::hb_ot_layout_get_size_params(
                 self.as_ptr(),
@@ -320,6 +369,7 @@ impl<'a> FaceRef<'a> {
             GTag::GSub => sys::HB_OT_TAG_GSUB,
         });
 
+        // SAFETY: Internal pointer guaranteed valid
         let mut len = unsafe {
             sys::hb_ot_layout_table_get_script_tags(
                 self.as_ptr(),
@@ -330,6 +380,7 @@ impl<'a> FaceRef<'a> {
             )
         };
         let mut out = vec![Tag::new(0); len as usize];
+        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
         unsafe {
             sys::hb_ot_layout_table_get_script_tags(
                 self.as_ptr(),
@@ -349,6 +400,7 @@ impl<'a> FaceRef<'a> {
             GTag::GSub => sys::HB_OT_TAG_GSUB,
         });
 
+        // SAFETY: Internal pointer guaranteed valid
         let len = unsafe {
             sys::hb_ot_layout_script_get_language_tags(
                 self.as_ptr(),
@@ -368,6 +420,7 @@ impl<'a> FaceRef<'a> {
             GTag::GSub => sys::HB_OT_TAG_GSUB,
         });
 
+        // SAFETY: Internal pointer guaranteed valid
         let mut len = unsafe {
             sys::hb_ot_layout_script_get_language_tags(
                 self.as_ptr(),
@@ -379,6 +432,7 @@ impl<'a> FaceRef<'a> {
             )
         };
         let mut out = vec![Tag::new(0); len as usize];
+        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
         unsafe {
             sys::hb_ot_layout_script_get_language_tags(
                 self.as_ptr(),
@@ -404,6 +458,7 @@ impl<'a> FaceRef<'a> {
             GTag::GSub => sys::HB_OT_TAG_GSUB,
         });
 
+        // SAFETY: Internal pointer guaranteed valid
         let len = unsafe {
             sys::hb_ot_layout_language_get_feature_tags(
                 self.as_ptr(),
@@ -429,6 +484,7 @@ impl<'a> FaceRef<'a> {
             GTag::GSub => sys::HB_OT_TAG_GSUB,
         });
 
+        // SAFETY: Internal pointer guaranteed valid
         let mut len = unsafe {
             sys::hb_ot_layout_language_get_feature_tags(
                 self.as_ptr(),
@@ -442,6 +498,7 @@ impl<'a> FaceRef<'a> {
         };
 
         let mut out = vec![Tag::new(0); len as usize];
+        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
         unsafe {
             sys::hb_ot_layout_language_get_feature_tags(
                 self.as_ptr(),
@@ -469,6 +526,7 @@ impl<'a> FaceRef<'a> {
         });
 
         let mut out_idx = 0;
+        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
         let found = unsafe {
             sys::hb_ot_layout_script_select_language(
                 self.as_ptr(),
@@ -493,6 +551,7 @@ impl<'a> FaceRef<'a> {
         });
 
         let mut pos = 0;
+        // SAFETY: Internal pointer guaranteed valid
         let found = unsafe {
             sys::hb_ot_layout_table_find_script(self.as_ptr(), tag.0, script.0, &mut pos)
         };
@@ -504,7 +563,9 @@ impl<'a> FaceRef<'a> {
     }
 
     pub fn gr_face(self) -> Option<gr::FaceRef<'a>> {
+        // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_graphite2_face_get_gr_face(self.as_ptr()) };
+        // SAFETY: If non-null, returned pointer is a valid (non-retained) graphite face reference.
         NonNull::new(ptr).map(|ptr| unsafe { gr::FaceRef::from_raw(ptr) })
     }
 }
@@ -517,30 +578,39 @@ impl<'a> FaceMut<'a> {
     }
 
     pub fn set_index(&mut self, index: u32) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_face_set_index(self.as_ptr_mut(), index as libc::c_uint) }
     }
 
     pub fn set_upem(&mut self, upem: u32) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_face_set_upem(self.as_ptr_mut(), upem as libc::c_uint) }
     }
 }
 pub struct Face(NonNull<sys::hb_face_t>);
 
 impl Face {
-    pub fn new_tables<T: Fn(&FaceRef, Tag) -> Option<Blob> + 'static>(f: T) -> Face {
-        unsafe extern "C" fn get_table<T: Fn(&FaceRef, Tag) -> Option<Blob> + 'static>(
+    pub fn new_tables<T: Fn(FaceRef<'_>, Tag) -> Option<Blob> + 'static>(f: T) -> Face {
+        unsafe extern "C" fn get_table<T: Fn(FaceRef<'_>, Tag) -> Option<Blob> + 'static>(
             face: *mut sys::hb_face_t,
             tag: sys::hb_tag_t,
             user_data: *mut (),
         ) -> *mut sys::hb_blob_t {
+            // SAFETY: Precondition of this function - it is only called with a T user-data
             let f = unsafe { &*user_data.cast::<T>() };
-            let face = &*face.cast();
+            let face = NonNull::new(face).unwrap();
+            // SAFETY: Harfbuzz guarantees to provide a valid non-retained face reference when this
+            //         is called.
+            let face = unsafe { FaceRef::from_raw(face) };
             match f(face, Tag(tag)) {
                 Some(blob) => blob.0.as_ptr(),
                 None => ptr::null_mut(),
             }
         }
 
+        // SAFETY: The created face will only call get_table in valid ways. The passed closure will
+        //         be deallocated as its same type by `dealloc` when the face is destroyed, the
+        //         static bound ensures it may live however long that is.
         let face = unsafe {
             sys::hb_face_create_for_tables(
                 get_table::<T>,
@@ -563,6 +633,7 @@ impl Face {
 
 impl Drop for Face {
     fn drop(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid, we own the pointer.
         unsafe { sys::hb_face_destroy(self.0.as_ptr()) }
     }
 }
@@ -571,16 +642,22 @@ impl Drop for Face {
 pub struct FontRef<'a>(NonNull<sys::hb_font_t>, PhantomData<&'a sys::hb_font_t>);
 
 impl<'a> FontRef<'a> {
+    unsafe fn from_raw(ptr: NonNull<sys::hb_font_t>) -> FontRef<'a> {
+        FontRef(ptr, PhantomData)
+    }
+
     pub fn as_ptr(self) -> *mut sys::hb_font_t {
         self.0.as_ptr()
     }
 
     pub fn get_face(self) -> FaceRef<'a> {
+        // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_font_get_face(self.as_ptr()) };
         FaceRef(NonNull::new(ptr).unwrap(), PhantomData)
     }
 
     pub fn get_ptem(self) -> f32 {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_font_get_ptem(self.as_ptr()) }
     }
 }
@@ -593,10 +670,12 @@ impl FontMut<'_> {
     }
 
     pub fn set_scale(&mut self, x: i32, y: i32) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_font_set_scale(self.as_ptr_mut(), x as libc::c_int, y as libc::c_int) }
     }
 
     pub fn set_ppem(&mut self, x: u32, y: u32) {
+        // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_font_set_ppem(self.as_ptr_mut(), x as libc::c_uint, y as libc::c_uint) }
     }
 
@@ -605,6 +684,10 @@ impl FontMut<'_> {
         T: 'static,
     {
         let funcs = funcs.as_ptr();
+        // SAFETY: Internal pointer guaranteed valid. FontFuncs implementation upholds the relevant
+        //         invariants for ensuring all functions is contains will be valid. Data will be
+        //         deallocated as its same type by `dealloc` when the font is destroyed, or when a
+        //         new set of functions is set. The static bound ensures it may live that long.
         unsafe {
             sys::hb_font_set_funcs(
                 self.as_ptr_mut(),
@@ -620,6 +703,7 @@ pub struct Font(NonNull<sys::hb_font_t>);
 
 impl Font {
     pub fn new(face: FaceRef<'_>) -> Font {
+        // SAFETY: The pointer from FaceRef is guaranteed valid
         let ptr = unsafe { sys::hb_font_create(face.as_ptr()) };
         Font(NonNull::new(ptr).unwrap())
     }
@@ -628,13 +712,14 @@ impl Font {
         FontRef(self.0, PhantomData)
     }
 
-    pub fn as_mut(&self) -> FontMut<'_> {
+    pub fn as_mut(&mut self) -> FontMut<'_> {
         FontMut(self.as_ref(), PhantomData)
     }
 }
 
 impl Drop for Font {
     fn drop(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid, we own the pointer.
         unsafe { sys::hb_font_destroy(self.0.as_ptr()) }
     }
 }
@@ -650,7 +735,10 @@ impl ShapePlanRef<'_> {
     }
 
     pub fn get_shaper(&self) -> &CStr {
+        // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_shape_plan_get_shaper(self.as_ptr()) };
+        // FIXME(CraftSpider): See BufferRef::get_glyph_info
+        // SAFETY: The returned pointer is guaranteed valid for as long as ShapePlan isn't updated.
         unsafe { CStr::from_ptr(ptr) }
     }
 }
@@ -668,6 +756,9 @@ impl ShapePlanMut<'_> {
         mut buffer: BufferMut<'_>,
         features: &[Feature],
     ) -> bool {
+        // SAFETY: Internal pointer guaranteed valid. The pointers from font and buffer are
+        //         similarly guaranteed valid. Features will not be read past len and will not be
+        //         used after this call.
         unsafe {
             sys::hb_shape_plan_execute(
                 self.as_ptr_mut(),
@@ -700,6 +791,9 @@ impl ShapePlan {
         if let Some(list) = shaper_list {
             assert!(list.last().unwrap().is_null());
         }
+        // SAFETY: Face and features pointers are guaranteed valid. The features will not be read
+        //         past their provided length. shaper_list is guaranteed to end with a null if Some
+        //         by above assert.
         let ptr = unsafe {
             sys::hb_shape_plan_create(
                 face.as_ptr(),
@@ -721,6 +815,9 @@ impl ShapePlan {
         if let Some(list) = shaper_list {
             assert!(list.last().unwrap().is_null());
         }
+        // SAFETY: Face and features pointers are guaranteed valid. The features will not be read
+        //         past their provided length. shaper_list is guaranteed to end with a null if Some
+        //         by above assert.
         let ptr = unsafe {
             sys::hb_shape_plan_create_cached(
                 face.as_ptr(),
@@ -737,13 +834,14 @@ impl ShapePlan {
         ShapePlanRef(self.0, PhantomData)
     }
 
-    pub fn as_mut(&self) -> ShapePlanMut<'_> {
+    pub fn as_mut(&mut self) -> ShapePlanMut<'_> {
         ShapePlanMut(self.as_ref(), PhantomData)
     }
 }
 
 impl Drop for ShapePlan {
     fn drop(&mut self) {
+        // SAFETY: Internal pointer guaranteed valid, we own the pointer.
         unsafe { sys::hb_shape_plan_destroy(self.0.as_ptr()) }
     }
 }
