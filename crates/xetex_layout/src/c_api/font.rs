@@ -41,7 +41,7 @@ fn get_glyph_advance(face: &ft::Face, gid: libc::c_uint, vertical: bool) -> ft::
 }
 
 pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
-    static FONTS: OnceLock<hb::FontFuncs<Rc<RefCell<ft::Face>>>> = OnceLock::new();
+    static FONTS: OnceLock<hb::ImmutFontFuncs<Rc<RefCell<ft::Face>>>> = OnceLock::new();
 
     FONTS
         .get_or_init(|| {
@@ -129,7 +129,7 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
                 },
             );
 
-            funcs
+            funcs.make_immutable()
         })
         .as_ref()
 }
