@@ -45,8 +45,8 @@ macro_rules! c {
 }
 
 mod c_api {
-    use crate::c_api::engine::XeTeXLayoutEngineBase;
-    use crate::c_api::font::XeTeXFontBase;
+    use crate::c_api::engine::LayoutEngine;
+    use crate::c_api::font::Font;
     use std::collections::BTreeMap;
     use std::sync::Mutex;
 
@@ -82,9 +82,9 @@ mod c_api {
     pub type OTTag = u32;
     pub type GlyphID = u16;
     /// cbindgen:ignore
-    pub type XeTeXFont = *mut XeTeXFontBase;
+    pub type XeTeXFont = *mut Font;
     /// cbindgen:ignore
-    pub type XeTeXLayoutEngine = *mut XeTeXLayoutEngineBase;
+    pub type XeTeXLayoutEngine = *mut LayoutEngine;
     #[cfg(not(target_os = "macos"))]
     type RawPlatformFontRef = *mut fc::sys::FcPattern;
     #[cfg(target_os = "macos")]
