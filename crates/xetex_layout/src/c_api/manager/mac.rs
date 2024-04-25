@@ -1,5 +1,5 @@
 use crate::c_api::manager::{
-    base_get_op_size_rec_and_style_flags, Font, FontManager, FontManagerBackend, FontMaps,
+    base_get_op_size_rec_and_style_flags, FontInfo, FontManager, FontManagerBackend, FontMaps,
     NameCollection,
 };
 use crate::c_api::PlatformFontRef;
@@ -94,7 +94,7 @@ impl FontManagerBackend for MacBackend {
         path
     }
 
-    fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
+    fn get_op_size_rec_and_style_flags(&self, font: &mut FontInfo) {
         base_get_op_size_rec_and_style_flags(font);
     }
 

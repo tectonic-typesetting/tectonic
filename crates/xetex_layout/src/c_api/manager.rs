@@ -1,4 +1,4 @@
-use crate::c_api::font::XeTeXFontBase;
+use crate::c_api::font::Font;
 use crate::c_api::{
     d_to_fix, fix_to_d, raw_to_rs, Fixed, PlatformFontRef, RawPlatformFontRef, XeTeXFont,
 };
@@ -41,7 +41,7 @@ pub struct OpSizeRec {
 }
 
 #[allow(dead_code)]
-pub struct Font {
+pub struct FontInfo {
     full_name: Option<CString>,
     ps_name: CString,
     family_name: CString,
@@ -57,14 +57,14 @@ pub struct Font {
     is_italic: bool,
 }
 
-impl Font {
+impl FontInfo {
     fn new(
         font_ref: PlatformFontRef,
         ps_name: CString,
         family_name: CString,
         style_name: CString,
-    ) -> Font {
-        let mut out = Font {
+    ) -> FontInfo {
+        let mut out = FontInfo {
             full_name: None,
             ps_name,
             family_name,
@@ -86,7 +86,7 @@ impl Font {
 }
 
 #[derive(Default)]
-pub struct Family {
+pub struct FamilyInfo {
     styles: HashMap<CString, usize>,
     min_weight: u16,
     max_weight: u16,
@@ -96,9 +96,9 @@ pub struct Family {
     max_slant: i16,
 }
 
-impl Family {
-    fn new() -> Family {
-        Family::default()
+impl FamilyInfo {
+    fn new() -> FamilyInfo {
+        FamilyInfo::default()
     }
 }
 
@@ -112,13 +112,13 @@ pub struct NameCollection {
 
 pub trait FontManagerBackend {
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
-    fn get_op_size_rec_and_style_flags(&self, font: &mut Font);
+    fn get_op_size_rec_and_style_flags(&self, font: &mut FontInfo);
     fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
     fn read_names(&self, font: PlatformFontRef) -> NameCollection;
 }
 
-fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
-    let xfont = match XeTeXFontBase::new(font.font_ref.clone(), 10.0) {
+fn base_get_op_size_rec_and_style_flags(font: &mut FontInfo) {
+    let xfont = match Font::new(font.font_ref.clone(), 10.0) {
         Ok(xfont) => xfont,
         Err(_) => return,
     };
@@ -170,8 +170,8 @@ fn base_get_op_size_rec_and_style_flags(font: &mut Font) {
 
 #[derive(Default)]
 pub struct FontMaps {
-    fonts: Vec<Font>,
-    families: Vec<Family>,
+    fonts: Vec<FontInfo>,
+    families: Vec<FamilyInfo>,
 
     name_to_font: HashMap<CString, usize>,
     name_to_family: HashMap<CString, usize>,
@@ -212,7 +212,7 @@ impl FontMaps {
             CString::default()
         };
 
-        let mut font = Font::new(pfont.clone(), ps_name.to_owned(), family_name, style_name);
+        let mut font = FontInfo::new(pfont.clone(), ps_name.to_owned(), family_name, style_name);
         backend.get_op_size_rec_and_style_flags(&mut font);
         self.fonts.push(font);
         let font_pos = self.fonts.len() - 1;
@@ -228,7 +228,7 @@ impl FontMaps {
             let fam = self.name_to_family.get(i).copied();
             let (family, fam_pos) = match fam {
                 None => {
-                    let mut family = Family::new();
+                    let mut family = FamilyInfo::new();
                     family.min_weight = font.weight;
                     family.max_weight = font.weight;
                     family.min_width = font.width;
@@ -715,7 +715,7 @@ impl FontManager {
         name.as_ptr()
     }
 
-    pub fn get_design_size(&self, font: &XeTeXFontBase) -> f64 {
+    pub fn get_design_size(&self, font: &Font) -> f64 {
         let size_rec = Self::get_op_size(font);
         match size_rec {
             None => 10.0,
@@ -723,7 +723,7 @@ impl FontManager {
         }
     }
 
-    pub fn weight_and_width_diff(a: &Font, b: &Font) -> libc::c_int {
+    pub fn weight_and_width_diff(a: &FontInfo, b: &FontInfo) -> libc::c_int {
         if a.weight == 0 && a.width == 0 {
             return if a.is_bold == b.is_bold { 0 } else { 10000 };
         }
@@ -737,7 +737,7 @@ impl FontManager {
     }
 
     pub fn style_diff(
-        a: &Font,
+        a: &FontInfo,
         wt: libc::c_int,
         wd: libc::c_int,
         slant: libc::c_int,
@@ -754,7 +754,7 @@ impl FontManager {
 
     pub fn best_match_from_family(
         &self,
-        family: &Family,
+        family: &FamilyInfo,
         wt: libc::c_int,
         wd: libc::c_int,
         slant: libc::c_int,
@@ -789,7 +789,7 @@ impl FontManager {
         list.insert(0, str.into());
     }
 
-    pub fn get_op_size(font: &XeTeXFontBase) -> Option<OpSizeRec> {
+    pub fn get_op_size(font: &Font) -> Option<OpSizeRec> {
         let hb_font = font.try_hb_font()?;
 
         hb_font.face().ot_layout().size_params().map(|params| OpSizeRec {

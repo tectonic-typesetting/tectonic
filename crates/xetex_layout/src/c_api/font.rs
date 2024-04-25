@@ -141,7 +141,7 @@ pub unsafe extern "C" fn createFont(font_ref: RawPlatformFontRef, point_size: Fi
         None => return ptr::null_mut(),
     };
 
-    match XeTeXFontBase::new(font_ref, fix_to_d(point_size) as f32) {
+    match Font::new(font_ref, fix_to_d(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
     }
@@ -159,7 +159,7 @@ pub unsafe extern "C" fn createFontFromFile(
         Some(CStr::from_ptr(filename))
     };
 
-    match XeTeXFontBase::new_path_index(filename, index as usize, fix_to_d(point_size) as f32) {
+    match Font::new_path_index(filename, index as usize, fix_to_d(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
     }
@@ -170,7 +170,7 @@ pub unsafe extern "C" fn deleteFont(font: XeTeXFont) {
     let _ = Box::from_raw(font);
 }
 
-pub fn get_larger_script_list_table_ot(font: &XeTeXFontBase) -> hb::ot::Table<'_> {
+pub fn get_larger_script_list_table_ot(font: &Font) -> hb::ot::Table<'_> {
     let layout = font.hb_font().face().ot_layout();
 
     let sl_sub = layout.table(hb::GTag::GSub);
@@ -234,7 +234,7 @@ enum FontKind {
 
 /// cbindgen:rename-all=camelCase
 #[repr(C)]
-pub struct XeTeXFontBase {
+pub struct Font {
     units_per_em: libc::c_ushort,
     point_size: f32,
     ascent: f32,
@@ -254,18 +254,18 @@ pub struct XeTeXFontBase {
     kind: FontKind,
 }
 
-impl XeTeXFontBase {
+impl Font {
     #[cfg(not(target_os = "macos"))]
-    pub(crate) fn new(font: PlatformFontRef, point_size: f32) -> Result<XeTeXFontBase, i32> {
+    pub(crate) fn new(font: PlatformFontRef, point_size: f32) -> Result<Font, i32> {
         let path = font.get::<fc::pat::File>(0).ok();
         let index = font.get::<fc::pat::Index>(0).unwrap_or(0);
 
-        XeTeXFontBase::new_path_index(path, index as usize, point_size)
+        Font::new_path_index(path, index as usize, point_size)
     }
 
     #[cfg(target_os = "macos")]
-    pub(crate) fn new(descriptor: PlatformFontRef, point_size: f32) -> Result<XeTeXFontBase, i32> {
-        let mut out = XeTeXFontBase {
+    pub(crate) fn new(descriptor: PlatformFontRef, point_size: f32) -> Result<Font, i32> {
+        let mut out = Font {
             units_per_em: 0,
             point_size,
             ascent: 0.0,
@@ -292,8 +292,8 @@ impl XeTeXFontBase {
         path: Option<&CStr>,
         index: usize,
         point_size: f32,
-    ) -> Result<XeTeXFontBase, i32> {
-        let mut out = XeTeXFontBase {
+    ) -> Result<Font, i32> {
+        let mut out = Font {
             units_per_em: 0,
             point_size,
             ascent: 0.0,
