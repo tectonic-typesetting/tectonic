@@ -1,5 +1,5 @@
 use super::{
-    base_get_op_size_rec_and_style_flags, Font, FontManager, FontManagerBackend, FontMaps,
+    base_get_op_size_rec_and_style_flags, FontInfo, FontManager, FontManagerBackend, FontMaps,
     NameCollection,
 };
 use crate::c_api::{fc, PlatformFontRef};
@@ -93,7 +93,7 @@ impl FontManagerBackend for FcBackend {
         }
     }
 
-    fn get_op_size_rec_and_style_flags(&self, font: &mut Font) {
+    fn get_op_size_rec_and_style_flags(&self, font: &mut FontInfo) {
         base_get_op_size_rec_and_style_flags(font);
 
         if font.weight == 0 && font.width == 0 {
