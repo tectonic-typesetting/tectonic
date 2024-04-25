@@ -170,13 +170,13 @@ pub unsafe extern "C" fn deleteFont(font: XeTeXFont) {
     let _ = Box::from_raw(font);
 }
 
-pub fn get_larger_script_list_table(font: &XeTeXFontBase) -> Vec<hb::Tag> {
-    let face = font.get_hb_font().get_face();
+pub fn get_larger_script_list_table_ot(font: &XeTeXFontBase) -> hb::ot::Table<'_> {
+    let layout = font.hb_font().face().ot_layout();
 
-    let sl_sub = face.get_ot_layout_script_tags(hb::GTag::GSub);
-    let sl_pos = face.get_ot_layout_script_tags(hb::GTag::GPos);
+    let sl_sub = layout.table(hb::GTag::GSub);
+    let sl_pos = layout.table(hb::GTag::GPos);
 
-    if sl_sub.len() > sl_pos.len() {
+    if sl_sub.script_tags_len() > sl_pos.script_tags_len() {
         sl_sub
     } else {
         sl_pos
@@ -185,24 +185,24 @@ pub fn get_larger_script_list_table(font: &XeTeXFontBase) -> Vec<hb::Tag> {
 
 #[no_mangle]
 pub unsafe extern "C" fn countScripts(font: XeTeXFont) -> libc::c_uint {
-    get_larger_script_list_table(&*font).len() as libc::c_uint
+    get_larger_script_list_table_ot(&*font).script_tags_len() as libc::c_uint
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn countLanguages(font: XeTeXFont, script: hb::Tag) -> libc::c_uint {
-    let face = (*font).get_hb_font().get_face();
-
-    let script_list = get_larger_script_list_table(&*font);
-    let mut rval = 0;
-    for (i, script_i) in script_list.iter().enumerate() {
-        if *script_i == script {
-            rval += face.get_ot_layout_script_language_tags_len(hb::GTag::GSub, i);
-            rval += face.get_ot_layout_script_language_tags_len(hb::GTag::GPos, i);
-            break;
+    let table = get_larger_script_list_table_ot(&*font);
+    let script = table.find_script(script);
+    let out = match script {
+        Some(script) => {
+            script.language_tags_len()
+                + script
+                    .swap_table()
+                    .map(|s| s.language_tags_len())
+                    .unwrap_or(0)
         }
-    }
-
-    rval as libc::c_uint
+        None => 0,
+    };
+    out as libc::c_uint
 }
 
 #[no_mangle]
@@ -211,22 +211,15 @@ pub unsafe extern "C" fn countFeatures(
     script: hb::Tag,
     language: hb::Tag,
 ) -> libc::c_uint {
-    let face = (*font).get_hb_font().get_face();
+    let layout = (*font).hb_font().face().ot_layout();
 
     let mut rval = 0;
-    for i in 0..2 {
-        let table_tag = if i == 0 {
-            hb::GTag::GSub
-        } else {
-            hb::GTag::GPos
-        };
-        if let Some(script_idx) = face.find_ot_layout_script(table_tag, script) {
-            let lang = face.select_ot_layout_language(table_tag, script_idx, &[language]);
-            let lang_idx = lang.unwrap_or_else(|idx| idx);
-
+    for table_tag in [hb::GTag::GSub, hb::GTag::GPos] {
+        let table = layout.table(table_tag);
+        if let Some(script) = table.find_script(script) {
+            let lang = script.select_lang(&[language]);
             if lang.is_ok() || language == hb::Tag::new(0) {
-                rval +=
-                    face.get_ot_layout_language_feature_tags_len(table_tag, script_idx, lang_idx);
+                rval += lang.unwrap_or_else(|l| l).feature_tags_len();
             }
         }
     }
@@ -487,7 +480,7 @@ impl XeTeXFontBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn countGlyphs(font: XeTeXFont) -> libc::c_uint {
-        (*font).get_num_glyphs() as libc::c_uint
+        (*font).num_glyphs() as libc::c_uint
     }
 
     #[no_mangle]
@@ -502,13 +495,9 @@ impl XeTeXFontBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn getIndScript(font: XeTeXFont, index: libc::c_uint) -> hb::Tag {
-        let mut rval = hb::Tag::new(0);
-        let script_list = get_larger_script_list_table(&*font);
-        if (index as usize) < script_list.len() {
-            rval = script_list[index as usize];
-        }
-
-        rval
+        get_larger_script_list_table_ot(&*font)
+            .script(index as usize)
+            .map_or(hb::Tag::new(0), |s| s.tag())
     }
 
     #[no_mangle]
@@ -518,27 +507,19 @@ impl XeTeXFontBase {
         index: libc::c_uint,
     ) -> hb::Tag {
         let index = index as usize;
-        let mut rval = hb::Tag::new(0);
-        let face = (*font).get_hb_font().get_face();
+        let script = get_larger_script_list_table_ot(&*font).find_script(script);
 
-        let script_list = get_larger_script_list_table(&*font);
-        for (i, script_i) in script_list.iter().enumerate() {
-            if *script_i == script {
-                let lang_list = face.get_ot_layout_script_language_tags(hb::GTag::GSub, i);
-                if index < lang_list.len() {
-                    rval = lang_list[index];
-                    break;
-                }
-
-                let lang_list = face.get_ot_layout_script_language_tags(hb::GTag::GPos, i);
-                if index < lang_list.len() {
-                    rval = lang_list[index];
-                    break;
-                }
+        if let Some(script) = script {
+            if let Some(lang) = script.lang(index) {
+                return lang.tag();
+            }
+            let lang = script.swap_table().and_then(|s| s.lang(index));
+            if let Some(lang) = lang {
+                return lang.tag();
             }
         }
 
-        rval
+        hb::Tag::new(0)
     }
 
     #[no_mangle]
@@ -546,37 +527,29 @@ impl XeTeXFontBase {
         font: XeTeXFont,
         script: hb::Tag,
         language: hb::Tag,
-        mut index: libc::c_uint,
+        index: libc::c_uint,
     ) -> hb::Tag {
-        let face = (*font).get_hb_font().get_face();
+        let mut index = index as usize;
+        let layout = (*font).hb_font().face().ot_layout();
 
-        let mut rval = hb::Tag::new(0);
-        for i in 0..2 {
-            let table_tag = if i == 0 {
-                hb::GTag::GSub
-            } else {
-                hb::GTag::GPos
-            };
-
-            if let Some(script_idx) = face.find_ot_layout_script(table_tag, script) {
-                let lang = face.select_ot_layout_language(table_tag, script_idx, &[language]);
-                let lang_idx = lang.unwrap_or_else(|idx| idx);
-
+        for table_tag in [hb::GTag::GSub, hb::GTag::GPos] {
+            let table = layout.table(table_tag);
+            if let Some(script) = table.find_script(script) {
+                let lang = script.select_lang(&[language]);
                 if lang.is_ok() || language == hb::Tag::new(0) {
-                    let feat_list =
-                        face.get_ot_layout_language_feature_tags(table_tag, script_idx, lang_idx);
+                    let lang = lang.unwrap_or_else(|l| l);
+                    let feat = lang.feature(index);
 
-                    if (index as usize) < feat_list.len() {
-                        rval = feat_list[index as usize];
-                        break;
+                    if let Some(feat) = feat {
+                        return feat;
                     }
 
-                    index -= feat_list.len() as libc::c_uint;
+                    index -= lang.feature_tags_len();
                 }
             }
         }
 
-        rval
+        hb::Tag::new(0)
     }
 
     #[no_mangle]
@@ -672,11 +645,11 @@ impl XeTeXFontBase {
         }
     }
 
-    pub(crate) fn get_first_char_code(&self) -> u32 {
+    pub(crate) fn first_char_code(&self) -> u32 {
         self.ft_face().get_first_char().0
     }
 
-    pub(crate) fn get_last_char_code(&self) -> u32 {
+    pub(crate) fn last_char_code(&self) -> u32 {
         let ft_face = self.ft_face();
 
         let (mut ch, mut index) = ft_face.get_first_char();
@@ -736,7 +709,7 @@ impl XeTeXFontBase {
         }
     }
 
-    pub(crate) fn get_filename(&self, index: &mut u32) -> &CStr {
+    pub(crate) fn filename(&self, index: &mut u32) -> &CStr {
         *index = self.index;
         &self.filename
     }
@@ -749,7 +722,7 @@ impl XeTeXFontBase {
         self.italic_angle
     }
 
-    pub(crate) fn get_num_glyphs(&self) -> usize {
+    pub(crate) fn num_glyphs(&self) -> usize {
         self.ft_face().num_glyphs()
     }
 
@@ -785,11 +758,11 @@ impl XeTeXFontBase {
         self.x_height
     }
 
-    pub(crate) fn get_hb_font(&self) -> hb::FontRef<'_> {
+    pub(crate) fn hb_font(&self) -> hb::FontRef<'_> {
         self.hb_font.as_ref().unwrap().as_ref()
     }
 
-    pub(crate) fn try_get_hb_font(&self) -> Option<hb::FontRef<'_>> {
+    pub(crate) fn try_hb_font(&self) -> Option<hb::FontRef<'_>> {
         self.hb_font.as_ref().map(|f| f.as_ref())
     }
 

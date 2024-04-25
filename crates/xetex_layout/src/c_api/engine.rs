@@ -335,9 +335,9 @@ impl XeTeXLayoutEngineBase {
         req_first: libc::c_int,
     ) -> libc::c_int {
         if req_first != 0 {
-            (*engine).font().get_first_char_code() as libc::c_int
+            (*engine).font().first_char_code() as libc::c_int
         } else {
-            (*engine).font().get_last_char_code() as libc::c_int
+            (*engine).font().last_char_code() as libc::c_int
         }
     }
 
@@ -369,14 +369,14 @@ impl XeTeXLayoutEngineBase {
 
     #[no_mangle]
     pub unsafe extern "C" fn isOpenTypeMathFont(engine: XeTeXLayoutEngine) -> bool {
-        (*engine).font().get_hb_font().get_face().has_ot_math_data()
+        (*engine).font().hb_font().face().has_ot_math_data()
     }
 
     #[no_mangle]
     pub unsafe extern "C" fn ttxl_get_hb_font(
         engine: XeTeXLayoutEngine,
     ) -> *mut hb::sys::hb_font_t {
-        (*engine).font().get_hb_font().as_ptr()
+        (*engine).font().hb_font().as_ptr()
     }
 
     #[no_mangle]
@@ -391,8 +391,8 @@ impl XeTeXLayoutEngineBase {
         let chars = slice::from_raw_parts(chars, max as usize);
         let engine = &mut *engine;
 
-        let hb_font = engine.font.get_hb_font();
-        let hb_face = hb_font.get_face();
+        let hb_font = engine.font.hb_font();
+        let hb_face = hb_font.face();
 
         let direction = if engine.font.layout_dir_vertical() {
             hb::Direction::Ttb
@@ -545,11 +545,7 @@ pub unsafe extern "C" fn getFontFilename(
     engine: XeTeXLayoutEngine,
     index: *mut u32,
 ) -> *const libc::c_char {
-    (*engine)
-        .font()
-        .get_filename(&mut *index)
-        .to_owned()
-        .into_raw()
+    (*engine).font().filename(&mut *index).to_owned().into_raw()
 }
 
 #[no_mangle]
@@ -559,7 +555,7 @@ pub unsafe extern "C" fn freeFontFilename(filename: *const libc::c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) {
-    let hb_glyphs = (*engine).hb_buffer.as_ref().get_glyph_info();
+    let hb_glyphs = (*engine).hb_buffer.as_ref().glyph_info();
 
     for (idx, glyph) in hb_glyphs.iter().enumerate() {
         *glyphs.add(idx) = glyph.codepoint;
@@ -569,7 +565,7 @@ pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32) {
     let engine = &*engine;
-    let hb_positions = engine.hb_buffer.as_ref().get_glyph_position();
+    let hb_positions = engine.hb_buffer.as_ref().glyph_positions();
 
     for (i, pos) in hb_positions.iter().enumerate() {
         let advance = if engine.font().layout_dir_vertical() {
@@ -585,7 +581,7 @@ pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint) {
     let engine = &mut *engine;
-    let hb_positions = engine.hb_buffer.as_ref().get_glyph_position();
+    let hb_positions = engine.hb_buffer.as_ref().glyph_positions();
 
     let mut x: f32 = 0.0;
     let mut y: f32 = 0.0;
@@ -622,7 +618,7 @@ pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions:
 
 #[no_mangle]
 pub unsafe extern "C" fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32 {
-    let hb_face = (*engine).font().get_hb_font().get_face();
+    let hb_face = (*engine).font().hb_font().face();
     match hb_face.gr_face() {
         Some(face) => face.num_feature_refs() as u32,
         None => 0,
@@ -632,8 +628,8 @@ pub unsafe extern "C" fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32
 fn get_graphite_feature_code(engine: &XeTeXLayoutEngineBase, index: u32) -> Option<u32> {
     let id = engine
         .font()
-        .get_hb_font()
-        .get_face()
+        .hb_font()
+        .face()
         .gr_face()?
         .feature_ref(index as usize)?
         .id();
@@ -648,8 +644,8 @@ pub unsafe extern "C" fn getGraphiteFeatureCode(engine: XeTeXLayoutEngine, index
 fn count_graphite_feature_settings(engine: &XeTeXLayoutEngineBase, feature_id: u32) -> Option<u32> {
     let out = engine
         .font()
-        .get_hb_font()
-        .get_face()
+        .hb_font()
+        .face()
         .gr_face()?
         .find_feature_ref(feature_id)?
         .num_values() as u32;
@@ -671,8 +667,8 @@ fn get_graphite_feature_setting_code(
 ) -> Option<u32> {
     let out = engine
         .font()
-        .get_hb_font()
-        .get_face()
+        .hb_font()
+        .face()
         .gr_face()?
         .find_feature_ref(feature_id)?
         .value(index as usize) as u32;
@@ -692,7 +688,7 @@ fn get_graphite_feature_default_setting(
     engine: &XeTeXLayoutEngineBase,
     feature_id: u32,
 ) -> Option<u32> {
-    let face = engine.font().get_hb_font().get_face().gr_face()?;
+    let face = engine.font().hb_font().face().gr_face()?;
     let feat = face.find_feature_ref(feature_id)?;
     let lang = engine
         .language
@@ -717,7 +713,7 @@ fn get_graphite_feature_label(
     engine: &XeTeXLayoutEngineBase,
     feature_id: u32,
 ) -> Option<gr::Label> {
-    let face = engine.font().get_hb_font().get_face().gr_face()?;
+    let face = engine.font().hb_font().face().gr_face()?;
     let feature = face.find_feature_ref(feature_id)?;
     let lang_id = 0x409;
     let label = feature.label(lang_id)?;
@@ -740,7 +736,7 @@ fn get_graphite_feature_setting_label(
     feature_id: u32,
     setting_id: u32,
 ) -> Option<gr::Label> {
-    let face = engine.font().get_hb_font().get_face().gr_face()?;
+    let face = engine.font().hb_font().face().gr_face()?;
 
     let feature = face.find_feature_ref(feature_id)?;
     for i in 0..feature.num_values() {
@@ -817,7 +813,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
 }
 
 pub fn find_graphite_feature_named(engine: &XeTeXLayoutEngineBase, name: &[u8]) -> Option<u32> {
-    let gr_face = engine.font().get_hb_font().get_face().gr_face()?;
+    let gr_face = engine.font().hb_font().face().gr_face()?;
 
     let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
 
@@ -855,7 +851,7 @@ fn find_graphite_feature_setting_named(
     id: u32,
     name: &[u8],
 ) -> Option<i16> {
-    let face = engine.font().get_hb_font().get_face().gr_face()?;
+    let face = engine.font().hb_font().face().gr_face()?;
 
     let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
 
@@ -898,12 +894,12 @@ pub unsafe extern "C" fn initGraphiteBreaking(
 
     engine.gr_breaking = None;
 
-    let hb_font = engine.font().get_hb_font();
-    let hb_face = hb_font.get_face();
+    let hb_font = engine.font().hb_font();
+    let hb_face = hb_font.face();
     let Some(gr_face) = hb_face.gr_face() else {
         return false;
     };
-    let Some(gr_font) = gr::Font::new(hb_font.get_ptem(), gr_face) else {
+    let Some(gr_font) = gr::Font::new(hb_font.ptem(), gr_face) else {
         return false;
     };
 
