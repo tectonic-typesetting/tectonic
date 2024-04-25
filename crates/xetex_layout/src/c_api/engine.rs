@@ -1,4 +1,4 @@
-use super::font::XeTeXFontBase;
+use super::font::Font;
 use crate::c_api::manager::getReqEngine;
 use crate::c_api::{FloatPoint, GlyphBBox, XeTeXFont, XeTeXLayoutEngine};
 use std::borrow::Cow;
@@ -41,8 +41,8 @@ pub struct GrBreak {
 }
 
 #[repr(C)]
-pub struct XeTeXLayoutEngineBase {
-    font: MaybeBorrow<'static, XeTeXFontBase>,
+pub struct LayoutEngine {
+    font: MaybeBorrow<'static, Font>,
     script: hb::Tag,
     language: hb::Language,
     features: Box<[hb::Feature]>,
@@ -58,10 +58,10 @@ pub struct XeTeXLayoutEngineBase {
     gr_breaking: Option<GrBreak>,
 }
 
-impl XeTeXLayoutEngineBase {
+impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
-        font: MaybeBorrow<'static, XeTeXFontBase>,
+        font: MaybeBorrow<'static, Font>,
         script: hb::Tag,
         language: Option<Cow<'static, CStr>>,
         features: Box<[hb::Feature]>,
@@ -70,8 +70,8 @@ impl XeTeXLayoutEngineBase {
         extend: f32,
         slant: f32,
         embolden: f32,
-    ) -> XeTeXLayoutEngineBase {
-        XeTeXLayoutEngineBase {
+    ) -> LayoutEngine {
+        LayoutEngine {
             font,
             script,
             // For Graphite fonts treat the language as BCP 47 tag, for OpenType we
@@ -135,7 +135,7 @@ impl XeTeXLayoutEngineBase {
             Vec::new()
         };
 
-        let this = Box::new(XeTeXLayoutEngineBase::new(
+        let this = Box::new(LayoutEngine::new(
             MaybeBorrow::Owned(font),
             script,
             language,
@@ -188,7 +188,7 @@ impl XeTeXLayoutEngineBase {
             Vec::new()
         };
 
-        let this = Box::new(XeTeXLayoutEngineBase::new(
+        let this = Box::new(LayoutEngine::new(
             MaybeBorrow::Borrowed(font),
             script,
             language,
@@ -531,11 +531,11 @@ impl XeTeXLayoutEngineBase {
         glyph_count as libc::c_int
     }
 
-    fn font(&self) -> &XeTeXFontBase {
+    fn font(&self) -> &Font {
         &self.font
     }
 
-    fn font_mut(&mut self) -> &mut XeTeXFontBase {
+    fn font_mut(&mut self) -> &mut Font {
         &mut self.font
     }
 }
@@ -625,7 +625,7 @@ pub unsafe extern "C" fn countGraphiteFeatures(engine: XeTeXLayoutEngine) -> u32
     }
 }
 
-fn get_graphite_feature_code(engine: &XeTeXLayoutEngineBase, index: u32) -> Option<u32> {
+fn get_graphite_feature_code(engine: &LayoutEngine, index: u32) -> Option<u32> {
     let id = engine
         .font()
         .hb_font()
@@ -641,7 +641,7 @@ pub unsafe extern "C" fn getGraphiteFeatureCode(engine: XeTeXLayoutEngine, index
     get_graphite_feature_code(&*engine, index).unwrap_or(0)
 }
 
-fn count_graphite_feature_settings(engine: &XeTeXLayoutEngineBase, feature_id: u32) -> Option<u32> {
+fn count_graphite_feature_settings(engine: &LayoutEngine, feature_id: u32) -> Option<u32> {
     let out = engine
         .font()
         .hb_font()
@@ -661,7 +661,7 @@ pub unsafe extern "C" fn countGraphiteFeatureSettings(
 }
 
 fn get_graphite_feature_setting_code(
-    engine: &XeTeXLayoutEngineBase,
+    engine: &LayoutEngine,
     feature_id: u32,
     index: u32,
 ) -> Option<u32> {
@@ -684,10 +684,7 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingCode(
     get_graphite_feature_setting_code(&*engine, feature_id, index).unwrap_or(0)
 }
 
-fn get_graphite_feature_default_setting(
-    engine: &XeTeXLayoutEngineBase,
-    feature_id: u32,
-) -> Option<u32> {
+fn get_graphite_feature_default_setting(engine: &LayoutEngine, feature_id: u32) -> Option<u32> {
     let face = engine.font().hb_font().face().gr_face()?;
     let feat = face.find_feature_ref(feature_id)?;
     let lang = engine
@@ -709,10 +706,7 @@ pub unsafe extern "C" fn getGraphiteFeatureDefaultSetting(
     get_graphite_feature_default_setting(&*engine, feature_id).unwrap_or(0)
 }
 
-fn get_graphite_feature_label(
-    engine: &XeTeXLayoutEngineBase,
-    feature_id: u32,
-) -> Option<gr::Label> {
+fn get_graphite_feature_label(engine: &LayoutEngine, feature_id: u32) -> Option<gr::Label> {
     let face = engine.font().hb_font().face().gr_face()?;
     let feature = face.find_feature_ref(feature_id)?;
     let lang_id = 0x409;
@@ -732,7 +726,7 @@ pub unsafe extern "C" fn getGraphiteFeatureLabel(
 }
 
 fn get_graphite_feature_setting_label(
-    engine: &XeTeXLayoutEngineBase,
+    engine: &LayoutEngine,
     feature_id: u32,
     setting_id: u32,
 ) -> Option<gr::Label> {
@@ -762,7 +756,7 @@ pub unsafe extern "C" fn getGraphiteFeatureSettingLabel(
 }
 
 fn find_graphite_feature(
-    engine: &XeTeXLayoutEngineBase,
+    engine: &LayoutEngine,
     str: &[u8],
     tag: &mut hb::Tag,
     v: &mut libc::c_int,
@@ -812,7 +806,7 @@ pub unsafe extern "C" fn findGraphiteFeature(
     find_graphite_feature(&*engine, str, &mut *f, &mut *v)
 }
 
-pub fn find_graphite_feature_named(engine: &XeTeXLayoutEngineBase, name: &[u8]) -> Option<u32> {
+pub fn find_graphite_feature_named(engine: &LayoutEngine, name: &[u8]) -> Option<u32> {
     let gr_face = engine.font().hb_font().face().gr_face()?;
 
     let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
@@ -846,11 +840,7 @@ pub unsafe extern "C" fn findGraphiteFeatureNamed(
         .unwrap_or(-1)
 }
 
-fn find_graphite_feature_setting_named(
-    engine: &XeTeXLayoutEngineBase,
-    id: u32,
-    name: &[u8],
-) -> Option<i16> {
+fn find_graphite_feature_setting_named(engine: &LayoutEngine, id: u32, name: &[u8]) -> Option<i16> {
     let face = engine.font().hb_font().face().gr_face()?;
 
     let tag = hb::Tag::from_str(std::str::from_utf8(name).unwrap()).to_raw();
