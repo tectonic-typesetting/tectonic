@@ -790,11 +790,9 @@ impl FontManager {
     }
 
     pub fn get_op_size(font: &XeTeXFontBase) -> Option<OpSizeRec> {
-        let hb_font = font.try_get_hb_font()?;
+        let hb_font = font.try_hb_font()?;
 
-        let face = hb_font.get_face();
-
-        face.get_ot_layout_size_params().map(|params| OpSizeRec {
+        hb_font.face().ot_layout().size_params().map(|params| OpSizeRec {
             sub_family_id: params.subfamily_id,
             name_code: params.subfamily_name_id,
             design_size: params.design_size as f64 * 72.27 / 72.0 / 10.0,
