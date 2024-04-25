@@ -203,6 +203,8 @@ impl<'a> Language<'a> {
     pub fn tag(self) -> Tag {
         let mut len = 1;
         let mut out = 0;
+        // SAFETY: Face pointer is guaranteed valid. We provide length of one and one place to write
+        //         to.
         unsafe {
             sys::hb_ot_layout_script_get_language_tags(
                 self.face.as_ptr(),
@@ -238,6 +240,8 @@ impl<'a> Language<'a> {
     pub fn feature(self, idx: usize) -> Option<Tag> {
         let mut len = 1;
         let mut out = 0;
+        // SAFETY: Face pointer is guaranteed valid. We provide length of one and one place to write
+        //         to.
         unsafe {
             sys::hb_ot_layout_language_get_feature_tags(
                 self.face.as_ptr(),
