@@ -15,6 +15,7 @@ use std::{ptr, slice};
 use tectonic_bridge_graphite2 as gr;
 
 mod font_funcs;
+pub mod ot;
 pub mod sys;
 
 pub use font_funcs::{FontFuncs, FontFuncsMut, FontFuncsRef, ImmutFontFuncs};
@@ -145,7 +146,7 @@ impl<'a> BufferRef<'a> {
         self.len() == 0
     }
 
-    pub fn get_glyph_info(self) -> &'a [GlyphInfo] {
+    pub fn glyph_info(self) -> &'a [GlyphInfo] {
         let mut len = 0;
         // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_buffer_get_glyph_infos(self.as_ptr(), &mut len) };
@@ -157,7 +158,7 @@ impl<'a> BufferRef<'a> {
         unsafe { slice::from_raw_parts(ptr, len as usize) }
     }
 
-    pub fn get_glyph_position(self) -> &'a [GlyphPosition] {
+    pub fn glyph_positions(self) -> &'a [GlyphPosition] {
         let mut len = 0;
         // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_buffer_get_glyph_positions(self.as_ptr(), &mut len) };
@@ -306,6 +307,15 @@ pub enum GTag {
     GSub,
 }
 
+impl GTag {
+    fn as_tag(self) -> Tag {
+        Tag::new(match self {
+            GTag::GPos => sys::HB_OT_TAG_GPOS,
+            GTag::GSub => sys::HB_OT_TAG_GSUB,
+        })
+    }
+}
+
 pub struct LayoutSizeParams {
     pub design_size: u32,
     pub subfamily_id: u32,
@@ -313,6 +323,8 @@ pub struct LayoutSizeParams {
     pub start: u32,
     pub end: u32,
 }
+
+// TODO: OTLayout/OTTable/OTScript/OTLanguage
 
 #[derive(Copy, Clone)]
 pub struct FaceRef<'a>(NonNull<sys::hb_face_t>, PhantomData<&'a sys::hb_face_t>);
@@ -331,235 +343,8 @@ impl<'a> FaceRef<'a> {
         unsafe { sys::hb_ot_math_has_data(self.as_ptr()) != 0 }
     }
 
-    pub fn get_ot_layout_size_params(self) -> Option<LayoutSizeParams> {
-        let mut design_size = 0;
-        let mut subfamily_id = 0;
-        let mut subfamily_name_id = 0;
-        let mut start = 0;
-        let mut end = 0;
-
-        // SAFETY: Internal pointer guaranteed valid
-        let res = unsafe {
-            sys::hb_ot_layout_get_size_params(
-                self.as_ptr(),
-                &mut design_size,
-                &mut subfamily_id,
-                &mut subfamily_name_id,
-                &mut start,
-                &mut end,
-            )
-        };
-
-        if res != 0 {
-            Some(LayoutSizeParams {
-                design_size: design_size as u32,
-                subfamily_id: subfamily_id as u32,
-                subfamily_name_id,
-                start: start as u32,
-                end: end as u32,
-            })
-        } else {
-            None
-        }
-    }
-
-    pub fn get_ot_layout_script_tags(self, tag: GTag) -> Vec<Tag> {
-        let tag = Tag::new(match tag {
-            GTag::GPos => sys::HB_OT_TAG_GPOS,
-            GTag::GSub => sys::HB_OT_TAG_GSUB,
-        });
-
-        // SAFETY: Internal pointer guaranteed valid
-        let mut len = unsafe {
-            sys::hb_ot_layout_table_get_script_tags(
-                self.as_ptr(),
-                tag.0,
-                0,
-                ptr::null_mut(),
-                ptr::null_mut(),
-            )
-        };
-        let mut out = vec![Tag::new(0); len as usize];
-        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
-        unsafe {
-            sys::hb_ot_layout_table_get_script_tags(
-                self.as_ptr(),
-                tag.0,
-                0,
-                &mut len,
-                out.as_mut_ptr().cast(),
-            )
-        };
-        assert_eq!(len as usize, out.len());
-        out
-    }
-
-    pub fn get_ot_layout_script_language_tags_len(self, tag: GTag, idx: usize) -> usize {
-        let tag = Tag::new(match tag {
-            GTag::GPos => sys::HB_OT_TAG_GPOS,
-            GTag::GSub => sys::HB_OT_TAG_GSUB,
-        });
-
-        // SAFETY: Internal pointer guaranteed valid
-        let len = unsafe {
-            sys::hb_ot_layout_script_get_language_tags(
-                self.as_ptr(),
-                tag.0,
-                idx as libc::c_uint,
-                0,
-                ptr::null_mut(),
-                ptr::null_mut(),
-            )
-        };
-        len as usize
-    }
-
-    pub fn get_ot_layout_script_language_tags(self, tag: GTag, idx: usize) -> Vec<Tag> {
-        let tag = Tag::new(match tag {
-            GTag::GPos => sys::HB_OT_TAG_GPOS,
-            GTag::GSub => sys::HB_OT_TAG_GSUB,
-        });
-
-        // SAFETY: Internal pointer guaranteed valid
-        let mut len = unsafe {
-            sys::hb_ot_layout_script_get_language_tags(
-                self.as_ptr(),
-                tag.0,
-                idx as libc::c_uint,
-                0,
-                ptr::null_mut(),
-                ptr::null_mut(),
-            )
-        };
-        let mut out = vec![Tag::new(0); len as usize];
-        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
-        unsafe {
-            sys::hb_ot_layout_script_get_language_tags(
-                self.as_ptr(),
-                tag.0,
-                idx as libc::c_uint,
-                0,
-                &mut len,
-                out.as_mut_ptr().cast(),
-            )
-        };
-        assert_eq!(len as usize, out.len());
-        out
-    }
-
-    pub fn get_ot_layout_language_feature_tags_len(
-        self,
-        tag: GTag,
-        script_index: usize,
-        lang_index: usize,
-    ) -> usize {
-        let tag = Tag::new(match tag {
-            GTag::GPos => sys::HB_OT_TAG_GPOS,
-            GTag::GSub => sys::HB_OT_TAG_GSUB,
-        });
-
-        // SAFETY: Internal pointer guaranteed valid
-        let len = unsafe {
-            sys::hb_ot_layout_language_get_feature_tags(
-                self.as_ptr(),
-                tag.0,
-                script_index as libc::c_uint,
-                lang_index as libc::c_uint,
-                0,
-                ptr::null_mut(),
-                ptr::null_mut(),
-            )
-        };
-        len as usize
-    }
-
-    pub fn get_ot_layout_language_feature_tags(
-        self,
-        tag: GTag,
-        script_index: usize,
-        lang_index: usize,
-    ) -> Vec<Tag> {
-        let tag = Tag::new(match tag {
-            GTag::GPos => sys::HB_OT_TAG_GPOS,
-            GTag::GSub => sys::HB_OT_TAG_GSUB,
-        });
-
-        // SAFETY: Internal pointer guaranteed valid
-        let mut len = unsafe {
-            sys::hb_ot_layout_language_get_feature_tags(
-                self.as_ptr(),
-                tag.0,
-                script_index as libc::c_uint,
-                lang_index as libc::c_uint,
-                0,
-                ptr::null_mut(),
-                ptr::null_mut(),
-            )
-        };
-
-        let mut out = vec![Tag::new(0); len as usize];
-        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
-        unsafe {
-            sys::hb_ot_layout_language_get_feature_tags(
-                self.as_ptr(),
-                tag.0,
-                script_index as libc::c_uint,
-                lang_index as libc::c_uint,
-                0,
-                &mut len,
-                out.as_mut_ptr().cast(),
-            )
-        };
-        assert_eq!(len as usize, out.len());
-        out
-    }
-
-    pub fn select_ot_layout_language(
-        self,
-        tag: GTag,
-        script_index: usize,
-        langs: &[Tag],
-    ) -> Result<usize, usize> {
-        let tag = Tag::new(match tag {
-            GTag::GPos => sys::HB_OT_TAG_GPOS,
-            GTag::GSub => sys::HB_OT_TAG_GSUB,
-        });
-
-        let mut out_idx = 0;
-        // SAFETY: Internal pointer guaranteed valid. Provided buffer not written past `len`.
-        let found = unsafe {
-            sys::hb_ot_layout_script_select_language(
-                self.as_ptr(),
-                tag.0,
-                script_index as libc::c_uint,
-                langs.len() as libc::c_uint,
-                langs.as_ptr().cast(),
-                &mut out_idx,
-            )
-        };
-        if found != 0 {
-            Ok(out_idx as usize)
-        } else {
-            Err(out_idx as usize)
-        }
-    }
-
-    pub fn find_ot_layout_script(self, tag: GTag, script: Tag) -> Option<usize> {
-        let tag = Tag::new(match tag {
-            GTag::GPos => sys::HB_OT_TAG_GPOS,
-            GTag::GSub => sys::HB_OT_TAG_GSUB,
-        });
-
-        let mut pos = 0;
-        // SAFETY: Internal pointer guaranteed valid
-        let found = unsafe {
-            sys::hb_ot_layout_table_find_script(self.as_ptr(), tag.0, script.0, &mut pos)
-        };
-        if found != 0 {
-            Some(pos as usize)
-        } else {
-            None
-        }
+    pub fn ot_layout(self) -> ot::Layout<'a> {
+        ot::Layout(self)
     }
 
     pub fn gr_face(self) -> Option<gr::FaceRef<'a>> {
@@ -650,13 +435,13 @@ impl<'a> FontRef<'a> {
         self.0.as_ptr()
     }
 
-    pub fn get_face(self) -> FaceRef<'a> {
+    pub fn face(self) -> FaceRef<'a> {
         // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_font_get_face(self.as_ptr()) };
         FaceRef(NonNull::new(ptr).unwrap(), PhantomData)
     }
 
-    pub fn get_ptem(self) -> f32 {
+    pub fn ptem(self) -> f32 {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_font_get_ptem(self.as_ptr()) }
     }
