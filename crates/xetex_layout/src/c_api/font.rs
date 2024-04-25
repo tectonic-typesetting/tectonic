@@ -159,7 +159,7 @@ pub unsafe extern "C" fn createFontFromFile(
         Some(CStr::from_ptr(filename))
     };
 
-    match XeTeXFontBase::new_path_index(filename, index, fix_to_d(point_size) as f32) {
+    match XeTeXFontBase::new_path_index(filename, index as usize, fix_to_d(point_size) as f32) {
         Err(_) => ptr::null_mut(),
         Ok(out) => Box::into_raw(Box::new(out)),
     }
@@ -260,7 +260,7 @@ impl XeTeXFontBase {
         let path = font.get::<fc::pat::File>(0).ok();
         let index = font.get::<fc::pat::Index>(0).unwrap_or(0);
 
-        XeTeXFontBase::new_path_index(path, index, point_size)
+        XeTeXFontBase::new_path_index(path, index as usize, point_size)
     }
 
     #[cfg(target_os = "macos")]
@@ -290,7 +290,7 @@ impl XeTeXFontBase {
 
     pub(crate) fn new_path_index(
         path: Option<&CStr>,
-        index: libc::c_int,
+        index: usize,
         point_size: f32,
     ) -> Result<XeTeXFontBase, i32> {
         let mut out = XeTeXFontBase {
@@ -320,7 +320,7 @@ impl XeTeXFontBase {
         }
     }
 
-    fn initialize_ft(&mut self, pathname: &CStr, index: libc::c_int) -> i32 {
+    fn initialize_ft(&mut self, pathname: &CStr, index: usize) -> i32 {
         let mut handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::OpenType, 0) };
         if handle.is_null() {
             handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::TrueType, 0) };
@@ -340,7 +340,7 @@ impl XeTeXFontBase {
         }
         unsafe { ttstub_input_close(handle) };
 
-        self.ft_face = match ft::Face::new_memory(backing_data, index as usize) {
+        self.ft_face = match ft::Face::new_memory(backing_data, index) {
             Ok(face) => Some(Rc::new(RefCell::new(face))),
             Err(_) => return 1,
         };
@@ -461,7 +461,7 @@ impl XeTeXFontBase {
         ));
         let mut index = 0;
         let pathname = get_file_name_from_ct_font(font_ref.as_ref().unwrap(), &mut index).unwrap();
-        self.initialize_ft(&pathname, index as libc::c_int)
+        self.initialize_ft(&pathname, index)
     }
 
     #[no_mangle]
@@ -784,7 +784,7 @@ pub fn get_name_from_ct_font(ct_font: &CTFont, name_key: FontNameKey) -> Option<
 }
 
 #[cfg(target_os = "macos")]
-fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CString> {
+fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut usize) -> Option<CString> {
     let url = ct_font
         .attr(FontAttribute::URL)
         .and_then(|t| t.downcast::<CFUrl>().ok())?;
@@ -797,18 +797,18 @@ fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CStri
         if face.num_faces() > 1 {
             let num_faces = face.num_faces();
             let ps_name1 = ct_font.name(FontNameKey::PostScript);
-            *index = 0xFFFFFFFF;
+            *index = usize::MAX;
             for i in 0..num_faces {
                 let face = ft::Face::new(&pathname, i);
                 if let Ok(face) = face {
                     let ps_name2 = face.get_postscript_name();
                     match (&ps_name1, ps_name2) {
                         (None, None) => {
-                            *index = i as u32;
+                            *index = i;
                             break;
                         }
                         (Some(name1), Some(name2)) if &*name1.as_cstr() == name2 => {
-                            *index = i as u32;
+                            *index = i;
                             break;
                         }
                         _ => (),
@@ -818,7 +818,7 @@ fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CStri
         }
     }
 
-    if *index != 0xFFFFFFFF {
+    if *index != usize::MAX {
         Some(pathname)
     } else {
         None
