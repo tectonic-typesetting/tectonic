@@ -13,11 +13,8 @@ use tectonic_bridge_fontconfig as fc;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
 #[cfg(target_os = "macos")]
-use tectonic_mac_core::sys::CTFontRef;
-#[cfg(target_os = "macos")]
 use tectonic_mac_core::{
-    CFArray, CFDictionary, CFString, CFType, CFUrl, CTFont, CTFontDescriptor, CoreType,
-    FontAttribute, FontNameKey,
+    CFArray, CFDictionary, CFType, CFUrl, CTFont, CTFontDescriptor, FontAttribute, FontNameKey,
 };
 
 fn get_glyph_advance(face: &ft::Face, gid: libc::c_uint, vertical: bool) -> ft::Fixed {
