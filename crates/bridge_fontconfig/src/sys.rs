@@ -64,6 +64,9 @@ extern "C" {
     ) -> *mut FcFontSet;
     pub fn FcConfigGetCurrent() -> *mut FcConfig;
     pub fn FcObjectSetDestroy(os: *mut FcObjectSet);
+    pub fn FcPatternReference(pat: *mut FcPattern);
     pub fn FcPatternDestroy(pat: *mut FcPattern);
     pub fn FcFontSetDestroy(fs: *mut FcFontSet);
+    pub fn FcObjectSetCreate() -> *mut FcObjectSet;
+    pub fn FcObjectSetAdd(os: *mut FcObjectSet, object: *const libc::c_char) -> FcBool;
 }

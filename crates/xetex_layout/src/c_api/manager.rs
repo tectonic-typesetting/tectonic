@@ -792,14 +792,18 @@ impl FontManager {
     pub fn get_op_size(font: &Font) -> Option<OpSizeRec> {
         let hb_font = font.try_hb_font()?;
 
-        hb_font.face().ot_layout().size_params().map(|params| OpSizeRec {
-            sub_family_id: params.subfamily_id,
-            name_code: params.subfamily_name_id,
-            design_size: params.design_size as f64 * 72.27 / 72.0 / 10.0,
-            min_size: params.start as f64 * 72.27 / 72.0 / 10.0,
+        hb_font
+            .face()
+            .ot_layout()
+            .size_params()
+            .map(|params| OpSizeRec {
+                sub_family_id: params.subfamily_id,
+                name_code: params.subfamily_name_id,
+                design_size: params.design_size as f64 * 72.27 / 72.0 / 10.0,
+                min_size: params.start as f64 * 72.27 / 72.0 / 10.0,
 
-            max_size: params.end as f64 * 72.27 / 72.0 / 10.0,
-        })
+                max_size: params.end as f64 * 72.27 / 72.0 / 10.0,
+            })
     }
 
     pub fn search_for_host_platform_fonts(&mut self, name: &CStr) {
@@ -849,7 +853,7 @@ pub unsafe extern "C" fn findFontByName(
     #[cfg(not(target_os = "macos"))]
     FontManager::with_font_manager(|mgr| {
         mgr.find_font(name, var, size)
-            .map(super::fc::Pattern::into_raw)
+            .map(|pat| pat.as_ref().as_ptr())
             .unwrap_or(ptr::null_mut())
     })
 }
