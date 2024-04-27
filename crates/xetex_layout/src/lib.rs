@@ -38,22 +38,16 @@ macro_rules! cstr {
     };
 }
 
-macro_rules! c {
-    ($lit:literal) => {
-        ::std::ptr::from_ref(concat!($lit, "\0")).cast::<::libc::c_char>()
-    };
-}
-
 mod c_api {
     use crate::c_api::engine::LayoutEngine;
     use crate::c_api::font::Font;
     use std::collections::BTreeMap;
+    use std::ptr::NonNull;
     use std::sync::Mutex;
+    #[cfg(not(target_os = "macos"))]
+    use tectonic_bridge_fontconfig as fc;
 
     mod engine;
-    #[cfg(not(target_os = "macos"))]
-    /// cbindgen:ignore
-    mod fc;
     mod font;
     mod manager;
 
@@ -108,13 +102,10 @@ mod c_api {
         #[cfg(target_os = "macos")]
         let out = {
             use tectonic_mac_core::CoreType;
-            std::ptr::NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
+            NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
         };
         #[cfg(not(target_os = "macos"))]
-        let out = {
-            use std::convert::TryInto;
-            font.try_into().ok()
-        };
+        let out = { unsafe { NonNull::new(font).map(|p| PlatformFontRef::from_raw_borrowed(p)) } };
         out
     }
 
