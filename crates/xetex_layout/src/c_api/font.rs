@@ -1,5 +1,3 @@
-#[cfg(not(target_os = "macos"))]
-use crate::c_api::fc;
 use crate::c_api::{
     d_to_fix, fix_to_d, raw_to_rs, ttstub_input_close, ttstub_input_get_size, ttstub_input_open,
     ttstub_input_read, Fixed, GlyphBBox, GlyphID, OTTag, PlatformFontRef, RawPlatformFontRef,
@@ -11,6 +9,8 @@ use std::ptr;
 use std::rc::Rc;
 use std::sync::OnceLock;
 use tectonic_bridge_core::FileFormat;
+#[cfg(not(target_os = "macos"))]
+use tectonic_bridge_fontconfig as fc;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
 #[cfg(target_os = "macos")]
@@ -257,8 +257,8 @@ pub struct Font {
 impl Font {
     #[cfg(not(target_os = "macos"))]
     pub(crate) fn new(font: PlatformFontRef, point_size: f32) -> Result<Font, i32> {
-        let path = font.get::<fc::pat::File>(0).ok();
-        let index = font.get::<fc::pat::Index>(0).unwrap_or(0);
+        let path = font.as_ref().get::<fc::pat::File>(0).ok();
+        let index = font.as_ref().get::<fc::pat::Index>(0).unwrap_or(0);
 
         Font::new_path_index(path, index as usize, point_size)
     }
