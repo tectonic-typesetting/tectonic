@@ -36,6 +36,9 @@ tectonic_bridge_fontconfig = { path = "../bridge_fontconfig", version = "0.0.0-d
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+tectonic_bridge_fontconfig = { path = "../bridge_fontconfig", version = "0.0.0-dev.0" }
+
 [target.'cfg(target_os = "macos")'.dependencies]
 tectonic_mac_core = { path = "../mac_core", version = "0.0.0-dev.0" }
 
