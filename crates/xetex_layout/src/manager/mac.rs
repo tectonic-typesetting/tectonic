@@ -1,8 +1,8 @@
-use crate::c_api::manager::{
+use crate::c_api::PlatformFontRef;
+use crate::manager::{
     base_get_op_size_rec_and_style_flags, FontInfo, FontManager, FontManagerBackend, FontMaps,
     NameCollection,
 };
-use crate::c_api::PlatformFontRef;
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
 use tectonic_mac_core::{
