@@ -5,6 +5,8 @@ use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
+#[cfg(target_os = "macos")]
+use tectonic_mac_core::{CTFont, CTFontRef};
 
 #[no_mangle]
 pub unsafe extern "C" fn hasFontTable(font: XeTeXFont, table_tag: OTTag) -> bool {
@@ -218,7 +220,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     index: *mut u32,
 ) -> *const libc::c_char {
     use std::ptr::NonNull;
-    crate::c_api::font::get_file_name_from_ct_font(
+    crate::font::get_file_name_from_ct_font(
         &CTFont::new_borrowed(NonNull::new(ct_font.cast_mut()).unwrap()),
         &mut *index,
     )
