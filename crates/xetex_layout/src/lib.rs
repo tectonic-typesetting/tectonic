@@ -24,25 +24,6 @@ mod font;
 mod manager;
 mod utils;
 
-/// Import things from our bridge crates to ensure that we actually link with
-/// them.
-mod linkage {
-    #[allow(unused_imports)]
-    use tectonic_bridge_core as clipyrenamehack1;
-
-    #[allow(unused_imports)]
-    use tectonic_bridge_freetype2 as clipyrenamehack2;
-
-    #[allow(unused_imports)]
-    use tectonic_bridge_graphite2 as clipyrenamehack3;
-
-    #[allow(unused_imports)]
-    use tectonic_bridge_harfbuzz as clipyrenamehack4;
-
-    #[allow(unused_imports)]
-    use tectonic_bridge_icu as clipyrenamehack5;
-}
-
 pub(crate) mod c_api {
     use crate::engine::LayoutEngine;
     use crate::font::Font;
@@ -94,9 +75,9 @@ pub(crate) mod c_api {
     #[cfg(target_os = "macos")]
     pub(crate) type PlatformFontRef = tectonic_mac_core::CTFontDescriptor;
 
-    /// key is combined value representing `(font_id << 16) + glyph`
+    /// key is combined value representing `(font_id, glyph)`
     /// value is glyph bounding box in TeX points
-    static GLYPH_BOXES: Mutex<BTreeMap<u32, GlyphBBox>> = Mutex::new(BTreeMap::new());
+    static GLYPH_BOXES: Mutex<BTreeMap<(u16, u16), GlyphBBox>> = Mutex::new(BTreeMap::new());
 
     #[no_mangle]
     pub unsafe extern "C" fn getCachedGlyphBBox(
@@ -104,9 +85,7 @@ pub(crate) mod c_api {
         glyph_id: u16,
         bbox: *mut GlyphBBox,
     ) -> i32 {
-        let key = ((font_id as u32) << 16) | (glyph_id as u32);
-
-        match GLYPH_BOXES.lock().unwrap().get(&key) {
+        match GLYPH_BOXES.lock().unwrap().get(&(font_id, glyph_id)) {
             Some(val) => {
                 *bbox = *val;
                 1
@@ -117,8 +96,10 @@ pub(crate) mod c_api {
 
     #[no_mangle]
     pub unsafe extern "C" fn cacheGlyphBBox(font_id: u16, glyph_id: u16, bbox: *const GlyphBBox) {
-        let key = ((font_id as u32) << 16) | (glyph_id as u32);
-        GLYPH_BOXES.lock().unwrap().insert(key, *bbox);
+        GLYPH_BOXES
+            .lock()
+            .unwrap()
+            .insert((font_id, glyph_id), *bbox);
     }
 
     /* The following code used to be in a file called "hz.cpp" and there's no
