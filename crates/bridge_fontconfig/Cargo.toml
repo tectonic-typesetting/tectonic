@@ -2,6 +2,14 @@
 name = "tectonic_bridge_fontconfig"
 version = "0.0.0-dev.0"
 edition = "2021"
+links = "fontconfig"
 
 [dependencies]
 libc = "0.2"
+
+[build-dependencies]
+tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
+tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
+
+[package.metadata.internal_dep_versions]
+tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

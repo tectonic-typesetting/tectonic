@@ -10,44 +10,6 @@
 
 use std::{env, path::PathBuf};
 use tectonic_cfg_support::target_cfg;
-use tectonic_dep_support::{Configuration, Dependency, Spec};
-
-struct FontconfigSpec;
-
-impl Spec for FontconfigSpec {
-    fn get_pkgconfig_spec(&self) -> &str {
-        "fontconfig"
-    }
-
-    fn get_vcpkg_spec(&self) -> &[&str] {
-        &["fontconfig"]
-    }
-}
-
-/// Note that we have to decide what to look for at runtime, because we might be
-/// cross-compiling, in which case the target configuration settings are exposed
-/// dynamically through environment variables.
-struct PlatformLayoutDeps<'a> {
-    fontconfig: Option<Dependency<'a, FontconfigSpec>>,
-}
-
-impl<'a> PlatformLayoutDeps<'a> {
-    pub fn new(dep_cfg: &'a Configuration, is_mac_os: bool) -> Self {
-        let fontconfig = if is_mac_os {
-            None
-        } else {
-            Some(Dependency::probe(FontconfigSpec, dep_cfg))
-        };
-
-        PlatformLayoutDeps { fontconfig }
-    }
-
-    pub fn emit(&self) {
-        if let Some(ref fc) = self.fontconfig {
-            fc.emit();
-        }
-    }
-}
 
 fn main() {
     // let target = env::var("TARGET").unwrap();
@@ -55,13 +17,10 @@ fn main() {
     let manifest_dir: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().into();
     let is_mac_os = target_cfg!(target_os = "macos");
 
-    // Find any necessary deps.
-
-    let dep_cfg = Configuration::default();
-    let deps = PlatformLayoutDeps::new(&dep_cfg, is_mac_os);
-
     // Include paths and settings exported by our internal dependencies.
 
+    // TODO: Don't unwrap, won't exist on mac
+    let fontconfig_include_path = env::var("DEP_FONTCONFIG_INCLUDE_PATH").unwrap();
     let freetype2_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
     let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
@@ -76,9 +35,6 @@ fn main() {
     }
 
     // OK, back to generic build rules.
-
-    deps.emit();
-
     // Copy the static header file for C preprocessing convenience.
 
     let mut main_header_src = manifest_dir.clone();
@@ -98,6 +54,10 @@ fn main() {
     // code that all interlink.
 
     print!("cargo:include-path={out_dir}");
+
+    for item in fontconfig_include_path.split(';') {
+        print!(";{item}");
+    }
 
     for item in harfbuzz_include_path.split(';') {
         print!(";{item}");
