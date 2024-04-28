@@ -12,4 +12,5 @@ tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
 
 [package.metadata.internal_dep_versions]
+tectonic_cfg_support = "thiscommit:aeRoo7oa"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
