@@ -19,6 +19,8 @@ fn main() {
 
     // Include paths and settings exported by our internal dependencies.
 
+    // TODO: Don't unwrap, won't exist on mac
+    let fontconfig_include_path = env::var("DEP_FONTCONFIG_INCLUDE_PATH").unwrap();
     let freetype2_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
     let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
@@ -53,6 +55,10 @@ fn main() {
     // code that all interlink.
 
     print!("cargo:include-path={out_dir}");
+
+    for item in fontconfig_include_path.split(';') {
+        print!(";{item}");
+    }
 
     for item in harfbuzz_include_path.split(';') {
         print!(";{item}");
