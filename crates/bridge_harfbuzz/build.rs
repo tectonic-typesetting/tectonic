@@ -5,7 +5,6 @@
 
 #[cfg(feature = "external-harfbuzz")]
 mod inner {
-    use std::env;
     use tectonic_dep_support::{Configuration, Dependency, Spec};
 
     struct HarfbuzzSpec;
