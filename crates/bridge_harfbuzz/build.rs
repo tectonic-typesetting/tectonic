@@ -56,11 +56,6 @@ mod inner {
             print!("{}{}", sep, p.parent().unwrap().to_str().unwrap());
         });
 
-        let freetype_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
-        for item in freetype_include_path.split(';') {
-            print!(";{}", item);
-        }
-
         println!();
 
         dep.emit();
@@ -98,6 +93,7 @@ mod inner {
         }
 
         // Include paths exported by our internal dependencies:
+        let freetype2_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
         let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
         let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
 
@@ -108,6 +104,10 @@ mod inner {
             .warnings(false)
             .define("HAVE_GRAPHITE2", "1")
             .file("harfbuzz/src/harfbuzz.cc");
+
+        for item in freetype2_include_path.split(';') {
+            cfg.include(item);
+        }
 
         for item in graphite2_include_path.split(';') {
             cfg.include(item);
@@ -142,6 +142,10 @@ mod inner {
             "cargo:include-path={}",
             include_dir.to_str().expect("non-string-friendly OUT_DIR")
         );
+
+        for item in freetype2_include_path.split(';') {
+            print!(";{item}");
+        }
 
         for item in graphite2_include_path.split(';') {
             print!(";{item}");
