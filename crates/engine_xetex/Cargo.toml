@@ -24,6 +24,7 @@ tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_bridge_flate = { path = "../bridge_flate", version = "0.0.0-dev.0" }
 tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev.0" }
 tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version = "0.0.0-dev.0" }
+tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_pdf_io = { path = "../pdf_io", version = "0.0.0-dev.0" }
 tectonic_xetex_layout = { path = "../xetex_layout", version = "0.0.0-dev.0" }
@@ -43,6 +44,7 @@ tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"
 tectonic_bridge_flate = "5933308152efb6ba206b4dc01ab6814063b835c0"
 tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
+tectonic_bridge_icu = "thiscommit:2023-09-17:6uIZ4lA"
 tectonic_cfg_support = "9d5feb40c7ac6958ee3c50604af9271eb2db2b20"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
 tectonic_pdf_io = "9a8b975e76c7a27f140d0974ec3442f2347e18ad"
