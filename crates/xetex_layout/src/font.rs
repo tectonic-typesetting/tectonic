@@ -378,7 +378,7 @@ impl Font {
         ));
         let mut index = 0;
         let pathname = get_file_name_from_ct_font(font_ref.as_ref().unwrap(), &mut index).unwrap();
-        self.initialize_ft(&pathname, index)
+        self.initialize_ft(&pathname, index as usize)
     }
 
     pub(crate) fn ft_face(&self) -> std::cell::Ref<'_, ft::Face> {
