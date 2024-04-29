@@ -55,6 +55,11 @@ mod inner {
             sep = ";";
         });
 
+        let freetype_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
+        for item in freetype_include_path.split(';') {
+            print!(";{}", item);
+        }
+
         println!();
 
         dep.emit();
