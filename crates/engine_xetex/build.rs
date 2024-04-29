@@ -16,6 +16,7 @@ fn main() {
     let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
+    let fontconfig_include_path = env::var("DEP_FONTCONFIG_INCLUDE_PATH");
 
     // If we want to profile, the default assumption is that we must force the
     // compiler to include frame pointers. We whitelist platforms that are
@@ -76,6 +77,13 @@ fn main() {
     for item in graphite2_include_path.split(';') {
         c_cfg.include(item);
         cxx_cfg.include(item);
+    }
+
+    if let Ok(fc_includes) = fontconfig_include_path {
+        for item in fc_includes.split(';') {
+            c_cfg.include(item);
+            cxx_cfg.include(item);
+        }
     }
 
     if graphite2_static {
