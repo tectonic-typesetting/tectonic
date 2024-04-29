@@ -16,10 +16,6 @@
 typedef struct XeTeXFont_rec* XeTeXFont;
 typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 
-#define LEFT_SIDE 0
-
-#define RIGHT_SIDE 1
-
 #if !defined(XETEX_MAC)
 #define FONT_FAMILY_NAME 1
 #endif
@@ -40,7 +36,9 @@ typedef struct XeTeXLayoutEngine_rec* XeTeXLayoutEngine;
 #define PREFERRED_SUBFAMILY_NAME 17
 #endif
 
-typedef struct hb_font_t hb_font_t;
+#define LEFT_SIDE 0
+
+#define RIGHT_SIDE 1
 
 typedef struct {
   float xMin;
@@ -54,6 +52,12 @@ typedef struct {
   float y;
 } FloatPoint;
 
+typedef uint32_t OTTag;
+
+#if !defined(XETEX_MAC)
+typedef int32_t Fixed;
+#endif
+
 #if !defined(XETEX_MAC)
 typedef FcPattern *RawPlatformFontRef;
 #endif
@@ -61,12 +65,6 @@ typedef FcPattern *RawPlatformFontRef;
 #if defined(XETEX_MAC)
 typedef CTFontDescriptorRef RawPlatformFontRef;
 #endif
-
-#if !defined(XETEX_MAC)
-typedef int32_t Fixed;
-#endif
-
-typedef uint32_t OTTag;
 
 #ifdef __cplusplus
 extern "C" {
@@ -198,18 +196,6 @@ bool initGraphiteBreaking(XeTeXLayoutEngine engine, const uint16_t *txt_ptr, uns
 
 int findNextGraphiteBreak(XeTeXLayoutEngine engine);
 
-XeTeXFont createFont(RawPlatformFontRef font_ref, Fixed point_size);
-
-XeTeXFont createFontFromFile(const char *filename, int index, Fixed point_size);
-
-void deleteFont(XeTeXFont font);
-
-unsigned int countScripts(XeTeXFont font);
-
-unsigned int countLanguages(XeTeXFont font, hb_tag_t script);
-
-unsigned int countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language);
-
 bool hasFontTable(XeTeXFont font, OTTag table_tag);
 
 Fixed getSlant(XeTeXFont font);
@@ -235,6 +221,18 @@ float ttxl_font_units_to_points(XeTeXFont font, float units);
 float ttxl_font_points_to_units(XeTeXFont font, float points);
 
 float ttxl_font_get_point_size(XeTeXFont font);
+
+XeTeXFont createFont(RawPlatformFontRef font_ref, Fixed point_size);
+
+XeTeXFont createFontFromFile(const char *filename, int index, Fixed point_size);
+
+void deleteFont(XeTeXFont font);
+
+unsigned int countScripts(XeTeXFont font);
+
+unsigned int countLanguages(XeTeXFont font, hb_tag_t script);
+
+unsigned int countFeatures(XeTeXFont font, hb_tag_t script, hb_tag_t language);
 
 #if defined(XETEX_MAC)
 const char *getFileNameFromCTFont(CTFontRef ct_font, uint32_t *index);

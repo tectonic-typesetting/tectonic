@@ -570,7 +570,7 @@ impl Font {
 }
 
 #[cfg(target_os = "macos")]
-pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut usize) -> Option<CString> {
+pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CString> {
     let url = ct_font
         .attr(FontAttribute::URL)
         .and_then(|t| t.downcast::<CFUrl>().ok())?;
@@ -583,18 +583,18 @@ pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut usize) ->
         if face.num_faces() > 1 {
             let num_faces = face.num_faces();
             let ps_name1 = ct_font.name(FontNameKey::PostScript);
-            *index = usize::MAX;
+            *index = u32::MAX;
             for i in 0..num_faces {
                 let face = ft::Face::new(&pathname, i);
                 if let Ok(face) = face {
                     let ps_name2 = face.get_postscript_name();
                     match (&ps_name1, ps_name2) {
                         (None, None) => {
-                            *index = i;
+                            *index = i as u32;
                             break;
                         }
                         (Some(name1), Some(name2)) if &*name1.as_cstr() == name2 => {
-                            *index = i;
+                            *index = i as u32;
                             break;
                         }
                         _ => (),
@@ -604,7 +604,7 @@ pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut usize) ->
         }
     }
 
-    if *index != usize::MAX {
+    if *index != u32::MAX {
         Some(pathname)
     } else {
         None
