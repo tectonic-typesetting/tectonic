@@ -5,6 +5,7 @@
 
 #[cfg(feature = "external-harfbuzz")]
 mod inner {
+    use std::env;
     use tectonic_dep_support::{Configuration, Dependency, Spec};
 
     struct HarfbuzzSpec;
@@ -43,6 +44,11 @@ mod inner {
             print!("{}{}", sep, p.to_str().unwrap());
             sep = ";";
         });
+
+        let freetype_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
+        for item in freetype_include_path.split(';') {
+            print!(";{}", item);
+        }
 
         println!();
 
