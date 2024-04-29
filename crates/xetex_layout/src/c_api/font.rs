@@ -6,7 +6,7 @@ use std::ptr;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
 #[cfg(target_os = "macos")]
-use tectonic_mac_core::{CTFont, CTFontRef};
+use tectonic_mac_core::{sys::CTFontRef, CTFont, CoreType};
 
 #[no_mangle]
 pub unsafe extern "C" fn hasFontTable(font: XeTeXFont, table_tag: OTTag) -> bool {
