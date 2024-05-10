@@ -221,6 +221,9 @@ pub struct OutputProfile {
     /// Directory is not managed and any files created in it will not be deleted.
     ///
     pub shell_escape_cwd: Option<String>,
+
+    /// Whether synctex should be activated for this profile.
+    pub synctex: bool,
 }
 
 /// The output target type of a document build.
@@ -308,6 +311,7 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
                 .collect(),
             shell_escape: false,
             shell_escape_cwd: None,
+            synctex: false,
         },
     );
     outputs
