@@ -357,4 +357,37 @@ mod tests {
         let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
         assert!(doc.outputs.get("o").unwrap().shell_escape);
     }
+
+    #[test]
+    fn synctex_default_false() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        "#;
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(!doc.outputs.get("o").unwrap().synctex);
+    }
+
+    #[test]
+    fn synctex_set_true() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        synctex = true
+        "#;
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(doc.outputs.get("o").unwrap().synctex);
+    }
 }
