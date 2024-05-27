@@ -223,6 +223,8 @@ pub struct OutputProfile {
     pub shell_escape_cwd: Option<String>,
 
     /// Whether synctex should be activated for this profile.
+    ///
+    /// Default is false.
     pub synctex: bool,
 }
 
