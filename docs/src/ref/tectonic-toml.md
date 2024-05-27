@@ -57,6 +57,9 @@ shell_escape = false
 # This is optional, and defaults to a temporary directory.
 shell_escape_cwd = "string"
 
+# Whether the synctex files will be created. This is optional and defaults to false.
+synctex = false
+
 # The input file we'll use to build this document,
 # Given as a path relative to the `./src` directory.
 #
