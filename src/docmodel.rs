@@ -176,7 +176,8 @@ impl DocumentExt for Document {
             })
             .pass(PassSetting::Default)
             .primary_input_buffer(input_buffer.as_bytes())
-            .tex_input_name(output_profile);
+            .tex_input_name(output_profile)
+            .synctex(profile.synctex);
 
         if profile.shell_escape {
             // For now, this is the only option we allow.
