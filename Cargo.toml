@@ -97,6 +97,7 @@ watchexec-filterer-globset = "3.0"
 watchexec-signals = "2.0"
 watchexec-supervisor = "1.0"
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
+time = "0.3.36"
 
 [features]
 default = ["geturl-reqwest", "serialization"]
