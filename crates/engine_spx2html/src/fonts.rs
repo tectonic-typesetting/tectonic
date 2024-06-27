@@ -197,13 +197,13 @@ impl FontEnsemble {
         // Update the info records for the relevant fonts to capture the
         // established relationship.
 
-        self.font_files[regular].family_name = name.clone();
+        self.font_files[regular].family_name.clone_from(&name);
         self.font_files[regular].family_relation = FamilyRelativeFontId::Regular;
-        self.font_files[bold].family_name = name.clone();
+        self.font_files[bold].family_name.clone_from(&name);
         self.font_files[bold].family_relation = FamilyRelativeFontId::Bold;
-        self.font_files[italic].family_name = name.clone();
+        self.font_files[italic].family_name.clone_from(&name);
         self.font_files[italic].family_relation = FamilyRelativeFontId::Italic;
-        self.font_files[bold_italic].family_name = name.clone();
+        self.font_files[bold_italic].family_name.clone_from(&name);
         self.font_files[bold_italic].family_relation = FamilyRelativeFontId::BoldItalic;
 
         self.font_families.insert(

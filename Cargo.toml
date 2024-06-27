@@ -16,16 +16,13 @@ documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "CARGO_README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
-categories = [
-    "command-line-interface",
-    "parser-implementations",
-    "rendering",
-    "science",
-    "text-processing",
-]
+categories = ["command-line-interface", "parser-implementations", "rendering", "science", "text-processing"]
 license = "MIT"
 edition = "2018"
 exclude = ["/dist/", "/reference_sources/"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)'] }
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
@@ -97,6 +94,7 @@ watchexec-filterer-globset = "3.0"
 watchexec-signals = "2.0"
 watchexec-supervisor = "1.0"
 zip = { version = "^0.6", default-features = false, features = ["deflate"] }
+time = "0.3.36"
 
 [features]
 default = ["geturl-reqwest", "serialization"]
@@ -114,10 +112,7 @@ external-harfbuzz = ["tectonic_engine_xetex/external-harfbuzz"]
 geturl-curl = ["tectonic_bundles/geturl-curl", "tectonic_geturl/curl"]
 geturl-reqwest = ["tectonic_bundles/geturl-reqwest", "tectonic_geturl/reqwest"]
 
-native-tls-vendored = [
-    "tectonic_bundles/native-tls-vendored",
-    "tectonic_geturl/native-tls-vendored",
-]
+native-tls-vendored = ["tectonic_bundles/native-tls-vendored", "tectonic_geturl/native-tls-vendored"]
 
 # developer feature to compile with the necessary flags for profiling tectonic.
 profile = []
@@ -141,23 +136,9 @@ overlay-triplets-path = "dist/vcpkg-triplets"
 # guidance if they might need to set $VCPKGRS_TRIPLET.
 [package.metadata.vcpkg.target]
 x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
-aarch64-apple-darwin = { triplet = "arm64-osx", install = [
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
-] }
-x86_64-unknown-linux-gnu = { install = [
-    "fontconfig",
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
-] }
-x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
-    "fontconfig",
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
-] }
+aarch64-apple-darwin = { triplet = "arm64-osx", install = ["freetype", "harfbuzz[graphite2]", "icu"] }
+x86_64-unknown-linux-gnu = { install = ["fontconfig", "freetype", "harfbuzz[graphite2]", "icu"] }
+x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = ["fontconfig", "freetype", "harfbuzz[graphite2]", "icu"] }
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2023-06-11:PvhF7YB"

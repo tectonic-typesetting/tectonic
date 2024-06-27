@@ -263,7 +263,7 @@ impl Document {
                 tried_src_path = true;
 
                 if let Some(s) = t.to_str() {
-                    name = s.to_owned();
+                    s.clone_into(&mut name);
                 }
             }
 
@@ -273,7 +273,7 @@ impl Document {
 
                     if let Some(Component::Normal(t)) = full_path.components().next_back() {
                         if let Some(s) = t.to_str() {
-                            name = s.to_owned();
+                            s.clone_into(&mut name);
                         }
                     }
                 }

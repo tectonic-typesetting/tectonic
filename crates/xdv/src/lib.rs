@@ -1229,7 +1229,7 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
             return Err(InternalError::NeedMoreData);
         }
 
-        let rv = unsafe { mem::transmute(self.buf[0]) };
+        let rv = unsafe { mem::transmute::<u8, i8>(self.buf[0]) };
         self.buf = &self.buf[1..];
         self.offset += 1;
         Ok(rv)
