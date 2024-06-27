@@ -1132,7 +1132,7 @@ impl ProcessingSessionBuilder {
                     }
                 };
 
-                filesystem_root = parent.clone();
+                filesystem_root.clone_from(&parent);
                 let pio: Box<dyn IoProvider> = Box::new(FilesystemPrimaryInputIo::new(&p));
                 (pio, Some(p), parent)
             }
