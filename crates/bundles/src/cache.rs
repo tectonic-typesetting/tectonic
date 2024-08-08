@@ -460,7 +460,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
         // If a filename contains newline characters, it will mess up our
         // line-based manifest format. Be paranoid and refuse to record such
         // filenames.
-        if !name.contains(|c| c == '\n' || c == '\r') {
+        if !name.contains(['\n', '\r']) {
             writeln!(man, "{name} {length} {digest_text}")?;
         }
 
@@ -515,9 +515,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
             // giving incorrect results if we pulled files out of the cache
             // before this invocation. Rewrite the digest file so that next time
             // we'll start afresh, then bail.
-            file_create_write(&self.digest_path, |f| {
-                writeln!(f, "{}", pull_data.digest.to_string())
-            })?;
+            file_create_write(&self.digest_path, |f| writeln!(f, "{}", pull_data.digest))?;
             bail!("backend digest changed; rerun tectonic to use updated information");
         }
 

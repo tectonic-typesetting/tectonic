@@ -4,7 +4,7 @@
 //! Helpers to tidy up the computation of digests in various places.
 
 use std::{
-    fs,
+    fmt, fs,
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -103,9 +103,9 @@ impl DigestData {
     }
 }
 
-impl ToString for DigestData {
-    fn to_string(&self) -> String {
-        bytes_to_hex(&self.0)
+impl fmt::Display for DigestData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", bytes_to_hex(&self.0))
     }
 }
 

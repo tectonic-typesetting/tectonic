@@ -55,7 +55,7 @@ impl FormatCache {
         let mut p = self.formats_base.clone();
         p.push(format!(
             "{}-{}-{}.fmt",
-            self.bundle_digest.to_string(),
+            self.bundle_digest,
             stem,
             crate::FORMAT_SERIAL
         ));

@@ -216,7 +216,7 @@ impl<'a> ExpectedFile<'a> {
             .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", pbase))
             .replace(std::path::is_separator, "_");
 
-        let mut dec = GzDecoder::new(File::open(&pbase).unwrap());
+        let mut dec = GzDecoder::new(File::open(pbase.as_path()).unwrap());
         let mut contents = Vec::new();
         dec.read_to_end(&mut contents).unwrap();
 
