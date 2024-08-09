@@ -42,7 +42,7 @@ tectonic_mac_core = { path = "../mac_core", version = "0.0.0-dev.0" }
 external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
 
 [package.metadata.internal_dep_versions]
-tectonic_mac_core = "d8a93933fdc519f29892ea19aad41693f18e1fb2"
+tectonic_mac_core = "87f819e2f7f33a1065b98a220ec2f67093e73bc2"
 tectonic_bridge_core = "thiscommit:2021-01-16:wie2Ejoh"
 tectonic_bridge_graphite2 = "2722731f9e32c6963fe8c8566a201b33672c5c5a"
 tectonic_bridge_freetype2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
