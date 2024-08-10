@@ -256,32 +256,32 @@ impl LayoutEngine {
 
         let glyph_count = self.hb_buffer.as_ref().len();
 
-        #[cfg(feature = "debug")]
-        {
-            use std::ffi::CStr;
-
-            let mut buf = [0u8; 1024];
-            let mut consumed = 0;
-            println!("shaper: {}", CStr::from_ptr(engine.shaper));
-
-            let flags = HB_BUFFER_SERIALIZE_FLAGS_DEFAULT;
-            let format = HB_BUFFER_SERIALIZE_FORMAT_JSON;
-
-            hb_buffer_serialize_glyphs(
-                engine.hb_buffer,
-                0,
-                glyph_count,
-                &mut buf,
-                1024,
-                &mut consumed,
-                hb_font,
-                format,
-                flags,
-            );
-            if consumed != 0 {
-                println!("buffer glyphs: {}", CStr::from_ptr(&buf));
-            }
-        }
+        // #[cfg(feature = "debug")]
+        // {
+        //     use std::ffi::CStr;
+        //
+        //     let mut buf = [0u8; 1024];
+        //     let mut consumed = 0;
+        //     println!("shaper: {}", CStr::from_ptr(engine.shaper));
+        //
+        //     let flags = HB_BUFFER_SERIALIZE_FLAGS_DEFAULT;
+        //     let format = HB_BUFFER_SERIALIZE_FORMAT_JSON;
+        //
+        //     hb_buffer_serialize_glyphs(
+        //         engine.hb_buffer,
+        //         0,
+        //         glyph_count,
+        //         &mut buf,
+        //         1024,
+        //         &mut consumed,
+        //         hb_font,
+        //         format,
+        //         flags,
+        //     );
+        //     if consumed != 0 {
+        //         println!("buffer glyphs: {}", CStr::from_ptr(&buf));
+        //     }
+        // }
 
         glyph_count
     }

@@ -510,7 +510,7 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
     }
 
     if (reqEngine == 'G') {
-    	static char* graphiteShaper[] = {"graphite2", NULL};
+    	static const char* graphiteShaper[] = {"graphite2", NULL};
         /* create a default engine so we can query the font for Graphite features;
          * because of font caching, it's cheap to discard this and create the real one later */
         engine = createLayoutEngineBorrowed(font, script, NULL,
@@ -659,7 +659,7 @@ loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* 
         setFontLayoutDir(font, 1);
 
     engine = createLayoutEngine(font, script, language,
-                    features, nFeatures, shapers, rgbValue, extend, slant, embolden);
+                    features, nFeatures, (const char**) shapers, rgbValue, extend, slant, embolden);
 
     // The layout engine clones all these - this is temporary to avoid using
     // different alloc/dealloc
