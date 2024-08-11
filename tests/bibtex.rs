@@ -114,12 +114,14 @@ fn test_colon() {
 
 #[test]
 fn test_control_sequences() {
-    TestCase::new("control_seq", Some("cites")).go();
+    TestCase::new(&["cites", "control_seq"])
+        .expect(Ok(TexOutcome::Warnings))
+        .go();
 }
 
 #[test]
 fn test_multi_bib() {
-    TestCase::new("multi_file", Some("cites")).go();
+    TestCase::new(&["cites", "multi_file"]).go();
 }
 
 #[test]
