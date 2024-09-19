@@ -420,7 +420,7 @@ impl FontFileData {
         out_base: Option<&Path>,
         rel_path: &str,
     ) -> Result<Vec<(Option<usize>, String)>> {
-        // Write the main font file ... maybe.
+        // Write the main font file... maybe.
 
         let mut out_path = out_base.map(|p| p.to_owned());
 
@@ -555,7 +555,7 @@ fn load_ssty_mappings(
                 let c = map.get(glyph).unwrap().get_char();
 
                 if let Some(cov) = st.covered(*glyph) {
-                    // Implement more subtable kinds as needed ...
+                    // Implement more subtable kinds as needed...
                     if let SubtableKind::AlternateSubst1(t) = st.kind() {
                         if let Some(sl) = t.get(cov) {
                             if let Some(g) = sl.get(0) {

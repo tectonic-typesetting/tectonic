@@ -131,7 +131,7 @@ impl DepState {
                         let target = env::var("TARGET").unwrap_or_default();
 
                         if target == "x86_64-pc-windows-msvc" {
-                            println!("cargo:warning=you may need to export VCPKGRS_TRIPLET=x64-windows-static-release ...");
+                            println!("cargo:warning=you may need to export VCPKGRS_TRIPLET=x64-windows-static-release...");
                             println!("cargo:warning=... which is a custom triplet used by Tectonic's cargo-vcpkg integration");
                         }
                     }
