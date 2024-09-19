@@ -174,7 +174,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     let mut at_bib_command = false;
 
     let mut init = globals.buffers.init(BufTy::Base);
-    while !Scan::new().chars(&[b'@']).scan_till(globals.buffers, init) {
+    while !Scan::new().chars(b"@").scan_till(globals.buffers, init) {
         if !input_ln(globals.bibs.cur_bib_file(), globals.buffers) {
             return Ok(());
         }
@@ -459,9 +459,9 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     let init = globals.buffers.init(BufTy::Base);
     Scan::new()
         .chars(if right_outer_delim == b')' {
-            &[b',']
+            b","
         } else {
-            &[b',', b'}']
+            b",}"
         })
         .class(LexClass::Whitespace)
         .scan_till(globals.buffers, init);

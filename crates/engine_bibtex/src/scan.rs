@@ -226,7 +226,7 @@ fn handle_char(
             buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
             let init = buffers.init(BufTy::Base);
-            if !Scan::new().chars(&[b'"']).scan_till(buffers, init) {
+            if !Scan::new().chars(b"\"").scan_till(buffers, init) {
                 write_logs("No `\"` to end string literal");
                 return skip_token_print(ctx, buffers, pool);
             }
@@ -258,7 +258,7 @@ fn handle_char(
 
             let init = buffers.init(BufTy::Base);
             Scan::new()
-                .chars(&[b'}', b'%'])
+                .chars(b"}%")
                 .class(LexClass::Whitespace)
                 .scan_till(buffers, init);
 
@@ -303,7 +303,7 @@ fn handle_char(
         _ => {
             let init = buffers.init(BufTy::Base);
             Scan::new()
-                .chars(&[b'}', b'%'])
+                .chars(b"}%")
                 .class(LexClass::Whitespace)
                 .scan_till(buffers, init);
 
@@ -523,7 +523,7 @@ fn scan_balanced_braces(
                         let init = buffers.init(BufTy::Base);
                         if (c == b'{'
                             || c == b'}'
-                            || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
+                            || !Scan::new().chars(b"{}").scan_till(buffers, init))
                             && !eat_bib_white_space(buffers, bibs)
                         {
                             return eat_bib_print(buffers, pool, bibs, at_bib_command)

@@ -6,6 +6,8 @@
 //!
 //! This module is only used by [`crate::document::Document`]
 
+use std::path::PathBuf;
+
 use crate::document::{BuildTargetType, InputFile, OutputProfile};
 use serde::{Deserialize, Serialize, Serializer};
 
@@ -30,6 +32,7 @@ pub struct TomlDocSection {
     pub name: String,
     pub bundle: String,
     pub metadata: Option<toml::Value>,
+    pub extra_paths: Option<Vec<PathBuf>>,
 }
 
 #[derive(Debug, Deserialize)]
