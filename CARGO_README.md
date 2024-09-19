@@ -68,6 +68,5 @@ sub-crates:
 - [`tectonic_geturl`](https://crates.io/crates/tectonic_geturl)
 - [`tectonic_io_base`](https://crates.io/crates/tectonic_io_base)
 - [`tectonic_pdf_io`](https://crates.io/crates/tectonic_pdf_io)
-- [`tectonic_status_base`](https://crates.io/crates/tectonic_status_base)
 - [`tectonic_xdv`](https://crates.io/crates/tectonic_xdv)
 - [`tectonic_xetex_layout`](https://crates.io/crates/tectonic_xetex_layout)
