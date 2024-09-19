@@ -633,11 +633,7 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        if let Some(t) = maybe_time {
-            t
-        } else {
-            1 // Intentionally make this distinguishable from the error value 0
-        }
+        maybe_time.unwrap_or(1)
     }
 
     fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {

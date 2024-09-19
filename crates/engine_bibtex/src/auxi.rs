@@ -78,7 +78,7 @@ fn aux_bib_data_command(
         buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
         let init = buffers.init(BufTy::Base);
         if !Scan::new()
-            .chars(&[b'}', b','])
+            .chars(b"},")
             .class(LexClass::Whitespace)
             .scan_till(buffers, init)
         {
@@ -149,7 +149,7 @@ fn aux_bib_style_command(
     buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
     let init = buffers.init(BufTy::Base);
     if !Scan::new()
-        .chars(&[b'}'])
+        .chars(b"}")
         .class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
@@ -218,7 +218,7 @@ fn aux_citation_command(
 
         let init = buffers.init(BufTy::Base);
         if !Scan::new()
-            .chars(&[b'}', b','])
+            .chars(b"},")
             .class(LexClass::Whitespace)
             .scan_till(buffers, init)
         {
@@ -316,7 +316,7 @@ fn aux_input_command(
 
     let init = buffers.init(BufTy::Base);
     if !Scan::new()
-        .chars(&[b'}'])
+        .chars(b"}")
         .class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
@@ -398,7 +398,7 @@ pub(crate) fn get_aux_command_and_process(
 ) -> Result<(), BibtexError> {
     globals.buffers.set_offset(BufTy::Base, 2, 0);
     let init = globals.buffers.init(BufTy::Base);
-    if !Scan::new().chars(&[b'{']).scan_till(globals.buffers, init) {
+    if !Scan::new().chars(b"{").scan_till(globals.buffers, init) {
         return Ok(());
     }
 
