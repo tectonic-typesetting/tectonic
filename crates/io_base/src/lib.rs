@@ -485,6 +485,15 @@ pub trait IoProvider: AsIoProviderMut {
         }
     }
 
+    /// Return the path of an input file if it happens to be stored on the file system.
+    ///
+    /// A minimal implementation can always return [`OpenResult::NotAvailable`].
+    /// If a file is on the file system, it is preferred by the "bundle serve" command to return a
+    /// local path rather than dumping the contents.
+    fn input_path(&mut self, _name: &str, _status: &mut dyn StatusBackend) -> OpenResult<PathBuf> {
+        OpenResult::NotAvailable
+    }
+
     /// Open the "primary" input file, which in the context of TeX is the main
     /// input that it's given. When the build is being done using the
     /// filesystem and the input is a file on the filesystem, this function
