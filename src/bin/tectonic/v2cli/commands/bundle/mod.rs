@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use create::BundleCreateCommand;
 use tectonic::{
     config::PersistentConfig,
     docmodel::{DocumentExt, DocumentSetupOptions},
@@ -10,6 +11,11 @@ use tectonic_docmodel::workspace::Workspace;
 use tectonic_status_base::StatusBackend;
 
 use crate::v2cli::{CommandCustomizations, TectonicCommand};
+
+mod actions;
+mod create;
+mod pack;
+mod select;
 
 fn get_a_bundle(
     _config: PersistentConfig,
@@ -45,13 +51,13 @@ fn get_a_bundle(
 }
 
 /// `bundle`: Commands relating to Tectonic bundles
-#[derive(Debug, Eq, PartialEq, Parser)]
+#[derive(Debug, Parser)]
 pub struct BundleCommand {
     #[command(subcommand)]
     command: BundleCommands,
 }
 
-#[derive(Debug, Eq, PartialEq, Subcommand)]
+#[derive(Debug, Subcommand)]
 enum BundleCommands {
     #[command(name = "cat")]
     /// Dump the contents of a file in the bundle
@@ -60,6 +66,10 @@ enum BundleCommands {
     #[command(name = "search")]
     /// Filter the list of filenames contained in the bundle
     Search(BundleSearchCommand),
+
+    #[command(name = "create")]
+    /// Create a new bundle
+    Create(BundleCreateCommand),
 }
 
 impl TectonicCommand for BundleCommand {
@@ -67,6 +77,7 @@ impl TectonicCommand for BundleCommand {
         match &self.command {
             BundleCommands::Cat(c) => c.customize(cc),
             BundleCommands::Search(c) => c.customize(cc),
+            BundleCommands::Create(c) => c.customize(cc),
         }
     }
 
@@ -74,11 +85,12 @@ impl TectonicCommand for BundleCommand {
         match self.command {
             BundleCommands::Cat(c) => c.execute(config, status),
             BundleCommands::Search(c) => c.execute(config, status),
+            BundleCommands::Create(c) => c.execute(config, status),
         }
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Parser)]
+#[derive(Debug, Parser)]
 struct BundleCatCommand {
     /// Use only resource files cached locally
     #[arg(short = 'C', long)]
