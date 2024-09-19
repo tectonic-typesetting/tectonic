@@ -12,7 +12,6 @@ use std::{
     time::SystemTime,
 };
 use tectonic_errors::Result;
-use tectonic_status_base::StatusBackend;
 
 use super::{
     normalize_tex_path, InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult,
@@ -208,11 +207,7 @@ impl IoProvider for MemoryIo {
         ))
     }
 
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        _status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
         if name.is_empty() {
             return OpenResult::NotAvailable;
         }
@@ -234,7 +229,6 @@ impl IoProvider for MemoryIo {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::status::NoopStatusBackend;
     use std::io::{BufRead, BufReader};
 
     /// Early versions had a bug where files were not truncated when opened
@@ -244,7 +238,6 @@ mod tests {
     fn shrinking_file() {
         let mut mem = MemoryIo::new(false);
         let name = "test.tex";
-        let mut sb = NoopStatusBackend::default();
 
         // Write a line to a file, then (implicitly) close it.
         {
@@ -254,12 +247,12 @@ mod tests {
 
         // Reopen the file for input, then close it.
         {
-            mem.input_open_name(name, &mut sb).unwrap();
+            mem.input_open_name(name).unwrap();
         }
 
         // Open for input yet again; file should *not* have been truncated.
         {
-            let h = mem.input_open_name(name, &mut sb).unwrap();
+            let h = mem.input_open_name(name).unwrap();
             let mut br = BufReader::new(h);
             let mut s = String::new();
             br.read_line(&mut s).unwrap();
@@ -274,7 +267,7 @@ mod tests {
 
         // Open for input one last time; file should now have been truncated.
         {
-            let h = mem.input_open_name(name, &mut sb).unwrap();
+            let h = mem.input_open_name(name).unwrap();
             let mut br = BufReader::new(h);
             let mut s = String::new();
             br.read_line(&mut s).unwrap();

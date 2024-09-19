@@ -10,7 +10,6 @@ use std::{
 };
 use tectonic_errors::prelude::*;
 use tectonic_io_base::{InputHandle, InputOrigin, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
 use zip::{result::ZipError, ZipArchive};
 
 use crate::Bundle;
@@ -37,11 +36,7 @@ impl ZipBundle<File> {
 }
 
 impl<R: Read + Seek> IoProvider for ZipBundle<R> {
-    fn input_open_name(
-        &mut self,
-        name: &str,
-        _status: &mut dyn StatusBackend,
-    ) -> OpenResult<InputHandle> {
+    fn input_open_name(&mut self, name: &str) -> OpenResult<InputHandle> {
         // We need to be able to look at other items in the Zip file while
         // reading this one, so the only path forward is to read the entire
         // contents into a buffer right now. RAM is cheap these days.
@@ -72,7 +67,7 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
 }
 
 impl<R: Read + Seek> Bundle for ZipBundle<R> {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+    fn all_files(&mut self) -> Result<Vec<String>> {
         Ok(self.zip.file_names().map(|s| s.to_owned()).collect())
     }
 }

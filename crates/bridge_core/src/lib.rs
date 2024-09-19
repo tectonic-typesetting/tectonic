@@ -52,7 +52,7 @@ use tectonic_io_base::{
     digest::DigestData, normalize_tex_path, InputFeatures, InputHandle, IoProvider, OpenResult,
     OutputHandle,
 };
-use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
+use tracing::{error, warn};
 
 /// Possible failures for "system request" calls to the driver.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -106,26 +106,14 @@ pub trait DriverHooks {
     /// argument specifies the cryptographic digest of the data that were
     /// written. Note that this function takes ownership of the name and
     /// digest.
-    fn event_output_closed(
-        &mut self,
-        _name: String,
-        _digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
-    }
+    fn event_output_closed(&mut self, _name: String, _digest: DigestData) {}
 
     /// This function is called when an input file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
     /// read, if available. This digest is not always available, if the engine
     /// used seeks while reading the file. Note that this function takes
     /// ownership of the name and digest.
-    fn event_input_closed(
-        &mut self,
-        _name: String,
-        _digest: Option<DigestData>,
-        _status: &mut dyn StatusBackend,
-    ) {
-    }
+    fn event_input_closed(&mut self, _name: String, _digest: Option<DigestData>) {}
 
     /// The engine is requesting a "shell escape" evaluation.
     ///
@@ -143,11 +131,7 @@ pub trait DriverHooks {
     /// This function can only return a limited range of error values because
     /// the C/C++ engines can't do anything useful with them. Detailed error
     /// information should be logged or stored inside the hook function.
-    fn sysrq_shell_escape(
-        &mut self,
-        _command: &str,
-        _status: &mut dyn StatusBackend,
-    ) -> StdResult<(), SystemRequestError> {
+    fn sysrq_shell_escape(&mut self, _command: &str) -> StdResult<(), SystemRequestError> {
         Err(SystemRequestError::NotImplemented)
     }
 }
@@ -217,7 +201,6 @@ impl std::error::Error for EngineAbortedError {}
 /// A mechanism for launching bridged FFI code.
 pub struct CoreBridgeLauncher<'a> {
     hooks: &'a mut dyn DriverHooks,
-    status: &'a mut dyn StatusBackend,
     security: SecuritySettings,
     filesystem_emulation_settings: FsEmulationSettings,
 }
@@ -229,19 +212,14 @@ impl<'a> CoreBridgeLauncher<'a> {
     /// known-insecure engine features. Use [`Self::new_with_security`] to
     /// provide your own security settings that can attempt to allow the use of
     /// such features.
-    pub fn new(hooks: &'a mut dyn DriverHooks, status: &'a mut dyn StatusBackend) -> Self {
-        Self::new_with_security(hooks, status, SecuritySettings::default())
+    pub fn new(hooks: &'a mut dyn DriverHooks) -> Self {
+        Self::new_with_security(hooks, SecuritySettings::default())
     }
 
     /// Set up a new context for launching bridged FFI code.
-    pub fn new_with_security(
-        hooks: &'a mut dyn DriverHooks,
-        status: &'a mut dyn StatusBackend,
-        security: SecuritySettings,
-    ) -> Self {
+    pub fn new_with_security(hooks: &'a mut dyn DriverHooks, security: SecuritySettings) -> Self {
         CoreBridgeLauncher {
             hooks,
-            status,
             security,
             filesystem_emulation_settings: FsEmulationSettings::default(),
         }
@@ -283,7 +261,6 @@ impl<'a> CoreBridgeLauncher<'a> {
         let mut state = CoreBridgeState::new(
             self.security.clone(),
             self.hooks,
-            self.status,
             self.filesystem_emulation_settings.clone(),
         );
         let result = callback(&mut state);
@@ -314,9 +291,6 @@ pub struct CoreBridgeState<'a> {
     /// The driver hooks associated with this engine invocation.
     hooks: &'a mut dyn DriverHooks,
 
-    /// The status-reporting backend associated with this engine invocation.
-    status: &'a mut dyn StatusBackend,
-
     #[allow(clippy::vec_box)]
     input_handles: Vec<Box<InputHandle>>,
 
@@ -337,13 +311,11 @@ impl<'a> CoreBridgeState<'a> {
     fn new(
         security: SecuritySettings,
         hooks: &'a mut dyn DriverHooks,
-        status: &'a mut dyn StatusBackend,
         fs_emulation_settings: FsEmulationSettings,
     ) -> CoreBridgeState<'a> {
         CoreBridgeState {
             security,
             hooks,
-            status,
             output_handles: Vec::new(),
             input_handles: Vec::new(),
             latest_input_path: None,
@@ -359,13 +331,13 @@ impl<'a> CoreBridgeState<'a> {
         let io = self.hooks.io();
 
         if let FileFormat::Format = format {
-            match io.input_open_format(name, self.status) {
+            match io.input_open_format(name) {
                 OpenResult::NotAvailable => {}
                 OpenResult::Err(e) => return OpenResult::Err(e),
                 OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
             }
         } else {
-            match io.input_open_name_with_abspath(name, self.status) {
+            match io.input_open_name_with_abspath(name) {
                 OpenResult::NotAvailable => {}
                 r => return r,
             }
@@ -380,13 +352,13 @@ impl<'a> CoreBridgeState<'a> {
             let ext = format!("{name}.{e}");
 
             if let FileFormat::Format = format {
-                match io.input_open_format(&ext, self.status) {
+                match io.input_open_format(&ext) {
                     OpenResult::NotAvailable => {}
                     OpenResult::Err(e) => return OpenResult::Err(e),
                     OpenResult::Ok(h) => return OpenResult::Ok((h, None)),
                 }
             } else {
-                match io.input_open_name_with_abspath(&ext, self.status) {
+                match io.input_open_name_with_abspath(&ext) {
                     OpenResult::NotAvailable => {}
                     r => return r,
                 }
@@ -424,8 +396,8 @@ impl<'a> CoreBridgeState<'a> {
         let mut hash = Md5::default();
 
         // We could try to be fancy and look up the file in our cache to see
-        // if we've already computed is SHA256 ... and then lie and use a
-        // truncated SHA256 digest as the MD5 ... but it seems like a better
+        // if we've already computed is SHA256... and then lie and use a
+        // truncated SHA256 digest as the MD5... but it seems like a better
         // idea to just go and read the file.
 
         let mut ih = match self.input_open_name_format(&name, FileFormat::Tex) {
@@ -438,8 +410,10 @@ impl<'a> CoreBridgeState<'a> {
                 return true;
             }
             OpenResult::Err(e) => {
-                tt_error!(self.status, "error trying to open file \"{}\" for MD5 calculation",
-                          name; e);
+                error!(
+                    tectonic_log_source = "bridge",
+                    "error trying to open file \"{}\" for MD5 calculation: {e}", name
+                );
                 return true;
             }
         };
@@ -457,8 +431,11 @@ impl<'a> CoreBridgeState<'a> {
                 }
                 Ok(n) => n,
                 Err(e) => {
-                    tt_error!(self.status, "error reading file \"{}\" for MD5 calculation",
-                              ih.name(); e.into());
+                    error!(
+                        tectonic_log_source = "bridge",
+                        "error reading file \"{}\" for MD5 calculation: {e}",
+                        ih.name()
+                    );
                     error_occurred = true;
                     break;
                 }
@@ -469,7 +446,7 @@ impl<'a> CoreBridgeState<'a> {
         // Clean up.
 
         let (name, digest_opt) = ih.into_name_digest();
-        self.hooks.event_input_closed(name, digest_opt, self.status);
+        self.hooks.event_input_closed(name, digest_opt);
 
         if !error_occurred {
             let result = hash.finalize();
@@ -487,7 +464,10 @@ impl<'a> CoreBridgeState<'a> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of output {} failed", name; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "open of output {} failed: {e}", name
+                );
                 return ptr::null_mut();
             }
         };
@@ -511,7 +491,7 @@ impl<'a> CoreBridgeState<'a> {
             OpenResult::Ok(oh) => oh,
             OpenResult::NotAvailable => return ptr::null_mut(),
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of stdout failed"; e);
+                warn!(tectonic_log_source = "bridge", "open of stdout failed {e}");
                 return ptr::null_mut();
             }
         };
@@ -527,7 +507,7 @@ impl<'a> CoreBridgeState<'a> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                tt_warning!(self.status, "write failed"; e.into());
+                warn!(tectonic_log_source = "bridge", "write failed: {e}");
                 true
             }
         }
@@ -540,7 +520,7 @@ impl<'a> CoreBridgeState<'a> {
         match result {
             Ok(_) => false,
             Err(e) => {
-                tt_warning!(self.status, "flush failed"; e.into());
+                warn!(tectonic_log_source = "bridge", "flush failed: {e}");
                 true
             }
         }
@@ -556,11 +536,15 @@ impl<'a> CoreBridgeState<'a> {
             if p == handle {
                 let mut oh = self.output_handles.swap_remove(i);
                 if let Err(e) = oh.flush() {
-                    tt_warning!(self.status, "error when closing output {}", oh.name(); e.into());
+                    warn!(
+                        tectonic_log_source = "bridge",
+                        "error when closing output {}: {e}",
+                        oh.name()
+                    );
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
-                self.hooks.event_output_closed(name, digest, self.status);
+                self.hooks.event_output_closed(name, digest);
                 break;
             }
         }
@@ -577,7 +561,10 @@ impl<'a> CoreBridgeState<'a> {
                 return ptr::null_mut();
             }
             OpenResult::Err(e) => {
-                tt_warning!(self.status, "open of input {} failed", name; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "open of input {} failed: {e}", name
+                );
                 return ptr::null_mut();
             }
         };
@@ -590,14 +577,20 @@ impl<'a> CoreBridgeState<'a> {
     fn input_open_primary(&mut self) -> *mut InputHandle {
         let io = self.hooks.io();
 
-        let (ih, path) = match io.input_open_primary_with_abspath(self.status) {
+        let (ih, path) = match io.input_open_primary_with_abspath() {
             OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
-                tt_error!(self.status, "primary input not available (?!)");
+                error!(
+                    tectonic_log_source = "bridge",
+                    "primary input not available (?!)"
+                );
                 return ptr::null_mut();
             }
             OpenResult::Err(e) => {
-                tt_error!(self.status, "open of primary input failed"; e);
+                error!(
+                    tectonic_log_source = "bridge",
+                    "open of primary input failed: {e}"
+                );
                 return ptr::null_mut();
             }
         };
@@ -613,7 +606,10 @@ impl<'a> CoreBridgeState<'a> {
         match rhandle.get_size() {
             Ok(s) => s,
             Err(e) => {
-                tt_warning!(self.status, "failed to get the size of an input"; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "failed to get the size of an input: {e}"
+                );
                 0
             }
         }
@@ -628,7 +624,10 @@ impl<'a> CoreBridgeState<'a> {
         let maybe_time = match rhandle.get_unix_mtime() {
             Ok(t) => t,
             Err(e) => {
-                tt_warning!(self.status, "failed to get the modification time of an input"; e);
+                warn!(
+                    tectonic_log_source = "bridge",
+                    "failed to get the modification time of an input: {e}"
+                );
                 Some(0)
             }
         };
@@ -671,21 +670,24 @@ impl<'a> CoreBridgeState<'a> {
                 let mut rv = false;
 
                 if let Err(e) = ih.scan_remainder() {
-                    tt_warning!(self.status, "error closing out input {}", ih.name(); e);
+                    warn!(
+                        tectonic_log_source = "bridge",
+                        "error closing out input {}: {e}",
+                        ih.name()
+                    );
                     rv = true;
                 }
 
                 let (name, digest_opt) = ih.into_name_digest();
-                self.hooks.event_input_closed(name, digest_opt, self.status);
+                self.hooks.event_input_closed(name, digest_opt);
                 return rv;
             }
         }
 
         // TODO: Handle the error better. This indicates a bug in the engine.
-        tt_error!(
-            self.status,
-            "serious internal bug: unexpected handle in input close: {:?}",
-            handle
+        error!(
+            tectonic_log_source = "bridge",
+            "serious internal bug: unexpected handle in input close: {:?}", handle
         );
 
         true
@@ -693,24 +695,21 @@ impl<'a> CoreBridgeState<'a> {
 
     fn shell_escape(&mut self, command: &str) -> bool {
         if self.security.allow_shell_escape() {
-            match self.hooks.sysrq_shell_escape(command, self.status) {
+            match self.hooks.sysrq_shell_escape(command) {
                 Ok(_) => false,
 
                 Err(e) => {
-                    tt_error!(
-                        self.status,
-                        "failed to execute the shell-escape command \"{}\": {}",
-                        command,
-                        e
+                    error!(
+                        tectonic_log_source = "bridge",
+                        "failed to execute the shell-escape command \"{}\": {}", command, e
                     );
                     true
                 }
             }
         } else {
-            tt_error!(
-                self.status,
-                "forbidden to execute shell-escape command \"{}\"",
-                command
+            error!(
+                tectonic_log_source = "bridge",
+                "forbidden to execute shell-escape command \"{}\"", command
             );
             true
         }
@@ -838,9 +837,9 @@ impl Default for FsEmulationSettings {
 ///
 /// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub unsafe extern "C" fn ttbc_issue_warning(es: &mut CoreBridgeState, text: *const libc::c_char) {
+pub unsafe extern "C" fn ttbc_issue_warning(text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
-    tt_warning!(es.status, "{}", rtext.to_string_lossy());
+    warn!(tectonic_log_source = "ctex", "{}", rtext.to_string_lossy());
 }
 
 /// Issue an error.
@@ -849,9 +848,9 @@ pub unsafe extern "C" fn ttbc_issue_warning(es: &mut CoreBridgeState, text: *con
 ///
 /// This function is unsafe because it accepts a raw C string.
 #[no_mangle]
-pub unsafe extern "C" fn ttbc_issue_error(es: &mut CoreBridgeState, text: *const libc::c_char) {
+pub unsafe extern "C" fn ttbc_issue_error(text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
-    tt_error!(es.status, "{}", rtext.to_string_lossy());
+    error!(tectonic_log_source = "ctex", "{}", rtext.to_string_lossy());
 }
 
 /// Calculate the MD5 digest of a Tectonic file.
@@ -1086,8 +1085,8 @@ pub unsafe extern "C" fn ttbc_input_seek(
         libc::SEEK_CUR => SeekFrom::Current(offset as i64),
         libc::SEEK_END => SeekFrom::End(offset as i64),
         _ => {
-            tt_error!(
-                es.status,
+            error!(
+                tectonic_log_source = "ctex",
                 "serious internal bug: unexpected \"whence\" parameter to fseek() wrapper: {}",
                 whence
             );
@@ -1100,7 +1099,7 @@ pub unsafe extern "C" fn ttbc_input_seek(
         Ok(pos) => pos as libc::size_t,
         Err(e) => {
             // TODO: Handle the error better. Report the error properly to the caller?
-            tt_error!(es.status, "input seek failed"; e);
+            error!(tectonic_log_source = "ctex", "input seek failed: {e}");
             0
         }
     }
@@ -1124,7 +1123,7 @@ pub extern "C" fn ttbc_input_getc(
                 }
             }
 
-            tt_warning!(es.status, "getc failed"; e);
+            warn!(tectonic_log_source = "ctex", "getc failed: {e}");
             -1
         }
     }
@@ -1140,7 +1139,7 @@ pub extern "C" fn ttbc_input_ungetc(
     match es.input_ungetc(handle, ch as u8) {
         Ok(_) => 0,
         Err(e) => {
-            tt_warning!(es.status, "ungetc() failed"; e);
+            warn!(tectonic_log_source = "ctex", "ungetc() failed: {e}");
             -1
         }
     }
@@ -1163,7 +1162,10 @@ pub unsafe extern "C" fn ttbc_input_read(
     match es.input_read(handle, rdata) {
         Ok(_) => len as isize,
         Err(e) => {
-            tt_warning!(es.status, "{}-byte read failed", len; e);
+            warn!(
+                tectonic_log_source = "ctex",
+                "{}-byte read failed: {e}", len
+            );
             -1
         }
     }
@@ -1180,6 +1182,16 @@ pub extern "C" fn ttbc_input_close(
     }
 
     libc::c_int::from(es.input_close(handle))
+}
+
+/// The type of diagnostic message to send
+#[derive(Clone, Debug)]
+pub enum MessageKind {
+    /// Send a warning message
+    Warning,
+
+    /// Send an error message
+    Error,
 }
 
 /// A buffer for diagnostic messages. Rust code does not need to use this type.
@@ -1229,11 +1241,13 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 ///
 /// This function is unsafe because it dereferences a raw Diagnostic pointer
 #[no_mangle]
-pub unsafe extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
+pub unsafe extern "C" fn ttbc_diag_finish(diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
     let rdiag = Box::from_raw(diag);
-    es.status
-        .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+    match rdiag.kind {
+        MessageKind::Error => error!(tectonic_log_source = "ctex", "{}", rdiag.message),
+        MessageKind::Warning => warn!(tectonic_log_source = "ctex", "{}", rdiag.message),
+    }
 }
 
 /// Run a shell command
@@ -1251,7 +1265,10 @@ pub unsafe extern "C" fn ttbc_shell_escape(
     let rcmd = match String::from_utf16(rcmd) {
         Ok(cmd) => cmd,
         Err(err) => {
-            tt_error!(es.status, "command was not valid UTF-16"; err.into());
+            error!(
+                tectonic_log_source = "ctex",
+                "command was not valid UTF-16: {}", err
+            );
             return -1;
         }
     };

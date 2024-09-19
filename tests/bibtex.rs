@@ -8,7 +8,6 @@ use std::path::PathBuf;
 use tectonic::io::{FilesystemIo, IoProvider, IoStack, MemoryIo};
 use tectonic::BibtexEngine;
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
-use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]
 mod util;
@@ -58,8 +57,7 @@ impl TestCase {
 
         let io = IoStack::new(io_list);
         let mut hooks = MinimalDriver::new(io);
-        let mut status = NoopStatusBackend::default();
-        let mut launcher = CoreBridgeLauncher::new(&mut hooks, &mut status);
+        let mut launcher = CoreBridgeLauncher::new(&mut hooks);
 
         let res = BibtexEngine::new().process(&mut launcher, &auxname, &Default::default());
 

@@ -8,7 +8,6 @@ use std::{
     rc::Rc,
 };
 use tectonic_errors::Result;
-use tectonic_status_base::StatusBackend;
 
 use super::{InputFeatures, InputHandle, InputOrigin, IoProvider, OpenResult, OutputHandle};
 
@@ -138,7 +137,7 @@ impl BufferedPrimaryIo {
 }
 
 impl IoProvider for BufferedPrimaryIo {
-    fn input_open_primary(&mut self, _status: &mut dyn StatusBackend) -> OpenResult<InputHandle> {
+    fn input_open_primary(&mut self) -> OpenResult<InputHandle> {
         OpenResult::Ok(InputHandle::new(
             "",
             Cursor::new(self.buffer.clone()),

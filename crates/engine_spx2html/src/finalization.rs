@@ -4,7 +4,7 @@
 //! The finalization phase of SPX to HTML processing.
 
 use tectonic_errors::prelude::*;
-use tectonic_status_base::tt_warning;
+use tracing::warn;
 
 use crate::{
     assets::Assets, fonts::FontEnsemble, specials::Special, templating::Templating, Common,
@@ -28,9 +28,12 @@ impl FinalizingState {
         })
     }
 
-    fn warn_finished_content(&mut self, detail: &str, common: &mut Common) {
+    fn warn_finished_content(&mut self, detail: &str) {
         if !self.warning_issued {
-            tt_warning!(common.status, "dropping post-finish content ({})", detail);
+            warn!(
+                tectonic_log_source = "spx2html",
+                "dropping post-finish content ({})", detail
+            );
             self.warning_issued = true;
         }
     }
@@ -54,33 +57,33 @@ impl FinalizingState {
             }
 
             Special::SetTemplateVariable(spec) => {
-                self.templating.handle_set_template_variable(spec, common)
+                self.templating.handle_set_template_variable(spec)
             }
 
             Special::ProvideFile(_) | Special::ProvideSpecial(_) => {
-                self.assets.try_handle_special(special, common);
+                self.assets.try_handle_special(special);
                 Ok(())
             }
 
             other => {
-                self.warn_finished_content(&format!("special {other}"), common);
+                self.warn_finished_content(&format!("special {other}"));
                 Ok(())
             }
         }
     }
 
-    pub(crate) fn handle_text_and_glyphs(&mut self, text: &str, common: &mut Common) -> Result<()> {
-        self.warn_finished_content(&format!("text `{text}`"), common);
+    pub(crate) fn handle_text_and_glyphs(&mut self, text: &str) -> Result<()> {
+        self.warn_finished_content(&format!("text `{text}`"));
         Ok(())
     }
 
-    pub(crate) fn handle_glyph_run(&mut self, common: &mut Common) -> Result<()> {
-        self.warn_finished_content("glyph run", common);
+    pub(crate) fn handle_glyph_run(&mut self) -> Result<()> {
+        self.warn_finished_content("glyph run");
         Ok(())
     }
 
-    pub(crate) fn handle_rule(&mut self, common: &mut Common) -> Result<()> {
-        self.warn_finished_content("rule", common);
+    pub(crate) fn handle_rule(&mut self) -> Result<()> {
+        self.warn_finished_content("rule");
         Ok(())
     }
 

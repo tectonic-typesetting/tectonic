@@ -10,7 +10,7 @@ use reqwest::{
     StatusCode, Url,
 };
 use tectonic_errors::{anyhow::bail, Result};
-use tectonic_status_base::{tt_note, StatusBackend};
+use tracing::info;
 
 use crate::{GetUrlBackend, RangeReader};
 
@@ -24,7 +24,7 @@ impl GetUrlBackend for ReqwestBackend {
     type Response = Response;
     type RangeReader = ReqwestRangeReader;
 
-    fn get_url(&mut self, url: &str, _status: &mut dyn StatusBackend) -> Result<Response> {
+    fn get_url(&mut self, url: &str) -> Result<Response> {
         let res = Client::new().get(url).send()?;
         if !res.status().is_success() {
             bail!(
@@ -36,8 +36,8 @@ impl GetUrlBackend for ReqwestBackend {
         Ok(res)
     }
 
-    fn resolve_url(&mut self, url: &str, status: &mut dyn StatusBackend) -> Result<String> {
-        tt_note!(status, "connecting to {}", url);
+    fn resolve_url(&mut self, url: &str) -> Result<String> {
+        info!(tectonic_log_source = "net", "connecting to {}", url);
 
         let parsed = Url::parse(url)?;
         let original_filename = parsed
@@ -97,7 +97,7 @@ impl GetUrlBackend for ReqwestBackend {
 
         let final_url: String = res.url().clone().into();
         if final_url != url {
-            tt_note!(status, "resolved to {}", final_url);
+            info!(tectonic_log_source = "net", "resolved to {}", final_url);
         }
 
         Ok(final_url)

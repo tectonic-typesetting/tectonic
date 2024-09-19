@@ -243,7 +243,7 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
     temppath.push("doc");
 
     // To run a build in our test setup, we can only use plain TeX. So, jankily
-    // change the format ...
+    // change the format...
 
     {
         let mut toml_path = temppath.clone();
@@ -252,7 +252,7 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
         writeln!(file, "tex_format = 'plain'").unwrap();
     }
 
-    // ... and write some files that are plain TeX.
+    // ...and write some files that are plain TeX.
 
     {
         let mut path = temppath.clone();
@@ -279,12 +279,6 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
 /* Keep tests alphabetized */
 
 #[test]
-fn bad_chatter_1() {
-    let output = run_tectonic(&PathBuf::from("."), &["-", "--chatter=reticent"]);
-    error_or_panic(&output);
-}
-
-#[test]
 fn bad_input_path_1() {
     let output = run_tectonic(&PathBuf::from("."), &["/"]);
     error_or_panic(&output);
@@ -293,6 +287,12 @@ fn bad_input_path_1() {
 #[test]
 fn bad_input_path_2() {
     let output = run_tectonic(&PathBuf::from("."), &["somedir/.."]);
+    error_or_panic(&output);
+}
+
+#[test]
+fn bad_log_1() {
+    let output = run_tectonic(&PathBuf::from("."), &["-", "--log=reticent"]);
     error_or_panic(&output);
 }
 
@@ -796,7 +796,7 @@ fn v2_build_multiple_outputs() {
     temppath.push("doc");
 
     // To run a build in our test setup, we can only use plain TeX. So, jankily
-    // change the format ...
+    // change the format...
 
     {
         let mut toml_path = temppath.clone();
@@ -818,7 +818,7 @@ fn v2_build_multiple_outputs() {
         .unwrap();
     }
 
-    // ... and write some files that are plain TeX.
+    // ...and write some files that are plain TeX.
 
     {
         let mut path = temppath.clone();
