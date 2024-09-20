@@ -248,11 +248,7 @@ fn setup_v2() -> (tempfile::TempDir, PathBuf) {
     {
         let mut toml_path = temppath.clone();
         toml_path.push("Tectonic.toml");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(toml_path)
-            .unwrap();
+        let mut file = OpenOptions::new().append(true).open(toml_path).unwrap();
         writeln!(file, "tex_format = 'plain'").unwrap();
     }
 
@@ -805,11 +801,7 @@ fn v2_build_multiple_outputs() {
     {
         let mut toml_path = temppath.clone();
         toml_path.push("Tectonic.toml");
-        let mut file = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(toml_path)
-            .unwrap();
+        let mut file = OpenOptions::new().append(true).open(toml_path).unwrap();
         writeln!(
             file,
             "tex_format = 'plain'
@@ -941,6 +933,19 @@ fn v2_dump_suffix() {
     assert!(saw_first && saw_second);
 }
 
+/// Checks that shell completions are correctly generated
+#[cfg(feature = "serialization")]
+#[test]
+fn v2_show_shell_completions() {
+    let (_tempdir, temppath) = setup_v2();
+    let output = run_tectonic(&temppath, &["-X", "show", "shell-completions", "zsh"]);
+    success_or_panic(&output);
+
+    if !String::from_utf8_lossy(&output.stdout).contains("compdef _nextonic nextonic") {
+        panic!("shell completions generation failed.")
+    }
+}
+
 const SHELL_ESCAPE_TEST_DOC: &str = r"\immediate\write18{mkdir shellwork}
 \immediate\write18{echo 123 >shellwork/persist}
 \ifnum123=\input{shellwork/persist}
@@ -1066,7 +1071,7 @@ fn extra_search_paths() {
 #[cfg(all(feature = "serialization", not(target_arch = "mips")))]
 #[test]
 fn v2_watch_succeeds() {
-    if KCOV_WORDS.len() > 0 {
+    if KCOV_WORDS.len() > 0 || env::var("TECTONIC_KCOV_RUN").is_ok() {
         return; // See run_tectonic_until() for an explanation of why this test must be skipped
     }
 
@@ -1115,8 +1120,8 @@ fn v2_watch_succeeds() {
     // success_or_panic(&output);
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    println!("stdout:\n{}", stdout);
-    println!("stderr:\n{}", stderr);
+    println!("-- stdout --\n{}\n-- end stdout --", stdout);
+    println!("-- stderr --\n{}\n-- end stderr --", stderr);
 
     thread.join().unwrap();
 

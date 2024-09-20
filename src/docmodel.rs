@@ -17,7 +17,7 @@ use tectonic_bundles::{
     cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
 };
 use tectonic_docmodel::{
-    document::{BuildTargetType, Document},
+    document::{BuildTargetType, Document, InputFile},
     workspace::{Workspace, WorkspaceCreator},
 };
 use tectonic_geturl::{DefaultBackend, GetUrlBackend};
@@ -151,18 +151,27 @@ impl DocumentExt for Document {
         };
 
         let mut input_buffer = String::new();
-        if !profile.preamble_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.preamble_file)?;
-        }
-        if !profile.index_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.index_file)?;
-        }
-        if !profile.postamble_file.is_empty() {
-            writeln!(input_buffer, "\\input{{{}}}", profile.postamble_file)?;
+
+        for input in &profile.inputs {
+            match input {
+                InputFile::Inline(s) => {
+                    writeln!(input_buffer, "{}", s)?;
+                }
+                InputFile::File(f) => {
+                    writeln!(input_buffer, "\\input{{{}}}", f)?;
+                }
+            };
         }
 
         let mut sess_builder =
             ProcessingSessionBuilder::new_with_security(setup_options.security.clone());
+
+        // Interpret all extra paths as relative to our working dir
+        let extra_paths: Vec<PathBuf> = self
+            .extra_paths
+            .iter()
+            .map(|x| self.src_dir().join(x))
+            .collect();
 
         sess_builder
             .output_format(output_format)
@@ -170,6 +179,7 @@ impl DocumentExt for Document {
             .build_date_from_env(setup_options.deterministic_mode)
             .unstables(UnstableOptions {
                 deterministic_mode: setup_options.deterministic_mode,
+                extra_search_paths: extra_paths,
                 ..Default::default()
             })
             .pass(PassSetting::Default)
@@ -236,6 +246,6 @@ impl WorkspaceCreatorExt for WorkspaceCreator {
             gub.resolve_url(&unresolved_loc, status)?
         };
 
-        Ok(self.create(bundle_loc)?)
+        Ok(self.create(bundle_loc, Vec::new())?)
     }
 }

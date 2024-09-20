@@ -82,7 +82,7 @@ impl Cache {
     /// and contain data appropriate for, the [`CacheBackend`] type associated
     /// with the bundle that you’re creating. If *only_cached* is true, this
     /// instance will never actually connect to the backend; if any uncached
-    /// files are requested, they will be represented as “not found”.
+    /// files are requested, they will be represented as "not found".
     pub fn open<CB: CacheBackend>(
         &mut self,
         url: &str,
@@ -148,7 +148,7 @@ pub trait CacheBackend: Sized {
     /// This method is used when this backend has already been accessed by the
     /// cache during a previous execution. If we need to download more data from
     /// the backend, we first need to verify that the cached data still look
-    /// valid. This method asks the backend to pull its “digest file” (currently
+    /// valid. This method asks the backend to pull its "digest file" (currently
     /// named `SHA256SUM`) and return its contents for validate. The method
     /// should return `Err` on actual errors, and `Ok(None)` if there are any
     /// indications that the cached indexing data should be thrown out and
@@ -460,7 +460,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
         // If a filename contains newline characters, it will mess up our
         // line-based manifest format. Be paranoid and refuse to record such
         // filenames.
-        if !name.contains(|c| c == '\n' || c == '\r') {
+        if !name.contains(['\n', '\r']) {
             writeln!(man, "{name} {length} {digest_text}")?;
         }
 
@@ -515,9 +515,7 @@ impl<CB: CacheBackend> CachingBundle<CB> {
             // giving incorrect results if we pulled files out of the cache
             // before this invocation. Rewrite the digest file so that next time
             // we'll start afresh, then bail.
-            file_create_write(&self.digest_path, |f| {
-                writeln!(f, "{}", pull_data.digest.to_string())
-            })?;
+            file_create_write(&self.digest_path, |f| writeln!(f, "{}", pull_data.digest))?;
             bail!("backend digest changed; rerun tectonic to use updated information");
         }
 

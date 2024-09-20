@@ -8,10 +8,6 @@
 //! to be reliable or very polished. In particular, many of these prevent the build from being
 //! reproducible.
 
-use crate::{
-    errmsg,
-    errors::{Error, Result},
-};
 use std::default::Default;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -37,7 +33,7 @@ const HELPMSG: &str = r#"Available unstable options:
 "#;
 
 // Each entry of this should correspond to a field of UnstableOptions.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum UnstableArg {
     ContinueOnErrors,
     Help,
@@ -50,10 +46,10 @@ pub enum UnstableArg {
 }
 
 impl FromStr for UnstableArg {
-    type Err = Error;
+    type Err = Box<dyn std::error::Error + Send + Sync + 'static>;
 
     /// Parse from the argument to -Z
-    fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         let mut splitter = s.splitn(2, '=');
         let arg = splitter.next().unwrap(); // splitn will always have at least 1 item
         let value = splitter.next();
@@ -63,11 +59,11 @@ impl FromStr for UnstableArg {
 
         let require_value = |value_name| {
             value.ok_or_else(|| {
-                errmsg!(
+                format!(
                     "'-Z {}=<{}>' requires a value but none was supplied",
-                    arg,
-                    value_name
+                    arg, value_name
                 )
+                .into()
             })
         };
 

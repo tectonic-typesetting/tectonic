@@ -15,7 +15,7 @@
 //! For an example of how to use this module, see `src/bin/tectonic/main.rs`,
 //! which contains tectonic's main CLI program.
 
-use byte_unit::Byte;
+use byte_unit::{Byte, UnitType};
 use quick_xml::{events::Event, NsReader};
 use std::{
     collections::{HashMap, HashSet},
@@ -213,7 +213,7 @@ enum OutputDestination {
 /// the larger [`ProcessingSession`] type.
 ///
 /// Due to the needs of the C/C++ engines, this means that [`BridgeState`] must
-/// hold the fully-prepared I/O stack information as well as the “event”
+/// hold the fully-prepared I/O stack information as well as the "event"
 /// information that helps the driver implement the rerun logic.
 struct BridgeState {
     /// I/O for the primary input source. This is boxed since it can come
@@ -257,8 +257,8 @@ struct BridgeState {
 }
 
 impl BridgeState {
-    /// Tell the IoProvider implementation of the bridge state to enter “format
-    /// mode”, in which the “primary input” is fixed, based on the requested
+    /// Tell the IoProvider implementation of the bridge state to enter "format
+    /// mode", in which the "primary input" is fixed, based on the requested
     /// format file name, and filesystem I/O is bypassed.
     fn enter_format_mode(&mut self, format_file_name: &str) {
         self.format_primary = Some(BufferedPrimaryIo::from_text(format!(
@@ -266,7 +266,7 @@ impl BridgeState {
         )));
     }
 
-    /// Leave “format mode”.
+    /// Leave "format mode".
     fn leave_format_mode(&mut self) {
         self.format_primary = None;
     }
@@ -704,6 +704,12 @@ impl DriverHooks for BridgeState {
                 }
 
                 let real_path = work.root().join(name);
+                if let Some(prefix) = real_path.parent() {
+                    std::fs::create_dir_all(prefix).map_err(|e| {
+                        tt_error!(status, "failed to create sub directory `{}`", prefix.display(); e.into());
+                        SystemRequestError::Failed
+                    })?;
+                }
                 let mut f = File::create(&real_path).map_err(|e| {
                     tt_error!(status, "failed to create file `{}`", real_path.display(); e.into());
                     SystemRequestError::Failed
@@ -1132,7 +1138,7 @@ impl ProcessingSessionBuilder {
                     }
                 };
 
-                filesystem_root = parent.clone();
+                filesystem_root.clone_from(&parent);
                 let pio: Box<dyn IoProvider> = Box::new(FilesystemPrimaryInputIo::new(&p));
                 (pio, Some(p), parent)
             }
@@ -1638,12 +1644,16 @@ impl ProcessingSession {
             }
 
             let real_path = root.join(name);
-            let byte_len = Byte::from_bytes(file.data.len() as u128);
+            let byte_len = Byte::from_u128(file.data.len() as u128).unwrap();
             status.note_highlighted(
                 "Writing ",
                 &format!("`{}`", real_path.display()),
-                &format!(" ({})", byte_len.get_appropriate_unit(true)),
+                &format!(" ({})", byte_len.get_appropriate_unit(UnitType::Binary)),
             );
+
+            if let Some(parent) = real_path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
 
             let mut f = File::create(&real_path)?;
             f.write_all(&file.data)?;

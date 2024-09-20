@@ -38,17 +38,17 @@
 //! - [`tectonic_io_base`](https://docs.rs/tectonic_io_base) for the I/O
 //!   abstraction framework.
 //! - [`tectonic_bridge_core`](https://docs.rs/tectonic_bridge_core) for a
-//!   framework to launch unsafe (C/C++) “engines” through [FFI].
+//!   framework to launch unsafe (C/C++) "engines" through [FFI].
 //!
 //! [FFI]: https://doc.rust-lang.org/std/ffi/index.html
 //!
 //! Building on these and other support crates of less general interest are the
 //! following major pieces of Tectonic’s functionality:
 //!
-//! - [`tectonic_bundles`](https://docs.rs/tectonic_bundles) for the“bundles” of
+//! - [`tectonic_bundles`](https://docs.rs/tectonic_bundles) for the"bundles" of
 //!   TeX support files underlying Tectonic processing.
 //! - [`tectonic_docmodel`](https://docs.rs/tectonic_docmodel) for the Tectonic
-//!   “document model” expressed in `Tectonic.toml` files.
+//!   "document model" expressed in `Tectonic.toml` files.
 //! - [`tectonic_engine_xetex`](https://docs.rs/tectonic_engine_xetex) for the
 //!   XeTeX engine.
 //! - [`tectonic_engine_xdvipdfmx`](https://docs.rs/tectonic_engine_xdvipdfmx)

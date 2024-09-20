@@ -654,7 +654,7 @@ pub(crate) fn skip_token_print(
     mark_error();
 
     Scan::new()
-        .chars(&[b'}', b'%'])
+        .chars(b"}%")
         .class(LexClass::Whitespace)
         .scan_till(buffers, buffers.init(BufTy::Base));
 

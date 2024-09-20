@@ -426,9 +426,10 @@ impl FontFileData {
 
         if let Some(out_path) = out_path.as_mut() {
             out_path.push(rel_path);
+            let display_path = out_path.clone();
             atry!(
-                std::fs::write(&out_path, &self.buffer);
-                ["cannot write output file `{}`", out_path.display()]
+                std::fs::write(out_path, &self.buffer);
+                ["cannot write output file `{}`", display_path.display()]
             );
         }
 
@@ -490,9 +491,10 @@ impl FontFileData {
 
                 out_path.pop();
                 out_path.push(&varname);
+                let display_path = out_path.clone();
                 atry!(
-                    std::fs::write(&out_path, &buffer);
-                    ["cannot write output file `{}`", out_path.display()]
+                    std::fs::write(out_path, &buffer);
+                    ["cannot write output file `{}`", display_path.display()]
                 );
             }
 

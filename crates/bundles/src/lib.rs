@@ -5,7 +5,7 @@
 
 //! Implementations of Tectonic bundle formats.
 //!
-//! A Tectonic “bundle” is a collection of TeX support files. In code, bundles
+//! A Tectonic "bundle" is a collection of TeX support files. In code, bundles
 //! implement the [`Bundle`] trait defined here, although most of the action in
 //! a bundle will be in its implementation of [`tectonic_io_base::IoProvider`].
 //!
@@ -29,7 +29,7 @@ pub mod zip;
 
 /// A trait for bundles of Tectonic support files.
 ///
-/// A “bundle” is an [`IoProvider`] with a few special properties. Bundles are
+/// A "bundle" is an [`IoProvider`] with a few special properties. Bundles are
 /// read-only, and their contents can be enumerated In principle a bundle is
 /// completely defined by its file contents, which can be summarized by a
 /// cryptographic digest, obtainable using the [`Self::get_digest`] method: two

@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_pdf_io"
-version = "0.4.1"
+version = "0.4.1+20240920"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Xdvipdfmx’s PDF, XDV, and image I/O APIs in C, as a Rust crate.
