@@ -15,7 +15,14 @@ the file are detailed below.
 ```toml
 [doc]
 name = <string>  # the document name
-bundle = <url or filesystem path>  # the source of the TeX bundle
+
+# A string identifying the location of the “bundle” of TeX support files
+# underlying the processing of the document. The `tectonic -X new` command
+# will populate this field with the current recommended default.
+# 
+# This field should be a URL (a `.ttb` on the web, or a legacy indexed tar bundle),
+# or a file on your computer (a `.ttb` or a legacy `.zip` bundle).
+bundle = <url or filesystem path>
 
 # Extra search paths for TeX sources, images, etc.
 #
