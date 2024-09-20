@@ -37,24 +37,12 @@ mod commands;
 
 struct V2CliOptions {
     /// How much chatter to print when running
-    #[arg(long = "chatter", short, name = "level", default_value = "default")]
+    #[arg(long = "chatter", short, default_value = "default")]
     chatter_level: ChatterLevel,
 
     /// Control colorization of output
-    #[arg(long = "color", name = "when", default_value = "auto")]
+    #[arg(long = "color", default_value = "auto")]
     cli_color: crate::CliColor,
-
-    /// Use this URL to find resource files instead of the default
-    // TODO add URL validation
-    #[arg(
-        long,
-        short,
-        name = "url",
-        overrides_with = "url", 
-        // This is inherited by some subcommands
-        global(true)
-    )]
-    web_bundle: Option<String>,
 
     /// The command to run
     #[command(subcommand)]

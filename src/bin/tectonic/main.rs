@@ -43,11 +43,11 @@ struct CliOptions {
     use_v2: bool,
 
     /// How much chatter to print when running
-    #[arg(long = "chatter", short, name = "level", default_value = "default")]
+    #[arg(long = "chatter", short, default_value = "default")]
     chatter_level: ChatterLevel,
 
     /// Enable/disable colorful log output
-    #[arg(long = "color", name = "when", default_value = "auto")]
+    #[arg(long = "color", default_value = "auto")]
     cli_color: CliColor,
 
     #[command(flatten)]

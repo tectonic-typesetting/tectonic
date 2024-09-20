@@ -44,18 +44,18 @@ pub struct BuildCommand {
     target: Option<String>,
 
     /// Use this URL to find resource files instead of the default
-    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
-    web_bundle: Option<String>,
+    #[arg(long, short)]
+    bundle: Option<String>,
 }
 
 impl TectonicCommand for BuildCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
     fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        // `--web-bundle` is not actually used for `-X build`,
-        // so inform the user instead of ignoring silently.
-        if let Some(url) = &self.web_bundle {
-            tt_note!(status, "--web-bundle {} ignored", url);
+        // `--bundle` is not used for `-X build`,
+        // tell the user instead of ignoring silently.
+        if let Some(url) = &self.bundle {
+            tt_note!(status, "--bundle {} ignored", url);
             tt_note!(status, "using workspace bundle configuration");
         }
         let ws = Workspace::open_from_environment()?;

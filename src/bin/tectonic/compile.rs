@@ -24,16 +24,16 @@ use tectonic_bundles::detect_bundle;
 #[derive(Debug, Parser)]
 pub struct CompileOptions {
     /// The file to process, or "-" to process the standard input stream
-    #[arg(name = "input", value_hint = clap::ValueHint::FilePath)]
+    #[arg(value_hint = clap::ValueHint::FilePath)]
     input: String,
 
     /// The name of the "format" file used to initialize the TeX engine
     #[arg(long, short, name = "path", default_value = "latex")]
     format: String,
 
-    /// Use this directory or Zip-format bundle file to find resource files instead of the default
-    #[arg(long, short, name = "file_path")]
-    bundle: Option<PathBuf>,
+    /// Use this URL or path to find resource files instead of the default
+    #[arg(long, short)]
+    bundle: Option<String>,
 
     /// Use only resource files cached locally
     #[arg(short = 'C', long)]
@@ -86,10 +86,6 @@ pub struct CompileOptions {
     /// Unstable options. Pass -Zhelp to show a list
     #[arg(name = "option", short = 'Z')]
     unstable: Vec<UnstableArg>,
-
-    /// Use this URL to find resource files instead of the default
-    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
-    web_bundle: Option<String>,
 }
 
 // TODO: deprecate v1 interface and move this to v2cli/commands

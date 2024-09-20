@@ -57,7 +57,7 @@ pub struct BundleCreateCommand {
 
     /// Build directory for this bundle.
     /// Will be removed.
-    #[arg(short, long)]
+    #[arg(long)]
     pub build_dir: PathBuf,
 
     /// What kind of bundle should we produce?
