@@ -126,11 +126,11 @@ impl IoProvider for TestBundle {
 }
 
 impl Bundle for TestBundle {
-    fn get_digest(&mut self, _status: &mut dyn StatusBackend) -> Result<DigestData> {
+    fn get_digest(&mut self) -> Result<DigestData> {
         Ok(DigestData::zeros())
     }
 
-    fn all_files(&mut self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        self.0.all_files(status)
+    fn all_files(&self) -> Vec<String> {
+        self.0.all_files()
     }
 }

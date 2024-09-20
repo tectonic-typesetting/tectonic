@@ -30,7 +30,7 @@ impl TectonicCommand for InitCommand {
 
         let wc = WorkspaceCreator::new(path);
         ctry!(
-            wc.create_defaulted(config, status, self.web_bundle);
+            wc.create_defaulted(&config, self.bundle);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)
@@ -61,7 +61,7 @@ impl TectonicCommand for NewCommand {
 
         let wc = WorkspaceCreator::new(self.path);
         ctry!(
-            wc.create_defaulted(config, status, self.web_bundle);
+            wc.create_defaulted(&config, self.bundle);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)

@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 
 use tectonic::{
-    config::PersistentConfig,
+    config::{maybe_return_test_bundle, PersistentConfig},
     driver::{OutputFormat, PassSetting, ProcessingSession, ProcessingSessionBuilder},
     errmsg,
     errors::{ErrorKind, Result},
@@ -18,6 +18,8 @@ use tectonic::{
     tt_error, tt_note,
     unstable_opts::{UnstableArg, UnstableOptions},
 };
+
+use tectonic_bundles::detect_bundle;
 
 #[derive(Debug, Parser)]
 pub struct CompileOptions {
@@ -94,8 +96,6 @@ pub struct CompileOptions {
 
 //impl TectonicCommand for CompileOptions {
 impl CompileOptions {
-    //fn customize(&self, _cc: &mut CommandCustomizations) {}
-
     pub fn execute(self, config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
         let unstable = UnstableOptions::from_unstable_args(self.unstable.into_iter());
 
@@ -185,16 +185,26 @@ impl CompileOptions {
             }
         }
 
-        let only_cached = self.only_cached;
-        if only_cached {
+        if self.only_cached {
             tt_note!(status, "using only cached resource files");
         }
-        if let Some(path) = self.bundle {
-            sess_builder.bundle(config.make_local_file_provider(path, status)?);
-        } else if let Some(u) = self.web_bundle {
-            sess_builder.bundle(config.make_cached_url_provider(&u, only_cached, None, status)?);
+
+        if let Some(bundle) = self.bundle {
+            // TODO: this is ugly.
+            // It's probably a good idea to re-design our code so we
+            // don't need special cases for tests our source.
+            if let Ok(bundle) = maybe_return_test_bundle(Some(bundle.clone())) {
+                sess_builder.bundle(bundle);
+            } else if let Some(bundle) = detect_bundle(bundle.clone(), self.only_cached, None)? {
+                sess_builder.bundle(bundle);
+            } else {
+                return Err(errmsg!("`{bundle}` doesn't specify a valid bundle."));
+            }
+        } else if let Ok(bundle) = maybe_return_test_bundle(None) {
+            // TODO: this is ugly too.
+            sess_builder.bundle(bundle);
         } else {
-            sess_builder.bundle(config.default_bundle(only_cached, status)?);
+            sess_builder.bundle(config.default_bundle(self.only_cached)?);
         }
         sess_builder.build_date_from_env(deterministic_mode);
 

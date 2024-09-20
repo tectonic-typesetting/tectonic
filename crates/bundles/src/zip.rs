@@ -3,17 +3,17 @@
 
 //! ZIP files as Tectonic bundles.
 
+use crate::Bundle;
 use std::{
     fs::File,
     io::{Cursor, Read, Seek},
     path::Path,
+    str::FromStr,
 };
 use tectonic_errors::prelude::*;
-use tectonic_io_base::{InputHandle, InputOrigin, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
+use tectonic_io_base::{digest, InputHandle, InputOrigin, IoProvider, OpenResult};
+use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 use zip::{result::ZipError, ZipArchive};
-
-use crate::Bundle;
 
 /// A bundle backed by a ZIP file.
 pub struct ZipBundle<R: Read + Seek> {
@@ -57,7 +57,11 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
             }
         };
 
-        let mut buf = Vec::with_capacity(zipitem.size() as usize);
+        let s = zipitem.size();
+        if s >= u32::MAX as u64 {
+            return OpenResult::Err(anyhow!("Zip item too large."));
+        }
+        let mut buf = Vec::with_capacity(s as usize);
 
         if let Err(e) = zipitem.read_to_end(&mut buf) {
             return OpenResult::Err(e.into());
@@ -72,7 +76,28 @@ impl<R: Read + Seek> IoProvider for ZipBundle<R> {
 }
 
 impl<R: Read + Seek> Bundle for ZipBundle<R> {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        Ok(self.zip.file_names().map(|s| s.to_owned()).collect())
+    fn all_files(&self) -> Vec<String> {
+        self.zip.file_names().map(|x| x.to_owned()).collect()
+    }
+
+    fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {
+        let digest_text = match self.input_open_name(digest::DIGEST_NAME, &mut NoopStatusBackend {})
+        {
+            OpenResult::Ok(h) => {
+                let mut text = String::new();
+                h.take(64).read_to_string(&mut text)?;
+                text
+            }
+
+            OpenResult::NotAvailable => {
+                bail!("bundle does not provide needed SHA256SUM file");
+            }
+
+            OpenResult::Err(e) => {
+                return Err(e);
+            }
+        };
+
+        Ok(atry!(digest::DigestData::from_str(&digest_text); ["corrupted SHA256 digest data"]))
     }
 }
