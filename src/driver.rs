@@ -704,6 +704,12 @@ impl DriverHooks for BridgeState {
                 }
 
                 let real_path = work.root().join(name);
+                if let Some(prefix) = real_path.parent() {
+                    std::fs::create_dir_all(prefix).map_err(|e| {
+                        tt_error!(status, "failed to create sub directory `{}`", prefix.display(); e.into());
+                        SystemRequestError::Failed
+                    })?;
+                }
                 let mut f = File::create(&real_path).map_err(|e| {
                     tt_error!(status, "failed to create file `{}`", real_path.display(); e.into());
                     SystemRequestError::Failed
