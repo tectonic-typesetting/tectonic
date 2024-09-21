@@ -14,6 +14,7 @@ use tectonic::{
 };
 use tectonic_errors::prelude::anyhow;
 use tectonic_status_base::plain::PlainStatusBackend;
+use tracing::level_filters::LevelFilter;
 
 use self::commands::{
     build::BuildCommand,
@@ -36,24 +37,12 @@ mod commands;
 
 struct V2CliOptions {
     /// How much chatter to print when running
-    #[arg(long = "chatter", short, name = "level", default_value = "default")]
+    #[arg(long = "chatter", short, default_value = "default")]
     chatter_level: ChatterLevel,
 
     /// Control colorization of output
-    #[arg(long = "color", name = "when", default_value = "auto")]
+    #[arg(long = "color", default_value = "auto")]
     cli_color: crate::CliColor,
-
-    /// Use this URL to find resource files instead of the default
-    // TODO add URL validation
-    #[arg(
-        long,
-        short,
-        name = "url",
-        overrides_with = "url", 
-        // This is inherited by some subcommands
-        global(true)
-    )]
-    web_bundle: Option<String>,
 
     /// The command to run
     #[command(subcommand)]
@@ -90,6 +79,13 @@ pub fn v2_main(effective_args: &[OsString]) {
     // Parse args -- this will exit if there are problems.
 
     let args = V2CliOptions::parse_from(effective_args);
+
+    tracing_subscriber::fmt()
+        .with_max_level(LevelFilter::INFO)
+        .with_target(false)
+        .without_time()
+        .with_ansi(args.cli_color.should_enable())
+        .init();
 
     // Command-specific customizations before we do our centralized setup.
     // This is a semi-hack so that we can set up certain commands to ensure

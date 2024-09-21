@@ -641,12 +641,7 @@ impl DriverHooks for BridgeState {
         self
     }
 
-    fn event_output_closed(
-        &mut self,
-        name: String,
-        digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .events
             .get_mut(&name)
@@ -1166,7 +1161,7 @@ impl ProcessingSessionBuilder {
         let format_cache_path = self
             .format_cache_path
             .unwrap_or_else(|| filesystem_root.clone());
-        let format_cache = FormatCache::new(bundle.get_digest(status)?, format_cache_path);
+        let format_cache = FormatCache::new(bundle.get_digest()?, format_cache_path);
 
         let genuine_stdout = if self.print_stdout {
             Some(GenuineStdoutIo::new())

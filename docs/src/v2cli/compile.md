@@ -36,7 +36,6 @@ tectonic -X compile  # full form
   [--reruns <count>] [-r <count>]
   [--synctex]
   [--untrusted]
-  [--web-bundle <url>] [-w <url>]
   [-Z <option>...]
   <input>
 ```
@@ -92,9 +91,9 @@ The following are the available flags.
 <!-- Keep alphabetized by full name: -->
 
 | Short | Full                           | Explanation                                                                                            |
-|:------|:-------------------------------|:-------------------------------------------------------------------------------------------------------|
-| `-b`  | `--bundle <file_path>`         | Use this directory or Zip-format bundle file to find resource files instead of the default             |
-| `-f`  | `--format <path>`              | The name of the "format" file used to initialize the TeX engine [default: `latex`]                     |
+| :---- | :----------------------------- | :----------------------------------------------------------------------------------------------------- |
+| `-b`  | `--bundle <path or url>`       | Use this bundle instead of the default                                                                 |
+| `-f`  | `--format <path>`              | The name of the “format” file used to initialize the TeX engine [default: `latex`]                     |
 | `-h`  | `--help`                       | Prints help information                                                                                |
 |       | `--hide <hide_path>...`        | Tell the engine that no file at `<hide_path>` exists, if it tries to read it                           |
 | `-k`  | `--keep-intermediates`         | Keep the intermediate files generated during processing                                                |
@@ -109,7 +108,6 @@ The following are the available flags.
 |       | `--synctex`                    | Generate SyncTeX data                                                                                  |
 |       | `--untrusted`                  | Input is untrusted — disable all known-insecure features                                               |
 | `-V`  | `--version`                    | Prints version information                                                                             |
-| `-w`  | `--web-bundle <url>`           | Use this URL to find resource files instead of the default                                             |
 | `-Z`  | `-Z <option>...`               | Unstable options. Pass `-Zhelp` to show a list                                                         |
 
 #### Unstable options
@@ -119,8 +117,8 @@ the set of unstable options is subject to change at any time.
 
 <!-- Keep alphabetized: -->
 
-| Expression                   | Explanation |
-|:-----------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Expression                   | Explanation                                                                                                                                                                                                                                                                                                |
+| :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `-Z help`                    | List all unstable options                                                                                                                                                                                                                                                                                  |
 | `-Z continue-on-errors`      | Keep compiling even when severe errors occur                                                                                                                                                                                                                                                               |
 | `-Z min-crossrefs=<num>`     | Equivalent to bibtex’s `-min-crossrefs` flag - "include after `<num>` crossrefs" [default: `2`]                                                                                                                                                                                                            |

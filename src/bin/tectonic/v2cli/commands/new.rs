@@ -13,8 +13,8 @@ use crate::v2cli::{CommandCustomizations, TectonicCommand};
 #[derive(Debug, Eq, PartialEq, Parser)]
 pub struct InitCommand {
     /// Use this URL to find resource files instead of the default
-    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
-    web_bundle: Option<String>,
+    #[arg(long, short)]
+    bundle: Option<String>,
 }
 
 impl TectonicCommand for InitCommand {
@@ -30,7 +30,7 @@ impl TectonicCommand for InitCommand {
 
         let wc = WorkspaceCreator::new(path);
         ctry!(
-            wc.create_defaulted(config, status, self.web_bundle);
+            wc.create_defaulted(&config, self.bundle);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)
@@ -45,8 +45,8 @@ pub struct NewCommand {
     path: PathBuf,
 
     /// Use this URL to find resource files instead of the default
-    #[arg(long, short, name = "url", overrides_with = "url", global(true))]
-    web_bundle: Option<String>,
+    #[arg(long, short)]
+    bundle: Option<String>,
 }
 
 impl TectonicCommand for NewCommand {
@@ -61,7 +61,7 @@ impl TectonicCommand for NewCommand {
 
         let wc = WorkspaceCreator::new(self.path);
         ctry!(
-            wc.create_defaulted(config, status, self.web_bundle);
+            wc.create_defaulted(&config, self.bundle);
             "failed to create the new Tectonic workspace"
         );
         Ok(0)

@@ -1,0 +1,44 @@
+\documentclass[
+    digital,
+    twoside,
+    nolof,
+    nolot
+]{fithesis4}
+\usepackage[main=english]{babel} 
+
+% The fithesis document class uses tex paths in many odd ways:
+% - it provides many files with the same name
+% - it loads these files, depending on configuration, with a partial path
+%
+% This behavior makes fithesis a good test case for
+% Tectonic's file search algorithm.
+
+
+\thesissetup{
+    date          = \the\year/\the\month/\the\day,
+    university    = mu,
+    faculty       = sci,
+    type          = bc,
+    programme     = NA,
+    field         = Sport Management,
+    department    = Department of Social Sciences and Sport Management,
+    author        = Jane Doe,
+    gender        = f,
+    advisor       = {Prof. RNDr. John Smith, CSc.},
+    title         = The use of LaTeX for the Typesetting
+                                    of Sports Tables,
+    TeXtitle      = The use of \LaTeX\ for the Typesetting
+                                    of Sports Tables,
+    keywords      = {keyword1, keywords2, ...},
+    TeXkeywords   = {keyword1, keywords2, \ldots},
+    abstract      = {%
+        This is the abstract of my thesis, which can
+        span multiple paragraphs.
+    }
+}
+
+\begin{document}
+
+    test
+
+\end{document}

@@ -12,6 +12,7 @@ The `bundle` subcommands are:
 
 - [`tectonic -X bundle cat`](#tectonic--x-bundle-cat)
 - [`tectonic -X bundle search`](#tectonic--x-bundle-search)
+- [`tectonic -X bundle create`](#tectonic--x-bundle-create)
 
 
 ## tectonic -X bundle cat
@@ -71,3 +72,8 @@ be added in the future, activated by additional options.
 
 If this command is run outside of a [document workspace](../ref/workspaces.md),
 the system default bundle will be used.
+
+
+## tectonic -X bundle create
+
+Create a new bundle. See `./bundles` in the `tectonic` repository.

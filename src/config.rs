@@ -12,19 +12,13 @@
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::atomic::{AtomicBool, Ordering},
 };
-use tectonic_bundles::{
-    cache::Cache, dir::DirBundle, itar::IndexedTarBackend, zip::ZipBundle, Bundle,
-};
+use tectonic_bundles::{detect_bundle, Bundle};
 use tectonic_io_base::app_dirs;
-use url::Url;
 
-use crate::{
-    errors::{ErrorKind, Result},
-    status::StatusBackend,
-};
+use crate::errors::{ErrorKind, Result};
 
 /// Awesome hack time!!!
 ///
@@ -44,19 +38,19 @@ pub fn is_config_test_mode_activated() -> bool {
     CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst)
 }
 
-pub fn is_test_bundle_wanted(web_bundle: Option<String>) -> bool {
+pub fn is_test_bundle_wanted(bundle: Option<String>) -> bool {
     if !is_config_test_mode_activated() {
         return false;
     }
-    match web_bundle {
+    match bundle {
         None => true,
         Some(x) if x.contains("test-bundle://") => true,
         _ => false,
     }
 }
 
-pub fn maybe_return_test_bundle(web_bundle: Option<String>) -> Result<Box<dyn Bundle>> {
-    if is_test_bundle_wanted(web_bundle) {
+pub fn maybe_return_test_bundle(bundle: Option<String>) -> Result<Box<dyn Bundle>> {
+    if is_test_bundle_wanted(bundle) {
         Ok(Box::<crate::test_util::TestBundle>::default())
     } else {
         Err(ErrorKind::Msg("not asking for the default test bundle".to_owned()).into())
@@ -134,53 +128,14 @@ impl PersistentConfig {
         Ok(PersistentConfig::default())
     }
 
-    pub fn make_cached_url_provider(
-        &self,
-        url: &str,
-        only_cached: bool,
-        custom_cache_root: Option<&Path>,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
-        if let Ok(test_bundle) = maybe_return_test_bundle(Some(url.to_owned())) {
-            return Ok(test_bundle);
-        }
-
-        let mut cache = if let Some(root) = custom_cache_root {
-            Cache::get_for_custom_directory(root)
-        } else {
-            Cache::get_user_default()?
-        };
-
-        let bundle = cache.open::<IndexedTarBackend>(url, only_cached, status)?;
-        Ok(Box::new(bundle) as _)
-    }
-
-    pub fn make_local_file_provider(
-        &self,
-        file_path: PathBuf,
-        _status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
-        let bundle: Box<dyn Bundle> = if file_path.is_dir() {
-            Box::new(DirBundle::new(file_path))
-        } else {
-            Box::new(ZipBundle::open(file_path)?)
-        };
-        Ok(bundle)
-    }
-
     pub fn default_bundle_loc(&self) -> &str {
         &self.default_bundles[0].url
     }
 
-    pub fn default_bundle(
-        &self,
-        only_cached: bool,
-        status: &mut dyn StatusBackend,
-    ) -> Result<Box<dyn Bundle>> {
-        use std::io;
-
-        if let Ok(test_bundle) = maybe_return_test_bundle(None) {
-            return Ok(test_bundle);
+    pub fn default_bundle(&self, only_cached: bool) -> Result<Box<dyn Bundle>> {
+        if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
+            let bundle = crate::test_util::TestBundle::default();
+            return Ok(Box::new(bundle));
         }
 
         if self.default_bundles.len() != 1 {
@@ -190,25 +145,18 @@ impl PersistentConfig {
             .into());
         }
 
-        let url = Url::parse(&self.default_bundles[0].url)
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "failed to parse url"))?;
-        if url.scheme() == "file" {
-            // load the local zip file.
-            let file_path = url.to_file_path().map_err(|_| {
-                io::Error::new(io::ErrorKind::InvalidInput, "failed to parse local path")
-            })?;
-            return self.make_local_file_provider(file_path, status);
-        }
-        let bundle =
-            self.make_cached_url_provider(&self.default_bundles[0].url, only_cached, None, status)?;
-        Ok(Box::new(bundle) as _)
+        Ok(
+            detect_bundle(self.default_bundles[0].url.to_owned(), only_cached, None)
+                .unwrap()
+                .unwrap(),
+        )
     }
 
     pub fn format_cache_path(&self) -> Result<PathBuf> {
         if is_config_test_mode_activated() {
             Ok(crate::test_util::test_path(&[]))
         } else {
-            Ok(app_dirs::ensure_user_cache_dir("formats")?)
+            Ok(app_dirs::get_user_cache_dir("formats")?)
         }
     }
 }
