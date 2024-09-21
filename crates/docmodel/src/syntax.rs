@@ -98,6 +98,7 @@ pub struct TomlOutputProfile {
     pub tex_format: Option<String>,
     pub shell_escape: Option<bool>,
     pub shell_escape_cwd: Option<String>,
+    pub synctex: Option<bool>,
 
     // We cannot handle these two input variants with an enum.
     // The ideal solution requires #[serde(flatten)],
@@ -118,6 +119,7 @@ pub struct TomlOutputProfile {
 impl From<&TomlOutputProfile> for OutputProfile {
     fn from(val: &TomlOutputProfile) -> OutputProfile {
         let shell_escape_default = val.shell_escape_cwd.is_some();
+        let synctex_default = false;
 
         let inputs = {
             if let Some(inputs) = &val.inputs {
@@ -152,6 +154,7 @@ impl From<&TomlOutputProfile> for OutputProfile {
             inputs,
             shell_escape: val.shell_escape.unwrap_or(shell_escape_default),
             shell_escape_cwd: val.shell_escape_cwd.clone(),
+            synctex: val.synctex.unwrap_or(synctex_default),
         }
     }
 }
@@ -169,6 +172,7 @@ impl From<&OutputProfile> for TomlOutputProfile {
 
         let shell_escape = if !rt.shell_escape { None } else { Some(true) };
         let shell_escape_cwd = rt.shell_escape_cwd.clone();
+        let synctex = if !rt.synctex { None } else {Some(true)};
 
         TomlOutputProfile {
             name: rt.name.clone(),
@@ -177,6 +181,7 @@ impl From<&OutputProfile> for TomlOutputProfile {
             inputs: Some(inputs),
             shell_escape,
             shell_escape_cwd,
+            synctex,
             preamble_file: None,
             index_file: None,
             postamble_file: None,
