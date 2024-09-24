@@ -555,7 +555,7 @@ dependencies = [
  "libz-sys",
  "openssl-sys",
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "windows-sys 0.52.0",
 ]
 
@@ -1572,7 +1572,7 @@ dependencies = [
  "cc",
  "libc",
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1887,7 +1887,7 @@ dependencies = [
  "libc",
  "openssl-src",
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1927,6 +1927,12 @@ checksum = "c705f256449c60da65e11ff6626e0c16a0a0b96aaa348de61376b249bc340f41"
 dependencies = [
  "regex",
 ]
+
+[[package]]
+name = "paste"
+version = "1.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de3145af08024dea9fa9914f381a17b8fc6034dfb00f3a84013f7ff43f29ed4c"
 
 [[package]]
 name = "pathdiff"
@@ -2743,9 +2749,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_bridge_fontconfig"
+version = "0.0.0-dev.0"
+dependencies = [
+ "libc",
+ "tectonic_cfg_support",
+ "tectonic_dep_support",
+]
+
+[[package]]
 name = "tectonic_bridge_freetype2"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
  "tectonic_dep_support",
 ]
 
@@ -2753,6 +2769,7 @@ dependencies = [
 name = "tectonic_bridge_graphite2"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
  "tectonic_dep_support",
 ]
 
@@ -2761,6 +2778,8 @@ name = "tectonic_bridge_harfbuzz"
 version = "0.0.0-dev.0"
 dependencies = [
  "cc",
+ "libc",
+ "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_dep_support",
 ]
@@ -2769,6 +2788,8 @@ dependencies = [
 name = "tectonic_bridge_icu"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
+ "paste",
  "tectonic_dep_support",
 ]
 
@@ -2798,7 +2819,7 @@ name = "tectonic_dep_support"
 version = "0.0.0-dev.0"
 dependencies = [
  "pkg-config",
- "vcpkg",
+ "vcpkg 0.2.15 (git+https://github.com/CraftSpider/vcpkg-rs/?branch=expose-version)",
 ]
 
 [[package]]
@@ -2860,6 +2881,7 @@ dependencies = [
  "tectonic_bridge_flate",
  "tectonic_bridge_graphite2",
  "tectonic_bridge_harfbuzz",
+ "tectonic_bridge_icu",
  "tectonic_cfg_support",
  "tectonic_errors",
  "tectonic_pdf_io",
@@ -2895,6 +2917,14 @@ dependencies = [
  "tectonic_errors",
  "tectonic_status_base",
  "thiserror",
+]
+
+[[package]]
+name = "tectonic_mac_core"
+version = "0.0.0-dev.0"
+dependencies = [
+ "libc",
+ "tectonic_cfg_support",
 ]
 
 [[package]]
@@ -2938,13 +2968,17 @@ name = "tectonic_xetex_layout"
 version = "0.0.0-dev.0"
 dependencies = [
  "cc",
+ "libc",
  "tectonic_bridge_core",
+ "tectonic_bridge_fontconfig",
  "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_bridge_harfbuzz",
  "tectonic_bridge_icu",
  "tectonic_cfg_support",
  "tectonic_dep_support",
+ "tectonic_io_base",
+ "tectonic_mac_core",
 ]
 
 [[package]]
@@ -3386,6 +3420,11 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "vcpkg"
+version = "0.2.15"
+source = "git+https://github.com/CraftSpider/vcpkg-rs/?branch=expose-version#949c69d74eaf4785ff04d833f275c2894b18394b"
 
 [[package]]
 name = "version_check"
