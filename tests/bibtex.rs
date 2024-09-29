@@ -113,6 +113,18 @@ fn test_colon() {
 }
 
 #[test]
+fn test_control_sequences() {
+    TestCase::new(&["cites", "control_seq"])
+        .expect(Ok(TexOutcome::Warnings))
+        .go();
+}
+
+#[test]
+fn test_multi_bib() {
+    TestCase::new(&["cites", "multi_file"]).go();
+}
+
+#[test]
 fn test_empty_files() {
     TestCase::new(&["empty"])
         .expect(Ok(TexOutcome::Errors))
