@@ -220,7 +220,7 @@ fn handle_char(
                 .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
 
             let init = globals.buffers.init(BufTy::Base);
-            if !Scan::new().chars(&[b'"']).scan_till(globals.buffers, init) {
+            if !Scan::new().chars(b"\"").scan_till(globals.buffers, init) {
                 ctx.write_logs("No `\"` to end string literal");
                 return skip_token_print(ctx, globals.buffers, globals.pool);
             }
@@ -512,7 +512,7 @@ fn scan_balanced_braces(
                         let init = buffers.init(BufTy::Base);
                         if (c == b'{'
                             || c == b'}'
-                            || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
+                            || !Scan::new().chars(b"{}").scan_till(buffers, init))
                             && !eat_bib_white_space(ctx, buffers, bibs)
                         {
                             return eat_bib_print(ctx, buffers, pool, bibs, bib_command)

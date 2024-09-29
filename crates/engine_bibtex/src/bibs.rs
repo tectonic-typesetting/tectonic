@@ -134,7 +134,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     let mut bib_command = None;
 
     let mut init = globals.buffers.init(BufTy::Base);
-    while !Scan::new().chars(&[b'@']).scan_till(globals.buffers, init) {
+    while !Scan::new().chars(b"@").scan_till(globals.buffers, init) {
         if !input_ln(
             ctx.engine,
             &mut globals.bibs.top_file_mut().file,
