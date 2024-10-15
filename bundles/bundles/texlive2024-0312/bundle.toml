@@ -1,0 +1,89 @@
+[bundle]
+name = "texlive2024-0312"
+expected_hash = "8fae742a1d9453fc3abfe7c6971363696f611ade1266c17788ccb5c18ffd1312"
+
+search_order = ["/", { input = "include" }, { input = "texlive" }]
+
+# Note the triple-quoted multiline strings:
+# this is the best way to get raw strings in TOML.
+ignore = [
+    # Files and extensions we usually want to ignore.
+    '''.*/00readme\.txt''',
+    '''.*/LICENSE\.md''',
+    '''.*/Makefile''',
+    '''.*/README''',
+    '''.*/README.md''',
+    '''.*/readme\.txt''',
+    '''.*/ls-R''',
+    '''.*\.fmt''',
+    '''.*\.log''',
+    '''.*\.lua''',
+    '''.*\.mf''',
+    '''.*\.pl''',
+    '''.*\.ps''',
+]
+
+
+[inputs."include"]
+source.dir.path = "include"
+
+
+# Requires texlive-20240312-texmf, which is available at
+# https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2024/texlive-20240312-texmf.tar.xz
+# download and extract this file as a .tar in this directory.
+[inputs."texlive"]
+source.tarball.path = "texlive-20240312-texmf.tar"
+source.tarball.hash = "87f7f5fd9618689cd9ae436ad37cefe43fabf1f2f457ac3860ec2aa854578d20"
+source.tarball.root_dir = "texlive-20240312-texmf/texmf-dist"
+patch_dir = "patches/texlive"
+
+ignore = [
+    # I don't think tectonic has xindy support, ignore for now
+    '''xindy/.*''',
+
+    # We may need this, but exclude for now.
+    '''tex4ht/.*''',
+
+    # These require pLaTeX2e, tectonic uses XeTeX
+    '''tex/uplatex/.*''',
+    '''tex/uptex/.*''',
+
+    # Other odd tex formats & unnecessary files
+    '''tex/cslatex/.*''',
+    '''tex/csplain/.*''',
+    '''tex/ptex/.*''',
+    '''tex/platex/.*''',
+    '''tex/lollipop/.*''',
+    '''tex/context/.*''',
+    '''context/.*''',
+    '''texdoc/.*''',
+    '''texdoctk/.*''',
+    '''texconfig/.*''',
+    '''scripts/.*''',
+    '''dvips/.*''',
+    '''asymptote/.*''',
+    '''makeindex/.*''',
+    '''luatex-cache/.*''',
+    '''hb2gf/.*''',
+    '''chktex/.*''',
+    '''source/.*''',
+    '''doc/.*''',
+    '''tex/luatex/.*''',
+    '''tex/lualatex/.*''',
+    '''tex/lambda/.*''',
+    '''omega/.*''',
+]
+
+search_order = [
+    "tex/{xelatex,latex,xetex,plain,generic}//",
+    "bibtex/{bib,bst,csf}//",
+    "web2c//",
+    "fonts//",
+    "biber//",
+    "mft//",
+    "dvips//",
+    "makeindex//",
+    "{web,cweb}//",
+    "ttf2pk//",
+    "dvipdfmx/",
+]
