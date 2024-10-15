@@ -233,6 +233,11 @@ pub struct OutputProfile {
     /// Directory is not managed and any files created in it will not be deleted.
     ///
     pub shell_escape_cwd: Option<String>,
+
+    /// Whether synctex should be activated for this profile.
+    ///
+    /// Default is false.
+    pub synctex: bool,
 }
 
 /// The output target type of a document build.
@@ -325,6 +330,7 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
                 .collect(),
             shell_escape: false,
             shell_escape_cwd: None,
+            synctex: false,
         },
     );
     outputs
@@ -369,5 +375,38 @@ mod tests {
         let mut c = Cursor::new(TOML.as_bytes());
         let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
         assert!(doc.outputs.get("o").unwrap().shell_escape);
+    }
+
+    #[test]
+    fn synctex_default_false() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        "#;
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(!doc.outputs.get("o").unwrap().synctex);
+    }
+
+    #[test]
+    fn synctex_set_true() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        synctex = true
+        "#;
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(doc.outputs.get("o").unwrap().synctex);
     }
 }
