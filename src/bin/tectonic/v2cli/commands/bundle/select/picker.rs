@@ -420,14 +420,14 @@ impl FilePicker {
                 if x.hash().unwrap() != hash {
                     if cli.allow_hash_mismatch {
                         warn!("hash of tarball for source `{source}` doesn't match expected value");
-                        warn!("expected: {}", x.hash().unwrap());
-                        warn!("got:      {}", hash);
+                        warn!("expected: {}", hash);
+                        warn!("got:      {}", x.hash().unwrap());
                     } else {
                         error!(
                             "hash of tarball for source `{source}` doesn't match expected value"
                         );
-                        error!("expected: {}", x.hash().unwrap());
-                        error!("got:      {}", hash);
+                        error!("expected: {}", hash);
+                        error!("got:      {}", x.hash().unwrap());
                         bail!("hash of tarball for source `{source}` doesn't match expected value")
                     }
                 }
