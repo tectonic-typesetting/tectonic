@@ -38,32 +38,27 @@ pub(super) fn select(cli: &BundleCreateCommand) -> Result<()> {
         return Err(e);
     };
 
+    let build_dir = cli.build_dir.join(&bundle_config.bundle.name);
+
     // Remove build dir if it exists
-    if cli.build_dir.exists() {
-        warn!(
-            "build dir {} aleady exists",
-            cli.build_dir.to_str().unwrap()
-        );
+    if build_dir.exists() {
+        warn!("build dir {} aleady exists", build_dir.to_str().unwrap());
 
         for i in (1..=5).rev() {
             warn!(
                 "recursively removing {} in {i} second{}",
-                cli.build_dir.to_str().unwrap(),
+                build_dir.to_str().unwrap(),
                 if i != 1 { "s" } else { "" }
             );
             thread::sleep(Duration::from_secs(1));
         }
         thread::sleep(Duration::from_secs(2));
 
-        fs::remove_dir_all(&cli.build_dir)?;
+        fs::remove_dir_all(&build_dir)?;
     }
-    fs::create_dir_all(&cli.build_dir).context("while creating build dir")?;
+    fs::create_dir_all(&build_dir).context("while creating build dir")?;
 
-    let mut picker = FilePicker::new(
-        bundle_config.clone(),
-        cli.build_dir.clone(),
-        bundle_dir.clone(),
-    )?;
+    let mut picker = FilePicker::new(bundle_config.clone(), build_dir.clone(), bundle_dir.clone())?;
 
     // Run selector
     let sources: Vec<String> = picker.iter_sources().map(|x| x.to_string()).collect();
@@ -110,16 +105,18 @@ pub(super) fn pack(cli: &BundleCreateCommand) -> Result<()> {
     file.read_to_string(&mut file_str)?;
     let bundle_config: BundleSpec = toml::from_str(&file_str)?;
 
+    let build_dir = cli.build_dir.join(&bundle_config.bundle.name);
+
     if !cli.build_dir.join("content").is_dir() {
         error!(
             "content directory `{}/content` doesn't exist, can't continue",
-            cli.build_dir.to_str().unwrap()
+            build_dir.to_str().unwrap()
         );
         return Ok(());
     }
 
     let target_name = format!("{}.ttb", &bundle_config.bundle.name);
-    let target = cli.build_dir.join(&target_name);
+    let target = build_dir.join(&target_name);
     if target.exists() {
         if target.is_file() {
             warn!("target bundle `{target_name}` exists, removing");
@@ -132,7 +129,7 @@ pub(super) fn pack(cli: &BundleCreateCommand) -> Result<()> {
 
     match cli.format {
         BundleFormat::BundleV1 => {
-            BundleV1::make(Box::new(File::create(target)?), cli.build_dir.clone())?
+            BundleV1::make(Box::new(File::create(target)?), build_dir.clone())?
         }
     }
 
