@@ -1,13 +1,13 @@
 # Build files
-/cross
+tectonic/cross
+tectonic/target
 /docs/book/*
-/target
 
 # Tests
-crates/cli/tests/plain.fmt
-crates/cli/tests/00*00-latex-*.fmt
-crates/cli/tests/*-plain-*.fmt
-crates/cli/tests/xenia/paper.pdf
+tectonic/crates/cli/tests/plain.fmt
+tectonic/crates/cli/tests/00*00-latex-*.fmt
+tectonic/crates/cli/tests/*-plain-*.fmt
+tectonic/crates/cli/tests/xenia/paper.pdf
 
 # Tectonic bundles
 *.ttb
