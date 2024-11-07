@@ -1,69 +1,13 @@
-# Cargo.toml -- Cargo definition file for Tectonic.
-# Copyright 2016-2023 the Tectonic Project
-# Licensed under the MIT License.
+[workspace]
+members = ["crates/*"]
+default-members = ["crates/cli"]
+resolver = "2"
 
-[package]
-name = "tectonic"
-version = "0.0.0-dev.0" # assigned with cranko (see README)
-authors = ["Peter Williams <peter@newton.cx>"]
-description = """
-A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
-extension to the classic "Web2C" implementation of TeX and uses the TeXLive distribution
-of support files.
-"""
-homepage = "https://tectonic-typesetting.github.io/"
-documentation = "https://docs.rs/tectonic"
-repository = "https://github.com/tectonic-typesetting/tectonic/"
-readme = "CARGO_README.md"
-keywords = ["tex", "latex", "typesetting", "font"]
-categories = [
-    "command-line-interface",
-    "parser-implementations",
-    "rendering",
-    "science",
-    "text-processing",
-]
-license = "MIT"
-edition = "2018"
-exclude = ["/dist/", "/reference_sources/"]
-
-[lints.rust]
+[workspace.lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)'] }
 
-[badges]
-travis-ci = { repository = "tectonic-typesetting/tectonic" }
-codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
-
-[workspace]
-members = [
-    "crates/bridge_flate",
-    "crates/bridge_freetype2",
-    "crates/bridge_graphite2",
-    "crates/bridge_harfbuzz",
-    "crates/bridge_icu",
-    "crates/bundles",
-    "crates/cfg_support",
-    "crates/dep_support",
-    "crates/docmodel",
-    "crates/engine_bibtex",
-    "crates/engine_spx2html",
-    "crates/engine_xdvipdfmx",
-    "crates/engine_xetex",
-    "crates/errors",
-    "crates/geturl",
-    "crates/io_base",
-    "crates/pdf_io",
-    "crates/status_base",
-    "crates/xdv",
-    "crates/xetex_format",
-    "crates/xetex_layout",
-]
-
-[lib]
-name = "tectonic"
-crate-type = ["rlib"]
-
-[dependencies]
+# Includes both dev and dist dependencies
+[workspace.dependencies]
 byte-unit = "^5.0"
 cfg-if = "1.0"
 error-chain = "^0.12"
@@ -74,12 +18,12 @@ libc = "^0.2"
 md-5 = "^0.10"
 open = "^5.0"
 quick-xml = "^0.31"
-serde = { version = "^1.0", features = ["derive"], optional = true }
+serde = { version = "^1.0", features = ["derive"] }
 sha2 = "^0.10"
 clap = { version = "4.5.1", features = ["derive"] }
 tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
 tectonic_bundles = { path = "crates/bundles", version = "0.0.0-dev.0", default-features = false }
-tectonic_docmodel = { path = "crates/docmodel", version = "0.0.0-dev.0", optional = true }
+tectonic_docmodel = { path = "crates/docmodel", version = "0.0.0-dev.0" }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = "0.0.0-dev.0" }
 tectonic_engine_spx2html = { path = "crates/engine_spx2html", version = "0.0.0-dev.0" }
 tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version = "0.0.0-dev.0" }
@@ -93,7 +37,7 @@ tectonic_xetex_layout = { path = "crates/xetex_layout", version = "0.0.0-dev.0" 
 tempfile = "^3.1"
 termcolor = "^1.1"
 tokio = "^1.0"
-toml = { version = "^0.8", optional = true }
+toml = { version = "^0.8" }
 url = "^2.0"
 watchexec = "^3.0"
 watchexec-filterer-globset = "3.0"
@@ -109,31 +53,8 @@ tar = "0.4.40"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
-[features]
-default = ["geturl-reqwest", "serialization"]
 
-# The main motivation for this feature was to be able to compile without
-# proc-macros (via serde-derive), for statically-linked targets which can't use
-# them. In the CI, we now build for statically-linked targets using a
-# cross-compilation model that allows us to have proc-macros anyway. So maybe
-# this feature should go away? It's kind of annoying to support, and at this
-# point proc-macros may have snuck into the dependency tree elsewhere, anyway.
-serialization = ["serde", "tectonic_docmodel", "toml"]
-
-external-harfbuzz = ["tectonic_engine_xetex/external-harfbuzz"]
-
-geturl-curl = ["tectonic_bundles/geturl-curl", "tectonic_geturl/curl"]
-geturl-reqwest = ["tectonic_bundles/geturl-reqwest", "tectonic_geturl/reqwest"]
-
-native-tls-vendored = [
-    "tectonic_bundles/native-tls-vendored",
-    "tectonic_geturl/native-tls-vendored",
-]
-
-# developer feature to compile with the necessary flags for profiling tectonic.
-profile = []
-
-[dev-dependencies]
+[workspace.dev-dependencies]
 filetime = "^0.2"
 futures = "0.3"
 headers = "0.4"
@@ -146,52 +67,3 @@ hyper-util = { version = "0.1", features = [
     "tokio",
 ] }
 tempfile = "^3.1"
-
-[package.metadata.vcpkg]
-git = "https://github.com/microsoft/vcpkg"
-rev = "4a600e9fea71bd7872080cbb716797e04d30e6d3"
-overlay-triplets-path = "dist/vcpkg-triplets"
-
-# If other targets start using custom triplets like x86_64-pc-windows-msvc,
-# add them to crates/dep_support/src/lib.rs:new_from_vcpkg() to give users
-# guidance if they might need to set $VCPKGRS_TRIPLET.
-[package.metadata.vcpkg.target]
-x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
-aarch64-apple-darwin = { triplet = "arm64-osx", install = [
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
-] }
-x86_64-unknown-linux-gnu = { install = [
-    "fontconfig",
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
-] }
-x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
-    "fontconfig",
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
-] }
-
-[package.metadata.internal_dep_versions]
-tectonic_bridge_core = "thiscommit:2023-06-11:PvhF7YB"
-tectonic_bridge_flate = "thiscommit:2021-01-01:eer4ahL4"
-tectonic_bridge_graphite2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
-tectonic_bridge_harfbuzz = "thiscommit:2023-09-17:FZwRtUP"
-tectonic_bridge_icu = "thiscommit:2023-09-17:AwTXf3W"
-tectonic_bundles = "thiscommit:2022-03-29:SFnXSaL"
-tectonic_cfg_support = "thiscommit:aeRoo7oa"
-tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
-tectonic_docmodel = "a88a0418a9c3c559d023d9b1da9b03fce3a469e5"
-tectonic_engine_bibtex = "thiscommit:2021-01-17:KuhaeG1e"
-tectonic_engine_spx2html = "thiscommit:2022-11-22:vicemXu"
-tectonic_engine_xdvipdfmx = "8a003834b1f6d967d33cc07de4cc025af14560da"
-tectonic_engine_xetex = "c135e6a4a5a2e8c2dc4edcbcfd93f7d466ff8f88"
-tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
-tectonic_geturl = "68c5fc525c5fead75913bd90380043761bde9f61"
-tectonic_io_base = "thiscommit:2021-06-13:XFjtSsZ"
-tectonic_status_base = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
-tectonic_xdv = "c91f2ef37858d1a0a724a5c3ddc2f7ea46373c77"
-tectonic_xetex_layout = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"

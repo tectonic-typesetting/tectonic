@@ -4,10 +4,10 @@
 /target
 
 # Tests
-/tests/plain.fmt
-/tests/00*00-latex-*.fmt
-/tests/*-plain-*.fmt
-/tests/xenia/paper.pdf
+crates/cli/tests/plain.fmt
+crates/cli/tests/00*00-latex-*.fmt
+crates/cli/tests/*-plain-*.fmt
+crates/cli/tests/xenia/paper.pdf
 
 # Tectonic bundles
 *.ttb
