@@ -8,19 +8,7 @@ unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)'] }
 
 # Includes both dev and dist dependencies
 [workspace.dependencies]
-byte-unit = "^5.0"
-cfg-if = "1.0"
-error-chain = "^0.12"
-flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
-fs2 = "^0.4"
-lazy_static = "^1.4"
-libc = "^0.2"
-md-5 = "^0.10"
-open = "^5.0"
-quick-xml = "^0.31"
-serde = { version = "^1.0", features = ["derive"] }
-sha2 = "^0.10"
-clap = { version = "4.5.1", features = ["derive"] }
+# Project dependencies
 tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
 tectonic_bundles = { path = "crates/bundles", version = "0.0.0-dev.0", default-features = false }
 tectonic_docmodel = { path = "crates/docmodel", version = "0.0.0-dev.0" }
@@ -34,6 +22,29 @@ tectonic_io_base = { path = "crates/io_base", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "crates/status_base", version = "0.0.0-dev.0" }
 tectonic_xdv = { path = "crates/xdv", version = "0.0.0-dev.0" }
 tectonic_xetex_layout = { path = "crates/xetex_layout", version = "0.0.0-dev.0" }
+tectonic_dep_support = { path = "crates/dep_support", version = "0.0.0-dev.0" }
+tectonic_cfg_support = { path = "crates/cfg_support", version = "0.0.0-dev.0" }
+tectonic_bridge_graphite2 = { path = "crates/bridge_graphite2", version = "0.0.0-dev.0" }
+tectonic_pdf_io = { path = "crates/pdf_io", version = "0.0.0-dev.0" }
+tectonic_bridge_flate = { path = "crates/bridge_flate", version = "0.0.0-dev.0" }
+tectonic_bridge_freetype2 = { path = "crates/bridge_freetype2", version = "0.0.0-dev.0" }
+tectonic_bridge_harfbuzz = { path = "crates/bridge_harfbuzz", version = "0.0.0-dev.0" }
+tectonic_bridge_icu = { path = "crates/bridge_icu", version = "0.0.0-dev.0" }
+
+# External dependencies
+byte-unit = "^5.0"
+cfg-if = "1.0"
+error-chain = "^0.12"
+flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
+fs2 = "^0.4"
+lazy_static = "^1.4"
+libc = "^0.2"
+md-5 = "^0.10"
+open = "^5.0"
+quick-xml = "^0.31"
+serde = { version = "^1.0", features = ["derive"] }
+sha2 = "^0.10"
+clap = { version = "4.5.1", features = ["derive", "cargo"] }
 tempfile = "^3.1"
 termcolor = "^1.1"
 tokio = "^1.0"
@@ -52,9 +63,6 @@ anyhow = "1.0.80"
 tar = "0.4.40"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-
-
-[workspace.dev-dependencies]
 filetime = "^0.2"
 futures = "0.3"
 headers = "0.4"
@@ -66,4 +74,17 @@ hyper-util = { version = "0.1", features = [
     "http2",
     "tokio",
 ] }
-tempfile = "^3.1"
+cc = "^1.0.66"
+pkg-config = "^0.3"
+vcpkg = "^0.2.11"
+byteorder = "^1.4"
+html-escape = "^0.2"
+percent-encoding = "^2.1"
+pinot = "^0.1.4"
+tera = "^1.13"
+serde_json = "^1.0"
+curl = { version = "^0.4" }
+reqwest = { version = "^0.11", features = ["blocking"] }
+app_dirs2 = "^2.3"
+thiserror = "1.0"
+nom = "^7"

@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_core"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing core backend APIs to the Tectonic C/C++ code.
@@ -19,16 +19,17 @@ edition = "2018"
 links = "tectonic_bridge_core"
 
 [dependencies]
-flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
-lazy_static = "^1.4"
-libc = "^0.2"
-md-5 = "^0.10"
-tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
-tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
+tectonic_errors = { workspace = true }
+tectonic_io_base = { workspace = true }
+tectonic_status_base = { workspace = true }
+
+flate2 = { workspace = true }
+lazy_static = { workspace = true }
+libc = { workspace = true }
+md-5 = { workspace = true }
 
 [build-dependencies]
-cc = "^1.0.66"
+cc = { workspace = true }
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"

@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_errors"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A boxed error type for Tectonic, with supporting utilities.
@@ -16,4 +16,4 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-anyhow = "^1"
+anyhow = { workspace = true }

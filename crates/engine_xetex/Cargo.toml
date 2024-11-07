@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_engine_xetex"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The [XeTeX](http://xetex.sourceforge.net/) engine as a reusable crate.
@@ -19,18 +19,19 @@ edition = "2018"
 links = "tectonic_engine_xetex"
 
 [dependencies]
-libc = "^0.2"
-tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
-tectonic_bridge_flate = { path = "../bridge_flate", version = "0.0.0-dev.0" }
-tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev.0" }
-tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version = "0.0.0-dev.0" }
-tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
-tectonic_pdf_io = { path = "../pdf_io", version = "0.0.0-dev.0" }
-tectonic_xetex_layout = { path = "../xetex_layout", version = "0.0.0-dev.0" }
+tectonic_bridge_core = { workspace = true }
+tectonic_bridge_flate = { workspace = true }
+tectonic_bridge_graphite2 = { workspace = true }
+tectonic_bridge_harfbuzz = { workspace = true }
+tectonic_errors = { workspace = true }
+tectonic_pdf_io = { workspace = true }
+tectonic_xetex_layout = { workspace = true }
+libc = { workspace = true }
+
 
 [build-dependencies]
-cc = "^1.0.66"
-tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
+tectonic_cfg_support = { workspace = true }
+cc = { workspace = true }
 
 [features]
 external-harfbuzz = [

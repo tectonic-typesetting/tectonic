@@ -19,16 +19,17 @@ edition = "2018"
 links = "tectonic_xetex_layout"
 
 [dependencies]
-tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
-tectonic_bridge_freetype2 = { path = "../bridge_freetype2", version = "0.0.0-dev.0" }
-tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev.0" }
-tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version = "0.0.0-dev.0" }
-tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
+tectonic_bridge_core = { workspace = true }
+tectonic_bridge_freetype2 = { workspace = true }
+tectonic_bridge_graphite2 = { workspace = true }
+tectonic_bridge_harfbuzz = { workspace = true }
+tectonic_bridge_icu = { workspace = true }
 
 [build-dependencies]
-cc = "^1.0.66"
-tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
-tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
+tectonic_cfg_support = { workspace = true }
+tectonic_dep_support = { workspace = true }
+
+cc = { workspace = true }
 
 [features]
 external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]

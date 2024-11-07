@@ -50,51 +50,46 @@ tectonic_status_base = { workspace = true }
 tectonic_xdv = { workspace = true }
 tectonic_xetex_layout = { workspace = true }
 
-byte-unit = "^5.0"
-cfg-if = "1.0"
-error-chain = "^0.12"
-flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
-fs2 = "^0.4"
-lazy_static = "^1.4"
-libc = "^0.2"
-md-5 = "^0.10"
-open = "^5.0"
-quick-xml = "^0.31"
-serde = { version = "^1.0", features = ["derive"], optional = true }
-sha2 = "^0.10"
-clap = { version = "4.5.1", features = ["derive"] }
-tempfile = "^3.1"
-termcolor = "^1.1"
-tokio = "^1.0"
-toml = { version = "^0.8", optional = true }
-url = "^2.0"
-watchexec = "^3.0"
-watchexec-filterer-globset = "3.0"
-watchexec-signals = "2.0"
-watchexec-supervisor = "1.0"
-zip = { version = "^0.6", default-features = false, features = ["deflate"] }
-time = "0.3.36"
-clap_complete = "4.5.1"
-walkdir = "2"
-regex = "1.10.2"
-anyhow = "1.0.80"
-tar = "0.4.40"
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+byte-unit = { workspace = true }
+cfg-if = { workspace = true }
+error-chain = { workspace = true }
+flate2 = { workspace = true }
+fs2 = { workspace = true }
+lazy_static = { workspace = true }
+libc = { workspace = true }
+md-5 = { workspace = true }
+open = { workspace = true }
+quick-xml = { workspace = true }
+serde = { workspace = true, optional = true }
+sha2 = { workspace = true }
+clap = { workspace = true }
+tempfile = { workspace = true }
+termcolor = { workspace = true }
+tokio = { workspace = true }
+toml = { workspace = true, optional = true }
+url = { workspace = true }
+watchexec = { workspace = true }
+watchexec-filterer-globset = { workspace = true }
+watchexec-signals = { workspace = true }
+watchexec-supervisor = { workspace = true }
+zip = { workspace = true }
+time = { workspace = true }
+clap_complete = { workspace = true }
+walkdir = { workspace = true }
+regex = { workspace = true }
+anyhow = { workspace = true }
+tar = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 
 [dev-dependencies]
-filetime = "^0.2"
-futures = "0.3"
-headers = "0.4"
-http-body-util = "0.1.0"
-hyper = { version = "1.0.0", features = ["server", "http1", "http2"] }
-hyper-util = { version = "0.1", features = [
-    "server",
-    "http1",
-    "http2",
-    "tokio",
-] }
-tempfile = "^3.1"
+filetime = { workspace = true }
+futures = { workspace = true }
+headers = { workspace = true }
+http-body-util = { workspace = true }
+hyper = { workspace = true }
+hyper-util = { workspace = true }
+tempfile = { workspace = true }
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"

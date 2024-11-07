@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_dep_support"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Support for finding third-party libraries using either pkg-config or vcpkg.
@@ -16,5 +16,5 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-pkg-config = "^0.3"
-vcpkg = "^0.2.11"
+pkg-config = { workspace = true }
+vcpkg = { workspace = true }

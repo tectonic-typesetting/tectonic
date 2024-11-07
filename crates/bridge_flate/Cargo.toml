@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_flate"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing flate compression to the Tectonic C code.
@@ -19,6 +19,5 @@ edition = "2018"
 links = "tectonic_bridge_flate"
 
 [dependencies]
-flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
-libc = "^0.2"
-
+flate2 = { workspace = true }
+libc = { workspace = true }

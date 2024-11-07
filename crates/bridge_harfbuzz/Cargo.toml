@@ -20,11 +20,12 @@ links = "harfbuzz"
 exclude = ["/harfbuzz/docs/", "/harfbuzz/perf/", "/harfbuzz/test/"]
 
 [dependencies]
-tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev.0" }
+tectonic_bridge_graphite2 = { workspace = true }
 
 [build-dependencies]
-cc = "^1.0.66"
-tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
+tectonic_dep_support = { workspace = true }
+
+cc = { workspace = true }
 
 [features]
 external-harfbuzz = []

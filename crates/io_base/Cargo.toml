@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_io_base"
-version = "0.0.0-dev.0"  # assigned with cranko (see README)
+version = "0.0.0-dev.0" # assigned with cranko (see README)
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Basic types for Tectonic's pluggable I/O backend system
@@ -16,13 +16,15 @@ license = "MIT"
 edition = "2018"
 
 [dependencies]
-app_dirs2 = "^2.3"
-flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
-libc = "^0.2" # for EISDIR :-(
-sha2 = "^0.10" # for digest computations
-thiserror = "1.0"
-tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
-tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
+tectonic_errors = { workspace = true }
+tectonic_status_base = { workspace = true }
+
+app_dirs2 = { workspace = true }
+flate2 = { workspace = true }
+libc = { workspace = true }      # for EISDIR :-(
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"
