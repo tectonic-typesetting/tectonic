@@ -172,7 +172,7 @@ impl From<&OutputProfile> for TomlOutputProfile {
 
         let shell_escape = if !rt.shell_escape { None } else { Some(true) };
         let shell_escape_cwd = rt.shell_escape_cwd.clone();
-        let synctex = if !rt.synctex { None } else {Some(true)};
+        let synctex = if !rt.synctex { None } else { Some(true) };
 
         TomlOutputProfile {
             name: rt.name.clone(),
