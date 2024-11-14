@@ -7,6 +7,9 @@ steps:
 - bash: docker run --rm --privileged multiarch/qemu-user-static:register --reset --credential yes
   displayName: Set up QEMU
 
+- bash: cargo install cross
+  displayName: Install cross
+
 - bash: |
     HOST_UID=$(id -u)
     HOST_GID=$(id -g)
