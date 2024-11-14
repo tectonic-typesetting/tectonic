@@ -20,7 +20,10 @@ steps:
 
 # Main build/test
 
-- bash: cross build $CROSS_ARGS --all
+- bash: |
+    echo "CROSS_ROOTLESS_CONTAINER_ENGINE: $CROSS_ROOTLESS_CONTAINER_ENGINE"
+    echo "DOCKER_ARGS: $DOCKER_ARGS"
+    cross build $CROSS_ARGS --all
   displayName: "cross build"
 
 - bash: cross test $CROSS_ARGS --all
