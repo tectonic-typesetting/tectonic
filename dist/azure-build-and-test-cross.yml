@@ -20,10 +20,10 @@ steps:
 
 # Main build/test
 
-- bash: ./cross build $CROSS_ARGS --all
+- bash: cross build $CROSS_ARGS --all
   displayName: "cross build"
 
-- bash: ./cross test $CROSS_ARGS --all
+- bash: cross test $CROSS_ARGS --all
   displayName: "cross test"
 
 # Publish binaries
