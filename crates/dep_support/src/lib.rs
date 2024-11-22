@@ -80,7 +80,16 @@ struct PkgConfigState {
 /// Build-script state when using vcpkg as the backend.
 #[derive(Clone, Debug)]
 struct VcPkgState {
-    include_paths: Vec<PathBuf>,
+    libs: Vec<vcpkg::Library>,
+}
+
+impl VcPkgState {
+    fn include_paths(&self) -> Vec<PathBuf> {
+        self.libs
+            .iter()
+            .flat_map(|lib| lib.include_paths.iter().cloned())
+            .collect::<Vec<_>>()
+    }
 }
 
 /// State for discovering and managing a dependency, which may vary
@@ -117,7 +126,7 @@ impl DepState {
 
     /// Probe using vcpkg.
     fn new_from_vcpkg<T: Spec>(spec: &T, _config: &Configuration) -> Self {
-        let mut include_paths = vec![];
+        let mut libs = vec![];
 
         for dep in spec.get_vcpkg_spec() {
             let library = match vcpkg::Config::new().cargo_metadata(false).find_package(dep) {
@@ -140,10 +149,17 @@ impl DepState {
                 }
             };
 
-            include_paths.extend(library.include_paths.iter().cloned());
+            libs.push(library);
         }
 
-        DepState::VcPkg(VcPkgState { include_paths })
+        DepState::VcPkg(VcPkgState { libs })
+    }
+
+    fn version(&self) -> &str {
+        match self {
+            DepState::PkgConfig(cfg) => &cfg.libs.version,
+            DepState::VcPkg(cfg) => &cfg.libs[0].version,
+        }
     }
 }
 
@@ -166,6 +182,11 @@ impl<'a, T: Spec> Dependency<'a, T> {
         }
     }
 
+    /// Get the version of this dependency that was found by [`Self::probe`]
+    pub fn version(&self) -> &str {
+        self.state.version()
+    }
+
     /// Invoke a callback for each C/C++ include directory injected by our
     /// dependencies.
     pub fn foreach_include_path<F>(&self, mut f: F)
@@ -180,8 +201,8 @@ impl<'a, T: Spec> Dependency<'a, T> {
             }
 
             DepState::VcPkg(ref s) => {
-                for p in &s.include_paths {
-                    f(p);
+                for p in s.include_paths() {
+                    f(&p);
                 }
             }
         }
