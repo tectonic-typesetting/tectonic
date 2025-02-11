@@ -149,8 +149,8 @@ pub(crate) fn add_database_cite(
     other.check_field_overflow(other.num_fields() * (new_cite + 1));
 
     cites.set_cite(new_cite, hash.text(cite_loc));
-    hash.set_ilk_info(cite_loc, new_cite as i32);
-    hash.set_ilk_info(lc_cite_loc, cite_loc as i32);
+    hash.set_ilk_info(cite_loc, new_cite as i64);
+    hash.set_ilk_info(lc_cite_loc, cite_loc as i64);
     new_cite + 1
 }
 

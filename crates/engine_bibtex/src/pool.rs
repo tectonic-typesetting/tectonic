@@ -386,24 +386,24 @@ pub(crate) fn pre_def_certain_strings(
     let res = pool.lookup_str_insert(hash, b"crossref", StrIlk::BstFn)?;
     let num_fields = other.num_fields();
     hash.set_ty(res.loc, FnClass::Field);
-    hash.set_ilk_info(res.loc, num_fields as i32);
+    hash.set_ilk_info(res.loc, num_fields as i64);
     other.set_crossref_num(num_fields);
     other.set_num_fields(num_fields + 1);
     other.set_pre_defined_fields(num_fields + 1);
 
     let res = pool.lookup_str_insert(hash, b"sort.key$", StrIlk::BstFn)?;
     hash.set_ty(res.loc, FnClass::StrEntryVar);
-    hash.set_ilk_info(res.loc, entries.num_ent_strs() as i32);
+    hash.set_ilk_info(res.loc, entries.num_ent_strs() as i64);
     entries.set_sort_key_num(entries.num_ent_strs());
     entries.set_num_ent_strs(entries.num_ent_strs() + 1);
 
     let res = pool.lookup_str_insert(hash, b"entry.max$", StrIlk::BstFn)?;
     hash.set_ty(res.loc, FnClass::IntGlblVar);
-    hash.set_ilk_info(res.loc, ENT_STR_SIZE as i32);
+    hash.set_ilk_info(res.loc, ENT_STR_SIZE as i64);
 
     let res = pool.lookup_str_insert(hash, b"global.max$", StrIlk::BstFn)?;
     hash.set_ty(res.loc, FnClass::IntGlblVar);
-    hash.set_ilk_info(res.loc, GLOB_STR_SIZE as i32);
+    hash.set_ilk_info(res.loc, GLOB_STR_SIZE as i64);
 
     Ok(())
 }

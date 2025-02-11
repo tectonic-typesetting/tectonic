@@ -350,7 +350,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 *cur_macro_loc = res.loc;
                 globals
                     .hash
-                    .set_ilk_info(res.loc, globals.hash.text(res.loc) as i32);
+                    .set_ilk_info(res.loc, globals.hash.text(res.loc) as i64);
 
                 if !eat_bib_white_space(globals.buffers, globals.bibs) {
                     eat_bib_print(globals.buffers, globals.pool, globals.bibs, at_bib_command)?;
@@ -520,8 +520,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                         res = uc_res;
 
                         if !uc_res.exists {
-                            globals.hash.set_ilk_info(lc_res.loc, uc_res.loc as i32);
-                            globals.hash.set_ilk_info(uc_res.loc, entry_ptr as i32);
+                            globals.hash.set_ilk_info(lc_res.loc, uc_res.loc as i64);
+                            globals.hash.set_ilk_info(uc_res.loc, entry_ptr as i64);
                             globals
                                 .cites
                                 .set_cite(entry_ptr, globals.hash.text(uc_res.loc));

@@ -34,7 +34,7 @@ pub(crate) enum StkType {
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum ExecVal {
-    Integer(i32),
+    Integer(i64),
     String(StrNumber),
     Function(HashPointer),
     Missing(StrNumber),
@@ -648,12 +648,12 @@ fn interp_eq(
 
     match (pop1, pop2) {
         (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
-            ctx.push_stack(ExecVal::Integer((i1 == i2) as i32));
+            ctx.push_stack(ExecVal::Integer((i1 == i2) as i64));
         }
         (ExecVal::String(s1), ExecVal::String(s2)) => {
             // TODO: Can we just compare str numbers here?
             ctx.push_stack(ExecVal::Integer(
-                (pool.get_str(s1) == pool.get_str(s2)) as i32,
+                (pool.get_str(s1) == pool.get_str(s2)) as i64,
             ));
         }
         _ if pop1.ty() != pop2.ty() => {
@@ -689,7 +689,7 @@ fn interp_gt(
 
     match (pop1, pop2) {
         (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
-            ctx.push_stack(ExecVal::Integer((i2 > i1) as i32));
+            ctx.push_stack(ExecVal::Integer((i2 > i1) as i64));
         }
         (ExecVal::Integer(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
@@ -714,7 +714,7 @@ fn interp_lt(
 
     match (pop1, pop2) {
         (ExecVal::Integer(i1), ExecVal::Integer(i2)) => {
-            ctx.push_stack(ExecVal::Integer((i2 < i1) as i32));
+            ctx.push_stack(ExecVal::Integer((i2 < i1) as i64));
         }
         (ExecVal::Integer(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
@@ -1195,7 +1195,7 @@ fn interp_chr_to_int(
                 bst_ex_warn_print(ctx, pool, cites)?;
                 ctx.push_stack(ExecVal::Integer(0));
             } else {
-                ctx.push_stack(ExecVal::Integer(str[0] as i32))
+                ctx.push_stack(ExecVal::Integer(str[0] as i64))
             }
         }
         _ => {
@@ -1264,7 +1264,7 @@ fn interp_empty(
         ExecVal::String(s1) => {
             let str = pool.get_str(s1);
             let res = str.iter().all(|c| LexClass::of(*c) == LexClass::Whitespace);
-            ctx.push_stack(ExecVal::Integer(res as i32));
+            ctx.push_stack(ExecVal::Integer(res as i64));
         }
         ExecVal::Missing(_) => {
             ctx.push_stack(ExecVal::Integer(1));

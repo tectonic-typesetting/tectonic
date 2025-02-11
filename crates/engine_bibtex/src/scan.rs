@@ -126,7 +126,7 @@ pub(crate) fn scan_identifier(
     }
 }
 
-fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
+fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i64) -> bool {
     let last = buffers.init(BufTy::Base);
     let start = buffers.offset(BufTy::Base, 2);
     buffers.set_offset(BufTy::Base, 1, start);
@@ -142,7 +142,7 @@ fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
     *token_value = 0;
     let mut char = buffers.at(BufTy::Base, idx);
     while idx < last && LexClass::of(char) == LexClass::Numeric {
-        *token_value = *token_value * 10 + (char - 48) as i32;
+        *token_value = *token_value * 10 + (char - 48) as i64;
         idx += 1;
         char = buffers.at(BufTy::Base, idx);
     }
@@ -369,7 +369,7 @@ pub(crate) fn scan_fn_def(
     single_function.push(HashData::end_of_def());
 
     other.check_wiz_overflow(single_function.len());
-    hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i32);
+    hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i64);
 
     for ptr in single_function {
         let wiz_ptr = other.wiz_def_ptr();
@@ -780,7 +780,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
         if at_bib_command {
             match command_num {
                 1 => bibs.add_preamble(hash.text(res.loc)),
-                2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i32),
+                2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i64),
                 _ => {
                     // TODO: Replace command_num with an enum
                     bib_cmd_confusion();

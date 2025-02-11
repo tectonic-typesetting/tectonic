@@ -123,7 +123,7 @@ fn bst_entry_command(
         globals.hash.set_ty(res.loc, FnClass::Field);
         globals
             .hash
-            .set_ilk_info(res.loc, globals.other.num_fields() as i32);
+            .set_ilk_info(res.loc, globals.other.num_fields() as i64);
         globals.other.set_num_fields(globals.other.num_fields() + 1);
 
         eat_bst_white!(ctx, globals, "entry");
@@ -169,7 +169,7 @@ fn bst_entry_command(
         globals.hash.set_ty(res.loc, FnClass::IntEntryVar);
         globals
             .hash
-            .set_ilk_info(res.loc, globals.entries.num_ent_ints() as i32);
+            .set_ilk_info(res.loc, globals.entries.num_ent_ints() as i64);
         globals
             .entries
             .set_num_ent_ints(globals.entries.num_ent_ints() + 1);
@@ -211,7 +211,7 @@ fn bst_entry_command(
         globals.hash.set_ty(res.loc, FnClass::StrEntryVar);
         globals
             .hash
-            .set_ilk_info(res.loc, globals.entries.num_ent_strs() as i32);
+            .set_ilk_info(res.loc, globals.entries.num_ent_strs() as i64);
         globals
             .entries
             .set_num_ent_strs(globals.entries.num_ent_strs() + 1);
@@ -455,7 +455,7 @@ fn bst_macro_command(
     }
     globals
         .hash
-        .set_ilk_info(res.loc, globals.hash.text(res.loc) as i32);
+        .set_ilk_info(res.loc, globals.hash.text(res.loc) as i64);
 
     eat_bst_white!(ctx, globals, "macro");
     bst_brace!('}', ctx, globals, "macro");
@@ -492,7 +492,7 @@ fn bst_macro_command(
     globals.hash.set_ty(res2.loc, FnClass::StrLit);
     globals
         .hash
-        .set_ilk_info(res.loc, globals.hash.text(res2.loc) as i32);
+        .set_ilk_info(res.loc, globals.hash.text(res2.loc) as i64);
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
@@ -747,7 +747,7 @@ fn bst_read_command(
 
                 globals
                     .hash
-                    .set_ilk_info(find.cite_loc, ctx.glbl_ctx().cite_xptr as i32);
+                    .set_ilk_info(find.cite_loc, ctx.glbl_ctx().cite_xptr as i64);
 
                 let start = ctx.glbl_ctx().cite_xptr * globals.other.num_fields();
                 let end = start + globals.other.num_fields();
@@ -897,7 +897,7 @@ fn bst_strings_command(
         globals.hash.set_ty(res.loc, FnClass::StrGlblVar);
         globals
             .hash
-            .set_ilk_info(res.loc, globals.globals.num_glb_strs());
+            .set_ilk_info(res.loc, globals.globals.num_glb_strs() as i64);
 
         if globals.globals.num_glb_strs() as usize == globals.globals.len() {
             globals.globals.grow();

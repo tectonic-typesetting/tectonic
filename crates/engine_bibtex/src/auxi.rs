@@ -296,8 +296,8 @@ fn aux_citation_command(
             }
 
             cites.set_cite(cites.ptr(), hash.text(uc_res.loc));
-            hash.set_ilk_info(uc_res.loc, cites.ptr() as i32);
-            hash.set_ilk_info(lc_res.loc, uc_res.loc as i32);
+            hash.set_ilk_info(uc_res.loc, cites.ptr() as i64);
+            hash.set_ilk_info(lc_res.loc, uc_res.loc as i64);
             cites.set_ptr(cites.ptr() + 1);
         }
     }
