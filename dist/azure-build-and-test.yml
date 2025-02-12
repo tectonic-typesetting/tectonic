@@ -62,7 +62,7 @@ parameters:
           TOOLCHAIN: nightly
 
       - name: macos_intdeps
-        vmImage: macos-12
+        vmImage: macos-13
         params:
           canaryBuild: true
           installAllDeps: false
@@ -71,7 +71,7 @@ parameters:
           TOOLCHAIN: stable
 
       - name: macos_extdeps
-        vmImage: macos-12
+        vmImage: macos-13
         params:
           canaryBuild: true
           installAllDeps: true
@@ -141,14 +141,14 @@ parameters:
           TOOLCHAIN: stable
 
       - name: x86_64_apple_darwin
-        vmImage: macos-12
+        vmImage: macos-13
         params: { }
         vars:
           TARGET: x86_64-apple-darwin
           TOOLCHAIN: stable
 
       - name: aarch64_apple_darwin
-        vmImage: macos-12
+        vmImage: macos-13
         params:
           testIt: false
         vars:
