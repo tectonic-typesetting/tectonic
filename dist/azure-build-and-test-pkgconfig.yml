@@ -67,7 +67,7 @@ steps:
     fi
 
     brew install $pkgs
-    icupcdir="$(echo /usr/local/Cellar/icu4c/*/lib/pkgconfig)"
+    icupcdir="$(echo /opt/homebrew/Cellar/icu4c*/*/lib/pkgconfig)"
     export PKG_CONFIG_PATH="$icupcdir"
     set +x  # `set -x` messes up setvariable
     echo "##vso[task.setvariable variable=PKG_CONFIG_PATH;]$PKG_CONFIG_PATH"
