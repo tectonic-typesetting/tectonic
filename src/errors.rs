@@ -184,7 +184,6 @@ impl Error {
 /// equivalent, and false otherwise. This can happen if the value are known to
 /// be different, but also if we can't tell. It doesn't cover all cases, but
 /// it does cover the ones that come up in our test suite.
-
 pub trait DefinitelySame {
     fn definitely_same(&self, other: &Self) -> bool;
 }

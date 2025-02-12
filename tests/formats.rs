@@ -56,8 +56,8 @@ struct FormatTestDriver<'a> {
     events: HashMap<String, FileSummary>,
 }
 
-impl<'a> FormatTestDriver<'a> {
-    fn new(io: IoStack<'a>) -> FormatTestDriver {
+impl FormatTestDriver<'_> {
+    fn new(io: IoStack) -> FormatTestDriver {
         FormatTestDriver {
             io,
             events: HashMap::new(),
@@ -67,7 +67,7 @@ impl<'a> FormatTestDriver<'a> {
 
 // We need to provide this whole wrapper implementation just to be able to add
 // file open events in `output_open_name`.
-impl<'a> IoProvider for FormatTestDriver<'a> {
+impl IoProvider for FormatTestDriver<'_> {
     fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         let r = self.io.output_open_name(name);
 
@@ -112,7 +112,7 @@ impl<'a> IoProvider for FormatTestDriver<'a> {
     }
 }
 
-impl<'a> DriverHooks for FormatTestDriver<'a> {
+impl DriverHooks for FormatTestDriver<'_> {
     fn io(&mut self) -> &mut dyn IoProvider {
         self
     }

@@ -62,10 +62,8 @@ impl<'a> Scan<'a> {
 
     fn match_char(&self, char: ASCIICode) -> bool {
         self.not_class
-            .map_or(false, |class| LexClass::of(char) != class)
-            || self
-                .class
-                .map_or(false, |class| LexClass::of(char) == class)
+            .is_some_and(|class| LexClass::of(char) != class)
+            || self.class.is_some_and(|class| LexClass::of(char) == class)
             || self.chars.contains(&char)
     }
 
@@ -904,11 +902,10 @@ pub(crate) fn name_scan_for_and(
                 buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                 if preceding_white
                     && buffers.offset(BufTy::Ex, 1) <= buffers.init(BufTy::Ex).saturating_sub(3)
-                    && buffers.at_offset(BufTy::Ex, 1).to_ascii_lowercase() == b'n'
+                    && buffers.at_offset(BufTy::Ex, 1).eq_ignore_ascii_case(&b'n')
                     && buffers
                         .at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 1)
-                        .to_ascii_lowercase()
-                        == b'd'
+                        .eq_ignore_ascii_case(&b'd')
                     && LexClass::of(buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 2))
                         == LexClass::Whitespace
                 {

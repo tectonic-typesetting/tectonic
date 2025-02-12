@@ -50,7 +50,6 @@ where
 }
 
 /// The internal file-information struct used by the [`TTBNetBundle`].
-
 impl TTBNetBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
     /// This method does not require network access.
@@ -128,7 +127,7 @@ impl Bundle for TTBNetBundle<TTBFileIndex> {
     }
 }
 
-impl<'this> CachableBundle<'this, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
+impl CachableBundle<'_, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
     fn get_location(&mut self) -> String {
         self.url.clone()
     }

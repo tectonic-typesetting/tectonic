@@ -193,7 +193,7 @@ impl Bundle for ItarBundle {
     }
 }
 
-impl<'this> CachableBundle<'this, ItarFileIndex> for ItarBundle {
+impl CachableBundle<'_, ItarFileIndex> for ItarBundle {
     fn get_location(&mut self) -> String {
         self.url.clone()
     }
