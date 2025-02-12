@@ -231,10 +231,7 @@ impl<'a> ExpectedFile<'a> {
         let contents = String::from_utf8(contents)
             .unwrap()
             .replace("${ROOT}", &root)
-            .replace(
-                "${len(ROOT)+106}",
-                &(root.as_bytes().len() + 106).to_string(),
-            )
+            .replace("${len(ROOT)+106}", &(root.len() + 106).to_string())
             .into_bytes();
 
         ExpectedFile {

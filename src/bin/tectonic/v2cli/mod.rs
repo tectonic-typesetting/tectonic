@@ -34,7 +34,6 @@ mod commands;
     about = "Process (La)TeX documents",
     no_binary_name(true)
 )]
-
 struct V2CliOptions {
     /// How much chatter to print when running
     #[arg(long = "chatter", short, default_value = "default")]

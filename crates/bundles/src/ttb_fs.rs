@@ -39,7 +39,6 @@ where
 }
 
 /// The internal file-information struct used by the [`TTBFsBundle`].
-
 impl TTBFsBundle<TTBFileIndex> {
     /// Create a new ZIP bundle for a generic readable and seekable stream.
     pub fn new(file: File) -> Result<Self> {

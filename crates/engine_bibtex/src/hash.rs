@@ -83,7 +83,7 @@ pub(crate) struct HashData {
     hash_next: XBuf<HashPointer>,
     hash_text: XBuf<StrNumber>,
     hash_ilk: XBuf<StrIlk>,
-    ilk_info: XBuf<i32>,
+    ilk_info: XBuf<i64>,
     fn_type: XBuf<FnClass>,
     hash_used: usize,
 }
@@ -152,11 +152,11 @@ impl HashData {
         self.hash_ilk[pos] = val;
     }
 
-    pub fn ilk_info(&self, pos: usize) -> i32 {
+    pub fn ilk_info(&self, pos: usize) -> i64 {
         self.ilk_info[pos]
     }
 
-    pub fn set_ilk_info(&mut self, pos: usize, info: i32) {
+    pub fn set_ilk_info(&mut self, pos: usize, info: i64) {
         self.ilk_info[pos] = info;
     }
 }

@@ -576,7 +576,7 @@ struct GlyphTextProcessingIterator<'a> {
     next: usize,
 }
 
-impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
+impl Iterator for GlyphTextProcessingIterator<'_> {
     type Item = (usize, Option<(char, String)>, FixedPoint);
 
     fn next(&mut self) -> Option<Self::Item> {

@@ -241,7 +241,7 @@ impl<'a> EngineState<'a> {
     }
 }
 
-impl<'a> XdvEvents for EngineState<'a> {
+impl XdvEvents for EngineState<'_> {
     type Error = Error;
 
     fn handle_header(&mut self, filetype: FileType, _comment: &[u8]) -> Result<()> {
