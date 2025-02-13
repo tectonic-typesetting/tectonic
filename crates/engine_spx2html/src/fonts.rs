@@ -300,6 +300,7 @@ impl FontEnsemble {
     ///
     /// If we're unable to figure out a way to render the desired glyph, a
     /// warning is logged to the status backend.
+    #[allow(clippy::type_complexity)]
     pub fn process_glyphs_as_text<'a>(
         &'a mut self,
         font_num: TexFontNum,

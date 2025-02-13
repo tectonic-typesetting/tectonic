@@ -40,8 +40,8 @@ impl AsBytes for [u8] {
 }
 
 thread_local! {
-    static STANDARD_OUTPUT: Cell<Option<&'static mut OutputHandle>> = Cell::new(None);
-    static LOG_FILE: Cell<Option<&'static mut OutputHandle>> = Cell::new(None);
+    static STANDARD_OUTPUT: Cell<Option<&'static mut OutputHandle>> = const { Cell::new(None) };
+    static LOG_FILE: Cell<Option<&'static mut OutputHandle>> = const { Cell::new(None) };
 }
 
 pub(crate) fn reset() {

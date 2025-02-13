@@ -39,7 +39,7 @@ impl GetUrlBackend for ReqwestBackend {
         let parsed = Url::parse(url)?;
         let original_filename = parsed
             .path_segments()
-            .and_then(|s| s.last())
+            .and_then(|mut s| s.next_back())
             .unwrap_or(".") // if the filename is this, the `contains('.')` will already match
             .to_owned();
 
@@ -60,9 +60,9 @@ impl GetUrlBackend for ReqwestBackend {
             // match the original filename.
             if attempt.previous().len() >= MAX_HTTP_REDIRECTS_ALLOWED {
                 attempt.error("too many redirections")
-            } else if let Some(segments) = attempt.url().clone().path_segments() {
+            } else if let Some(mut segments) = attempt.url().clone().path_segments() {
                 let follow = segments
-                    .last()
+                    .next_back()
                     .map(|file| file.contains('.') || file == original_filename)
                     .unwrap_or(true);
                 if follow {

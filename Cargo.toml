@@ -28,7 +28,8 @@ edition = "2018"
 exclude = ["/dist/", "/reference_sources/"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)'] }
+# FIXME(CraftSpider): Switch from error-chain to a newer package, as it's a deprecated project
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)', 'cfg(has_error_description_deprecated)'] }
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
@@ -149,7 +150,7 @@ tempfile = "^3.1"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "4a600e9fea71bd7872080cbb716797e04d30e6d3"
+rev = "be1ae8e5c5bc79aac1b8f593f5554aee1cfde54f"
 overlay-triplets-path = "dist/vcpkg-triplets"
 
 # If other targets start using custom triplets like x86_64-pc-windows-msvc,
