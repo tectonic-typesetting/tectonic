@@ -109,7 +109,7 @@ pub(crate) enum BstFn {
     Field(usize),
     IntEntry(usize),
     StrEntry(usize),
-    IntGlbl(i32),
+    IntGlbl(i64),
     StrGlbl(usize),
 }
 
@@ -117,7 +117,7 @@ pub(crate) enum BstFn {
 pub enum HashExtra {
     #[default]
     Text,
-    Integer(i32),
+    Integer(i64),
     AuxCommand(AuxCommand),
     AuxFile,
     BstCommand(BstCommand),

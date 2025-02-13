@@ -470,14 +470,14 @@ pub(crate) fn pre_def_certain_strings(
         ctx,
         hash,
         b"entry.max$",
-        HashExtra::BstFn(BstFn::IntGlbl(ENT_STR_SIZE as i32)),
+        HashExtra::BstFn(BstFn::IntGlbl(ENT_STR_SIZE as i64)),
     )?;
 
     pool.lookup_str_insert(
         ctx,
         hash,
         b"global.max$",
-        HashExtra::BstFn(BstFn::IntGlbl(GLOB_STR_SIZE as i32)),
+        HashExtra::BstFn(BstFn::IntGlbl(GLOB_STR_SIZE as i64)),
     )?;
 
     Ok(())
