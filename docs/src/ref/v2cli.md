@@ -72,8 +72,13 @@ nextonic show shell-completions --help
 
 The V2 interface also supports external commands. If you run `tectonic -X cmd`, where `cmd` is NOT built into Tectonic, Tectonic will search for a binary called `tectonic-cmd` and run it if it exists.
 
+In particular, if a `tectonic-biber` binary is found it will be preferred over
+the regular `biber` binary when generating bibliography with the `biblatex`
+package. This may help resolve [possible version mismatch][biber-mismatch]
+between `biber` and the bundled `biblatex` files when there are multiple TeX
+installations on a system.
 
-
+[biber-mismatch]: https://github.com/tectonic-typesetting/tectonic/issues/893
 
 ## Migration plan
 
