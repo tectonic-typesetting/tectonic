@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::time::Duration;
 use std::{env, path::PathBuf, sync::Arc};
 use tectonic::{config::PersistentConfig, errors::Result, tt_error};
 use tectonic_status_base::StatusBackend;
@@ -115,12 +116,17 @@ impl WatchCommand {
         let exec_handler = Watchexec::new_async(move |mut action| {
             let cmds = Arc::clone(&cmds);
             Box::new(async move {
+                // When we spawn a job it doesn't immediately become available. So we chain it
+                // with existing jobs.
+                let mut new_job = None;
+
                 if action.get_job(cmds[0].0).is_none() {
                     for (id, cmd) in &*cmds {
                         let job = action.get_or_create_job(*id, || Arc::clone(cmd));
                         job.set_spawn_hook(|_, ctx| {
                             println!("[Running `{}`]", ctx.command);
                         });
+                        new_job = Some((*id, job));
                     }
                 }
 
@@ -136,15 +142,14 @@ impl WatchCommand {
                     });
 
                     if is_kill {
-                        action.list_jobs().for_each(|(_, job)| {
-                            job.stop();
-                        });
+                        // Give the jobs a quit signal, then a short time to clean themselves up
+                        action.quit_gracefully(Signal::Quit, Duration::from_millis(100));
                         return action;
                     }
 
                     let paths = event.paths().collect::<Vec<_>>();
                     if !paths.is_empty() {
-                        for (_, job) in action.list_jobs() {
+                        for (_, job) in action.list_jobs().chain(new_job) {
                             job.start().await;
                             let end = job.to_wait();
                             tokio::spawn(end_task(end, job));
