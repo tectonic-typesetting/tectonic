@@ -28,7 +28,8 @@ edition = "2018"
 exclude = ["/dist/", "/reference_sources/"]
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)'] }
+# FIXME(CraftSpider): Switch from error-chain to a newer package, as it's a deprecated project
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)', 'cfg(has_error_description_deprecated)'] }
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
