@@ -6,7 +6,7 @@ pub(crate) struct EntryData {
     num_entry_ints: usize,
     num_entry_strs: usize,
     sort_key_num: usize,
-    entry_ints: Option<XBuf<i32>>,
+    entry_ints: Option<XBuf<i64>>,
     entry_strs: Option<XBuf<ASCIICode>>,
 }
 
@@ -21,11 +21,11 @@ impl EntryData {
         }
     }
 
-    pub fn ints(&self, pos: usize) -> i32 {
+    pub fn ints(&self, pos: usize) -> i64 {
         self.entry_ints.as_ref().unwrap()[pos]
     }
 
-    pub fn set_int(&mut self, pos: usize, val: i32) {
+    pub fn set_int(&mut self, pos: usize, val: i64) {
         self.entry_ints.as_mut().unwrap()[pos] = val;
     }
 

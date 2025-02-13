@@ -6,7 +6,6 @@
 use curl::easy::Easy;
 use std::io::Cursor;
 use tectonic_errors::{anyhow::bail, Result};
-use tectonic_status_base::StatusBackend;
 
 use crate::{GetUrlBackend, RangeReader};
 
@@ -67,11 +66,11 @@ impl GetUrlBackend for CurlBackend {
     type Response = Cursor<Vec<u8>>;
     type RangeReader = CurlRangeReader;
 
-    fn get_url(&mut self, url: &str, _status: &mut dyn StatusBackend) -> Result<Self::Response> {
+    fn get_url(&mut self, url: &str) -> Result<Self::Response> {
         get_url_generic(&mut self.handle, url, None)
     }
 
-    fn resolve_url(&mut self, url: &str, _status: &mut dyn StatusBackend) -> Result<String> {
+    fn resolve_url(&mut self, url: &str) -> Result<String> {
         Ok(url.into())
     }
 

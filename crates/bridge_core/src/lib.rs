@@ -6,7 +6,7 @@
 //! Core APIs for bridging the C and Rust portions of Tectonic’s processing
 //! backends.
 //!
-//! This crate is used by the Tectonic “engines”, which are predominantly C/C++
+//! This crate is used by the Tectonic "engines", which are predominantly C/C++
 //! code derived from the original TeX codebase. It provides a framework so that
 //! the C/C++ code can invoke the support services provided by Tectonic, such as
 //! its pluggable I/O backends. The interfaces exposed to the C/C++ layers are
@@ -54,7 +54,7 @@ use tectonic_io_base::{
 };
 use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
 
-/// Possible failures for “system request” calls to the driver.
+/// Possible failures for "system request" calls to the driver.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SystemRequestError {
     /// The driver does not implement this system request.
@@ -106,13 +106,7 @@ pub trait DriverHooks {
     /// argument specifies the cryptographic digest of the data that were
     /// written. Note that this function takes ownership of the name and
     /// digest.
-    fn event_output_closed(
-        &mut self,
-        _name: String,
-        _digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
-    }
+    fn event_output_closed(&mut self, _name: String, _digest: DigestData) {}
 
     /// This function is called when an input file is closed. The "digest"
     /// argument specifies the cryptographic digest of the data that were
@@ -127,7 +121,7 @@ pub trait DriverHooks {
     ) {
     }
 
-    /// The engine is requesting a “shell escape” evaluation.
+    /// The engine is requesting a "shell escape" evaluation.
     ///
     /// If the driver wishes to implement this request, it should run the
     /// specified command using the OS’s default shell. Relevant files should be
@@ -560,7 +554,7 @@ impl<'a> CoreBridgeState<'a> {
                     rv = true;
                 }
                 let (name, digest) = oh.into_name_digest();
-                self.hooks.event_output_closed(name, digest, self.status);
+                self.hooks.event_output_closed(name, digest);
                 break;
             }
         }
@@ -633,11 +627,7 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        if let Some(t) = maybe_time {
-            t
-        } else {
-            1 // Intentionally make this distinguishable from the error value 0
-        }
+        maybe_time.unwrap_or(1)
     }
 
     fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {

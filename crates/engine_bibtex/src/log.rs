@@ -40,8 +40,8 @@ impl AsBytes for [u8] {
 }
 
 thread_local! {
-    static STANDARD_OUTPUT: Cell<Option<&'static mut OutputHandle>> = Cell::new(None);
-    static LOG_FILE: Cell<Option<&'static mut OutputHandle>> = Cell::new(None);
+    static STANDARD_OUTPUT: Cell<Option<&'static mut OutputHandle>> = const { Cell::new(None) };
+    static LOG_FILE: Cell<Option<&'static mut OutputHandle>> = const { Cell::new(None) };
 }
 
 pub(crate) fn reset() {
@@ -654,7 +654,7 @@ pub(crate) fn skip_token_print(
     mark_error();
 
     Scan::new()
-        .chars(&[b'}', b'%'])
+        .chars(b"}%")
         .class(LexClass::Whitespace)
         .scan_till(buffers, buffers.init(BufTy::Base));
 

@@ -62,10 +62,8 @@ impl<'a> Scan<'a> {
 
     fn match_char(&self, char: ASCIICode) -> bool {
         self.not_class
-            .map_or(false, |class| LexClass::of(char) != class)
-            || self
-                .class
-                .map_or(false, |class| LexClass::of(char) == class)
+            .is_some_and(|class| LexClass::of(char) != class)
+            || self.class.is_some_and(|class| LexClass::of(char) == class)
             || self.chars.contains(&char)
     }
 
@@ -126,7 +124,7 @@ pub(crate) fn scan_identifier(
     }
 }
 
-fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
+fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i64) -> bool {
     let last = buffers.init(BufTy::Base);
     let start = buffers.offset(BufTy::Base, 2);
     buffers.set_offset(BufTy::Base, 1, start);
@@ -142,7 +140,7 @@ fn scan_integer(buffers: &mut GlobalBuffer, token_value: &mut i32) -> bool {
     *token_value = 0;
     let mut char = buffers.at(BufTy::Base, idx);
     while idx < last && LexClass::of(char) == LexClass::Numeric {
-        *token_value = *token_value * 10 + (char - 48) as i32;
+        *token_value = *token_value * 10 + (char - 48) as i64;
         idx += 1;
         char = buffers.at(BufTy::Base, idx);
     }
@@ -226,7 +224,7 @@ fn handle_char(
             buffers.set_offset(BufTy::Base, 2, buffers.offset(BufTy::Base, 2) + 1);
 
             let init = buffers.init(BufTy::Base);
-            if !Scan::new().chars(&[b'"']).scan_till(buffers, init) {
+            if !Scan::new().chars(b"\"").scan_till(buffers, init) {
                 write_logs("No `\"` to end string literal");
                 return skip_token_print(ctx, buffers, pool);
             }
@@ -258,7 +256,7 @@ fn handle_char(
 
             let init = buffers.init(BufTy::Base);
             Scan::new()
-                .chars(&[b'}', b'%'])
+                .chars(b"}%")
                 .class(LexClass::Whitespace)
                 .scan_till(buffers, init);
 
@@ -303,7 +301,7 @@ fn handle_char(
         _ => {
             let init = buffers.init(BufTy::Base);
             Scan::new()
-                .chars(&[b'}', b'%'])
+                .chars(b"}%")
                 .class(LexClass::Whitespace)
                 .scan_till(buffers, init);
 
@@ -369,7 +367,7 @@ pub(crate) fn scan_fn_def(
     single_function.push(HashData::end_of_def());
 
     other.check_wiz_overflow(single_function.len());
-    hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i32);
+    hash.set_ilk_info(fn_hash_loc, other.wiz_def_ptr() as i64);
 
     for ptr in single_function {
         let wiz_ptr = other.wiz_def_ptr();
@@ -523,7 +521,7 @@ fn scan_balanced_braces(
                         let init = buffers.init(BufTy::Base);
                         if (c == b'{'
                             || c == b'}'
-                            || !Scan::new().chars(&[b'{', b'}']).scan_till(buffers, init))
+                            || !Scan::new().chars(b"{}").scan_till(buffers, init))
                             && !eat_bib_white_space(buffers, bibs)
                         {
                             return eat_bib_print(buffers, pool, bibs, at_bib_command)
@@ -780,7 +778,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
         if at_bib_command {
             match command_num {
                 1 => bibs.add_preamble(hash.text(res.loc)),
-                2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i32),
+                2 => hash.set_ilk_info(cur_macro_loc, hash.text(res.loc) as i64),
                 _ => {
                     // TODO: Replace command_num with an enum
                     bib_cmd_confusion();
@@ -904,11 +902,10 @@ pub(crate) fn name_scan_for_and(
                 buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
                 if preceding_white
                     && buffers.offset(BufTy::Ex, 1) <= buffers.init(BufTy::Ex).saturating_sub(3)
-                    && buffers.at_offset(BufTy::Ex, 1).to_ascii_lowercase() == b'n'
+                    && buffers.at_offset(BufTy::Ex, 1).eq_ignore_ascii_case(&b'n')
                     && buffers
                         .at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 1)
-                        .to_ascii_lowercase()
-                        == b'd'
+                        .eq_ignore_ascii_case(&b'd')
                     && LexClass::of(buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 2))
                         == LexClass::Whitespace
                 {

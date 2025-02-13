@@ -3,15 +3,15 @@
 
 //! Decode a format file.
 
+use clap::Parser;
 use std::{fs::File, io::Read, path::PathBuf, process};
-use structopt::StructOpt;
 use tectonic_errors::prelude::*;
 use tectonic_xetex_format::format::Format;
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = "decode", about = "Decode a Tectonic format file")]
+#[derive(Debug, Parser)]
+#[clap(name = "decode", about = "Decode a Tectonic format file")]
 struct Options {
-    #[structopt(subcommand)]
+    #[command(subcommand)]
     command: Commands,
 }
 
@@ -26,29 +26,23 @@ impl Options {
     }
 }
 
-#[derive(Debug, StructOpt)]
+#[derive(Debug, Parser)]
 enum Commands {
-    #[structopt(name = "actives")]
     /// Dump the active characters
     Actives(GenericCommand),
-
-    #[structopt(name = "catcodes")]
     /// Dump the character category codes
     Catcodes(GenericCommand),
-
-    #[structopt(name = "cseqs")]
+    #[command(name = "cseqs")]
     /// Dump the control sequences
     ControlSequences(CseqsCommand),
-
-    #[structopt(name = "strings")]
     /// Dump the strings table
     Strings(GenericCommand),
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct GenericCommand {
     /// The format filename.
-    #[structopt()]
+    #[arg()]
     path: PathBuf,
 }
 
@@ -85,14 +79,14 @@ impl GenericCommand {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, StructOpt)]
+#[derive(Debug, Eq, PartialEq, Parser)]
 pub struct CseqsCommand {
     /// Whether to dump extended information such as macro contents
-    #[structopt(long = "extended", short = "e")]
+    #[arg(long = "extended", short = 'e')]
     extended: bool,
 
     /// The format filename.
-    #[structopt()]
+    #[arg()]
     path: PathBuf,
 }
 
@@ -114,7 +108,7 @@ impl CseqsCommand {
 }
 
 fn main() {
-    let options = Options::from_args();
+    let options = Options::parse();
 
     if let Err(e) = options.execute() {
         eprintln!("error: {e}");
