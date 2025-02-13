@@ -120,6 +120,13 @@ fn test_control_sequences() {
 }
 
 #[test]
+fn test_control_sequences_alpha() {
+    TestCase::new(&["cites", "control_seq_alpha"])
+        .expect(Ok(TexOutcome::Warnings))
+        .go();
+}
+
+#[test]
 fn test_multi_bib() {
     TestCase::new(&["cites", "multi_file"]).go();
 }

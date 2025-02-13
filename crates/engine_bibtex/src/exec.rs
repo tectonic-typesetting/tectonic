@@ -1944,6 +1944,7 @@ fn interp_text_len(
                             b'}' => brace_level -= 1,
                             _ => (),
                         }
+                        idx += 1;
                         num_chars += 1;
                     }
                 }
