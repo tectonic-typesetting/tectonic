@@ -1,4 +1,5 @@
 use clap::Parser;
+use std::time::Duration;
 use std::{env, path::PathBuf, sync::Arc};
 use tectonic::{config::PersistentConfig, errors::Result, tt_error};
 use tectonic_status_base::StatusBackend;
@@ -136,9 +137,8 @@ impl WatchCommand {
                     });
 
                     if is_kill {
-                        action.list_jobs().for_each(|(_, job)| {
-                            job.stop();
-                        });
+                        // Give the jobs a quit signal, then a short time to clean themselves up
+                        action.quit_gracefully(Signal::Quit, Duration::from_millis(100));
                         return action;
                     }
 
