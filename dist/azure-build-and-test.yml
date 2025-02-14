@@ -169,6 +169,10 @@ parameters:
         vars:
           TARGET: aarch64-unknown-linux-musl
 
+      - name: aarch64_unknown_linux_gnu
+        vars:
+          TARGET: aarch64-unknown-linux-gnu
+
       - name: arm_unknown_linux_musleabihf
         vars:
           TARGET: arm-unknown-linux-musleabihf
