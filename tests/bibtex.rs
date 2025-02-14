@@ -94,8 +94,10 @@ fn test_single_entry() {
 }
 
 #[test]
-fn test_brace_string() {
-    TestCase::new(&["cites", "odd_strings"]).go();
+fn test_odd_strings() {
+    TestCase::new(&["cites", "odd_strings"])
+        .expect(Ok(TexOutcome::Warnings))
+        .go();
 }
 
 #[test]
@@ -242,6 +244,14 @@ fn test_dup_bib() {
 #[test]
 fn test_missing_bib() {
     TestCase::new(&["aux_files", "missing_bib"])
+        .expect(Ok(TexOutcome::Errors))
+        .test_bbl(false)
+        .go();
+}
+
+#[test]
+fn test_missing_bst() {
+    TestCase::new(&["aux_files", "missing_bst"])
         .expect(Ok(TexOutcome::Errors))
         .test_bbl(false)
         .go();

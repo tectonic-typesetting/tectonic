@@ -1,5 +1,11 @@
 \begin{thebibliography}{1}
 
+\bibitem{Article01}
+Article 1.
+
+\bibitem{Article02}
+Multi- line string.
+
 \bibitem{Nobody06}
 Nobody Jr.
 \newblock {My} article, 2006.
