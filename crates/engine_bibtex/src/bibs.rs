@@ -8,105 +8,55 @@ use crate::{
         bib_one_of_two_print, bib_warn_print, cite_key_disappeared_confusion, eat_bib_print,
         hash_cite_confusion, print_a_token, print_confusion, write_log_file, write_logs,
     },
-    peekable::{input_ln, PeekableInput},
+    peekable::input_ln,
     pool::StringPool,
     scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
-    xbuf::XBuf,
-    BibNumber, Bibtex, BibtexError, CiteNumber, GlobalItems, HashPointer, StrIlk, StrNumber,
+    BibNumber, Bibtex, BibtexError, CiteNumber, File, GlobalItems, HashPointer, StrIlk, StrNumber,
 };
-use std::ptr::NonNull;
-
-const MAX_BIB_FILES: usize = 20;
 
 pub(crate) struct BibData {
-    bib_file: XBuf<Option<NonNull<PeekableInput>>>,
-    bib_list: XBuf<StrNumber>,
-    bib_ptr: BibNumber,
-    bib_line_num: i32,
-    preamble: XBuf<StrNumber>,
-    preamble_ptr: BibNumber,
+    bibs: Vec<File>,
+    preamble: Vec<StrNumber>,
 }
 
 impl BibData {
     pub fn new() -> BibData {
         BibData {
-            bib_file: XBuf::new(MAX_BIB_FILES),
-            bib_list: XBuf::new(MAX_BIB_FILES),
-            bib_ptr: 0,
-            bib_line_num: 0,
-            preamble: XBuf::new(MAX_BIB_FILES),
-            preamble_ptr: 0,
+            bibs: Vec::new(),
+            preamble: Vec::new(),
         }
     }
 
-    pub fn cur_bib(&self) -> StrNumber {
-        self.bib_list[self.bib_ptr]
+    pub fn top_file(&self) -> &File {
+        self.bibs.first().unwrap()
     }
 
-    pub fn set_cur_bib(&mut self, num: StrNumber) {
-        self.bib_list[self.bib_ptr] = num;
+    pub fn top_file_mut(&mut self) -> &mut File {
+        self.bibs.first_mut().unwrap()
     }
 
-    pub fn cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
-        match &mut self.bib_file[self.bib_ptr] {
-            // SAFETY: If non-null, bib files are guaranteed valid inputs
-            Some(r) => Some(unsafe { r.as_mut() }),
-            None => None,
-        }
+    pub fn push_file(&mut self, file: File) {
+        self.bibs.push(file);
     }
 
-    pub fn take_cur_bib_file(&mut self) -> Option<&mut PeekableInput> {
-        self.bib_file[self.bib_ptr]
-            .take()
-            // SAFETY: Contained file pointer guaranteed valid
-            .map(|mut ptr| unsafe { ptr.as_mut() })
-    }
-
-    pub fn set_cur_bib_file(&mut self, input: Option<NonNull<PeekableInput>>) {
-        self.bib_file[self.bib_ptr] = input;
-    }
-
-    pub fn line_num(&self) -> i32 {
-        self.bib_line_num
-    }
-
-    pub fn set_line_num(&mut self, val: i32) {
-        self.bib_line_num = val;
+    pub fn pop_file(&mut self) -> File {
+        self.bibs.remove(0)
     }
 
     pub fn add_preamble(&mut self, s: StrNumber) {
-        self.preamble[self.preamble_ptr] = s;
-        self.preamble_ptr += 1;
+        self.preamble.push(s);
     }
 
-    pub fn preamble_ptr(&self) -> usize {
-        self.preamble_ptr
+    pub fn preamble_len(&self) -> usize {
+        self.preamble.len()
     }
 
-    pub fn set_preamble_ptr(&mut self, val: usize) {
-        self.preamble_ptr = val;
+    pub fn preamble(&self) -> &[StrNumber] {
+        &self.preamble
     }
 
-    pub fn cur_preamble(&self) -> StrNumber {
-        self.preamble[self.preamble_ptr]
-    }
-
-    pub fn ptr(&self) -> BibNumber {
-        self.bib_ptr
-    }
-
-    pub fn set_ptr(&mut self, val: BibNumber) {
-        self.bib_ptr = val;
-    }
-
-    pub fn len(&self) -> usize {
-        self.bib_list.len()
-    }
-
-    pub fn grow(&mut self) {
-        self.bib_list.grow(MAX_BIB_FILES);
-        self.bib_file.grow(MAX_BIB_FILES);
-        self.preamble.grow(MAX_BIB_FILES);
+    pub fn len(&self) -> BibNumber {
+        self.bibs.len()
     }
 }
 
@@ -116,12 +66,11 @@ pub(crate) fn eat_bib_white_space(buffers: &mut GlobalBuffer, bibs: &mut BibData
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, init)
     {
-        let bib_file = bibs.cur_bib_file();
-        if !input_ln(bib_file, buffers) {
+        if !input_ln(&mut bibs.top_file_mut().file, buffers) {
             return false;
         }
 
-        bibs.set_line_num(bibs.line_num() + 1);
+        bibs.top_file_mut().line += 1;
         buffers.set_offset(BufTy::Base, 2, 0);
         init = buffers.init(BufTy::Base);
     }
@@ -146,14 +95,13 @@ pub(crate) fn compress_bib_white(
         .not_class(LexClass::Whitespace)
         .scan_till(buffers, last)
     {
-        let bib_file = bibs.cur_bib_file();
-        let res = !input_ln(bib_file, buffers);
+        let res = !input_ln(&mut bibs.top_file_mut().file, buffers);
 
         if res {
             return eat_bib_print(buffers, pool, bibs, at_bib_command).map(|_| false);
         }
 
-        bibs.set_line_num(bibs.line_num() + 1);
+        bibs.top_file_mut().line += 1;
         buffers.set_offset(BufTy::Base, 2, 0);
         last = buffers.init(BufTy::Base);
     }
@@ -175,11 +123,11 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let mut init = globals.buffers.init(BufTy::Base);
     while !Scan::new().chars(b"@").scan_till(globals.buffers, init) {
-        if !input_ln(globals.bibs.cur_bib_file(), globals.buffers) {
+        if !input_ln(&mut globals.bibs.top_file_mut().file, globals.buffers) {
             return Ok(());
         }
 
-        globals.bibs.set_line_num(globals.bibs.line_num() + 1);
+        globals.bibs.top_file_mut().line += 1;
         globals.buffers.set_offset(BufTy::Base, 2, 0);
         init = globals.buffers.init(BufTy::Base);
     }
@@ -225,10 +173,6 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         match globals.hash.ilk_info(res.loc) {
             0 => (),
             1 => {
-                if globals.bibs.preamble_ptr() == globals.bibs.len() {
-                    globals.bibs.grow();
-                }
-
                 if !eat_bib_white_space(globals.buffers, globals.bibs) {
                     eat_bib_print(globals.buffers, globals.pool, globals.bibs, at_bib_command)?;
                     return Ok(());

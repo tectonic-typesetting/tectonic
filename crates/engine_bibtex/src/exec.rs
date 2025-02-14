@@ -218,15 +218,15 @@ pub(crate) fn bst_ln_num_print(
     glbl_ctx: &Bibtex<'_, '_>,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
-    write_logs(&format!("--line {} of file ", glbl_ctx.bst_line_num));
-    print_bst_name(glbl_ctx, pool)
+    write_logs(&format!(
+        "--line {} of file ",
+        glbl_ctx.bst.as_ref().unwrap().line
+    ));
+    print_bst_name(pool, glbl_ctx.bst.as_ref().unwrap().name)
 }
 
-pub(crate) fn print_bst_name(
-    glbl_ctx: &Bibtex<'_, '_>,
-    pool: &StringPool,
-) -> Result<(), BibtexError> {
-    print_a_pool_str(glbl_ctx.bst_str, pool)?;
+pub(crate) fn print_bst_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
+    print_a_pool_str(name, pool)?;
     write_logs(".bst\n");
     Ok(())
 }
@@ -1678,11 +1678,9 @@ fn interp_preamble(
     pool: &mut StringPool,
     bibs: &mut BibData,
 ) -> Result<(), BibtexError> {
-    let mut out = Vec::with_capacity(ctx.glbl_ctx().num_preamble_strings * 32);
-    bibs.set_preamble_ptr(0);
-    while bibs.preamble_ptr() < ctx.glbl_ctx().num_preamble_strings {
-        out.extend(pool.get_str(bibs.cur_preamble()));
-        bibs.set_preamble_ptr(bibs.preamble_ptr() + 1);
+    let mut out = Vec::with_capacity(bibs.preamble_len() * 32);
+    for s in bibs.preamble() {
+        out.extend(pool.get_str(*s));
     }
     let s = pool.add_string_raw(&out)?;
     ctx.push_stack(ExecVal::String(s));
