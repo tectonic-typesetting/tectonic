@@ -230,3 +230,19 @@ fn test_lots_of_cites() {
         .test_bbl(false)
         .go();
 }
+
+#[test]
+fn test_dup_bib() {
+    TestCase::new(&["aux_files", "dup_bib"])
+        .expect(Ok(TexOutcome::Errors))
+        .test_bbl(false)
+        .go();
+}
+
+#[test]
+fn test_missing_bib() {
+    TestCase::new(&["aux_files", "missing_bib"])
+        .expect(Ok(TexOutcome::Errors))
+        .test_bbl(false)
+        .go();
+}
