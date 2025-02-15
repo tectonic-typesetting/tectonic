@@ -49,6 +49,7 @@ steps:
     echo "##vso[task.setvariable variable=VCPKG_ROOT;]$(pwd)/target/vcpkg"
     echo "##vso[task.setvariable variable=TECTONIC_DEP_BACKEND;]vcpkg"
     echo "##vso[task.setvariable variable=VCPKG_DEFAULT_BINARY_CACHE;]$(pwd)/target/vcpkg-cache"
+    mkdir -p "$(pwd)/target/vcpkg-cache"
   displayName: Setup build variables
 
 # Without RUST_TEST_THREAD=1, on Windows the doctests fail with a
