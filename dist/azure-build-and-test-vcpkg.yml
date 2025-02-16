@@ -69,7 +69,7 @@ steps:
   inputs:
     key: '"vcpkg" | "$(TARGET)" | Cargo.toml'
     path: $(VCPKG_DEFAULT_BINARY_CACHE)
-    restoreKeys: '"vcpkg" | "$(Agent.OS)" | "$(Agent.OSArchitecture)" | Cargo.toml'
+    restoreKeys: '"vcpkg" | "$(Agent.OS)" | "$(Agent.OSArchitecture)"'
   displayName: Load vcpkg cache
 
 - bash: |
