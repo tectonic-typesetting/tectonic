@@ -224,16 +224,16 @@ jobs:
       TOOLCHAIN: stable
 
   # pkg-config builds
-#  - ${{ each build in parameters.pkgconfigBuilds }}:
-#      - job: ${{ format('build_{0}_pkgconfig', build.name) }}
-#        pool:
-#          vmImage: ${{ build.vmImage }}
-#        steps:
-#          - template: azure-build-and-test-pkgconfig.yml
-#            parameters:
-#              ${{ insert }}: ${{ build.params }}
-#        variables:
-#          ${{ insert }}: ${{ build.vars }}
+  - ${{ each build in parameters.pkgconfigBuilds }}:
+      - job: ${{ format('build_{0}_pkgconfig', build.name) }}
+        pool:
+          vmImage: ${{ build.vmImage }}
+        steps:
+          - template: azure-build-and-test-pkgconfig.yml
+            parameters:
+              ${{ insert }}: ${{ build.params }}
+        variables:
+          ${{ insert }}: ${{ build.vars }}
 
   # vcpkg builds
   - ${{ each build in parameters.vcpkgBuilds }}:
@@ -248,15 +248,15 @@ jobs:
           ${{ insert }}: ${{ build.vars }}
 
   # cross builds
-#  - ${{ each build in parameters.crossBuilds }}:
-#      - job: ${{ format('cross_{0}', build.name) }}
-#        pool:
-#          vmImage: ubuntu-22.04
-#        steps:
-#          - template: azure-build-and-test-cross.yml
-#        variables:
-#          TOOLCHAIN: stable
-#          ${{ insert }}: ${{ build.vars }}
+  - ${{ each build in parameters.crossBuilds }}:
+      - job: ${{ format('cross_{0}', build.name) }}
+        pool:
+          vmImage: ubuntu-22.04
+        steps:
+          - template: azure-build-and-test-cross.yml
+        variables:
+          TOOLCHAIN: stable
+          ${{ insert }}: ${{ build.vars }}
 
   # coverage analysis check
   - job: coverage
