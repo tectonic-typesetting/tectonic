@@ -3062,7 +3062,7 @@ dependencies = [
  "sha2",
  "tectonic_errors",
  "tectonic_status_base",
- "thiserror 1.0.69",
+ "thiserror 2.0.11",
 ]
 
 [[package]]
