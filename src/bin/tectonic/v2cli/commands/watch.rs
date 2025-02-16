@@ -88,6 +88,7 @@ impl WatchCommand {
             [("build/**".to_string(), None), ("*.swp".to_string(), None)],
             [],
             [],
+            [],
         )
         .await
         .unwrap();
@@ -173,7 +174,7 @@ impl WatchCommand {
             Ok(exec_handler) => {
                 exec_handler
                     .config
-                    .pathset([&current_dir])
+                    .pathset([current_dir])
                     .filterer(Arc::new(filter));
                 exec_handler.main().await.unwrap().unwrap();
                 Ok(0)
