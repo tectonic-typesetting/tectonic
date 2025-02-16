@@ -74,7 +74,7 @@ lazy_static = "^1.4"
 libc = "^0.2"
 md-5 = "^0.10"
 open = "^5.0"
-quick-xml = "^0.37"
+quick-xml = "0.37"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.10"
 clap = { version = "4.5.1", features = ["derive"] }
@@ -100,7 +100,7 @@ watchexec = "^3.0"
 watchexec-filterer-globset = "3.0"
 watchexec-signals = "2.0"
 watchexec-supervisor = "1.0"
-zip = { version = "^0.6", default-features = false, features = ["deflate"] }
+zip = { version = "2.0", default-features = false, features = ["deflate"] }
 time = "0.3.36"
 clap_complete = "4.5.1"
 walkdir = "2"
