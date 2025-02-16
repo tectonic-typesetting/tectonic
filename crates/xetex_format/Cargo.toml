@@ -19,7 +19,7 @@ edition = "2018"
 
 [dependencies]
 byteorder = "^1"
-nom = "^7"
+nom = "8"
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 
 [dev-dependencies]
