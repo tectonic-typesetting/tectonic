@@ -136,16 +136,6 @@ profile = []
 
 [dev-dependencies]
 filetime = "^0.2"
-futures = "0.3"
-headers = "0.4"
-http-body-util = "0.1.0"
-hyper = { version = "1.0.0", features = ["server", "http1", "http2"] }
-hyper-util = { version = "0.1", features = [
-    "server",
-    "http1",
-    "http2",
-    "tokio",
-] }
 tempfile = "^3.1"
 
 [package.metadata.vcpkg]
