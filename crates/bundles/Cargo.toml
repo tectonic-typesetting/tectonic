@@ -19,7 +19,6 @@ edition = "2018"
 
 [dependencies]
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
-fs2 = "^0.4"
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_geturl = { path = "../geturl", version = "0.0.0-dev.0", default-features = false }
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
