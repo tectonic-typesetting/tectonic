@@ -288,10 +288,10 @@ pub(crate) fn aux_end2_err_print(pool: &StringPool, name: StrNumber) -> Result<(
     Ok(())
 }
 
-pub(crate) fn print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
-    print_a_pool_str(bibs.cur_bib(), pool)?;
+pub(crate) fn print_bib_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
+    print_a_pool_str(name, pool)?;
     let res = pool
-        .try_get_str(bibs.cur_bib())
+        .try_get_str(name)
         .map_err(|_| BibtexError::Fatal)
         .map(|str| str.ends_with(b".bib"))?;
     if !res {
@@ -301,11 +301,11 @@ pub(crate) fn print_bib_name(pool: &StringPool, bibs: &BibData) -> Result<(), Bi
     Ok(())
 }
 
-pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), BibtexError> {
+pub(crate) fn log_pr_bib_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
     with_log(|log| {
-        out_pool_str(pool, log, bibs.cur_bib())?;
+        out_pool_str(pool, log, name)?;
         let res = pool
-            .try_get_str(bibs.cur_bib())
+            .try_get_str(name)
             .map(|str| str.ends_with(b".bib"))
             .map_err(|_| BibtexError::Fatal)?;
         if !res {
@@ -319,7 +319,7 @@ pub(crate) fn log_pr_bib_name(bibs: &BibData, pool: &StringPool) -> Result<(), B
 pub(crate) fn log_pr_bst_name(ctx: &Bibtex<'_, '_>, pool: &StringPool) -> Result<(), BibtexError> {
     with_log(|log| {
         // TODO: This call can panic if bst_str doesn't exist
-        out_pool_str(pool, log, ctx.bst_str)?;
+        out_pool_str(pool, log, ctx.bst.as_ref().unwrap().name)?;
         writeln!(log, ".bst").unwrap();
         Ok(())
     })
@@ -378,8 +378,8 @@ pub fn bst_right_brace_print() {
 }
 
 pub(crate) fn bib_ln_num_print(pool: &StringPool, bibs: &BibData) -> Result<(), BibtexError> {
-    write_logs(&format!("--line {} of file ", bibs.line_num()));
-    print_bib_name(pool, bibs)
+    write_logs(&format!("--line {} of file ", bibs.top_file().line));
+    print_bib_name(pool, bibs.top_file().name)
 }
 
 pub(crate) fn bib_err_print(
@@ -580,12 +580,10 @@ pub(crate) fn bst_err_print_and_look_for_blank_line(
     bst_ln_num_print(ctx, pool)?;
     print_bad_input_line(buffers);
     while buffers.init(BufTy::Base) != 0 {
-        // SAFETY: bst_file guaranteed valid
-        let bst_file = unsafe { ctx.bst_file.map(|mut ptr| ptr.as_mut()) };
-        if !input_ln(bst_file, buffers) {
+        if !input_ln(&mut ctx.bst.as_mut().unwrap().file, buffers) {
             return Err(BibtexError::Recover);
         } else {
-            ctx.bst_line_num += 1;
+            ctx.bst.as_mut().unwrap().line += 1;
         }
     }
     buffers.set_offset(BufTy::Base, 2, buffers.init(BufTy::Base));
