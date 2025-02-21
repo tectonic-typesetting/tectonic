@@ -113,6 +113,13 @@ _ttbc_get_error_message(void)
 }
 
 
+ttbc_state_t *
+_ttbc_get_core_state(void)
+{
+	return tectonic_global_bridge_core;
+}
+
+
 jmp_buf *
 ttbc_global_engine_enter(ttbc_state_t *api)
 {
