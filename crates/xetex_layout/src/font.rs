@@ -1,13 +1,12 @@
-use crate::c_api::{
-    ttstub_input_close, ttstub_input_get_size, ttstub_input_open, ttstub_input_read, Fixed,
-    GlyphBBox, GlyphID, PlatformFontRef,
-};
+use crate::c_api::{Fixed, GlyphBBox, GlyphID, PlatformFontRef};
 use crate::utils::fix_to_d;
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
+use std::path::Path;
 use std::rc::Rc;
+use std::str::FromStr;
 use std::sync::OnceLock;
-use tectonic_bridge_core::FileFormat;
+use tectonic_bridge_core::{CoreBridgeState, FileFormat};
 #[cfg(not(target_os = "macos"))]
 use tectonic_bridge_fontconfig as fc;
 use tectonic_bridge_freetype2 as ft;
@@ -174,7 +173,11 @@ pub struct Font {
 impl Font {
     #[cfg(not(target_os = "macos"))]
     pub(crate) fn new(font: PlatformFontRef, point_size: f32) -> Result<Font, i32> {
-        let path = font.as_ref().get::<fc::pat::File>(0).ok();
+        let path = font
+            .as_ref()
+            .get::<fc::pat::File>(0)
+            .and_then(|s| s.to_str().map_err(|_| fc::FcErr::NoMatch))
+            .ok();
         let index = font.as_ref().get::<fc::pat::Index>(0).unwrap_or(0);
 
         Font::new_path_index(path, index as usize, point_size)
@@ -206,7 +209,7 @@ impl Font {
     }
 
     pub(crate) fn new_path_index(
-        path: Option<&CStr>,
+        path: Option<&str>,
         index: usize,
         point_size: f32,
     ) -> Result<Font, i32> {
@@ -237,69 +240,60 @@ impl Font {
         }
     }
 
-    fn initialize_ft(&mut self, pathname: &CStr, index: usize) -> i32 {
-        let mut handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::OpenType, 0) };
-        if handle.is_null() {
-            handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::TrueType, 0) };
-        }
-        if handle.is_null() {
-            handle = unsafe { ttstub_input_open(pathname.as_ptr(), FileFormat::Type1, 0) };
-        }
-        if handle.is_null() {
-            return 1;
-        }
+    fn initialize_ft(&mut self, pathname: &str, index: usize) -> i32 {
+        let res = CoreBridgeState::with_global_state(|engine| {
+            let handle = engine
+                .input_open(pathname, FileFormat::OpenType, false)
+                .or_else(|| engine.input_open(pathname, FileFormat::TrueType, false))
+                .or_else(|| engine.input_open(pathname, FileFormat::Type1, false));
+            let Some(handle) = handle else {
+                return 1;
+            };
 
-        let sz = unsafe { ttstub_input_get_size(handle) };
-        let mut backing_data = vec![0; sz];
-        let r = unsafe { ttstub_input_read(handle, backing_data.as_mut_ptr().cast(), sz) };
-        if r < 0 || (r as usize) != sz {
-            panic!("failed to read font file");
-        }
-        unsafe { ttstub_input_close(handle) };
+            let sz = engine.input_get_size(handle);
+            let mut backing_data = vec![0; sz];
+            engine
+                .input_read(handle, &mut backing_data)
+                .expect("failed to read font file");
 
-        self.ft_face = match ft::Face::new_memory(backing_data, index) {
-            Ok(face) => Some(Rc::new(RefCell::new(face))),
-            Err(_) => return 1,
-        };
+            engine.input_close(handle);
 
-        if !self.ft_face().is_scalable() {
-            return 1;
-        }
+            self.ft_face = match ft::Face::new_memory(backing_data, index) {
+                Ok(face) => Some(Rc::new(RefCell::new(face))),
+                Err(_) => return 1,
+            };
 
-        if index == 0 && !self.ft_face().is_sfnt() {
-            let pathname = pathname.to_bytes();
-            let mut afm = pathname
-                .rsplit(|c| *c == b'/')
-                .next()
-                .unwrap_or(pathname)
-                .to_vec();
-            let file_ty = afm.rsplit_mut(|c| *c == b'.').next();
-            if let Some(file_ty) = file_ty {
-                if file_ty.len() == 3
-                    && file_ty[0].to_ascii_lowercase() == b'p'
-                    && file_ty[1].to_ascii_lowercase() == b'f'
-                {
-                    file_ty.copy_from_slice(b"afm");
+            if !self.ft_face().is_scalable() {
+                return 1;
+            }
+
+            if index == 0 && !self.ft_face().is_sfnt() {
+                let afm = Path::new(pathname)
+                    .file_name()
+                    .map(Path::new)
+                    .unwrap_or(Path::new(pathname));
+                let afm = afm.with_extension("afm");
+
+                let afm_handle = engine.input_open(afm.to_str().unwrap(), FileFormat::Afm, false);
+
+                if let Some(afm_handle) = afm_handle {
+                    let sz = engine.input_get_size(afm_handle);
+                    let mut backing_data2 = vec![0; sz];
+                    engine
+                        .input_read(handle, &mut backing_data2)
+                        .expect("failed to read AFM file");
+
+                    self.ft_face_mut().attach_stream_mem(backing_data2).unwrap();
+                    engine.input_close(afm_handle);
                 }
             }
-            afm.push(0);
-
-            let afm_handle = unsafe { ttstub_input_open(afm.as_ptr().cast(), FileFormat::Afm, 0) };
-
-            if !afm_handle.is_null() {
-                let sz = unsafe { ttstub_input_get_size(afm_handle) };
-                let mut backing_data2 = vec![0; sz];
-                let r = unsafe { ttstub_input_read(handle, backing_data2.as_mut_ptr().cast(), sz) };
-
-                if r < 0 || (r as usize) != sz {
-                    panic!("failed to read AFM file");
-                }
-
-                self.ft_face_mut().attach_stream_mem(backing_data2).unwrap();
-            }
+            0
+        });
+        if res != 0 {
+            return res;
         }
 
-        self.filename = pathname.to_owned();
+        self.filename = CString::from_str(pathname).unwrap();
         self.index = index as u32;
         let upe = { self.ft_face().units_per_em() };
         self.units_per_em = upe;
@@ -378,7 +372,7 @@ impl Font {
         ));
         let mut index = 0;
         let pathname = get_file_name_from_ct_font(font_ref.as_ref().unwrap(), &mut index).unwrap();
-        self.initialize_ft(&pathname, index as usize)
+        self.initialize_ft(pathname.to_str().unwrap(), index as usize)
     }
 
     pub(crate) fn ft_face(&self) -> std::cell::Ref<'_, ft::Face> {
