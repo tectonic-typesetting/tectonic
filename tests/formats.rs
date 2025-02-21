@@ -16,7 +16,6 @@
 /// way to implement that option.
 use std::{
     collections::{HashMap, HashSet},
-    default::Default,
     str::FromStr,
 };
 
@@ -57,8 +56,8 @@ struct FormatTestDriver<'a> {
     events: HashMap<String, FileSummary>,
 }
 
-impl<'a> FormatTestDriver<'a> {
-    fn new(io: IoStack<'a>) -> FormatTestDriver {
+impl FormatTestDriver<'_> {
+    fn new(io: IoStack) -> FormatTestDriver {
         FormatTestDriver {
             io,
             events: HashMap::new(),
@@ -68,7 +67,7 @@ impl<'a> FormatTestDriver<'a> {
 
 // We need to provide this whole wrapper implementation just to be able to add
 // file open events in `output_open_name`.
-impl<'a> IoProvider for FormatTestDriver<'a> {
+impl IoProvider for FormatTestDriver<'_> {
     fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         let r = self.io.output_open_name(name);
 
@@ -113,17 +112,12 @@ impl<'a> IoProvider for FormatTestDriver<'a> {
     }
 }
 
-impl<'a> DriverHooks for FormatTestDriver<'a> {
+impl DriverHooks for FormatTestDriver<'_> {
     fn io(&mut self) -> &mut dyn IoProvider {
         self
     }
 
-    fn event_output_closed(
-        &mut self,
-        name: String,
-        digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .events
             .get_mut(&name)
@@ -177,12 +171,8 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
             let observed = info.write_digest.unwrap();
 
             if observed != want_digest {
-                println!(
-                    "expected {} to have SHA256 = {}",
-                    fmtname,
-                    want_digest.to_string()
-                );
-                println!("instead, got {}", observed.to_string());
+                println!("expected {} to have SHA256 = {}", fmtname, want_digest);
+                println!("instead, got {}", observed);
                 panic!();
             }
         }

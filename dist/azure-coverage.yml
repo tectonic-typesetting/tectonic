@@ -45,6 +45,7 @@ steps:
 
 - bash: |
     set -xeuo pipefail
+    export TECTONIC_KCOV_RUN=1
     cargo kcov --no-clean-rebuild -- --include-path="$(pwd)" --exclude-pattern=/tests/
   displayName: cargo kcov
 

@@ -6,7 +6,7 @@
 use nom::{
     multi::count,
     number::complete::{be_i16, be_i32, be_i64, be_u16},
-    Err as NomErr, IResult,
+    Err as NomErr, IResult, Parser,
 };
 use std::io::Write;
 use tectonic_errors::prelude::*;
@@ -336,7 +336,7 @@ fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
 
     // Primitives. TODO: figure out best type for `prims`.
 
-    let (input, _prims) = count(be_i64, prim_size as usize + 1)(input)?;
+    let (input, _prims) = count(be_i64, prim_size as usize + 1).parse(input)?;
 
     // Control sequence names -- the hash table.
 
@@ -346,42 +346,46 @@ fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
 
     let (input, fmem_ptr) = parseutils::ranged_be_i32(7, 147483647)(input)?;
 
-    let (input, _font_info) = count(be_i64, fmem_ptr as usize)(input)?;
+    let (input, _font_info) = count(be_i64, fmem_ptr as usize).parse(input)?;
 
     // NB: FONT_BASE = 0
     let (input, font_ptr) = parseutils::ranged_be_i32(0, max_fonts)(input)?;
 
     let n_fonts = font_ptr as usize + 1;
-    let (input, _font_check) = count(be_i64, n_fonts)(input)?;
-    let (input, _font_size) = count(be_i32, n_fonts)(input)?;
-    let (input, _font_dsize) = count(be_i32, n_fonts)(input)?;
+    let (input, _font_check) = count(be_i64, n_fonts).parse(input)?;
+    let (input, _font_size) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _font_dsize) = count(be_i32, n_fonts).parse(input)?;
     let (input, _font_params) = count(
         parseutils::ranged_be_i32(MIN_HALFWORD, MAX_HALFWORD),
         n_fonts,
-    )(input)?;
-    let (input, _hyphen_char) = count(be_i32, n_fonts)(input)?;
-    let (input, _skew_char) = count(be_i32, n_fonts)(input)?;
-    let (input, _font_name) = count(be_i32, n_fonts)(input)?;
-    let (input, _font_area) = count(be_i32, n_fonts)(input)?;
-    let (input, _font_bc) = count(be_i16, n_fonts)(input)?;
-    let (input, _font_ec) = count(be_i16, n_fonts)(input)?;
-    let (input, _char_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _width_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _height_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _depth_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _italic_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _lig_kern_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _kern_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _exten_base) = count(be_i32, n_fonts)(input)?;
-    let (input, _param_base) = count(be_i32, n_fonts)(input)?;
+    )
+    .parse(input)?;
+    let (input, _hyphen_char) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _skew_char) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _font_name) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _font_area) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _font_bc) = count(be_i16, n_fonts).parse(input)?;
+    let (input, _font_ec) = count(be_i16, n_fonts).parse(input)?;
+    let (input, _char_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _width_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _height_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _depth_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _italic_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _lig_kern_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _kern_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _exten_base) = count(be_i32, n_fonts).parse(input)?;
+    let (input, _param_base) = count(be_i32, n_fonts).parse(input)?;
     let (input, _font_glue) = count(
         parseutils::ranged_be_i32(MIN_HALFWORD, mem.lo_mem_max),
         n_fonts,
-    )(input)?;
-    let (input, _bchar_label) = count(parseutils::ranged_be_i32(0, fmem_ptr - 1), n_fonts)(input)?;
-    let (input, _font_bchar) = count(parseutils::ranged_be_i32(0, TOO_BIG_CHAR), n_fonts)(input)?;
+    )
+    .parse(input)?;
+    let (input, _bchar_label) =
+        count(parseutils::ranged_be_i32(0, fmem_ptr - 1), n_fonts).parse(input)?;
+    let (input, _font_bchar) =
+        count(parseutils::ranged_be_i32(0, TOO_BIG_CHAR), n_fonts).parse(input)?;
     let (input, _font_false_bchar) =
-        count(parseutils::ranged_be_i32(0, TOO_BIG_CHAR), n_fonts)(input)?;
+        count(parseutils::ranged_be_i32(0, TOO_BIG_CHAR), n_fonts).parse(input)?;
 
     // Hyphenations!
 
@@ -424,18 +428,18 @@ fn parse_body(engine: Engine, input: &[u8]) -> IResult<&[u8], Format> {
     let (input, _hyph_start) = parseutils::ranged_be_i32(0, trie_max)(input)?;
 
     let n_trie = trie_max as usize + 1;
-    let (input, _trie_trl) = count(be_i32, n_trie)(input)?;
-    let (input, _trie_tro) = count(be_i32, n_trie)(input)?;
-    let (input, _trie_trc) = count(be_u16, n_trie)(input)?;
+    let (input, _trie_trl) = count(be_i32, n_trie).parse(input)?;
+    let (input, _trie_tro) = count(be_i32, n_trie).parse(input)?;
+    let (input, _trie_trc) = count(be_u16, n_trie).parse(input)?;
 
     let (input, _max_hyph_char) = be_i32(input)?;
 
     let (input, trie_op_ptr) = parseutils::ranged_be_i32(0, TRIE_OP_SIZE)(input)?;
 
     // IMPORTANT!!! XeTeX loads these into 1-based indices!
-    let (input, _hyf_distance) = count(be_i16, trie_op_ptr as usize)(input)?;
-    let (input, _hyf_num) = count(be_i16, trie_op_ptr as usize)(input)?;
-    let (input, _hyf_next) = count(be_u16, trie_op_ptr as usize)(input)?;
+    let (input, _hyf_distance) = count(be_i16, trie_op_ptr as usize).parse(input)?;
+    let (input, _hyf_num) = count(be_i16, trie_op_ptr as usize).parse(input)?;
+    let (input, _hyf_next) = count(be_u16, trie_op_ptr as usize).parse(input)?;
 
     let mut trie_used = vec![0i32; BIGGEST_LANG + 1];
     let mut op_start = vec![0i32; BIGGEST_LANG + 1];

@@ -1,11 +1,11 @@
-# “V2” (Prototype) Command-Line Interface
+# "V2" (Prototype) Command-Line Interface
 
-The “V2” command-line interface to Tectonic is a substantially new interface to
+The "V2" command-line interface to Tectonic is a substantially new interface to
 the Tectonic engine introduced in the 0.4.x release series.
 
-In short, the V2 interface is “[cargo]-like”, with a variety of subcommands
+In short, the V2 interface is "[cargo]-like", with a variety of subcommands
 anchored around a [Tectonic.toml] file defining a document to build. For
-comparison, the original (“V1”) interface is more “[rustc]-like”, offering a
+comparison, the original ("V1") interface is more "[rustc]-like", offering a
 single primary workflow with lots of options controlling its behavior.
 
 [cargo]: https://doc.rust-lang.org/cargo/
@@ -40,6 +40,33 @@ nextonic build
 You can use various Unix `argv[0]` hacks to achieve this, or you can just rename
 or symlink the `tectonic` binary to `nextonic` manually.
 
+## Shell completions
+
+Shell completions for the `nextonic` executable can be generated using
+`nextonic show shell-completions`, plus the name of your shell. Currently,
+completions are only available for the `nextonic` command.
+
+As an example, you can generate shell completions for zsh and save it to a
+file with the following command:
+
+```zsh
+nextonic show shell-completions zsh > _nextonic
+```
+
+You can then move the completion file to a location where zsh can auto load;
+for example, `/usr/local/share/zsh/site-functions` would probably work for
+most Unix systems. Alternatively, you can evaluate the completions directly
+in you `~/.zshrc`, e.g.
+
+```zsh
+eval "$(nextonic show shell-completions zsh)"
+```
+
+Currently supported shells are listed in the `--help` text:
+
+```zsh
+nextonic show shell-completions --help
+```
 
 ## External tools
 

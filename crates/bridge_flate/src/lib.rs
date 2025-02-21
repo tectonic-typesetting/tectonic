@@ -113,7 +113,7 @@ struct Decompressor<'a> {
     done: bool,
 }
 
-impl<'a> Decompressor<'a> {
+impl Decompressor<'_> {
     fn decompress_chunk(&mut self, output: &mut [u8]) -> Result<usize, Error> {
         if self.done {
             return Ok(0);
