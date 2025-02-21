@@ -117,29 +117,6 @@ pub(crate) mod c_api {
         }
         .unwrap_or(0)
     }
-
-    /// cbindgen:ignore
-    mod ext {
-        use tectonic_bridge_core::FileFormat;
-        use tectonic_io_base::InputHandle;
-
-        #[allow(improper_ctypes)]
-        extern "C" {
-            pub fn ttstub_input_open(
-                path: *const libc::c_char,
-                format: FileFormat,
-                is_gz: libc::c_int,
-            ) -> *mut InputHandle;
-            pub fn ttstub_input_get_size(handle: *mut InputHandle) -> usize;
-            pub fn ttstub_input_read(
-                handle: *mut InputHandle,
-                data: *mut libc::c_char,
-                len: usize,
-            ) -> isize;
-            pub fn ttstub_input_close(handle: *mut InputHandle) -> libc::c_int;
-        }
-    }
-    pub use ext::*;
 }
 
 /// Does our resulting executable link correctly?
