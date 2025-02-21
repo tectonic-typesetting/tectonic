@@ -156,7 +156,7 @@ pub unsafe extern "C" fn createFontFromFile(
     let filename = if filename.is_null() {
         None
     } else {
-        Some(CStr::from_ptr(filename))
+        Some(CStr::from_ptr(filename).to_str().unwrap())
     };
 
     match Font::new_path_index(filename, index as usize, fix_to_d(point_size) as f32) {
