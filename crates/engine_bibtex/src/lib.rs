@@ -27,11 +27,10 @@ use crate::{
     entries::EntryData,
     exec::ExecCtx,
     global::GlobalData,
-    hash::HashData,
-    history::{get_history, History},
+    hash::{HashData, HashExtra},
     log::{
-        bib_close_log, init_log_file, init_standard_output, log_pr_aux_name, print_aux_name,
-        print_confusion, sam_wrong_file_name_print, write_log_file, write_logs,
+        bib_close_log, log_pr_aux_name, print_aux_name, print_confusion, sam_wrong_file_name_print,
+        AsBytes,
     },
     other::OtherData,
     peekable::{input_ln, PeekableInput},
@@ -40,14 +39,10 @@ use crate::{
 };
 use std::{
     ffi::{CStr, CString},
-    ptr,
+    io::Write,
 };
-use tectonic_bridge_core::{
-    ttbc_input_close, ttbc_input_open, ttbc_output_close, ttbc_output_open,
-    ttbc_output_open_stdout, CoreBridgeLauncher, CoreBridgeState, FileFormat,
-};
+use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, FileFormat, OutputId};
 use tectonic_errors::prelude::*;
-use tectonic_io_base::OutputHandle;
 
 pub(crate) mod auxi;
 pub(crate) mod bibs;
@@ -59,12 +54,19 @@ pub(crate) mod entries;
 pub(crate) mod exec;
 pub(crate) mod global;
 pub(crate) mod hash;
-pub(crate) mod history;
 pub(crate) mod log;
 pub(crate) mod other;
 pub(crate) mod peekable;
 pub(crate) mod pool;
 pub(crate) mod scan;
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub(crate) enum History {
+    Spotless,
+    WarningIssued(u32),
+    ErrorIssued(u32),
+    FatalError,
+}
 
 #[doc(hidden)]
 #[derive(Debug)]
@@ -193,13 +195,21 @@ impl Default for BibtexConfig {
     }
 }
 
+#[derive(Default)]
+pub(crate) struct Logs {
+    stdout: Option<OutputId>,
+    file: Option<OutputId>,
+}
+
 pub(crate) struct Bibtex<'a, 'cbs> {
     pub engine: &'a mut CoreBridgeState<'cbs>,
     pub config: BibtexConfig,
+    pub history: History,
+    pub logs: Logs,
 
     pub bst: Option<File>,
 
-    pub bbl_file: *mut OutputHandle,
+    pub bbl_file: Option<OutputId>,
     pub bbl_line_num: usize,
 
     pub impl_fn_num: usize,
@@ -228,9 +238,11 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
         Bibtex {
             engine,
             config,
+            history: History::Spotless,
+            logs: Logs::default(),
             bst: None,
-            bbl_file: ptr::null_mut(),
-            bbl_line_num: 0,
+            bbl_file: None,
+            bbl_line_num: 1,
             impl_fn_num: 0,
             cite_xptr: 0,
             bib_seen: false,
@@ -245,6 +257,69 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
             s_null: 0,
             s_default: 0,
             s_aux_extension: 0,
+        }
+    }
+
+    pub(crate) fn mark_warning(&mut self) {
+        match self.history {
+            History::WarningIssued(cur) => self.history = History::WarningIssued(cur + 1),
+            History::Spotless => self.history = History::WarningIssued(1),
+            _ => (),
+        }
+    }
+
+    pub(crate) fn mark_error(&mut self) {
+        match self.history {
+            History::Spotless | History::WarningIssued(_) => self.history = History::ErrorIssued(1),
+            History::ErrorIssued(cur) => self.history = History::ErrorIssued(cur + 1),
+            _ => (),
+        }
+    }
+
+    pub(crate) fn mark_fatal(&mut self) {
+        self.history = History::FatalError;
+    }
+
+    pub(crate) fn write_logs<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        let _ = self
+            .engine
+            .get_output(self.logs.file.unwrap())
+            .write_all(str.as_bytes());
+        let _ = self
+            .engine
+            .get_output(self.logs.stdout.unwrap())
+            .write_all(str.as_bytes());
+    }
+
+    pub(crate) fn write_stdout<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        let _ = self
+            .engine
+            .get_output(self.logs.stdout.unwrap())
+            .write_all(str.as_bytes());
+    }
+
+    pub(crate) fn write_log_file<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        self.engine
+            .get_output(self.logs.file.unwrap())
+            .write_all(str.as_bytes())
+            .unwrap();
+    }
+
+    pub(crate) fn init_stdout(&mut self) -> bool {
+        if self.logs.stdout.is_none() {
+            self.logs.stdout = self.engine.output_open_stdout();
+            self.logs.stdout.is_some()
+        } else {
+            true
+        }
+    }
+
+    pub(crate) fn init_log_file(&mut self, file: &CStr) -> bool {
+        if self.logs.file.is_none() {
+            self.logs.file = self.engine.output_open(file.to_str().unwrap(), false);
+            self.logs.file.is_some()
+        } else {
+            true
         }
     }
 }
@@ -296,9 +371,6 @@ type FieldLoc = usize;
 type FnDefLoc = usize;
 
 pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> History {
-    history::reset();
-    log::reset();
-
     let mut buffers = GlobalBuffer::new();
     let mut pool = StringPool::new();
     let mut hash = HashData::new();
@@ -325,38 +397,42 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
     match res {
         Err(BibtexError::Recover) | Ok(History::Spotless) => {
             ctx.bst.take().map(|file| file.file.close(ctx));
-            ttbc_output_close(ctx.engine, ctx.bbl_file);
+            if let Some(bbl) = ctx.bbl_file {
+                ctx.engine.output_close(bbl);
+            }
         }
         Err(BibtexError::NoBst) => {
-            ttbc_output_close(ctx.engine, ctx.bbl_file);
+            if let Some(bbl) = ctx.bbl_file {
+                ctx.engine.output_close(bbl);
+            }
         }
         Err(BibtexError::Fatal) => (),
         Ok(hist) => return hist,
     }
 
-    match get_history() {
+    match ctx.history {
         History::Spotless => (),
         History::WarningIssued(warns) => {
             if warns == 1 {
-                write_logs("(There was 1 warning)\n")
+                ctx.write_logs("(There was 1 warning)\n")
             } else {
-                write_logs(&format!("(There were {} warnings)\n", warns))
+                ctx.write_logs(&format!("(There were {} warnings)\n", warns))
             }
         }
         History::ErrorIssued(errs) => {
             if errs == 1 {
-                write_logs("(There was 1 error message)\n")
+                ctx.write_logs("(There was 1 error message)\n")
             } else {
-                write_logs(&format!("(There were {} error messages)\n", errs))
+                ctx.write_logs(&format!("(There were {} error messages)\n", errs))
             }
         }
         History::FatalError => {
-            write_logs("(That was a fatal error)\n");
+            ctx.write_logs("(That was a fatal error)\n");
         }
     }
 
     bib_close_log(ctx);
-    get_history()
+    ctx.history
 }
 
 pub(crate) fn inner_bibtex_main(
@@ -364,21 +440,22 @@ pub(crate) fn inner_bibtex_main(
     globals: &mut GlobalItems<'_>,
     aux_file_name: &CStr,
 ) -> Result<History, BibtexError> {
-    if !init_standard_output(ctx) {
+    if !ctx.init_stdout() {
         return Ok(History::FatalError);
     }
 
-    if initialize(ctx, globals, aux_file_name)? != 0 {
+    pre_def_certain_strings(ctx, globals)?;
+    if get_the_top_level_aux_file_name(ctx, globals, aux_file_name)? != 0 {
         return Ok(History::FatalError);
     }
 
     if ctx.config.verbose {
-        write_logs("This is BibTeX, Version 0.99d\n");
+        ctx.write_logs("This is BibTeX, Version 0.99d\n");
     } else {
-        write_log_file("This is BibTeX, Version 0.99d\n");
+        ctx.write_log_file("This is BibTeX, Version 0.99d\n");
     }
 
-    write_log_file(&format!(
+    ctx.write_log_file(&format!(
         "Capacity: max_strings={}, hash_size={}, hash_prime={}\n",
         pool::MAX_STRINGS,
         hash::HASH_SIZE,
@@ -386,17 +463,21 @@ pub(crate) fn inner_bibtex_main(
     ));
 
     if ctx.config.verbose {
-        write_logs("The top-level auxiliary file: ");
-        print_aux_name(globals.pool, globals.aux.top_file().name)?;
+        ctx.write_logs("The top-level auxiliary file: ");
+        print_aux_name(ctx, globals.pool, globals.aux.top_file().name)?;
     } else {
-        write_log_file("The top-level auxiliary file: ");
-        log_pr_aux_name(globals.aux, globals.pool)?;
+        ctx.write_log_file("The top-level auxiliary file: ");
+        log_pr_aux_name(ctx, globals.aux, globals.pool)?;
     }
 
     let last_aux = loop {
         globals.aux.top_file_mut().line += 1;
 
-        if !input_ln(&mut globals.aux.top_file_mut().file, globals.buffers) {
+        if !input_ln(
+            ctx.engine,
+            &mut globals.aux.top_file_mut().file,
+            globals.buffers,
+        ) {
             if let Some(last) = pop_the_aux_stack(ctx, globals.aux) {
                 break last;
             }
@@ -411,14 +492,13 @@ pub(crate) fn inner_bibtex_main(
         return Err(BibtexError::NoBst);
     }
 
-    ctx.bbl_line_num = 1;
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.init(BufTy::Base));
 
     let mut exec = ExecCtx::new(ctx);
     loop {
-        if !eat_bst_white_space(exec.glbl_ctx_mut(), globals.buffers) {
+        if !eat_bst_white_space(&mut exec, globals.buffers) {
             break;
         }
         get_bst_command_and_process(&mut exec, globals)?;
@@ -434,7 +514,6 @@ pub(crate) fn get_the_top_level_aux_file_name(
     }: &mut GlobalItems<'_>,
     aux_file_name: &CStr,
 ) -> Result<i32, BibtexError> {
-    let ctx = &mut *ctx;
     let aux_bytes = aux_file_name.to_bytes_with_nul();
 
     // This will be our scratch space for CStr filenames
@@ -450,32 +529,32 @@ pub(crate) fn get_the_top_level_aux_file_name(
     let aux_file = match PeekableInput::open(ctx, aux_file_name, FileFormat::Tex) {
         Ok(file) => file,
         Err(_) => {
-            sam_wrong_file_name_print(aux_file_name);
+            sam_wrong_file_name_print(ctx, aux_file_name);
             return Ok(1);
         }
     };
 
     set_extension(&mut path, b".blg");
     let log_file = CStr::from_bytes_with_nul(&path).unwrap();
-    if !init_log_file(ctx, log_file) {
-        sam_wrong_file_name_print(log_file);
+    if !ctx.init_log_file(log_file) {
+        sam_wrong_file_name_print(ctx, log_file);
         return Ok(1);
     }
 
     set_extension(&mut path, b".bbl");
     let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
-    // SAFETY: Function sound if provided a valid path pointer
-    ctx.bbl_file = unsafe { ttbc_output_open(ctx.engine, bbl_file.as_ptr(), 0) };
-    if ctx.bbl_file.is_null() {
-        sam_wrong_file_name_print(bbl_file);
+    ctx.bbl_file = ctx.engine.output_open(bbl_file.to_str().unwrap(), false);
+    if ctx.bbl_file.is_none() {
+        sam_wrong_file_name_print(ctx, bbl_file);
         return Ok(1);
     }
 
     set_extension(&mut path, b".aux");
-    let lookup = match pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile) {
-        Ok(res) => res,
-        Err(_) => return Err(BibtexError::Fatal),
-    };
+    let lookup =
+        match pool.lookup_str_insert(ctx, hash, &path[..path.len() - 1], HashExtra::AuxFile) {
+            Ok(res) => res,
+            Err(_) => return Err(BibtexError::Fatal),
+        };
 
     aux.push_file(File {
         name: hash.text(lookup.loc),
@@ -484,37 +563,12 @@ pub(crate) fn get_the_top_level_aux_file_name(
     });
 
     if lookup.exists {
-        write_logs("Already encountered auxiliary file");
-        print_confusion();
+        ctx.write_logs("Already encountered auxiliary file");
+        print_confusion(ctx);
         return Err(BibtexError::Fatal);
     }
 
     Ok(0)
-}
-
-fn initialize(
-    ctx: &mut Bibtex<'_, '_>,
-    globals: &mut GlobalItems<'_>,
-    aux_file_name: &CStr,
-) -> Result<i32, BibtexError> {
-    globals.pool.set_pool_ptr(0);
-    globals.pool.set_str_ptr(1);
-    globals.pool.set_start(globals.pool.str_ptr(), 0);
-
-    ctx.bib_seen = false;
-    ctx.bst_seen = false;
-    ctx.citation_seen = false;
-    ctx.all_entries = false;
-
-    ctx.entry_seen = false;
-    ctx.read_seen = false;
-    ctx.read_performed = false;
-    ctx.reading_completed = false;
-    ctx.impl_fn_num = 0;
-    globals.buffers.set_init(BufTy::Out, 0);
-
-    pre_def_certain_strings(ctx, globals)?;
-    get_the_top_level_aux_file_name(ctx, globals, aux_file_name)
 }
 
 /// Does our resulting executable link correctly?

@@ -5,13 +5,12 @@ use crate::{
     cite::CiteInfo,
     entries::{EntryData, ENT_STR_SIZE},
     global::{GlobalData, GLOB_STR_SIZE},
-    hash::{FnClass, HashData},
-    history::{mark_error, mark_warning},
+    hash::{BstBuiltin, BstFn, HashData, HashExtra},
     log::{
         brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
         bst_1print_string_size_exceeded, bst_2print_string_size_exceeded,
         bst_cant_mess_with_entries_print, output_bbl_line, print_a_pool_str, print_confusion,
-        rs_print_fn_class, write_logs,
+        print_fn_class,
     },
     pool::{add_buf_pool, add_out_pool, StringPool},
     scan::{
@@ -21,7 +20,24 @@ use crate::{
     ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, PoolPointer, StrIlk,
     StrNumber,
 };
-use std::ops::Index;
+use std::ops::{Deref, DerefMut, Index};
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub(crate) enum ControlSeq {
+    LowerI,
+    LowerJ,
+    LowerAA,
+    UpperAA,
+    LowerAE,
+    UpperAE,
+    LowerOE,
+    UpperOE,
+    LowerO,
+    UpperO,
+    LowerL,
+    UpperL,
+    LowerSS,
+}
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub(crate) enum StkType {
@@ -54,8 +70,8 @@ impl ExecVal {
 }
 
 pub(crate) struct ExecCtx<'a, 'bib, 'cbs> {
-    pub glbl_ctx: &'a mut Bibtex<'bib, 'cbs>,
-    pub _default: HashPointer,
+    glbl_ctx: &'a mut Bibtex<'bib, 'cbs>,
+    pub default: HashPointer,
     pub(crate) lit_stack: Vec<ExecVal>,
     pub mess_with_entries: bool,
     /// Pointer to the current top of the string pool, used to optimize certain string operations
@@ -66,7 +82,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
     pub(crate) fn new(glbl_ctx: &'a mut Bibtex<'bib, 'cbs>) -> ExecCtx<'a, 'bib, 'cbs> {
         ExecCtx {
             glbl_ctx,
-            _default: 0,
+            default: 0,
             lit_stack: Vec::new(),
             mess_with_entries: false,
             bib_str_ptr: 0,
@@ -86,8 +102,8 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
             if let ExecVal::String(str) = pop {
                 if str >= self.bib_str_ptr {
                     if str != pool.str_ptr() - 1 {
-                        write_logs("Nontop top of string stack");
-                        print_confusion();
+                        self.write_logs("Nontop top of string stack");
+                        print_confusion(self);
                         return Err(BibtexError::Fatal);
                     }
                     pool.set_str_ptr(pool.str_ptr() - 1);
@@ -96,44 +112,51 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
             }
             Ok(pop)
         } else {
-            write_logs("You can't pop an empty literal stack");
+            self.write_logs("You can't pop an empty literal stack");
             bst_ex_warn_print(self, pool, cites)?;
             Ok(ExecVal::Illegal)
         }
     }
+}
 
-    pub(crate) fn glbl_ctx(&self) -> &Bibtex<'bib, 'cbs> {
-        &*self.glbl_ctx
+impl<'bib, 'cbs> Deref for ExecCtx<'_, 'bib, 'cbs> {
+    type Target = Bibtex<'bib, 'cbs>;
+
+    fn deref(&self) -> &Self::Target {
+        self.glbl_ctx
     }
+}
 
-    pub(crate) fn glbl_ctx_mut(&mut self) -> &mut Bibtex<'bib, 'cbs> {
-        &mut *self.glbl_ctx
+impl DerefMut for ExecCtx<'_, '_, '_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.glbl_ctx
     }
 }
 
 pub(crate) fn print_lit(
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
     hash: &HashData,
     val: ExecVal,
 ) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => {
-            write_logs(&format!("{}\n", val));
+            ctx.write_logs(&format!("{}\n", val));
         }
         ExecVal::String(str) => {
-            print_a_pool_str(str, pool)?;
-            write_logs("\n");
+            print_a_pool_str(ctx, str, pool)?;
+            ctx.write_logs("\n");
         }
         ExecVal::Function(f) => {
-            print_a_pool_str(hash.text(f), pool)?;
-            write_logs("\n");
+            print_a_pool_str(ctx, hash.text(f), pool)?;
+            ctx.write_logs("\n");
         }
         ExecVal::Missing(s) => {
-            print_a_pool_str(s, pool)?;
-            write_logs("\n");
+            print_a_pool_str(ctx, s, pool)?;
+            ctx.write_logs("\n");
         }
         ExecVal::Illegal => {
-            illegl_literal_confusion();
+            illegal_literal_confusion(ctx);
             return Err(BibtexError::Fatal);
         }
     }
@@ -141,29 +164,30 @@ pub(crate) fn print_lit(
 }
 
 pub(crate) fn print_stk_lit(
-    val: ExecVal,
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
     hash: &HashData,
+    val: ExecVal,
 ) -> Result<(), BibtexError> {
     match val {
-        ExecVal::Integer(val) => write_logs(&format!("{} is an integer literal", val)),
+        ExecVal::Integer(val) => ctx.write_logs(&format!("{} is an integer literal", val)),
         ExecVal::String(str) => {
-            write_logs("\"");
-            print_a_pool_str(str, pool)?;
-            write_logs("\" is a string literal");
+            ctx.write_logs("\"");
+            print_a_pool_str(ctx, str, pool)?;
+            ctx.write_logs("\" is a string literal");
         }
         ExecVal::Function(f) => {
-            write_logs("`");
-            print_a_pool_str(hash.text(f), pool)?;
-            write_logs("` is a function literal");
+            ctx.write_logs("`");
+            print_a_pool_str(ctx, hash.text(f), pool)?;
+            ctx.write_logs("` is a function literal");
         }
         ExecVal::Missing(s) => {
-            write_logs("`");
-            print_a_pool_str(s, pool)?;
-            write_logs("` is a missing field");
+            ctx.write_logs("`");
+            print_a_pool_str(ctx, s, pool)?;
+            ctx.write_logs("` is a missing field");
         }
         ExecVal::Illegal => {
-            illegl_literal_confusion();
+            illegal_literal_confusion(ctx);
             return Err(BibtexError::Fatal);
         }
     }
@@ -171,7 +195,7 @@ pub(crate) fn print_stk_lit(
 }
 
 pub(crate) fn print_wrong_stk_lit(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     hash: &HashData,
     cites: &CiteInfo,
@@ -181,14 +205,14 @@ pub(crate) fn print_wrong_stk_lit(
     match val {
         ExecVal::Illegal => Ok(()),
         _ => {
-            print_stk_lit(val, pool, hash)?;
+            print_stk_lit(ctx, pool, hash, val)?;
 
             match typ2 {
-                StkType::Integer => write_logs(", not an integer,"),
-                StkType::String => write_logs(", not a string,"),
-                StkType::Function => write_logs(", not a function,"),
+                StkType::Integer => ctx.write_logs(", not an integer,"),
+                StkType::String => ctx.write_logs(", not a string,"),
+                StkType::Function => ctx.write_logs(", not a function,"),
                 StkType::Missing | StkType::Illegal => {
-                    illegl_literal_confusion();
+                    illegal_literal_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
             };
@@ -199,41 +223,45 @@ pub(crate) fn print_wrong_stk_lit(
 }
 
 pub(crate) fn bst_ex_warn_print(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if ctx.mess_with_entries {
-        write_logs(" for entry ");
-        print_a_pool_str(cites.get_cite(cites.ptr()), pool)?;
+        ctx.write_logs(" for entry ");
+        print_a_pool_str(ctx, cites.get_cite(cites.ptr()), pool)?;
     }
 
-    write_logs("\nwhile executing-");
-    bst_ln_num_print(ctx.glbl_ctx(), pool)?;
-    mark_error();
+    ctx.write_logs("\nwhile executing-");
+    bst_ln_num_print(ctx, pool)?;
+    ctx.mark_error();
     Ok(())
 }
 
 pub(crate) fn bst_ln_num_print(
-    glbl_ctx: &Bibtex<'_, '_>,
+    ctx: &mut Bibtex<'_, '_>,
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
-    write_logs(&format!(
+    ctx.write_logs(&format!(
         "--line {} of file ",
-        glbl_ctx.bst.as_ref().unwrap().line
+        ctx.bst.as_ref().unwrap().line
     ));
-    print_bst_name(pool, glbl_ctx.bst.as_ref().unwrap().name)
+    print_bst_name(ctx, pool, ctx.bst.as_ref().unwrap().name)
 }
 
-pub(crate) fn print_bst_name(pool: &StringPool, name: StrNumber) -> Result<(), BibtexError> {
-    print_a_pool_str(name, pool)?;
-    write_logs(".bst\n");
+pub(crate) fn print_bst_name(
+    ctx: &mut Bibtex<'_, '_>,
+    pool: &StringPool,
+    name: StrNumber,
+) -> Result<(), BibtexError> {
+    print_a_pool_str(ctx, name, pool)?;
+    ctx.write_logs(".bst\n");
     Ok(())
 }
 
-pub fn illegl_literal_confusion() {
-    write_logs("Illegal literal type");
-    print_confusion();
+pub fn illegal_literal_confusion(ctx: &mut Bibtex<'_, '_>) {
+    ctx.write_logs("Illegal literal type");
+    print_confusion(ctx);
 }
 
 fn pop_top_and_print(
@@ -244,10 +272,10 @@ fn pop_top_and_print(
 ) -> Result<(), BibtexError> {
     ctx.pop_stack(pool, cites).and_then(|val| {
         if let ExecVal::Illegal = val {
-            write_logs("Empty literal\n");
+            ctx.write_logs("Empty literal\n");
             Ok(())
         } else {
-            print_lit(pool, hash, val)
+            print_lit(ctx, pool, hash, val)
         }
     })
 }
@@ -279,7 +307,7 @@ pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i3
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn figure_out_the_formatted_name(
-    ctx: &ExecCtx<'_, '_, '_>,
+    ctx: &mut ExecCtx<'_, '_, '_>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
     cites: &CiteInfo,
@@ -613,14 +641,15 @@ pub(crate) fn check_command_execution(
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     if !ctx.lit_stack.is_empty() {
-        write_logs(&format!("ptr={}, stack=\n", ctx.lit_stack.len()));
+        let msg = format!("ptr={}, stack=\n", ctx.lit_stack.len());
+        ctx.write_logs(&msg);
         pop_whole_stack(ctx, pool, hash, cites)?;
-        write_logs("---the literal stack isn't empty");
+        ctx.write_logs("---the literal stack isn't empty");
         bst_ex_warn_print(ctx, pool, cites)?;
     }
     if ctx.bib_str_ptr != pool.str_ptr() {
-        write_logs("Nonempty empty string stack");
-        print_confusion();
+        ctx.write_logs("Nonempty empty string stack");
+        print_confusion(ctx);
         return Err(BibtexError::Fatal);
     }
     Ok(())
@@ -633,7 +662,8 @@ fn add_pool_buf_and_push(
 ) -> Result<(), BibtexError> {
     buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
-    ctx.push_stack(ExecVal::String(pool.add_string_raw(str)?));
+    let val = ExecVal::String(pool.add_string_raw(ctx, str)?);
+    ctx.push_stack(val);
     Ok(())
 }
 
@@ -658,18 +688,18 @@ fn interp_eq(
         }
         _ if pop1.ty() != pop2.ty() => {
             if pop1.ty() != StkType::Illegal && pop2.ty() != StkType::Illegal {
-                print_stk_lit(pop1, pool, hash)?;
-                write_logs(", ");
-                print_stk_lit(pop2, pool, hash)?;
-                write_logs("\n---they aren't the same literal types");
+                print_stk_lit(ctx, pool, hash, pop1)?;
+                ctx.write_logs(", ");
+                print_stk_lit(ctx, pool, hash, pop2)?;
+                ctx.write_logs("\n---they aren't the same literal types");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
             if pop1.ty() != StkType::Illegal {
-                print_stk_lit(pop1, pool, hash)?;
-                write_logs(", not an integer or a string,");
+                print_stk_lit(ctx, pool, hash, pop1)?;
+                ctx.write_logs(", not an integer or a string,");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
             ctx.push_stack(ExecVal::Integer(0))
@@ -791,12 +821,12 @@ fn interp_concat(
         (ExecVal::String(s1), ExecVal::String(s2)) => (s1, s2),
         (ExecVal::String(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
         (_, _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
@@ -821,7 +851,7 @@ fn interp_concat(
             let ptr = pool.str_start(s2 + 1);
             pool.copy_raw(s1, ptr);
             pool.set_pool_ptr(ptr + s1_len);
-            let new = pool.make_string()?;
+            let new = pool.make_string(ctx)?;
             ctx.push_stack(ExecVal::String(new));
         }
     } else if s1 >= ctx.bib_str_ptr {
@@ -845,7 +875,8 @@ fn interp_concat(
             pool.copy_raw(s1, pool.str_start(s1 + 1) + s2_len - s1_len);
             pool.copy_raw(s2, pool.str_start(s1));
             pool.set_pool_ptr(pool.str_start(s1) + s1_len + s2_len);
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
+            let val = ExecVal::String(pool.make_string(ctx)?);
+            ctx.push_stack(val);
         }
     } else {
         let str1 = pool.get_str(s1);
@@ -864,7 +895,8 @@ fn interp_concat(
             pool.copy_raw(s2, ptr);
             pool.copy_raw(s1, ptr + s2_len);
             pool.set_pool_ptr(ptr + s1_len + s2_len);
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
+            let val = ExecVal::String(pool.make_string(ctx)?);
+            ctx.push_stack(val);
         }
     }
     Ok(())
@@ -889,71 +921,61 @@ fn interp_gets(
         }
     };
 
-    let fn_ty = hash.ty(f1);
-    if !ctx.mess_with_entries && fn_ty == FnClass::StrEntryVar || fn_ty == FnClass::IntEntryVar {
-        bst_cant_mess_with_entries_print(ctx, pool, cites)?;
-        return Ok(());
-    }
-
-    match fn_ty {
-        FnClass::IntEntryVar => {
+    match &hash.node(f1).extra {
+        HashExtra::BstFn(BstFn::IntEntry(_) | BstFn::StrEntry(_)) if !ctx.mess_with_entries => {
+            bst_cant_mess_with_entries_print(ctx, pool, cites)?;
+        }
+        HashExtra::BstFn(BstFn::IntEntry(entry)) => {
             if let ExecVal::Integer(i2) = pop2 {
-                entries.set_int(
-                    cites.ptr() * entries.num_ent_ints() + hash.ilk_info(f1) as usize,
-                    i2,
-                )
+                entries.set_int(cites.ptr() * entries.num_ent_ints() + *entry, i2)
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
         }
-        FnClass::StrEntryVar => {
+        HashExtra::BstFn(BstFn::StrEntry(entry)) => {
             if let ExecVal::String(s2) = pop2 {
                 let mut s = pool.get_str(s2);
                 if s.len() > ENT_STR_SIZE {
-                    bst_1print_string_size_exceeded();
-                    write_logs(&format!("{}, the entry", ENT_STR_SIZE));
+                    bst_1print_string_size_exceeded(ctx);
+                    ctx.write_logs(&format!("{}, the entry", ENT_STR_SIZE));
                     bst_2print_string_size_exceeded(ctx, pool, cites)?;
                     s = &s[..ENT_STR_SIZE];
                 }
-                entries.set_str(
-                    cites.ptr() * entries.num_ent_strs() + hash.ilk_info(f1) as usize,
-                    s,
-                );
+                entries.set_str(cites.ptr() * entries.num_ent_strs() + *entry, s);
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
         }
-        FnClass::IntGlblVar => {
+        HashExtra::BstFn(BstFn::IntGlbl(_)) => {
             if let ExecVal::Integer(i2) = pop2 {
-                hash.set_ilk_info(f1, i2);
+                hash.node_mut(f1).extra = HashExtra::BstFn(BstFn::IntGlbl(i2));
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
         }
-        FnClass::StrGlblVar => {
+        HashExtra::BstFn(BstFn::StrGlbl(str_ptr)) => {
             if let ExecVal::String(s2) = pop2 {
-                let str_glb_ptr = hash.ilk_info(f1) as usize;
                 if s2 < ctx.bib_str_ptr {
-                    globals.set_str_ptr(str_glb_ptr, s2);
+                    globals.set_str_ptr(*str_ptr, s2);
                 } else {
-                    globals.set_str_ptr(str_glb_ptr, 0);
+                    globals.set_str_ptr(*str_ptr, 0);
                     let mut s = pool.get_str(s2);
                     if s.len() > GLOB_STR_SIZE {
-                        bst_1print_string_size_exceeded();
-                        write_logs(&format!("{}, the global", GLOB_STR_SIZE));
+                        bst_1print_string_size_exceeded(ctx);
+                        ctx.write_logs(&format!("{}, the global", GLOB_STR_SIZE));
                         bst_2print_string_size_exceeded(ctx, pool, cites)?;
                         s = &s[..GLOB_STR_SIZE];
                     }
-                    globals.set_str(str_glb_ptr, s);
+                    globals.set_str(*str_ptr, s);
                 }
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::String)?;
             }
         }
         _ => {
-            write_logs("You can't assign to type ");
-            rs_print_fn_class(hash, f1);
-            write_logs(", a nonvariable function class");
+            ctx.write_logs("You can't assign to type ");
+            print_fn_class(ctx, hash, f1);
+            ctx.write_logs(", a nonvariable function class");
             bst_ex_warn_print(ctx, pool, cites)?;
         }
     }
@@ -972,7 +994,7 @@ fn interp_add_period(
         ExecVal::String(s1) => s1,
         _ => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
@@ -980,7 +1002,7 @@ fn interp_add_period(
     let str = pool.get_str(s1);
 
     if str.is_empty() {
-        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        ctx.push_stack(ExecVal::String(ctx.s_null));
         return Ok(());
     }
 
@@ -1008,7 +1030,8 @@ fn interp_add_period(
                 }
             }
             pool.append(b'.');
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
+            let val = ExecVal::String(pool.make_string(ctx)?);
+            ctx.push_stack(val);
         }
     }
     Ok(())
@@ -1048,8 +1071,8 @@ fn interp_change_case(
             };
 
             if conv_ty == ConvTy::Bad {
-                print_a_pool_str(s1, pool)?;
-                write_logs(" is an illegal case-conversion string");
+                print_a_pool_str(ctx, s1, pool)?;
+                ctx.write_logs(" is an illegal case-conversion string");
                 bst_ex_warn_print(ctx, pool, cites)?;
             }
 
@@ -1081,21 +1104,33 @@ fn interp_change_case(
 
                             let res =
                                 pool.lookup_str(hash, &scratch[old_idx..idx], StrIlk::ControlSeq);
+
                             if res.exists {
+                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
+                                    panic!("ControlSeq lookup didn't have ControlSeq extra");
+                                };
                                 match conv_ty {
-                                    ConvTy::TitleLower | ConvTy::AllLower => {
-                                        match hash.ilk_info(res.loc) {
-                                            3 | 5 | 7 | 9 | 11 => {
-                                                scratch[old_idx..idx].make_ascii_lowercase()
-                                            }
-                                            _ => (),
+                                    ConvTy::TitleLower | ConvTy::AllLower => match seq {
+                                        ControlSeq::UpperOE
+                                        | ControlSeq::UpperAE
+                                        | ControlSeq::UpperAA
+                                        | ControlSeq::UpperO
+                                        | ControlSeq::UpperL => {
+                                            scratch[old_idx..idx].make_ascii_lowercase()
                                         }
-                                    }
-                                    ConvTy::AllUpper => match hash.ilk_info(res.loc) {
-                                        2 | 4 | 6 | 8 | 10 => {
+                                        _ => (),
+                                    },
+                                    ConvTy::AllUpper => match seq {
+                                        ControlSeq::LowerOE
+                                        | ControlSeq::LowerAE
+                                        | ControlSeq::LowerAA
+                                        | ControlSeq::LowerO
+                                        | ControlSeq::LowerL => {
                                             scratch[old_idx..idx].make_ascii_uppercase()
                                         }
-                                        0 | 1 | 12 => {
+                                        ControlSeq::LowerI
+                                        | ControlSeq::LowerJ
+                                        | ControlSeq::LowerSS => {
                                             scratch[old_idx..idx].make_ascii_uppercase();
                                             scratch.copy_within(old_idx..idx, old_idx - 1);
                                             let old_idx = idx - 1;
@@ -1164,15 +1199,16 @@ fn interp_change_case(
                 idx += 1;
             }
             check_brace_level(ctx, pool, cites, s2, brace_level)?;
-            ctx.push_stack(ExecVal::String(pool.add_string_raw(&scratch)?));
+            let val = ExecVal::String(pool.add_string_raw(ctx, &scratch)?);
+            ctx.push_stack(val);
         }
         (ExecVal::String(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
         }
         (_, _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
         }
     }
     Ok(())
@@ -1189,9 +1225,9 @@ fn interp_chr_to_int(
         ExecVal::String(s1) => {
             let str = pool.get_str(s1);
             if str.len() != 1 {
-                write_logs("\"");
-                print_a_pool_str(s1, pool)?;
-                write_logs("\" isn't a single character");
+                ctx.write_logs("\"");
+                print_a_pool_str(ctx, s1, pool)?;
+                ctx.write_logs("\" isn't a single character");
                 bst_ex_warn_print(ctx, pool, cites)?;
                 ctx.push_stack(ExecVal::Integer(0));
             } else {
@@ -1242,7 +1278,8 @@ fn interp_dup(
                 let ptr = pool.pool_ptr();
                 pool.copy_raw(s1, ptr);
                 pool.set_pool_ptr(ptr + str_len);
-                ctx.push_stack(ExecVal::String(pool.make_string()?));
+                let val = ExecVal::String(pool.make_string(ctx)?);
+                ctx.push_stack(val);
             }
         }
         _ => {
@@ -1273,8 +1310,8 @@ fn interp_empty(
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(pop1, pool, hash)?;
-            write_logs(", not a string or missing field,");
+            print_stk_lit(ctx, pool, hash, pop1)?;
+            ctx.write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool, cites)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
@@ -1297,17 +1334,17 @@ fn interp_format_name(
         (ExecVal::String(s1), ExecVal::Integer(i2), ExecVal::String(s3)) => (s1, i2, s3),
         (ExecVal::String(_), ExecVal::Integer(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop3, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
         (ExecVal::String(_), _, _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
         (_, _, _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
@@ -1331,12 +1368,12 @@ fn interp_format_name(
 
     if num_names < i2 {
         if i2 == 1 {
-            write_logs("There is no name in \"");
+            ctx.write_logs("There is no name in \"");
         } else {
-            write_logs(&format!("There aren't {} names in \"", i2));
+            ctx.write_logs(&format!("There aren't {} names in \"", i2));
         }
-        print_a_pool_str(s3, pool)?;
-        write_logs("\"");
+        print_a_pool_str(ctx, s3, pool)?;
+        ctx.write_logs("\"");
         bst_ex_warn_print(ctx, pool, cites)?;
     }
 
@@ -1347,9 +1384,9 @@ fn interp_format_name(
             }
             _ => {
                 if buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b',' {
-                    write_logs(&format!("Name {} in \"", i2));
-                    print_a_pool_str(s3, pool)?;
-                    write_logs("\" has a comma at the end");
+                    ctx.write_logs(&format!("Name {} in \"", i2));
+                    print_a_pool_str(ctx, s3, pool)?;
+                    ctx.write_logs("\" has a comma at the end");
                     bst_ex_warn_print(ctx, pool, cites)?;
                     buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
                 } else {
@@ -1383,9 +1420,9 @@ fn interp_format_name(
                         buffers.set_at(BufTy::NameSep, num_tokens, b',');
                     }
                     Commas::Two(_, _) => {
-                        write_logs(&format!("Too many commas in name {} of \"", i2));
-                        print_a_pool_str(s3, pool)?;
-                        write_logs("\"");
+                        ctx.write_logs(&format!("Too many commas in name {} of \"", i2));
+                        print_a_pool_str(ctx, s3, pool)?;
+                        ctx.write_logs("\"");
                         bst_ex_warn_print(ctx, pool, cites)?;
                     }
                 }
@@ -1419,9 +1456,9 @@ fn interp_format_name(
                     num_tokens += 1;
                 }
 
-                write_logs(&format!("Name {} of \"", i2));
-                print_a_pool_str(s3, pool)?;
-                write_logs("\" isn't brace balanced");
+                ctx.write_logs(&format!("Name {} of \"", i2));
+                print_a_pool_str(ctx, s3, pool)?;
+                ctx.write_logs("\" isn't brace balanced");
                 bst_ex_warn_print(ctx, pool, cites)?;
                 xptr += 1;
                 token_starting = false;
@@ -1474,7 +1511,7 @@ fn interp_format_name(
             while von_start < last_end - 1 {
                 name_ptr = buffers.name_tok(von_start);
                 name_ptr2 = buffers.name_tok(von_start + 1);
-                if von_token_found(buffers, hash, pool, &mut name_ptr, name_ptr2)? {
+                if von_token_found(buffers, hash, pool, &mut name_ptr, name_ptr2) {
                     von_name_ends_and_last_name_starts_stuff(
                         buffers,
                         hash,
@@ -1484,7 +1521,7 @@ fn interp_format_name(
                         &mut von_end,
                         &mut name_ptr,
                         &mut name_ptr2,
-                    )?;
+                    );
                     second_loop = false;
                     break;
                 }
@@ -1518,7 +1555,7 @@ fn interp_format_name(
                 &mut von_end,
                 &mut name_ptr,
                 &mut name_ptr2,
-            )?;
+            );
         }
         Commas::Two(comma1, comma2) => {
             last_end = comma1;
@@ -1534,7 +1571,7 @@ fn interp_format_name(
                 &mut von_end,
                 &mut name_ptr,
                 &mut name_ptr2,
-            )?;
+            );
         }
     }
 
@@ -1572,22 +1609,23 @@ fn interp_int_to_chr(
         ExecVal::Integer(i1) => i1,
         _ => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::Integer)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
 
     if !(0..=127).contains(&i1) {
-        write_logs(&format!("{} isn't valid ASCII", i1));
+        ctx.write_logs(&format!("{} isn't valid ASCII", i1));
         bst_ex_warn_print(ctx, pool, cites)?;
-        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        ctx.push_stack(ExecVal::String(ctx.s_null));
     } else {
         if pool.pool_ptr() + 1 > pool.len() {
             pool.grow();
         }
 
         pool.append(i1 as u8);
-        ctx.push_stack(ExecVal::String(pool.make_string()?));
+        let val = ExecVal::String(pool.make_string(ctx)?);
+        ctx.push_stack(val);
     }
     Ok(())
 }
@@ -1603,13 +1641,14 @@ fn interp_int_to_str(
         ExecVal::Integer(i1) => i1,
         _ => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::Integer)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
 
     let scratch = i1.to_string();
-    ctx.push_stack(ExecVal::String(pool.add_string_raw(scratch.as_bytes())?));
+    let val = ExecVal::String(pool.add_string_raw(ctx, scratch.as_bytes())?);
+    ctx.push_stack(val);
     Ok(())
 }
 
@@ -1635,8 +1674,8 @@ fn interp_missing(
             ctx.push_stack(ExecVal::Integer(0));
         }
         _ => {
-            print_stk_lit(pop1, pool, hash)?;
-            write_logs(", not a string or missing field,");
+            print_stk_lit(ctx, pool, hash, pop1)?;
+            ctx.write_logs(", not a string or missing field,");
             bst_ex_warn_print(ctx, pool, cites)?;
             ctx.push_stack(ExecVal::Integer(0));
         }
@@ -1682,7 +1721,7 @@ fn interp_preamble(
     for s in bibs.preamble() {
         out.extend(pool.get_str(*s));
     }
-    let s = pool.add_string_raw(&out)?;
+    let s = pool.add_string_raw(ctx, &out)?;
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1698,7 +1737,7 @@ fn interp_purify(
         ExecVal::String(s1) => s1,
         _ => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
@@ -1735,10 +1774,17 @@ fn interp_purify(
                             let res =
                                 pool.lookup_str(hash, &scratch[old_idx..idx], StrIlk::ControlSeq);
                             if res.exists {
+                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
+                                    panic!("ControlSeq lookup didn't have ControlSeq extra");
+                                };
                                 scratch[write_idx] = scratch[old_idx];
                                 write_idx += 1;
-                                match hash.ilk_info(res.loc) {
-                                    2 | 3 | 4 | 5 | 12 => {
+                                match seq {
+                                    ControlSeq::LowerOE
+                                    | ControlSeq::UpperOE
+                                    | ControlSeq::LowerAE
+                                    | ControlSeq::UpperAE
+                                    | ControlSeq::LowerSS => {
                                         scratch[write_idx] = scratch[old_idx + 1];
                                         write_idx += 1;
                                     }
@@ -1773,14 +1819,14 @@ fn interp_purify(
     }
 
     scratch.truncate(write_idx);
-    let out = pool.add_string_raw(&scratch)?;
+    let out = pool.add_string_raw(ctx, &scratch)?;
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
 }
 
 fn interp_quote(ctx: &mut ExecCtx<'_, '_, '_>, pool: &mut StringPool) -> Result<(), BibtexError> {
-    let s = pool.add_string_raw(b"\"")?;
+    let s = pool.add_string_raw(ctx, b"\"")?;
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1825,17 +1871,17 @@ fn interp_substr(
         (ExecVal::Integer(i1), ExecVal::Integer(i2), ExecVal::String(s3)) => (i1, i2, s3),
         (ExecVal::Integer(_), ExecVal::Integer(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop3, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
         (ExecVal::Integer(_), _, _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
         (_, _, _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::Integer)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
@@ -1843,7 +1889,7 @@ fn interp_substr(
     let str = pool.get_str(s3);
 
     if len <= 0 || start == 0 || start.unsigned_abs() as usize > str.len() {
-        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        ctx.push_stack(ExecVal::String(ctx.s_null));
         return Ok(());
     }
 
@@ -1870,7 +1916,7 @@ fn interp_substr(
     // TODO: Remove this intermediate allocation, currently can't pass a `&str` from a StringPool
     //       to that StringPool.
     let new_str = Vec::from(&str[SLRange { start, len }]);
-    let out = pool.add_string_raw(&new_str)?;
+    let out = pool.add_string_raw(ctx, &new_str)?;
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
@@ -1893,8 +1939,10 @@ fn interp_swap(
             let ptr = pool.pool_ptr();
             pool.copy_raw(s1, ptr);
             pool.set_pool_ptr(ptr + s1_len);
-            ctx.push_stack(ExecVal::String(pool.make_string()?));
-            ctx.push_stack(ExecVal::String(pool.add_string_raw(&tmp)?));
+            let val = ExecVal::String(pool.make_string(ctx)?);
+            ctx.push_stack(val);
+            let val = ExecVal::String(pool.add_string_raw(ctx, &tmp)?);
+            ctx.push_stack(val);
             return Ok(());
         }
         (ExecVal::String(s), _) | (_, ExecVal::String(s)) if s >= ctx.bib_str_ptr => {
@@ -1920,7 +1968,7 @@ fn interp_text_len(
         ExecVal::String(s1) => s1,
         _ => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
@@ -1971,18 +2019,18 @@ fn interp_text_prefix(
         (ExecVal::Integer(i1), ExecVal::String(s2)) => (i1, s2),
         (ExecVal::Integer(_), _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::String)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
         (_, _) => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::Integer)?;
-            ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+            ctx.push_stack(ExecVal::String(ctx.s_null));
             return Ok(());
         }
     };
 
     if i1 <= 0 {
-        ctx.push_stack(ExecVal::String(ctx.glbl_ctx().s_null));
+        ctx.push_stack(ExecVal::String(ctx.s_null));
         return Ok(());
     }
 
@@ -2032,7 +2080,8 @@ fn interp_text_prefix(
         pool.append(b'}');
     }
 
-    ctx.push_stack(ExecVal::String(pool.make_string()?));
+    let val = ExecVal::String(pool.make_string(ctx)?);
+    ctx.push_stack(val);
     Ok(())
 }
 
@@ -2049,7 +2098,7 @@ fn interp_ty(
 
     let ty = cites.get_type(cites.ptr());
     let s = if ty == HashData::undefined() || ty == 0 {
-        ctx.glbl_ctx().s_null
+        ctx.s_null
     } else {
         hash.text(ty)
     };
@@ -2066,9 +2115,9 @@ fn interp_warning(
     let pop1 = ctx.pop_stack(pool, cites)?;
     match pop1 {
         ExecVal::String(_) => {
-            write_logs("Warning--");
-            print_lit(pool, hash, pop1)?;
-            mark_warning();
+            ctx.write_logs("Warning--");
+            print_lit(ctx, pool, hash, pop1)?;
+            ctx.mark_warning();
         }
         _ => print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?,
     }
@@ -2116,12 +2165,15 @@ fn interp_width(
                         } else {
                             let res = pool.lookup_str(hash, &str[old_idx..idx], StrIlk::ControlSeq);
                             if res.exists {
-                                match hash.ilk_info(res.loc) {
-                                    12 => string_width += 500,
-                                    4 => string_width += 722,
-                                    2 => string_width += 778,
-                                    5 => string_width += 903,
-                                    3 => string_width += 1014,
+                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
+                                    panic!("ControlSeq lookup didn't have ControlSeq extra");
+                                };
+                                match seq {
+                                    ControlSeq::LowerSS => string_width += 500,
+                                    ControlSeq::LowerAE => string_width += 722,
+                                    ControlSeq::LowerOE => string_width += 778,
+                                    ControlSeq::UpperAE => string_width += 903,
+                                    ControlSeq::UpperOE => string_width += 1014,
                                     _ => string_width += CHAR_WIDTH[str[old_idx] as usize],
                                 }
                             }
@@ -2172,7 +2224,7 @@ fn interp_write(
     let pop1 = ctx.pop_stack(pool, cites)?;
     match pop1 {
         ExecVal::String(s1) => {
-            add_out_pool(ctx.glbl_ctx_mut(), buffers, pool, s1);
+            add_out_pool(ctx, buffers, pool, s1);
         }
         _ => {
             print_wrong_stk_lit(ctx, pool, hash, cites, pop1, StkType::String)?;
@@ -2186,15 +2238,23 @@ pub(crate) fn execute_fn(
     globals: &mut GlobalItems<'_>,
     ex_fn_loc: HashPointer,
 ) -> Result<(), BibtexError> {
-    match globals.hash.ty(ex_fn_loc) {
-        FnClass::Builtin => match globals.hash.ilk_info(ex_fn_loc) {
-            0 => interp_eq(ctx, globals.pool, globals.hash, globals.cites),
-            1 => interp_gt(ctx, globals.pool, globals.hash, globals.cites),
-            2 => interp_lt(ctx, globals.pool, globals.hash, globals.cites),
-            3 => interp_plus(ctx, globals.pool, globals.hash, globals.cites),
-            4 => interp_minus(ctx, globals.pool, globals.hash, globals.cites),
-            5 => interp_concat(ctx, globals.pool, globals.hash, globals.cites),
-            6 => interp_gets(
+    match &globals.hash.node(ex_fn_loc).extra {
+        HashExtra::Text => {
+            ctx.push_stack(ExecVal::String(globals.hash.text(ex_fn_loc)));
+            Ok(())
+        }
+        HashExtra::Integer(i) => {
+            ctx.push_stack(ExecVal::Integer(*i));
+            Ok(())
+        }
+        HashExtra::BstFn(BstFn::Builtin(builtin)) => match builtin {
+            BstBuiltin::Eq => interp_eq(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Gt => interp_gt(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Lt => interp_lt(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Plus => interp_plus(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Minus => interp_minus(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Concat => interp_concat(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Set => interp_gets(
                 ctx,
                 globals.pool,
                 globals.hash,
@@ -2202,33 +2262,39 @@ pub(crate) fn execute_fn(
                 globals.globals,
                 globals.cites,
             ),
-            7 => interp_add_period(ctx, globals.pool, globals.hash, globals.cites),
-            8 => {
+            BstBuiltin::AddPeriod => {
+                interp_add_period(ctx, globals.pool, globals.hash, globals.cites)
+            }
+            BstBuiltin::CallType => {
                 let default = globals.cites.get_type(globals.cites.ptr());
                 if !ctx.mess_with_entries {
                     bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)?;
                     Ok(())
                 } else if default == HashData::undefined() {
-                    execute_fn(ctx, globals, ctx._default)
+                    execute_fn(ctx, globals, ctx.default)
                 } else if default != 0 {
                     execute_fn(ctx, globals, default)
                 } else {
                     Ok(())
                 }
             }
-            9 => interp_change_case(ctx, globals.pool, globals.cites, globals.hash),
-            10 => interp_chr_to_int(ctx, globals.pool, globals.hash, globals.cites),
-            11 => interp_cite(ctx, globals.pool, globals.cites),
-            12 => interp_dup(ctx, globals.pool, globals.cites),
-            13 => interp_empty(ctx, globals.pool, globals.hash, globals.cites),
-            14 => interp_format_name(
+            BstBuiltin::ChangeCase => {
+                interp_change_case(ctx, globals.pool, globals.cites, globals.hash)
+            }
+            BstBuiltin::ChrToInt => {
+                interp_chr_to_int(ctx, globals.pool, globals.hash, globals.cites)
+            }
+            BstBuiltin::Cite => interp_cite(ctx, globals.pool, globals.cites),
+            BstBuiltin::Duplicate => interp_dup(ctx, globals.pool, globals.cites),
+            BstBuiltin::Empty => interp_empty(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::FormatName => interp_format_name(
                 ctx,
                 globals.pool,
                 globals.buffers,
                 globals.cites,
                 globals.hash,
             ),
-            15 => {
+            BstBuiltin::If => {
                 let pop1 = ctx.pop_stack(globals.pool, globals.cites)?;
                 let pop2 = ctx.pop_stack(globals.pool, globals.cites)?;
                 let pop3 = ctx.pop_stack(globals.pool, globals.cites)?;
@@ -2267,34 +2333,42 @@ pub(crate) fn execute_fn(
                     ),
                 }
             }
-            16 => interp_int_to_chr(ctx, globals.pool, globals.hash, globals.cites),
-            17 => interp_int_to_str(ctx, globals.pool, globals.hash, globals.cites),
-            18 => interp_missing(ctx, globals.pool, globals.hash, globals.cites),
-            19 => {
-                output_bbl_line(ctx.glbl_ctx_mut(), globals.buffers);
+            BstBuiltin::IntToChr => {
+                interp_int_to_chr(ctx, globals.pool, globals.hash, globals.cites)
+            }
+            BstBuiltin::IntToStr => {
+                interp_int_to_str(ctx, globals.pool, globals.hash, globals.cites)
+            }
+            BstBuiltin::Missing => interp_missing(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Newline => {
+                output_bbl_line(ctx, globals.buffers);
                 Ok(())
             }
-            20 => interp_num_names(
+            BstBuiltin::NumNames => interp_num_names(
                 ctx,
                 globals.pool,
                 globals.buffers,
                 globals.hash,
                 globals.cites,
             ),
-            21 => ctx.pop_stack(globals.pool, globals.cites).map(|_| ()),
-            22 => interp_preamble(ctx, globals.pool, globals.bibs),
-            23 => interp_purify(ctx, globals.pool, globals.hash, globals.cites),
-            24 => interp_quote(ctx, globals.pool),
-            25 => Ok(()),
-            26 => pop_whole_stack(ctx, globals.pool, globals.hash, globals.cites),
-            27 => interp_substr(ctx, globals.pool, globals.hash, globals.cites),
-            28 => interp_swap(ctx, globals.pool, globals.cites),
-            29 => interp_text_len(ctx, globals.pool, globals.hash, globals.cites),
-            30 => interp_text_prefix(ctx, globals.pool, globals.hash, globals.cites),
-            31 => pop_top_and_print(ctx, globals.pool, globals.hash, globals.cites),
-            32 => interp_ty(ctx, globals.pool, globals.hash, globals.cites),
-            33 => interp_warning(ctx, globals.pool, globals.hash, globals.cites),
-            34 => {
+            BstBuiltin::Pop => ctx.pop_stack(globals.pool, globals.cites).map(|_| ()),
+            BstBuiltin::Preamble => interp_preamble(ctx, globals.pool, globals.bibs),
+            BstBuiltin::Purify => interp_purify(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Quote => interp_quote(ctx, globals.pool),
+            BstBuiltin::Skip => Ok(()),
+            BstBuiltin::Stack => pop_whole_stack(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Substring => interp_substr(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Swap => interp_swap(ctx, globals.pool, globals.cites),
+            BstBuiltin::TextLength => {
+                interp_text_len(ctx, globals.pool, globals.hash, globals.cites)
+            }
+            BstBuiltin::TextPrefix => {
+                interp_text_prefix(ctx, globals.pool, globals.hash, globals.cites)
+            }
+            BstBuiltin::Top => pop_top_and_print(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Type => interp_ty(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Warning => interp_warning(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::While => {
                 let pop1 = ctx.pop_stack(globals.pool, globals.cites)?;
                 let pop2 = ctx.pop_stack(globals.pool, globals.cites)?;
 
@@ -2341,22 +2415,16 @@ pub(crate) fn execute_fn(
                     ),
                 }
             }
-            35 => interp_width(ctx, globals.pool, globals.hash, globals.cites),
-            36 => interp_write(
+            BstBuiltin::Width => interp_width(ctx, globals.pool, globals.hash, globals.cites),
+            BstBuiltin::Write => interp_write(
                 ctx,
                 globals.pool,
                 globals.hash,
                 globals.buffers,
                 globals.cites,
             ),
-            _ => {
-                write_logs("Unknown built-in function");
-                print_confusion();
-                Err(BibtexError::Fatal)
-            }
         },
-        FnClass::Wizard => {
-            let mut wiz_ptr = globals.hash.ilk_info(ex_fn_loc) as usize;
+        HashExtra::BstFn(BstFn::Wizard(mut wiz_ptr)) => {
             let mut cur_fn = globals.other.wiz_function(wiz_ptr);
             while cur_fn != HashData::end_of_def() {
                 if cur_fn != QUOTE_NEXT_FN {
@@ -2371,23 +2439,14 @@ pub(crate) fn execute_fn(
             }
             Ok(())
         }
-        FnClass::IntLit => {
-            ctx.push_stack(ExecVal::Integer(globals.hash.ilk_info(ex_fn_loc)));
-            Ok(())
-        }
-        FnClass::StrLit => {
-            ctx.push_stack(ExecVal::String(globals.hash.text(ex_fn_loc)));
-            Ok(())
-        }
-        FnClass::Field => {
+        HashExtra::BstFn(BstFn::Field(field)) => {
             if !ctx.mess_with_entries {
                 bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)
             } else {
-                let field_ptr = globals.cites.ptr() * globals.other.num_fields()
-                    + globals.hash.ilk_info(ex_fn_loc) as usize;
+                let field_ptr = globals.cites.ptr() * globals.other.num_fields() + *field;
                 if field_ptr >= globals.other.max_fields() {
-                    write_logs("field_info index is out of range");
-                    print_confusion();
+                    ctx.write_logs("field_info index is out of range");
+                    print_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
 
@@ -2400,43 +2459,45 @@ pub(crate) fn execute_fn(
                 Ok(())
             }
         }
-        FnClass::IntEntryVar => {
+        HashExtra::BstFn(BstFn::IntEntry(entry)) => {
             if !ctx.mess_with_entries {
                 bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)
             } else {
-                ctx.push_stack(ExecVal::Integer(globals.entries.ints(
-                    globals.cites.ptr() * globals.entries.num_ent_ints()
-                        + globals.hash.ilk_info(ex_fn_loc) as usize,
-                )));
+                ctx.push_stack(ExecVal::Integer(
+                    globals
+                        .entries
+                        .ints(globals.cites.ptr() * globals.entries.num_ent_ints() + *entry),
+                ));
                 Ok(())
             }
         }
-        FnClass::StrEntryVar => {
+        HashExtra::BstFn(BstFn::StrEntry(entry)) => {
             if !ctx.mess_with_entries {
                 bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)
             } else {
-                let str_ent_ptr = globals.cites.ptr() * globals.entries.num_ent_strs()
-                    + globals.hash.ilk_info(ex_fn_loc) as usize;
+                let str_ent_ptr = globals.cites.ptr() * globals.entries.num_ent_strs() + *entry;
                 let str = globals.entries.strs(str_ent_ptr);
-                ctx.push_stack(ExecVal::String(globals.pool.add_string_raw(str)?));
+                let val = ExecVal::String(globals.pool.add_string_raw(ctx, str)?);
+                ctx.push_stack(val);
                 Ok(())
             }
         }
-        FnClass::IntGlblVar => {
-            ctx.push_stack(ExecVal::Integer(globals.hash.ilk_info(ex_fn_loc)));
+        HashExtra::BstFn(BstFn::IntGlbl(value)) => {
+            ctx.push_stack(ExecVal::Integer(*value));
             Ok(())
         }
-        FnClass::StrGlblVar => {
-            let str_glb_ptr = globals.hash.ilk_info(ex_fn_loc) as usize;
-            let str_ptr = globals.globals.str_ptr(str_glb_ptr);
+        HashExtra::BstFn(BstFn::StrGlbl(glb_ptr)) => {
+            let str_ptr = globals.globals.str_ptr(*glb_ptr);
             if str_ptr > 0 {
                 ctx.push_stack(ExecVal::String(str_ptr));
             } else {
-                let str = globals.globals.str(str_glb_ptr);
-                ctx.push_stack(ExecVal::String(globals.pool.add_string_raw(str)?));
+                let str = globals.globals.str(*glb_ptr);
+                let val = ExecVal::String(globals.pool.add_string_raw(ctx, str)?);
+                ctx.push_stack(val);
             }
             Ok(())
         }
+        _ => panic!("Invalid node passed as ex_fn_loc"),
     }
 }
 

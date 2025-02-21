@@ -1069,7 +1069,7 @@ fn v2_watch_succeeds() {
             }
 
             let new_mod = output.metadata().and_then(|meta| meta.modified()).unwrap();
-            if start_mod.map_or(true, |start_mod| new_mod > start_mod) {
+            if start_mod.is_none_or(|start_mod| new_mod > start_mod) {
                 start_mod = Some(new_mod);
                 modified += 1;
             }
