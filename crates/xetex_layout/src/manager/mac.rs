@@ -78,7 +78,7 @@ impl MacBackend {
 
 impl FontManagerBackend for MacBackend {
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
-        let mut path = Cow::Borrowed(cstr!("[unknown]"));
+        let mut path = Cow::Borrowed(c"[unknown]");
 
         let ct_font = CTFont::new_descriptor(font, 0.0);
         let url = ct_font

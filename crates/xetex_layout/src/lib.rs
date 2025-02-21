@@ -1,23 +1,9 @@
 // Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//! This crate contains no Rust code. It exists to export a *C* API to C++ font
-//! loading and layout code in the Cargo build framework used by [Tectonic].
-//! Ideally, it will migrate to become a cbindgen C API to a Rust
-//! implementation.
+//! This crate provides font loading and layout code, as well as C bindings to it.
 //!
 //! [Tectonic]: https://tectonic-typesetting.github.io/
-
-macro_rules! cstr {
-    ($lit:literal) => {
-        // SAFETY: C string passed to from_ptr guaranteed to end with a null due to concat!
-        unsafe {
-            ::std::ffi::CStr::from_ptr(
-                ::std::ptr::from_ref(concat!($lit, "\0")).cast::<::libc::c_char>(),
-            )
-        }
-    };
-}
 
 mod engine;
 mod font;

@@ -36,17 +36,17 @@ impl FcBackend {
         }
         ft::init();
 
-        let mac_roman = icu::Converter::new(cstr!("macintosh")).ok();
-        let utf16_be = match icu::Converter::new(cstr!("UTF16BE")) {
+        let mac_roman = icu::Converter::new(c"macintosh").ok();
+        let utf16_be = match icu::Converter::new(c"UTF16BE") {
             Ok(conv) => conv,
             Err(_) => panic!("cannot read font names"),
         };
-        let utf8 = match icu::Converter::new(cstr!("UTF8")) {
+        let utf8 = match icu::Converter::new(c"UTF8") {
             Ok(conv) => conv,
             Err(_) => panic!("cannot read font names"),
         };
 
-        let pat = fc::Pattern::from_name(cstr!(":outline=true")).unwrap();
+        let pat = fc::Pattern::from_name(c":outline=true").unwrap();
         let os = fc::ObjectSet::new(&[
             fc::Property::Family,
             fc::Property::Style,
@@ -102,7 +102,7 @@ impl FontManagerBackend for FcBackend {
         if let Ok(str) = font.as_ref().get::<fc::pat::File>(0) {
             Cow::Borrowed(str)
         } else {
-            Cow::Borrowed(cstr!("[unknown]"))
+            Cow::Borrowed(c"[unknown]")
         }
     }
 
