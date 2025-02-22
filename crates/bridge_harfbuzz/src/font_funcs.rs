@@ -189,7 +189,7 @@ pub struct FontFuncsRef<'a, T>(
     PhantomData<(&'a sys::hb_font_funcs_t, T)>,
 );
 
-impl<'a, T> FontFuncsRef<'a, T> {
+impl<T> FontFuncsRef<'_, T> {
     pub(crate) fn as_ptr(&self) -> *mut sys::hb_font_funcs_t {
         self.0.as_ptr()
     }
@@ -200,7 +200,7 @@ pub struct FontFuncsMut<'a, T>(
     PhantomData<&'a mut sys::hb_font_funcs_t>,
 );
 
-impl<'a, T> FontFuncsMut<'a, T> {
+impl<T> FontFuncsMut<'_, T> {
     fn as_mut_ptr(&self) -> *mut sys::hb_font_funcs_t {
         self.0.as_ptr()
     }
