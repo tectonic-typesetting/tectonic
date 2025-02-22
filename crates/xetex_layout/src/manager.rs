@@ -410,12 +410,7 @@ impl FontManager {
                 // which confuses the search above... so try some known names
                 if font.is_none() || reg_fonts > 1 {
                     // try for style "Regular", "Plain", "Normal", "Roman"
-                    for name in [
-                        c"Regular",
-                        c"Plain",
-                        c"Normal",
-                        c"Roman",
-                    ] {
+                    for name in [c"Regular", c"Plain", c"Normal", c"Roman"] {
                         if let Some(&font_pos) = family.styles.get(name) {
                             font = Some(font_pos);
                             break;
@@ -471,7 +466,8 @@ impl FontManager {
                     }
                 });
 
-                if any_var {} else if cp.starts_with(b"S") {
+                if any_var {
+                } else if cp.starts_with(b"S") {
                     cp = &cp[1..];
                     if cp.first() == Some(&b'=') {
                         cp = &cp[1..];
@@ -573,10 +569,10 @@ impl FontManager {
                                 // weight info was available, so try to match that
                                 if new_best.is_none()
                                     || Self::weight_and_width_diff(style, font)
-                                    < Self::weight_and_width_diff(
-                                    &self.maps.fonts[new_best.unwrap()],
-                                    font,
-                                )
+                                        < Self::weight_and_width_diff(
+                                            &self.maps.fonts[new_best.unwrap()],
+                                            font,
+                                        )
                                 {
                                     new_best = Some(style_pos);
                                 }
@@ -618,13 +614,13 @@ impl FontManager {
                             let style = &self.maps.fonts[style_pos];
                             if style.is_italic == font.is_italic
                                 && (new_best.is_none()
-                                || Self::weight_and_width_diff(
-                                style,
-                                &self.maps.fonts[best_match],
-                            ) < Self::weight_and_width_diff(
-                                &self.maps.fonts[new_best.unwrap()],
-                                &self.maps.fonts[best_match],
-                            ))
+                                    || Self::weight_and_width_diff(
+                                        style,
+                                        &self.maps.fonts[best_match],
+                                    ) < Self::weight_and_width_diff(
+                                        &self.maps.fonts[new_best.unwrap()],
+                                        &self.maps.fonts[best_match],
+                                    ))
                             {
                                 new_best = Some(style_pos);
                             }

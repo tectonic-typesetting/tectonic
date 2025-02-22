@@ -163,7 +163,7 @@ pub struct SfntName<'a> {
     pub string: &'a [u8],
 }
 
-impl<'a> From<sys::FT_SfntName> for SfntName<'a> {
+impl From<sys::FT_SfntName> for SfntName<'_> {
     fn from(value: sys::FT_SfntName) -> Self {
         SfntName {
             platform_id: PlatformId(value.platform_id as u16),
