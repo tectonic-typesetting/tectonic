@@ -199,7 +199,7 @@ pub struct Language<'a> {
     lang: usize,
 }
 
-impl<'a> Language<'a> {
+impl Language<'_> {
     pub fn tag(self) -> Tag {
         let mut len = 1;
         let mut out = 0;
