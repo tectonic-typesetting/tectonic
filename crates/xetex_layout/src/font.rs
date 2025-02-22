@@ -9,7 +9,6 @@ use std::sync::OnceLock;
 use tectonic_bridge_core::{CoreBridgeState, FileFormat};
 #[cfg(not(target_os = "macos"))]
 use tectonic_bridge_fontconfig as fc;
-use tectonic_bridge_fontconfig::FcErr;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
 #[cfg(target_os = "macos")]
@@ -177,7 +176,7 @@ impl Font {
         let path = font
             .as_ref()
             .get::<fc::pat::File>(0)
-            .and_then(|s| s.to_str().map_err(|_| FcErr::NoMatch))
+            .and_then(|s| s.to_str().map_err(|_| fc::FcErr::NoMatch))
             .ok();
         let index = font.as_ref().get::<fc::pat::Index>(0).unwrap_or(0);
 
