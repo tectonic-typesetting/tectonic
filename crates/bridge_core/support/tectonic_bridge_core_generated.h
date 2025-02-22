@@ -296,6 +296,8 @@ int ttbc_input_ungetc(ttbc_state_t *es, ttbc_input_handle_t *handle, int ch);
  */
 ssize_t ttbc_input_read(ttbc_state_t *es, ttbc_input_handle_t *handle, uint8_t *data, size_t len);
 
+ssize_t ttbc_input_read_partial(ttbc_state_t *es, ttbc_input_handle_t *handle, uint8_t *data, size_t len);
+
 /**
  * Close a Tectonic input file.
  */
