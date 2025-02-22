@@ -174,6 +174,8 @@ impl<T: IoProvider> DriverHooks for MinimalDriver<T> {
 // Function defined in the C support code:
 extern "C" {
     fn _ttbc_get_error_message() -> *const libc::c_char;
+    #[allow(improper_ctypes)]
+    fn _ttbc_get_core_state() -> *mut CoreBridgeState<'static>;
 }
 
 lazy_static::lazy_static! {
@@ -351,6 +353,17 @@ impl<'a> CoreBridgeState<'a> {
             latest_input_path: None,
             fs_emulation_settings,
         }
+    }
+
+    /// Get the current global bridge state. Uses a mutex to ensure unique access, and panics
+    /// if no global state is set.
+    pub fn with_global_state<T, F: for<'b> FnOnce(&mut CoreBridgeState<'b>) -> T>(f: F) -> T {
+        /// Ensures we only enter the state once at a time, globally
+        static GLOBAL: Mutex<()> = Mutex::new(());
+        let _lock = GLOBAL.lock().unwrap();
+        let state = unsafe { _ttbc_get_core_state().as_mut() }
+            .expect("Currently within an engine context in C");
+        f(state)
     }
 
     fn input_open_name_format(
@@ -635,8 +648,9 @@ impl<'a> CoreBridgeState<'a> {
         &mut **self.input_handles.last_mut().unwrap()
     }
 
-    fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    /// Get the size of an input. Prints a warning and returns 0 on error
+    pub fn input_get_size(&mut self, handle: InputId) -> usize {
+        let rhandle: &mut InputHandle = self.get_input(handle);
 
         match rhandle.get_size() {
             Ok(s) => s,
@@ -669,8 +683,9 @@ impl<'a> CoreBridgeState<'a> {
         rhandle.try_seek(pos)
     }
 
-    fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    /// Read from an input
+    pub fn input_read(&mut self, handle: InputId, buf: &mut [u8]) -> Result<()> {
+        let rhandle: &mut InputHandle = self.get_input(handle);
         rhandle.read_exact(buf).map_err(Error::from)
     }
 
@@ -1092,7 +1107,7 @@ pub extern "C" fn ttbc_input_get_size(
     es: &mut CoreBridgeState,
     handle: *mut InputHandle,
 ) -> libc::size_t {
-    es.input_get_size(handle)
+    es.input_get_size(InputId(handle))
 }
 
 /// Get the modification time of a Tectonic input file.
@@ -1193,7 +1208,7 @@ pub unsafe extern "C" fn ttbc_input_read(
 ) -> libc::ssize_t {
     let rdata = slice::from_raw_parts_mut(data, len);
 
-    match es.input_read(handle, rdata) {
+    match es.input_read(InputId(handle), rdata) {
         Ok(_) => len as isize,
         Err(e) => {
             tt_warning!(es.status, "{}-byte read failed", len; e);
