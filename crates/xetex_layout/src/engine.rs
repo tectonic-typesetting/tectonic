@@ -216,7 +216,7 @@ impl LayoutEngine {
             // XeTeX preferred OpenType over Graphite, so we are doing the same
             // here for sake of backward compatibility. Since "ot" shaper never
             // fails, we set the shaper list to just include it.
-            self.shaper_list = vec![b"ot\0".as_ptr().cast::<libc::c_char>(), ptr::null()];
+            self.shaper_list = vec![c"ot".as_ptr(), ptr::null()];
         }
 
         let mut shape_plan = hb::ShapePlan::new_cached(
