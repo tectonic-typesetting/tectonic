@@ -357,7 +357,7 @@ impl<'a> FaceRef<'a> {
 
 pub struct FaceMut<'a>(FaceRef<'a>, PhantomData<&'a mut sys::hb_face_t>);
 
-impl<'a> FaceMut<'a> {
+impl FaceMut<'_> {
     fn as_ptr_mut(&mut self) -> *mut sys::hb_face_t {
         self.0.as_ptr()
     }
