@@ -29,6 +29,7 @@ fn bundle_presets() {
     // export to rustc
     println!("cargo::rustc-env={LOCKED_VAR_NAME}={bundle_locked}");
     println!("cargo::rustc-env={PREFIX_VAR_NAME}={bundle_prefix}");
+    println!("cargo::warning=setting\n {LOCKED_VAR_NAME}={bundle_locked}\n {PREFIX_VAR_NAME}={bundle_prefix}");
 }
 
 fn main() {
