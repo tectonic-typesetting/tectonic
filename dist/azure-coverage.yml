@@ -36,15 +36,15 @@ steps:
         libelf-dev
         libstdc++-12-dev
     )
-
+    
     sudo apt-get install -y "${PACKAGES[@]}"
-
+    
     url="https://github.com/SimonKagstrom/kcov"
     tmp_dir=$(mktemp -d /tmp/kcov-XXXXX)
     kcov_version="v43"
-
+    
     git clone "${url}" "${tmp_dir}" -b "${kcov_version}" --depth 1 
-
+    
     cd "${tmp_dir}"
     mkdir build && cd build
     cmake ..
