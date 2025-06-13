@@ -20,11 +20,45 @@ steps:
   displayName: Install core dependencies
 
 - bash: |
+    set -xeuo pipefail
+    PACKAGES=(
+        binutils-dev
+        build-essential
+        cmake
+        git
+        libcurl4-openssl-dev
+        libdw-dev
+        libiberty-dev
+        libssl-dev
+        ninja-build
+        python3
+        zlib1g-dev
+        libelf-dev
+        libstdc++-12-dev
+    )
+
+    sudo apt-get install -y "${PACKAGES[@]}"
+
+    url="https://github.com/SimonKagstrom/kcov"
+    tmp_dir=$(mktemp -d /tmp/kcov-XXXXX)
+    kcov_version="v43"
+
+    git clone "${url}" "${tmp_dir}" -b "${kcov_version}" --depth 1 
+
+    cd "${tmp_dir}"
+    mkdir build && cd build
+    cmake ..
+    make
+    sudo make install
+  displayName: Install kcov
+
+- bash: |
     # note: `set -x` messes up setvariable
     set -euo pipefail
     echo "##vso[task.setvariable variable=RUSTFLAGS;]-C link-dead-code"
     set -x
-    sudo apt-get install -y kcov
+# TODO: Use this once Ubuntu packages kcov again
+#    sudo apt-get install -y kcov
     cargo install --force cargo-kcov
   displayName: Set up code coverage
 
