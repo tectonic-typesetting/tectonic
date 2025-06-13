@@ -124,10 +124,10 @@ impl DocumentExt for Document {
         for input in &profile.inputs {
             match input {
                 InputFile::Inline(s) => {
-                    writeln!(input_buffer, "{}", s)?;
+                    writeln!(input_buffer, "{s}")?;
                 }
                 InputFile::File(f) => {
-                    writeln!(input_buffer, "\\input{{{}}}", f)?;
+                    writeln!(input_buffer, "\\input{{{f}}}")?;
                 }
             };
         }

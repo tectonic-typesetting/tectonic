@@ -72,7 +72,7 @@ impl StringPool {
     pub fn make_string(&mut self, ctx: &mut Bibtex<'_, '_>) -> Result<StrNumber, BibtexError> {
         if self.str_ptr == MAX_STRINGS {
             print_overflow(ctx);
-            ctx.write_logs(&format!("number of strings {}\n", MAX_STRINGS));
+            ctx.write_logs(&format!("number of strings {MAX_STRINGS}\n"));
             return Err(BibtexError::Fatal);
         }
         self.str_ptr += 1;

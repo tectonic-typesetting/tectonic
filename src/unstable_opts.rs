@@ -59,11 +59,7 @@ impl FromStr for UnstableArg {
 
         let require_value = |value_name| {
             value.ok_or_else(|| {
-                format!(
-                    "'-Z {}=<{}>' requires a value but none was supplied",
-                    arg, value_name
-                )
-                .into()
+                format!("'-Z {arg}=<{value_name}>' requires a value but none was supplied",).into()
             })
         };
 

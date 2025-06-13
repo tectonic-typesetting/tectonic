@@ -265,8 +265,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
                 if globals.buffers.at_offset(BufTy::Base, 2) != right_outer_delim {
                     ctx.write_logs(&format!(
-                        "Missing \"{}\" in preamble command",
-                        right_outer_delim
+                        "Missing \"{right_outer_delim}\" in preamble command",
                     ));
                     bib_err_print(
                         ctx,
@@ -416,8 +415,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
                 if globals.buffers.at_offset(BufTy::Base, 2) != right_outer_delim {
                     ctx.write_logs(&format!(
-                        "Missing \"{}\" in string command",
-                        right_outer_delim
+                        "Missing \"{right_outer_delim}\" in string command"
                     ));
                     bib_err_print(
                         ctx,

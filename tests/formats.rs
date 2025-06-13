@@ -171,8 +171,8 @@ fn test_format_generation(texname: &str, fmtname: &str, sha256: &str) {
             let observed = info.write_digest.unwrap();
 
             if observed != want_digest {
-                println!("expected {} to have SHA256 = {}", fmtname, want_digest);
-                println!("instead, got {}", observed);
+                println!("expected {fmtname} to have SHA256 = {want_digest}");
+                println!("instead, got {observed}");
                 panic!();
             }
         }

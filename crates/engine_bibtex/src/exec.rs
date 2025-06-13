@@ -141,7 +141,7 @@ pub(crate) fn print_lit(
 ) -> Result<(), BibtexError> {
     match val {
         ExecVal::Integer(val) => {
-            ctx.write_logs(&format!("{}\n", val));
+            ctx.write_logs(&format!("{val}\n"));
         }
         ExecVal::String(str) => {
             print_a_pool_str(ctx, str, pool)?;
@@ -170,7 +170,7 @@ pub(crate) fn print_stk_lit(
     val: ExecVal,
 ) -> Result<(), BibtexError> {
     match val {
-        ExecVal::Integer(val) => ctx.write_logs(&format!("{} is an integer literal", val)),
+        ExecVal::Integer(val) => ctx.write_logs(&format!("{val} is an integer literal")),
         ExecVal::String(str) => {
             ctx.write_logs("\"");
             print_a_pool_str(ctx, str, pool)?;
@@ -937,7 +937,7 @@ fn interp_gets(
                 let mut s = pool.get_str(s2);
                 if s.len() > ENT_STR_SIZE {
                     bst_1print_string_size_exceeded(ctx);
-                    ctx.write_logs(&format!("{}, the entry", ENT_STR_SIZE));
+                    ctx.write_logs(&format!("{ENT_STR_SIZE}, the entry"));
                     bst_2print_string_size_exceeded(ctx, pool, cites)?;
                     s = &s[..ENT_STR_SIZE];
                 }
@@ -962,7 +962,7 @@ fn interp_gets(
                     let mut s = pool.get_str(s2);
                     if s.len() > GLOB_STR_SIZE {
                         bst_1print_string_size_exceeded(ctx);
-                        ctx.write_logs(&format!("{}, the global", GLOB_STR_SIZE));
+                        ctx.write_logs(&format!("{GLOB_STR_SIZE}, the global"));
                         bst_2print_string_size_exceeded(ctx, pool, cites)?;
                         s = &s[..GLOB_STR_SIZE];
                     }
@@ -1370,7 +1370,7 @@ fn interp_format_name(
         if i2 == 1 {
             ctx.write_logs("There is no name in \"");
         } else {
-            ctx.write_logs(&format!("There aren't {} names in \"", i2));
+            ctx.write_logs(&format!("There aren't {i2} names in \""));
         }
         print_a_pool_str(ctx, s3, pool)?;
         ctx.write_logs("\"");
@@ -1384,7 +1384,7 @@ fn interp_format_name(
             }
             _ => {
                 if buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b',' {
-                    ctx.write_logs(&format!("Name {} in \"", i2));
+                    ctx.write_logs(&format!("Name {i2} in \""));
                     print_a_pool_str(ctx, s3, pool)?;
                     ctx.write_logs("\" has a comma at the end");
                     bst_ex_warn_print(ctx, pool, cites)?;
@@ -1420,7 +1420,7 @@ fn interp_format_name(
                         buffers.set_at(BufTy::NameSep, num_tokens, b',');
                     }
                     Commas::Two(_, _) => {
-                        ctx.write_logs(&format!("Too many commas in name {} of \"", i2));
+                        ctx.write_logs(&format!("Too many commas in name {i2} of \""));
                         print_a_pool_str(ctx, s3, pool)?;
                         ctx.write_logs("\"");
                         bst_ex_warn_print(ctx, pool, cites)?;
@@ -1456,7 +1456,7 @@ fn interp_format_name(
                     num_tokens += 1;
                 }
 
-                ctx.write_logs(&format!("Name {} of \"", i2));
+                ctx.write_logs(&format!("Name {i2} of \""));
                 print_a_pool_str(ctx, s3, pool)?;
                 ctx.write_logs("\" isn't brace balanced");
                 bst_ex_warn_print(ctx, pool, cites)?;
@@ -1615,7 +1615,7 @@ fn interp_int_to_chr(
     };
 
     if !(0..=127).contains(&i1) {
-        ctx.write_logs(&format!("{} isn't valid ASCII", i1));
+        ctx.write_logs(&format!("{i1} isn't valid ASCII"));
         bst_ex_warn_print(ctx, pool, cites)?;
         ctx.push_stack(ExecVal::String(ctx.s_null));
     } else {

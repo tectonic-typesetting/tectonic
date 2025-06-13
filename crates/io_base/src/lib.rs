@@ -276,8 +276,7 @@ impl Read for InputHandle {
 
 impl Seek for InputHandle {
     fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
-        self.try_seek(pos)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+        self.try_seek(pos).map_err(io::Error::other)
     }
 }
 
@@ -694,7 +693,7 @@ fn try_normalize_tex_path(path: &str) -> Option<String> {
 /// A _TeX path_ is a path that obeys simplified semantics: Unix-like syntax (`/`
 /// for separators, etc.), must be Unicode-able, no symlinks allowed such that
 /// `..` can be stripped lexically.
-pub fn normalize_tex_path(path: &str) -> Cow<str> {
+pub fn normalize_tex_path(path: &str) -> Cow<'_, str> {
     if let Some(t) = try_normalize_tex_path(path) {
         Cow::Owned(t)
     } else {

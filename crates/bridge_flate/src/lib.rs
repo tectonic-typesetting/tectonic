@@ -10,10 +10,7 @@
 //! If you change the interfaces here, rerun cbindgen as described in the README!
 
 use flate2::{Compress, Compression, Decompress, FlushCompress, FlushDecompress, Status};
-use std::{
-    io::{Error, ErrorKind},
-    slice,
-};
+use std::{io::Error, slice};
 
 /// Re-export of the flate2 crate linked by this crate.
 pub use flate2;
@@ -132,10 +129,7 @@ impl Decompressor<'_> {
                 self.done = true;
             }
             Status::BufError => {
-                return Err(Error::new(
-                    ErrorKind::Other,
-                    "incomplete input or too-small output buffer",
-                ));
+                return Err(Error::other("incomplete input or too-small output buffer"));
             }
         }
 

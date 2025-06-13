@@ -79,11 +79,11 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
     // might need to use something like QEMU to actually be able to run the
     // executable. If we're collecting code coverage information with kcov, we
     // need to wrap the invocation with that program.
-    let mut command = if TARGET_RUNNER_WORDS.len() > 0 {
+    let mut command = if !TARGET_RUNNER_WORDS.is_empty() {
         let mut cmd = Command::new(&TARGET_RUNNER_WORDS[0]);
         cmd.args(&TARGET_RUNNER_WORDS[1..]).arg(tectonic);
         cmd
-    } else if KCOV_WORDS.len() > 0 {
+    } else if !KCOV_WORDS.is_empty() {
         let mut cmd = Command::new(&KCOV_WORDS[0]);
         cmd.args(&KCOV_WORDS[1..]);
 
@@ -96,7 +96,7 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
         root.push("cov");
         root.push("exetest.");
         let tempdir = tempfile::Builder::new().prefix(&root).tempdir().unwrap();
-        let tempdir = tempdir.into_path();
+        let tempdir = tempdir.keep();
         cmd.arg(tempdir);
 
         cmd.arg(tectonic);
@@ -1034,7 +1034,7 @@ fn extra_search_paths() {
 #[cfg(all(feature = "serialization", not(target_arch = "mips")))]
 #[test]
 fn v2_watch_succeeds() {
-    if KCOV_WORDS.len() > 0 || env::var("TECTONIC_KCOV_RUN").is_ok() {
+    if !KCOV_WORDS.is_empty() || env::var("TECTONIC_KCOV_RUN").is_ok() {
         return; // See run_tectonic_until() for an explanation of why this test must be skipped
     }
 
@@ -1065,7 +1065,7 @@ fn v2_watch_succeeds() {
 
             {
                 let mut file = File::create(&input).unwrap();
-                writeln!(file, "New Text {}", modified).unwrap();
+                writeln!(file, "New Text {modified}").unwrap();
             }
 
             let new_mod = output.metadata().and_then(|meta| meta.modified()).unwrap();
@@ -1083,8 +1083,8 @@ fn v2_watch_succeeds() {
     // success_or_panic(&output);
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
-    println!("-- stdout --\n{}\n-- end stdout --", stdout);
-    println!("-- stderr --\n{}\n-- end stderr --", stderr);
+    println!("-- stdout --\n{stdout}\n-- end stdout --");
+    println!("-- stderr --\n{stderr}\n-- end stderr --");
 
     thread.join().unwrap();
 

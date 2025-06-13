@@ -1427,7 +1427,7 @@ impl ProcessingSession {
                 let tempdir = ctry!(tempfile::Builder::new().tempdir(); "can't create temporary directory for shell-escape work");
                 (
                     Some(FilesystemIo::new(
-                        &tempdir.into_path(),
+                        &tempdir.keep(),
                         false,
                         false,
                         HashSet::new(),
