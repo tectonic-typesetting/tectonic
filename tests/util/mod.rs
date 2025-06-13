@@ -135,8 +135,7 @@ impl<'a, E: DefinitelySame + Debug> Expected<'a, E> {
         for (expected, found) in &self.result {
             if !found.definitely_same(expected) {
                 failures.push(format!(
-                    "Expected engine result {:?}, got {:?}",
-                    expected, found
+                    "Expected engine result {expected:?}, got {found:?}"
                 ));
             }
         }
@@ -266,17 +265,17 @@ impl<'a> ExpectedFile<'a> {
             let mut n = self.expect_name.clone();
             n.push_str(".expected");
             let mut f = File::create(&n)
-                .map_err(|_| format!("failed to create {} for test failure diagnosis", n))?;
+                .map_err(|_| format!("failed to create {n} for test failure diagnosis"))?;
             f.write_all(&self.contents)
-                .map_err(|_| format!("failed to write {} for test failure diagnosis", n))?;
+                .map_err(|_| format!("failed to write {n} for test failure diagnosis"))?;
         }
         {
             let mut n = self.expect_name.clone();
             n.push_str(".observed");
             let mut f = File::create(&n)
-                .map_err(|_| format!("failed to create {} for test failure diagnosis", n))?;
+                .map_err(|_| format!("failed to create {n} for test failure diagnosis"))?;
             f.write_all(observed)
-                .map_err(|_| format!("failed to write {} for test failure diagnosis", n))?;
+                .map_err(|_| format!("failed to write {n} for test failure diagnosis"))?;
         }
         Err(format!(
             "difference in {}; contents saved to disk",
