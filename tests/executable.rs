@@ -96,7 +96,7 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
         root.push("cov");
         root.push("exetest.");
         let tempdir = tempfile::Builder::new().prefix(&root).tempdir().unwrap();
-        let tempdir = tempdir.into_path();
+        let tempdir = tempdir.keep();
         cmd.arg(tempdir);
 
         cmd.arg(tectonic);
