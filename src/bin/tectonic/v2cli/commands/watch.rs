@@ -48,6 +48,8 @@ impl WatchCommand {
             .expect("Executable path wasn't valid UTF-8");
         let mut cmds = Vec::new();
 
+        let v2cli_enabled = exe_name.contains("nextonic");
+
         #[cfg(windows)]
         let shell = Shell::cmd();
         #[cfg(unix)]
@@ -56,10 +58,16 @@ impl WatchCommand {
         for x in self.execute.iter() {
             let x = x.trim();
             if !x.is_empty() {
+                let command = if v2cli_enabled {
+                    format!("\"{exe_name}\" {}", x)
+                } else {
+                    format!("\"{exe_name}\" -X {}", x)
+                };
+
                 let cmd = Command {
                     program: Program::Shell {
                         shell: shell.clone(),
-                        command: format!("\"{exe_name}\" -X {}", x),
+                        command,
                         args: vec![],
                     },
                     options: Default::default(),
@@ -69,13 +77,21 @@ impl WatchCommand {
         }
 
         if cmds.is_empty() {
+            let mut args = Vec::with_capacity(2);
+
+            if !v2cli_enabled {
+                args.push("-X".to_string());
+            }
+            args.push("build".to_string());
+
             let cmd = Command {
                 program: Program::Exec {
                     prog: exe_name.into(),
-                    args: vec!["-X".to_string(), "build".to_string()],
+                    args,
                 },
                 options: Default::default(),
             };
+
             cmds.push((Id::default(), Arc::new(cmd)));
         }
 
