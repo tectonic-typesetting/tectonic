@@ -363,3 +363,14 @@ fn xetex_g_builtins() {
 fn xetex_ot_builtins() {
     TestCase::new("xetex_ot_builtins").check_pdf(true).go()
 }
+
+#[test]
+fn pdf_fstream() {
+    // Need to do this here since we call test_path unusually early.
+    util::set_test_root();
+
+    TestCase::new("pdf_fstream")
+        .with_fs(&test_path(&["tex-outputs"]))
+        .check_pdf(true)
+        .go()
+}

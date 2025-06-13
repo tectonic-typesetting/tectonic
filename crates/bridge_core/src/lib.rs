@@ -674,6 +674,11 @@ impl<'a> CoreBridgeState<'a> {
         rhandle.read_exact(buf).map_err(Error::from)
     }
 
+    fn input_read_partial(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<usize> {
+        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+        rhandle.read(buf).map_err(Error::from)
+    }
+
     fn input_getc(&mut self, handle: *mut InputHandle) -> Result<u8> {
         let rhandle: &mut InputHandle = unsafe { &mut *handle };
         rhandle.getc()
@@ -1181,6 +1186,9 @@ pub extern "C" fn ttbc_input_ungetc(
 
 /// Read data from a Tectonic input handle
 ///
+/// This read corresponds to Rust's read_exact, i.e. it will return exactly the number of requested
+/// bytes or error (-1).
+///
 /// # Safety
 ///
 /// This function is unsafe because it dereferences raw C pointers.
@@ -1195,6 +1203,32 @@ pub unsafe extern "C" fn ttbc_input_read(
 
     match es.input_read(handle, rdata) {
         Ok(_) => len as isize,
+        Err(e) => {
+            tt_warning!(es.status, "{}-byte read failed", len; e);
+            -1
+        }
+    }
+}
+
+/// Read data from a Tectonic input handle
+///
+/// This read corresponds to Rust's read, i.e. it can return less bytes than requested (and does
+/// when buffering)
+///
+/// # Safety
+///
+/// This function is unsafe because it dereferences raw C pointers.
+#[no_mangle]
+pub unsafe extern "C" fn ttbc_input_read_partial(
+    es: &mut CoreBridgeState,
+    handle: *mut InputHandle,
+    data: *mut u8,
+    len: libc::size_t,
+) -> libc::ssize_t {
+    let rdata = slice::from_raw_parts_mut(data, len);
+
+    match es.input_read_partial(handle, rdata) {
+        Ok(size) => size as isize,
         Err(e) => {
             tt_warning!(es.status, "{}-byte read failed", len; e);
             -1
