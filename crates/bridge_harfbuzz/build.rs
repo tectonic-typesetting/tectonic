@@ -127,7 +127,7 @@ mod inner {
         );
 
         for item in graphite2_include_path.split(';') {
-            print!(";{}", item);
+            print!(";{item}");
         }
 
         println!();

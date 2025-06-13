@@ -416,14 +416,14 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
             if warns == 1 {
                 ctx.write_logs("(There was 1 warning)\n")
             } else {
-                ctx.write_logs(&format!("(There were {} warnings)\n", warns))
+                ctx.write_logs(&format!("(There were {warns} warnings)\n"))
             }
         }
         History::ErrorIssued(errs) => {
             if errs == 1 {
                 ctx.write_logs("(There was 1 error message)\n")
             } else {
-                ctx.write_logs(&format!("(There were {} error messages)\n", errs))
+                ctx.write_logs(&format!("(There were {errs} error messages)\n"))
             }
         }
         History::FatalError => {

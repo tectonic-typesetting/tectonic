@@ -59,7 +59,7 @@ impl WatchCommand {
                 let cmd = Command {
                     program: Program::Shell {
                         shell: shell.clone(),
-                        command: format!("\"{exe_name}\" -X {}", x),
+                        command: format!("\"{exe_name}\" -X {x}"),
                         args: vec![],
                     },
                     options: Default::default(),

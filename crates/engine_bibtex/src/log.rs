@@ -121,7 +121,7 @@ pub(crate) fn out_pool_str(
         ctx.write_log_file(str);
         Ok(())
     } else {
-        ctx.write_logs(&format!("Illegal string number: {}", s));
+        ctx.write_logs(&format!("Illegal string number: {s}"));
         print_confusion(ctx);
         Err(BibtexError::Fatal)
     }
@@ -137,7 +137,7 @@ pub(crate) fn print_a_pool_str(
         ctx.write_logs(str);
         Ok(())
     } else {
-        ctx.write_logs(&format!("Illegal string number: {}", s));
+        ctx.write_logs(&format!("Illegal string number: {s}"));
         print_confusion(ctx);
         Err(BibtexError::Fatal)
     }
@@ -304,13 +304,12 @@ pub(crate) fn bst_id_print(
     let char = buffers.at_offset(BufTy::Base, 2) as char;
     match scan_result {
         ScanRes::IdNull => {
-            ctx.write_logs(&format!("\"{}\" begins identifier, command: ", char));
+            ctx.write_logs(&format!("\"{char}\" begins identifier, command: "));
             Ok(())
         }
         ScanRes::OtherCharAdjacent => {
             ctx.write_logs(&format!(
-                "\"{}\" immediately follows identifier, command: ",
-                char
+                "\"{char}\" immediately follows identifier, command: ",
             ));
             Ok(())
         }
@@ -434,7 +433,7 @@ pub(crate) fn bib_id_print(
         }
         ScanRes::OtherCharAdjacent => {
             let char = buffers.at_offset(BufTy::Base, 2);
-            ctx.write_logs(&format!("\"{}\" immediately follows ", char));
+            ctx.write_logs(&format!("\"{char}\" immediately follows "));
             Ok(())
         }
         _ => {

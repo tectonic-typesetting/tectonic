@@ -150,7 +150,7 @@ impl FilePicker {
                 if m.is_empty() {
                     bail!("Bad search path format");
                 }
-                output.push(format!("{}{}{}", head, m, t));
+                output.push(format!("{head}{m}{t}"));
             }
         }
 
@@ -441,7 +441,7 @@ impl FilePicker {
             let (rel_file_path, mut read) = x?;
 
             let ignore = {
-                let f = format!("/{source}/{}", rel_file_path);
+                let f = format!("/{source}/{rel_file_path}");
                 let mut ignore = false;
                 for pattern in &ignore_patterns {
                     if pattern.is_match(&f) {

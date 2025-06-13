@@ -11,7 +11,7 @@
 
 use error_chain::error_chain;
 use std::{
-    convert, ffi,
+    ffi,
     fmt::{self, Debug, Display},
     io,
     io::Write,
@@ -143,9 +143,9 @@ macro_rules! ctry {
     }}
 }
 
-impl convert::From<Error> for io::Error {
+impl From<Error> for io::Error {
     fn from(err: Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, format!("{err}"))
+        io::Error::other(err.to_string())
     }
 }
 

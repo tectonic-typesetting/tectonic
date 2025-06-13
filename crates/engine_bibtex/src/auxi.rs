@@ -355,7 +355,7 @@ fn aux_input_command(
         print_a_token(ctx, buffers);
         ctx.write_logs(": ");
         print_overflow(ctx);
-        ctx.write_logs(&format!("auxiliary file depth {}\n", AUX_STACK_SIZE));
+        ctx.write_logs(&format!("auxiliary file depth {AUX_STACK_SIZE}\n"));
         return Err(BibtexError::Fatal);
     }
 
