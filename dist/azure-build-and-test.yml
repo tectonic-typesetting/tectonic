@@ -81,7 +81,7 @@ parameters:
           TOOLCHAIN: stable
 
       - name: windows_intdeps
-        vmImage: windows-2019
+        vmImage: windows-2022
         params:
           installAllDeps: false
         vars:
@@ -89,7 +89,7 @@ parameters:
           TOOLCHAIN: stable-x86_64-pc-windows-gnu
 
       - name: windows_extdeps
-        vmImage: windows-2019
+        vmImage: windows-2022
         params:
           canaryBuild: true
           installAllDeps: true
@@ -156,7 +156,7 @@ parameters:
           TOOLCHAIN: stable
 
       - name: x86_64_pc_windows_msvc
-        vmImage: windows-2019
+        vmImage: windows-2022
         params: { }
         vars:
           TARGET: x86_64-pc-windows-msvc
