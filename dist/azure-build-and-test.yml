@@ -265,7 +265,9 @@ jobs:
     steps:
       - template: azure-coverage.yml
     variables:
-      TOOLCHAIN: stable
+      - group: Coverage Credentials
+      - name: TOOLCHAIN
+        value: stable
 
   # book build
   - job: book

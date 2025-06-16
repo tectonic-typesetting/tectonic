@@ -108,3 +108,5 @@ steps:
     set -xeuo pipefail
     bash <(curl -s https://codecov.io/bash)
   displayName: Report coverage results
+  env:
+    CODECOV_TOKEN: $(CODECOV_TOKEN)
