@@ -1228,7 +1228,8 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
             return Err(InternalError::NeedMoreData);
         }
 
-        let rv = self.buf[0].cast_signed();
+        // TODO: Once we're willing to bump MSRV to 1.87, switch to `cast_signed`
+        let rv = self.buf[0] as i8;
         self.buf = &self.buf[1..];
         self.offset += 1;
         Ok(rv)
