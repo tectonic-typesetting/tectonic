@@ -25,7 +25,7 @@ impl<'a> IoStack<'a> {
     }
 }
 
-impl<'a> IoProvider for IoStack<'a> {
+impl IoProvider for IoStack<'_> {
     fn output_open_name(&mut self, name: &str) -> OpenResult<OutputHandle> {
         for item in &mut self.items {
             let r = item.output_open_name(name);

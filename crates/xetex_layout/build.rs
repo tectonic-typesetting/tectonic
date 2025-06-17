@@ -86,7 +86,7 @@ fn main() {
     let mut cppcfg = cc::Build::new();
 
     let cppflags = [
-        "-std=c++14",
+        "-std=c++17",
         "-Wall",
         "-Wdate-time",
         "-Wendif-labels",

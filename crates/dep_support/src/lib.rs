@@ -3,7 +3,7 @@
 
 #![deny(missing_docs)]
 
-//! Support for locating third-party libraries (“dependencies”) when building
+//! Support for locating third-party libraries ("dependencies") when building
 //! Tectonic. The main point of interest is that both pkg-config and vcpkg are
 //! supported as dep-finding backends. This crate does *not* deal with the
 //! choice of whether to provide a library externally or through vendoring.

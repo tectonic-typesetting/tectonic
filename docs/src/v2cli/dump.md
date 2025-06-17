@@ -5,7 +5,7 @@ standard output. This can be useful if you have an external tool that parses
 such files, and you wish to integrate it into Tectonic-based authoring
 workflows.
 
-***This is a [V2 CLI][v2cli-ref] command. For information on the original (“V1”
+***This is a [V2 CLI][v2cli-ref] command. For information on the original ("V1"
 CLI), see [its reference page][v1cli-ref].***
 
 [v2cli-ref]: ../ref/v2cli.md
@@ -43,7 +43,7 @@ one of its parents.
 
 [tectonic-toml]: ../ref/tectonic-toml.md
 
-The “partial build” consists of one pass of the TeX engine. Future versions of
+The "partial build" consists of one pass of the TeX engine. Future versions of
 this tool might gain options allowing you to specify different passes. This
 command can be used to dump any file created by TeX during the build (so long
 as it’s created on the first pass).

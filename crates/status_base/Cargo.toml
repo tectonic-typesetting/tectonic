@@ -3,7 +3,7 @@
 
 [package]
 name = "tectonic_status_base"
-version = "0.2.1"
+version = "0.2.1+20250617"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Basic types for reporting status messages to a user.

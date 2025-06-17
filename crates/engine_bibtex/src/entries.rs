@@ -1,4 +1,4 @@
-use crate::{cite::CiteInfo, xbuf::XBuf, ASCIICode};
+use crate::{cite::CiteInfo, ASCIICode};
 
 pub(crate) const ENT_STR_SIZE: usize = 250;
 
@@ -6,8 +6,8 @@ pub(crate) struct EntryData {
     num_entry_ints: usize,
     num_entry_strs: usize,
     sort_key_num: usize,
-    entry_ints: Option<XBuf<i32>>,
-    entry_strs: Option<XBuf<ASCIICode>>,
+    entry_ints: Option<Vec<i64>>,
+    entry_strs: Option<Vec<ASCIICode>>,
 }
 
 impl EntryData {
@@ -21,11 +21,11 @@ impl EntryData {
         }
     }
 
-    pub fn ints(&self, pos: usize) -> i32 {
+    pub fn ints(&self, pos: usize) -> i64 {
         self.entry_ints.as_ref().unwrap()[pos]
     }
 
-    pub fn set_int(&mut self, pos: usize, val: i32) {
+    pub fn set_int(&mut self, pos: usize, val: i64) {
         self.entry_ints.as_mut().unwrap()[pos] = val;
     }
 
@@ -74,11 +74,13 @@ impl EntryData {
 
     pub fn init_entries(&mut self, cites: &CiteInfo) {
         let num_cites = cites.num_cites();
-        self.entry_ints = Some(XBuf::new((self.num_entry_ints + 1) * (num_cites + 1)));
-
-        let mut new_buf =
-            XBuf::new((self.num_entry_strs + 1) * (num_cites + 1) * (ENT_STR_SIZE + 1));
-        new_buf.fill(127);
-        self.entry_strs = Some(new_buf);
+        self.entry_ints = Some(vec![0; (self.num_entry_ints + 1) * (num_cites + 1) + 1]);
+        self.entry_strs = Some(vec![
+            127;
+            (self.num_entry_strs + 1)
+                * (num_cites + 1)
+                * (ENT_STR_SIZE + 1)
+                + 1
+        ]);
     }
 }
