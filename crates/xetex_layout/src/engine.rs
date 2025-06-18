@@ -6,7 +6,6 @@ use std::ops::{Deref, DerefMut};
 use std::ptr;
 use tectonic_bridge_graphite2 as gr;
 use tectonic_bridge_harfbuzz as hb;
-use tectonic_bridge_icu::{UBIDI_DEFAULT_LTR, UBIDI_DEFAULT_RTL};
 
 pub enum MaybeBorrow<'a, T> {
     Owned(Box<T>),
@@ -127,6 +126,9 @@ impl LayoutEngine {
     }
 
     pub fn default_dir(&self) -> u8 {
+        pub const UBIDI_DEFAULT_LTR: u8 = 0xFE;
+        pub const UBIDI_DEFAULT_RTL: u8 = 0xFF;
+
         let script = self.hb_buffer.as_ref().get_script();
         if script.get_horizontal_direction() == hb::Direction::Rtl {
             UBIDI_DEFAULT_RTL

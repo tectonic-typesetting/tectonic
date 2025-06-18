@@ -3,11 +3,12 @@ use super::{
     NameCollection,
 };
 use crate::c_api::PlatformFontRef;
+use enrede::encoding::{MacRoman, Utf16BE, Utf8};
+use enrede::Str;
 use std::borrow::Cow;
 use std::ffi::{CStr, CString};
 use tectonic_bridge_fontconfig as fc;
 use tectonic_bridge_freetype2 as ft;
-use tectonic_bridge_icu as icu;
 
 pub const FONT_FAMILY_NAME: libc::c_ushort = 1;
 pub const FONT_STYLE_NAME: libc::c_ushort = 2;
@@ -15,18 +16,9 @@ pub const FONT_FULL_NAME: libc::c_ushort = 4;
 pub const PREFERRED_FAMILY_NAME: libc::c_ushort = 16;
 pub const PREFERRED_SUBFAMILY_NAME: libc::c_ushort = 17;
 
-fn convert_to_utf8(backend: &FcBackend, conv: &icu::Converter, name: &[u8]) -> CString {
-    let buffer1 = conv.to_uchars(name).unwrap();
-    let buffer2 = backend.utf8.from_uchars(&buffer1).unwrap();
-    CString::new(buffer2).unwrap()
-}
-
 pub struct FcBackend {
     all_fonts: fc::FontSet,
     cached_all: bool,
-    mac_roman: Option<icu::Converter>,
-    utf16_be: icu::Converter,
-    utf8: icu::Converter,
 }
 
 impl FcBackend {
@@ -35,16 +27,6 @@ impl FcBackend {
             panic!("fontconfig initialization failed");
         }
         ft::init();
-
-        let mac_roman = icu::Converter::new(c"macintosh").ok();
-        let utf16_be = match icu::Converter::new(c"UTF16BE") {
-            Ok(conv) => conv,
-            Err(_) => panic!("cannot read font names"),
-        };
-        let utf8 = match icu::Converter::new(c"UTF8") {
-            Ok(conv) => conv,
-            Err(_) => panic!("cannot read font names"),
-        };
 
         let pat = fc::Pattern::from_name(c":outline=true").unwrap();
         let os = fc::ObjectSet::new(&[
@@ -63,9 +45,6 @@ impl FcBackend {
         FcBackend {
             all_fonts,
             cached_all: false,
-            mac_roman,
-            utf16_be,
-            utf8,
         }
     }
 
@@ -245,22 +224,22 @@ impl FontManagerBackend for FcBackend {
                     | PREFERRED_FAMILY_NAME
                     | PREFERRED_SUBFAMILY_NAME => {
                         let mut preferred_name = false;
-                        if self.mac_roman.is_some()
-                            && name_rec.platform_id == ft::PlatformId::MACINTOSH
+                        if name_rec.platform_id == ft::PlatformId::MACINTOSH
                             && name_rec.encoding_id == ft::EncodingId::MAC_ROMAN
                             && name_rec.language_id == ft::LanguageId::MAC_ENGLISH
                         {
-                            utf8_name = Some(convert_to_utf8(
-                                self,
-                                self.mac_roman.as_ref().unwrap(),
-                                name_rec.string,
-                            ));
+                            let str = Str::<MacRoman>::from_bytes_infallible(name_rec.string);
+                            utf8_name = Some(
+                                enrede::CString::try_from(str.recode::<Utf8>().unwrap()).unwrap(),
+                            );
                             preferred_name = true;
                         } else if name_rec.platform_id == ft::PlatformId::APPLE_UNICODE
                             || name_rec.platform_id == ft::PlatformId::MICROSOFT
                         {
-                            utf8_name =
-                                Some(convert_to_utf8(self, &self.utf16_be, name_rec.string));
+                            let str = Str::<Utf16BE>::from_bytes(name_rec.string).unwrap();
+                            utf8_name = Some(
+                                enrede::CString::try_from(str.recode::<Utf8>().unwrap()).unwrap(),
+                            );
                         }
 
                         if let Some(name) = utf8_name {
@@ -274,9 +253,9 @@ impl FontManagerBackend for FcBackend {
                             };
 
                             if preferred_name {
-                                FontManager::prepend_to_list(name_list, name);
+                                FontManager::prepend_to_list(name_list, name.into_std());
                             } else {
-                                FontManager::append_to_list(name_list, name);
+                                FontManager::append_to_list(name_list, name.into_std());
                             }
                         }
                     }

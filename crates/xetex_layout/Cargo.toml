@@ -28,6 +28,7 @@ tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version = "0.0.0-dev.0
 tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
 tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
 libc = "0.2"
+enrede = { version = "0.2", features = ["alloc"] }
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
 tectonic_bridge_fontconfig = { path = "../bridge_fontconfig", version = "0.0.0-dev.0" }
