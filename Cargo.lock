@@ -2973,6 +2973,7 @@ version = "0.0.0-dev.0"
 dependencies = [
  "cc",
  "tectonic_bridge_graphite2",
+ "tectonic_cfg_support",
  "tectonic_dep_support",
 ]
 
