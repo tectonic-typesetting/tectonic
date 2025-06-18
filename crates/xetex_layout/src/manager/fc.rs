@@ -228,7 +228,7 @@ impl FontManagerBackend for FcBackend {
                             && name_rec.encoding_id == ft::EncodingId::MAC_ROMAN
                             && name_rec.language_id == ft::LanguageId::MAC_ENGLISH
                         {
-                            let str = Str::<MacRoman>::from_bytes_infallible(&name_rec.string);
+                            let str = Str::<MacRoman>::from_bytes_infallible(name_rec.string);
                             utf8_name = Some(
                                 enrede::CString::try_from(str.recode::<Utf8>().unwrap()).unwrap(),
                             );
@@ -236,7 +236,7 @@ impl FontManagerBackend for FcBackend {
                         } else if name_rec.platform_id == ft::PlatformId::APPLE_UNICODE
                             || name_rec.platform_id == ft::PlatformId::MICROSOFT
                         {
-                            let str = Str::<Utf16BE>::from_bytes(&name_rec.string).unwrap();
+                            let str = Str::<Utf16BE>::from_bytes(name_rec.string).unwrap();
                             utf8_name = Some(
                                 enrede::CString::try_from(str.recode::<Utf8>().unwrap()).unwrap(),
                             );
