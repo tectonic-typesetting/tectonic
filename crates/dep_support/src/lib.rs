@@ -181,7 +181,7 @@ impl<'a, T: Spec> Dependency<'a, T> {
 
             DepState::VcPkg(ref s) => {
                 for p in &s.include_paths {
-                    f(&p);
+                    f(p);
                 }
             }
         }
