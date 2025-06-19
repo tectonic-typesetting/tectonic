@@ -241,6 +241,13 @@ fn graphite_basic() {
 }
 
 #[test]
+fn otf_ot_shaper() {
+    TestCase::new("otf_ot_shaper")
+        .expect(Ok(TexOutcome::Warnings))
+        .go()
+}
+
+#[test]
 fn prim_creationdate() {
     TestCase::new("prim_creationdate").go()
 }

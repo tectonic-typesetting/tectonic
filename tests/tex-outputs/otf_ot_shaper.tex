@@ -1,0 +1,11 @@
+% Use a native OTF font requesting OT mode to exercise shapers code
+\font\x="[lmroman12-regular]/OT"
+\x Unicode “like this” with enough characters to get us breaking the paragraph
+into different lines, with some discretionary hyphenation and whatnot to make
+things interesting. How much text will it take? Well, it will take less if we
+use long words like antidisestablishmentarianism hypermetasuperconductivity
+semihemidemiquaver prepostantepenultimate. The paragraph needs to be of
+sufficient length for it to work out better to stick some hyphens in there, so
+we need to keep on typing and typing and typing and come on TeX don't leave us
+hanging. Here's a DESERET SMALL LETTER YEE to get us outside of the BMP: 𐐷.t
+\bye
