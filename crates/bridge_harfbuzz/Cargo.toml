@@ -25,6 +25,7 @@ tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev
 [build-dependencies]
 cc = "^1.0.66"
 tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
+tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 
 [features]
 external-harfbuzz = []
@@ -32,3 +33,4 @@ external-harfbuzz = []
 [package.metadata.internal_dep_versions]
 tectonic_bridge_graphite2 = "2722731f9e32c6963fe8c8566a201b33672c5c5a"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
+tectonic_cfg_support = "thiscommit:aeRoo7oa"
