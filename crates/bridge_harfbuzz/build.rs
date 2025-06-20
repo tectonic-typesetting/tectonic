@@ -47,7 +47,7 @@ mod inner {
         dep.foreach_include_path(|p| {
             // HACK: On macOS, the default brew harfbuzz for some reason points into the harfbuzz
             // folder itself, so we need to go up one level to the includes folder.
-            if is_macos_external {
+            if is_macos_external && p.ends_with("harfbuzz") {
                 print!("{}{}", sep, p.parent().unwrap().to_str().unwrap());
                 sep = ";";
             }
