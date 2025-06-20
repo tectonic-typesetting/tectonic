@@ -1,8 +1,6 @@
 // Copyright 2018 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! A decoder for the XDV and SPX file formats used by Tectonic and XeTeX.
 //!
 //! Both of these file formats are derived from the venerable "device

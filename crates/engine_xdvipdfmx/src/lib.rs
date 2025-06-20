@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! The `xdvipdfmx` program from [XeTeX] as a reusable crate.
 //!
 //! [XeTeX]: http://xetex.sourceforge.net/

@@ -1,7 +1,7 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//#![deny(missing_docs)]
+#![allow(missing_docs)]
 
 //! The low-level primitive commands provided by the engine.
 

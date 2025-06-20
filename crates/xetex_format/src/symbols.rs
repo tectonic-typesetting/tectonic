@@ -1,7 +1,7 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//#![deny(missing_docs)]
+#![allow(missing_docs)]
 
 //! In this crate, a symbol is a number with an assigned name that is exposed to
 //! the engine implementation as a C preprocessor `#define`.

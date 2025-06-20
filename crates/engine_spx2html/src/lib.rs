@@ -1,8 +1,6 @@
 // Copyright 2018-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Convert Tectonic’s SPX format to HTML.
 //!
 //! SPX is essentially the same thing as XDV, but we identify it differently to

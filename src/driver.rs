@@ -1,8 +1,6 @@
 // Copyright 2018-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! The high-level Tectonic document processing interface.
 //!
 //! The main struct in this module is [`ProcessingSession`], which knows how to

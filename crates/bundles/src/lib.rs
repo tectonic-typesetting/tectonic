@@ -1,8 +1,6 @@
 // Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Implementations of Tectonic bundle formats.
 //!
 //! A Tectonic "bundle" is a collection of TeX support files. In code, bundles

@@ -1,8 +1,6 @@
 // Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Core APIs for bridging the C and Rust portions of Tectonic’s processing
 //! backends.
 //!

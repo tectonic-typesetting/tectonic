@@ -63,6 +63,9 @@ members = [
     "tests/bundle_env_overrides_test",
 ]
 
+[workspace.lints.rust]
+missing_docs = "deny"
+
 [lib]
 name = "tectonic"
 crate-type = ["rlib"]

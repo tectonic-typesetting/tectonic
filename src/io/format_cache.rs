@@ -1,8 +1,6 @@
 // Copyright 2018-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Code for locally caching compiled format files.
 
 use std::{

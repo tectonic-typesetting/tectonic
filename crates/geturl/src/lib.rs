@@ -1,8 +1,6 @@
 // Copyright 2020-2021 the Tectonic Project.
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! A simple, pluggable interface for HTTP GETs and range requests.
 //!
 //! At the moment, there are three backends that might be available:
