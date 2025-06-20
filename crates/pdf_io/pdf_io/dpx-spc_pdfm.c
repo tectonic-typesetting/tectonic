@@ -1621,7 +1621,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
   ssize_t nb_read;
   char    *ident, *instring;
   pdf_obj *tmp;
-  rust_input_handle_t handle = NULL;
+  rust_input_handle_t handle = INVALID_HANDLE;
 
   skip_white(&args->curptr, args->endptr);
 
@@ -1656,7 +1656,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
       return  -1;
     }
     handle = ttstub_input_open(instring, TTBC_FILE_FORMAT_PICT, 0);
-    if (handle == NULL) {
+    if (handle == INVALID_HANDLE) {
       spc_warn(spe, "Could not open file: %s", instring);
       pdf_release_obj(tmp);
       free(ident);

@@ -42,7 +42,6 @@ use std::{
     fmt::{Display, Error as FmtError, Formatter},
     io::{self, Read, SeekFrom, Write},
     path::PathBuf,
-    ptr,
     result::Result as StdResult,
     slice,
     sync::Mutex,
@@ -56,11 +55,37 @@ use tectonic_status_base::{tt_error, tt_warning, MessageKind, StatusBackend};
 
 /// The ID of an InputHandle, used for Rust core state
 #[derive(Copy, Clone, PartialEq)]
-pub struct InputId(*mut InputHandle);
+#[repr(transparent)]
+pub struct InputId(usize);
+
+impl InputId {
+    /// Create an invalid [`InputId`] for C code
+    fn invalid() -> Self {
+        InputId(0)
+    }
+
+    /// Check if this [`InputId`] is invalid
+    fn is_invalid(self) -> bool {
+        self.0 == 0
+    }
+}
 
 /// The ID of an OutputHandle, used for Rust core state
 #[derive(Copy, Clone, PartialEq)]
-pub struct OutputId(*mut OutputHandle);
+#[repr(transparent)]
+pub struct OutputId(usize);
+
+impl OutputId {
+    /// Create an invalid [`OutputId`] for C code
+    fn invalid() -> Self {
+        OutputId(usize::MAX)
+    }
+
+    /// Check if this [`OutputId`] is invalid
+    fn is_invalid(self) -> bool {
+        self.0 == usize::MAX
+    }
+}
 
 /// Possible failures for "system request" calls to the driver.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -320,10 +345,10 @@ pub struct CoreBridgeState<'a> {
     status: &'a mut dyn StatusBackend,
 
     #[allow(clippy::vec_box)]
-    input_handles: Vec<Box<InputHandle>>,
+    input_handles: Vec<Option<InputHandle>>,
 
     #[allow(clippy::vec_box)]
-    output_handles: Vec<Box<OutputHandle>>,
+    output_handles: Vec<Option<OutputHandle>>,
 
     /// A semi-hack to allow us to feed input file path information to SyncTeX.
     /// This field is updated every time a new input file is opened. The XeTeX
@@ -481,16 +506,13 @@ impl<'a> CoreBridgeState<'a> {
         error_occurred
     }
 
-    fn output_to_id(&self, output: *mut OutputHandle) -> OutputId {
-        OutputId(output)
-    }
-
     /// Get a mutable reference to an [`OutputHandle`] associated with an [`OutputId`]
     pub fn get_output(&mut self, id: OutputId) -> &mut OutputHandle {
-        self.output_handles
-            .iter_mut()
-            .find(|o| ptr::addr_eq(&***o, id.0))
-            .unwrap()
+        if id.is_invalid() {
+            panic!("Attempt to get output for invalid ID")
+        } else {
+            self.output_handles[id.0 - 1].as_mut().unwrap()
+        }
     }
 
     /// Open a new output, provided the output name and whether it is gzipped.
@@ -515,8 +537,8 @@ impl<'a> CoreBridgeState<'a> {
             );
         }
 
-        self.output_handles.push(Box::new(oh));
-        Some(OutputId(&mut **self.output_handles.last_mut().unwrap()))
+        self.output_handles.push(Some(oh));
+        Some(OutputId(self.output_handles.len()))
     }
 
     /// Open a new stdout output.
@@ -532,12 +554,12 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        self.output_handles.push(Box::new(oh));
-        Some(OutputId(&mut **self.output_handles.last_mut().unwrap()))
+        self.output_handles.push(Some(oh));
+        Some(OutputId(self.output_handles.len()))
     }
 
-    fn output_write(&mut self, handle: *mut OutputHandle, buf: &[u8]) -> bool {
-        let rhandle: &mut OutputHandle = unsafe { &mut *handle };
+    fn output_write(&mut self, handle: OutputId, buf: &[u8]) -> bool {
+        let rhandle: &mut OutputHandle = self.get_output(handle);
         let result = rhandle.write_all(buf);
 
         match result {
@@ -549,8 +571,8 @@ impl<'a> CoreBridgeState<'a> {
         }
     }
 
-    fn output_flush(&mut self, handle: *mut OutputHandle) -> bool {
-        let rhandle: &mut OutputHandle = unsafe { &mut *handle };
+    fn output_flush(&mut self, handle: OutputId) -> bool {
+        let rhandle: &mut OutputHandle = self.get_output(handle);
         let result = rhandle.flush();
 
         match result {
@@ -564,35 +586,29 @@ impl<'a> CoreBridgeState<'a> {
 
     /// Close the provided output, flushing it and performing any necessary handling.
     pub fn output_close(&mut self, id: OutputId) -> bool {
-        let mut rv = false;
-
-        let pos = self
-            .output_handles
-            .iter()
-            .position(|o| ptr::addr_eq(&**o, id.0));
-        if let Some(pos) = pos {
-            let mut oh = self.output_handles.swap_remove(pos);
-            if let Err(e) = oh.flush() {
-                tt_warning!(self.status, "error when closing output {}", oh.name(); e.into());
-                rv = true;
-            }
-            let (name, digest) = oh.into_name_digest();
-            self.hooks.event_output_closed(name, digest);
+        if id.is_invalid() {
+            tt_warning!(self.status, "Attempt to close invalid output");
+            return true;
         }
 
+        let mut rv = false;
+        let mut oh = self.output_handles[id.0 - 1].take().unwrap();
+        if let Err(e) = oh.flush() {
+            tt_warning!(self.status, "error when closing output {}", oh.name(); e.into());
+            rv = true;
+        }
+        let (name, digest) = oh.into_name_digest();
+        self.hooks.event_output_closed(name, digest);
         rv
-    }
-
-    fn input_to_id(&self, input: *mut InputHandle) -> InputId {
-        InputId(input)
     }
 
     /// Get a mutable reference to an [`InputHandle`] associated with an [`InputId`]
     pub fn get_input(&mut self, input: InputId) -> &mut InputHandle {
-        self.input_handles
-            .iter_mut()
-            .find(|i| ptr::addr_eq(&***i, input.0))
-            .unwrap()
+        if input.is_invalid() {
+            panic!("Attempt to get input for invalid ID");
+        } else {
+            self.input_handles[input.0 - 1].as_mut().unwrap()
+        }
     }
 
     /// Open a new input, provided the input name, the file format, and whether it is gzipped.
@@ -610,33 +626,33 @@ impl<'a> CoreBridgeState<'a> {
             }
         };
 
-        self.input_handles.push(Box::new(ih));
+        self.input_handles.push(Some(ih));
         self.latest_input_path = path;
-        Some(InputId(&mut **self.input_handles.last_mut().unwrap()))
+        Some(InputId(self.input_handles.len()))
     }
 
-    fn input_open_primary(&mut self) -> *mut InputHandle {
+    fn input_open_primary(&mut self) -> Option<InputId> {
         let io = self.hooks.io();
 
         let (ih, path) = match io.input_open_primary_with_abspath(self.status) {
             OpenResult::Ok(tup) => tup,
             OpenResult::NotAvailable => {
                 tt_error!(self.status, "primary input not available (?!)");
-                return ptr::null_mut();
+                return None;
             }
             OpenResult::Err(e) => {
                 tt_error!(self.status, "open of primary input failed"; e);
-                return ptr::null_mut();
+                return None;
             }
         };
 
-        self.input_handles.push(Box::new(ih));
+        self.input_handles.push(Some(ih));
         self.latest_input_path = path;
-        &mut **self.input_handles.last_mut().unwrap()
+        Some(InputId(self.input_handles.len()))
     }
 
-    fn input_get_size(&mut self, handle: *mut InputHandle) -> usize {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    fn input_get_size(&mut self, handle: InputId) -> usize {
+        let rhandle: &mut InputHandle = self.get_input(handle);
 
         match rhandle.get_size() {
             Ok(s) => s,
@@ -647,11 +663,11 @@ impl<'a> CoreBridgeState<'a> {
         }
     }
 
-    fn input_get_mtime(&mut self, handle: *mut InputHandle) -> i64 {
+    fn input_get_mtime(&mut self, handle: InputId) -> i64 {
         if let Some(mtime) = self.fs_emulation_settings.mtime_override {
             return mtime;
         }
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+        let rhandle: &mut InputHandle = self.get_input(handle);
 
         let maybe_time = match rhandle.get_unix_mtime() {
             Ok(t) => t,
@@ -664,59 +680,49 @@ impl<'a> CoreBridgeState<'a> {
         maybe_time.unwrap_or(1)
     }
 
-    fn input_seek(&mut self, handle: *mut InputHandle, pos: SeekFrom) -> Result<u64> {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    fn input_seek(&mut self, handle: InputId, pos: SeekFrom) -> Result<u64> {
+        let rhandle: &mut InputHandle = self.get_input(handle);
         rhandle.try_seek(pos)
     }
 
-    fn input_read(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<()> {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    fn input_read(&mut self, handle: InputId, buf: &mut [u8]) -> Result<()> {
+        let rhandle: &mut InputHandle = self.get_input(handle);
         rhandle.read_exact(buf).map_err(Error::from)
     }
 
-    fn input_read_partial(&mut self, handle: *mut InputHandle, buf: &mut [u8]) -> Result<usize> {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    fn input_read_partial(&mut self, handle: InputId, buf: &mut [u8]) -> Result<usize> {
+        let rhandle: &mut InputHandle = self.get_input(handle);
         rhandle.read(buf).map_err(Error::from)
     }
 
-    fn input_getc(&mut self, handle: *mut InputHandle) -> Result<u8> {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    fn input_getc(&mut self, handle: InputId) -> Result<u8> {
+        let rhandle: &mut InputHandle = self.get_input(handle);
         rhandle.getc()
     }
 
-    fn input_ungetc(&mut self, handle: *mut InputHandle, byte: u8) -> Result<()> {
-        let rhandle: &mut InputHandle = unsafe { &mut *handle };
+    fn input_ungetc(&mut self, handle: InputId, byte: u8) -> Result<()> {
+        let rhandle: &mut InputHandle = self.get_input(handle);
         rhandle.ungetc(byte)
     }
 
     /// Close the provided output, performing any necessary handling.
     pub fn input_close(&mut self, id: InputId) -> bool {
-        let pos = self
-            .input_handles
-            .iter()
-            .position(|i| ptr::addr_eq(&**i, id.0));
-        if let Some(pos) = pos {
-            let mut ih = self.input_handles.swap_remove(pos);
-            let mut rv = false;
-
-            if let Err(e) = ih.scan_remainder() {
-                tt_warning!(self.status, "error closing out input {}", ih.name(); e);
-                rv = true;
-            }
-
-            let (name, digest_opt) = ih.into_name_digest();
-            self.hooks.event_input_closed(name, digest_opt, self.status);
-            return rv;
+        if id.is_invalid() {
+            tt_warning!(self.status, "attempt to close invalid input");
+            return true;
         }
 
-        // TODO: Handle the error better. This indicates a bug in the engine.
-        tt_error!(
-            self.status,
-            "serious internal bug: unexpected handle in input close: {:?}",
-            id.0
-        );
+        let mut ih = self.input_handles[id.0 - 1].take().unwrap();
+        let mut rv = false;
 
-        true
+        if let Err(e) = ih.scan_remainder() {
+            tt_warning!(self.status, "error closing out input {}", ih.name(); e);
+            rv = true;
+        }
+
+        let (name, digest_opt) = ih.into_name_digest();
+        self.hooks.event_input_closed(name, digest_opt, self.status);
+        rv
     }
 
     fn shell_escape(&mut self, command: &str) -> bool {
@@ -934,30 +940,25 @@ pub unsafe extern "C" fn ttbc_output_open(
     es: &mut CoreBridgeState,
     name: *const libc::c_char,
     is_gz: libc::c_int,
-) -> *mut OutputHandle {
+) -> OutputId {
     let rname = CStr::from_ptr(name).to_string_lossy();
     let ris_gz = is_gz != 0;
 
-    match es.output_open(&rname, ris_gz) {
-        Some(id) => es.get_output(id),
-        None => ptr::null_mut(),
-    }
+    es.output_open(&rname, ris_gz)
+        .unwrap_or_else(OutputId::invalid)
 }
 
 /// Open the general user output stream as a Tectonic output file.
 #[no_mangle]
-pub extern "C" fn ttbc_output_open_stdout(es: &mut CoreBridgeState) -> *mut OutputHandle {
-    match es.output_open_stdout() {
-        Some(id) => es.get_output(id),
-        None => ptr::null_mut(),
-    }
+pub extern "C" fn ttbc_output_open_stdout(es: &mut CoreBridgeState) -> OutputId {
+    es.output_open_stdout().unwrap_or_else(OutputId::invalid)
 }
 
 /// Write a single character to a Tectonic output file.
 #[no_mangle]
 pub extern "C" fn ttbc_output_putc(
     es: &mut CoreBridgeState,
-    handle: *mut OutputHandle,
+    handle: OutputId,
     c: libc::c_int,
 ) -> libc::c_int {
     let rc = c as u8;
@@ -977,7 +978,7 @@ pub extern "C" fn ttbc_output_putc(
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_output_write(
     es: &mut CoreBridgeState,
-    handle: *mut OutputHandle,
+    handle: OutputId,
     data: *const u8,
     len: libc::size_t,
 ) -> libc::size_t {
@@ -994,24 +995,18 @@ pub unsafe extern "C" fn ttbc_output_write(
 
 /// Flush pending writes to a Tectonic output file.
 #[no_mangle]
-pub extern "C" fn ttbc_output_flush(
-    es: &mut CoreBridgeState,
-    handle: *mut OutputHandle,
-) -> libc::c_int {
+pub extern "C" fn ttbc_output_flush(es: &mut CoreBridgeState, handle: OutputId) -> libc::c_int {
     libc::c_int::from(es.output_flush(handle))
 }
 
 /// Close a Tectonic output file.
 #[no_mangle]
-pub extern "C" fn ttbc_output_close(
-    es: &mut CoreBridgeState,
-    handle: *mut OutputHandle,
-) -> libc::c_int {
-    if handle.is_null() {
+pub extern "C" fn ttbc_output_close(es: &mut CoreBridgeState, handle: OutputId) -> libc::c_int {
+    if handle.is_invalid() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    libc::c_int::from(es.output_close(es.output_to_id(handle)))
+    libc::c_int::from(es.output_close(handle))
 }
 
 /// Open a Tectonic file for input.
@@ -1025,20 +1020,17 @@ pub unsafe extern "C" fn ttbc_input_open(
     name: *const libc::c_char,
     format: FileFormat,
     is_gz: libc::c_int,
-) -> *mut InputHandle {
+) -> InputId {
     let rname = CStr::from_ptr(name).to_string_lossy();
     let ris_gz = is_gz != 0;
-    let id = es.input_open(&rname, format, ris_gz);
-    match id {
-        Some(id) => es.get_input(id),
-        None => ptr::null_mut(),
-    }
+    es.input_open(&rname, format, ris_gz)
+        .unwrap_or_else(InputId::invalid)
 }
 
 /// Open the "primary input" file.
 #[no_mangle]
-pub extern "C" fn ttbc_input_open_primary(es: &mut CoreBridgeState) -> *mut InputHandle {
-    es.input_open_primary()
+pub extern "C" fn ttbc_input_open_primary(es: &mut CoreBridgeState) -> InputId {
+    es.input_open_primary().unwrap_or_else(InputId::invalid)
 }
 
 /// Get the filesystem path of the most-recently-opened input file.
@@ -1093,16 +1085,13 @@ pub unsafe extern "C" fn ttbc_get_last_input_abspath(
 
 /// Get the size of a Tectonic input file.
 #[no_mangle]
-pub extern "C" fn ttbc_input_get_size(
-    es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
-) -> libc::size_t {
+pub extern "C" fn ttbc_input_get_size(es: &mut CoreBridgeState, handle: InputId) -> libc::size_t {
     es.input_get_size(handle)
 }
 
 /// Get the modification time of a Tectonic input file.
 #[no_mangle]
-pub extern "C" fn ttbc_input_get_mtime(es: &mut CoreBridgeState, handle: *mut InputHandle) -> i64 {
+pub extern "C" fn ttbc_input_get_mtime(es: &mut CoreBridgeState, handle: InputId) -> i64 {
     es.input_get_mtime(handle)
 }
 
@@ -1114,7 +1103,7 @@ pub extern "C" fn ttbc_input_get_mtime(es: &mut CoreBridgeState, handle: *mut In
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_input_seek(
     es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
+    handle: InputId,
     offset: libc::ssize_t,
     whence: libc::c_int,
     internal_error: *mut libc::c_int,
@@ -1146,10 +1135,7 @@ pub unsafe extern "C" fn ttbc_input_seek(
 
 /// Get a single character from a Tectonic input file.
 #[no_mangle]
-pub extern "C" fn ttbc_input_getc(
-    es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
-) -> libc::c_int {
+pub extern "C" fn ttbc_input_getc(es: &mut CoreBridgeState, handle: InputId) -> libc::c_int {
     // If we couldn't fill the whole (1-byte) buffer, that's boring old EOF.
     // No need to complain. Fun match statement here.
 
@@ -1172,7 +1158,7 @@ pub extern "C" fn ttbc_input_getc(
 #[no_mangle]
 pub extern "C" fn ttbc_input_ungetc(
     es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
+    handle: InputId,
     ch: libc::c_int,
 ) -> libc::c_int {
     match es.input_ungetc(handle, ch as u8) {
@@ -1195,7 +1181,7 @@ pub extern "C" fn ttbc_input_ungetc(
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_input_read(
     es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
+    handle: InputId,
     data: *mut u8,
     len: libc::size_t,
 ) -> libc::ssize_t {
@@ -1221,7 +1207,7 @@ pub unsafe extern "C" fn ttbc_input_read(
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_input_read_partial(
     es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
+    handle: InputId,
     data: *mut u8,
     len: libc::size_t,
 ) -> libc::ssize_t {
@@ -1238,15 +1224,12 @@ pub unsafe extern "C" fn ttbc_input_read_partial(
 
 /// Close a Tectonic input file.
 #[no_mangle]
-pub extern "C" fn ttbc_input_close(
-    es: &mut CoreBridgeState,
-    handle: *mut InputHandle,
-) -> libc::c_int {
-    if handle.is_null() {
+pub extern "C" fn ttbc_input_close(es: &mut CoreBridgeState, handle: InputId) -> libc::c_int {
+    if handle.is_invalid() {
         return 0; // This is/was the behavior of close_file() in C.
     }
 
-    libc::c_int::from(es.input_close(es.input_to_id(handle)))
+    libc::c_int::from(es.input_close(handle))
 }
 
 /// A buffer for diagnostic messages. Rust code does not need to use this type.

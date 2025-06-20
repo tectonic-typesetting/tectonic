@@ -42,6 +42,7 @@ mod inner {
         dep.foreach_include_path(|p| {
             print!("{}{}", sep, p.to_str().unwrap());
             sep = ";";
+            print!("{}{}", sep, p.parent().unwrap().to_str().unwrap());
         });
 
         println!();

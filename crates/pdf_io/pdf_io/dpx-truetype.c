@@ -56,7 +56,7 @@ pdf_font_open_truetype (pdf_font *font, const char *ident, int index, int encodi
 {
     pdf_obj  *fontdict, *descriptor;
     sfnt     *sfont;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
     int       length, error = 0;
 
     assert(font);
@@ -867,7 +867,7 @@ pdf_font_load_truetype (pdf_font *font)
     int        index       = font->index;
     char     **enc_vec;
     pdf_obj   *fontfile;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
     sfnt      *sfont;
     int        i, error = 0;
 
@@ -875,9 +875,9 @@ pdf_font_load_truetype (pdf_font *font)
         return  0;
 
     handle = dpx_open_truetype_file(ident);
-    if (handle == NULL) {
+    if (handle == INVALID_HANDLE) {
         handle = dpx_open_dfont_file(ident);
-        if (handle == NULL)
+        if (handle == INVALID_HANDLE)
             _tt_abort("Unable to open TrueType/dfont font file: %s", ident); /* Should find *truetype* here */
 
         sfont = dfont_open(handle, index);

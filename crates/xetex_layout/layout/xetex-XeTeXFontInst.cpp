@@ -315,11 +315,11 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
 
     // Here we emulate some logic that was originally in find_native_font();
     rust_input_handle_t handle = ttstub_input_open (pathname, TTBC_FILE_FORMAT_OPEN_TYPE, 0);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         handle = ttstub_input_open (pathname, TTBC_FILE_FORMAT_TRUE_TYPE, 0);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         handle = ttstub_input_open (pathname, TTBC_FILE_FORMAT_TYPE1, 0);
-    if (handle == NULL) {
+    if (handle == INVALID_HANDLE) {
         status = 1;
         return;
     }
@@ -353,7 +353,7 @@ XeTeXFontInst::initialize(const char* pathname, int index, int &status)
         rust_input_handle_t afm_handle = ttstub_input_open (afm, TTBC_FILE_FORMAT_AFM, 0);
         free (afm);
 
-        if (afm_handle != NULL) {
+        if (afm_handle != INVALID_HANDLE) {
             sz = ttstub_input_get_size (afm_handle);
             m_backingData2 = (FT_Byte *) xmalloc (sz);
             r = ttstub_input_read (afm_handle, (char *) m_backingData2, sz);

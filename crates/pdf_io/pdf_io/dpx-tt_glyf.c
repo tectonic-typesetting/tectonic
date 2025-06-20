@@ -212,7 +212,7 @@ tt_build_tables (sfnt *sfont, struct tt_glyphs *g)
 
   assert(g);
 
-  if (sfont == NULL || sfont->handle == NULL)
+  if (sfont == NULL || sfont->handle == INVALID_HANDLE)
     _tt_abort("File not opened.");
 
   if (sfont->type != SFNT_TYPE_TRUETYPE &&
@@ -518,7 +518,7 @@ tt_get_metrics (sfnt *sfont, struct tt_glyphs *g)
 
   assert(g);
 
-  if (sfont == NULL || sfont->handle == NULL)
+  if (sfont == NULL || sfont->handle == INVALID_HANDLE)
     _tt_abort("File not opened.");
 
   if (sfont->type != SFNT_TYPE_TRUETYPE &&

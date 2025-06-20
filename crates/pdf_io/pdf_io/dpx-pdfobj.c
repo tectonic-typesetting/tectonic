@@ -265,7 +265,7 @@ init_pdf_out_struct (pdf_out *p)
   p->options.enable_encrypt    = 0;
   p->options.use_objstm        = 1;
 
-  p->output.handle = NULL;
+  p->output.handle = INVALID_HANDLE;
   p->output.file_position = 0;
   p->output.line_position = 0;
   p->output.compression_saved = 0;
@@ -682,7 +682,7 @@ pdf_out_flush (void)
         dpx_message("%"PRIuZ" bytes written", p->output.file_position);
 
         ttstub_output_close(p->output.handle);
-        p->output.handle = NULL;
+        p->output.handle = INVALID_HANDLE;
         p->output.file_position = 0;
         p->output.line_position = 0;
     }
@@ -704,7 +704,7 @@ pdf_error_cleanup (void)
      */
     if (p->output.handle) {
         ttstub_output_close(p->output.handle);
-        p->output.handle = NULL;
+        p->output.handle = INVALID_HANDLE;
     }
 }
 
@@ -2972,7 +2972,7 @@ pdf_release_obj (pdf_obj *object)
         if (object->label) {
             p->free_list[object->label/8] |= (1 << (7 - (object->label % 8)));
 
-            if (p->output.handle != NULL) {
+            if (p->output.handle != INVALID_HANDLE) {
                 if (!p->options.use_objstm || object->flags & OBJ_NO_OBJSTM
                     || (p->options.enable_encrypt && object->flags & OBJ_NO_ENCRYPT)
                     || object->generation)
@@ -4075,7 +4075,7 @@ void
 pdf_close (pdf_file *pf)
 {
     if (pf)
-        pf->handle = NULL;
+        pf->handle = INVALID_HANDLE;
 }
 
 void
@@ -4390,7 +4390,10 @@ pdf_obj_reset_global_state(void)
 {
     pdf_out *p = current_output();
 
-    p->output.handle = NULL;
+    if (p->output.handle != INVALID_HANDLE) {
+        ttstub_output_close(p->output.handle);
+    }
+    p->output.handle = INVALID_HANDLE;
     p->output.file_position = 0;
     p->output.line_position = 0;
     p->output.compression_saved = 0;

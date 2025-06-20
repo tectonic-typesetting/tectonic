@@ -3,10 +3,9 @@ cpp_compat = true
 style = "type"
 include_guard = "TECTONIC_BRIDGE_CORE_GENERATED_H"
 after_includes = """
-typedef struct ttbc_input_handle_t ttbc_input_handle_t;
-typedef struct ttbc_output_handle_t ttbc_output_handle_t;
-typedef ttbc_input_handle_t *rust_input_handle_t;
-typedef ttbc_output_handle_t *rust_output_handle_t;
+typedef uintptr_t rust_input_handle_t;
+typedef uintptr_t rust_output_handle_t;
+#define INVALID_HANDLE ((uintptr_t)0)
 """
 
 [enum]
@@ -16,5 +15,5 @@ prefix_with_name = true
 "CoreBridgeState" = "ttbc_state_t"
 "Diagnostic" = "ttbc_diagnostic_t"
 "FileFormat" = "ttbc_file_format"
-"InputHandle" = "ttbc_input_handle_t"
-"OutputHandle" = "ttbc_output_handle_t"
+"OutputId" = "ttbc_output_handle_t"
+"InputId" = "ttbc_input_handle_t"

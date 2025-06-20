@@ -1183,7 +1183,7 @@ t1_get_fontname (rust_input_handle_t handle, char *fontname)
 static void
 init_cff_font (cff_font *cff)
 {
-    cff->handle = NULL;
+    cff->handle = INVALID_HANDLE;
     cff->filter = 0;
     cff->fontname = NULL;
     cff->index    = 0;

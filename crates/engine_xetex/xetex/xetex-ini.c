@@ -2125,7 +2125,7 @@ store_fmt_file(void)
     pack_job_name(".fmt");
 
     fmt_out = ttstub_output_open (name_of_file, 0);
-    if (fmt_out == NULL)
+    if (fmt_out == INVALID_HANDLE)
         _tt_abort ("cannot open format output file \"%s\"", name_of_file);
 
     print_nl_cstr("Beginning to dump on file ");
@@ -2467,7 +2467,7 @@ load_fmt_file(void)
     pack_buffered_name(format_default_length - 4, 1, 0);
 
     fmt_in = ttstub_input_open(name_of_file, TTBC_FILE_FORMAT_FORMAT, 0);
-    if (fmt_in == NULL)
+    if (fmt_in == INVALID_HANDLE)
         _tt_abort("cannot open the format file \"%s\"", name_of_file);
 
     cur_input.loc = j;
@@ -3035,7 +3035,7 @@ static void
 init_io(void)
 {
     /* This is largely vestigial at this point */
-    stdin_ufile.handle = NULL;
+    stdin_ufile.handle = INVALID_HANDLE;
     stdin_ufile.savedChar = -1;
     stdin_ufile.skipNextLF = 0;
     stdin_ufile.encodingMode = UTF8;

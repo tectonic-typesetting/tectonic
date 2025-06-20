@@ -249,7 +249,7 @@ make_encoding_differences (char **enc_vec, const char **baseenc, const char *is_
 static int
 load_encoding_file (const char *filename)
 {
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
     pdf_obj *enc_name = NULL;
     pdf_obj *encoding_array = NULL;
     char *wbuf;
@@ -264,7 +264,7 @@ load_encoding_file (const char *filename)
         dpx_message("(Encoding:%s", filename);
 
     handle = dpx_tt_open(filename, ".enc", TTBC_FILE_FORMAT_ENC);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return -1;
 
     fsize = ttstub_input_get_size(handle);
@@ -682,13 +682,13 @@ pdf_load_ToUnicode_stream (const char *ident)
 {
     pdf_obj *stream = NULL;
     CMap *cmap;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
 
     if (!ident)
         return NULL;
 
     handle = ttstub_input_open(ident, TTBC_FILE_FORMAT_CMAP, 0);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return NULL;
 
     if (CMap_parse_check_sig(handle) < 0) {
