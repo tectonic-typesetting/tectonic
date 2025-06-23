@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 use lazy_static::lazy_static;
+use std::io::ErrorKind;
 use std::{
     env,
     fs::{self, File, OpenOptions},
@@ -155,8 +156,12 @@ fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
         .stderr(Stdio::piped());
     println!("running {command:?}");
     let mut child = command.spawn().expect("tectonic failed to start");
-    write!(child.stdin.as_mut().unwrap(), "{stdin}")
-        .expect("failed to send data to tectonic subprocess");
+    match write!(child.stdin.as_mut().unwrap(), "{stdin}") {
+        Ok(_) => (),
+        // Ignore if the child already died
+        Err(e) if e.kind() == ErrorKind::BrokenPipe => (),
+        Err(e) => panic!("failed to send data to tectonic subprocess: {:?}", e),
+    }
     child
         .wait_with_output()
         .expect("failed to wait on tectonic subprocess")
