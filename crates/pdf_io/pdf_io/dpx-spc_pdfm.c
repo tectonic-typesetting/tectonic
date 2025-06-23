@@ -1664,7 +1664,7 @@ spc_handler_pdfm_stream_with_type (struct spc_env *spe, struct spc_arg *args, in
     }
     fstream = pdf_new_stream(STREAM_COMPRESS);
     while ((nb_read =
-            ttstub_input_read(handle, work_buffer, WORK_BUFFER_SIZE)) > 0)
+            ttstub_input_read_partial(handle, work_buffer, WORK_BUFFER_SIZE)) > 0)
       pdf_add_stream(fstream, work_buffer, nb_read);
     ttstub_input_close(handle);
     break;

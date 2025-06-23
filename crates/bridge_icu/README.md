@@ -25,8 +25,8 @@ approach. This package is distinctive because:
 [pkg-config]: https://www.freedesktop.org/wiki/Software/pkg-config/
 [vcpkg]: https://vcpkg.readthedocs.io/
 
-Ideally, though, one day this crate will be superseded by a true Rust “sys
-crate”.
+Ideally, though, one day this crate will be superseded by a true Rust "sys
+crate".
 
 If your project depends on this crate, Cargo will export for your build script
 an environment variable named `DEP_ICUUC_INCLUDE_PATH`, which will be a
