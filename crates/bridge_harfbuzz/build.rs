@@ -5,6 +5,8 @@
 
 #[cfg(feature = "external-harfbuzz")]
 mod inner {
+    use std::env;
+    use tectonic_cfg_support::target_cfg;
     use tectonic_dep_support::{Configuration, Dependency, Spec};
 
     struct HarfbuzzSpec;
@@ -39,7 +41,16 @@ mod inner {
 
         let mut sep = "cargo:include-path=";
 
+        let is_macos_external =
+            target_cfg!(target_os = "macos") && env::var("CARGO_FEATURE_EXTERNAL_HARFBUZZ").is_ok();
+
         dep.foreach_include_path(|p| {
+            // HACK: On macOS, the default brew harfbuzz for some reason points into the harfbuzz
+            // folder itself, so we need to go up one level to the includes folder.
+            if is_macos_external && p.ends_with("harfbuzz") {
+                print!("{}{}", sep, p.parent().unwrap().to_str().unwrap());
+                sep = ";";
+            }
             print!("{}{}", sep, p.to_str().unwrap());
             sep = ";";
         });
