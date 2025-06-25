@@ -7,6 +7,8 @@
 #include <stdlib.h>
 typedef uintptr_t rust_input_handle_t;
 typedef uintptr_t rust_output_handle_t;
+typedef rust_input_handle_t Option_InputId;
+typedef rust_output_handle_t Option_OutputId;
 #define INVALID_HANDLE ((uintptr_t)0)
 
 
@@ -130,16 +132,6 @@ typedef struct ttbc_state_t ttbc_state_t;
  */
 typedef struct ttbc_diagnostic_t ttbc_diagnostic_t;
 
-/**
- * The ID of an OutputHandle, used for Rust core state
- */
-typedef uintptr_t ttbc_output_handle_t;
-
-/**
- * The ID of an InputHandle, used for Rust core state
- */
-typedef uintptr_t ttbc_input_handle_t;
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -192,17 +184,17 @@ int ttbc_get_data_md5(const uint8_t *data, size_t len, uint8_t *digest);
  *
  * This function is unsafe because it accepts a raw C string.
  */
-ttbc_output_handle_t ttbc_output_open(ttbc_state_t *es, const char *name, int is_gz);
+Option_OutputId ttbc_output_open(ttbc_state_t *es, const char *name, int is_gz);
 
 /**
  * Open the general user output stream as a Tectonic output file.
  */
-ttbc_output_handle_t ttbc_output_open_stdout(ttbc_state_t *es);
+Option_OutputId ttbc_output_open_stdout(ttbc_state_t *es);
 
 /**
  * Write a single character to a Tectonic output file.
  */
-int ttbc_output_putc(ttbc_state_t *es, ttbc_output_handle_t handle, int c);
+int ttbc_output_putc(ttbc_state_t *es, Option_OutputId handle, int c);
 
 /**
  * Write data to a Tectonic output file.
@@ -211,20 +203,17 @@ int ttbc_output_putc(ttbc_state_t *es, ttbc_output_handle_t handle, int c);
  *
  * This function is unsafe because it dereferences raw C pointers.
  */
-size_t ttbc_output_write(ttbc_state_t *es,
-                         ttbc_output_handle_t handle,
-                         const uint8_t *data,
-                         size_t len);
+size_t ttbc_output_write(ttbc_state_t *es, Option_OutputId handle, const uint8_t *data, size_t len);
 
 /**
  * Flush pending writes to a Tectonic output file.
  */
-int ttbc_output_flush(ttbc_state_t *es, ttbc_output_handle_t handle);
+int ttbc_output_flush(ttbc_state_t *es, Option_OutputId handle);
 
 /**
  * Close a Tectonic output file.
  */
-int ttbc_output_close(ttbc_state_t *es, ttbc_output_handle_t handle);
+int ttbc_output_close(ttbc_state_t *es, Option_OutputId handle);
 
 /**
  * Open a Tectonic file for input.
@@ -233,15 +222,15 @@ int ttbc_output_close(ttbc_state_t *es, ttbc_output_handle_t handle);
  *
  * This function is unsafe because it accepts a raw C string.
  */
-ttbc_input_handle_t ttbc_input_open(ttbc_state_t *es,
-                                    const char *name,
-                                    ttbc_file_format format,
-                                    int is_gz);
+Option_InputId ttbc_input_open(ttbc_state_t *es,
+                               const char *name,
+                               ttbc_file_format format,
+                               int is_gz);
 
 /**
  * Open the "primary input" file.
  */
-ttbc_input_handle_t ttbc_input_open_primary(ttbc_state_t *es);
+Option_InputId ttbc_input_open_primary(ttbc_state_t *es);
 
 /**
  * Get the filesystem path of the most-recently-opened input file.
@@ -266,12 +255,12 @@ ssize_t ttbc_get_last_input_abspath(ttbc_state_t *es, uint8_t *buffer, size_t le
 /**
  * Get the size of a Tectonic input file.
  */
-size_t ttbc_input_get_size(ttbc_state_t *es, ttbc_input_handle_t handle);
+size_t ttbc_input_get_size(ttbc_state_t *es, Option_InputId handle);
 
 /**
  * Get the modification time of a Tectonic input file.
  */
-int64_t ttbc_input_get_mtime(ttbc_state_t *es, ttbc_input_handle_t handle);
+int64_t ttbc_input_get_mtime(ttbc_state_t *es, Option_InputId handle);
 
 /**
  * Seek in a Tectonic input stream.
@@ -281,7 +270,7 @@ int64_t ttbc_input_get_mtime(ttbc_state_t *es, ttbc_input_handle_t handle);
  * This function is unsafe because it dereferences raw pointers from C.
  */
 size_t ttbc_input_seek(ttbc_state_t *es,
-                       ttbc_input_handle_t handle,
+                       Option_InputId handle,
                        ssize_t offset,
                        int whence,
                        int *internal_error);
@@ -289,12 +278,12 @@ size_t ttbc_input_seek(ttbc_state_t *es,
 /**
  * Get a single character from a Tectonic input file.
  */
-int ttbc_input_getc(ttbc_state_t *es, ttbc_input_handle_t handle);
+int ttbc_input_getc(ttbc_state_t *es, Option_InputId handle);
 
 /**
  * Put back a character that was obtained from a `getc` call.
  */
-int ttbc_input_ungetc(ttbc_state_t *es, ttbc_input_handle_t handle, int ch);
+int ttbc_input_ungetc(ttbc_state_t *es, Option_InputId handle, int ch);
 
 /**
  * Read data from a Tectonic input handle
@@ -306,7 +295,7 @@ int ttbc_input_ungetc(ttbc_state_t *es, ttbc_input_handle_t handle, int ch);
  *
  * This function is unsafe because it dereferences raw C pointers.
  */
-ssize_t ttbc_input_read(ttbc_state_t *es, ttbc_input_handle_t handle, uint8_t *data, size_t len);
+ssize_t ttbc_input_read(ttbc_state_t *es, Option_InputId handle, uint8_t *data, size_t len);
 
 /**
  * Read data from a Tectonic input handle
@@ -318,15 +307,12 @@ ssize_t ttbc_input_read(ttbc_state_t *es, ttbc_input_handle_t handle, uint8_t *d
  *
  * This function is unsafe because it dereferences raw C pointers.
  */
-ssize_t ttbc_input_read_partial(ttbc_state_t *es,
-                                ttbc_input_handle_t handle,
-                                uint8_t *data,
-                                size_t len);
+ssize_t ttbc_input_read_partial(ttbc_state_t *es, Option_InputId handle, uint8_t *data, size_t len);
 
 /**
  * Close a Tectonic input file.
  */
-int ttbc_input_close(ttbc_state_t *es, ttbc_input_handle_t handle);
+int ttbc_input_close(ttbc_state_t *es, Option_InputId handle);
 
 /**
  * Create a new diagnostic that will be reported as a warning.

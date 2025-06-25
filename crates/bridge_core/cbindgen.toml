@@ -5,15 +5,18 @@ include_guard = "TECTONIC_BRIDGE_CORE_GENERATED_H"
 after_includes = """
 typedef uintptr_t rust_input_handle_t;
 typedef uintptr_t rust_output_handle_t;
+typedef rust_input_handle_t Option_InputId;
+typedef rust_output_handle_t Option_OutputId;
 #define INVALID_HANDLE ((uintptr_t)0)
 """
 
 [enum]
 prefix_with_name = true
 
+[export]
+exclude = ["Option_OutputId", "Option_InputId"]
+
 [export.rename]
 "CoreBridgeState" = "ttbc_state_t"
 "Diagnostic" = "ttbc_diagnostic_t"
 "FileFormat" = "ttbc_file_format"
-"OutputId" = "ttbc_output_handle_t"
-"InputId" = "ttbc_input_handle_t"
