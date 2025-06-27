@@ -80,7 +80,7 @@ count_pdf_file_pages (void)
     pdf_file *pf;
 
     handle = ttstub_input_open (name_of_file, TTBC_FILE_FORMAT_PICT, 0);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return 0;
 
     if ((pf = pdf_open(name_of_file, handle)) == NULL) {
@@ -229,7 +229,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     handle = ttstub_input_open (name_of_file, TTBC_FILE_FORMAT_PICT, 0);
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return 1;
 
     if (pdfBoxType != 0) {

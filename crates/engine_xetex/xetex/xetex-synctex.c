@@ -108,7 +108,7 @@ static struct {
         unsigned int output_p:1;    /*  Whether the output_directory is used */
     } flags;
 } synctex_ctxt = {
-    NULL, /* file */
+    INVALID_HANDLE, /* file */
     NULL, /* root_name */
     0, /* count */
     0, /* node */
@@ -144,7 +144,7 @@ synctex_init_command(void)
      * argument. */
 
     /* Reset state */
-    synctex_ctxt.file = NULL;
+    synctex_ctxt.file = INVALID_HANDLE;
     synctex_ctxt.root_name = NULL;
     synctex_ctxt.count = 0;
     synctex_ctxt.node = 0;
@@ -181,7 +181,7 @@ synctexabort(void)
 {
     if (synctex_ctxt.file) {
         ttstub_output_close(synctex_ctxt.file);
-        synctex_ctxt.file = NULL;
+        synctex_ctxt.file = INVALID_HANDLE;
     }
 
     synctex_ctxt.root_name = mfree(synctex_ctxt.root_name);
@@ -229,7 +229,7 @@ synctex_dot_open(void)
     size_t len;
 
     if (synctex_ctxt.flags.off || !INTPAR(synctex))
-        return NULL;
+        return INVALID_HANDLE;
 
     if (synctex_ctxt.file)
         return synctex_ctxt.file;
@@ -251,7 +251,7 @@ synctex_dot_open(void)
     tmp = mfree(tmp);
 
     synctex_ctxt.file = ttstub_output_open(the_name, 1);
-    if (synctex_ctxt.file == NULL)
+    if (synctex_ctxt.file == INVALID_HANDLE)
         goto fail;
 
     if (synctex_record_preamble())
@@ -276,7 +276,7 @@ fail:
     free(the_name);
 
     synctexabort();
-    return NULL;
+    return INVALID_HANDLE;
 }
 
 /**
@@ -284,14 +284,14 @@ fail:
  *  only once there is an opportunity to know whether
  *  in pdf or dvi mode.
  */
-static void *
+rust_output_handle_t
 synctex_prepare_content(void)
 {
     if (synctex_ctxt.flags.content_ready) {
         return synctex_ctxt.file;
     }
 
-    if ((NULL != synctex_dot_open())
+    if ((INVALID_HANDLE != synctex_dot_open())
         && (0 == synctex_record_settings())
         && (0 == synctex_record_content())) {
         synctex_ctxt.flags.content_ready = 1;
@@ -299,7 +299,7 @@ synctex_prepare_content(void)
     }
 
     synctexabort();
-    return NULL;
+    return INVALID_HANDLE;
 }
 
 /*  Each time TeX opens a file, it sends a synctexstartinput message and enters
@@ -353,8 +353,8 @@ void synctex_start_input(void)
         }
         return;
     }
-    if (synctex_ctxt.file
-        || (NULL != synctex_dot_open())) {
+    if (synctex_ctxt.file != INVALID_HANDLE
+        || (INVALID_HANDLE != synctex_dot_open())) {
         char *tmp = get_current_name();
         /* Always record the input, even if INTPAR(synctex) is 0 */
         synctex_record_input(cur_input.synctex_tag, tmp);
@@ -376,13 +376,13 @@ void synctex_start_input(void)
  */
 void synctex_terminate(bool log_opened)
 {
-    if (synctex_ctxt.file) {
+    if (synctex_ctxt.file != INVALID_HANDLE) {
         /* We keep the file even if no tex output is produced
          * (synctex_ctxt.flags.not_void == 0). I assume that this means that there
          * was an error and tectonic will not save anything anyway. */
         synctex_record_postamble();
         ttstub_output_close(synctex_ctxt.file);
-        synctex_ctxt.file = NULL;
+        synctex_ctxt.file = INVALID_HANDLE;
     }
     synctexabort();
 }
@@ -406,7 +406,7 @@ void synctex_sheet(int32_t mag)
             synctex_ctxt.magnification = mag;
         }
     }
-    if (NULL != synctex_prepare_content()) {
+    if (INVALID_HANDLE != synctex_prepare_content()) {
         /*  First possibility: the .synctex file is already open because SyncTeX was activated on the CLI
          *  or it was activated with the \synctex macro and the first page is already shipped out.
          *  Second possibility: tries to open the .synctex, useful if synchronization was enabled
@@ -734,7 +734,7 @@ synctex_record_settings(void)
 {
     int len;
 
-    if (NULL == synctex_ctxt.file)
+    if (INVALID_HANDLE == synctex_ctxt.file)
         return 0;
 
     len = ttstub_fprintf(synctex_ctxt.file, "Output:pdf\nMagnification:%i\nUnit:%i\nX Offset:0\nY Offset:0\n",
@@ -850,7 +850,7 @@ synctex_pdfxform(int32_t p)
         return;
     }
 
-    if (NULL != synctex_prepare_content()) {
+    if (INVALID_HANDLE != synctex_prepare_content()) {
         synctex_record_pdfxform(p);
     }
 }

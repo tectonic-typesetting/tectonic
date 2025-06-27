@@ -53,6 +53,7 @@ mod inner {
             }
             print!("{}{}", sep, p.to_str().unwrap());
             sep = ";";
+            print!("{}{}", sep, p.parent().unwrap().to_str().unwrap());
         });
 
         println!();
