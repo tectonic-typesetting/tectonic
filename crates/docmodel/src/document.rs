@@ -22,6 +22,24 @@ use tectonic_errors::prelude::*;
 use crate::syntax;
 use crate::workspace::WorkspaceCreator;
 
+/// The default filesystem name for the "preamble" file of a document.
+///
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
+pub const DEFAULT_PREAMBLE_FILE: &str = "_preamble.tex";
+
+/// The default filesystem name for the main "index" file of a document.
+///
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
+pub const DEFAULT_INDEX_FILE: &str = "index.tex";
+
+/// The default filesystem name for the "postamble" file of a document.
+///
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
+pub const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
+
 /// The default files used to build a document.
 ///
 /// This default can be overridden on an output-by-output basis in
