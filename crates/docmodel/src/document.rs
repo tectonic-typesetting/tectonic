@@ -343,6 +343,29 @@ mod tests {
     use super::*;
 
     #[test]
+    fn default_inputs() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        "#;
+
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert_eq!(
+            doc.outputs.get("o").unwrap().inputs,
+            DEFAULT_INPUTS
+                .iter()
+                .map(|x| InputFile::File(x.to_string()))
+                .collect::<Vec<InputFile>>()
+        );
+    }
+
+    #[test]
     fn shell_escape_default_false() {
         const TOML: &str = r#"
         [doc]
