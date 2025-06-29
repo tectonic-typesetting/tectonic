@@ -22,6 +22,24 @@ use tectonic_errors::prelude::*;
 use crate::syntax;
 use crate::workspace::WorkspaceCreator;
 
+/// The default filesystem name for the "preamble" file of a document.
+///
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
+pub const DEFAULT_PREAMBLE_FILE: &str = "_preamble.tex";
+
+/// The default filesystem name for the main "index" file of a document.
+///
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
+pub const DEFAULT_INDEX_FILE: &str = "index.tex";
+
+/// The default filesystem name for the "postamble" file of a document.
+///
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
+pub const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
+
 /// The default files used to build a document.
 ///
 /// This default can be overridden on an output-by-output basis in
@@ -341,6 +359,29 @@ mod tests {
     use std::io::Cursor;
 
     use super::*;
+
+    #[test]
+    fn default_inputs() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        "#;
+
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert_eq!(
+            doc.outputs.get("o").unwrap().inputs,
+            DEFAULT_INPUTS
+                .iter()
+                .map(|x| InputFile::File(x.to_string()))
+                .collect::<Vec<InputFile>>()
+        );
+    }
 
     #[test]
     fn shell_escape_default_false() {
