@@ -1,34 +1,24 @@
 use super::{sys, FcErr};
-use std::convert::TryInto;
 use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ptr;
 use std::ptr::NonNull;
 
-unsafe fn get_string<'a>(
-    pat: *mut sys::FcPattern,
-    ty: *const libc::c_char,
-    idx: libc::c_int,
-) -> Result<&'a CStr, FcErr> {
+fn get_string<'a>(pat: PatternRef<'a>, ty: &CStr, idx: libc::c_int) -> Result<&'a CStr, FcErr> {
     let mut str = ptr::null();
-    // SAFETY: Provided values valid is a precondition.
-    match unsafe { sys::FcPatternGetString(pat, ty, idx, &mut str) }.try_into() {
-        Ok(err) => Err(err),
-        Err(_) => Ok(CStr::from_ptr(str)),
-    }
+    // SAFETY: PatternRef is guaranteed valid for its lifetime, as is CStr
+    unsafe { sys::FcPatternGetString(pat.as_ptr(), ty.as_ptr(), idx, &mut str) }
+        .res()
+        // SAFETY: Assuming no error, `str` will have been filled with a valid C-string pointer
+        .map(|_| unsafe { CStr::from_ptr(str) })
 }
 
-unsafe fn get_int(
-    pat: *mut sys::FcPattern,
-    ty: *const libc::c_char,
-    idx: libc::c_int,
-) -> Result<i32, FcErr> {
+fn get_int(pat: PatternRef<'_>, ty: &CStr, idx: libc::c_int) -> Result<i32, FcErr> {
     let mut int: libc::c_int = 0;
     // SAFETY: Provided values valid is a precondition.
-    match unsafe { sys::FcPatternGetInteger(pat, ty, idx, &mut int) }.try_into() {
-        Ok(err) => Err(err),
-        Err(_) => Ok(int as i32),
-    }
+    unsafe { sys::FcPatternGetInteger(pat.as_ptr(), ty.as_ptr(), idx, &mut int) }
+        .res()
+        .map(|_| int as i32)
 }
 
 pub trait PatParam {
@@ -42,8 +32,7 @@ impl PatParam for File {
     type Output<'a> = &'a CStr;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_FILE is a string property.
-        unsafe { get_string(pat.0.as_ptr(), sys::FC_FILE, idx as libc::c_int) }
+        get_string(pat, sys::FC_FILE, idx as libc::c_int)
     }
 }
 
@@ -53,8 +42,7 @@ impl PatParam for Family {
     type Output<'a> = &'a CStr;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_FAMILY is a string property.
-        unsafe { get_string(pat.0.as_ptr(), sys::FC_FAMILY, idx as libc::c_int) }
+        get_string(pat, sys::FC_FAMILY, idx as libc::c_int)
     }
 }
 
@@ -64,8 +52,7 @@ impl PatParam for FullName {
     type Output<'a> = &'a CStr;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_FULLNAME is a string property.
-        unsafe { get_string(pat.0.as_ptr(), sys::FC_FULLNAME, idx as libc::c_int) }
+        get_string(pat, sys::FC_FULLNAME, idx as libc::c_int)
     }
 }
 
@@ -75,8 +62,7 @@ impl PatParam for Style {
     type Output<'a> = &'a CStr;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_STYLE is a string property.
-        unsafe { get_string(pat.0.as_ptr(), sys::FC_STYLE, idx as libc::c_int) }
+        get_string(pat, sys::FC_STYLE, idx as libc::c_int)
     }
 }
 
@@ -86,8 +72,7 @@ impl PatParam for Index {
     type Output<'a> = i32;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_INDEX is an int property.
-        unsafe { get_int(pat.0.as_ptr(), sys::FC_INDEX, idx as libc::c_int) }
+        get_int(pat, sys::FC_INDEX, idx as libc::c_int)
     }
 }
 
@@ -97,8 +82,7 @@ impl PatParam for Weight {
     type Output<'a> = i32;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_WEIGHT is an int property.
-        unsafe { get_int(pat.0.as_ptr(), sys::FC_WEIGHT, idx as libc::c_int) }
+        get_int(pat, sys::FC_WEIGHT, idx as libc::c_int)
     }
 }
 
@@ -108,8 +92,7 @@ impl PatParam for Width {
     type Output<'a> = i32;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_WIDTH is an int property.
-        unsafe { get_int(pat.0.as_ptr(), sys::FC_WIDTH, idx as libc::c_int) }
+        get_int(pat, sys::FC_WIDTH, idx as libc::c_int)
     }
 }
 
@@ -119,8 +102,7 @@ impl PatParam for Slant {
     type Output<'a> = i32;
 
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr> {
-        // SAFETY: Pat pointer guaranteed valid. FC_SLANT is an int property.
-        unsafe { get_int(pat.0.as_ptr(), sys::FC_SLANT, idx as libc::c_int) }
+        get_int(pat, sys::FC_SLANT, idx as libc::c_int)
     }
 }
 

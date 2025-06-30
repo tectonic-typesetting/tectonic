@@ -1,14 +1,16 @@
 #![allow(nonstandard_style, unused)]
 
-pub const FC_FAMILY: *const libc::c_char = c!("family");
-pub const FC_STYLE: *const libc::c_char = c!("style");
-pub const FC_SLANT: *const libc::c_char = c!("slant");
-pub const FC_WEIGHT: *const libc::c_char = c!("weight");
-pub const FC_WIDTH: *const libc::c_char = c!("width");
-pub const FC_FILE: *const libc::c_char = c!("file");
-pub const FC_INDEX: *const libc::c_char = c!("index");
-pub const FC_FULLNAME: *const libc::c_char = c!("fullname");
-pub const FC_FONTFORMAT: *const libc::c_char = c!("fontformat");
+use std::ffi::CStr;
+
+pub const FC_FAMILY: &CStr = c"family";
+pub const FC_STYLE: &CStr = c"style";
+pub const FC_SLANT: &CStr = c"slant";
+pub const FC_WEIGHT: &CStr = c"weight";
+pub const FC_WIDTH: &CStr = c"width";
+pub const FC_FILE: &CStr = c"file";
+pub const FC_INDEX: &CStr = c"index";
+pub const FC_FULLNAME: &CStr = c"fullname";
+pub const FC_FONTFORMAT: &CStr = c"fontformat";
 
 pub type FcBool = libc::c_int;
 
@@ -39,6 +41,15 @@ pub enum FcResult {
     TypeMismatch,
     ResultNoId,
     OutOfMemory,
+}
+
+impl FcResult {
+    pub fn res(self) -> Result<(), crate::FcErr> {
+        match crate::FcErr::try_from(self) {
+            Ok(err) => Err(err),
+            Err(_) => Ok(()),
+        }
+    }
 }
 
 extern "C" {

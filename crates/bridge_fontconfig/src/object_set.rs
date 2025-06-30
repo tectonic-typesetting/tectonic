@@ -21,7 +21,7 @@ impl ObjectSet {
         for prop in props {
             // SAFETY: The ptr value is guaranteed valid if non-null, property `to_raw` returns a
             // valid C-string.
-            unsafe { sys::FcObjectSetAdd(ptr.as_ptr(), prop.to_raw()) };
+            unsafe { sys::FcObjectSetAdd(ptr.as_ptr(), prop.to_raw().as_ptr()) };
         }
         ObjectSet(ptr)
     }

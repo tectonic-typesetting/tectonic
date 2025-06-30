@@ -1,12 +1,7 @@
 #![deny(clippy::undocumented_unsafe_blocks)]
 
 use std::convert::TryFrom;
-
-macro_rules! c {
-    ($lit:literal) => {
-        ::std::ptr::from_ref(concat!($lit, "\0")).cast::<::libc::c_char>()
-    };
-}
+use std::ffi::CStr;
 
 mod font_set;
 mod object_set;
@@ -59,7 +54,7 @@ pub enum Property {
 }
 
 impl Property {
-    fn to_raw(self) -> *const libc::c_char {
+    fn to_raw(self) -> &'static CStr {
         match self {
             Property::Family => sys::FC_FAMILY,
             Property::Style => sys::FC_STYLE,
