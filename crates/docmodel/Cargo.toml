@@ -15,7 +15,7 @@ documentation = "https://docs.rs/tectonic_docmodel"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 serde = { version = "^1.0", features = ["derive"] }

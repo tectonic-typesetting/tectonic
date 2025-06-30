@@ -24,7 +24,7 @@ categories = [
     "text-processing",
 ]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 exclude = ["/dist/", "/reference_sources/"]
 
 [lints.rust]
