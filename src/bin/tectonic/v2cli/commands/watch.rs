@@ -59,9 +59,9 @@ impl WatchCommand {
             let x = x.trim();
             if !x.is_empty() {
                 let command = if v2cli_default {
-                    format!("\"{exe_name}\" {}", x)
+                    format!("\"{exe_name}\" {x}")
                 } else {
-                    format!("\"{exe_name}\" -X {}", x)
+                    format!("\"{exe_name}\" -X {x}")
                 };
 
                 let cmd = Command {
