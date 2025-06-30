@@ -15,7 +15,7 @@ documentation = "https://docs.rs/tectonic_engine_spx2html"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 byteorder = "^1.4"
