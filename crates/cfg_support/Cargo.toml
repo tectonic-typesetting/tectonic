@@ -19,7 +19,7 @@ documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 lazy_static = "^1.4"
