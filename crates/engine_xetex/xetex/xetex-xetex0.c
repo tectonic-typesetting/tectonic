@@ -10877,7 +10877,7 @@ open_log_file(void)
     pack_job_name(".log");
 
     log_file = ttstub_output_open (name_of_file, 0);
-    if (log_file == NULL)
+    if (log_file == INVALID_HANDLE)
         _tt_abort ("cannot open log file output \"%s\"", name_of_file);
 
     texmf_log_name = make_name_string();
@@ -11611,7 +11611,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     check_for_tfm_font_mapping();
 
     tfm_file = tt_xetex_open_input (TTBC_FILE_FORMAT_TFM);
-    if (tfm_file == NULL) {
+    if (tfm_file == INVALID_HANDLE) {
         if (!quoted_filename) {
             g = load_native_font(u, nom, aire, s);
             if (g != FONT_BASE)
