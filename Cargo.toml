@@ -38,6 +38,7 @@ codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 [workspace]
 members = [
     "crates/bridge_flate",
+    "crates/bridge_fontconfig",
     "crates/bridge_freetype2",
     "crates/bridge_graphite2",
     "crates/bridge_harfbuzz",
