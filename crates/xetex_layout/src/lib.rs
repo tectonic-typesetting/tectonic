@@ -25,6 +25,9 @@ mod linkage {
 
     #[allow(unused_imports)]
     use tectonic_bridge_icu as clipyrenamehack5;
+
+    #[allow(unused_imports)]
+    use tectonic_bridge_fontconfig as clipyrenamehack6;
 }
 
 /// Does our resulting executable link correctly?
