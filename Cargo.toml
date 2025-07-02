@@ -42,7 +42,7 @@ members = [
     "crates/bridge_freetype2",
     "crates/bridge_graphite2",
     "crates/bridge_harfbuzz",
-    "crates/bridge_icu",
+    "crates/bridge_icu", "crates/bridge_png",
     "crates/bundles",
     "crates/cfg_support",
     "crates/dep_support",

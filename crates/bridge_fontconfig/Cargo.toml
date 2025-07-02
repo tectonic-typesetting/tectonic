@@ -6,6 +6,7 @@ links = "fontconfig"
 
 [dependencies]
 libc = "0.2"
+tectonic_bridge_png = { path = "../bridge_png", version = "0.0.0-dev.0" }
 
 [build-dependencies]
 tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }

@@ -26,7 +26,7 @@ pub fn init() -> bool {
 pub enum FcErr {
     /// No matching found for pattern or search
     NoMatch,
-    /// Invalid type used - for example, attempted
+    /// Invalid type used - for example, attempted to access a string property as an integer
     TypeMismatch,
     /// No ID exists for the request
     ResultNoId,
@@ -86,4 +86,11 @@ impl Property {
             Property::FontFormat => sys::FC_FONTFORMAT,
         }
     }
+}
+
+/// Import things from our bridge crates to ensure that we actually link with
+/// them.
+mod linkage {
+    #[allow(unused_imports)]
+    use tectonic_bridge_png as clippyrenamehack1;
 }
