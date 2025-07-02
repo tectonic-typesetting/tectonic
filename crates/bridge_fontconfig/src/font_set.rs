@@ -1,4 +1,4 @@
-use crate::{sys, ObjectSetRef, PatternRef};
+use crate::{sys, ObjectSet, ObjectSetRef, Pattern, PatternRef};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
@@ -24,6 +24,13 @@ impl<'a> FontSetRef<'a> {
 pub struct FontSet(NonNull<sys::FcFontSet>);
 
 impl FontSet {
+    pub fn all() -> FontSet {
+        FontSet::new(
+            Pattern::from_name(c"").unwrap().as_ref(),
+            ObjectSet::all().as_ref(),
+        )
+    }
+
     pub fn new(pattern: PatternRef<'_>, objects: ObjectSetRef<'_>) -> FontSet {
         super::init();
         // SAFETY: Pattern and object font reference pointers guaranteed valid
@@ -46,5 +53,18 @@ impl Drop for FontSet {
     fn drop(&mut self) {
         // SAFETY: Internal pointer guaranteed valid, we own the pointer
         unsafe { sys::FcFontSetDestroy(self.0.as_ptr()) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_font_set() {
+        let all = FontSet::all();
+        let fs = all.as_ref();
+
+        assert!(!fs.fonts().is_empty());
     }
 }

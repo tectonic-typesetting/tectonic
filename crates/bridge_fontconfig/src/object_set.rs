@@ -26,6 +26,13 @@ impl ObjectSet {
         ObjectSet(ptr)
     }
 
+    pub fn all() -> ObjectSet {
+        use Property::*;
+        ObjectSet::new(&[
+            Family, Style, Slant, Weight, Width, File, Index, FullName, FontFormat,
+        ])
+    }
+
     pub fn as_ref(&self) -> ObjectSetRef<'_> {
         ObjectSetRef(self.0, PhantomData)
     }
@@ -35,5 +42,15 @@ impl Drop for ObjectSet {
     fn drop(&mut self) {
         // SAFETY: Internal pointer guaranteed valid, we own the pointer
         unsafe { sys::FcObjectSetDestroy(self.0.as_ptr()) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_add() {
+        let _ = ObjectSet::new(&[Property::File, Property::Width]).as_ref();
     }
 }

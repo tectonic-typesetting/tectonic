@@ -172,3 +172,44 @@ impl Drop for Pattern {
         unsafe { sys::FcPatternDestroy(self.0.as_ptr()) };
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::FontSet;
+
+    #[test]
+    fn test_pattern_from_name() {
+        let pat = Pattern::from_name(c":outline=true").unwrap();
+        let pat_ref = pat.as_ref();
+        let pat2 = pat_ref.upgrade();
+        let pat_ref_2 = pat2.as_ref();
+
+        assert!(pat_ref == pat_ref_2);
+    }
+
+    #[test]
+    fn test_pattern_get() {
+        let fs = FontSet::all();
+        let pat = fs.as_ref().fonts().first().unwrap();
+
+        let fonts = fs.as_ref().fonts();
+        assert!(!fonts.is_empty());
+
+        let mut has_file = false;
+        let mut has_index = false;
+        for pat in fs.as_ref().fonts() {
+            let file = pat.get::<File>(0);
+            if !has_file && file.is_ok() {
+                // Ensure we don't fault on reading the bytes of the file
+                let _ = file.unwrap().to_str();
+                has_file = true;
+            }
+            if !has_index && pat.get::<Index>(0).is_ok() {
+                has_index = true;
+            }
+        }
+
+        assert!(has_file && has_index)
+    }
+}
