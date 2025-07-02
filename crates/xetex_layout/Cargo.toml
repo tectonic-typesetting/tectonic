@@ -25,7 +25,7 @@ tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev
 tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version = "0.0.0-dev.0" }
 tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
 
-[target.'cfg(target_os = "macos")'.dependencies]
+[target.'cfg(not(target_os = "macos"))'.dependencies]
 tectonic_bridge_fontconfig = { path = "../bridge_fontconfig", version = "0.0.0-dev.0" }
 
 [build-dependencies]
