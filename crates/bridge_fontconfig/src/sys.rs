@@ -1,4 +1,4 @@
-#![allow(nonstandard_style, unused)]
+#![allow(nonstandard_style, missing_docs)]
 
 use std::ffi::CStr;
 

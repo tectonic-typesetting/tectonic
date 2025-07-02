@@ -1,3 +1,6 @@
+//! Font patterns - used to select fonts matching certain properties, or as a unique identifier
+//! of a resolved font.
+
 use super::{sys, FcErr};
 use std::ffi::CStr;
 use std::marker::PhantomData;
@@ -21,11 +24,16 @@ fn get_int(pat: PatternRef<'_>, ty: &CStr, idx: libc::c_int) -> Result<i32, FcEr
         .map(|_| int as i32)
 }
 
+/// Type that may be a parameter of a loaded font
 pub trait PatParam {
+    /// The type of this parameter
     type Output<'a>;
+
+    /// Given a pattern, attempt to get the value of the parameter for the N-th font that matches
     fn get(pat: PatternRef<'_>, idx: usize) -> Result<Self::Output<'_>, FcErr>;
 }
 
+/// File parameter
 pub struct File(());
 
 impl PatParam for File {
@@ -36,6 +44,7 @@ impl PatParam for File {
     }
 }
 
+/// Family parameter
 pub struct Family(());
 
 impl PatParam for Family {
@@ -46,6 +55,7 @@ impl PatParam for Family {
     }
 }
 
+/// Full name parameter
 pub struct FullName(());
 
 impl PatParam for FullName {
@@ -56,6 +66,7 @@ impl PatParam for FullName {
     }
 }
 
+/// Style parameter
 pub struct Style(());
 
 impl PatParam for Style {
@@ -66,6 +77,7 @@ impl PatParam for Style {
     }
 }
 
+/// Index parameter
 pub struct Index(());
 
 impl PatParam for Index {
@@ -76,6 +88,7 @@ impl PatParam for Index {
     }
 }
 
+/// Weight parameter
 pub struct Weight(());
 
 impl PatParam for Weight {
@@ -86,6 +99,7 @@ impl PatParam for Weight {
     }
 }
 
+/// Width parameter
 pub struct Width(());
 
 impl PatParam for Width {
@@ -96,6 +110,7 @@ impl PatParam for Width {
     }
 }
 
+/// Slant parameter
 pub struct Slant(());
 
 impl PatParam for Slant {
@@ -106,6 +121,7 @@ impl PatParam for Slant {
     }
 }
 
+/// A borrowed reference to a [`Pattern`]
 #[derive(Copy, Clone, PartialEq, Eq, Hash)]
 #[repr(transparent)]
 pub struct PatternRef<'a>(NonNull<sys::FcPattern>, PhantomData<&'a sys::FcPattern>);
@@ -119,20 +135,26 @@ impl<'a> PatternRef<'a> {
         PatternRef(ptr, PhantomData)
     }
 
+    /// Upgrade this borrow into an owned reference
     pub fn upgrade(self) -> Pattern {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { Pattern::from_raw_borrowed(self.0) }
     }
 
+    /// Convert into a raw pointer to the inner [`sys::FcPattern`] struct
     pub fn as_ptr(self) -> *mut sys::FcPattern {
         self.0.as_ptr()
     }
 
+    /// Get a parameter from the font matching this pattern at the provided index. May fail if
+    /// the provided index is out-of-range, or if the property wasn't loaded for this pattern.
     pub fn get<T: PatParam>(self, idx: usize) -> Result<T::Output<'a>, FcErr> {
         T::get(self, idx)
     }
 }
 
+/// An owned font pattern. This is a semi-opaque value used to select fonts matching certain
+/// properties, or as a unique identifier of a resolved font.
 #[derive(PartialEq, Eq, Hash)]
 pub struct Pattern(NonNull<sys::FcPattern>);
 
@@ -146,6 +168,8 @@ impl Pattern {
         Pattern(ptr)
     }
 
+    /// Convert a name string, of the syntax `<families>-<point sizes>:<name1>=<values1>:<name2>=<values2>...`,
+    /// into a pattern. All sections are optional, and the empty string will match all fonts.
     pub fn from_name(name: &CStr) -> Option<Pattern> {
         super::init();
         // SAFETY: Name is guaranteed a valid C-string, and not held past the duration of this call.
@@ -153,6 +177,7 @@ impl Pattern {
         NonNull::new(raw).map(Pattern)
     }
 
+    /// Convert into a borrowed reference.
     pub fn as_ref(&self) -> PatternRef<'_> {
         PatternRef(self.0, PhantomData)
     }
@@ -191,8 +216,6 @@ mod tests {
     #[test]
     fn test_pattern_get() {
         let fs = FontSet::all();
-        let pat = fs.as_ref().fonts().first().unwrap();
-
         let fonts = fs.as_ref().fonts();
         assert!(!fonts.is_empty());
 

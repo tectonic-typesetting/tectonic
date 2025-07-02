@@ -3,14 +3,17 @@ use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::slice;
 
+/// A borrowed reference to a [`FontSet`]
 #[derive(Copy, Clone)]
 pub struct FontSetRef<'a>(NonNull<sys::FcFontSet>, PhantomData<&'a sys::FcFontSet>);
 
 impl<'a> FontSetRef<'a> {
+    /// Convert into a raw pointer to the inner [`sys::FcFontSet`] struct
     fn as_ptr(self) -> *mut sys::FcFontSet {
         self.0.as_ptr()
     }
 
+    /// Get a list of all fonts referenced by this [`FontSet`]
     pub fn fonts(self) -> &'a [PatternRef<'a>] {
         // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { (*self.as_ptr()).fonts.cast() };
@@ -21,9 +24,12 @@ impl<'a> FontSetRef<'a> {
     }
 }
 
+/// An owned font set. This is a list of [`Pattern`]s that identify unique fonts, with properties
+/// loaded based on an [`ObjectSet`]
 pub struct FontSet(NonNull<sys::FcFontSet>);
 
 impl FontSet {
+    /// Get all available fonts
     pub fn all() -> FontSet {
         FontSet::new(
             Pattern::from_name(c"").unwrap().as_ref(),
@@ -31,6 +37,8 @@ impl FontSet {
         )
     }
 
+    /// Load all fonts matching the provided pattern, getting the properties specified in the object
+    /// set.
     pub fn new(pattern: PatternRef<'_>, objects: ObjectSetRef<'_>) -> FontSet {
         super::init();
         // SAFETY: Pattern and object font reference pointers guaranteed valid
@@ -44,6 +52,7 @@ impl FontSet {
         FontSet(NonNull::new(ptr).unwrap())
     }
 
+    /// Convert into a borrowed reference.
     pub fn as_ref(&self) -> FontSetRef<'_> {
         FontSetRef(self.0, PhantomData)
     }

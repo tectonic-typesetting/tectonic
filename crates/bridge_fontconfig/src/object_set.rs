@@ -2,17 +2,21 @@ use crate::{sys, Property};
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 
+/// A borrowed reference to an [`ObjectSet`]
 pub struct ObjectSetRef<'a>(NonNull<sys::FcObjectSet>, PhantomData<&'a sys::FcObjectSet>);
 
 impl ObjectSetRef<'_> {
+    /// Convert into a raw pointer to the inner [`sys::FcObjectSet`] struct
     pub fn as_ptr(&self) -> *mut sys::FcObjectSet {
         self.0.as_ptr()
     }
 }
 
+/// A set of strings used to represent properties to load in a [`FontSet`](crate::FontSet).
 pub struct ObjectSet(NonNull<sys::FcObjectSet>);
 
 impl ObjectSet {
+    /// Create a new object set that contains the provided [Properties](Property)
     pub fn new(props: &[Property]) -> ObjectSet {
         super::init();
         // SAFETY: This is always safe to call
@@ -26,6 +30,7 @@ impl ObjectSet {
         ObjectSet(ptr)
     }
 
+    /// Get all [Properties](Property) as an [`ObjectSet`]
     pub fn all() -> ObjectSet {
         use Property::*;
         ObjectSet::new(&[
@@ -33,6 +38,7 @@ impl ObjectSet {
         ])
     }
 
+    /// Convert into a borrowed reference.
     pub fn as_ref(&self) -> ObjectSetRef<'_> {
         ObjectSetRef(self.0, PhantomData)
     }

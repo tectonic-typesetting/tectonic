@@ -1,4 +1,7 @@
-#![deny(clippy::undocumented_unsafe_blocks)]
+//! This crate exists to both export the FreeType2 *C* API into the
+//! Cargo framework, and provide a safe wrapper around it for use in Rust code.
+
+#![deny(clippy::undocumented_unsafe_blocks, missing_docs)]
 
 use std::convert::TryFrom;
 use std::ffi::CStr;
@@ -12,16 +15,22 @@ pub use font_set::{FontSet, FontSetRef};
 pub use object_set::{ObjectSet, ObjectSetRef};
 pub use pat::{Pattern, PatternRef};
 
+/// Initialize fontconfig. Should be called automatically by any API that requires it.
 pub fn init() -> bool {
     // SAFETY: This is always safe to call
     (unsafe { sys::FcInit() }) == sys::FcTrue
 }
 
+/// Error returned by a fallible operation
 #[derive(Debug, PartialEq)]
 pub enum FcErr {
+    /// No matching found for pattern or search
     NoMatch,
+    /// Invalid type used - for example, attempted
     TypeMismatch,
+    /// No ID exists for the request
     ResultNoId,
+    /// Allocation failed due to out-of-memory error
     OutOfMemory,
 }
 
@@ -40,16 +49,26 @@ impl TryFrom<sys::FcResult> for FcErr {
     }
 }
 
+/// Properties a font can have
 #[derive(Copy, Clone)]
 pub enum Property {
+    /// Font family
     Family,
+    /// Font style
     Style,
+    /// Font slant
     Slant,
+    /// Font weight
     Weight,
+    /// Font width
     Width,
+    /// Font file
     File,
+    /// Font index
     Index,
+    /// Font full name
     FullName,
+    /// Font format
     FontFormat,
 }
 
