@@ -263,6 +263,8 @@ jobs:
           vmImage: ubuntu-22.04
         steps:
           - template: azure-build-and-test-cross.yml
+            parameters:
+              ${{ insert }}: ${{ build.params }}
         variables:
           TOOLCHAIN: stable
           ${{ insert }}: ${{ build.vars }}

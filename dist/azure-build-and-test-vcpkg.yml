@@ -16,6 +16,9 @@ parameters:
 - name: testIt
   type: boolean
   default: true
+- name: extraFlags
+  type: string
+  default: ''
 
 steps:
 - template: azure-generic-build-setup.yml
