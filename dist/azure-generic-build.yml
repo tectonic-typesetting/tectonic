@@ -25,6 +25,12 @@ parameters:
 - name: testIt
   type: boolean
   default: true
+- name: extraFlags
+  type: string
+  default: ''
+- name: testFlags
+  type: string
+  default: ''
 
 steps:
 # We use two variables for feature flagging just because I'm worried about
