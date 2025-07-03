@@ -142,7 +142,8 @@ parameters:
 
       - name: x86_64_apple_darwin
         vmImage: macos-13
-        params: { }
+        params:
+          extraFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: x86_64-apple-darwin
           TOOLCHAIN: stable
@@ -151,6 +152,7 @@ parameters:
         vmImage: macos-13
         params:
           testIt: false
+          extraFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: aarch64-apple-darwin
           TOOLCHAIN: stable
@@ -166,10 +168,15 @@ parameters:
     type: object
     default:
       - name: aarch64_unknown_linux_musl
+        parameters:
+          # TODO: Add font files to the cross images
+          testFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: aarch64-unknown-linux-musl
 
       - name: arm_unknown_linux_musleabihf
+        parameters:
+          testFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: arm-unknown-linux-musleabihf
 
@@ -178,6 +185,8 @@ parameters:
           TARGET: i686-unknown-linux-gnu
 
       - name: x86_64_unknown_linux_musl
+        parameters:
+          testFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: x86_64-unknown-linux-musl
 
