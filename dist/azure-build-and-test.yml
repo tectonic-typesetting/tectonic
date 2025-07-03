@@ -181,6 +181,7 @@ parameters:
           TARGET: arm-unknown-linux-musleabihf
 
       - name: i686_unknown_linux_gnu
+        parameters: { }
         vars:
           TARGET: i686-unknown-linux-gnu
 
