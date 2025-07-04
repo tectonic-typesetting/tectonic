@@ -84,3 +84,4 @@ steps:
     canaryBuild: ${{ parameters.canaryBuild }}
     explicitFeatures: "external-harfbuzz"
     testIt: ${{ parameters.testIt }}
+    extraFlags: ${{ parameters.extraFlags }}

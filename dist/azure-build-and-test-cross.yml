@@ -28,7 +28,7 @@ steps:
 - bash: cross build $CROSS_ARGS --all
   displayName: "cross build"
 
-- bash: cross test $CROSS_ARGS --all $(parameters.testFlags)
+- bash: cross test $CROSS_ARGS --all ${{ parameters.testFlags }}
   displayName: "cross test"
 
 # Publish binaries

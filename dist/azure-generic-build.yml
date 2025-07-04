@@ -59,11 +59,11 @@ steps:
     DEFAULT_FEATURES_FLAG: ${{ parameters.defaultFeatures }}
     EXPLICIT_FEATURES: ${{ parameters.explicitFeatures }}
 
-- bash: cargo build --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v $(parameters.extraFlags)
+- bash: cargo build --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v ${{ parameters.extraFlags }}
   displayName: cargo build for $(TARGET)
 
 - ${{ if parameters.testIt }}:
-  - bash: cargo test --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" $(parameters.extraFlags)
+  - bash: cargo test --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" ${{ parameters.extraFlags }}
     displayName: cargo test
   - bash: |
       artifact_dir="$(Build.ArtifactStagingDirectory)/test_failures"
