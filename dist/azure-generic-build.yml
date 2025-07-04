@@ -88,7 +88,7 @@ steps:
   - bash: |
       artifact_dir="$(Build.ArtifactStagingDirectory)/binary-$TARGET"
       mkdir -p "$artifact_dir"
-      cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --target $TARGET --release
+      cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --target $TARGET --release ${{ parameters.extraFlags }}
     displayName: Package binaries
 
   - task: PublishPipelineArtifact@1
