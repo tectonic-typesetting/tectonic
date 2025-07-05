@@ -72,7 +72,7 @@
 #define UTF32toUTF16LS(x)  (0xdc00 + (  x                 & 0x3ff))
 
 /* Interal Variables */
-static rust_input_handle_t dvi_handle = NULL;
+static rust_input_handle_t dvi_handle = INVALID_HANDLE;
 static char linear = 0; /* set to 1 for strict linear processing of the input */
 
 static uint32_t *page_loc  = NULL;
@@ -1132,12 +1132,12 @@ dvi_locate_native_font (const char *filename, uint32_t index,
     if (dpx_conf.verbose_level > 0)
         dpx_message("<%s@%.2fpt", filename, ptsize * dvi2pts);
 
-    if ((handle = dpx_open_dfont_file(filename)) != NULL)
+    if ((handle = dpx_open_dfont_file(filename)) != INVALID_HANDLE)
         is_dfont = 1;
-    else if ((handle = dpx_open_type1_file(filename)) != NULL)
+    else if ((handle = dpx_open_type1_file(filename)) != INVALID_HANDLE)
         is_type1 = 1;
-    else if (((handle = dpx_open_opentype_file(filename)) == NULL
-              && (handle = dpx_open_truetype_file(filename)) == NULL)) {
+    else if (((handle = dpx_open_opentype_file(filename)) == INVALID_HANDLE
+              && (handle = dpx_open_truetype_file(filename)) == INVALID_HANDLE)) {
         _tt_abort("Cannot proceed without the font: %s", filename);
     }
     need_more_fonts(1);
@@ -2276,7 +2276,7 @@ dvi_init (const char *dvi_filename, double mag)
         _tt_abort("filename must be specified");
 
     dvi_handle = ttstub_input_open (dvi_filename, TTBC_FILE_FORMAT_PROGRAM_DATA, 0);
-    if (dvi_handle == NULL)
+    if (dvi_handle == INVALID_HANDLE)
         _tt_abort("cannot open \"%s\"", dvi_filename);
 
     /* DVI files are most easily read backwards by searching for post_post and
@@ -2314,7 +2314,7 @@ dvi_close (void)
 
     /* Do some house cleaning */
     ttstub_input_close(dvi_handle);
-    dvi_handle = NULL;
+    dvi_handle = INVALID_HANDLE;
 
     if (def_fonts) {
         for (i = 0; i < num_def_fonts; i++) {

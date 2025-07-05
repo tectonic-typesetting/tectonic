@@ -6,7 +6,7 @@ documents.
 
 ## Technical documents
 
-What do we mean by “technical documents”? While the Tectonic project seeks to
+What do we mean by "technical documents"? While the Tectonic project seeks to
 cast its net as widely as possible, common examples might be software manuals,
 scientific papers, or analytical reports. What features do such documents
 include that traditional authoring frameworks have trouble supporting?
@@ -26,8 +26,8 @@ include that traditional authoring frameworks have trouble supporting?
   live-updating data, and so on — into documents, and it is becoming clear
   that this new capability is not just evolutionary, but revolutionary.
 - **Hackability**. Finally, we also believe that technical documents should
-  ideally be “hackable,” meaning that people should be able to see how they
-  work “under the hood” and use them as a basis for their own creations.
+  ideally be "hackable," meaning that people should be able to see how they
+  work "under the hood" and use them as a basis for their own creations.
 
 ## Tectonic and TeX
 

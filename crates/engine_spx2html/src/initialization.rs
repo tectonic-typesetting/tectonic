@@ -167,12 +167,12 @@ impl InitializationState {
     }
 
     fn handle_set_template(&mut self, texpath: &str, _common: &mut Common) -> Result<()> {
-        self.next_template_path = texpath.to_owned();
+        texpath.clone_into(&mut self.next_template_path);
         Ok(())
     }
 
     fn handle_set_output_path(&mut self, texpath: &str, _common: &mut Common) -> Result<()> {
-        self.next_output_path = texpath.to_owned();
+        texpath.clone_into(&mut self.next_output_path);
         Ok(())
     }
 
