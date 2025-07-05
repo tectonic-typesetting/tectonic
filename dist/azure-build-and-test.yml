@@ -166,18 +166,26 @@ parameters:
     type: object
     default:
       - name: aarch64_unknown_linux_musl
+        params:
+          # TODO: Add font files to the cross images
+          testFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: aarch64-unknown-linux-musl
 
       - name: arm_unknown_linux_musleabihf
+        params:
+          testFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: arm-unknown-linux-musleabihf
 
       - name: i686_unknown_linux_gnu
+        params: { }
         vars:
           TARGET: i686-unknown-linux-gnu
 
       - name: x86_64_unknown_linux_musl
+        params:
+          testFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: x86_64-unknown-linux-musl
 
@@ -254,6 +262,8 @@ jobs:
           vmImage: ubuntu-22.04
         steps:
           - template: azure-build-and-test-cross.yml
+            parameters:
+              ${{ insert }}: ${{ build.params }}
         variables:
           TOOLCHAIN: stable
           ${{ insert }}: ${{ build.vars }}

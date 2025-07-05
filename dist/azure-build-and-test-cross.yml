@@ -1,6 +1,11 @@
 # Copyright 2019-2022 the Tectonic Project
 # Licensed under the MIT License.
 
+parameters:
+- name: testFlags
+  type: string
+  default: ''
+
 steps:
 - template: azure-generic-build-setup.yml
 
@@ -23,7 +28,7 @@ steps:
 - bash: cross build $CROSS_ARGS --all
   displayName: "cross build"
 
-- bash: cross test $CROSS_ARGS --all
+- bash: cross test $CROSS_ARGS --all ${{ parameters.testFlags }}
   displayName: "cross test"
 
 # Publish binaries

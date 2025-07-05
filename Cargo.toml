@@ -38,10 +38,12 @@ codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 [workspace]
 members = [
     "crates/bridge_flate",
+    "crates/bridge_fontconfig",
     "crates/bridge_freetype2",
     "crates/bridge_graphite2",
     "crates/bridge_harfbuzz",
     "crates/bridge_icu",
+    "crates/bridge_png",
     "crates/bundles",
     "crates/cfg_support",
     "crates/dep_support",
@@ -142,8 +144,9 @@ overlay-triplets-path = "dist/vcpkg-triplets"
 # add them to crates/dep_support/src/lib.rs:new_from_vcpkg() to give users
 # guidance if they might need to set $VCPKGRS_TRIPLET.
 [package.metadata.vcpkg.target]
-x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
+x86_64-apple-darwin = { install = ["fontconfig", "freetype", "harfbuzz[graphite2]", "icu"] }
 aarch64-apple-darwin = { triplet = "arm64-osx", install = [
+    "fontconfig",
     "freetype",
     "harfbuzz[graphite2]",
     "icu",

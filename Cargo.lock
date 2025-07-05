@@ -2954,6 +2954,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "tectonic_bridge_fontconfig"
+version = "0.0.0-dev.0"
+dependencies = [
+ "libc",
+ "tectonic_bridge_png",
+ "tectonic_dep_support",
+]
+
+[[package]]
 name = "tectonic_bridge_freetype2"
 version = "0.0.0-dev.0"
 dependencies = [
@@ -2979,6 +2988,13 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_icu"
+version = "0.0.0-dev.0"
+dependencies = [
+ "tectonic_dep_support",
+]
+
+[[package]]
+name = "tectonic_bridge_png"
 version = "0.0.0-dev.0"
 dependencies = [
  "tectonic_dep_support",
@@ -3116,8 +3132,8 @@ dependencies = [
  "cc",
  "tectonic_bridge_core",
  "tectonic_bridge_flate",
+ "tectonic_bridge_png",
  "tectonic_cfg_support",
- "tectonic_dep_support",
 ]
 
 [[package]]
@@ -3151,12 +3167,12 @@ version = "0.0.0-dev.0"
 dependencies = [
  "cc",
  "tectonic_bridge_core",
+ "tectonic_bridge_fontconfig",
  "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_bridge_harfbuzz",
  "tectonic_bridge_icu",
  "tectonic_cfg_support",
- "tectonic_dep_support",
 ]
 
 [[package]]
