@@ -16,6 +16,9 @@ mod linkage {
 
     #[allow(unused_imports)]
     use tectonic_bridge_flate as clippyrenamehack2;
+
+    #[allow(unused_imports)]
+    use tectonic_bridge_png as clippyrenamehack3;
 }
 
 /// Does our resulting executable link correctly?

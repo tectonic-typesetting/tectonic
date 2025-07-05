@@ -1,0 +1,11 @@
+[package]
+name = "tectonic_bridge_png"
+version = "0.0.0-dev.0"
+edition = "2021"
+links = "png"
+
+[build-dependencies]
+tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
+
+[package.metadata.internal_dep_versions]
+tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

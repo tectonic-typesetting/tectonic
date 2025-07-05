@@ -21,14 +21,15 @@ links = "tectonic_pdf_io"
 [dependencies]
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_bridge_flate = { path = "../bridge_flate", version = "0.0.0-dev.0" }
+tectonic_bridge_png = { path = "../bridge_png", version = "0.0.0-dev.0" }
 
 [build-dependencies]
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
-tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "925a9a1566aaa4a55d4468d7bf239319828722fb"
 tectonic_bridge_flate = "5933308152efb6ba206b4dc01ab6814063b835c0"
+tectonic_bridge_png = "866856eb2cb26ac8c534648bfbd3b0ee88e74d69"
 tectonic_cfg_support = "9d5feb40c7ac6958ee3c50604af9271eb2db2b20"
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
