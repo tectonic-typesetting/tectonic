@@ -8,7 +8,10 @@
 
 use std::path::PathBuf;
 
-use crate::document::{BuildTargetType, InputFile, OutputProfile};
+use crate::document::{
+    BuildTargetType, InputFile, OutputProfile, DEFAULT_INDEX_FILE, DEFAULT_POSTAMBLE_FILE,
+    DEFAULT_PREAMBLE_FILE,
+};
 use serde::{Deserialize, Serialize, Serializer};
 
 // This file is an exercise in Rust type conversion.
@@ -128,17 +131,26 @@ impl From<&TomlOutputProfile> for OutputProfile {
                     StringOrInputVec::Vec(v) => v.iter().map(|x| x.clone().into()).collect(),
                 }
             } else {
-                let mut v = Vec::with_capacity(3);
-                if let Some(s) = &val.preamble_file {
-                    v.push(TomlInputFile::Path(s.to_string()).into())
-                }
-                if let Some(s) = &val.index_file {
-                    v.push(TomlInputFile::Path(s.to_string()).into())
-                }
-                if let Some(s) = &val.postamble_file {
-                    v.push(TomlInputFile::Path(s.to_string()).into())
-                }
-                v
+                vec![
+                    TomlInputFile::Path(
+                        val.preamble_file
+                            .clone()
+                            .unwrap_or(DEFAULT_PREAMBLE_FILE.to_string()),
+                    )
+                    .into(),
+                    TomlInputFile::Path(
+                        val.index_file
+                            .clone()
+                            .unwrap_or(DEFAULT_INDEX_FILE.to_string()),
+                    )
+                    .into(),
+                    TomlInputFile::Path(
+                        val.postamble_file
+                            .clone()
+                            .unwrap_or(DEFAULT_POSTAMBLE_FILE.to_string()),
+                    )
+                    .into(),
+                ]
             }
         };
 
