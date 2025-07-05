@@ -1,0 +1,24 @@
+tex/latex/fithesis/style/mu/fithesis-mu-base.sty
+131c131,138
+<     \setmainfont[Ligatures=TeX]{TeX Gyre Pagella}
+---
+>       \setmainfont{texgyrepagella}[
+>         Ligatures = TeX,
+>         Extension = .otf,
+>         UprightFont = *-regular,
+>         ItalicFont = *-italic,
+>         BoldFont = *-bold,
+>         BoldItalicFont = *-bolditalic,
+>       ]
+136c143,151
+<     \setsansfont[Ligatures=TeX,Scale=MatchLowercase]{TeX Gyre Heros}
+---
+>     \setmainfont{texgyreheros}[
+>       Ligatures = TeX,
+>       Scale = MatchLowercase,
+>       Extension = .otf,
+>       UprightFont = *-regular,
+>       ItalicFont = *-italic,
+>       BoldFont = *-bold,
+>       BoldItalicFont = *-bolditalic,
+>     ]

@@ -99,7 +99,7 @@ pdf_font_open_type1 (pdf_font *font, const char *ident, int index, int encoding_
         /* NOTE: skipping qcheck_filetype() call in dpx_find_type1_file but we
          * call is_pfb() in just a second anyway.
          */
-        if (handle == NULL)
+        if (handle == INVALID_HANDLE)
             return -1;
 
         if (!embedding) {
@@ -512,7 +512,7 @@ pdf_font_load_type1 (pdf_font *font)
     assert(fontname);
 
     handle = ttstub_input_open(ident, TTBC_FILE_FORMAT_TYPE1, 0);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         _tt_abort("Type1: Could not open Type1 font: %s", ident);
 
     GIDMap     = NULL;

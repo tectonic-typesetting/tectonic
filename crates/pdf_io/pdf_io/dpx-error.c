@@ -42,7 +42,7 @@ shut_up (int quietness)
 }
 
 
-static rust_output_handle_t _dpx_message_handle = NULL;
+static rust_output_handle_t _dpx_message_handle = INVALID_HANDLE;
 static char _dpx_message_buf[1024];
 
 static rust_output_handle_t
@@ -50,7 +50,7 @@ _dpx_ensure_output_handle (void)
 {
     _dpx_message_handle = ttstub_output_open_stdout();
 
-    if (_dpx_message_handle == NULL)
+    if (_dpx_message_handle == INVALID_HANDLE)
         _tt_abort("xdvipdfmx cannot get output logging handle?!");
 
     return _dpx_message_handle;

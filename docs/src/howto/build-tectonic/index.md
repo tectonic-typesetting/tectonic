@@ -51,7 +51,7 @@ with fonts, Unicode, text shaping, and so on. Specifically:
 To build Tectonic, your first task is to decide where you want these library
 dependencies to come from.
 
-- Tectonic can provide some dependencies **internally** (“vendor” them). This is
+- Tectonic can provide some dependencies **internally** ("vendor" them). This is
   the default for [Harfbuzz]. You can use [Cargo features][cargo-features],
   described below, to control when this happens. For some third-party libraries
   needed by Tectonic, vendoring is not possible.
@@ -89,7 +89,7 @@ If using [pkg-config], setting the environment variable
 link with external libraries statically rather than dynamically. System
 libraries, such as `libc` and `libm` on Unix systems, will still be linked
 dynamically. This mode is planned to be superseded by better support for
-“vendoring” dependent libraries.
+"vendoring" dependent libraries.
 
 
 ## Choose Cargo Features
@@ -100,7 +100,7 @@ control build options. Tectonic offers the following features:
 [cargo-features]: https://doc.rust-lang.org/cargo/reference/features.html
 
 - **`external-harfbuzz`**. By default, the Tectonic crates will build and link
-  to a “vendored” (static, internal) version of the [Harfbuzz] text shaping
+  to a "vendored" (static, internal) version of the [Harfbuzz] text shaping
   library. If you would like to link to an externally-supplied version instead,
   enable this feature.
 - **`geturl-curl`**. Uses the [curl] crate to get URLs. In order for this to
