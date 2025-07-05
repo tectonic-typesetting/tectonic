@@ -142,8 +142,7 @@ parameters:
 
       - name: x86_64_apple_darwin
         vmImage: macos-13
-        params:
-          extraFlags: --exclude tectonic_bridge_fontconfig
+        params: { }
         vars:
           TARGET: x86_64-apple-darwin
           TOOLCHAIN: stable
@@ -152,7 +151,6 @@ parameters:
         vmImage: macos-13
         params:
           testIt: false
-          extraFlags: --exclude tectonic_bridge_fontconfig
         vars:
           TARGET: aarch64-apple-darwin
           TOOLCHAIN: stable

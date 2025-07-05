@@ -25,9 +25,6 @@ parameters:
 - name: testIt
   type: boolean
   default: true
-- name: extraFlags
-  type: string
-  default: ''
 
 steps:
 # We use two variables for feature flagging just because I'm worried about
@@ -59,11 +56,11 @@ steps:
     DEFAULT_FEATURES_FLAG: ${{ parameters.defaultFeatures }}
     EXPLICIT_FEATURES: ${{ parameters.explicitFeatures }}
 
-- bash: cargo build --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v ${{ parameters.extraFlags }}
+- bash: cargo build --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v
   displayName: cargo build for $(TARGET)
 
 - ${{ if parameters.testIt }}:
-  - bash: cargo test --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" ${{ parameters.extraFlags }}
+  - bash: cargo test --all --target $TARGET --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT"
     displayName: cargo test
   - bash: |
       artifact_dir="$(Build.ArtifactStagingDirectory)/test_failures"
@@ -88,7 +85,7 @@ steps:
   - bash: |
       artifact_dir="$(Build.ArtifactStagingDirectory)/binary-$TARGET"
       mkdir -p "$artifact_dir"
-      cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --target $TARGET --release ${{ parameters.extraFlags }}
+      cranko cargo package-released-binaries -t $TARGET $artifact_dir -- build --target $TARGET --release
     displayName: Package binaries
 
   - task: PublishPipelineArtifact@1

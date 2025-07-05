@@ -16,9 +16,6 @@ parameters:
 - name: testIt
   type: boolean
   default: true
-- name: extraFlags
-  type: string
-  default: ''
 
 steps:
 - template: azure-generic-build-setup.yml
@@ -84,4 +81,3 @@ steps:
     canaryBuild: ${{ parameters.canaryBuild }}
     explicitFeatures: "external-harfbuzz"
     testIt: ${{ parameters.testIt }}
-    extraFlags: ${{ parameters.extraFlags }}
