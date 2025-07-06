@@ -290,6 +290,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytemuck"
+version = "1.23.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c76a5792e44e4abe34d3abf15636779261d45a7450612059293d1d2cfc63422"
+dependencies = [
+ "bytemuck_derive",
+]
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ecc273b49b3205b83d648f0690daa588925572cc5063745bfe547fe7ec8e1a1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.103",
+]
+
+[[package]]
 name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -447,10 +467,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "core-foundation"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b2a6cd9ae233e7f62ba4e9353e81a88df7fc8a5987b8d445b4d90c879bd156f6"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+]
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
+
+[[package]]
+name = "core-graphics"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fa95a34622365fa5bbf40b20b75dba8dfa8c94c734aea8ac9a5ca38af14316f1"
+dependencies = [
+ "bitflags 2.9.1",
+ "core-foundation 0.10.1",
+ "core-graphics-types",
+ "foreign-types 0.5.0",
+ "libc",
+]
+
+[[package]]
+name = "core-graphics-types"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d44a101f213f6c4cdc1853d4b78aef6db6bdfa3468798cc1d9912f4735013eb"
+dependencies = [
+ "bitflags 2.9.1",
+ "core-foundation 0.10.1",
+ "libc",
+]
+
+[[package]]
+name = "core-text"
+version = "21.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a593227b66cbd4007b2a050dfdd9e1d1318311409c8d600dc82ba1b15ca9c130"
+dependencies = [
+ "core-foundation 0.10.1",
+ "core-graphics",
+ "foreign-types 0.5.0",
+ "libc",
+]
 
 [[package]]
 name = "cpufeatures"
@@ -595,6 +661,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c34f04666d835ff5d62e058c3995147c06f42fe86ff053337632bca83e42702d"
 
 [[package]]
+name = "enrede"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42685d561e9e3f84c7cf5c9ec917e6112052b82b741ffe5f9dd373bfc19504cd"
+dependencies = [
+ "arrayvec",
+ "bytemuck",
+ "phf",
+ "serde",
+]
+
+[[package]]
 name = "equivalent"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -683,7 +761,28 @@ version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6f339eb8adc052cd2ca78910fda869aefa38d22d5cb648e6485e4d3fc06f3b1"
 dependencies = [
- "foreign-types-shared",
+ "foreign-types-shared 0.1.1",
+]
+
+[[package]]
+name = "foreign-types"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d737d9aa519fb7b749cbc3b962edcf310a8dd1f4b67c91c4f83975dbdd17d965"
+dependencies = [
+ "foreign-types-macros",
+ "foreign-types-shared 0.3.1",
+]
+
+[[package]]
+name = "foreign-types-macros"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a5c6c585bc94aaf2c7b51dd4c2ba22680844aba4c687be581871a6f518c5742"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.103",
 ]
 
 [[package]]
@@ -691,6 +790,12 @@ name = "foreign-types-shared"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
+
+[[package]]
+name = "foreign-types-shared"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aa9a19cbb55df58761df49b23516a86d432839add4af60fc256da840f66ed35b"
 
 [[package]]
 name = "form_urlencoded"
@@ -1960,7 +2065,7 @@ checksum = "8505734d46c8ab1e19a1dce3aef597ad87dcb4c37e7188231769bd6bd51cebf8"
 dependencies = [
  "bitflags 2.9.1",
  "cfg-if",
- "foreign-types",
+ "foreign-types 0.3.2",
  "libc",
  "once_cell",
  "openssl-macros",
@@ -2113,6 +2218,7 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fd6780a80ae0c52cc120a26a1a42c1ae51b247a253e4e06113d23d2c2edd078"
 dependencies = [
+ "phf_macros",
  "phf_shared",
 ]
 
@@ -2134,6 +2240,19 @@ checksum = "3c80231409c20246a13fddb31776fb942c38553c51e871f8cbd687a4cfb5843d"
 dependencies = [
  "phf_shared",
  "rand",
+]
+
+[[package]]
+name = "phf_macros"
+version = "0.11.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f84ac04429c13a7ff43785d75ad27569f2951ce0ffd30a3321230db2fc727216"
+dependencies = [
+ "phf_generator",
+ "phf_shared",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.103",
 ]
 
 [[package]]
@@ -2609,7 +2728,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "897b2245f0b511c87893af39b033e5ca9cce68824c4d7e7630b5a1d339658d02"
 dependencies = [
  "bitflags 2.9.1",
- "core-foundation",
+ "core-foundation 0.9.4",
  "core-foundation-sys",
  "libc",
  "security-framework-sys",
@@ -2854,7 +2973,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3c879d448e9d986b661742763247d3693ed13609438cf3d006f51f5368a5ba6b"
 dependencies = [
  "bitflags 2.9.1",
- "core-foundation",
+ "core-foundation 0.9.4",
  "system-configuration-sys",
 ]
 
@@ -2966,6 +3085,7 @@ dependencies = [
 name = "tectonic_bridge_freetype2"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
  "tectonic_dep_support",
 ]
 
@@ -2973,6 +3093,7 @@ dependencies = [
 name = "tectonic_bridge_graphite2"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
  "tectonic_dep_support",
 ]
 
@@ -2981,6 +3102,8 @@ name = "tectonic_bridge_harfbuzz"
 version = "0.0.0-dev.0"
 dependencies = [
  "cc",
+ "libc",
+ "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_cfg_support",
  "tectonic_dep_support",
@@ -3088,6 +3211,7 @@ dependencies = [
  "tectonic_bridge_flate",
  "tectonic_bridge_graphite2",
  "tectonic_bridge_harfbuzz",
+ "tectonic_bridge_icu",
  "tectonic_cfg_support",
  "tectonic_errors",
  "tectonic_pdf_io",
@@ -3166,6 +3290,10 @@ name = "tectonic_xetex_layout"
 version = "0.0.0-dev.0"
 dependencies = [
  "cc",
+ "core-foundation 0.10.1",
+ "core-text",
+ "enrede",
+ "libc",
  "tectonic_bridge_core",
  "tectonic_bridge_fontconfig",
  "tectonic_bridge_freetype2",
@@ -3173,6 +3301,7 @@ dependencies = [
  "tectonic_bridge_harfbuzz",
  "tectonic_bridge_icu",
  "tectonic_cfg_support",
+ "tectonic_io_base",
 ]
 
 [[package]]
