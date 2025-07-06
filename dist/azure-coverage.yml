@@ -20,89 +20,18 @@ steps:
   displayName: Install core dependencies
 
 - bash: |
-    set -xeuo pipefail
-    PACKAGES=(
-        binutils-dev
-        build-essential
-        cmake
-        git
-        libcurl4-openssl-dev
-        libdw-dev
-        libiberty-dev
-        libssl-dev
-        ninja-build
-        python3
-        zlib1g-dev
-        libelf-dev
-        libstdc++-12-dev
-    )
-    
-    sudo apt-get install -y "${PACKAGES[@]}"
-    
-    url="https://github.com/SimonKagstrom/kcov"
-    tmp_dir=$(mktemp -d /tmp/kcov-XXXXX)
-    kcov_version="v43"
-    
-    git clone "${url}" "${tmp_dir}" -b "${kcov_version}" --depth 1 
-    
-    cd "${tmp_dir}"
-    mkdir build && cd build
-    cmake ..
-    make
-    sudo make install
-  displayName: Install kcov
-
-- bash: |
     # note: `set -x` messes up setvariable
     set -euo pipefail
-    echo "##vso[task.setvariable variable=RUSTFLAGS;]-C link-dead-code"
+    echo "##vso[task.setvariable variable=CC;]clang"
+    echo "##vso[task.setvariable variable=CXX;]clang++"
     set -x
-    # TODO: Use this once Ubuntu packages kcov again
-    # sudo apt-get install -y kcov
-    cargo install --force cargo-kcov
+    cargo install --force cargo-llvm-cov
   displayName: Set up code coverage
 
-# As of Rust 1.44, test executables land in target/debug/deps/ instead of
-# target/debug/, which messes up current cargo-kcov (0.5.2) because it tries to
-# search for those executables. Work around with `cp`. One of the `tectonic-*`
-# binaries is the debug executable, which is hard-linked to
-# `target/debug/tectonic`. kcov will erroneously try to run this as a test if we
-# copy it, so we have to make not to do that, which we accomplish with a search
-# based on the hardlink count. Hacky and fragile but this should get us going.
-# Hopefully kcov will get fixed where this will become unneccessary anyway.
 - bash: |
     set -xeuo pipefail
-    cargo test --no-run
-    find target/debug/deps/tectonic-???????????????? -links 2 -print -delete
-    cp -vp target/debug/deps/*-???????????????? target/debug/
-  displayName: cargo test --no-run
-
-- bash: |
-    set -xeuo pipefail
-    export TECTONIC_KCOV_RUN=1
-    cargo kcov --no-clean-rebuild -- --include-path="$(pwd)" --exclude-pattern=/tests/
-  displayName: cargo kcov
-
-# Our "executable" test executes the actual Tectonic binary. In order to collect
-# coverage information about what happens in those executions, we have special
-# support in the test harness to wrap the invocations in `kcov` calls.
-- bash: |
-    set -xeuo pipefail
-    export TECTONIC_EXETEST_KCOV_RUNNER="kcov --include-path=$(pwd) --exclude-pattern=/tests/"
-    cargo test --test executable
-  displayName: Special-case executable tests
-
-# Now, merge all of the coverage reports. `cargo kcov` does this automatically,
-# but it uses an explicit list of coverage runs, so there's no way to get it to
-# include our special executable tests. We just glob everything, which means we
-# have to delete the preexisting merged report.
-- bash: |
-    set -xeou pipefail
-    cd target/cov
-    rm -rf amber.png bcov.css data glass.png index.html index.js* \
-      kcov-merged merged-kcov-output
-    kcov --merge . *
-  displayName: Merge coverage reports
+    cargo llvm-cov --workspace --include-ffi --ignore-filename-regex '/harfbuzz/' --codecov --output-path coverage.json
+  displayName: cargo llvm-cov
 
 - bash: |
     set -xeuo pipefail

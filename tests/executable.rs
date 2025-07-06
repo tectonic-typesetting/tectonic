@@ -40,17 +40,6 @@ lazy_static! {
             vec![]
         }
     };
-
-    // Special coverage-collection mode. This implementation is quite tuned for
-    // the Tectonic CI/CD system, so if you're trying to use it manually, expect
-    // some rough edges.
-    static ref KCOV_WORDS: Vec<String> = {
-        if let Ok(runtext) = env::var("TECTONIC_EXETEST_KCOV_RUNNER") {
-            runtext.split_whitespace().map(|x| x.to_owned()).collect()
-        } else {
-            vec![]
-        }
-    };
 }
 
 fn get_plain_format_arg() -> String {
@@ -78,29 +67,10 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
 
     // We may need to wrap the Tectonic invocation. If we're cross-compiling, we
     // might need to use something like QEMU to actually be able to run the
-    // executable. If we're collecting code coverage information with kcov, we
-    // need to wrap the invocation with that program.
+    // executable.
     let mut command = if !TARGET_RUNNER_WORDS.is_empty() {
         let mut cmd = Command::new(&TARGET_RUNNER_WORDS[0]);
         cmd.args(&TARGET_RUNNER_WORDS[1..]).arg(tectonic);
-        cmd
-    } else if !KCOV_WORDS.is_empty() {
-        let mut cmd = Command::new(&KCOV_WORDS[0]);
-        cmd.args(&KCOV_WORDS[1..]);
-
-        // Give kcov a directory into which to put its output. We use
-        // mktemp-like functionality to automatically create such directories
-        // uniquely so that we don't have to manually bookkeep. This does mean
-        // that successive runs will build up new data directories indefinitely.
-        let mut root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        root.push("target");
-        root.push("cov");
-        root.push("exetest.");
-        let tempdir = tempfile::Builder::new().prefix(&root).tempdir().unwrap();
-        let tempdir = tempdir.keep();
-        cmd.arg(tempdir);
-
-        cmd.arg(tectonic);
         cmd
     } else {
         Command::new(tectonic)
@@ -121,16 +91,6 @@ fn run_tectonic(cwd: &Path, args: &[&str]) -> Output {
 }
 
 fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool) -> Output {
-    // This harness doesn't work when running with kcov because there's no good
-    // way to stop the Tectonic child process that is "inside" of the kcov
-    // runner. If we kill kcov itself, the child process keeps running and we
-    // hang because our pipes never get fully closed. Right now I don't see a
-    // way to actually terminate the Tectonic subprocess short of guessing its
-    // PID, which is hackier than I want to implement. We could address this by
-    // providing some other mechanism to tell the "watch" subprocess to stop,
-    // such as closing its stdin.
-    assert_eq!(KCOV_WORDS.len(), 0, "\"until\" tests do not work with kcov");
-
     let mut command = prep_tectonic(cwd, args);
     command.stdout(Stdio::piped()).stderr(Stdio::piped());
     command.env("BROWSER", "echo");
@@ -142,6 +102,7 @@ fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool)
     }
 
     // Ignore if the child already died
+    // TODO: This causes coverage to not be reported
     let _ = child.kill();
     child
         .wait_with_output()
@@ -173,7 +134,6 @@ fn setup_and_copy_files(files: &[&str]) -> TempDir {
         .tempdir()
         .unwrap();
 
-    // `cargo kcov` (0.5.2) does not set this variable:
     let executable_test_dir = if let Some(v) = env::var_os("CARGO_MANIFEST_DIR") {
         PathBuf::from(v)
     } else {
@@ -1039,10 +999,6 @@ fn extra_search_paths() {
 #[cfg(all(feature = "serialization", not(target_arch = "mips")))]
 #[test]
 fn v2_watch_succeeds() {
-    if !KCOV_WORDS.is_empty() || env::var("TECTONIC_KCOV_RUN").is_ok() {
-        return; // See run_tectonic_until() for an explanation of why this test must be skipped
-    }
-
     let (_tempdir, temppath) = setup_v2();
 
     // Timeout the test after 5 minutes - we should definitely run twice in that range
