@@ -1,5 +1,17 @@
 use crate::c_api::{Fixed, GlyphBBox, GlyphID, PlatformFontRef};
 use crate::utils::fix_to_d;
+#[cfg(target_os = "macos")]
+use core_foundation::array::CFArray;
+#[cfg(target_os = "macos")]
+use core_foundation::base::CFType;
+#[cfg(target_os = "macos")]
+use core_foundation::dictionary::CFDictionary;
+#[cfg(target_os = "macos")]
+use core_foundation::url::CFURL as CFUrl;
+#[cfg(target_os = "macos")]
+use core_text::font::CTFont;
+#[cfg(target_os = "macos")]
+use core_text::font_descriptor::{kCTFontCascadeListAttribute, CTFontDescriptor};
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::path::Path;
@@ -11,10 +23,6 @@ use tectonic_bridge_core::{CoreBridgeState, FileFormat};
 use tectonic_bridge_fontconfig as fc;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
-#[cfg(target_os = "macos")]
-use tectonic_mac_core::{
-    CFArray, CFDictionary, CFType, CFUrl, CTFont, CTFontDescriptor, FontAttribute, FontNameKey,
-};
 
 fn get_glyph_advance(face: &ft::Face, gid: libc::c_uint, vertical: bool) -> ft::Fixed {
     let flags = if vertical {
@@ -361,15 +369,15 @@ impl Font {
             return 1;
         };
 
-        let empty_cascade_list = CFArray::<CFType>::empty();
-        let attributes =
-            CFDictionary::new([(FontAttribute::CascadeList.to_str(), empty_cascade_list)]);
+        let empty_cascade_list = CFArray::<CFType>::from_CFTypes(&[]);
+        let attributes = CFDictionary::from_CFType_pairs(&[(
+            unsafe { kCTFontCascadeListAttribute },
+            empty_cascade_list,
+        )]);
 
         *descriptor = descriptor.copy_with_attrs(&attributes);
-        *font_ref = Some(CTFont::new_descriptor(
-            descriptor,
-            self.point_size as f64 * 72.0 / 72.27,
-        ));
+        *font_ref =
+            core_text::font::new_from_descriptor(descriptor, self.point_size as f64 * 72.0 / 72.27);
         let mut index = 0;
         let pathname = get_file_name_from_ct_font(font_ref.as_ref().unwrap(), &mut index).unwrap();
         self.initialize_ft(pathname.to_str().unwrap(), index as usize)
@@ -565,18 +573,18 @@ impl Font {
 
 #[cfg(target_os = "macos")]
 pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CString> {
-    let url = ct_font
-        .attr(FontAttribute::URL)
-        .and_then(|t| t.downcast::<CFUrl>().ok())?;
+    use std::os::unix::ffi::OsStringExt;
+    let url = ct_font.url()?;
 
-    let pathname = url.fs_representation()?;
+    let pathname_vec = url.to_path()?.into_os_string().into_vec();
+    let pathname = CString::new(pathname_vec).unwrap();
     *index = 0;
 
     let face = ft::Face::new(&pathname, 0);
     if let Ok(face) = face {
         if face.num_faces() > 1 {
             let num_faces = face.num_faces();
-            let ps_name1 = ct_font.name(FontNameKey::PostScript);
+            let ps_name1 = ct_font.postscript_name();
             *index = u32::MAX;
             for i in 0..num_faces {
                 let face = ft::Face::new(&pathname, i);

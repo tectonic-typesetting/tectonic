@@ -53,13 +53,13 @@ pub(crate) mod c_api {
     #[cfg(not(target_os = "macos"))]
     pub(crate) type RawPlatformFontRef = *mut fc::sys::FcPattern;
     #[cfg(target_os = "macos")]
-    pub(crate) type RawPlatformFontRef = tectonic_mac_core::sys::CTFontDescriptorRef;
+    pub(crate) type RawPlatformFontRef = core_text::font_descriptor::CTFontDescriptorRef;
     /// cbindgen:ignore
     #[cfg(not(target_os = "macos"))]
     pub(crate) type PlatformFontRef = fc::Pattern;
     /// cbindgen:ignore
     #[cfg(target_os = "macos")]
-    pub(crate) type PlatformFontRef = tectonic_mac_core::CTFontDescriptor;
+    pub(crate) type PlatformFontRef = core_text::font_descriptor::CTFontDescriptor;
 
     /// key is combined value representing `(font_id, glyph)`
     /// value is glyph bounding box in TeX points

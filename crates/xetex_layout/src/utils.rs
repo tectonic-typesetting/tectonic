@@ -12,8 +12,12 @@ pub fn d_to_fix(d: f64) -> Fixed {
 pub fn raw_to_rs(font: RawPlatformFontRef) -> Option<PlatformFontRef> {
     #[cfg(target_os = "macos")]
     let out = {
-        use tectonic_mac_core::CoreType;
-        NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
+        use core_foundation::base::TCFType;
+        if font.is_null() {
+            None
+        } else {
+            Some(unsafe { PlatformFontRef::wrap_under_get_rule(font) })
+        }
     };
     #[cfg(not(target_os = "macos"))]
     let out = { unsafe { NonNull::new(font).map(|p| PlatformFontRef::from_raw_borrowed(p)) } };

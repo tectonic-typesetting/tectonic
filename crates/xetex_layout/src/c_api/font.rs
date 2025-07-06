@@ -1,12 +1,14 @@
 use crate::c_api::{Fixed, OTTag, RawPlatformFontRef, XeTeXFont};
 use crate::font::{get_larger_script_list_table_ot, Font};
 use crate::utils::{d_to_fix, fix_to_d, raw_to_rs};
+#[cfg(target_os = "macos")]
+use core_foundation::base::TCFType;
+#[cfg(target_os = "macos")]
+use core_text::font::{CTFont, CTFontRef};
 use std::ffi::{CStr, CString};
 use std::ptr;
 use tectonic_bridge_freetype2 as ft;
 use tectonic_bridge_harfbuzz as hb;
-#[cfg(target_os = "macos")]
-use tectonic_mac_core::{sys::CTFontRef, CTFont, CoreType};
 
 #[no_mangle]
 pub unsafe extern "C" fn hasFontTable(font: XeTeXFont, table_tag: OTTag) -> bool {
@@ -219,11 +221,7 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     ct_font: CTFontRef,
     index: *mut u32,
 ) -> *const libc::c_char {
-    use std::ptr::NonNull;
-    crate::font::get_file_name_from_ct_font(
-        &CTFont::new_borrowed(NonNull::new(ct_font.cast_mut()).unwrap()),
-        &mut *index,
-    )
-    .map(CString::into_raw)
-    .unwrap_or(ptr::null_mut())
+    crate::font::get_file_name_from_ct_font(&CTFont::wrap_under_get_rule(ct_font), &mut *index)
+        .map(CString::into_raw)
+        .unwrap_or(ptr::null_mut())
 }

@@ -38,9 +38,9 @@ pub unsafe extern "C" fn findFontByName(
 
     #[cfg(target_os = "macos")]
     return FontManager::with_font_manager(|mgr| {
-        use tectonic_mac_core::CoreType;
+        use core_foundation::base::TCFType;
         mgr.find_font(name, var, size)
-            .map(tectonic_mac_core::CTFontDescriptor::into_type_ref)
+            .map(core_text::font_descriptor::CTFontDescriptor::as_concrete_TypeRef)
             .unwrap_or(ptr::null_mut())
     });
     #[cfg(not(target_os = "macos"))]
