@@ -90,12 +90,12 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
             f.glyph_v_kerning(|_, _, _, _| 0);
             f.glyph_extents(|_, face, gid| {
                 let mut face = face.borrow_mut();
-                if face.load_glyph(gid, ft::LoadFlags::NO_SCALE).is_ok() {
+                if let Ok(glyph) = face.load_glyph(gid, ft::LoadFlags::NO_SCALE) {
                     Some(hb::GlyphExtents {
-                        x_bearing: face.glyph().metrics().horiBearingX as hb::Position,
-                        y_bearing: face.glyph().metrics().horiBearingY as hb::Position,
-                        width: face.glyph().metrics().width as hb::Position,
-                        height: -face.glyph().metrics().height as hb::Position,
+                        x_bearing: glyph.metrics().horiBearingX as hb::Position,
+                        y_bearing: glyph.metrics().horiBearingY as hb::Position,
+                        width: glyph.metrics().width as hb::Position,
+                        height: -glyph.metrics().height as hb::Position,
                     })
                 } else {
                     None
@@ -104,17 +104,16 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
             f.glyph_contour_point(|_, face, gid, point_index| {
                 let mut face = face.borrow_mut();
 
-                let error = face.load_glyph(gid, ft::LoadFlags::NO_SCALE).is_err();
-                if !error
-                    && face.glyph().format() == ft::GlyphFormat::Outline
-                    && point_index < (face.glyph().outline().n_points as u32)
-                {
-                    let x = face.glyph().outline().points()[point_index as usize].x as hb::Position;
-                    let y = face.glyph().outline().points()[point_index as usize].y as hb::Position;
-                    Some((x, y))
-                } else {
-                    None
+                if let Ok(glyph) = face.load_glyph(gid, ft::LoadFlags::NO_SCALE) {
+                    if let Some(outline) = glyph.outline() {
+                        if point_index < (outline.n_points as u32) {
+                            let x = outline.points()[point_index as usize].x as hb::Position;
+                            let y = outline.points()[point_index as usize].y as hb::Position;
+                            return Some((x, y));
+                        }
+                    }
                 }
+                None
             });
             f.glyph_name(
                 |_, face, gid, buf| match face.borrow().get_glyph_name(gid, buf) {
@@ -303,7 +302,7 @@ impl Font {
         self.descent = self.units_to_points(d) as f32;
 
         let ft_face = self.ft_face();
-        let post_table = ft_face.get_sfnt_table::<ft::Postscript>();
+        let post_table = ft_face.get_sfnt_table::<ft::tables::Postscript>();
         let ia = if let Some(table) = post_table {
             fix_to_d(table.italic_angle as Fixed) as f32
         } else {
@@ -313,7 +312,7 @@ impl Font {
         self.italic_angle = ia;
 
         let ft_face = self.ft_face();
-        let os2_table = ft_face.get_sfnt_table::<ft::Os2>();
+        let os2_table = ft_face.get_sfnt_table::<ft::tables::Os2>();
         let (ch, xh) = if let Some(table) = os2_table {
             let ch = self.units_to_points(table.sCapHeight as f64) as f32;
             let xh = self.units_to_points(table.sxHeight as f64) as f32;
@@ -458,25 +457,30 @@ impl Font {
     }
 
     pub(crate) fn get_glyph_bounds(&mut self, gid: GlyphID) -> GlyphBBox {
-        let mut bbox = GlyphBBox::default();
+        let mut ft_face = self.ft_face_mut();
 
-        if self
-            .ft_face_mut()
+        let glyph = ft_face
             .load_glyph(gid as u32, ft::LoadFlags::NO_SCALE)
-            .is_err()
-        {
-            return bbox;
-        }
+            .and_then(|slot| slot.get_glyph());
 
-        if let Ok(glyph) = self.ft_face().glyph().get_glyph() {
-            let ft_bbox = glyph.get_cbox(ft::BBoxMode::Unscaled);
-            bbox.x_min = self.units_to_points(ft_bbox.x_min as f64) as f32;
-            bbox.y_min = self.units_to_points(ft_bbox.y_min as f64) as f32;
-            bbox.x_max = self.units_to_points(ft_bbox.x_max as f64) as f32;
-            bbox.y_max = self.units_to_points(ft_bbox.y_max as f64) as f32;
+        match glyph {
+            Ok(glyph) => {
+                let ft::BBox {
+                    x_min,
+                    y_min,
+                    x_max,
+                    y_max,
+                } = glyph.get_cbox(ft::BBoxMode::Unscaled);
+                drop(ft_face);
+                GlyphBBox {
+                    x_min: self.units_to_points(x_min as f64) as f32,
+                    y_min: self.units_to_points(y_min as f64) as f32,
+                    x_max: self.units_to_points(x_max as f64) as f32,
+                    y_max: self.units_to_points(y_max as f64) as f32,
+                }
+            }
+            Err(_) => GlyphBBox::default(),
         }
-
-        bbox
     }
 
     pub(crate) fn get_glyph_height_depth(
