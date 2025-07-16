@@ -143,7 +143,7 @@ _png_warning_callback(png_structp png_ptr, png_const_charp msg)
 static void
 _png_read (png_structp png_ptr, png_bytep outbytes, png_size_t n)
 {
-    rust_input_handle_t handle = png_get_io_ptr (png_ptr);
+    rust_input_handle_t handle = (uintptr_t) png_get_io_ptr(png_ptr);
     ssize_t r;
 
     r = ttstub_input_read (handle, (char *) outbytes, n);
@@ -192,7 +192,7 @@ png_include_image (pdf_ximage *ximage, rust_input_handle_t handle)
 #endif
 
     /* Rust-backed IO */
-    png_set_read_fn (png_ptr, handle, _png_read);
+    png_set_read_fn (png_ptr, (void*)handle, _png_read);
     /* NOTE: could use png_set_sig_bytes() to tell libpng if we started at non-zero file offset */
 
     /* Read PNG info-header and get some info. */
@@ -1121,7 +1121,7 @@ png_get_bbox (rust_input_handle_t handle, uint32_t *width, uint32_t *height,
     }
 
     /* Rust-backed IO */
-    png_set_read_fn (png_ptr, handle, _png_read);
+    png_set_read_fn (png_ptr, (void*)handle, _png_read);
     /* NOTE: could use png_set_sig_bytes() to tell libpng if we started at non-zero file offset */
 
     /* Read PNG info-header and get some info. */

@@ -19,25 +19,32 @@ use std::{
 };
 use tectonic_errors::prelude::*;
 
+use crate::syntax;
 use crate::workspace::WorkspaceCreator;
 
 /// The default filesystem name for the "preamble" file of a document.
 ///
-/// This default can be overridden on an output-by-output basis in
-/// `Tectonic.toml`.
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
 pub const DEFAULT_PREAMBLE_FILE: &str = "_preamble.tex";
 
 /// The default filesystem name for the main "index" file of a document.
 ///
-/// This default can be overridden on an output-by-output basis in
-/// `Tectonic.toml`.
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
 pub const DEFAULT_INDEX_FILE: &str = "index.tex";
 
 /// The default filesystem name for the "postamble" file of a document.
 ///
+/// This is a deprecated field and may be removed in a future version. Users
+/// should prefer using the `inputs` field.
+pub const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
+
+/// The default files used to build a document.
+///
 /// This default can be overridden on an output-by-output basis in
 /// `Tectonic.toml`.
-pub const DEFAULT_POSTAMBLE_FILE: &str = "_postamble.tex";
+pub const DEFAULT_INPUTS: &[&str] = &["_preamble.tex", "index.tex", "_postamble.tex"];
 
 /// A Tectonic document.
 #[derive(Debug)]
@@ -64,6 +71,10 @@ pub struct Document {
     /// Either a URL or a local path.
     pub bundle_loc: String,
 
+    /// Extra local search paths for this document.
+    /// May be absolute or relative to src_dir.
+    pub extra_paths: Vec<PathBuf>,
+
     /// The different outputs that are created from the document source. These
     /// may have different formats (e.g., PDF and HTML) or the same format but
     /// different settings (e.g., PDF with A4 paper and PDF with US Letter
@@ -85,12 +96,12 @@ impl Document {
     ) -> Result<Self> {
         let mut toml_text = String::new();
         toml_data.read_to_string(&mut toml_text)?;
-        let doc: syntax::Document = toml::from_str(&toml_text)?;
+        let doc: syntax::TomlDocument = toml::from_str(&toml_text)?;
 
         let mut outputs = HashMap::new();
 
         for toml_output in &doc.outputs {
-            let output = toml_output.to_runtime();
+            let output: OutputProfile = toml_output.into();
 
             if outputs.insert(output.name.clone(), output).is_some() {
                 bail!(
@@ -109,6 +120,7 @@ impl Document {
             build_dir: build_dir.into(),
             name: doc.doc.name,
             bundle_loc: doc.doc.bundle,
+            extra_paths: doc.doc.extra_paths.unwrap_or_default(),
             metadata: doc.doc.metadata,
             outputs,
         })
@@ -124,13 +136,20 @@ impl Document {
         let outputs = self
             .outputs
             .values()
-            .map(syntax::OutputProfile::from_runtime)
+            .map(syntax::TomlOutputProfile::from)
             .collect();
 
-        let doc = syntax::Document {
-            doc: syntax::DocSection {
+        let extra_paths = if self.extra_paths.is_empty() {
+            None
+        } else {
+            Some(self.extra_paths.clone())
+        };
+
+        let doc = syntax::TomlDocument {
+            doc: syntax::TomlDocSection {
                 name: self.name.clone(),
                 bundle: self.bundle_loc.clone(),
+                extra_paths,
                 metadata: None,
             },
             outputs,
@@ -214,14 +233,8 @@ pub struct OutputProfile {
     /// The name of the TeX format used by this profile.
     pub tex_format: String,
 
-    /// The name of the preamble file within the `src` directory.
-    pub preamble_file: String,
-
-    /// The name of the index (main) file within the `src` directory.
-    pub index_file: String,
-
-    /// The name of the postamble file within the `src` directory.
-    pub postamble_file: String,
+    /// The input files we should use to build this document
+    pub inputs: Vec<InputFile>,
 
     /// Whether TeX's shell-escape feature should be activated in this profile.
     ///
@@ -238,6 +251,11 @@ pub struct OutputProfile {
     /// Directory is not managed and any files created in it will not be deleted.
     ///
     pub shell_escape_cwd: Option<String>,
+
+    /// Whether synctex should be activated for this profile.
+    ///
+    /// Default is false.
+    pub synctex: bool,
 }
 
 /// The output target type of a document build.
@@ -250,10 +268,24 @@ pub enum BuildTargetType {
     Pdf,
 }
 
+/// An input provided to a document build
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum InputFile {
+    /// A file system path.
+    File(String),
+
+    /// An inline file.
+    Inline(String),
+}
+
 impl Document {
     /// Create a new in-memory Document, based on the settings of a
     /// WorkspaceCreator object.
-    pub(crate) fn create_for(wc: &WorkspaceCreator, bundle_loc: String) -> Result<Self> {
+    pub(crate) fn create_for(
+        wc: &WorkspaceCreator,
+        bundle_loc: String,
+        extra_paths: Vec<PathBuf>,
+    ) -> Result<Self> {
         let src_dir = wc.root_dir.clone();
 
         let mut build_dir = src_dir.clone();
@@ -270,7 +302,7 @@ impl Document {
                 tried_src_path = true;
 
                 if let Some(s) = t.to_str() {
-                    name = s.to_owned();
+                    s.clone_into(&mut name);
                 }
             }
 
@@ -280,7 +312,7 @@ impl Document {
 
                     if let Some(Component::Normal(t)) = full_path.components().next_back() {
                         if let Some(s) = t.to_str() {
-                            name = s.to_owned();
+                            s.clone_into(&mut name);
                         }
                     }
                 }
@@ -295,6 +327,7 @@ impl Document {
             build_dir,
             name,
             bundle_loc,
+            extra_paths,
             outputs: crate::document::default_outputs(),
             metadata: None,
         })
@@ -309,177 +342,16 @@ pub(crate) fn default_outputs() -> HashMap<String, OutputProfile> {
             name: "default".to_owned(),
             target_type: BuildTargetType::Pdf,
             tex_format: "latex".to_owned(),
-            preamble_file: DEFAULT_PREAMBLE_FILE.to_owned(),
-            index_file: DEFAULT_INDEX_FILE.to_owned(),
-            postamble_file: DEFAULT_POSTAMBLE_FILE.to_owned(),
+            inputs: DEFAULT_INPUTS
+                .iter()
+                .map(|x| InputFile::File(x.to_string()))
+                .collect(),
             shell_escape: false,
             shell_escape_cwd: None,
+            synctex: false,
         },
     );
     outputs
-}
-
-/// The concrete syntax for saving document state, wired up via serde.
-mod syntax {
-    use super::{DEFAULT_INDEX_FILE, DEFAULT_POSTAMBLE_FILE, DEFAULT_PREAMBLE_FILE};
-    use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
-
-    #[derive(Debug, Deserialize, Serialize)]
-    #[serde(deny_unknown_fields)]
-    pub struct Document {
-        pub doc: DocSection,
-
-        #[serde(rename = "output")]
-        pub outputs: Vec<OutputProfile>,
-    }
-
-    #[derive(Debug, Deserialize, Serialize)]
-    #[serde(deny_unknown_fields)]
-    pub struct DocSection {
-        pub name: String,
-        pub bundle: String,
-        pub metadata: Option<toml::Value>,
-    }
-
-    #[derive(Debug, Deserialize, Serialize)]
-    #[serde(deny_unknown_fields)]
-    pub struct OutputProfile {
-        pub name: String,
-        #[serde(rename = "type")]
-        pub target_type: BuildTargetType,
-        pub tex_format: Option<String>,
-        #[serde(rename = "preamble")]
-        pub preamble_file: Option<String>,
-        #[serde(rename = "index")]
-        pub index_file: Option<String>,
-        #[serde(rename = "postamble")]
-        pub postamble_file: Option<String>,
-        pub shell_escape: Option<bool>,
-        pub shell_escape_cwd: Option<String>,
-    }
-
-    impl OutputProfile {
-        pub fn from_runtime(rt: &super::OutputProfile) -> Self {
-            let tex_format = if rt.tex_format == "latex" {
-                None
-            } else {
-                Some(rt.tex_format.clone())
-            };
-
-            let preamble_file = if rt.preamble_file == DEFAULT_PREAMBLE_FILE {
-                None
-            } else {
-                Some(rt.preamble_file.clone())
-            };
-
-            let index_file = if rt.index_file == DEFAULT_INDEX_FILE {
-                None
-            } else {
-                Some(rt.index_file.clone())
-            };
-
-            let postamble_file = if rt.postamble_file == DEFAULT_POSTAMBLE_FILE {
-                None
-            } else {
-                Some(rt.postamble_file.clone())
-            };
-
-            let shell_escape = if !rt.shell_escape { None } else { Some(true) };
-            let shell_escape_cwd = rt.shell_escape_cwd.clone();
-
-            OutputProfile {
-                name: rt.name.clone(),
-                target_type: BuildTargetType::from_runtime(&rt.target_type),
-                tex_format,
-                preamble_file,
-                index_file,
-                postamble_file,
-                shell_escape,
-                shell_escape_cwd,
-            }
-        }
-
-        pub fn to_runtime(&self) -> super::OutputProfile {
-            let shell_escape_default = self.shell_escape_cwd.is_some();
-
-            super::OutputProfile {
-                name: self.name.clone(),
-                target_type: self.target_type.to_runtime(),
-                tex_format: self
-                    .tex_format
-                    .as_ref()
-                    .map(|s| s.as_ref())
-                    .unwrap_or("latex")
-                    .to_owned(),
-                preamble_file: self
-                    .preamble_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_PREAMBLE_FILE.to_owned()),
-                index_file: self
-                    .index_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_INDEX_FILE.to_owned()),
-                postamble_file: self
-                    .postamble_file
-                    .clone()
-                    .unwrap_or_else(|| DEFAULT_POSTAMBLE_FILE.to_owned()),
-                shell_escape: self.shell_escape.unwrap_or(shell_escape_default),
-                shell_escape_cwd: self.shell_escape_cwd.clone(),
-            }
-        }
-    }
-
-    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-    pub enum BuildTargetType {
-        Html,
-        Pdf,
-    }
-
-    impl BuildTargetType {
-        pub fn from_runtime(rt: &super::BuildTargetType) -> Self {
-            match rt {
-                super::BuildTargetType::Html => BuildTargetType::Html,
-                super::BuildTargetType::Pdf => BuildTargetType::Pdf,
-            }
-        }
-
-        pub fn to_runtime(self) -> super::BuildTargetType {
-            match self {
-                BuildTargetType::Html => super::BuildTargetType::Html,
-                BuildTargetType::Pdf => super::BuildTargetType::Pdf,
-            }
-        }
-    }
-
-    impl Serialize for BuildTargetType {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            serializer.serialize_str(match *self {
-                BuildTargetType::Html => "html",
-                BuildTargetType::Pdf => "pdf",
-            })
-        }
-    }
-    impl<'de> Deserialize<'de> for BuildTargetType {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            let s = String::deserialize(deserializer)?;
-            Ok(match s.as_str() {
-                "html" => BuildTargetType::Html,
-                "pdf" => BuildTargetType::Pdf,
-                other => {
-                    return Err(<D as Deserializer>::Error::unknown_variant(
-                        other,
-                        &["html", "pdf"],
-                    ))
-                }
-            })
-        }
-    }
 }
 
 #[cfg(test)]
@@ -487,6 +359,29 @@ mod tests {
     use std::io::Cursor;
 
     use super::*;
+
+    #[test]
+    fn default_inputs() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        "#;
+
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert_eq!(
+            doc.outputs.get("o").unwrap().inputs,
+            DEFAULT_INPUTS
+                .iter()
+                .map(|x| InputFile::File(x.to_string()))
+                .collect::<Vec<InputFile>>()
+        );
+    }
 
     #[test]
     fn shell_escape_default_false() {
@@ -521,5 +416,38 @@ mod tests {
         let mut c = Cursor::new(TOML.as_bytes());
         let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
         assert!(doc.outputs.get("o").unwrap().shell_escape);
+    }
+
+    #[test]
+    fn synctex_default_false() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        "#;
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(!doc.outputs.get("o").unwrap().synctex);
+    }
+
+    #[test]
+    fn synctex_set_true() {
+        const TOML: &str = r#"
+        [doc]
+        name = "test"
+        bundle = "na"
+
+        [[output]]
+        name = "o"
+        type = "pdf"
+        synctex = true
+        "#;
+        let mut c = Cursor::new(TOML.as_bytes());
+        let doc = Document::new_from_toml(".", ".", &mut c).unwrap();
+        assert!(doc.outputs.get("o").unwrap().synctex);
     }
 }

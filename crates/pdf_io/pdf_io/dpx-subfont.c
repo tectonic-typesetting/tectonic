@@ -302,7 +302,7 @@ find_sfd_file (const char *sfd_name)
 
     if (id < 0) {
         struct sfd_file_ *sfd = NULL;
-        rust_input_handle_t handle = NULL;
+        rust_input_handle_t handle = INVALID_HANDLE;
 
         if (num_sfd_files >= max_sfd_files) {
             max_sfd_files += 8;
@@ -313,7 +313,7 @@ find_sfd_file (const char *sfd_name)
         sfd->ident = NEW(strlen(sfd_name) + 1, char);
         strcpy(sfd->ident, sfd_name);
         handle = ttstub_input_open(sfd->ident, TTBC_FILE_FORMAT_SFD, 0);
-        if (handle == NULL) {
+        if (handle == INVALID_HANDLE) {
             clean_sfd_file_(sfd);
             return  -1;
         }
@@ -386,7 +386,7 @@ sfd_load_record (const char *sfd_name, const char *subfont_id)
 
     /* reopen */
     handle = ttstub_input_open(sfd->ident, TTBC_FILE_FORMAT_SFD, 0);
-    if (handle == NULL) {
+    if (handle == INVALID_HANDLE) {
         return  -1;
         /* _tt_abort("Could not open SFD file \"%s\"", sfd_name); */
     }
