@@ -125,7 +125,7 @@ fn base_get_op_size_rec_and_style_flags(font: &mut FontInfo) {
     }
 
     let ft_face = xfont.ft_face();
-    let os2_table = ft_face.get_sfnt_table::<ft::Os2>();
+    let os2_table = ft_face.get_sfnt_table::<ft::tables::Os2>();
     if let Some(table) = os2_table {
         font.weight = table.usWeightClass;
         font.width = table.usWidthClass;
@@ -135,7 +135,7 @@ fn base_get_op_size_rec_and_style_flags(font: &mut FontInfo) {
         font.is_italic = (sel & (1 << 0)) != 0;
     }
 
-    let head_table = ft_face.get_sfnt_table::<ft::Header>();
+    let head_table = ft_face.get_sfnt_table::<ft::tables::Header>();
     if let Some(table) = head_table {
         let ms = table.Mac_Style;
         if (ms & (1 << 0)) != 0 {
@@ -146,7 +146,7 @@ fn base_get_op_size_rec_and_style_flags(font: &mut FontInfo) {
         }
     }
 
-    let post_table = ft_face.get_sfnt_table::<ft::Postscript>();
+    let post_table = ft_face.get_sfnt_table::<ft::tables::Postscript>();
     if let Some(table) = post_table {
         font.slant = (1000.0
             * (f64::tan(fix_to_d((-table.italic_angle) as Fixed) * std::f64::consts::PI / 180.0)))
@@ -466,8 +466,7 @@ impl FontManager {
                     }
                 });
 
-                if any_var {
-                } else if cp.starts_with(b"S") {
+                if any_var {} else if cp.starts_with(b"S") {
                     cp = &cp[1..];
                     if cp.first() == Some(&b'=') {
                         cp = &cp[1..];
@@ -569,10 +568,10 @@ impl FontManager {
                                 // weight info was available, so try to match that
                                 if new_best.is_none()
                                     || Self::weight_and_width_diff(style, font)
-                                        < Self::weight_and_width_diff(
-                                            &self.maps.fonts[new_best.unwrap()],
-                                            font,
-                                        )
+                                    < Self::weight_and_width_diff(
+                                    &self.maps.fonts[new_best.unwrap()],
+                                    font,
+                                )
                                 {
                                     new_best = Some(style_pos);
                                 }
@@ -614,13 +613,13 @@ impl FontManager {
                             let style = &self.maps.fonts[style_pos];
                             if style.is_italic == font.is_italic
                                 && (new_best.is_none()
-                                    || Self::weight_and_width_diff(
-                                        style,
-                                        &self.maps.fonts[best_match],
-                                    ) < Self::weight_and_width_diff(
-                                        &self.maps.fonts[new_best.unwrap()],
-                                        &self.maps.fonts[best_match],
-                                    ))
+                                || Self::weight_and_width_diff(
+                                style,
+                                &self.maps.fonts[best_match],
+                            ) < Self::weight_and_width_diff(
+                                &self.maps.fonts[new_best.unwrap()],
+                                &self.maps.fonts[best_match],
+                            ))
                             {
                                 new_best = Some(style_pos);
                             }
