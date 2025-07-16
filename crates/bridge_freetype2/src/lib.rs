@@ -617,6 +617,15 @@ mod tests {
     use std::fs;
     use std::path::{Path, PathBuf};
 
+    /// Import things from our bridge crates to ensure that we actually link with
+    /// them.
+    mod linkage {
+        #[allow(unused_imports)]
+        use tectonic_bridge_flate as clippyrenamehack1;
+        #[allow(unused_imports)]
+        use tectonic_bridge_png as clippyrenamehack2;
+    }
+
     fn assets_dir() -> PathBuf {
         Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../tests/assets")
