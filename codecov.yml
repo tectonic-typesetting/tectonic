@@ -14,9 +14,9 @@ component_management:
     - component_id: bridge_fontconfig
       paths:
         - "crates/bridge_fontconfig/**"
-    - component_id: bridge_freetype
+    - component_id: bridge_freetype2
       paths:
-        - "crates/bridge_freetype/**"
+        - "crates/bridge_freetype2/**"
     - component_id: bridge_graphite2
       paths:
         - "crates/bridge_graphite2/**"
