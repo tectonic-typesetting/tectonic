@@ -466,7 +466,8 @@ impl FontManager {
                     }
                 });
 
-                if any_var {} else if cp.starts_with(b"S") {
+                if any_var {
+                } else if cp.starts_with(b"S") {
                     cp = &cp[1..];
                     if cp.first() == Some(&b'=') {
                         cp = &cp[1..];
@@ -568,10 +569,10 @@ impl FontManager {
                                 // weight info was available, so try to match that
                                 if new_best.is_none()
                                     || Self::weight_and_width_diff(style, font)
-                                    < Self::weight_and_width_diff(
-                                    &self.maps.fonts[new_best.unwrap()],
-                                    font,
-                                )
+                                        < Self::weight_and_width_diff(
+                                            &self.maps.fonts[new_best.unwrap()],
+                                            font,
+                                        )
                                 {
                                     new_best = Some(style_pos);
                                 }
@@ -613,13 +614,13 @@ impl FontManager {
                             let style = &self.maps.fonts[style_pos];
                             if style.is_italic == font.is_italic
                                 && (new_best.is_none()
-                                || Self::weight_and_width_diff(
-                                style,
-                                &self.maps.fonts[best_match],
-                            ) < Self::weight_and_width_diff(
-                                &self.maps.fonts[new_best.unwrap()],
-                                &self.maps.fonts[best_match],
-                            ))
+                                    || Self::weight_and_width_diff(
+                                        style,
+                                        &self.maps.fonts[best_match],
+                                    ) < Self::weight_and_width_diff(
+                                        &self.maps.fonts[new_best.unwrap()],
+                                        &self.maps.fonts[best_match],
+                                    ))
                             {
                                 new_best = Some(style_pos);
                             }
