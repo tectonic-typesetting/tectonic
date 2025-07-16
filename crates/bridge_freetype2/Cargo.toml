@@ -15,11 +15,20 @@ documentation = "https://docs.rs/tectonic_bridge_freetype2"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 links = "freetype2"
+
+[dependencies]
+libc = "0.2"
 
 [build-dependencies]
 tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
 
+[dev-dependencies]
+tectonic_bridge_png = { path = "../bridge_png", version = "0.0.0-dev.0" }
+tectonic_bridge_flate = { path = "../bridge_flate", version = "0.0.0-dev.0" }
+
 [package.metadata.internal_dep_versions]
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
+tectonic_bridge_png = "42a1f6a8027b2ef01436be16c6e1bc27918f293f"
+tectonic_bridge_flate = "42a1f6a8027b2ef01436be16c6e1bc27918f293f"

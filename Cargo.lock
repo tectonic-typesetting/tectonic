@@ -2966,6 +2966,9 @@ dependencies = [
 name = "tectonic_bridge_freetype2"
 version = "0.0.0-dev.0"
 dependencies = [
+ "libc",
+ "tectonic_bridge_flate",
+ "tectonic_bridge_png",
  "tectonic_dep_support",
 ]
 
