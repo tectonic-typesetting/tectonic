@@ -1,4 +1,4 @@
-#![allow(non_camel_case_types, non_snake_case)]
+#![allow(non_camel_case_types, non_snake_case, missing_docs)]
 
 use std::convert::TryFrom;
 use std::marker::PhantomData;
@@ -19,7 +19,11 @@ pub const TT_PLATFORM_MICROSOFT: libc::c_ushort = 3;
 
 pub const TT_MAC_ID_ROMAN: libc::c_ushort = 0;
 
+pub const TT_MS_ID_UNICODE_CS: libc::c_ushort = 1;
+
 pub const TT_MAC_LANGID_ENGLISH: libc::c_ushort = 0;
+
+pub const TT_MS_LANGID_ENGLISH_UNITED_STATES: libc::c_ushort = 0x0409;
 
 #[repr(C)]
 pub enum FT_Kerning_Mode {
@@ -164,7 +168,7 @@ impl Default for FT_SfntName {
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Debug, Default, PartialEq)]
 #[repr(C)]
 pub struct FT_Vector {
     pub x: FT_Pos,
@@ -207,7 +211,7 @@ const fn as_variant(text: &[u8; 4]) -> isize {
     i32::from_be_bytes(*text) as isize
 }
 
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub enum FT_Glyph_Format {
     None = 0,
@@ -218,17 +222,24 @@ pub enum FT_Glyph_Format {
     Svg = as_variant(b"SVG "),
 }
 
+/// Enumeration of 'well known' sfnt tables, recognized by freetype natively.
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(C)]
 pub enum FT_Sfnt_Tag {
+    /// TrueType font header
     Head = 0,
+    /// Max-profile map - can be used to pre-allocate arrays
     MaxP,
+    /// OS/2 table - various font metrics
     Os2,
+    /// Horizontal Header table
     HHEA,
+    /// Vertical Header table
     VHEA,
+    /// Postscript table
     Post,
+    /// HP-PCL printer table. Usage of this table is largely deprecated.
     PCLT,
-    Max,
 }
 
 impl TryFrom<u32> for FT_Sfnt_Tag {
@@ -243,7 +254,6 @@ impl TryFrom<u32> for FT_Sfnt_Tag {
             4 => FT_Sfnt_Tag::VHEA,
             5 => FT_Sfnt_Tag::Post,
             6 => FT_Sfnt_Tag::PCLT,
-            7 => FT_Sfnt_Tag::Max,
             _ => return Err(()),
         })
     }
@@ -255,7 +265,7 @@ pub struct FT_Generic {
     pub finalizer: FT_Generic_Finalizer,
 }
 
-#[derive(Default)]
+#[derive(Clone, Default, Debug, PartialEq)]
 #[repr(C)]
 pub struct FT_BBox {
     pub x_min: FT_Pos,
@@ -297,7 +307,7 @@ pub struct FT_Outline {
 
     points: *mut FT_Vector,
     pub tags: *mut libc::c_char,
-    pub contours: *mut libc::c_short,
+    contours: *mut libc::c_short,
 
     pub flags: libc::c_int,
 }
@@ -306,6 +316,11 @@ impl FT_Outline {
     pub fn points(&self) -> &[FT_Vector] {
         // SAFETY: `points` guaranteed allocated and initialized up to `n_points`
         unsafe { slice::from_raw_parts(self.points, self.n_points as usize) }
+    }
+
+    pub fn contours(&self) -> &[libc::c_short] {
+        // SAFETY: `contours` guaranteed allocated and initialized up to `n_contours`
+        unsafe { slice::from_raw_parts(self.contours, self.n_contours as usize) }
     }
 }
 
@@ -504,4 +519,5 @@ extern "C" {
     pub fn FT_Get_Postscript_Name(face: FT_Face) -> *const libc::c_char;
     pub fn FT_Get_Sfnt_Name_Count(face: FT_Face) -> libc::c_uint;
     pub fn FT_Get_Sfnt_Name(face: FT_Face, idx: libc::c_uint, aname: *mut FT_SfntName) -> FT_Error;
+    pub fn FT_Error_String(code: FT_Error) -> *const libc::c_char;
 }
