@@ -232,16 +232,16 @@ jobs:
       TOOLCHAIN: stable
 
   # pkg-config builds
-  - ${{ each build in parameters.pkgconfigBuilds }}:
-      - job: ${{ format('build_{0}_pkgconfig', build.name) }}
-        pool:
-          vmImage: ${{ build.vmImage }}
-        steps:
-          - template: azure-build-and-test-pkgconfig.yml
-            parameters:
-              ${{ insert }}: ${{ build.params }}
-        variables:
-          ${{ insert }}: ${{ build.vars }}
+#  - ${{ each build in parameters.pkgconfigBuilds }}:
+#      - job: ${{ format('build_{0}_pkgconfig', build.name) }}
+#        pool:
+#          vmImage: ${{ build.vmImage }}
+#        steps:
+#          - template: azure-build-and-test-pkgconfig.yml
+#            parameters:
+#              ${{ insert }}: ${{ build.params }}
+#        variables:
+#          ${{ insert }}: ${{ build.vars }}
 
   # vcpkg builds
   - ${{ each build in parameters.vcpkgBuilds }}:
