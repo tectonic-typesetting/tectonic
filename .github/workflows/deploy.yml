@@ -10,4 +10,8 @@ on:
         type: boolean
 
 jobs:
-
+  todo:
+    runs-on: ubuntu-latest
+    steps:
+    - name: TODO
+      run: echo "TODO"
