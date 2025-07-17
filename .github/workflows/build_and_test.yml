@@ -2,6 +2,63 @@
 on: [workflow_call]
 
 jobs:
+  linux-semistatic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+          echo "TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC=true" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+  linux-toolchains:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain: ["beta", "nightly"]
+      fail-fast: false
+    steps:
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+  linux-feature-tests:
+    strategy:
+      matrix:
+        features: ["_all_", "_none_", "geturl-curl serialization"]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+          features: ${{ matrix.features }}
   pkg-config:
     strategy:
       matrix:
@@ -27,70 +84,19 @@ jobs:
           # When install-all-deps is true, set feature "external-harfbuzz"
           - install-all-deps: true
             features: "external-harfbuzz"
-
-          # Custom build configs
-          - image: ubuntu-latest
-            install-all-deps: false
-            toolchain: beta
-          - image: ubuntu-latest
-            install-all-deps: false
-            toolchain: nightly
-          - image: ubuntu-latest
-            install-all-deps: false
-            features: "_none_"
-          - image: ubuntu-latest
-            install-all-deps: true
-            features: "_all_"
       fail-fast: false
     runs-on: ${{ matrix.image }}
     steps:
-      - name: "Install pkg-config dependencies (Ubuntu)"
-        if: ${{ runner.os == 'Linux' }}
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
         run: |
-          # libfuse2 here is to support the AppImage build associated with
-          # the "primary" Linux artifact.
-          pkgs="
-            libgraphite2-dev
-            libfontconfig1-dev
-            libfuse2
-            libicu-dev
-            libssl-dev
-            openssl
-            zlib1g-dev"
-          if [[ "${{ matrix.install-all-deps }}" == "true" ]] ; then
-            pkgs="$pkgs libharfbuzz-dev"
-          fi
-
-          sudo apt-get update
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkgs
-      - name: "Install pkg-config dependencies (macOS)"
-        if: ${{ runner.os == 'macOS' }}
-        run: |
-          pkgs="
-                freetype
-                graphite2
-                icu4c
-                libpng
-                openssl"
-              if [[ $INSTALL_ALL_DEPS == True ]] ; then
-                pkgs="$pkgs harfbuzz"
-              fi
-
-              brew install $pkgs
-              cellar=$(brew --cellar)
-              icupcdir="$(echo $cellar/icu4c*/*/lib/pkgconfig)"
-              echo "PKG_CONFIG_PATH=\"$icupcdir\"" >> "$GITHUB_ENV"
-      - name: "Set MSYS64 paths (Windows)"
-        if: ${{ runner.os == 'Windows' }}
-        run: |
-          echo "PATH=C:\msys64\usr\bin:C:\msys64\mingw64\bin:$PATH" >> "$GITHUB_ENV"
-      - name: "Install pkg-config dependencies (Windows)"
-        if: ${{ runner.os == 'Windows' }}
-        run: |
-          pacman -S --noconfirm \
-            mingw-w64-x86_64-pkgconf \
-            mingw-w64-x86_64-fontconfig \
-            mingw-w64-x86_64-freetype \
-            mingw-w64-x86_64-icu
-          # Format file locking issue workaround:
-          echo "RUST_TEST_THREADS=1" >> "$GITHUB_ENV"
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: ${{ matrix.target }}
+          features: ${{ matrix.features }}
