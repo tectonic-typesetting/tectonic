@@ -117,11 +117,6 @@ jobs:
         shell: bash
         run: |
           echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
-      - name: "macOS debug"
-        if: ${{ runner.os == 'macOS' }}
-        run: |
-          ls /opt/homebrew/Cellar/icu4c@77/77.1/lib/pkgconfig
-          echo $PKG_CONFIG_PATH
       - name: "Build and Test"
         uses: ./.github/actions/build-and-test
         with:
