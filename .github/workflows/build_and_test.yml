@@ -9,6 +9,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: true
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
       - name: "Install pkg-config dependencies"
@@ -33,6 +34,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: true
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
         with:
@@ -58,6 +60,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: true
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
       - name: "Install pkg-config dependencies"
@@ -103,6 +106,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: true
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
       - name: "Install pkg-config dependencies"
