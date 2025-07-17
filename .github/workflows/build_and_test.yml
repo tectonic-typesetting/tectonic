@@ -1,0 +1,124 @@
+
+on: [workflow_call]
+
+jobs:
+  linux-semistatic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+          echo "TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC=true" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+  linux-toolchains:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain: ["beta", "nightly"]
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+  linux-feature-tests:
+    strategy:
+      matrix:
+        features: ["_all_", "_none_", "geturl-curl serialization"]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+          features: ${{ matrix.features }}
+  pkg-config:
+    strategy:
+      matrix:
+        image: [ubuntu-latest, windows-latest, macos-latest]
+        install-all-deps: [true, false]
+        include:
+          # By default, all items have toolchain: stable
+          - toolchain: stable
+          # Windows uses a different toolchain
+          - image: windows-latest
+            toolchain: stable-x86_64-pc-windows-gnu
+          # Set primary build for exactly one build
+          - image: ubuntu-latest
+            install-all-deps: false
+            primary-build: true
+          # Add targets for each image type
+          - image: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - image: windows-latest
+            target: x86_64-pc-windows-gnu
+          - image: macos-latest
+            target: aarch64-apple-darwin
+          # When install-all-deps is true, set feature "external-harfbuzz"
+          - install-all-deps: true
+            features: "external-harfbuzz"
+      fail-fast: false
+    runs-on: ${{ matrix.image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: ${{ matrix.target }}
+          features: ${{ matrix.features }}

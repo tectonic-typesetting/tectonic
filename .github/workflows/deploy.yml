@@ -1,0 +1,17 @@
+
+on:
+  workflow_call:
+    inputs:
+      is-main:
+        required: true
+        type: boolean
+      is-release:
+        required: true
+        type: boolean
+
+jobs:
+  todo:
+    runs-on: ubuntu-latest
+    steps:
+    - name: TODO
+      run: echo "TODO"
