@@ -5,6 +5,10 @@ jobs:
   linux-semistatic:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
       - name: "Install pkg-config dependencies"
@@ -25,6 +29,10 @@ jobs:
         toolchain: ["beta", "nightly"]
       fail-fast: false
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
         with:
@@ -46,6 +54,10 @@ jobs:
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
       - name: "Install pkg-config dependencies"
@@ -87,6 +99,10 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.image }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
       - name: "Install pkg-config dependencies"
