@@ -109,6 +109,8 @@ jobs:
           submodules: true
       - name: "Generic Setup"
         uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
       - name: "Install pkg-config dependencies"
         uses: ./.github/actions/pkgconfig-deps
       - name: "Setup build variables"
