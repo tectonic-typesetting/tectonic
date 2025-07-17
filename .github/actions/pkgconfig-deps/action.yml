@@ -51,6 +51,7 @@ runs:
       shell: bash
       run: |
         pacman -S --noconfirm \
+          mingw-w64-x86_64-toolchain \
           mingw-w64-x86_64-pkgconf \
           mingw-w64-x86_64-fontconfig \
           mingw-w64-x86_64-freetype \
