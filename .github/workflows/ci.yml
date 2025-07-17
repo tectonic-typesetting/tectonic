@@ -1,7 +1,7 @@
 
 on:
   push:
-    branches: [master, rc]
+    branches: [master, rc, github-actions]
   pull_request:
   schedule:
     - cron: '0 0 * * *'
