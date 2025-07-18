@@ -1,0 +1,30 @@
+name: 'vcpkg-deps'
+description: 'Install Tectonic vcpkg dependencies'
+inputs:
+  target:
+    description: "Compilation target"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: "Add target ${{ inputs.target }}"
+      run:
+        rustup target add ${{ inputs.target }}
+    - name: "Install vcpkg dependencies (Ubuntu)"
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt-get update
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+          autoconf-archive
+    - name: "Install vcpkg dependencies (macOS)"
+      if: ${{ runner.os == 'macOS' }}
+      run: brew install autoconf-archive automake libtool pkg-config
+    - name: "Install cargo vcpkg"
+      run: cargo install --git https://github.com/mcgoo/cargo-vcpkg --branch master cargo-vcpkg
+    - name: "Load vcpkg cache"
+      uses: actions/cache@v4
+      with:
+        path: $GITHUB_WORKSPACE/target/vcpkg-cache
+        key: ${{ runner.os }}-${{ inputs.target }}-${{ hashFiles('Cargo.toml') }}
+    - name: "Build vcpkg deps"
+      run: cargo vcpkg -v build --target ${{ inputs.target }}
