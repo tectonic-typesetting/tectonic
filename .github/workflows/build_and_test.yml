@@ -135,7 +135,7 @@ jobs:
       matrix:
         data:
           - image: ubuntu-latest
-            target: x86_64-unkown-linux-gnu
+            target: x86_64-unknown-linux-gnu
           - image: windows-latest
             target: x86_64-pc-windows-msvc
           - image: macos-latest
