@@ -8,6 +8,10 @@ inputs:
     description: "Extra feature flags to apply"
     required: false
     default: ""
+  publish:
+    description: "Whether to publish compiled binaries"
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -33,25 +37,28 @@ runs:
         # can be helpful to get a full backtrace.
         echo "RUST_BACKTRACE=full" >> "$GITHUB_ENV"
         echo "CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG=true" >> "$GITHUB_ENV"
+        if [[ -n "${{ runner.debug }}" ]]; then
+          echo "CARGO_VERBOSE=-v" >> "$GITHUB_ENV"
+        fi
       env:
         EXPLICIT_FEAUTURES: ${{ inputs.features }}
     - name: "cargo build for ${{ inputs.target }}"
       shell: bash
       run: |
-        cargo build --all --target ${{ inputs.target }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" -v
+        cargo build --all --target ${{ inputs.target }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" $CARGO_VERBOSE
     - name: "cargo test"
       shell: bash
       run: |
-        cargo test --all --target ${{ inputs.target }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT"
+        cargo test --all --target ${{ inputs.target }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" $CARGO_VERBOSE
     - name: "Package test failure files"
       id: package-tests
       if: ${{ failure() }}
       shell: bash
-      run:
+      run: |
         artifact_dir="test_failures"
         mkdir -p "$artifact_dir"
-        mv *.observed "$artifact_dir"
-        mv *.expected "$artifact_dir"
+        mv *.observed "$artifact_dir" || true
+        mv *.expected "$artifact_dir" || true
         if [ -n "$(ls -A $artifact_dir)" ]; then
           echo "failure-artifacts=true" >> "$GITHUB_OUTPUTS"
         fi
@@ -61,3 +68,16 @@ runs:
       with:
         name: test-failures-${{ inputs.target }}
         path: test_failures
+    - name: "Package binaries"
+      if: ${{ inputs.publish == 'true' }}
+      shell: bash
+      run: |
+        artifact_dir="binary-${{ inputs.target }}"
+        mkdir -p "$artifact_dir"
+        cranko cargo package-released-binaries -t ${{ inputs.target }} $artifact_dir -- build --target ${{ inputs.target }} --release
+    - name: "Publish packaged binary artifact(s)"
+      if: ${{ inputs.publish == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        path: binary-${{ inputs.target }}
+        name: binary-${{ inputs.target }}

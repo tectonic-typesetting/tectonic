@@ -1,3 +1,4 @@
+name: "Build and Test"
 
 on: [workflow_call]
 
@@ -23,6 +24,7 @@ jobs:
         uses: ./.github/actions/build-and-test
         with:
           target: x86_64-unknown-linux-gnu
+          publish: true
   linux-toolchains:
     runs-on: ubuntu-latest
     strategy:
@@ -80,11 +82,16 @@ jobs:
         image: [ubuntu-latest, windows-latest, macos-latest]
         install-all-deps: [true, false]
         include:
-          # By default, all items have toolchain: stable
+          # By default, all items have toolchain: stable, and don't publish
           - toolchain: stable
+            publish: false
           # Windows uses a different toolchain
           - image: windows-latest
             toolchain: stable-x86_64-pc-windows-gnu
+          # Windows intdeps publishes
+          - image: windows-latest
+            install-all-deps: false
+            publish: true
           # Set primary build for exactly one build
           - image: ubuntu-latest
             install-all-deps: false
@@ -122,3 +129,51 @@ jobs:
         with:
           target: ${{ matrix.target }}
           features: ${{ matrix.features }}
+          publish: ${{ matrix.publish }}
+  vcpkg:
+    strategy:
+      matrix:
+        data:
+          - image: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - image: windows-latest
+            target: x86_64-pc-windows-msvc
+          - image: macos-latest
+            target: x86_64-apple-darwin
+          - image: macos-latest
+            target: aarch64-apple-darwin
+      fail-fast: false
+    runs-on: ${{ matrix.data.image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Install vcpkg dependencies"
+        uses: ./.github/actions/vcpkg-deps
+        with:
+          target: ${{ matrix.data.target }}
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=vcpkg" >> "$GITHUB_ENV"
+          echo "VCPKG_ROOT=$GITHUB_WORKSPACE/target/vcpkg" >> "$GITHUB_ENV"
+      - name: "Setup build variables (Windows)"
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          echo "RUSTFLAGS=-Ctarget-feature=+crt-static" >> "$GITHUB_ENV"
+          echo "VCPKGRS_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          echo "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          # Format file locking issue workaround:
+          echo "RUST_TEST_THREADS=1" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: ${{ matrix.data.target }}
+          publish: ${{ matrix.data.image != 'ubuntu-latest' }}

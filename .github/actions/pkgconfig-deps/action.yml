@@ -43,9 +43,8 @@ runs:
         echo "PKG_CONFIG_PATH=$icupcdir" >> "$GITHUB_ENV"
     - name: "Set MSYS64 paths (Windows)"
       if: ${{ runner.os == 'Windows' }}
-      shell: bash
-      run: |
-        echo "PATH=C:\msys64\usr\bin;C:\msys64\mingw64\bin;$PATH" >> "$GITHUB_ENV"
+      shell: pwsh
+      run: Add-Content -Value "PATH=C:\msys64\usr\bin;C:\msys64\mingw64\bin;$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
     - name: "Install pkg-config dependencies (Windows)"
       if: ${{ runner.os == 'Windows' }}
       shell: bash
