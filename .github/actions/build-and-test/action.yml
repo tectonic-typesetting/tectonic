@@ -9,7 +9,7 @@ inputs:
     required: false
     default: ""
   publish:
-    description: "Whether to punish compiled binaries"
+    description: "Whether to publish compiled binaries"
     required: false
     default: 'false'
 runs:
@@ -51,7 +51,7 @@ runs:
       id: package-tests
       if: ${{ failure() }}
       shell: bash
-      run:
+      run: |
         artifact_dir="test_failures"
         mkdir -p "$artifact_dir"
         mv *.observed "$artifact_dir"
