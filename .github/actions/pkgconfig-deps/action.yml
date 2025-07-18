@@ -45,7 +45,7 @@ runs:
       if: ${{ runner.os == 'Windows' }}
       shell: bash
       run: |
-        echo "PATH=/c/msys64/usr/bin:$PATH" >> "$GITHUB_ENV"
+        echo "PATH=C:\msys64\usr\bin;C:\msys64\mingw64\bin;:$PATH" >> "$GITHUB_ENV"
     - name: "Install pkg-config dependencies (Windows)"
       if: ${{ runner.os == 'Windows' }}
       shell: bash
