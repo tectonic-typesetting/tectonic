@@ -54,8 +54,8 @@ runs:
       run: |
         artifact_dir="test_failures"
         mkdir -p "$artifact_dir"
-        mv *.observed "$artifact_dir"
-        mv *.expected "$artifact_dir"
+        mv *.observed "$artifact_dir" || true
+        mv *.expected "$artifact_dir" || true
         if [ -n "$(ls -A $artifact_dir)" ]; then
           echo "failure-artifacts=true" >> "$GITHUB_OUTPUTS"
         fi
