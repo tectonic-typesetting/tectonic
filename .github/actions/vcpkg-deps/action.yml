@@ -29,7 +29,7 @@ runs:
       uses: actions/cache@v4
       with:
         path: $GITHUB_WORKSPACE/target/vcpkg-cache
-        key: ${{ runner.os }}-${{ inputs.target }}-${{ hashFiles('Cargo.toml') }}
+        key: ${{ runner.os }}-${{ inputs.target }}
     - name: "Build vcpkg deps"
       shell: bash
       run: cargo vcpkg -v build --target ${{ inputs.target }}
