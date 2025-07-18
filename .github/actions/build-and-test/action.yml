@@ -66,9 +66,10 @@ runs:
         name: test-failures-${{ inputs.target }}
         path: test_failures
     - name: "Package binaries"
-      if: ${{ inputs.publish }}
+      if: ${{ inputs.publish == 'true' }}
       shell: bash
       run: |
+        ls /tmp/cranko-* || true
         artifact_dir="binary-${{ inputs.target }}"
         mkdir -p "$artifact_dir"
         cranko cargo package-released-binaries -t ${{ inputs.target }} $artifact_dir -- build --target ${{ inputs.target }} --release

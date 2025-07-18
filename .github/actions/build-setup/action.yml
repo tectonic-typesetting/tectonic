@@ -42,8 +42,7 @@ runs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://pkgw.github.io/cranko/fetch-latest.ps1'))
         Add-Content -Value "PATH=${d};$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
-        echo $d
-        echo $env:GITHUB_ENV
+        ls $d
     - name: Install release artifact
       uses: actions/download-artifact@v4
       with:
