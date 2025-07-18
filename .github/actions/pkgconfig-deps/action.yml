@@ -41,11 +41,11 @@ runs:
         cellar=$(brew --cellar)
         icupcdir="$(echo $cellar/icu4c*/*/lib/pkgconfig)"
         echo "PKG_CONFIG_PATH=$icupcdir" >> "$GITHUB_ENV"
-#    - name: "Set MSYS64 paths (Windows)"
-#      if: ${{ runner.os == 'Windows' }}
-#      shell: bash
-#      run: |
-#        echo "PATH=/c/msys64/usr/bin:$PATH" >> "$GITHUB_ENV"
+    - name: "Set MSYS64 paths (Windows)"
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: |
+        echo "PATH=/c/msys64/usr/bin:$PATH" >> "$GITHUB_ENV"
     - name: "Install pkg-config dependencies (Windows)"
       if: ${{ runner.os == 'Windows' }}
       shell: bash
