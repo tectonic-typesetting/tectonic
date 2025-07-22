@@ -3,6 +3,124 @@ name: "Build and Test"
 on: [workflow_call]
 
 jobs:
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: "Install rustfmt"
+        run: rustup component add rustfmt
+      - name: "cargo fmt"
+        run: cargo fmt --all -- --check
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+        with:
+          install-all-deps: 'true'
+      - name: "Install clippy"
+        run: |
+          rustup component add clippy
+          cargo clippy --version
+      - name: "cargo clippy"
+        run: cargo clippy --all --all-targets --all-features -- --deny warnings
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Set up code coverage"
+        run: |
+          echo "CC=clang" >> "$GITHUB_ENV"
+          echo "CXX=clang++" >> "$GITHUB_ENV"
+          cargo install cargo-llvm-cov
+      - name: "cargo llvm-cov"
+        run: cargo llvm-cov --workspace --include-ffi --ignore-filename-regex '/harfbuzz/' --codecov --output-path coverage.json
+      - name: "Report coverage results"
+        run: bash <(curl -s https://codecov.io/bash)
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+          echo "TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC=true" >> "$GITHUB_ENV"
+      - name: "Build AppImage"
+        shell: bash
+        run: |
+          artifact_dir="appimage"
+          mkdir -p "$artifact_dir"
+  
+          if [[ $SOURCE_BRANCH == master ]] ; then
+            export TECTONIC_APPIMAGE_TAG=continuous
+            export UPDATE_INFORMATION="gh-releases-zsync|tectonic-typesetting|tectonic|continuous|tectonic-*.AppImage.zsync"
+          fi
+  
+          ./dist/appimage/build.sh
+          cp dist/appimage/tectonic-*.AppImage* "$artifact_dir"
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+  book:
+    runs-on: ubuntu-latest
+    env:
+      MDBOOK_VERSION: 0.4.2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install mdbook ${{ env.MDBOOK_VERSION }}"
+        run: |
+          fn="mdbook-v${{ env.MDBOOK_VERSION }}-x86_64-unknown-linux-gnu.tar.gz"
+          url="https://github.com/rust-lang/mdBook/releases/download/v${{ env.MDBOOK_VERSION }}/$fn"
+          wget -q --progress=dot "$url"
+          tar xzf "$fn"
+          rm -f "$fn"
+      - name: "mdbook build"
+        run: |
+          artifact_dir="${{ github.workspace }}/book"
+          mkdir -p "$artifact_dir"
+          cd docs && ../mdbook build -d "$artifact_dir"
+      - name: "mdbook test"
+        run: |
+          cd docs && ../mdbook test
+      - name: "Publish book artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/book
+          name: book
   linux-semistatic:
     runs-on: ubuntu-latest
     steps:
@@ -120,6 +238,8 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
       - name: "Install pkg-config dependencies"
         uses: ./.github/actions/pkgconfig-deps
+        with:
+          install-all-deps: ${{ matrix.install-all-deps }}
       - name: "Setup build variables"
         shell: bash
         run: |
@@ -219,3 +339,4 @@ jobs:
           executable: 'cross'
           test-flags: '--exclude tectonic_bridge_fontconfig'
           package-flags: '--command-name=cross --reroot=.'
+

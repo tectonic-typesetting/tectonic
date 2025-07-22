@@ -1,5 +1,10 @@
 name: 'pkgconfig-deps'
 description: 'Install Tectonic pkg-config dependencies'
+inputs:
+  install-all-deps:
+    description: "Whether to install harfbuzz and other possibly-vendored dependencies"
+    required: false
+    default: 'false'
 runs:
   using: "composite"
   steps:
@@ -17,7 +22,7 @@ runs:
           libssl-dev
           openssl
           zlib1g-dev"
-        if [[ "${{ matrix.install-all-deps }}" == "true" ]] ; then
+        if [[ "${{ inputs.install-all-deps }}" == "true" ]] ; then
           pkgs="$pkgs libharfbuzz-dev"
         fi
 

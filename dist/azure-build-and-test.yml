@@ -13,129 +13,88 @@
 # This is why some platform-specific steps use `condition:` terms rather than
 # compile-time `${{ if }}:` statements.
 
-parameters:
-  - name: crossBuilds
-    type: object
-    default:
-      - name: aarch64_unknown_linux_musl
-        params:
-          # TODO: Add font files to the cross images
-          testFlags: --exclude tectonic_bridge_fontconfig
-        vars:
-          TARGET: aarch64-unknown-linux-musl
-
-      - name: arm_unknown_linux_musleabihf
-        params:
-          testFlags: --exclude tectonic_bridge_fontconfig
-        vars:
-          TARGET: arm-unknown-linux-musleabihf
-
-      - name: i686_unknown_linux_gnu
-        params: { }
-        vars:
-          TARGET: i686-unknown-linux-gnu
-
-      - name: x86_64_unknown_linux_musl
-        params:
-          testFlags: --exclude tectonic_bridge_fontconfig
-        vars:
-          TARGET: x86_64-unknown-linux-musl
-
-jobs:
+#jobs:
 
   # rustfmt check
-  - job: rustfmt
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - bash: rustup component add rustfmt
-        displayName: "Install rustfmt"
-      - bash: cargo fmt --all -- --check
-        displayName: "Check rustfmt (cargo)"
-    variables:
-      TOOLCHAIN: stable
+#  - job: rustfmt
+#    pool:
+#      vmImage: ubuntu-latest
+#    steps:
+#      - bash: rustup component add rustfmt
+#        displayName: "Install rustfmt"
+#      - bash: cargo fmt --all -- --check
+#        displayName: "Check rustfmt (cargo)"
+#    variables:
+#      TOOLCHAIN: stable
 
   # clippy check
-  - job: clippy
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: azure-generic-build-setup.yml
-      - bash: |
-          rustup component add clippy
-          cargo clippy --version
-        displayName: "Install clippy"
-      # Ew, redundant with stock builds:
-      - bash: |
-          set -xeuo pipefail
-          sudo apt-get update
-          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
-            libgraphite2-dev \
-            libharfbuzz-dev \
-            libfontconfig1-dev \
-            libicu-dev \
-            libssl-dev \
-            openssl \
-            zlib1g-dev
-        displayName: "Install pkg-config dependencies (Ubuntu)"
-      - bash: cargo clippy --all --all-targets --all-features -- --deny warnings
-        displayName: "Check clippy (cargo)"
-    variables:
-      TOOLCHAIN: stable
-
-  # cross builds
-#  - ${{ each build in parameters.crossBuilds }}:
-#      - job: ${{ format('cross_{0}', build.name) }}
-#        pool:
-#          vmImage: ubuntu-22.04
-#        steps:
-#          - template: azure-build-and-test-cross.yml
-#            parameters:
-#              ${{ insert }}: ${{ build.params }}
-#        variables:
-#          TOOLCHAIN: stable
-#          ${{ insert }}: ${{ build.vars }}
+#  - job: clippy
+#    pool:
+#      vmImage: ubuntu-latest
+#    steps:
+#      - template: azure-generic-build-setup.yml
+#      - bash: |
+#          rustup component add clippy
+#          cargo clippy --version
+#        displayName: "Install clippy"
+#      # Ew, redundant with stock builds:
+#      - bash: |
+#          set -xeuo pipefail
+#          sudo apt-get update
+#          sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+#            libgraphite2-dev \
+#            libharfbuzz-dev \
+#            libfontconfig1-dev \
+#            libicu-dev \
+#            libssl-dev \
+#            openssl \
+#            zlib1g-dev
+#        displayName: "Install pkg-config dependencies (Ubuntu)"
+#      - bash: cargo clippy --all --all-targets --all-features -- --deny warnings
+#        displayName: "Check clippy (cargo)"
+#    variables:
+#      TOOLCHAIN: stable
 
   # coverage analysis check
-  - job: coverage
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: azure-coverage.yml
-    variables:
-      - group: Coverage Credentials
-      - name: TOOLCHAIN
-        value: stable
+#  - job: coverage
+#    pool:
+#      vmImage: ubuntu-latest
+#    steps:
+#      - template: azure-coverage.yml
+#    variables:
+#      - group: Coverage Credentials
+#      - name: TOOLCHAIN
+#        value: stable
 
   # book build
-  - job: book
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: azure-generic-build-setup.yml
-      - bash: |
-          fn="mdbook-v$(MDBOOK_VERSION)-x86_64-unknown-linux-gnu.tar.gz"
-          url="https://github.com/rust-lang/mdBook/releases/download/v$(MDBOOK_VERSION)/$fn"
-          wget -q --progress=dot "$url"
-          tar xzf "$fn"
-          rm -f "$fn"
-        displayName: Install mdbook $(MDBOOK_VERSION)
-      - bash: cargo build -p tectonic_cfg_support
-        displayName: Mini cargo build
-      - bash: |
-          git add .
-          cranko release-workflow commit
-          git show HEAD
-        displayName: cranko release-workflow commit
-      - bash: |
-          artifact_dir="$(Build.ArtifactStagingDirectory)/book"
-          mkdir -p "$artifact_dir"
-          cd docs && ../mdbook build -d "$artifact_dir"
-        displayName: mdbook build
-      - task: PublishPipelineArtifact@1
-        displayName: Publish book artifacts
-        inputs:
-          targetPath: '$(Build.ArtifactStagingDirectory)/book'
-          artifactName: book
-      - bash: cd docs && ../mdbook test
-        displayName: mdbook test
+#  - job: book
+#    pool:
+#      vmImage: ubuntu-latest
+#    steps:
+#      - template: azure-generic-build-setup.yml
+#      - bash: |
+#          fn="mdbook-v$(MDBOOK_VERSION)-x86_64-unknown-linux-gnu.tar.gz"
+#          url="https://github.com/rust-lang/mdBook/releases/download/v$(MDBOOK_VERSION)/$fn"
+#          wget -q --progress=dot "$url"
+#          tar xzf "$fn"
+#          rm -f "$fn"
+#        displayName: Install mdbook $(MDBOOK_VERSION)
+#      - bash: cargo build -p tectonic_cfg_support
+#        displayName: Mini cargo build
+#      - bash: |
+#          git add .
+#          cranko release-workflow commit
+#          git show HEAD
+#        displayName: cranko release-workflow commit
+#      - bash: |
+#          artifact_dir="$(Build.ArtifactStagingDirectory)/book"
+#          mkdir -p "$artifact_dir"
+#          cd docs && ../mdbook build -d "$artifact_dir"
+#        displayName: mdbook build
+#      - task: PublishPipelineArtifact@1
+#        displayName: Publish book artifacts
+#        inputs:
+#          targetPath: '$(Build.ArtifactStagingDirectory)/book'
+#          artifactName: book
+#      - bash: cd docs && ../mdbook test
+#        displayName: mdbook test
