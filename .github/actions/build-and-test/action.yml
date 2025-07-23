@@ -1,0 +1,92 @@
+name: 'build-and-test'
+description: 'Run tectonic build and test'
+inputs:
+  target:
+    description: "Compilation target to use"
+    required: true
+  features:
+    description: "Extra feature flags to apply"
+    required: false
+    default: ""
+  publish:
+    description: "Whether to publish compiled binaries"
+    required: false
+    default: 'false'
+  executable:
+    description: "The executable to invoke. Normally cargo"
+    required: false
+    default: cargo
+  test-flags:
+    description: "Extra flags to pass to `cargo test`"
+    required: false
+  package-flags:
+    description: "Extra flags to pass to cranko package-released-binaries"
+runs:
+  using: "composite"
+  steps:
+    - name: Set feature flags
+      shell: bash
+      run: |
+        ffs=
+        fts=
+        
+        if [[ "$EXPLICIT_FEATURES" == "_none_" ]] ; then
+          ffs="--no-default-features"
+        elif [[ "$EXPLICIT_FEATURES" == "_all_" ]] ; then
+          ffs="--all-features"
+        else
+          fts="$EXPLICIT_FEATURES"
+        fi
+        
+        echo "Cargo features for this build: $ffs --features=\"$fts\""
+        echo "CARGO_FEATURES_EXPLICIT=$fts" >> "$GITHUB_ENV"
+        echo "CARGO_FEATURES_FLAGS=$ffs" >> "$GITHUB_ENV"
+        
+        # OK, these have nothing to do with features, but if a build script fails, it
+        # can be helpful to get a full backtrace.
+        echo "RUST_BACKTRACE=full" >> "$GITHUB_ENV"
+        echo "CARGO_PROFILE_RELEASE_BUILD_OVERRIDE_DEBUG=true" >> "$GITHUB_ENV"
+        if [[ -n "${{ runner.debug }}" ]]; then
+          echo "CARGO_VERBOSE=-v" >> "$GITHUB_ENV"
+        fi
+      env:
+        EXPLICIT_FEAUTURES: ${{ inputs.features }}
+    - name: "cargo build for ${{ inputs.target }}"
+      shell: bash
+      run: |
+        ${{ inputs.executable }} build --all --target ${{ inputs.target }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" $CARGO_VERBOSE
+    - name: "cargo test"
+      shell: bash
+      run: |
+        ${{ inputs.executable }} test --all --target ${{ inputs.target }} ${{ inputs.test-flags }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" $CARGO_VERBOSE
+    - name: "Package test failure files"
+      id: package-tests
+      if: ${{ failure() }}
+      shell: bash
+      run: |
+        artifact_dir="test_failures"
+        mkdir -p "$artifact_dir"
+        mv *.observed "$artifact_dir" || true
+        mv *.expected "$artifact_dir" || true
+        if [ -n "$(ls -A $artifact_dir)" ]; then
+          echo "failure-artifacts=true" >> "$GITHUB_OUTPUTS"
+        fi
+    - name: "Publish packaged test failures"
+      if: ${{ steps.package-tests.outputs.failure-artifacts }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-failures-${{ inputs.target }}
+        path: test_failures
+    - name: "Package binaries"
+      if: ${{ inputs.publish == 'true' }}
+      shell: bash
+      run: |
+        artifact_dir="binary-${{ inputs.target }}"
+        mkdir -p "$artifact_dir"
+        cranko cargo package-released-binaries ${{ inputs.package-flags }} -t ${{ inputs.target }} $artifact_dir -- build --target ${{ inputs.target }} --release
+    - name: "Publish packaged binary artifact(s)"
+      if: ${{ inputs.publish == 'true' }}
+      uses: actions/upload-artifact@v4
+      with:
+        path: binary-${{ inputs.target }}
+        name: binary-${{ inputs.target }}

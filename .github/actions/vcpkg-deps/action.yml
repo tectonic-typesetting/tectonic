@@ -1,0 +1,47 @@
+name: 'vcpkg-deps'
+description: 'Install Tectonic vcpkg dependencies'
+inputs:
+  target:
+    description: "Compilation target"
+    required: true
+  vcpkg_cache:
+    description: "Root directory for vcpkg cache"
+    required: false
+    default: ${{ github.workspace }}/target/vcpkg-cache
+runs:
+  using: "composite"
+  steps:
+    - name: "Add target ${{ inputs.target }}"
+      shell: bash
+      run:
+        rustup target add ${{ inputs.target }}
+    - name: "Install vcpkg dependencies (Ubuntu)"
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y \
+          autoconf-archive
+    - name: "Install vcpkg dependencies (macOS)"
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: brew install autoconf-archive automake libtool pkg-config
+    - name: "Install cargo vcpkg"
+      shell: bash
+      run: cargo install --git https://github.com/mcgoo/cargo-vcpkg --branch master cargo-vcpkg
+    - name: "Load vcpkg cache"
+      uses: actions/cache@v4
+      with:
+        path: ${{ inputs.vcpkg_cache }}
+        key: ${{ runner.os }}-${{ inputs.target }}-${{ hashFiles('Cargo.toml') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ inputs.target }}-
+    - name: "Ensure cache dir exists"
+      shell: bash
+      run: |
+        mkdir -p "${{ inputs.vcpkg_cache }}"
+    - name: "Build vcpkg deps"
+      shell: bash
+      run: cargo vcpkg -v build --target ${{ inputs.target }}
+      env:
+        VCPKG_DEFAULT_BINARY_CACHE: ${{ inputs.vcpkg_cache }}
