@@ -29,6 +29,8 @@ jobs:
             https://github.com/tectonic-typesetting/book.git \
             "${{ steps.deploy-setup.outputs.toplevel-mode }}" \
             "docs mdbook"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   recreate-continuous:
     runs-on: ubuntu-latest
     if: ${{ inputs.is-dev }}
@@ -58,6 +60,8 @@ jobs:
           cranko github upload-artifacts --by-tag continuous \
             $GITHUB_WORKSPACE/binary-*/* \
             $GITHUB_WORKSPACE/appimage/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   branch-and-tag:
     runs-on: ubuntu-latest
     if: ${{ inputs.is-main }}
@@ -77,6 +81,8 @@ jobs:
         run: |
           cranko release-workflow tag
           git push --tags origin release:release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   github-releases:
     runs-on: ubuntu-latest
     if: ${{ inputs.is-main }}
@@ -102,6 +108,8 @@ jobs:
               $GITHUB_WORKSPACE/binary-*/* \
               $GITHUB_WORKSPACE/appimage/*
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   cargo-publish:
     runs-on: ubuntu-latest
     if: ${{ inputs.is-main }}
@@ -119,6 +127,8 @@ jobs:
           is-release: ${{ inputs.is-release }}
       - name: "Publish updated Cargo crates"
         run: cranko cargo foreach-released --pause=30 -- publish --no-verify
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
   update-website:
     runs-on: ubuntu-latest
     if: ${{ inputs.is-main }}
@@ -138,3 +148,5 @@ jobs:
       - name: "Update GitHub Pages website"
         if: ${{ steps.deploy-setup.outputs.top-level != 'skip' }}
         run: bash dist/update-website.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
