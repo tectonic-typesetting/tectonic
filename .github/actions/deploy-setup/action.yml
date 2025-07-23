@@ -18,11 +18,8 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Install release artifact
+    - name: Install all artifacts
       uses: actions/download-artifact@v4
-      with:
-        name: release-bundle
-        path: ${{ github.workspace }}/git-release
     - name: Restore release commit
       shell: bash
       run: |
@@ -65,7 +62,7 @@ runs:
 
         # `set -x` messes up `setvariable` behavior:
         set +x
-        echo "##vso[task.setvariable variable=TOPLEVEL_MODE;]$version_text"
+        echo "top-level=$version_text" >> "$GITHUB_OUTPUT"
       env:
         IS_DEV: ${{ inputs.is-dev }}
         IS_RELEASE: ${{ inputs.is-release }}
