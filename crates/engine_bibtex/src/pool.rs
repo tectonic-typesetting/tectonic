@@ -58,8 +58,8 @@ impl StringPool {
 
     pub fn get_str(&self, s: usize) -> &[u8] {
         self.try_get_str(s).unwrap_or_else(|e| match e {
-            LookupErr::DoesntExist => panic!("String number {} doesn't exist", s),
-            LookupErr::Invalid => panic!("Invalid string number {}", s),
+            LookupErr::DoesntExist => panic!("String number {s} doesn't exist"),
+            LookupErr::Invalid => panic!("Invalid string number {s}"),
         })
     }
 

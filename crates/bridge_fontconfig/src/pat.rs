@@ -223,10 +223,12 @@ mod tests {
         let mut has_index = false;
         for pat in fs.as_ref().fonts() {
             let file = pat.get::<File>(0);
-            if !has_file && file.is_ok() {
-                // Ensure we don't fault on reading the bytes of the file
-                let _ = file.unwrap().to_str();
-                has_file = true;
+            if !has_file {
+                if let Ok(f) = file {
+                    // Ensure we don't fault on reading the bytes of the file
+                    let _ = f.to_str();
+                    has_file = true;
+                }
             }
             if !has_index && pat.get::<Index>(0).is_ok() {
                 has_index = true;
