@@ -1,0 +1,20 @@
+
+on:
+  workflow_run:
+    workflows:
+      - 'Build and Test'
+    types:
+      - completed
+
+jobs:
+  upload-coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Download coverage report"
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-data
+      - name: "Upload coverage to codecov"
+        run: bash <(curl -s https://codecov.io/bash)
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
