@@ -32,7 +32,7 @@ jobs:
           dist/force-push-tree.sh \
             $GITHUB_WORKSPACE/book \
             https://github.com/tectonic-typesetting/book.git \
-            "${{ steps.deploy-setup.outputs.toplevel-mode }}" \
+            "${{ steps.deploy-setup.outputs.top-level }}" \
             "docs mdbook"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
