@@ -35,7 +35,7 @@ jobs:
             "${{ steps.deploy-setup.outputs.top-level }}" \
             "docs mdbook"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.BOOK_TOKEN }}
   recreate-continuous:
     runs-on: ubuntu-latest
     if: ${{ inputs.is-dev }}
