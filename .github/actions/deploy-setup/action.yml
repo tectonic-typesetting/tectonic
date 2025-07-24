@@ -24,7 +24,7 @@ runs:
       shell: bash
       run: |
         git switch -c release
-        git pull --ff-only $GITHUB_WORKSPACE/git-release/release.bundle
+        git pull --ff-only $GITHUB_WORKSPACE/release-bundle/release.bundle
     - name: Install latest Cranko (Ubuntu)
       if: ${{ runner.os == 'Linux' }}
       shell: bash

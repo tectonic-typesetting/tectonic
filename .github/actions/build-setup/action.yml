@@ -46,9 +46,9 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: release-bundle
-        path: ${{ github.workspace }}/git-release
+        path: ${{ github.workspace }}/release-bundle
     - name: Restore release commit
       shell: bash
       run: |
         git switch -c release
-        git pull --ff-only $GITHUB_WORKSPACE/git-release/release.bundle
+        git pull --ff-only $GITHUB_WORKSPACE/release-bundle/release.bundle
