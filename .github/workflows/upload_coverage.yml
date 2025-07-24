@@ -1,7 +1,7 @@
 
 on:
   workflow_run:
-    workflows: ["Build and Test", "PR CI"]
+    workflows: ["Build and Test", "PR CI", "Push CI/CD"]
     types: [completed]
 
 jobs:
