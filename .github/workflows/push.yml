@@ -10,7 +10,6 @@ jobs:
   build_and_test:
     needs: prep
     uses: ./.github/workflows/build_and_test.yml
-    secrets: inherit
   deploy:
     needs: build_and_test
     if: ${{ github.event_name == 'push' }}
