@@ -34,7 +34,7 @@ runs:
         curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
         echo "PATH=$d:$PATH" >> "$GITHUB_ENV"
     # We determine a "toplevel" release mode that affects things like updates to the
-    # book. The $TOPLEVEL_MODE variable has three settings:
+    # book. The `top-level` variable has three settings:
     #
     # - "latest" if this is continuous deployment/delivery, i.e. a push to the
     #   `master` branch. In this case we update things like the book under the
