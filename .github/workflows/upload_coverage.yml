@@ -1,7 +1,7 @@
 
 on:
   workflow_run:
-    workflows: ["Build and Test"]
+    workflows: ["Build and Test", "PR CI"]
     types: [completed]
 
 jobs:
@@ -11,6 +11,8 @@ jobs:
       - name: "Download coverage report"
         uses: actions/download-artifact@v4
         with:
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
           name: coverage-data
       - name: "Upload coverage to codecov"
         run: bash <(curl -s https://codecov.io/bash)
