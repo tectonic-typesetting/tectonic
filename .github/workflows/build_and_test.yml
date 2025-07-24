@@ -190,6 +190,8 @@ jobs:
         uses: ./.github/actions/build-setup
       - name: "Install pkg-config dependencies"
         uses: ./.github/actions/pkgconfig-deps
+        with:
+          install-all-deps: ${{ matrix.features == '_all_' }}
       - name: "Setup build variables"
         shell: bash
         run: |
