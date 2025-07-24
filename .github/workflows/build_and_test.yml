@@ -89,6 +89,11 @@ jobs:
           cp dist/appimage/tectonic-*.AppImage* "$artifact_dir"
         env:
           SOURCE_BRANCH: ${{ github.ref_name }}
+      - name: "Upload AppImage"
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: appimage
   book:
     runs-on: ubuntu-latest
     env:
