@@ -8,13 +8,20 @@ jobs:
   upload-coverage:
     runs-on: ubuntu-latest
     steps:
+      - name: "Checkout PR"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - name: "Download coverage report"
         uses: actions/download-artifact@v4
         with:
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
           name: coverage-data
+      - name: "Debug"
+        run: echo "${{ github.event }}"
       - name: "Upload coverage to codecov"
-        run: bash <(curl -s https://codecov.io/bash)
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        uses: codecov/codecov-action@v5
+        with:
+          files: 'coverage.json'
+          token: ${{ secrets.CODECOV_TOKEN }}
