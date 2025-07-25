@@ -3,17 +3,6 @@ name: "Build and Test"
 on: [workflow_call]
 
 jobs:
-  rustfmt:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: "Install rustfmt"
-        run: rustup component add rustfmt
-      - name: "cargo fmt"
-        run: cargo fmt --all -- --check
   clippy:
     runs-on: ubuntu-latest
     steps:

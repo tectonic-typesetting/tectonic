@@ -35,3 +35,14 @@ jobs:
         with:
           name: release-bundle
           path: release.bundle
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: "Install rustfmt"
+        run: rustup component add rustfmt
+      - name: "cargo fmt"
+        run: cargo fmt --all -- --check
