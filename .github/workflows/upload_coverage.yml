@@ -20,7 +20,7 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           name: coverage-data
       - name: "Debug"
-        run: echo "${{ github.event }}"
+        run: echo "${{ toJson(github.event) }}"
       - name: "Upload coverage to codecov"
         uses: codecov/codecov-action@v5
         with:
