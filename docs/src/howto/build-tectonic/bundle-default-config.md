@@ -17,9 +17,9 @@ A default value is provided in the build script `crates/bundles/build.rs` in the
 
 The variable is used to construct bundle URLs in the following pattern:
 ```bash
-$TECTONIC_BUNDLE_PREFIX/default_bundle$_vFORMAT_VERSION.tar
+$TECTONIC_BUNDLE_PREFIX/default_bundle_v$FORMAT_VERSION.tar
 ```
-where `$_vFORMAT_VERSION` is a suffix from an internal variable, used to distinguish different versions
+where `$FORMAT_VERSION` is a suffix from an internal variable, used to distinguish different versions
 of the bundle's format for backward compatibility.
 
 For example, the current default is given by:
