@@ -70,7 +70,7 @@
 //! `eqtb_top` is `eqtb_size + hash_extra` and the total addressed size of the
 //! array is `eqtb_top + 1`.
 
-use nom::{multi::count, number::complete::be_u8, IResult};
+use nom::{multi::count, number::complete::be_u8, IResult, Parser};
 use tectonic_errors::prelude::*;
 
 use crate::{
@@ -137,7 +137,7 @@ impl EquivalenciesTable {
 
             // TODO: read straight into eqtb?
             let nb = n as usize * SIZEOF_MEMORY_WORD;
-            let (ii, block) = count(be_u8, nb)(ii)?;
+            let (ii, block) = count(be_u8, nb).parse(ii)?;
             eqtb[k * SIZEOF_MEMORY_WORD..k * SIZEOF_MEMORY_WORD + nb].copy_from_slice(&block[..]);
             k += n as usize;
 
@@ -161,7 +161,7 @@ impl EquivalenciesTable {
         if hash_high > 0 {
             // TODO: read straight into eqtb?
             let nb = hash_high as usize * SIZEOF_MEMORY_WORD;
-            let (new_input, block) = count(be_u8, nb)(input)?;
+            let (new_input, block) = count(be_u8, nb).parse(input)?;
             input = new_input;
             let ofs = (eqtb_size + 1) * SIZEOF_MEMORY_WORD;
             eqtb[ofs..ofs + nb].copy_from_slice(&block[..]);

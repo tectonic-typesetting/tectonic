@@ -1,7 +1,7 @@
 // Copyright 2020 the Tectonic Project
 // Licensed under the MIT License.
 
-//! FreeType2 build script. For now, we always find it externally. One day, we'd
+//! `FreeType2` build script. For now, we always find it externally. One day, we'd
 //! like to be able to vendor it. When that day comes, we should leverage
 //! existing work done in the other freetype-sys crates, preferably just using
 //! them directly instead of duplicating effort.

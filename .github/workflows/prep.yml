@@ -1,0 +1,48 @@
+name: "Prep"
+
+on: [workflow_call]
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install latest Cranko
+        run: |
+          d="$(mktemp -d /tmp/cranko.XXXXXX)"
+          cd "$d"
+          curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
+          echo "PATH=$d:$PATH" >> "$GITHUB_ENV"
+      - name: "cranko release-workflow apply-versions"
+        run: cranko release-workflow apply-versions
+      - name: "Mini-build to freshen Cargo.lock"
+        run: cargo build -p tectonic_cfg_support
+      - name: Generate release commit
+        run: |
+          git add .
+          cranko release-workflow commit
+          git show
+      - name: Generate git bundle
+        run: |
+          git bundle create release.bundle origin/master..HEAD
+      - name: Publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-bundle
+          path: release.bundle
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: "Install rustfmt"
+        run: rustup component add rustfmt
+      - name: "cargo fmt"
+        run: cargo fmt --all -- --check

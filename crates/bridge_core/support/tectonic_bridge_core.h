@@ -243,6 +243,7 @@ size_t ttstub_input_get_size(rust_input_handle_t handle);
 time_t ttstub_input_get_mtime(rust_input_handle_t handle);
 size_t ttstub_input_seek(rust_input_handle_t handle, ssize_t offset, int whence);
 ssize_t ttstub_input_read(rust_input_handle_t handle, char *data, size_t len);
+ssize_t ttstub_input_read_partial(rust_input_handle_t handle, char *data, size_t len);
 int ttstub_input_getc(rust_input_handle_t handle);
 int ttstub_input_ungetc(rust_input_handle_t handle, int ch);
 int ttstub_input_close(rust_input_handle_t handle);

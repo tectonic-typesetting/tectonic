@@ -24,8 +24,8 @@ use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
-/// A serial number describing the detailed binary layout of the TeX “format
-/// files” used by this crate. This number will occasionally increment,
+/// A serial number describing the detailed binary layout of the TeX "format
+/// files" used by this crate. This number will occasionally increment,
 /// indicating that the format file structure has changed. There is no provision
 /// for partial forwards or backwards compatibility: if the number changes, you
 /// need to regenerate your format files. If you’re generating format files, you
@@ -39,7 +39,7 @@ pub const FORMAT_SERIAL: u32 = 33;
 
 /// A possible outcome from a (Xe)TeX engine invocation.
 ///
-/// The classic TeX implementation provides a fourth outcome: “fatal error”. In
+/// The classic TeX implementation provides a fourth outcome: "fatal error". In
 /// Tectonic, this outcome is represented as an `Err` result rather than a
 /// [`TexOutcome`].
 ///
@@ -65,7 +65,7 @@ pub enum TexOutcome {
 
 /// A struct for invoking the (Xe)TeX engine.
 ///
-/// This struct has a fairly straightforward “builder” interface: you create it,
+/// This struct has a fairly straightforward "builder" interface: you create it,
 /// apply any settings that you wish, and eventually run the
 /// [`process()`](Self::process) method.
 ///
@@ -127,7 +127,7 @@ impl TexEngine {
         self
     }
 
-    /// Configure the engine to use “semantic pagination”.
+    /// Configure the engine to use "semantic pagination".
     ///
     /// **Important:** this mode is essentially unimplemented.
     ///
@@ -166,13 +166,13 @@ impl TexEngine {
     /// The *launcher* parameter gives overarching environmental context in
     /// which the engine will be run.
     ///
-    /// The *format_file_name* is the name for the TeX “format file” giving
+    /// The *format_file_name* is the name for the TeX "format file" giving
     /// preloaded engine state. It must be findable in the I/O stack, using the
     /// special hooks that are provided for handing format files, which allow
     /// updates to the file format to be handed (see [`FORMAT_SERIAL`]). If in
-    /// “initex” mode, this parameter will be ignored.
+    /// "initex" mode, this parameter will be ignored.
     ///
-    /// The *input_file_name* is used to name the “primary input file”. The I/O
+    /// The *input_file_name* is used to name the "primary input file". The I/O
     /// system has special hooks for opening this primary input, so be aware
     /// that this filename is *not* opened using the usual mechanisms. This
     /// setting affects some of the names used by the engine internally,
@@ -194,23 +194,14 @@ impl TexEngine {
             let r = unsafe {
                 use c_api::*;
                 tt_xetex_set_int_variable(
-                    b"shell_escape_enabled\0".as_ptr() as _,
+                    c"shell_escape_enabled".as_ptr(),
                     self.shell_escape_enabled.into(),
                 );
+                tt_xetex_set_int_variable(c"halt_on_error_p".as_ptr(), self.halt_on_error.into());
+                tt_xetex_set_int_variable(c"in_initex_mode".as_ptr(), self.initex_mode.into());
+                tt_xetex_set_int_variable(c"synctex_enabled".as_ptr(), self.synctex_enabled.into());
                 tt_xetex_set_int_variable(
-                    b"halt_on_error_p\0".as_ptr() as _,
-                    self.halt_on_error.into(),
-                );
-                tt_xetex_set_int_variable(
-                    b"in_initex_mode\0".as_ptr() as _,
-                    self.initex_mode.into(),
-                );
-                tt_xetex_set_int_variable(
-                    b"synctex_enabled\0".as_ptr() as _,
-                    self.synctex_enabled.into(),
-                );
-                tt_xetex_set_int_variable(
-                    b"semantic_pagination_enabled\0".as_ptr() as _,
+                    c"semantic_pagination_enabled".as_ptr(),
                     self.semantic_pagination_enabled.into(),
                 );
 

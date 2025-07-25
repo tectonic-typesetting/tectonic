@@ -183,7 +183,7 @@ ship_out(int32_t p)
             open_log_file();
         pack_job_name(output_file_extension);
         dvi_file = ttstub_output_open(name_of_file, 0);
-        if (dvi_file == NULL)
+        if (dvi_file == INVALID_HANDLE)
             _tt_abort("cannot open output file \"%s\"", name_of_file);
         output_file_name = make_name_string();
     }
@@ -1759,7 +1759,7 @@ out_what(int32_t p)
         pack_file_name(cur_name, cur_area, cur_ext);
 
         write_file[j] = ttstub_output_open(name_of_file, 0);
-        if (write_file[j] == NULL)
+        if (write_file[j] == INVALID_HANDLE)
             _tt_abort("cannot open output file \"%s\"", name_of_file);
 
         write_open[j] = true;

@@ -5,7 +5,7 @@
 
 [package]
 name = "tectonic_bridge_flate"
-version = "0.1.7"
+version = "0.1.7+20250725"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing flate compression to the Tectonic C code.
@@ -15,7 +15,7 @@ documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 links = "tectonic_bridge_flate"
 
 [dependencies]
