@@ -53,11 +53,10 @@ jobs:
           cargo install cargo-llvm-cov
       - name: "cargo llvm-cov"
         run: cargo llvm-cov --workspace --include-ffi --ignore-filename-regex '/harfbuzz/' --codecov --output-path coverage.json
-      - name: "Publish coverage artifact"
-        uses: actions/upload-artifact@v4
+      - name: "Report coverage results"
+        uses: codecov/codecov-action@v5
         with:
-          path: coverage.json
-          name: coverage-data
+          token: ${{ secrets.CODECOV_TOKEN }}
   appimage:
     runs-on: ubuntu-latest
     steps:

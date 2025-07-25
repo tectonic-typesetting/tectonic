@@ -11,3 +11,4 @@ jobs:
   build_and_test:
     needs: prep
     uses: ./.github/workflows/build_and_test.yml
+    secrets: inherit
