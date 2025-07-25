@@ -26,21 +26,21 @@ runs:
   steps:
     - name: Set feature flags
       shell: bash
+      id: set-feature-flags
       run: |
         ffs=
-        fts=
         
-        if [[ "$EXPLICIT_FEATURES" == "_none_" ]] ; then
-          ffs="--no-default-features"
-        elif [[ "$EXPLICIT_FEATURES" == "_all_" ]] ; then
+        if [[ "${{ inputs.features }}" == "_none_" ]] ; then
+          # We need to always enable a feature for geturl
+          ffs="--no-default-features --features reqwest"
+        elif [[ "${{ inputs.features }}" == "_all_" ]] ; then
           ffs="--all-features"
         else
-          fts="$EXPLICIT_FEATURES"
+          ffs="--features \"${{ inputs.features }}\""
         fi
         
-        echo "Cargo features for this build: $ffs --features=\"$fts\""
-        echo "CARGO_FEATURES_EXPLICIT=$fts" >> "$GITHUB_ENV"
-        echo "CARGO_FEATURES_FLAGS=$ffs" >> "$GITHUB_ENV"
+        echo "Cargo features for this build: $ffs"
+        echo "cargo-features=$ffs" >> "$GITHUB_OUTPUT"
         
         # OK, these have nothing to do with features, but if a build script fails, it
         # can be helpful to get a full backtrace.
@@ -49,16 +49,14 @@ runs:
         if [[ -n "${{ runner.debug }}" ]]; then
           echo "CARGO_VERBOSE=-v" >> "$GITHUB_ENV"
         fi
-      env:
-        EXPLICIT_FEATURES: ${{ inputs.features }}
     - name: "cargo build for ${{ inputs.target }}"
       shell: bash
       run: |
-        ${{ inputs.executable }} build --all --target ${{ inputs.target }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" $CARGO_VERBOSE
+        ${{ inputs.executable }} build --all --target ${{ inputs.target }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "cargo test"
       shell: bash
       run: |
-        ${{ inputs.executable }} test --all --target ${{ inputs.target }} ${{ inputs.test-flags }} --release $CARGO_FEATURES_FLAGS --features="$CARGO_FEATURES_EXPLICIT" $CARGO_VERBOSE
+        ${{ inputs.executable }} test --all --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "Package test failure files"
       id: package-tests
       if: ${{ failure() }}

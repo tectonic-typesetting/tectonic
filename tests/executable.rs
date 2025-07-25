@@ -57,10 +57,7 @@ fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
         .with_extension(env::consts::EXE_EXTENSION);
 
     if fs::metadata(&tectonic).is_err() {
-        panic!(
-            "tectonic binary not found at {:?}. Do you need to run `cargo build`?",
-            tectonic
-        )
+        panic!("tectonic binary not found at {tectonic:?}. Do you need to run `cargo build`?")
     }
     println!("using tectonic binary at {tectonic:?}");
     println!("using cwd {cwd:?}");
@@ -121,7 +118,7 @@ fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
         Ok(_) => (),
         // Ignore if the child already died
         Err(e) if e.kind() == ErrorKind::BrokenPipe => (),
-        Err(e) => panic!("failed to send data to tectonic subprocess: {:?}", e),
+        Err(e) => panic!("failed to send data to tectonic subprocess: {e:?}"),
     }
     child
         .wait_with_output()

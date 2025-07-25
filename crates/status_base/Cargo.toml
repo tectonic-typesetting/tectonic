@@ -13,7 +13,7 @@ documentation = "https://docs.rs/tectonic_status_base"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }

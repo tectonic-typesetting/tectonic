@@ -166,18 +166,18 @@ impl<'a> ExpectedFile<'a> {
         let root = test_path(&[]);
         let name = path
             .file_name()
-            .unwrap_or_else(|| panic!("couldn't get file name of {:?}", path))
+            .unwrap_or_else(|| panic!("couldn't get file name of {path:?}"))
             .to_str()
-            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", path))
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {path:?}"))
             .to_owned();
         let expect_name = path
             .strip_prefix(root)
-            .unwrap_or_else(|_| panic!("couldn't get path relative to test root {:?}", path))
+            .unwrap_or_else(|_| panic!("couldn't get path relative to test root {path:?}"))
             .to_str()
-            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", path))
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {path:?}"))
             .replace(std::path::is_separator, "_");
 
-        let mut f = File::open(path).unwrap_or_else(|_| panic!("failed to open {:?}", path));
+        let mut f = File::open(path).unwrap_or_else(|_| panic!("failed to open {path:?}"));
         let mut contents = Vec::new();
         f.read_to_end(&mut contents).unwrap();
 
@@ -204,15 +204,15 @@ impl<'a> ExpectedFile<'a> {
         let root = test_path(&[]);
         let name = pbase
             .file_name()
-            .unwrap_or_else(|| panic!("couldn't get file name of {:?}", pbase))
+            .unwrap_or_else(|| panic!("couldn't get file name of {pbase:?}"))
             .to_str()
-            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", pbase))
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {pbase:?}"))
             .to_owned();
         let expect_name = pbase
             .strip_prefix(root)
-            .unwrap_or_else(|_| panic!("couldn't get path relative to test root {:?}", pbase))
+            .unwrap_or_else(|_| panic!("couldn't get path relative to test root {pbase:?}"))
             .to_str()
-            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {:?}", pbase))
+            .unwrap_or_else(|| panic!("couldn't Unicode-ify file name of {pbase:?}"))
             .replace(std::path::is_separator, "_");
 
         let mut dec = GzDecoder::new(File::open(pbase.as_path()).unwrap());
