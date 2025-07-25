@@ -26,6 +26,7 @@ runs:
   steps:
     - name: Set feature flags
       shell: bash
+      id: set-feature-flags
       run: |
         ffs=
         
@@ -39,7 +40,7 @@ runs:
         fi
         
         echo "Cargo features for this build: $ffs"
-        echo "CARGO_FEATURES_FLAGS=$ffs" >> "$GITHUB_ENV"
+        echo "cargo-features=$ffs" >> "$GITHUB_OUTPUT"
         
         # OK, these have nothing to do with features, but if a build script fails, it
         # can be helpful to get a full backtrace.
@@ -51,11 +52,11 @@ runs:
     - name: "cargo build for ${{ inputs.target }}"
       shell: bash
       run: |
-        ${{ inputs.executable }} build --all --target ${{ inputs.target }} --release $CARGO_FEATURES_FLAGS $CARGO_VERBOSE
+        ${{ inputs.executable }} build --all --target ${{ inputs.target }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "cargo test"
       shell: bash
       run: |
-        ${{ inputs.executable }} test --all --target ${{ inputs.target }} ${{ inputs.test-flags }} --release $CARGO_FEATURES_FLAGS $CARGO_VERBOSE
+        ${{ inputs.executable }} test --all --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "Package test failure files"
       id: package-tests
       if: ${{ failure() }}
