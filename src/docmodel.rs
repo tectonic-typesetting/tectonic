@@ -67,6 +67,7 @@ impl DocumentSetupOptions {
     }
 }
 
+/// Extension methods for [`Document`].
 pub trait DocumentExt {
     /// Get the bundle used by this document.
     ///

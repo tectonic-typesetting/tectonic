@@ -1,6 +1,8 @@
 // Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Test suite for the TeX engine
+
 use std::collections::HashSet;
 use std::path::Path;
 use std::time;

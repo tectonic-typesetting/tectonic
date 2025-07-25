@@ -1,3 +1,5 @@
+//! `libpng` build script.
+
 use tectonic_dep_support::{Configuration, Dependency, Spec};
 
 struct LibpngSpec;

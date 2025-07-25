@@ -33,6 +33,7 @@ const HELPMSG: &str = r#"Available unstable options:
 "#;
 
 // Each entry of this should correspond to a field of UnstableOptions.
+#[doc(hidden)]
 #[derive(Debug, Clone)]
 pub enum UnstableArg {
     ContinueOnErrors,
@@ -102,13 +103,32 @@ impl FromStr for UnstableArg {
     }
 }
 
+/// Unstable options available for engine backends. These options may be added or removed in minor
+/// releases, and are not considered breaking.
+///
+/// These options may affect the reproducibility of built documents.
 #[derive(Debug, Default)]
 pub struct UnstableOptions {
+    /// Don't stop on errors - attempt to generate a document anyway, for all but the most fatal of
+    /// problems.
     pub continue_on_errors: bool,
+
+    /// Set the paper size used by the output document.
     pub paper_size: Option<String>,
+
+    /// Allow using shell commands during document compilation. All shell escapes will be executed
+    /// within a custom temporary directory that lives for the duration of the compilation session.
+    /// [`Self::shell_escape_cwd`] will take precedence over this flag.
     pub shell_escape: bool,
+
+    /// Minimum number of cross-references in `bibtex` before an item gets its own standalone entry.
     pub min_crossrefs: Option<u32>,
+
+    /// Extra directories to search for input files during a processing session.
     pub extra_search_paths: Vec<PathBuf>,
+
+    /// The working directory to use for shell escapes. The directory will be preserved after
+    /// compilation is complete. This overrides [`Self::shell_escape`].
     pub shell_escape_cwd: Option<String>,
 
     /// Ensure a deterministic build environment.
@@ -125,6 +145,7 @@ pub struct UnstableOptions {
 }
 
 impl UnstableOptions {
+    #[doc(hidden)]
     pub fn from_unstable_args<I>(uargs: I) -> Self
     where
         I: Iterator<Item = UnstableArg>,
@@ -152,6 +173,7 @@ impl UnstableOptions {
     }
 }
 
+#[doc(hidden)]
 pub fn print_unstable_help_and_exit() {
     print!("{HELPMSG}");
     std::process::exit(0);

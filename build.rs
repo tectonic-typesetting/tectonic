@@ -1,6 +1,8 @@
 // Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Build script for tectonic binary. Handles some simple environment setup.
+
 use std::env;
 
 fn main() {

@@ -38,6 +38,7 @@ pub fn is_config_test_mode_activated() -> bool {
     CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst)
 }
 
+#[doc(hidden)]
 pub fn is_test_bundle_wanted(bundle: Option<String>) -> bool {
     if !is_config_test_mode_activated() {
         return false;
@@ -49,6 +50,7 @@ pub fn is_test_bundle_wanted(bundle: Option<String>) -> bool {
     }
 }
 
+#[doc(hidden)]
 pub fn maybe_return_test_bundle(bundle: Option<String>) -> Result<Box<dyn Bundle>> {
     if is_test_bundle_wanted(bundle) {
         Ok(Box::<crate::test_util::TestBundle>::default())
@@ -57,11 +59,13 @@ pub fn maybe_return_test_bundle(bundle: Option<String>) -> Result<Box<dyn Bundle
     }
 }
 
+/// Top-level persistent configuration required for the engine
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct PersistentConfig {
     default_bundles: Vec<BundleInfo>,
 }
 
+/// Information about a default bundle
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 pub struct BundleInfo {
     url: String,
@@ -128,10 +132,12 @@ impl PersistentConfig {
         Ok(PersistentConfig::default())
     }
 
+    /// Get the default bundle URL for this configuration
     pub fn default_bundle_loc(&self) -> &str {
         &self.default_bundles[0].url
     }
 
+    /// Attempt to open the default bundle
     pub fn default_bundle(&self, only_cached: bool) -> Result<Box<dyn Bundle>> {
         if CONFIG_TEST_MODE_ACTIVATED.load(Ordering::SeqCst) {
             let bundle = crate::test_util::TestBundle::default();
@@ -152,6 +158,7 @@ impl PersistentConfig {
         )
     }
 
+    /// Get the cache directory to use for format files
     pub fn format_cache_path(&self) -> Result<PathBuf> {
         if is_config_test_mode_activated() {
             Ok(crate::test_util::test_path(&[]))
