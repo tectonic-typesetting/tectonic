@@ -1,3 +1,4 @@
+name: "Upload Coverage"
 
 on:
   workflow_run:
