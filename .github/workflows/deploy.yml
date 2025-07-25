@@ -54,7 +54,8 @@ jobs:
           setup-git: 'true'
       - name: "Recreate continuous-deployment GitHub release"
         run: |
-          cranko github delete-release continuous
+          # Allow this to fail, in case the release isn't present
+          cranko github delete-release continuous || true
           git tag -f continuous HEAD
           git push -f origin refs/tags/continuous
           cranko github create-custom-release \
