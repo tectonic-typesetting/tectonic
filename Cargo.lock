@@ -257,6 +257,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "793db76d6187cd04dff33004d8e6c9cc4e05cd330500379d2394209271b4aeee"
 
 [[package]]
+name = "bundle_env_overrides_test"
+version = "0.0.0-dev.0"
+dependencies = [
+ "tectonic_bundles",
+]
+
+[[package]]
 name = "byte-unit"
 version = "5.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
