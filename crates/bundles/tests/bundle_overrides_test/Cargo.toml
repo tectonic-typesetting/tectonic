@@ -1,8 +1,11 @@
 [package]
 name = "bundle_overrides_test"
 description = "Mini project for testing compile time bundle URL overrides"
-version = "0.1.0"
+version = "0.0.0-dev.0"
 edition = "2021"
 
 [dependencies]
-tectonic_bundles = { path = "../.." }
+tectonic_bundles = { path = "../..", version = "0.0.0-dev.0" }
+
+[package.metadata.internal_dep_versions]
+tectonic_bundles = "thiscommit:2025-07-26:IKt5CJV"
