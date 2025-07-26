@@ -1,0 +1,8 @@
+[package]
+name = "bundle_overrides_test"
+description = "Mini project for testing compile time bundle URL overrides"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tectonic_bundles = { path = "../.." }
