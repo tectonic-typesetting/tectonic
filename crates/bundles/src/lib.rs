@@ -37,6 +37,9 @@ use ttb_fs::TTBFsBundle;
 use ttb_net::TTBNetBundle;
 use zip::ZipBundle;
 
+/// The current hardcoded default prefix for tectonic's bundle.
+const TECTONIC_BUNDLE_PREFIX_DEFAULT: &str = "https://relay.fullyjustified.net";
+
 // How many times network bundles should retry
 // a download, and how long they should wait
 // between attempts.
@@ -261,18 +264,34 @@ pub fn detect_bundle(
 /// roughly corresponds to a TeXLive version, and the engine and TeXLive files
 /// are fairly closely coupled.
 ///
+/// The hardcoded default can be overridden at compile time by setting either:
+/// - `${TECTONIC_BUNDLE_PREFIX}`, which would lead to a URL in the form of
+///   `${TECTONIC_BUNDLE_PREFIX}/default_bundle_v${FORMAT_VERSION}.tar`, or
+/// - `${TECTONIC_BUNDLE_LOCKED}`, which can be used to pin the default bundle
+///   to a specific "snapshot" if specified. This would be useful for
+///   reproducible builds.
+///
 /// The URL template used in this function will be embedded in the binaries that
 /// you create, which may be used for years into the future, so it needs to be
 /// durable and reliable. We used `archive.org` for a while, but it had
 /// low-level reliability problems and was blocked in China. We now use a custom
 /// webservice.
 pub fn get_fallback_bundle_url(format_version: u32) -> String {
+    let bundle_locked = option_env!("TECTONIC_BUNDLE_LOCKED").unwrap_or("");
+    let bundle_prefix =
+        option_env!("TECTONIC_BUNDLE_PREFIX").unwrap_or(TECTONIC_BUNDLE_PREFIX_DEFAULT);
+
+    // Simply return the locked url when it is specified:
+    if !bundle_locked.is_empty() {
+        return bundle_locked.to_owned();
+    }
+
     // Format version 32 (TeXLive 2021) was when we introduced versioning to the
     // URL.
     if format_version < 32 {
-        "https://relay.fullyjustified.net/default_bundle.tar".to_owned()
+        format!("{bundle_prefix}/default_bundle.tar")
     } else {
-        format!("https://relay.fullyjustified.net/default_bundle_v{format_version}.tar")
+        format!("{bundle_prefix}/default_bundle_v{format_version}.tar")
     }
 }
 

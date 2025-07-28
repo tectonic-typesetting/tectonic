@@ -60,6 +60,7 @@ members = [
     "crates/xdv",
     "crates/xetex_format",
     "crates/xetex_layout",
+    "tests/bundle_env_overrides_test",
 ]
 
 [lib]
