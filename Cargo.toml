@@ -2,6 +2,8 @@
 # Copyright 2016-2023 the Tectonic Project
 # Licensed under the MIT License.
 
+lints.workspace = true
+
 [package]
 name = "tectonic"
 version = "0.0.0-dev.0" # assigned with cranko (see README)
@@ -26,10 +28,6 @@ categories = [
 license = "MIT"
 edition = "2021"
 exclude = ["/dist/", "/reference_sources/"]
-
-[lints.rust]
-# FIXME(CraftSpider): Switch from error-chain to a newer package, as it's a deprecated project
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)', 'cfg(has_error_description_deprecated)'] }
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
@@ -62,6 +60,14 @@ members = [
     "crates/xetex_layout",
     "tests/bundle_env_overrides_test",
 ]
+
+[workspace.lints.rust]
+# FIXME(CraftSpider): Switch from error-chain to a newer package, as it's a deprecated project
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(has_error_description_deprecated)'] }
+missing_docs = "deny"
+
+[workspace.lints.clippy]
+undocumented_unsafe_blocks = "deny"
 
 [lib]
 name = "tectonic"

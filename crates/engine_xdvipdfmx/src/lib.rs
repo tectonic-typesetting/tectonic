@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! The `xdvipdfmx` program from [XeTeX] as a reusable crate.
 //!
 //! [XeTeX]: http://xetex.sourceforge.net/
@@ -131,6 +129,8 @@ impl XdvipdfmxEngine {
         let cpdf = CString::new(pdf)?;
 
         launcher.with_global_lock(|state| {
+            // SAFETY: This is called while the global lock is held, and with valid C-strings for
+            //         dvi and pdf.
             let r = unsafe {
                 c_api::tt_engine_xdvipdfmx_main(state, &config, cdvi.as_ptr(), cpdf.as_ptr())
             };

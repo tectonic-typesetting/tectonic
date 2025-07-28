@@ -1,6 +1,8 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(missing_docs)]
+
 //! The TeX dynamic memory array.
 
 use nom::{

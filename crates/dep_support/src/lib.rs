@@ -1,8 +1,6 @@
 // Copyright 2020 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Support for locating third-party libraries ("dependencies") when building
 //! Tectonic. The main point of interest is that both pkg-config and vcpkg are
 //! supported as dep-finding backends. This crate does *not* deal with the

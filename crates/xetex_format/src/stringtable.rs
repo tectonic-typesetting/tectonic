@@ -1,6 +1,8 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(missing_docs)]
+
 //! Dealing with the TeX string table.
 
 use nom::{

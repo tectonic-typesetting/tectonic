@@ -1,19 +1,20 @@
 // Copyright 2017-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-/// Test that we can operate in "initex" mode to generate format files as
-/// expected. Unlike TeX we set things up so that formats should be
-/// byte-for-byte reproducible given the same inputs. Since formats are big,
-/// we check for equality by examining their SHA256 digests.
-///
-/// Note that since gzip compression is done transparently in the I/O layer,
-/// the desired SHA256 is that of the *uncompressed* format data, not the
-/// gzipped file that ends up on disk. When implementing this test I wasted a
-/// lot of time on that mistake!
-///
-/// Temporarily set the constant DEBUG to true to dump out the generated files
-/// to disk, which may be helpful in debugging. There is probably a less gross
-/// way to implement that option.
+//! Test that we can operate in "initex" mode to generate format files as
+//! expected. Unlike TeX we set things up so that formats should be
+//! byte-for-byte reproducible given the same inputs. Since formats are big,
+//! we check for equality by examining their SHA256 digests.
+//!
+//! Note that since gzip compression is done transparently in the I/O layer,
+//! the desired SHA256 is that of the *uncompressed* format data, not the
+//! gzipped file that ends up on disk. When implementing this test I wasted a
+//! lot of time on that mistake!
+//!
+//! Temporarily set the constant DEBUG to true to dump out the generated files
+//! to disk, which may be helpful in debugging. There is probably a less gross
+//! way to implement that option.
+
 use std::{
     collections::{HashMap, HashSet},
     str::FromStr,

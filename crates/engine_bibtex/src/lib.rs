@@ -1,7 +1,6 @@
 // Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
 #![allow(clippy::assertions_on_constants)]
 
 //! The [bibtex] program as a reusable crate.

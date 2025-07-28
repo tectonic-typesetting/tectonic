@@ -2,6 +2,8 @@
 // Copyright 2017-2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Engine for invoking `XeTeX`.
+
 use crate::errors::DefinitelySame;
 
 pub use tectonic_engine_xetex::{TexEngine, TexOutcome};

@@ -1,8 +1,6 @@
 // Copyright 2020 the Tectonic Project.
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Generic error handling for Tectonic.
 //!
 //! This crate provides a generic boxed error type, plus supporting utilities.

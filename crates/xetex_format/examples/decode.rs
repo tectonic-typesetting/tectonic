@@ -40,7 +40,7 @@ enum Commands {
 }
 
 #[derive(Debug, Eq, PartialEq, Parser)]
-pub struct GenericCommand {
+struct GenericCommand {
     /// The format filename.
     #[arg()]
     path: PathBuf,
@@ -80,7 +80,7 @@ impl GenericCommand {
 }
 
 #[derive(Debug, Eq, PartialEq, Parser)]
-pub struct CseqsCommand {
+struct CseqsCommand {
     /// Whether to dump extended information such as macro contents
     #[arg(long = "extended", short = 'e')]
     extended: bool,

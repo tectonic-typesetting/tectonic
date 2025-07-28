@@ -26,6 +26,7 @@ pub use self::memory::MemoryIo;
 // Helper for testing. FIXME: I want this to be conditionally compiled with
 // #[cfg(test)] but things break if I do that.
 
+#[doc(hidden)]
 pub mod testing {
     use super::*;
     use std::fs::File;

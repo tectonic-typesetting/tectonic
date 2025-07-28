@@ -3,7 +3,7 @@
 // Licensed under the MIT License.
 
 // TODO: make this module a feature that can be disabled if the user doesn't want to
-// link with termcolor
+//! Status backend that emits colorized errors to the terminal.
 
 use std::fmt::Arguments;
 use std::io::Write;
@@ -13,6 +13,7 @@ use tectonic_errors::Error;
 
 use super::{ChatterLevel, MessageKind, StatusBackend};
 
+/// Status backend based on `termcolor` that emits compile errors and note with terminal colors.
 pub struct TermcolorStatusBackend {
     chatter: ChatterLevel,
     always_stderr: bool,
@@ -25,6 +26,7 @@ pub struct TermcolorStatusBackend {
 }
 
 impl TermcolorStatusBackend {
+    /// Create a new instance of this backend with default colorization.
     pub fn new(chatter: ChatterLevel) -> TermcolorStatusBackend {
         let mut note_spec = ColorSpec::new();
         note_spec.set_fg(Some(Color::Green)).set_bold(true);
@@ -50,6 +52,7 @@ impl TermcolorStatusBackend {
         }
     }
 
+    /// Set whether non-error messages such as notes should be sent to stderr or stdout.
     pub fn always_stderr(&mut self, setting: bool) -> &mut Self {
         self.always_stderr = setting;
         self
@@ -125,6 +128,7 @@ impl TermcolorStatusBackend {
     // so we put them here to minimize the cross-section of the StatusBackend
     // trait.
 
+    /// Write the result of `fmt_args!` as a colorized note.
     pub fn note_styled(&mut self, args: Arguments) {
         if self.chatter > ChatterLevel::Minimal {
             if self.always_stderr {
@@ -135,12 +139,14 @@ impl TermcolorStatusBackend {
         }
     }
 
+    /// Write the results of `fmt_args!` as a colorized error.
     pub fn error_styled(&mut self, args: Arguments) {
         self.styled(MessageKind::Error, |s| {
             writeln!(s, "{args}").expect("write to stderr failed");
         });
     }
 
+    /// Write an [`Error`] to output directly.
     pub fn bare_error(&mut self, err: &Error) {
         let mut prefix = "error:";
 

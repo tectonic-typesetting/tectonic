@@ -1,8 +1,6 @@
 // Copyright 2018 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! A decoder for the XDV and SPX file formats used by Tectonic and XeTeX.
 //!
 //! Both of these file formats are derived from the venerable "device
@@ -402,11 +400,8 @@ impl<T: XdvEvents> XdvParser<T> {
                 // already-read bytes so that the parser gets a nice
                 // contiguous set of bytes to look at. The copy may involve
                 // overlapping memory regions (imagine we read 4096 bytes but
-                // only consume 1) so we have to get unsafe.
-                let ptr = buf.as_mut_ptr();
-                unsafe {
-                    std::ptr::copy(ptr.add(n_consumed), ptr, n_saved_bytes);
-                }
+                // only consume 1).
+                buf.copy_within(n_consumed..n_in_buffer, 0);
             }
 
             if n_in_buffer != 0 && n_consumed == 0 {

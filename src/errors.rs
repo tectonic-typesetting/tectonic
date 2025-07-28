@@ -7,7 +7,7 @@
 // former was [deprecated in Rust 1.33](https://github.com/rust-lang/rust/pull/53533). The fix for
 // `error-chain` is in <https://github.com/rust-lang-nursery/error-chain/pull/255> and will
 // hopefully show up in a future version.
-#![allow(deprecated)]
+#![allow(missing_docs)]
 
 use error_chain::error_chain;
 use std::{
@@ -105,6 +105,7 @@ error_chain! {
 
 /// `chain_err` compatibility between our old and new error types
 pub trait ChainErrCompatExt<T> {
+    /// Chain this error with another
     fn chain_err<F, K>(self, chainer: F) -> Result<T>
     where
         F: FnOnce() -> K,
@@ -323,9 +324,6 @@ impl<T: std::error::Error + 'static> SyncError<T> {
 }
 
 impl<T: std::error::Error + 'static> std::error::Error for SyncError<T> {
-    #[cfg(backtrace)]
-    fn backtrace(&self) -> Option<&Backtrace> {}
-
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.proxy.as_ref().map(|e| e as _)
     }
@@ -388,9 +386,6 @@ impl<T: std::error::Error> CauseProxy<T> {
 }
 
 impl<T: std::error::Error + 'static> std::error::Error for CauseProxy<T> {
-    #[cfg(backtrace)]
-    fn backtrace(&self) -> Option<&Backtrace> {}
-
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.next.as_ref().map(|e| e as _)
     }

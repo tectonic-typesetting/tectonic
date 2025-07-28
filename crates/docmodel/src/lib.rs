@@ -1,8 +1,6 @@
 // Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! The Tectonic document model and its serialization into `Tectonic.toml`.
 //!
 //! This crate provides data structures and serialization support for the

@@ -1,5 +1,7 @@
 // Licensed under the MIT License.
 
+//! Test suite for the top-level `tectonic` executable.
+
 use lazy_static::lazy_static;
 use std::io::ErrorKind;
 use std::{

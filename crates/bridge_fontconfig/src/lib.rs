@@ -1,7 +1,7 @@
 //! This crate exists to both export the FreeType2 *C* API into the
 //! Cargo framework, and provide a safe wrapper around it for use in Rust code.
 
-#![deny(clippy::undocumented_unsafe_blocks, missing_docs)]
+#![deny(clippy::undocumented_unsafe_blocks)]
 
 use std::convert::TryFrom;
 use std::ffi::CStr;

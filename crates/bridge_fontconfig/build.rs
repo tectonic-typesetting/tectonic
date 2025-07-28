@@ -1,3 +1,5 @@
+//! fontconfig build script. For now, we always find it externally.
+
 use tectonic_dep_support::{Configuration, Dependency, Spec};
 
 struct FontconfigSpec;

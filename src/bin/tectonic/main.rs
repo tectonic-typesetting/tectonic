@@ -2,6 +2,8 @@
 // Copyright 2016-2023 the Tectonic Project
 // Licensed under the MIT License.
 
+//! `tectonic` binary - the main entry point for command-line users.
+
 use clap::{Parser, ValueEnum};
 use std::{env, io::IsTerminal, process};
 use tectonic_status_base::plain::PlainStatusBackend;
@@ -55,7 +57,7 @@ struct CliOptions {
 }
 
 #[derive(ValueEnum, Clone, Debug)]
-pub enum CliColor {
+enum CliColor {
     #[value(name = "always")]
     Always,
 

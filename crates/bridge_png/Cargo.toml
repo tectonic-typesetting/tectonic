@@ -1,3 +1,5 @@
+lints.workspace = true
+
 [package]
 name = "tectonic_bridge_png"
 version = "0.0.0-dev.0"

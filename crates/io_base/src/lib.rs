@@ -1,8 +1,6 @@
 // Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Tectonic’s pluggable I/O backend.
 //!
 //! This crates defines the core traits and types used by Tectonic’s I/O

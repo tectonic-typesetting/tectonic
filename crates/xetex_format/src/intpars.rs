@@ -1,8 +1,6 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Integer parameters defined by the engine.
 
 use std::io::Write;

@@ -1,8 +1,6 @@
 // Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Core APIs for bridging the C and Rust portions of Tectonic’s processing
 //! backends.
 //!
@@ -223,9 +221,13 @@ impl EngineAbortedError {
         }
     }
 
-    unsafe fn new_with_details() -> Self {
-        let ptr = _ttbc_get_error_message();
-        let message = CStr::from_ptr(ptr).to_string_lossy().into_owned();
+    fn new_with_details() -> Self {
+        // SAFETY: This is always safe to call
+        let ptr = unsafe { _ttbc_get_error_message() };
+        // SAFETY: The pointer returned above will always have a null-terminated C-string in it
+        let message = unsafe { CStr::from_ptr(ptr) }
+            .to_string_lossy()
+            .into_owned();
         EngineAbortedError { message }
     }
 }
@@ -314,7 +316,7 @@ impl<'a> CoreBridgeLauncher<'a> {
 
         if let Err(ref e) = result {
             if e.downcast_ref::<EngineAbortedError>().is_some() {
-                return Err(unsafe { EngineAbortedError::new_with_details() }.into());
+                return Err(EngineAbortedError::new_with_details().into());
             }
         }
 

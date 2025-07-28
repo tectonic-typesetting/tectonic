@@ -4,7 +4,7 @@
 //! This crate exists to export the `FreeType2` *C* API into the Cargo framework, as well as provide
 //! bindings to other tectonic crates.
 
-#![deny(clippy::undocumented_unsafe_blocks, missing_docs)]
+#![deny(clippy::undocumented_unsafe_blocks)]
 #![allow(clippy::unnecessary_cast)]
 
 use std::ffi::CStr;

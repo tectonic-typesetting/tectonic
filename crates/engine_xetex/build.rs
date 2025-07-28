@@ -1,6 +1,9 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! XeTeX engine build script. Builds and links our locally modified copy of the XeTeX typesetting
+//! engine.
+
 use std::{env, path::PathBuf};
 use tectonic_cfg_support::*;
 

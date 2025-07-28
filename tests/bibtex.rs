@@ -1,6 +1,8 @@
 // Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Bibtex test suite - compare running bibtex against many different test files
+
 use std::collections::HashSet;
 use std::path::PathBuf;
 
