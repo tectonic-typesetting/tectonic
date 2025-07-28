@@ -66,6 +66,9 @@ members = [
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(has_error_description_deprecated)'] }
 missing_docs = "deny"
 
+[workspace.lints.clippy]
+undocumented_unsafe_blocks = "deny"
+
 [lib]
 name = "tectonic"
 crate-type = ["rlib"]

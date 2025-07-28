@@ -189,6 +189,7 @@ impl TexEngine {
             // Note that we have to do all of this setup while holding the
             // lock, because we're modifying static state variables.
 
+            // SAFETY: All methods are called with valid C-strings and while the global lock is held.
             let r = unsafe {
                 use c_api::*;
                 tt_xetex_set_int_variable(
