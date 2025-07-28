@@ -1,4 +1,3 @@
-// Copyright 2016-2022 the Tectonic Project
 // Licensed under the MIT License.
 
 use lazy_static::lazy_static;
@@ -268,11 +267,17 @@ fn bad_outfmt_1() {
 }
 
 fn run_with_biber(args: &str, stdin: &str) -> Output {
+    run_with_biber_exe(None, args, stdin, &["subdirectory/empty.bib"])
+}
+
+fn run_with_biber_exe(executable: Option<&str>, args: &str, stdin: &str, files: &[&str]) -> Output {
     let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&["subdirectory/empty.bib"]);
+    let tempdir = setup_and_copy_files(files);
     let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
 
-    let test_cmd = if cfg!(windows) {
+    let test_cmd = if let Some(exe) = executable {
+        format!("{exe} {args}")
+    } else if cfg!(windows) {
         format!(
             "cmd /c {} {}",
             util::test_path(&["fake-biber.bat"]).display(),
@@ -358,28 +363,9 @@ fn biber_failure() {
 
 #[test]
 fn biber_no_such_tool() {
-    let fmt_arg = get_plain_format_arg();
-    let tempdir = setup_and_copy_files(&[]);
-    let mut command = prep_tectonic(tempdir.path(), &[&fmt_arg, "-"]);
-
-    command.env("TECTONIC_TEST_FAKE_BIBER", "ohnothereisnobiberprogram");
-
     const REST: &str = r"\bye";
     let tex = format!("{BIBER_TRIGGER_TEX}{REST}");
-
-    command
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
-    println!("running {command:?}");
-    let mut child = command.spawn().expect("tectonic failed to start");
-
-    write!(child.stdin.as_mut().unwrap(), "{tex}")
-        .expect("failed to send data to tectonic subprocess");
-
-    let output = child
-        .wait_with_output()
-        .expect("failed to wait on tectonic subprocess");
+    let output = run_with_biber_exe(Some("ohnothereisnobiberprogram"), "", &tex, &[]);
     error_or_panic(&output);
 }
 
@@ -390,9 +376,7 @@ fn biber_signal() {
     error_or_panic(&output);
 }
 
-#[test]
-fn biber_success() {
-    const REST: &str = r"
+const BIBER_VALIDATE_TEX: &str = r"
 \ifsecond
 \ifnum\input{biberout.qqq}=456\relax
 a
@@ -401,8 +385,27 @@ a
 \fi
 \fi
 \bye";
-    let tex = format!("{BIBER_TRIGGER_TEX}{REST}");
+
+#[test]
+fn biber_success() {
+    let tex = format!("{BIBER_TRIGGER_TEX}{BIBER_VALIDATE_TEX}");
     let output = run_with_biber("success", &tex);
+    success_or_panic(&output);
+}
+
+/// Test `tectonic-biber` override: when no args passed, fall back to $PATH
+/// lookup for `tectonic-biber` first, and then `biber`. Currently defined in:
+/// [`tectonic::driver::ProcessingSession::check_biber_requirement`]
+#[cfg(unix)]
+#[test]
+fn biber_tectonic_override() {
+    let tex = format!("{BIBER_TRIGGER_TEX}{BIBER_VALIDATE_TEX}");
+    let output = run_with_biber_exe(
+        Some(""),
+        "", // no args passed
+        &tex,
+        &["subdirectory/empty.bib", "tectonic-biber"],
+    );
     success_or_panic(&output);
 }
 
