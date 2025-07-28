@@ -324,9 +324,6 @@ impl<T: std::error::Error + 'static> SyncError<T> {
 }
 
 impl<T: std::error::Error + 'static> std::error::Error for SyncError<T> {
-    #[cfg(backtrace)]
-    fn backtrace(&self) -> Option<&Backtrace> {}
-
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.proxy.as_ref().map(|e| e as _)
     }
@@ -389,9 +386,6 @@ impl<T: std::error::Error> CauseProxy<T> {
 }
 
 impl<T: std::error::Error + 'static> std::error::Error for CauseProxy<T> {
-    #[cfg(backtrace)]
-    fn backtrace(&self) -> Option<&Backtrace> {}
-
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.next.as_ref().map(|e| e as _)
     }

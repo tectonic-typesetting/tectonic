@@ -63,7 +63,7 @@ members = [
 
 [workspace.lints.rust]
 # FIXME(CraftSpider): Switch from error-chain to a newer package, as it's a deprecated project
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(backtrace)', 'cfg(has_error_description_deprecated)'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(has_error_description_deprecated)'] }
 missing_docs = "deny"
 
 [lib]
