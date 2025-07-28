@@ -20,19 +20,14 @@ runs:
         rustup -V
         rustc -Vv
         cargo -V
-    - name: Install latest Cranko (Ubuntu)
-      if: ${{ runner.os == 'Linux' }}
+    - name: Install latest Cranko (Ubuntu/macOS)
+      if: ${{ runner.os != 'Windows' }}
       shell: bash
       run: |
         d="$(mktemp -d /tmp/cranko.XXXXXX)"
         cd "$d"
         curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
         echo "PATH=$d:$PATH" >> "$GITHUB_ENV"
-    - name: Install latest Cranko (macOS)
-      if: ${{ runner.os == 'macOS' }}
-      shell: bash
-      run: |
-        cargo install cranko --force
     - name: Install latest Cranko (Windows)
       if: ${{ runner.os == 'Windows' }}
       shell: pwsh
