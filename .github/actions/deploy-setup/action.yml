@@ -50,7 +50,10 @@ runs:
       id: set-toplevel
       shell: bash
       run: |
-        if [[ "$IS_DEV" == "true" ]] ; then
+        if [[ -z $GITHUB_TOKEN ]] ; then
+          >&2 echo '$GITHUB_TOKEN is unset, skipping deployment'
+          version_text=skip
+        elif [[ "$IS_DEV" == "true" ]] ; then
           version_text=latest
         elif cranko show if-released --exit-code tectonic ; then
           version_text="$(cranko show version tectonic)"
