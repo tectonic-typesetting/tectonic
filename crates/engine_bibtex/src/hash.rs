@@ -172,7 +172,7 @@ pub(crate) struct HashData {
 }
 
 impl HashData {
-    pub(crate) fn new() -> HashData {
+    pub fn new() -> HashData {
         HashData {
             hash_data: vec![HashNode::default(); HASH_MAX + 1],
             len: HASH_MAX + 1,
@@ -199,27 +199,27 @@ impl HashData {
         self.hash_data[pos].text
     }
 
-    pub fn set_text(&mut self, pos: usize, val: StrNumber) {
+    fn set_text(&mut self, pos: usize, val: StrNumber) {
         self.hash_data[pos].text = val;
     }
 
-    pub fn next(&self, pos: usize) -> HashPointer {
+    fn next(&self, pos: usize) -> HashPointer {
         self.hash_data[pos].next
     }
 
-    pub fn set_next(&mut self, pos: usize, val: HashPointer) {
+    fn set_next(&mut self, pos: usize, val: HashPointer) {
         self.hash_data[pos].next = val
     }
 
-    pub fn len(&self) -> usize {
+    fn len(&self) -> usize {
         self.len
     }
 
-    pub fn set_len(&mut self, val: usize) {
+    fn set_len(&mut self, val: usize) {
         self.len = val;
     }
 
-    pub fn prime(&self) -> usize {
+    fn prime(&self) -> usize {
         HASH_PRIME
     }
 
