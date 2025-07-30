@@ -10,10 +10,11 @@ use crate::{
     peekable::input_ln,
     pool::StringPool,
     scan::{Scan, ScanRes},
-    ASCIICode, Bibtex, BibtexError, CiteNumber, FieldLoc, HashPointer, StrNumber,
+    ASCIICode, Bibtex, BibtexError, CiteNumber, FieldLoc, HashPointer,
 };
 use std::{ffi::CStr, io::Write, slice};
 use tectonic_io_base::OutputHandle;
+use crate::pool::StrNumber;
 
 pub trait AsBytes {
     fn as_bytes(&self) -> &[u8];

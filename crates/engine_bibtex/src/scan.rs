@@ -14,9 +14,9 @@ use crate::{
         skip_token_unknown_function_print,
     },
     peekable::input_ln,
-    pool::StringPool,
+    pool::{StringPool, StrNumber},
     ASCIICode, Bibtex, BibtexError, BufPointer, CiteNumber, FnDefLoc, GlobalItems, HashPointer,
-    StrIlk, StrNumber,
+    StrIlk,
 };
 
 pub(crate) const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
@@ -193,9 +193,9 @@ fn handle_char(
 
             let str = &globals.buffers.buffer(BufTy::Base)
                 [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
-            let res = globals.pool.lookup_str_insert(
+            let res = globals.hash.lookup_str_insert(
                 ctx,
-                globals.hash,
+                globals.pool,
                 str,
                 HashExtra::Integer(token_value),
             )?;
@@ -226,8 +226,8 @@ fn handle_char(
             let str = &globals.buffers.buffer(BufTy::Base)
                 [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
             let res = globals
-                .pool
-                .lookup_str_insert(ctx, globals.hash, str, HashExtra::Text)?;
+                .hash
+                .lookup_str_insert(ctx, globals.pool, str, HashExtra::Text)?;
 
             globals
                 .buffers
@@ -261,7 +261,7 @@ fn handle_char(
             globals.buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
 
             let str = &globals.buffers.buffer(BufTy::Base)[range];
-            let res = globals.pool.lookup_str(globals.hash, str, StrIlk::BstFn);
+            let res = globals.hash.lookup_str(globals.pool, str, StrIlk::BstFn);
 
             if !res.exists {
                 return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool);
@@ -279,9 +279,9 @@ fn handle_char(
 
             let str = format!("'{}", ctx.impl_fn_num);
 
-            let res = globals.pool.lookup_str_insert(
+            let res = globals.hash.lookup_str_insert(
                 ctx,
-                globals.hash,
+                globals.pool,
                 str.as_bytes(),
                 HashExtra::BstFn(BstFn::Wizard(0)),
             )?;
@@ -311,7 +311,7 @@ fn handle_char(
             globals.buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
 
             let str = &globals.buffers.buffer(BufTy::Base)[range];
-            let res = globals.pool.lookup_str(globals.hash, str, StrIlk::BstFn);
+            let res = globals.hash.lookup_str(globals.pool, str, StrIlk::BstFn);
             if !res.exists {
                 return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool);
             } else if res.loc == wiz_loc {
@@ -634,7 +634,7 @@ fn scan_a_field_token_and_eat_white(
                 globals.buffers.buffer_mut(BufTy::Base)[range.clone()].make_ascii_lowercase();
                 let str = &globals.buffers.buffer(BufTy::Base)[range];
 
-                let res = globals.pool.lookup_str(globals.hash, str, StrIlk::Macro);
+                let res = globals.hash.lookup_str(globals.pool, str, StrIlk::Macro);
                 let mut store_token = true;
                 if command == Some(BibCommand::String) && res.loc == cur_macro_loc {
                     store_token = false;
@@ -797,8 +797,8 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
         let str =
             &globals.buffers.buffer(BufTy::Ex)[ex_buf_xptr..globals.buffers.offset(BufTy::Ex, 1)];
         let res = globals
-            .pool
-            .lookup_str_insert(ctx, globals.hash, str, HashExtra::Text)?;
+            .hash
+            .lookup_str_insert(ctx, globals.pool, str, HashExtra::Text)?;
 
         if let Some(command) = command {
             match command {
@@ -824,7 +824,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
             }
 
             /* missing */
-            if globals.other.field(field_ptr) != 0 {
+            if !globals.other.field(field_ptr).is_invalid() {
                 ctx.write_logs("Warning--I'm ignoring ");
                 print_a_pool_str(
                     ctx,
@@ -851,9 +851,9 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     );
                     globals.buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
                     let str = &globals.buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
-                    let lc_res = globals.pool.lookup_str_insert(
+                    let lc_res = globals.hash.lookup_str_insert(
                         ctx,
-                        globals.hash,
+                        globals.pool,
                         str,
                         HashExtra::LcCite(0),
                     )?;
@@ -869,14 +869,14 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                         };
 
                         if cite >= globals.cites.old_num_cites() {
-                            globals.cites.set_info(cite, cite + 1);
+                            globals.cites.set_info(cite, StrNumber::from_raw_dangerous(cite + 1));
                         }
                     } else {
                         let str = &globals.buffers.buffer(BufTy::Ex)
                             [ex_buf_xptr..globals.buffers.offset(BufTy::Ex, 1)];
-                        let c_res = globals.pool.lookup_str_insert(
+                        let c_res = globals.hash.lookup_str_insert(
                             ctx,
-                            globals.hash,
+                            globals.pool,
                             str,
                             HashExtra::Cite(0),
                         )?;
@@ -897,7 +897,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                             panic!("Cite lookup didn't have Cite extra");
                         };
                         globals.cites.set_ptr(new_ptr);
-                        globals.cites.set_info(cite, 1);
+                        globals.cites.set_info(cite, StrNumber::from_raw_dangerous(1));
                     }
                 }
             }
@@ -1018,7 +1018,7 @@ pub(crate) fn von_token_found(
                         *name_bf_ptr += 1;
                     }
                     let str = &buffers.buffer(BufTy::Sv)[name_bf_yptr..*name_bf_ptr];
-                    let res = pool.lookup_str(hash, str, StrIlk::ControlSeq);
+                    let res = hash.lookup_str(pool, str, StrIlk::ControlSeq);
                     let ilk = res
                         .exists
                         .then(|| {

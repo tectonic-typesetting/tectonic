@@ -12,15 +12,15 @@ use crate::{
         bst_cant_mess_with_entries_print, output_bbl_line, print_a_pool_str, print_confusion,
         print_fn_class,
     },
-    pool::{add_buf_pool, add_out_pool, StringPool},
+    pool::{StringPool, StrNumber},
     scan::{
         check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
         von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
     },
     ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, PoolPointer, StrIlk,
-    StrNumber,
 };
 use std::ops::{Deref, DerefMut, Index};
+use crate::pool::{Checkpoint, MAX_PRINT_LINE, MIN_PRINT_LINE};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum ControlSeq {
@@ -75,7 +75,7 @@ pub(crate) struct ExecCtx<'a, 'bib, 'cbs> {
     pub(crate) lit_stack: Vec<ExecVal>,
     pub mess_with_entries: bool,
     /// Pointer to the current top of the string pool, used to optimize certain string operations
-    pub bib_str_ptr: StrNumber,
+    pub checkpoint: Checkpoint,
 }
 
 impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
@@ -85,7 +85,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
             default: 0,
             lit_stack: Vec::new(),
             mess_with_entries: false,
-            bib_str_ptr: 0,
+            checkpoint: Checkpoint::default(),
         }
     }
 
@@ -100,14 +100,12 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
     ) -> Result<ExecVal, BibtexError> {
         if let Some(pop) = self.lit_stack.pop() {
             if let ExecVal::String(str) = pop {
-                if str >= self.bib_str_ptr {
-                    if str != pool.str_ptr() - 1 {
+                if self.checkpoint.is_before(str) {
+                    if !pool.remove_last_str(str) {
                         self.write_logs("Nontop top of string stack");
                         print_confusion(self);
                         return Err(BibtexError::Fatal);
                     }
-                    pool.set_str_ptr(pool.str_ptr() - 1);
-                    pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
                 }
             }
             Ok(pop)
@@ -634,6 +632,87 @@ pub(crate) fn figure_out_the_formatted_name(
     Ok(())
 }
 
+pub(crate) fn add_buf_pool(pool: &StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
+    let str = pool.get_str(str);
+
+    if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
+        buffers.grow_all();
+    }
+
+    let start = buffers.init(BufTy::Ex);
+    buffers.copy_from(BufTy::Ex, start, str);
+    buffers.set_offset(BufTy::Ex, 1, start + str.len());
+    buffers.set_init(BufTy::Ex, start + str.len());
+}
+
+pub(crate) fn add_out_pool(
+    ctx: &mut Bibtex<'_, '_>,
+    buffers: &mut GlobalBuffer,
+    pool: &StringPool,
+    str: StrNumber,
+) {
+    let str = pool.get_str(str);
+
+    while buffers.init(BufTy::Out) + str.len() > buffers.len() {
+        buffers.grow_all();
+    }
+
+    let out_offset = buffers.init(BufTy::Out);
+    buffers.copy_from(BufTy::Out, out_offset, str);
+    buffers.set_init(BufTy::Out, out_offset + str.len());
+
+    let mut unbreakable_tail = false;
+    while buffers.init(BufTy::Out) > MAX_PRINT_LINE && !unbreakable_tail {
+        let end_ptr = buffers.init(BufTy::Out);
+        let mut out_offset = MAX_PRINT_LINE;
+        let mut break_pt_found = false;
+
+        while LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace
+            && out_offset >= MIN_PRINT_LINE
+        {
+            out_offset -= 1;
+        }
+
+        if out_offset == MIN_PRINT_LINE - 1 {
+            out_offset = MAX_PRINT_LINE + 1;
+            while out_offset < end_ptr {
+                if LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace {
+                    out_offset += 1;
+                } else {
+                    break;
+                }
+            }
+
+            if out_offset == end_ptr {
+                unbreakable_tail = true;
+            } else {
+                break_pt_found = true;
+                while out_offset + 1 < end_ptr {
+                    if LexClass::of(buffers.at(BufTy::Out, out_offset + 1)) == LexClass::Whitespace
+                    {
+                        out_offset += 1;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        } else {
+            break_pt_found = true;
+        }
+
+        if break_pt_found {
+            buffers.set_init(BufTy::Out, out_offset);
+            let break_ptr = buffers.init(BufTy::Out) + 1;
+            output_bbl_line(ctx, buffers);
+            buffers.set_at(BufTy::Out, 0, b' ');
+            buffers.set_at(BufTy::Out, 1, b' ');
+            let len = end_ptr - break_ptr;
+            buffers.copy_within(BufTy::Out, BufTy::Out, break_ptr, 2, len);
+            buffers.set_init(BufTy::Out, len + 2);
+        }
+    }
+}
+
 pub(crate) fn check_command_execution(
     ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &mut StringPool,
@@ -647,7 +726,7 @@ pub(crate) fn check_command_execution(
         ctx.write_logs("---the literal stack isn't empty");
         bst_ex_warn_print(ctx, pool, cites)?;
     }
-    if ctx.bib_str_ptr != pool.str_ptr() {
+    if !pool.is_at(ctx.checkpoint) {
         ctx.write_logs("Nonempty empty string stack");
         print_confusion(ctx);
         return Err(BibtexError::Fatal);
@@ -662,7 +741,7 @@ fn add_pool_buf_and_push(
 ) -> Result<(), BibtexError> {
     buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
-    let val = ExecVal::String(pool.add_string_raw(ctx, str)?);
+    let val = ExecVal::String(pool.add_string(ctx, str)?);
     ctx.push_stack(val);
     Ok(())
 }
@@ -835,34 +914,33 @@ fn interp_concat(
     // TODO: Add pool API for scratch strings, instead of doing it manually through dangerous manual
     //       implementation of strings
 
-    if s2 >= ctx.bib_str_ptr && s1 >= ctx.bib_str_ptr {
+    if ctx.checkpoint.is_before(s2) && ctx.checkpoint.is_before(s1) {
         // Both strings are 'scratch', they must be next to each-other due to external invariants,
         // se we just make one new string covering both
-        pool.set_start(s1, pool.str_start(s1 + 1));
-        pool.set_str_ptr(pool.str_ptr() + 1);
-        pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
-        ctx.push_stack(pop2);
-    } else if s2 >= ctx.bib_str_ptr {
+        let new_len = pool.get_str(s1).len() + pool.get_str(s2).len();
+        let new = pool.write_str(ctx, |cursor| cursor.extend(new_len))?;
+        ctx.push_stack(ExecVal::String(new));
+    } else if ctx.checkpoint.is_before(s2) {
         if pool.get_str(s2).is_empty() {
             ctx.push_stack(pop1);
         } else {
             // s2 is scratch, we add s1 to its end and return the new scratch string
-            let s1_len = pool.get_str(s1).len();
-            let ptr = pool.str_start(s2 + 1);
-            pool.copy_raw(s1, ptr);
-            pool.set_pool_ptr(ptr + s1_len);
-            let new = pool.make_string(ctx)?;
+            let s2_len = pool.get_str(s2).len();
+            let new = pool.write_str(ctx, |cursor| {
+                cursor.extend(s2_len);
+                cursor.append_str(s1);
+            })?;
             ctx.push_stack(ExecVal::String(new));
         }
-    } else if s1 >= ctx.bib_str_ptr {
+    } else if ctx.checkpoint.is_before(s1) {
         let str1 = pool.get_str(s1);
         let str2 = pool.get_str(s2);
 
         if str2.is_empty() {
             // s1 is scratch and s2 is empty - just save s1 and return it
-            pool.set_str_ptr(pool.str_ptr() + 1);
-            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
-            ctx.push_stack(pop1);
+            let s1_len = str1.len();
+            let new = pool.write_str(ctx, |cursor| cursor.extend(s1_len))?;
+            ctx.push_stack(ExecVal::String(new));
         } else if str1.is_empty() {
             // s1 is empty - just return s2
             ctx.push_stack(pop2);
@@ -872,10 +950,13 @@ fn interp_concat(
 
             // s1 is scratch and s2 is not - we want to copy s1 forward by the length of s2,
             // then write s2 in where it was, returning the new scratch string
-            pool.copy_raw(s1, pool.str_start(s1 + 1) + s2_len - s1_len);
-            pool.copy_raw(s2, pool.str_start(s1));
-            pool.set_pool_ptr(pool.str_start(s1) + s1_len + s2_len);
-            let val = ExecVal::String(pool.make_string(ctx)?);
+            let new = pool.write_str(ctx, |cursor| {
+                cursor.extend(s1_len + s2_len);
+                let raw = cursor.bytes();
+                raw.copy_within(0..s1_len, s2_len);
+                cursor.insert_str(s2, 0);
+            })?;
+            let val = ExecVal::String(new);
             ctx.push_stack(val);
         }
     } else {
@@ -888,14 +969,11 @@ fn interp_concat(
             ctx.push_stack(pop1);
         } else {
             // Neither is scratch or empty - make a new scratch string from the concat of both
-            let s1_len = str1.len();
-            let s2_len = str2.len();
-
-            let ptr = pool.pool_ptr();
-            pool.copy_raw(s2, ptr);
-            pool.copy_raw(s1, ptr + s2_len);
-            pool.set_pool_ptr(ptr + s1_len + s2_len);
-            let val = ExecVal::String(pool.make_string(ctx)?);
+            let new = pool.write_str(ctx, |cursor| {
+                cursor.append_str(s2);
+                cursor.append_str(s1);
+            })?;
+            let val = ExecVal::String(new);
             ctx.push_stack(val);
         }
     }
@@ -955,10 +1033,10 @@ fn interp_gets(
         }
         HashExtra::BstFn(BstFn::StrGlbl(str_ptr)) => {
             if let ExecVal::String(s2) = pop2 {
-                if s2 < ctx.bib_str_ptr {
+                if !ctx.checkpoint.is_before(s2) {
                     globals.set_str_ptr(*str_ptr, s2);
                 } else {
-                    globals.set_str_ptr(*str_ptr, 0);
+                    globals.set_str_ptr(*str_ptr, StrNumber::invalid());
                     let mut s = pool.get_str(s2);
                     if s.len() > GLOB_STR_SIZE {
                         bst_1print_string_size_exceeded(ctx);
@@ -1011,26 +1089,26 @@ fn interp_add_period(
     match str[pos] {
         b'.' | b'?' | b'!' => {
             // If scratch, save
-            if s1 >= ctx.bib_str_ptr {
-                pool.set_str_ptr(pool.str_ptr() + 1);
-                pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+            if ctx.checkpoint.is_before(s1) {
+                let s1_len = pool.get_str(s1).len();
+                let new = pool.write_str(ctx, |cursor| cursor.extend(s1_len))?;
+                ctx.push_stack(ExecVal::String(new));
+            } else {
+                ctx.push_stack(pop1);
             }
-            ctx.push_stack(pop1);
         }
         _ => {
-            if s1 < ctx.bib_str_ptr {
-                let ptr = pool.pool_ptr();
-                let s_len = str.len();
-                pool.copy_raw(s1, ptr);
-                pool.set_pool_ptr(ptr + s_len);
-            } else {
-                pool.set_pool_ptr(pool.str_start(s1 + 1));
-                while pool.pool_ptr() + 1 > pool.len() {
-                    pool.grow();
+            let is_bst_str = ctx.checkpoint.is_before(s1);
+            let s1_len = pool.get_str(s1).len();
+            let new = pool.write_str(ctx, |cursor| {
+                if is_bst_str {
+                    cursor.extend(s1_len);
+                } else {
+                    cursor.append_str(s1);
                 }
-            }
-            pool.append(b'.');
-            let val = ExecVal::String(pool.make_string(ctx)?);
+                cursor.append(b'.');
+            })?;
+            let val = ExecVal::String(new);
             ctx.push_stack(val);
         }
     }
@@ -1103,7 +1181,7 @@ fn interp_change_case(
                             }
 
                             let res =
-                                pool.lookup_str(hash, &scratch[old_idx..idx], StrIlk::ControlSeq);
+                                hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
 
                             if res.exists {
                                 let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
@@ -1199,7 +1277,7 @@ fn interp_change_case(
                 idx += 1;
             }
             check_brace_level(ctx, pool, cites, s2, brace_level)?;
-            let val = ExecVal::String(pool.add_string_raw(ctx, &scratch)?);
+            let val = ExecVal::String(pool.add_string(ctx, &scratch)?);
             ctx.push_stack(val);
         }
         (ExecVal::String(_), _) => {
@@ -1264,21 +1342,17 @@ fn interp_dup(
     match pop1 {
         ExecVal::String(s1) => {
             ctx.push_stack(pop1);
-            if s1 < ctx.bib_str_ptr {
+            if !ctx.checkpoint.is_before(s1) {
                 ctx.push_stack(pop1);
             } else {
-                pool.set_str_ptr(pool.str_ptr() + 1);
-                pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
-
                 let str_len = pool.get_str(s1).len();
-                while pool.pool_ptr() + str_len > pool.len() {
-                    pool.grow();
-                }
-
-                let ptr = pool.pool_ptr();
-                pool.copy_raw(s1, ptr);
-                pool.set_pool_ptr(ptr + str_len);
-                let val = ExecVal::String(pool.make_string(ctx)?);
+                let _ = pool.write_str(ctx, |cursor| {
+                    cursor.extend(str_len);
+                })?;
+                let new = pool.write_str(ctx, |cursor| {
+                    cursor.append_str(s1);
+                })?;
+                let val = ExecVal::String(new);
                 ctx.push_stack(val);
             }
         }
@@ -1619,12 +1693,7 @@ fn interp_int_to_chr(
         bst_ex_warn_print(ctx, pool, cites)?;
         ctx.push_stack(ExecVal::String(ctx.s_null));
     } else {
-        if pool.pool_ptr() + 1 > pool.len() {
-            pool.grow();
-        }
-
-        pool.append(i1 as u8);
-        let val = ExecVal::String(pool.make_string(ctx)?);
+        let val = ExecVal::String(pool.add_string(ctx, &[i1 as u8])?);
         ctx.push_stack(val);
     }
     Ok(())
@@ -1647,7 +1716,7 @@ fn interp_int_to_str(
     };
 
     let scratch = i1.to_string();
-    let val = ExecVal::String(pool.add_string_raw(ctx, scratch.as_bytes())?);
+    let val = ExecVal::String(pool.add_string(ctx, scratch.as_bytes())?);
     ctx.push_stack(val);
     Ok(())
 }
@@ -1721,7 +1790,7 @@ fn interp_preamble(
     for s in bibs.preamble() {
         out.extend(pool.get_str(*s));
     }
-    let s = pool.add_string_raw(ctx, &out)?;
+    let s = pool.add_string(ctx, &out)?;
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1772,7 +1841,7 @@ fn interp_purify(
                             }
 
                             let res =
-                                pool.lookup_str(hash, &scratch[old_idx..idx], StrIlk::ControlSeq);
+                                hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
                             if res.exists {
                                 let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
@@ -1819,14 +1888,14 @@ fn interp_purify(
     }
 
     scratch.truncate(write_idx);
-    let out = pool.add_string_raw(ctx, &scratch)?;
+    let out = pool.add_string(ctx, &scratch)?;
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
 }
 
 fn interp_quote(ctx: &mut ExecCtx<'_, '_, '_>, pool: &mut StringPool) -> Result<(), BibtexError> {
-    let s = pool.add_string_raw(ctx, b"\"")?;
+    let s = pool.add_string(ctx, b"\"")?;
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1897,26 +1966,26 @@ fn interp_substr(
     let start = start as isize;
 
     if len >= str.len() && (start == 1 || start == -1) {
-        if s3 >= ctx.bib_str_ptr {
-            pool.set_str_ptr(pool.str_ptr() + 1);
-            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+        if ctx.checkpoint.is_before(s3) {
+            let str_len = pool.get_str(s3).len();
+            let _ = pool.write_str(ctx, |cursor| cursor.extend(str_len))?;
         }
         ctx.push_stack(pop3);
         return Ok(());
     }
 
-    if start == 1 && s3 >= ctx.bib_str_ptr {
-        pool.set_start(s3 + 1, pool.str_start(s3) + len);
-        pool.set_str_ptr(pool.str_ptr() + 1);
-        pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
-        ctx.push_stack(pop3);
+    if start == 1 && ctx.checkpoint.is_before(s3) {
+        let new = pool.write_str(ctx, |cursor| {
+            cursor.extend(len);
+        })?;
+        ctx.push_stack(ExecVal::String(new));
         return Ok(());
     }
 
     // TODO: Remove this intermediate allocation, currently can't pass a `&str` from a StringPool
     //       to that StringPool.
     let new_str = Vec::from(&str[SLRange { start, len }]);
-    let out = pool.add_string_raw(ctx, &new_str)?;
+    let out = pool.add_string(ctx, &new_str)?;
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
@@ -1932,22 +2001,23 @@ fn interp_swap(
 
     match (pop1, pop2) {
         (ExecVal::String(s1), ExecVal::String(s2))
-            if s1 >= ctx.bib_str_ptr && s2 >= ctx.bib_str_ptr =>
+            if ctx.checkpoint.is_before(s1) && ctx.checkpoint.is_before(s2) =>
         {
             let tmp = Vec::from(pool.get_str(s2));
-            let s1_len = pool.get_str(s1).len();
-            let ptr = pool.pool_ptr();
-            pool.copy_raw(s1, ptr);
-            pool.set_pool_ptr(ptr + s1_len);
-            let val = ExecVal::String(pool.make_string(ctx)?);
+            let new = pool.write_str(ctx, |cursor| {
+                cursor.append_str(s1);
+            })?;
+            let val = ExecVal::String(new);
             ctx.push_stack(val);
-            let val = ExecVal::String(pool.add_string_raw(ctx, &tmp)?);
+            let val = ExecVal::String(pool.add_string(ctx, &tmp)?);
             ctx.push_stack(val);
             return Ok(());
         }
-        (ExecVal::String(s), _) | (_, ExecVal::String(s)) if s >= ctx.bib_str_ptr => {
-            pool.set_str_ptr(pool.str_ptr() + 1);
-            pool.set_pool_ptr(pool.str_start(pool.str_ptr()));
+        (ExecVal::String(s), _) | (_, ExecVal::String(s)) if ctx.checkpoint.is_before(s) => {
+            let str_len = pool.get_str(s).len();
+            let _ = pool.write_str(ctx, |cursor| {
+                cursor.extend(str_len);
+            })?;
         }
         (_, _) => (),
     }
@@ -2062,25 +2132,19 @@ fn interp_text_prefix(
         }
     }
 
-    let start = pool.str_start(s2);
+    let is_before = ctx.checkpoint.is_before(s2);
+    let new = pool.write_str(ctx, |cursor| {
+        if is_before {
+            cursor.extend(idx)
+        } else {
+            cursor.append_substr(s2, 0..idx)
+        }
+        for _ in 0..brace_level {
+            cursor.append(b'}');
+        }
+    })?;
 
-    while pool.pool_ptr() + brace_level + idx > pool.len() {
-        pool.grow();
-    }
-
-    if s2 >= ctx.bib_str_ptr {
-        pool.set_pool_ptr(start + idx)
-    } else {
-        let ptr = pool.pool_ptr();
-        pool.copy_range_raw(start..start + idx, ptr);
-        pool.set_pool_ptr(ptr + idx);
-    }
-
-    for _ in 0..brace_level {
-        pool.append(b'}');
-    }
-
-    let val = ExecVal::String(pool.make_string(ctx)?);
+    let val = ExecVal::String(new);
     ctx.push_stack(val);
     Ok(())
 }
@@ -2163,7 +2227,7 @@ fn interp_width(
                         if idx < str.len() && idx == old_idx {
                             idx += 1;
                         } else {
-                            let res = pool.lookup_str(hash, &str[old_idx..idx], StrIlk::ControlSeq);
+                            let res = hash.lookup_str(pool, &str[old_idx..idx], StrIlk::ControlSeq);
                             if res.exists {
                                 let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
@@ -2451,7 +2515,7 @@ pub(crate) fn execute_fn(
                 }
 
                 let field = globals.other.field(field_ptr);
-                if field == 0 {
+                if field.is_invalid() {
                     ctx.push_stack(ExecVal::Missing(globals.hash.text(ex_fn_loc)));
                 } else {
                     ctx.push_stack(ExecVal::String(field));
@@ -2477,7 +2541,7 @@ pub(crate) fn execute_fn(
             } else {
                 let str_ent_ptr = globals.cites.ptr() * globals.entries.num_ent_strs() + *entry;
                 let str = globals.entries.strs(str_ent_ptr);
-                let val = ExecVal::String(globals.pool.add_string_raw(ctx, str)?);
+                let val = ExecVal::String(globals.pool.add_string(ctx, str)?);
                 ctx.push_stack(val);
                 Ok(())
             }
@@ -2488,11 +2552,11 @@ pub(crate) fn execute_fn(
         }
         HashExtra::BstFn(BstFn::StrGlbl(glb_ptr)) => {
             let str_ptr = globals.globals.str_ptr(*glb_ptr);
-            if str_ptr > 0 {
+            if !str_ptr.is_invalid() {
                 ctx.push_stack(ExecVal::String(str_ptr));
             } else {
                 let str = globals.globals.str(*glb_ptr);
-                let val = ExecVal::String(globals.pool.add_string_raw(ctx, str)?);
+                let val = ExecVal::String(globals.pool.add_string(ctx, str)?);
                 ctx.push_stack(val);
             }
             Ok(())

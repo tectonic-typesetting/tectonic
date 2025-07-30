@@ -11,8 +11,9 @@ use crate::{
     peekable::input_ln,
     pool::StringPool,
     scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
-    BibNumber, Bibtex, BibtexError, File, GlobalItems, HashPointer, StrIlk, StrNumber,
+    BibNumber, Bibtex, BibtexError, File, GlobalItems, HashPointer, StrIlk,
 };
+use crate::pool::StrNumber;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum BibCommand {
@@ -191,8 +192,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     bib_cmd.make_ascii_lowercase();
 
     let res = globals
-        .pool
-        .lookup_str(globals.hash, bib_cmd, StrIlk::BibCommand);
+        .hash
+        .lookup_str(globals.pool, bib_cmd, StrIlk::BibCommand);
 
     let mut lc_cite_loc = 0;
 
@@ -351,11 +352,11 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 bib_macro.make_ascii_lowercase();
 
                 // let text = globals.hash.text(res.loc);
-                let res = globals.pool.lookup_str_insert(
+                let res = globals.hash.lookup_str_insert(
                     ctx,
-                    globals.hash,
+                    globals.pool,
                     bib_macro,
-                    HashExtra::Macro(0),
+                    HashExtra::Macro(StrNumber::default()),
                 )?;
                 // TODO: Insert overwriting?
                 globals.hash.node_mut(res.loc).extra = HashExtra::Macro(globals.hash.text(res.loc));
@@ -439,7 +440,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let range = globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
     let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
-    let bst_res = globals.pool.lookup_str(globals.hash, bst_fn, StrIlk::BstFn);
+    let bst_res = globals.hash.lookup_str(globals.pool, bst_fn, StrIlk::BstFn);
 
     let type_exists = if bst_res.exists {
         matches!(
@@ -515,12 +516,12 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let lc_res = if ctx.all_entries {
         globals
-            .pool
-            .lookup_str_insert(ctx, globals.hash, lc_cite, HashExtra::LcCite(0))?
+            .hash
+            .lookup_str_insert(ctx, globals.pool, lc_cite, HashExtra::LcCite(0))?
     } else {
         globals
-            .pool
-            .lookup_str(globals.hash, lc_cite, StrIlk::LcCite)
+            .hash
+            .lookup_str(globals.pool, lc_cite, StrIlk::LcCite)
     };
 
     let mut res = lc_res;
@@ -546,9 +547,9 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                         let range = globals.buffers.offset(BufTy::Base, 1)
                             ..globals.buffers.offset(BufTy::Base, 2);
                         let cite = &globals.buffers.buffer(BufTy::Base)[range];
-                        let uc_res = globals.pool.lookup_str_insert(
+                        let uc_res = globals.hash.lookup_str_insert(
                             ctx,
-                            globals.hash,
+                            globals.pool,
                             cite,
                             HashExtra::Cite(0),
                         );
@@ -578,8 +579,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 lc_cite.make_ascii_lowercase();
 
                 let lc_res2 = globals
-                    .pool
-                    .lookup_str(globals.hash, lc_cite, StrIlk::LcCite);
+                    .hash
+                    .lookup_str(globals.pool, lc_cite, StrIlk::LcCite);
 
                 res = lc_res2;
 
@@ -637,8 +638,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
             let res =
                 globals
-                    .pool
-                    .lookup_str_insert(ctx, globals.hash, cite, HashExtra::Cite(0))?;
+                    .hash
+                    .lookup_str_insert(ctx, globals.pool, cite, HashExtra::Cite(0))?;
             if res.exists {
                 hash_cite_confusion(ctx);
                 return Err(BibtexError::Fatal);
@@ -744,7 +745,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
             bst_fn.make_ascii_lowercase();
 
-            let res = globals.pool.lookup_str(globals.hash, bst_fn, StrIlk::BstFn);
+            let res = globals.hash.lookup_str(globals.pool, bst_fn, StrIlk::BstFn);
 
             *field_name_loc = res.loc;
             if res.exists {
