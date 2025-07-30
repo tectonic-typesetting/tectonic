@@ -13,7 +13,7 @@ use crate::{
         print_confusion, print_overflow, AuxTy,
     },
     peekable::PeekableInput,
-    pool::{StringPool, StrNumber},
+    pool::{StrNumber, StringPool},
     scan::Scan,
     Bibtex, BibtexError, File, GlobalItems, StrIlk,
 };

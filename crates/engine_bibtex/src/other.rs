@@ -1,4 +1,4 @@
-use crate::{FieldLoc, HashPointer, pool::StrNumber};
+use crate::{pool::StrNumber, FieldLoc, HashPointer};
 
 const MAX_FIELDS: usize = 17250;
 

@@ -12,7 +12,7 @@ use crate::{
         bst_cant_mess_with_entries_print, output_bbl_line, print_a_pool_str, print_confusion,
         print_fn_class,
     },
-    pool::{StringPool, StrNumber},
+    pool::{Checkpoint, StrNumber, StringPool, MAX_PRINT_LINE, MIN_PRINT_LINE},
     scan::{
         check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
         von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
@@ -20,7 +20,6 @@ use crate::{
     ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, StrIlk,
 };
 use std::ops::{Deref, DerefMut, Index};
-use crate::pool::{Checkpoint, MAX_PRINT_LINE, MIN_PRINT_LINE};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum ControlSeq {

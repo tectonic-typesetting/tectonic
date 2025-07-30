@@ -2,7 +2,7 @@ use crate::{
     entries::EntryData,
     hash::{HashData, HashExtra},
     other::OtherData,
-    pool::{StringPool, StrNumber},
+    pool::{StrNumber, StringPool},
     CiteNumber, FindCiteLocs, HashPointer, StrIlk,
 };
 use std::{cmp::Ordering, ops::IndexMut};
@@ -38,8 +38,10 @@ impl CiteInfo {
     }
 
     pub fn grow(&mut self) {
-        self.cite_list.resize(self.cite_list.len() + MAX_CITES, StrNumber::invalid());
-        self.cite_info.resize(self.cite_info.len() + MAX_CITES, StrNumber::invalid());
+        self.cite_list
+            .resize(self.cite_list.len() + MAX_CITES, StrNumber::invalid());
+        self.cite_info
+            .resize(self.cite_info.len() + MAX_CITES, StrNumber::invalid());
         self.type_list.resize(self.type_list.len() + MAX_CITES, 0);
         self.entry_exists
             .resize(self.entry_exists.len() + MAX_CITES, false);
@@ -125,7 +127,8 @@ impl CiteInfo {
     where
         Vec<StrNumber>: IndexMut<I, Output = [StrNumber]>,
     {
-        self.cite_info[r].sort_by(|a, b| less_than(entries, a.to_raw_dangerous(), b.to_raw_dangerous()))
+        self.cite_info[r]
+            .sort_by(|a, b| less_than(entries, a.to_raw_dangerous(), b.to_raw_dangerous()))
     }
 }
 

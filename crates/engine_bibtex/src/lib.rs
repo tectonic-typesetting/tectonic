@@ -18,22 +18,25 @@
 //! [`tectonic`]: https://docs.rs/tectonic/
 
 use crate::{
-    auxi::{get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxData},
-    bibs::BibData,
-    bst::get_bst_command_and_process,
+    auxi::{
+        get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxCommand,
+        AuxData,
+    },
+    bibs::{BibCommand, BibData},
+    bst::{get_bst_command_and_process, BstCommand},
     buffer::{BufTy, GlobalBuffer},
     cite::CiteInfo,
-    entries::EntryData,
-    exec::ExecCtx,
-    global::GlobalData,
-    hash::{HashData, HashExtra},
+    entries::{EntryData, ENT_STR_SIZE},
+    exec::{ControlSeq, ExecCtx},
+    global::{GlobalData, GLOB_STR_SIZE},
+    hash::{BstBuiltin, BstFn, HashData, HashExtra},
     log::{
         bib_close_log, log_pr_aux_name, print_aux_name, print_confusion, sam_wrong_file_name_print,
         AsBytes,
     },
     other::OtherData,
     peekable::{input_ln, PeekableInput},
-    pool::{StringPool, StrNumber},
+    pool::{StrNumber, StringPool},
     scan::eat_bst_white_space,
 };
 use std::{
@@ -42,13 +45,6 @@ use std::{
 };
 use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, FileFormat, OutputId};
 use tectonic_errors::prelude::*;
-use crate::auxi::AuxCommand;
-use crate::bibs::BibCommand;
-use crate::bst::BstCommand;
-use crate::entries::ENT_STR_SIZE;
-use crate::exec::ControlSeq;
-use crate::global::GLOB_STR_SIZE;
-use crate::hash::{BstBuiltin, BstFn};
 
 pub(crate) mod auxi;
 pub(crate) mod bibs;

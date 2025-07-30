@@ -12,7 +12,7 @@ use crate::{
         hash_cite_confusion, log_pr_bib_name, nonexistent_cross_reference_error, print_a_token,
         print_bib_name, print_confusion, print_fn_class, print_missing_entry,
     },
-    pool::{StringPool, StrNumber},
+    pool::{StrNumber, StringPool},
     scan::{eat_bst_white_space, scan_fn_def, scan_identifier, Scan, ScanRes},
     Bibtex, BibtexError, GlobalItems, HashPointer, StrIlk,
 };
@@ -369,7 +369,9 @@ fn bst_iterate_command(
 
     let mut sort_cite_ptr = 0;
     while sort_cite_ptr < globals.cites.num_cites() {
-        globals.cites.set_ptr(globals.cites.info(sort_cite_ptr).to_raw_dangerous());
+        globals
+            .cites
+            .set_ptr(globals.cites.info(sort_cite_ptr).to_raw_dangerous());
         execute_fn(ctx, globals, fn_loc)?;
         check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
         sort_cite_ptr += 1;
@@ -400,9 +402,12 @@ fn bst_macro_command(
     let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
     bst_fn.make_ascii_lowercase();
 
-    let res = globals
-        .hash
-        .lookup_str_insert(ctx, globals.pool, bst_fn, HashExtra::Macro(StrNumber::invalid()))?;
+    let res = globals.hash.lookup_str_insert(
+        ctx,
+        globals.pool,
+        bst_fn,
+        HashExtra::Macro(StrNumber::invalid()),
+    )?;
     if res.exists {
         print_a_token(ctx, globals.buffers);
         ctx.write_logs(" is already defined as a macro");
@@ -651,7 +656,8 @@ fn bst_read_command(
                     }
                     if !ctx.all_entries
                         && cite_parent_ptr >= globals.cites.old_num_cites()
-                        && globals.cites.info(cite_parent_ptr).to_raw_dangerous() < ctx.config.min_crossrefs as usize
+                        && globals.cites.info(cite_parent_ptr).to_raw_dangerous()
+                            < ctx.config.min_crossrefs as usize
                     {
                         globals.other.set_field(field_ptr, StrNumber::invalid());
                     }
@@ -728,7 +734,9 @@ fn bst_read_command(
     globals.entries.init_entries(globals.cites);
 
     for idx in 0..globals.cites.num_cites() {
-        globals.cites.set_info(idx, StrNumber::from_raw_dangerous(idx));
+        globals
+            .cites
+            .set_info(idx, StrNumber::from_raw_dangerous(idx));
     }
     globals.cites.set_ptr(globals.cites.num_cites());
 
@@ -786,7 +794,9 @@ fn bst_reverse_command(
     ctx.mess_with_entries = true;
 
     for idx in (0..globals.cites.num_cites()).rev() {
-        globals.cites.set_ptr(globals.cites.info(idx).to_raw_dangerous());
+        globals
+            .cites
+            .set_ptr(globals.cites.info(idx).to_raw_dangerous());
         execute_fn(ctx, globals, fn_loc)?;
         check_command_execution(ctx, globals.pool, globals.hash, globals.cites)?;
     }

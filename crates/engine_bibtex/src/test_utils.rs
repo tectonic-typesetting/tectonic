@@ -1,6 +1,5 @@
 use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, MinimalDriver};
-use tectonic_io_base::IoProvider;
-use tectonic_io_base::stack::IoStack;
+use tectonic_io_base::{stack::IoStack, IoProvider};
 use tectonic_status_base::NoopStatusBackend;
 
 // TODO: Create context without backend? Use custom backend-like type?
@@ -15,5 +14,5 @@ pub(crate) fn with_cbs(f: impl FnOnce(&mut CoreBridgeState<'_>)) {
         f(cbs);
         Ok(())
     })
-        .unwrap();
+    .unwrap();
 }

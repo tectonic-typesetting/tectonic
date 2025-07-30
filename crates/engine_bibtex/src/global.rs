@@ -1,4 +1,4 @@
-use crate::{ASCIICode, pool::StrNumber};
+use crate::{pool::StrNumber, ASCIICode};
 
 const MAX_GLOB_STRS: usize = 10;
 pub(crate) const GLOB_STR_SIZE: usize = 20000;
@@ -21,8 +21,10 @@ impl GlobalData {
     }
 
     pub fn grow(&mut self) {
-        self.glb_bib_str_ptr
-            .resize(self.glb_bib_str_ptr.len() + MAX_GLOB_STRS, StrNumber::invalid());
+        self.glb_bib_str_ptr.resize(
+            self.glb_bib_str_ptr.len() + MAX_GLOB_STRS,
+            StrNumber::invalid(),
+        );
         self.global_strs.resize(
             self.global_strs.len() + (GLOB_STR_SIZE + 1) * MAX_GLOB_STRS,
             0,

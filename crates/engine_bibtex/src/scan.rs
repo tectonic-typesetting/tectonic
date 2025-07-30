@@ -14,7 +14,7 @@ use crate::{
         skip_token_unknown_function_print,
     },
     peekable::input_ln,
-    pool::{StringPool, StrNumber},
+    pool::{StrNumber, StringPool},
     ASCIICode, Bibtex, BibtexError, BufPointer, CiteNumber, FnDefLoc, GlobalItems, HashPointer,
     StrIlk,
 };
@@ -869,7 +869,9 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                         };
 
                         if cite >= globals.cites.old_num_cites() {
-                            globals.cites.set_info(cite, StrNumber::from_raw_dangerous(cite + 1));
+                            globals
+                                .cites
+                                .set_info(cite, StrNumber::from_raw_dangerous(cite + 1));
                         }
                     } else {
                         let str = &globals.buffers.buffer(BufTy::Ex)
@@ -897,7 +899,9 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                             panic!("Cite lookup didn't have Cite extra");
                         };
                         globals.cites.set_ptr(new_ptr);
-                        globals.cites.set_info(cite, StrNumber::from_raw_dangerous(1));
+                        globals
+                            .cites
+                            .set_info(cite, StrNumber::from_raw_dangerous(1));
                     }
                 }
             }

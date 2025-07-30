@@ -1,6 +1,13 @@
-use crate::{auxi::AuxCommand, bibs::BibCommand, bst::BstCommand, exec::ControlSeq, pool, pool::StrNumber, ASCIICode, Bibtex, BibtexError, CiteNumber, FnDefLoc, HashPointer, LookupRes, StrIlk};
-use crate::log::print_overflow;
-use crate::pool::StringPool;
+use crate::{
+    auxi::AuxCommand,
+    bibs::BibCommand,
+    bst::BstCommand,
+    exec::ControlSeq,
+    log::print_overflow,
+    pool,
+    pool::{StrNumber, StringPool},
+    ASCIICode, Bibtex, BibtexError, CiteNumber, FnDefLoc, HashPointer, LookupRes, StrIlk,
+};
 
 pub(crate) const HASH_BASE: usize = 1;
 pub(crate) const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
@@ -236,7 +243,8 @@ impl HashData {
         let exists = loop {
             let existing = self.text(p);
 
-            if !existing.is_invalid() && pool.get_str(existing) == str && self.node(p).kind() == ilk {
+            if !existing.is_invalid() && pool.get_str(existing) == str && self.node(p).kind() == ilk
+            {
                 break true;
             }
 
@@ -332,9 +340,7 @@ impl HashData {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Bibtex, BibtexConfig};
-    use crate::pool::StringPool;
-    use crate::test_utils::with_cbs;
+    use crate::{pool::StringPool, test_utils::with_cbs, Bibtex, BibtexConfig};
 
     #[test]
     fn test_lookup_str() {
@@ -369,10 +375,7 @@ mod tests {
 
             let res4 = hash.lookup_str(&pool, b"a bad string", StrIlk::Text);
             assert!(!res4.exists);
-            assert_eq!(
-                pool.try_get_str(hash.text(res4.loc)),
-                None,
-            );
+            assert_eq!(pool.try_get_str(hash.text(res4.loc)), None,);
         })
     }
 }

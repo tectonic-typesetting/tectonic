@@ -1,6 +1,4 @@
-use std::fmt;
-use std::fmt::Formatter;
-use std::ops::Range;
+use std::{fmt, fmt::Formatter, ops::Range};
 
 const POOL_SIZE: usize = 65536;
 const STRINGS_SIZE: usize = 2048;
@@ -67,7 +65,8 @@ impl PoolCursor<'_> {
 
     pub fn append_substr(&mut self, str: StrNumber, range: Range<usize>) {
         let start = self.pool.str_start(str);
-        self.pool.copy_range_raw(start+range.start..start+range.end, self.end);
+        self.pool
+            .copy_range_raw(start + range.start..start + range.end, self.end);
     }
 
     pub fn insert_str(&mut self, str: StrNumber, offset: usize) {
@@ -106,7 +105,7 @@ impl StringPool {
     }
 
     fn str_start(&self, str: StrNumber) -> usize {
-        self.offsets[str.0-1]
+        self.offsets[str.0 - 1]
     }
 
     fn str_end(&self, str: StrNumber) -> usize {
@@ -125,13 +124,11 @@ impl StringPool {
     }
 
     pub fn get_str(&self, s: StrNumber) -> &[u8] {
-        self.try_get_str(s).unwrap_or_else(|| panic!("String number {s} doesn't exist"))
+        self.try_get_str(s)
+            .unwrap_or_else(|| panic!("String number {s} doesn't exist"))
     }
 
-    pub fn add_string(
-        &mut self,
-        str: &[u8],
-    ) -> StrNumber {
+    pub fn add_string(&mut self, str: &[u8]) -> StrNumber {
         while self.pool_ptr + str.len() > self.strings.len() {
             self.grow();
         }
@@ -141,7 +138,11 @@ impl StringPool {
     }
 
     pub fn write_str(&mut self, f: impl FnOnce(&mut PoolCursor)) -> StrNumber {
-        let mut cursor = PoolCursor { start: self.pool_ptr, end: self.pool_ptr, pool: self };
+        let mut cursor = PoolCursor {
+            start: self.pool_ptr,
+            end: self.pool_ptr,
+            pool: self,
+        };
         f(&mut cursor);
         self.pool_ptr = cursor.end;
         self.make_string()

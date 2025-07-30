@@ -9,11 +9,10 @@ use crate::{
         print_confusion,
     },
     peekable::input_ln,
-    pool::StringPool,
+    pool::{StrNumber, StringPool},
     scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
     BibNumber, Bibtex, BibtexError, File, GlobalItems, HashPointer, StrIlk,
 };
-use crate::pool::StrNumber;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum BibCommand {
