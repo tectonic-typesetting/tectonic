@@ -30,7 +30,7 @@ pub use url::CFUrl;
 
 /// An ID representing different [`CFType`] subclasses (and of course, [`CFType`]. itself). Can
 /// be used for dynamic upcasting and downcasting of values.
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct CFTypeId(libc::c_ulong);
 
 impl CFTypeId {
@@ -56,7 +56,12 @@ pub struct CFType(NonNull<()>);
 impl CFType {
     /// Attempt to convert this type into a more specific child type. If the cast fails, `Err`
     /// contains the original [`CFType`].
-    pub fn downcast<T: CoreType>(self) -> Result<T, Self> {
+    ///
+    /// # Safety
+    ///
+    /// This method cannot check the validity of casting from `CFArray<T> -> CFType -> CFArray<U>`
+    /// in general. It is an obligation of the caller to ensure the container type is preserved.
+    pub unsafe fn downcast<T: CoreType>(self) -> Result<T, Self> {
         if CFTypeId::of_val(&self) == CFTypeId::of::<T>() {
             let this = ManuallyDrop::new(self);
             // SAFETY: If the CFTypeId of self matches T, then it is guaranteed a valid pointer to T.
@@ -111,7 +116,8 @@ pub unsafe trait CoreType: Sized {
     /// The system type for this value. This is a pointer type in the `sys` module generally.
     type SysTy;
 
-    /// The [`CFTypeId`] that this type represents.
+    /// The [`CFTypeId`] that this type represents. This is insufficient to ensure equality - for
+    /// example, [`CFArray<A>`]` == `[`CFArray<B>`]
     fn type_id() -> CFTypeId;
 
     /// # Safety
@@ -136,4 +142,29 @@ pub unsafe trait CoreType: Sized {
 
     /// Upcast this value into a [`CFType`] for usage in generic contexts.
     fn into_ty(self) -> CFType;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_type_id() {
+        let arr = CFArray::<CFType>::empty();
+        assert_eq!(CFTypeId::of::<CFArray<CFType>>(), CFTypeId::of_val(&arr));
+        assert_eq!(
+            CFTypeId::of::<CFArray<CFString>>(),
+            CFTypeId::of::<CFArray<CFUrl>>()
+        );
+        assert_ne!(CFTypeId::of::<CFString>(), CFTypeId::of::<CFUrl>());
+    }
+
+    #[test]
+    fn test_upcast() {
+        let arr = CFArray::<CFType>::empty();
+        let ty = arr.into_ty();
+
+        assert_eq!(CFTypeId::of_val(&ty), CFTypeId::of::<CFArray<CFType>>());
+        drop(ty);
+    }
 }
