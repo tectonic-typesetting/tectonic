@@ -2,8 +2,15 @@ use crate::{pool::StrNumber, FieldLoc, HashPointer};
 
 const MAX_FIELDS: usize = 17250;
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum WizOp {
+    Exec(HashPointer),
+    Quote(HashPointer),
+    EndOfDef,
+}
+
 pub(crate) struct OtherData {
-    wiz_functions: Vec<HashPointer>,
+    wiz_functions: Vec<WizOp>,
     field_info: Vec<StrNumber>,
     num_fields: FieldLoc,
     num_pre_defined_fields: FieldLoc,
@@ -64,12 +71,12 @@ impl OtherData {
         self.crossref_num = val;
     }
 
-    pub fn wiz_function(&self, pos: usize) -> HashPointer {
-        self.wiz_functions[pos]
+    pub fn extend_wiz_data(&mut self, ops: impl IntoIterator<Item = WizOp>) {
+        self.wiz_functions.extend(ops);
     }
-
-    pub fn push_wiz_func(&mut self, val: HashPointer) {
-        self.wiz_functions.push(val)
+    
+    pub fn wiz_function(&self, pos: usize) -> WizOp {
+        self.wiz_functions[pos]
     }
 
     pub fn wiz_func_len(&self) -> usize {

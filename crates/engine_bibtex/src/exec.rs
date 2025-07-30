@@ -15,11 +15,13 @@ use crate::{
     pool::{Checkpoint, StrNumber, StringPool, MAX_PRINT_LINE, MIN_PRINT_LINE},
     scan::{
         check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
-        von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
+        von_name_ends_and_last_name_starts_stuff, von_token_found,
     },
     ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, StrIlk,
 };
 use std::ops::{Deref, DerefMut, Index};
+use slotmap::Key;
+use crate::other::WizOp;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub(crate) enum ControlSeq {
@@ -81,7 +83,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
     pub(crate) fn new(glbl_ctx: &'a mut Bibtex<'bib, 'cbs>) -> ExecCtx<'a, 'bib, 'cbs> {
         ExecCtx {
             glbl_ctx,
-            default: 0,
+            default: HashPointer::default(),
             lit_stack: Vec::new(),
             mess_with_entries: false,
             checkpoint: Checkpoint::default(),
@@ -996,7 +998,7 @@ fn interp_gets(
         }
     };
 
-    match &hash.node(f1).extra {
+    match hash.node(f1).extra() {
         HashExtra::BstFn(BstFn::IntEntry(_) | BstFn::StrEntry(_)) if !ctx.mess_with_entries => {
             bst_cant_mess_with_entries_print(ctx, pool, cites)?;
         }
@@ -1023,7 +1025,7 @@ fn interp_gets(
         }
         HashExtra::BstFn(BstFn::IntGlbl(_)) => {
             if let ExecVal::Integer(i2) = pop2 {
-                hash.node_mut(f1).extra = HashExtra::BstFn(BstFn::IntGlbl(i2));
+                *hash.node_mut(f1).extra_mut() = HashExtra::BstFn(BstFn::IntGlbl(i2));
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
@@ -1181,7 +1183,7 @@ fn interp_change_case(
                                 hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
 
                             if let Some(loc) = res {
-                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra else {
+                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra() else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 match conv_ty {
@@ -1840,7 +1842,7 @@ fn interp_purify(
                             let res =
                                 hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
                             if let Some(loc) = res {
-                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra else {
+                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra() else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 scratch[write_idx] = scratch[old_idx];
@@ -2158,7 +2160,7 @@ fn interp_ty(
     }
 
     let ty = cites.get_type(cites.ptr());
-    let s = if ty == HashData::undefined() || ty == 0 {
+    let s = if ty.is_null() || ty == HashData::undefined() {
         ctx.s_null
     } else {
         hash.text(ty)
@@ -2226,7 +2228,7 @@ fn interp_width(
                         } else {
                             let res = hash.lookup_str(pool, &str[old_idx..idx], StrIlk::ControlSeq);
                             if let Some(loc) = res {
-                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra else {
+                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra() else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 match seq {
@@ -2299,7 +2301,7 @@ pub(crate) fn execute_fn(
     globals: &mut GlobalItems<'_>,
     ex_fn_loc: HashPointer,
 ) -> Result<(), BibtexError> {
-    match &globals.hash.node(ex_fn_loc).extra {
+    match globals.hash.node(ex_fn_loc).extra() {
         HashExtra::Text => {
             ctx.push_stack(ExecVal::String(globals.hash.text(ex_fn_loc)));
             Ok(())
@@ -2333,7 +2335,7 @@ pub(crate) fn execute_fn(
                     Ok(())
                 } else if default == HashData::undefined() {
                     execute_fn(ctx, globals, ctx.default)
-                } else if default != 0 {
+                } else if !default.is_null() {
                     execute_fn(ctx, globals, default)
                 } else {
                     Ok(())
@@ -2486,17 +2488,18 @@ pub(crate) fn execute_fn(
             ),
         },
         HashExtra::BstFn(BstFn::Wizard(mut wiz_ptr)) => {
-            let mut cur_fn = globals.other.wiz_function(wiz_ptr);
-            while cur_fn != HashData::end_of_def() {
-                if cur_fn != QUOTE_NEXT_FN {
-                    execute_fn(ctx, globals, cur_fn)?;
-                } else {
-                    wiz_ptr += 1;
-                    cur_fn = globals.other.wiz_function(wiz_ptr);
-                    ctx.push_stack(ExecVal::Function(cur_fn))
+            loop {
+                match globals.other.wiz_function(wiz_ptr) {
+                    WizOp::EndOfDef => break,
+                    WizOp::Quote(ptr) => {
+                        ctx.push_stack(ExecVal::Function(ptr));
+                    }
+                    WizOp::Exec(ptr) => {
+                        execute_fn(ctx, globals, ptr)?;
+                    }
+
                 }
                 wiz_ptr += 1;
-                cur_fn = globals.other.wiz_function(wiz_ptr);
             }
             Ok(())
         }

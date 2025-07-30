@@ -525,7 +525,7 @@ pub(crate) fn braces_unbalanced_complaint(
 }
 
 pub(crate) fn print_fn_class(ctx: &mut Bibtex<'_, '_>, hash: &HashData, fn_loc: HashPointer) {
-    match hash.node(fn_loc).extra {
+    match hash.node(fn_loc).extra() {
         HashExtra::BstFn(BstFn::Builtin(_)) => ctx.write_logs("built-in"),
         HashExtra::BstFn(BstFn::Wizard(_)) => ctx.write_logs("wizard-defined"),
         HashExtra::Integer(_) => ctx.write_logs("integer-literal"),

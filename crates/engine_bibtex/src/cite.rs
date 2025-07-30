@@ -27,7 +27,7 @@ impl CiteInfo {
         CiteInfo {
             cite_list: vec![StrNumber::invalid(); MAX_CITES + 1],
             cite_info: vec![StrNumber::invalid(); MAX_CITES + 1],
-            type_list: vec![0; MAX_CITES + 1],
+            type_list: vec![HashPointer::default(); MAX_CITES + 1],
             entry_exists: vec![false; MAX_CITES + 1],
             cite_ptr: 0,
             entry_cite_ptr: 0,
@@ -42,7 +42,7 @@ impl CiteInfo {
             .resize(self.cite_list.len() + MAX_CITES, StrNumber::invalid());
         self.cite_info
             .resize(self.cite_info.len() + MAX_CITES, StrNumber::invalid());
-        self.type_list.resize(self.type_list.len() + MAX_CITES, 0);
+        self.type_list.resize(self.type_list.len() + MAX_CITES, HashPointer::default());
         self.entry_exists
             .resize(self.entry_exists.len() + MAX_CITES, false);
     }
@@ -147,8 +147,8 @@ pub(crate) fn add_database_cite(
     other: &mut OtherData,
     hash: &mut HashData,
     new_cite: CiteNumber,
-    cite_loc: CiteNumber,
-    lc_cite_loc: CiteNumber,
+    cite_loc: HashPointer,
+    lc_cite_loc: HashPointer,
 ) -> CiteNumber {
     if new_cite == cites.cite_list.len() {
         cites.grow();
@@ -156,8 +156,8 @@ pub(crate) fn add_database_cite(
     other.check_field_overflow(other.num_fields() * (new_cite + 1));
 
     cites.set_cite(new_cite, hash.text(cite_loc));
-    hash.node_mut(cite_loc).extra = HashExtra::Cite(new_cite);
-    hash.node_mut(lc_cite_loc).extra = HashExtra::LcCite(cite_loc);
+    *hash.node_mut(cite_loc).extra_mut() = HashExtra::Cite(new_cite);
+    *hash.node_mut(lc_cite_loc).extra_mut() = HashExtra::LcCite(cite_loc);
     new_cite + 1
 }
 

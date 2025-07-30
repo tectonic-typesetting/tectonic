@@ -4,7 +4,6 @@ use crate::{
     char_info::{IdClass, LexClass},
     cite::{add_database_cite, CiteInfo},
     exec::{ControlSeq, ExecCtx},
-    hash,
     hash::{BstFn, HashData, HashExtra},
     log::{
         bib_err_print, bib_id_print, bib_unbalanced_braces_print, bib_warn_print,
@@ -15,11 +14,10 @@ use crate::{
     },
     peekable::input_ln,
     pool::{StrNumber, StringPool},
-    ASCIICode, Bibtex, BibtexError, BufPointer, CiteNumber, FnDefLoc, GlobalItems, HashPointer,
+    ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer,
     StrIlk,
 };
-
-pub(crate) const QUOTE_NEXT_FN: usize = hash::HASH_BASE - 1;
+use crate::other::WizOp;
 
 pub(crate) enum ScanRes {
     IdNull,
@@ -175,7 +173,7 @@ pub(crate) fn eat_bst_white_space(ctx: &mut Bibtex<'_, '_>, buffers: &mut Global
 fn handle_char(
     ctx: &mut Bibtex<'_, '_>,
     globals: &mut GlobalItems<'_>,
-    single_function: &mut Vec<FnDefLoc>,
+    single_function: &mut Vec<WizOp>,
     wiz_loc: HashPointer,
     char: ASCIICode,
 ) -> Result<(), BibtexError> {
@@ -194,11 +192,10 @@ fn handle_char(
             let str = &globals.buffers.buffer(BufTy::Base)
                 [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
             let res = globals.hash.lookup_str_insert(
-                ctx,
                 globals.pool,
                 str,
                 HashExtra::Integer(token_value),
-            )?;
+            );
 
             let char = globals.buffers.at_offset(BufTy::Base, 2);
 
@@ -210,7 +207,7 @@ fn handle_char(
                 return skip_illegal_stuff_after_token_print(ctx, globals.buffers, globals.pool);
             }
 
-            single_function.push(res.loc);
+            single_function.push(WizOp::Exec(res.loc));
         }
         b'"' => {
             globals
@@ -227,7 +224,7 @@ fn handle_char(
                 [globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2)];
             let res = globals
                 .hash
-                .lookup_str_insert(ctx, globals.pool, str, HashExtra::Text)?;
+                .lookup_str_insert(globals.pool, str, HashExtra::Text);
 
             globals
                 .buffers
@@ -243,7 +240,7 @@ fn handle_char(
                 return skip_illegal_stuff_after_token_print(ctx, globals.buffers, globals.pool);
             }
 
-            single_function.push(res.loc);
+            single_function.push(WizOp::Exec(res.loc));
         }
         b'\'' => {
             globals
@@ -269,8 +266,7 @@ fn handle_char(
                     return print_recursion_illegal(ctx, globals.buffers, globals.pool);
                 }
                 Some(loc) => {
-                    single_function.push(QUOTE_NEXT_FN);
-                    single_function.push(loc);
+                    single_function.push(WizOp::Quote(loc));
                 }
             }
         }
@@ -282,11 +278,10 @@ fn handle_char(
             let str = format!("'{}", ctx.impl_fn_num);
 
             let res = globals.hash.lookup_str_insert(
-                ctx,
                 globals.pool,
                 str.as_bytes(),
                 HashExtra::BstFn(BstFn::Wizard(0)),
-            )?;
+            );
 
             if res.exists {
                 ctx.write_logs("Already encountered implicit function");
@@ -295,8 +290,7 @@ fn handle_char(
             }
             ctx.impl_fn_num += 1;
 
-            single_function.push(QUOTE_NEXT_FN);
-            single_function.push(res.loc);
+            single_function.push(WizOp::Quote(res.loc));
 
             scan_fn_def(ctx, globals, res.loc, wiz_loc)?;
         }
@@ -321,7 +315,7 @@ fn handle_char(
                     return print_recursion_illegal(ctx, globals.buffers, globals.pool);
                 }
                 Some(loc) => {
-                    single_function.push(loc);
+                    single_function.push(WizOp::Exec(loc));
                 }
             }
         }
@@ -357,14 +351,12 @@ pub(crate) fn scan_fn_def(
         char = globals.buffers.at_offset(BufTy::Base, 2);
     }
 
-    single_function.push(HashData::end_of_def());
+    single_function.push(WizOp::EndOfDef);
 
-    globals.hash.node_mut(fn_hash_loc).extra =
+    *globals.hash.node_mut(fn_hash_loc).extra_mut() =
         HashExtra::BstFn(BstFn::Wizard(globals.other.wiz_func_len()));
 
-    for ptr in single_function {
-        globals.other.push_wiz_func(ptr);
-    }
+    globals.other.extend_wiz_data(single_function);
 
     globals
         .buffers
@@ -658,7 +650,7 @@ fn scan_a_field_token_and_eat_white(
                 }
 
                 if let Some(loc) = store_token {
-                    let HashExtra::Macro(strnum) = globals.hash.node(loc).extra else {
+                    let &HashExtra::Macro(strnum) = globals.hash.node(loc).extra() else {
                         panic!("Macro lookup didn't have Macro extra");
                     };
                     let mut str = globals.pool.get_str(strnum);
@@ -742,7 +734,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
     globals: &mut GlobalItems<'_>,
     store_field: bool,
     command: Option<BibCommand>,
-    cite_out: Option<&mut CiteNumber>,
+    cite_out: Option<&mut HashPointer>,
     cur_macro_loc: HashPointer,
     right_outer_delim: ASCIICode,
     field_name_loc: HashPointer,
@@ -805,7 +797,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
             &globals.buffers.buffer(BufTy::Ex)[ex_buf_xptr..globals.buffers.offset(BufTy::Ex, 1)];
         let res = globals
             .hash
-            .lookup_str_insert(ctx, globals.pool, str, HashExtra::Text)?;
+            .lookup_str_insert(globals.pool, str, HashExtra::Text);
 
         if let Some(command) = command {
             match command {
@@ -813,12 +805,12 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                 BibCommand::Comment => (),
                 BibCommand::Preamble => globals.bibs.add_preamble(globals.hash.text(res.loc)),
                 BibCommand::String => {
-                    globals.hash.node_mut(cur_macro_loc).extra =
+                    *globals.hash.node_mut(cur_macro_loc).extra_mut() =
                         HashExtra::Macro(globals.hash.text(res.loc))
                 }
             }
         } else {
-            let HashExtra::BstFn(BstFn::Field(field)) = globals.hash.node(field_name_loc).extra
+            let &HashExtra::BstFn(BstFn::Field(field)) = globals.hash.node(field_name_loc).extra()
             else {
                 panic!("field_name_loc wasn't a BstFn::Field");
             };
@@ -859,19 +851,18 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     globals.buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
                     let str = &globals.buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
                     let lc_res = globals.hash.lookup_str_insert(
-                        ctx,
                         globals.pool,
                         str,
-                        HashExtra::LcCite(0),
-                    )?;
+                        HashExtra::LcCite(HashPointer::default()),
+                    );
                     if let Some(cite_out) = cite_out {
                         *cite_out = lc_res.loc;
                     }
-                    let HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra else {
+                    let &HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra() else {
                         panic!("LcCite lookup didn't have LcCite extra");
                     };
                     if lc_res.exists {
-                        let HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra else {
+                        let &HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra() else {
                             panic!("LcCite location didn't have Cite extra");
                         };
 
@@ -884,11 +875,10 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                         let str = &globals.buffers.buffer(BufTy::Ex)
                             [ex_buf_xptr..globals.buffers.offset(BufTy::Ex, 1)];
                         let c_res = globals.hash.lookup_str_insert(
-                            ctx,
                             globals.pool,
                             str,
                             HashExtra::Cite(0),
-                        )?;
+                        );
                         if c_res.exists {
                             hash_cite_confusion(ctx);
                             return Err(BibtexError::Fatal);
@@ -902,7 +892,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                             lc_res.loc,
                         );
 
-                        let HashExtra::Cite(cite) = globals.hash.node(c_res.loc).extra else {
+                        let &HashExtra::Cite(cite) = globals.hash.node(c_res.loc).extra() else {
                             panic!("Cite lookup didn't have Cite extra");
                         };
                         globals.cites.set_ptr(new_ptr);
@@ -1032,7 +1022,7 @@ pub(crate) fn von_token_found(
                     let res = hash.lookup_str(pool, str, StrIlk::ControlSeq);
                     let ilk = res
                         .and_then(|loc| {
-                            if let HashExtra::ControlSeq(seq) = hash.node(loc).extra {
+                            if let &HashExtra::ControlSeq(seq) = hash.node(loc).extra() {
                                 Some(seq)
                             } else {
                                 None

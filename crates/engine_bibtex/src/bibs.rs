@@ -1,3 +1,4 @@
+use slotmap::Key;
 use crate::{
     buffer::{BufTy, GlobalBuffer},
     char_info::LexClass,
@@ -194,10 +195,10 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         .hash
         .lookup_str(globals.pool, bib_cmd, StrIlk::BibCommand);
 
-    let mut lc_cite_loc = 0;
+    let mut lc_cite_loc = HashPointer::default();
 
     if let Some(loc) = res {
-        let HashExtra::BibCommand(cmd) = globals.hash.node(loc).extra else {
+        let &HashExtra::BibCommand(cmd) = globals.hash.node(loc).extra() else {
             panic!("BibCommand lookup didn't have BibCommand extra");
         };
 
@@ -352,13 +353,12 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
                 // let text = globals.hash.text(res.loc);
                 let res = globals.hash.lookup_str_insert(
-                    ctx,
                     globals.pool,
                     bib_macro,
                     HashExtra::Macro(StrNumber::default()),
-                )?;
+                );
                 // TODO: Insert overwriting?
-                globals.hash.node_mut(res.loc).extra = HashExtra::Macro(globals.hash.text(res.loc));
+                *globals.hash.node_mut(res.loc).extra_mut() = HashExtra::Macro(globals.hash.text(res.loc));
                 *cur_macro_loc = res.loc;
 
                 if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
@@ -444,7 +444,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         .lookup_str(globals.pool, bst_fn, StrIlk::BstFn)
         .filter(|&loc| {
             matches!(
-                globals.hash.node(loc).extra,
+                globals.hash.node(loc).extra(),
                 HashExtra::BstFn(BstFn::Wizard(_))
             )
         });
@@ -515,14 +515,14 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     let lc_res = if ctx.all_entries {
         globals
             .hash
-            .lookup_str_insert(ctx, globals.pool, lc_cite, HashExtra::LcCite(0))?
+            .lookup_str_insert(globals.pool, lc_cite, HashExtra::LcCite(HashPointer::default()))
     } else {
         globals
             .hash
             .lookup_str(globals.pool, lc_cite, StrIlk::LcCite)
             .map_or(
                 LookupRes {
-                    loc: usize::MAX,
+                    loc: HashPointer::default(),
                     exists: false,
                 },
                 |loc| LookupRes { loc, exists: true },
@@ -534,10 +534,10 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     // TODO: Improve this tangled control flow
     let mut inner = || {
         if lc_res.exists {
-            let HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra else {
+            let &HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra() else {
                 panic!("LcCite lookup didn't have LcCite extra");
             };
-            let HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra else {
+            let &HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra() else {
                 panic!("LcCite location didn't have Cite extra");
             };
 
@@ -547,28 +547,22 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 || entry_ptr < globals.cites.all_marker()
                 || entry_ptr > globals.cites.old_num_cites()
             {
-                if globals.cites.get_type(entry_ptr) == 0 {
+                if globals.cites.get_type(entry_ptr).is_null() {
                     if !ctx.all_entries && entry_ptr >= globals.cites.old_num_cites() {
                         let range = globals.buffers.offset(BufTy::Base, 1)
                             ..globals.buffers.offset(BufTy::Base, 2);
                         let cite = &globals.buffers.buffer(BufTy::Base)[range];
                         let uc_res = globals.hash.lookup_str_insert(
-                            ctx,
                             globals.pool,
                             cite,
                             HashExtra::Cite(0),
                         );
 
-                        let uc_res = match uc_res {
-                            Ok(res) => res,
-                            Err(e) => return Some(Err(e)),
-                        };
-
                         res = uc_res;
 
                         if !uc_res.exists {
-                            globals.hash.node_mut(lc_res.loc).extra = HashExtra::LcCite(uc_res.loc);
-                            globals.hash.node_mut(uc_res.loc).extra = HashExtra::Cite(entry_ptr);
+                            *globals.hash.node_mut(lc_res.loc).extra_mut() = HashExtra::LcCite(uc_res.loc);
+                            *globals.hash.node_mut(uc_res.loc).extra_mut() = HashExtra::Cite(entry_ptr);
                             globals
                                 .cites
                                 .set_cite(entry_ptr, globals.hash.text(uc_res.loc));
@@ -588,7 +582,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                     .lookup_str(globals.pool, lc_cite, StrIlk::LcCite)
                     .map_or(
                         LookupRes {
-                            loc: usize::MAX,
+                            loc: HashPointer::default(),
                             exists: false,
                         },
                         |loc| LookupRes { loc, exists: true },
@@ -605,7 +599,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                 }
             }
 
-            if globals.cites.get_type(entry_ptr) == 0 {
+            if globals.cites.get_type(entry_ptr).is_null() {
                 ctx.write_logs("The cite list is messed up");
                 print_confusion(ctx);
                 return Some(Err(BibtexError::Fatal));
@@ -631,7 +625,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         if res.exists {
             if globals.cites.entry_ptr() >= globals.cites.all_marker() {
                 globals.cites.set_exists(globals.cites.entry_ptr(), true);
-                let HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra else {
+                let &HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra() else {
                     panic!("LcCite lookup didn't have LcCite extra");
                 };
                 globals.cites.set_entry_ptr(globals.cites.ptr());
@@ -651,7 +645,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             let res =
                 globals
                     .hash
-                    .lookup_str_insert(ctx, globals.pool, cite, HashExtra::Cite(0))?;
+                    .lookup_str_insert(globals.pool, cite, HashExtra::Cite(0));
             if res.exists {
                 hash_cite_confusion(ctx);
                 return Err(BibtexError::Fatal);
@@ -747,7 +741,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             }
         }
 
-        *field_name_loc = 0;
+        *field_name_loc = HashPointer::default();
         let mut store_field = false;
         if store_entry {
             let range =
@@ -760,7 +754,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
             match res {
                 Some(loc)
                     if matches!(
-                        globals.hash.node(loc).extra,
+                        globals.hash.node(loc).extra(),
                         HashExtra::BstFn(BstFn::Field(_))
                     ) =>
                 {

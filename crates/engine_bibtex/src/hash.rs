@@ -1,21 +1,20 @@
+use std::ops::ControlFlow;
 use crate::{
     auxi::AuxCommand,
     bibs::BibCommand,
     bst::BstCommand,
     exec::ControlSeq,
-    log::print_overflow,
     pool,
     pool::{StrNumber, StringPool},
-    ASCIICode, Bibtex, BibtexError, CiteNumber, FnDefLoc, HashPointer, LookupRes, StrIlk,
+    CiteNumber, FnDefLoc, LookupRes, StrIlk,
 };
+use slotmap::{KeyData, SlotMap};
 
-pub(crate) const HASH_BASE: usize = 1;
 pub(crate) const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
     pool::MAX_STRINGS
 } else {
     5000
 };
-const HASH_MAX: usize = HASH_SIZE + HASH_BASE - 1;
 pub(crate) const HASH_PRIME: usize = compute_hash_prime();
 
 /// Calculate a prime number for use in hashing that's at least 17/20 of `HASH_SIZE`
@@ -159,211 +158,148 @@ impl HashExtra {
     }
 }
 
-#[derive(Clone, Default, Debug)]
-pub struct HashNode {
-    next: HashPointer,
+#[derive(Debug)]
+pub struct Node {
     text: StrNumber,
-    pub(crate) extra: HashExtra,
+    extra: HashExtra,
 }
 
-impl HashNode {
-    pub(crate) fn kind(&self) -> StrIlk {
+impl Node {
+    pub fn text(&self) -> StrNumber {
+        self.text
+    }
+
+    pub fn extra(&self) -> &HashExtra {
+        &self.extra
+    }
+
+    pub fn extra_mut(&mut self) -> &mut HashExtra {
+        &mut self.extra
+    }
+
+    pub fn kind(&self) -> StrIlk {
         self.extra.kind()
     }
 }
 
-// TODO: Split string-pool stuff into string pool, executor stuff into execution context
+slotmap::new_key_type! {
+    pub struct HashPointer;
+}
+
 pub(crate) struct HashData {
-    hash_data: Vec<HashNode>,
-    open_slot: usize,
+    data: SlotMap<HashPointer, Node>,
 }
 
 impl HashData {
     pub fn new() -> HashData {
         HashData {
-            hash_data: vec![HashNode::default(); HASH_MAX + 1],
-            open_slot: HASH_MAX + 1,
+            data: SlotMap::with_key(),
         }
     }
 
-    pub fn undefined() -> usize {
-        HASH_MAX + 1
+    pub fn undefined() -> HashPointer {
+        HashPointer::from(KeyData::from_ffi(0x0000_0001_FFFF_FFFE))
     }
 
-    pub fn end_of_def() -> usize {
-        HASH_MAX + 1
+    pub fn node(&self, pos: HashPointer) -> &Node {
+        &self.data[pos]
     }
 
-    pub fn node(&self, pos: usize) -> &HashNode {
-        &self.hash_data[pos]
+    pub fn node_mut(&mut self, pos: HashPointer) -> &mut Node {
+        &mut self.data[pos]
     }
 
-    pub fn node_mut(&mut self, pos: usize) -> &mut HashNode {
-        &mut self.hash_data[pos]
+    pub fn text(&self, pos: HashPointer) -> StrNumber {
+        self.data[pos].text
     }
 
-    pub fn text(&self, pos: usize) -> StrNumber {
-        self.hash_data[pos].text
-    }
-
-    fn set_text(&mut self, pos: usize, val: StrNumber) {
-        self.hash_data[pos].text = val;
-    }
-
-    fn next(&self, pos: usize) -> HashPointer {
-        self.hash_data[pos].next
-    }
-
-    fn set_next(&mut self, pos: usize, val: HashPointer) {
-        self.hash_data[pos].next = val
-    }
-
-    fn prime(&self) -> usize {
-        HASH_PRIME
-    }
-
-    fn hash_str(&self, str: &[ASCIICode]) -> usize {
-        let prime = self.prime();
-        str.iter()
-            .fold(0, |acc, &c| ((2 * acc) + c as usize) % prime)
-    }
-
-    pub fn lookup_str(&self, pool: &StringPool, str: &[ASCIICode], ilk: StrIlk) -> Option<usize> {
-        let h = self.hash_str(str);
-        let mut p = h as HashPointer + HASH_BASE as HashPointer;
-
-        loop {
-            let existing = self.text(p);
-
-            if !existing.is_invalid() && pool.get_str(existing) == str && self.node(p).kind() == ilk
-            {
-                break Some(p);
-            }
-
-            if self.next(p) == 0 {
-                break None;
-            }
-
-            p = self.next(p);
-        }
+    pub fn lookup_str(&self, pool: &StringPool, str: &[u8], ilk: StrIlk) -> Option<HashPointer> {
+        self.data.iter()
+            .find_map(|(key, value)| {
+                if pool.get_str(value.text) == str && value.kind() == ilk {
+                    Some(key)
+                } else {
+                    None
+                }
+            })
     }
 
     /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
     /// string is found or not, only returning `Err` if a called function fails.
     pub fn lookup_str_insert(
         &mut self,
-        ctx: &mut Bibtex<'_, '_>,
         pool: &mut StringPool,
-        str: &[ASCIICode],
+        str: &[u8],
         ilk: HashExtra,
-    ) -> Result<LookupRes, BibtexError> {
-        // Hash string using simple hash function. This hash is capped to HASH_PRIME
-        let h = self.hash_str(str);
-        let mut str_num = StrNumber::default();
-        // Get position by adding HASH_BASE
-        let mut p = (h + HASH_BASE) as HashPointer;
+    ) -> LookupRes {
+        let kind = ilk.kind();
 
-        // Look for an existing match, or the last slot
-        let existing = loop {
-            // Get the current text at the position
-            let existing = self.text(p);
-            // If the text exists and is the same as the text we're adding
-            if pool.try_get_str(existing) == Some(str) {
-                // If an existing hash entry exists for this type, return it
-                if self.node(p).kind() == ilk.kind() {
-                    return Ok(LookupRes {
-                        loc: p,
-                        exists: true,
-                    });
+        enum Found {
+            Found(HashPointer),
+            Str(StrNumber),
+            NotFound,
+        }
+        let (ControlFlow::Break(found) | ControlFlow::Continue(found)) = self.data.iter()
+            .try_fold(Found::NotFound, |acc, (key, value)| {
+                if pool.get_str(value.text) == str {
+                    if value.kind() == kind {
+                        ControlFlow::Break(Found::Found(key))
+                    } else {
+                        ControlFlow::Continue(Found::Str(value.text))
+                    }
                 } else {
-                    str_num = existing;
+                    ControlFlow::Continue(acc)
                 }
+            });
+        match found {
+            Found::Found(loc) => {
+                LookupRes { loc, exists: true }
             }
-
-            if self.next(p) == 0 {
-                break existing;
+            Found::Str(text) => {
+                let loc = self.data.insert(Node { extra: ilk, text });
+                LookupRes { loc, exists: false }
             }
-
-            p = self.next(p);
-        };
-
-        // If we hit the end and the slot is already in use
-        if !existing.is_invalid() {
-            // Walk backwards from our current len to our first empty slot.
-            // If all slots are full, error
-            loop {
-                if self.open_slot == HASH_BASE {
-                    print_overflow(ctx);
-                    ctx.write_logs(&format!("hash size {HASH_SIZE}\n"));
-                    return Err(BibtexError::Fatal);
-                }
-                self.open_slot -= 1;
-
-                if self.text(self.open_slot).is_invalid() {
-                    break;
-                }
+            Found::NotFound => {
+                let text = pool.add_string(str);
+                let loc = self.data.insert(Node { extra: ilk, text });
+                LookupRes { loc, exists: false }
             }
-            // Set the next item to our new lowest open slot
-            self.set_next(p, self.open_slot);
-            // Operate on the new empty slot
-            p = self.open_slot;
         }
-
-        // We found the string in the string pool while hunting for a slot
-        if !str_num.is_invalid() {
-            self.set_text(p, str_num);
-        // The string isn't in the string pool - add it
-        } else {
-            self.set_text(p, pool.add_string(str));
-        }
-
-        // Set the type of this slot
-        self.node_mut(p).extra = ilk;
-
-        Ok(LookupRes {
-            loc: p,
-            exists: false,
-        })
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{pool::StringPool, test_utils::with_cbs, Bibtex, BibtexConfig};
+    use crate::pool::StringPool;
 
     #[test]
     fn test_lookup_str() {
-        with_cbs(|cbs| {
-            let mut ctx = Bibtex::new(cbs, BibtexConfig::default());
-            let mut hash = HashData::new();
-            let mut pool = StringPool::new();
-            let res = hash
-                .lookup_str_insert(&mut ctx, &mut pool, b"a cool string", HashExtra::Text)
-                .unwrap();
-            assert!(!res.exists);
-            assert_eq!(
-                pool.try_get_str(hash.text(res.loc)),
-                Some(b"a cool string" as &[_])
-            );
+        let mut hash = HashData::new();
+        let mut pool = StringPool::new();
+        let res = hash
+            .lookup_str_insert(&mut pool, b"a cool string", HashExtra::Text);
+        assert!(!res.exists);
+        assert_eq!(
+            pool.try_get_str(hash.text(res.loc)),
+            Some(b"a cool string" as &[_])
+        );
 
-            let res2 = hash
-                .lookup_str_insert(&mut ctx, &mut pool, b"a cool string", HashExtra::Text)
-                .unwrap();
-            assert!(res2.exists);
-            assert_eq!(
-                pool.try_get_str(hash.text(res2.loc)),
-                Some(b"a cool string" as &[_])
-            );
+        let res2 = hash
+            .lookup_str_insert(&mut pool, b"a cool string", HashExtra::Text);
+        assert!(res2.exists);
+        assert_eq!(
+            pool.try_get_str(hash.text(res2.loc)),
+            Some(b"a cool string" as &[_])
+        );
 
-            let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text)
-                .unwrap();
-            assert_eq!(
-                pool.try_get_str(hash.text(res3)),
-                Some(b"a cool string" as &[_])
-            );
+        let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text)
+            .unwrap();
+        assert_eq!(
+            pool.try_get_str(hash.text(res3)),
+            Some(b"a cool string" as &[_])
+        );
 
-            assert!(hash.lookup_str(&pool, b"a bad string", StrIlk::Text).is_none());
-        })
+        assert!(hash.lookup_str(&pool, b"a bad string", StrIlk::Text).is_none());
     }
 }
