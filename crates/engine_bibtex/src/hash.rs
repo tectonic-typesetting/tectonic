@@ -1,6 +1,12 @@
 use crate::{
-    auxi::AuxCommand, bibs::BibCommand, bst::BstCommand, exec::ControlSeq, pool, CiteNumber,
-    FnDefLoc, HashPointer, StrIlk, StrNumber,
+    auxi::AuxCommand,
+    bibs::BibCommand,
+    bst::BstCommand,
+    exec::ControlSeq,
+    log::print_overflow,
+    pool,
+    pool::{StrNumber, StringPool},
+    ASCIICode, Bibtex, BibtexError, CiteNumber, FnDefLoc, HashPointer, LookupRes, StrIlk,
 };
 
 pub(crate) const HASH_BASE: usize = 1;
@@ -173,7 +179,7 @@ pub(crate) struct HashData {
 }
 
 impl HashData {
-    pub(crate) fn new() -> HashData {
+    pub fn new() -> HashData {
         HashData {
             hash_data: vec![HashNode::default(); HASH_MAX + 1],
             len: HASH_MAX + 1,
@@ -200,27 +206,176 @@ impl HashData {
         self.hash_data[pos].text
     }
 
-    pub fn set_text(&mut self, pos: usize, val: StrNumber) {
+    fn set_text(&mut self, pos: usize, val: StrNumber) {
         self.hash_data[pos].text = val;
     }
 
-    pub fn next(&self, pos: usize) -> HashPointer {
+    fn next(&self, pos: usize) -> HashPointer {
         self.hash_data[pos].next
     }
 
-    pub fn set_next(&mut self, pos: usize, val: HashPointer) {
+    fn set_next(&mut self, pos: usize, val: HashPointer) {
         self.hash_data[pos].next = val
     }
 
-    pub fn len(&self) -> usize {
+    fn len(&self) -> usize {
         self.len
     }
 
-    pub fn set_len(&mut self, val: usize) {
+    fn set_len(&mut self, val: usize) {
         self.len = val;
     }
 
-    pub fn prime(&self) -> usize {
+    fn prime(&self) -> usize {
         HASH_PRIME
+    }
+
+    fn hash_str(&self, str: &[ASCIICode]) -> usize {
+        let prime = self.prime();
+        str.iter()
+            .fold(0, |acc, &c| ((2 * acc) + c as usize) % prime)
+    }
+
+    pub fn lookup_str(&self, pool: &StringPool, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
+        let h = self.hash_str(str);
+        let mut p = h as HashPointer + HASH_BASE as HashPointer;
+
+        let exists = loop {
+            let existing = self.text(p);
+
+            if !existing.is_invalid() && pool.get_str(existing) == str && self.node(p).kind() == ilk
+            {
+                break true;
+            }
+
+            if self.next(p) == 0 {
+                break false;
+            }
+
+            p = self.next(p);
+        };
+
+        LookupRes { loc: p, exists }
+    }
+
+    /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
+    /// string is found or not, only returning `Err` if a called function fails.
+    pub fn lookup_str_insert(
+        &mut self,
+        ctx: &mut Bibtex<'_, '_>,
+        pool: &mut StringPool,
+        str: &[ASCIICode],
+        ilk: HashExtra,
+    ) -> Result<LookupRes, BibtexError> {
+        // Hash string using simple hash function. This hash is capped to HASH_PRIME
+        let h = self.hash_str(str);
+        let mut str_num = StrNumber::default();
+        // Get position by adding HASH_BASE
+        let mut p = (h + HASH_BASE) as HashPointer;
+
+        // Look for an existing match, or the last slot
+        let existing = loop {
+            // Get the current text at the position
+            let existing = self.text(p);
+            // If the text exists and is the same as the text we're adding
+            if pool.try_get_str(existing) == Some(str) {
+                // If an existing hash entry exists for this type, return it
+                if self.node(p).kind() == ilk.kind() {
+                    return Ok(LookupRes {
+                        loc: p,
+                        exists: true,
+                    });
+                } else {
+                    str_num = existing;
+                }
+            }
+
+            if self.next(p) == 0 {
+                break existing;
+            }
+
+            p = self.next(p);
+        };
+
+        // If we hit the end and the slot is already in use
+        if !existing.is_invalid() {
+            // Walk backwards from our current len to our first empty slot.
+            // If all slots are full, error
+            loop {
+                if self.len() == HASH_BASE {
+                    print_overflow(ctx);
+                    ctx.write_logs(&format!("hash size {HASH_SIZE}\n"));
+                    return Err(BibtexError::Fatal);
+                }
+                self.set_len(self.len() - 1);
+
+                if self.text(self.len()).is_invalid() {
+                    break;
+                }
+            }
+            // Set the next item to our new lowest open slot
+            self.set_next(p, self.len());
+            // Operate on the new empty slot
+            p = self.len();
+        }
+
+        // We found the string in the string pool while hunting for a slot
+        if !str_num.is_invalid() {
+            self.set_text(p, str_num);
+        // The string isn't in the string pool - add it
+        } else {
+            self.set_text(p, pool.add_string(str));
+        }
+
+        // Set the type of this slot
+        self.node_mut(p).extra = ilk;
+
+        Ok(LookupRes {
+            loc: p,
+            exists: false,
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{pool::StringPool, test_utils::with_cbs, Bibtex, BibtexConfig};
+
+    #[test]
+    fn test_lookup_str() {
+        with_cbs(|cbs| {
+            let mut ctx = Bibtex::new(cbs, BibtexConfig::default());
+            let mut hash = HashData::new();
+            let mut pool = StringPool::new();
+            let res = hash
+                .lookup_str_insert(&mut ctx, &mut pool, b"a cool string", HashExtra::Text)
+                .unwrap();
+            assert!(!res.exists);
+            assert_eq!(
+                pool.try_get_str(hash.text(res.loc)),
+                Some(b"a cool string" as &[_])
+            );
+
+            let res2 = hash
+                .lookup_str_insert(&mut ctx, &mut pool, b"a cool string", HashExtra::Text)
+                .unwrap();
+            assert!(res2.exists);
+            assert_eq!(
+                pool.try_get_str(hash.text(res2.loc)),
+                Some(b"a cool string" as &[_])
+            );
+
+            let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text);
+            assert!(res3.exists);
+            assert_eq!(
+                pool.try_get_str(hash.text(res3.loc)),
+                Some(b"a cool string" as &[_])
+            );
+
+            let res4 = hash.lookup_str(&pool, b"a bad string", StrIlk::Text);
+            assert!(!res4.exists);
+            assert_eq!(pool.try_get_str(hash.text(res4.loc)), None,);
+        })
     }
 }

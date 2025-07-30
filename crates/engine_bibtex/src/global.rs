@@ -1,4 +1,4 @@
-use crate::{ASCIICode, StrNumber};
+use crate::{pool::StrNumber, ASCIICode};
 
 const MAX_GLOB_STRS: usize = 10;
 pub(crate) const GLOB_STR_SIZE: usize = 20000;
@@ -13,7 +13,7 @@ pub(crate) struct GlobalData {
 impl GlobalData {
     pub fn new() -> GlobalData {
         GlobalData {
-            glb_bib_str_ptr: vec![0; MAX_GLOB_STRS + 1],
+            glb_bib_str_ptr: vec![StrNumber::invalid(); MAX_GLOB_STRS + 1],
             global_strs: vec![0; (GLOB_STR_SIZE + 1) * MAX_GLOB_STRS + 1],
             glb_str_end: vec![0; MAX_GLOB_STRS + 1],
             num_glb_strs: 0,
@@ -21,8 +21,10 @@ impl GlobalData {
     }
 
     pub fn grow(&mut self) {
-        self.glb_bib_str_ptr
-            .resize(self.glb_bib_str_ptr.len() + MAX_GLOB_STRS, 0);
+        self.glb_bib_str_ptr.resize(
+            self.glb_bib_str_ptr.len() + MAX_GLOB_STRS,
+            StrNumber::invalid(),
+        );
         self.global_strs.resize(
             self.global_strs.len() + (GLOB_STR_SIZE + 1) * MAX_GLOB_STRS,
             0,

@@ -18,22 +18,25 @@
 //! [`tectonic`]: https://docs.rs/tectonic/
 
 use crate::{
-    auxi::{get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxData},
-    bibs::BibData,
-    bst::get_bst_command_and_process,
+    auxi::{
+        get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxCommand,
+        AuxData,
+    },
+    bibs::{BibCommand, BibData},
+    bst::{get_bst_command_and_process, BstCommand},
     buffer::{BufTy, GlobalBuffer},
     cite::CiteInfo,
-    entries::EntryData,
-    exec::ExecCtx,
-    global::GlobalData,
-    hash::{HashData, HashExtra},
+    entries::{EntryData, ENT_STR_SIZE},
+    exec::{ControlSeq, ExecCtx},
+    global::{GlobalData, GLOB_STR_SIZE},
+    hash::{BstBuiltin, BstFn, HashData, HashExtra},
     log::{
         bib_close_log, log_pr_aux_name, print_aux_name, print_confusion, sam_wrong_file_name_print,
         AsBytes,
     },
     other::OtherData,
     peekable::{input_ln, PeekableInput},
-    pool::{pre_def_certain_strings, StringPool},
+    pool::{StrNumber, StringPool},
     scan::eat_bst_white_space,
 };
 use std::{
@@ -58,6 +61,8 @@ pub(crate) mod other;
 pub(crate) mod peekable;
 pub(crate) mod pool;
 pub(crate) mod scan;
+#[cfg(test)]
+pub(crate) mod test_utils;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub(crate) enum History {
@@ -224,9 +229,9 @@ pub(crate) struct Bibtex<'a, 'cbs> {
     pub all_entries: bool,
 
     pub b_default: HashPointer,
-    pub s_null: HashPointer,
-    pub s_default: HashPointer,
-    pub s_aux_extension: HashPointer,
+    pub s_null: StrNumber,
+    pub s_default: StrNumber,
+    pub s_aux_extension: StrNumber,
 }
 
 impl<'a, 'cbs> Bibtex<'a, 'cbs> {
@@ -253,9 +258,9 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
             reading_completed: false,
             all_entries: false,
             b_default: 0,
-            s_null: 0,
-            s_default: 0,
-            s_aux_extension: 0,
+            s_null: StrNumber::invalid(),
+            s_default: StrNumber::invalid(),
+            s_aux_extension: StrNumber::invalid(),
         }
     }
 
@@ -359,11 +364,9 @@ pub(crate) enum StrIlk {
     ControlSeq,
 }
 
-type StrNumber = usize;
 type CiteNumber = usize;
 type ASCIICode = u8;
 type BufPointer = usize;
-type PoolPointer = usize;
 type HashPointer = usize;
 type BibNumber = usize;
 type FieldLoc = usize;
@@ -432,6 +435,216 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
 
     bib_close_log(ctx);
     ctx.history
+}
+
+pub(crate) fn pre_def_certain_strings(
+    ctx: &mut Bibtex<'_, '_>,
+    GlobalItems {
+        pool,
+        hash,
+        other,
+        entries,
+        ..
+    }: &mut GlobalItems<'_>,
+) -> std::result::Result<(), BibtexError> {
+    let res = hash.lookup_str_insert(ctx, pool, b".aux", HashExtra::FileExt)?;
+    ctx.s_aux_extension = hash.text(res.loc);
+
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"\\bibdata",
+        HashExtra::AuxCommand(AuxCommand::Data),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"\\bibstyle",
+        HashExtra::AuxCommand(AuxCommand::Style),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"\\citation",
+        HashExtra::AuxCommand(AuxCommand::Citation),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"\\@input",
+        HashExtra::AuxCommand(AuxCommand::Input),
+    )?;
+
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"entry",
+        HashExtra::BstCommand(BstCommand::Entry),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"execute",
+        HashExtra::BstCommand(BstCommand::Execute),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"function",
+        HashExtra::BstCommand(BstCommand::Function),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"integers",
+        HashExtra::BstCommand(BstCommand::Integers),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"iterate",
+        HashExtra::BstCommand(BstCommand::Iterate),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"macro",
+        HashExtra::BstCommand(BstCommand::Macro),
+    )?;
+    hash.lookup_str_insert(ctx, pool, b"read", HashExtra::BstCommand(BstCommand::Read))?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"reverse",
+        HashExtra::BstCommand(BstCommand::Reverse),
+    )?;
+    hash.lookup_str_insert(ctx, pool, b"sort", HashExtra::BstCommand(BstCommand::Sort))?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"strings",
+        HashExtra::BstCommand(BstCommand::Strings),
+    )?;
+
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"comment",
+        HashExtra::BibCommand(BibCommand::Comment),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"preamble",
+        HashExtra::BibCommand(BibCommand::Preamble),
+    )?;
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"string",
+        HashExtra::BibCommand(BibCommand::String),
+    )?;
+
+    let mut build_in = |pds: &[ASCIICode], builtin| {
+        let res =
+            hash.lookup_str_insert(ctx, pool, pds, HashExtra::BstFn(BstFn::Builtin(builtin)))?;
+        Ok(res.loc)
+    };
+
+    build_in(b"=", BstBuiltin::Eq)?;
+    build_in(b">", BstBuiltin::Gt)?;
+    build_in(b"<", BstBuiltin::Lt)?;
+    build_in(b"+", BstBuiltin::Plus)?;
+    build_in(b"-", BstBuiltin::Minus)?;
+    build_in(b"*", BstBuiltin::Concat)?;
+    build_in(b":=", BstBuiltin::Set)?;
+    build_in(b"add.period$", BstBuiltin::AddPeriod)?;
+    build_in(b"call.type$", BstBuiltin::CallType)?;
+    build_in(b"change.case$", BstBuiltin::ChangeCase)?;
+    build_in(b"chr.to.int$", BstBuiltin::ChrToInt)?;
+    build_in(b"cite$", BstBuiltin::Cite)?;
+    build_in(b"duplicate$", BstBuiltin::Duplicate)?;
+    build_in(b"empty$", BstBuiltin::Empty)?;
+    build_in(b"format.name$", BstBuiltin::FormatName)?;
+    build_in(b"if$", BstBuiltin::If)?;
+    build_in(b"int.to.chr$", BstBuiltin::IntToChr)?;
+    build_in(b"int.to.str$", BstBuiltin::IntToStr)?;
+    build_in(b"missing$", BstBuiltin::Missing)?;
+    build_in(b"newline$", BstBuiltin::Newline)?;
+    build_in(b"num.names$", BstBuiltin::NumNames)?;
+    build_in(b"pop$", BstBuiltin::Pop)?;
+    build_in(b"preamble$", BstBuiltin::Preamble)?;
+    build_in(b"purify$", BstBuiltin::Purify)?;
+    build_in(b"quote$", BstBuiltin::Quote)?;
+    let skip_loc = build_in(b"skip$", BstBuiltin::Skip)?;
+    build_in(b"stack$", BstBuiltin::Stack)?;
+    build_in(b"substring$", BstBuiltin::Substring)?;
+    build_in(b"swap$", BstBuiltin::Swap)?;
+    build_in(b"text.length$", BstBuiltin::TextLength)?;
+    build_in(b"text.prefix$", BstBuiltin::TextPrefix)?;
+    build_in(b"top$", BstBuiltin::Top)?;
+    build_in(b"type$", BstBuiltin::Type)?;
+    build_in(b"warning$", BstBuiltin::Warning)?;
+    build_in(b"while$", BstBuiltin::While)?;
+    build_in(b"width$", BstBuiltin::Width)?;
+    build_in(b"write$", BstBuiltin::Write)?;
+
+    let res = hash.lookup_str_insert(ctx, pool, b"", HashExtra::Text)?;
+    ctx.s_null = hash.text(res.loc);
+    let res = hash.lookup_str_insert(ctx, pool, b"default.type", HashExtra::Text)?;
+    ctx.s_default = hash.text(res.loc);
+    ctx.b_default = skip_loc;
+
+    hash.lookup_str_insert(ctx, pool, b"i", HashExtra::ControlSeq(ControlSeq::LowerI))?;
+    hash.lookup_str_insert(ctx, pool, b"j", HashExtra::ControlSeq(ControlSeq::LowerJ))?;
+    hash.lookup_str_insert(ctx, pool, b"oe", HashExtra::ControlSeq(ControlSeq::LowerOE))?;
+    hash.lookup_str_insert(ctx, pool, b"OE", HashExtra::ControlSeq(ControlSeq::UpperOE))?;
+    hash.lookup_str_insert(ctx, pool, b"ae", HashExtra::ControlSeq(ControlSeq::LowerAE))?;
+    hash.lookup_str_insert(ctx, pool, b"AE", HashExtra::ControlSeq(ControlSeq::UpperAE))?;
+    hash.lookup_str_insert(ctx, pool, b"aa", HashExtra::ControlSeq(ControlSeq::LowerAA))?;
+    hash.lookup_str_insert(ctx, pool, b"AA", HashExtra::ControlSeq(ControlSeq::UpperAA))?;
+    hash.lookup_str_insert(ctx, pool, b"o", HashExtra::ControlSeq(ControlSeq::LowerO))?;
+    hash.lookup_str_insert(ctx, pool, b"O", HashExtra::ControlSeq(ControlSeq::UpperO))?;
+    hash.lookup_str_insert(ctx, pool, b"l", HashExtra::ControlSeq(ControlSeq::LowerL))?;
+    hash.lookup_str_insert(ctx, pool, b"L", HashExtra::ControlSeq(ControlSeq::UpperL))?;
+    hash.lookup_str_insert(ctx, pool, b"ss", HashExtra::ControlSeq(ControlSeq::LowerSS))?;
+
+    let num_fields = other.num_fields();
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"crossref",
+        HashExtra::BstFn(BstFn::Field(num_fields)),
+    )?;
+    other.set_crossref_num(num_fields);
+    other.set_num_fields(num_fields + 1);
+    other.set_pre_defined_fields(num_fields + 1);
+
+    let num_ent_strs = entries.num_ent_strs();
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"sort.key$",
+        HashExtra::BstFn(BstFn::StrEntry(num_ent_strs)),
+    )?;
+    entries.set_sort_key_num(num_ent_strs);
+    entries.set_num_ent_strs(num_ent_strs + 1);
+
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"entry.max$",
+        HashExtra::BstFn(BstFn::IntGlbl(ENT_STR_SIZE as i64)),
+    )?;
+
+    hash.lookup_str_insert(
+        ctx,
+        pool,
+        b"global.max$",
+        HashExtra::BstFn(BstFn::IntGlbl(GLOB_STR_SIZE as i64)),
+    )?;
+
+    Ok(())
 }
 
 pub(crate) fn inner_bibtex_main(
@@ -550,7 +763,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
 
     set_extension(&mut path, b".aux");
     let lookup =
-        match pool.lookup_str_insert(ctx, hash, &path[..path.len() - 1], HashExtra::AuxFile) {
+        match hash.lookup_str_insert(ctx, pool, &path[..path.len() - 1], HashExtra::AuxFile) {
             Ok(res) => res,
             Err(_) => return Err(BibtexError::Fatal),
         };

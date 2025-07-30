@@ -1,4 +1,4 @@
-use crate::{FieldLoc, HashPointer, StrNumber};
+use crate::{pool::StrNumber, FieldLoc, HashPointer};
 
 const MAX_FIELDS: usize = 17250;
 
@@ -14,7 +14,7 @@ impl OtherData {
     pub fn new() -> OtherData {
         OtherData {
             wiz_functions: Vec::new(),
-            field_info: vec![0; MAX_FIELDS + 1],
+            field_info: vec![StrNumber::invalid(); MAX_FIELDS + 1],
             num_fields: 0,
             num_pre_defined_fields: 0,
             crossref_num: 0,
@@ -52,7 +52,7 @@ impl OtherData {
     pub fn check_field_overflow(&mut self, fields: usize) {
         while fields > self.field_info.len() {
             self.field_info
-                .resize(self.field_info.len() + MAX_FIELDS, 0);
+                .resize(self.field_info.len() + MAX_FIELDS, StrNumber::invalid());
         }
     }
 
