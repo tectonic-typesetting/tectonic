@@ -12,7 +12,7 @@ use crate::{
     peekable::input_ln,
     pool::{StrNumber, StringPool},
     scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
-    BibNumber, Bibtex, BibtexError, File, GlobalItems, HashPointer, LookupRes, StrIlk,
+    Bibtex, BibtexError, File, GlobalItems, HashPointer, LookupRes, StrIlk,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -63,7 +63,7 @@ impl BibData {
         &self.preamble
     }
 
-    pub fn len(&self) -> BibNumber {
+    pub fn len(&self) -> usize {
         self.bibs.len()
     }
 }

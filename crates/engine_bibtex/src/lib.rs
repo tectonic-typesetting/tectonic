@@ -363,9 +363,7 @@ pub(crate) enum StrIlk {
 type CiteNumber = usize;
 type ASCIICode = u8;
 type BufPointer = usize;
-type BibNumber = usize;
 type FieldLoc = usize;
-type FnDefLoc = usize;
 
 pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> History {
     let mut buffers = GlobalBuffer::new();

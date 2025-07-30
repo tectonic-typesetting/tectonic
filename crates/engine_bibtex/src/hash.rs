@@ -6,7 +6,7 @@ use crate::{
     exec::ControlSeq,
     pool,
     pool::{StrNumber, StringPool},
-    CiteNumber, FnDefLoc, LookupRes, StrIlk,
+    CiteNumber, LookupRes, StrIlk,
 };
 use slotmap::{KeyData, SlotMap};
 
@@ -110,7 +110,7 @@ pub(crate) enum BstBuiltin {
 #[derive(Copy, Clone, Debug)]
 pub(crate) enum BstFn {
     Builtin(BstBuiltin),
-    Wizard(FnDefLoc),
+    Wizard(usize),
     Field(usize),
     IntEntry(usize),
     StrEntry(usize),
