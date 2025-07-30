@@ -99,12 +99,10 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
     ) -> Result<ExecVal, BibtexError> {
         if let Some(pop) = self.lit_stack.pop() {
             if let ExecVal::String(str) = pop {
-                if self.checkpoint.is_before(str) {
-                    if !pool.remove_last_str(str) {
-                        self.write_logs("Nontop top of string stack");
-                        print_confusion(self);
-                        return Err(BibtexError::Fatal);
-                    }
+                if self.checkpoint.is_before(str) && !pool.remove_last_str(str) {
+                    self.write_logs("Nontop top of string stack");
+                    print_confusion(self);
+                    return Err(BibtexError::Fatal);
                 }
             }
             Ok(pop)

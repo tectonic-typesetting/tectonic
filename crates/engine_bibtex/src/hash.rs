@@ -304,7 +304,7 @@ impl HashData {
             loop {
                 if self.len() == HASH_BASE {
                     print_overflow(ctx);
-                    ctx.write_logs(&format!("hash size {}\n", HASH_SIZE));
+                    ctx.write_logs(&format!("hash size {HASH_SIZE}\n"));
                     return Err(BibtexError::Fatal);
                 }
                 self.set_len(self.len() - 1);
