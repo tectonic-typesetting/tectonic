@@ -42,14 +42,15 @@ impl<K, V, const N: usize> Pairs for [(K, V); N] {
     type Values = [V; N];
 
     fn into_pairs(self) -> (Self::Keys, Self::Values) {
-        let mut keys: [MaybeUninit<K>; N] = unsafe { MaybeUninit::uninit().assume_init() };
-        let mut values: [MaybeUninit<V>; N] = unsafe { MaybeUninit::uninit().assume_init() };
+        let mut keys: [MaybeUninit<K>; N] = [const { MaybeUninit::uninit() }; N];
+        let mut values: [MaybeUninit<V>; N] = [const { MaybeUninit::uninit() }; N];
 
         for (idx, (key, val)) in self.into_iter().enumerate() {
             keys[idx].write(key);
             values[idx].write(val);
         }
 
+        // SAFETY: All values in both arrays have been initialized
         unsafe {
             (
                 mem::transmute_copy::<_, [K; N]>(&keys),
@@ -69,13 +70,17 @@ impl<K, V> Pairs for Vec<(K, V)> {
 }
 
 cfty! {
+    /// A dictionary / map of CFType keys to values, similar to [`HashMap`](std::collections::HashMap)
     CFDictionary<K, V> : CFDictionaryGetTypeID
 }
 
 impl<K: CoreType, V: CoreType> CFDictionary<K, V> {
+    /// Create a new [`CFDictionary`] that contains the provided key/value pairs.
     pub fn new<P: Pairs>(pairs: P) -> CFDictionary<K, V> {
         let (keys, values) = pairs.into_pairs();
 
+        // SAFETY: Length matches provided slices and values are `CoreType` so must be valid
+        //         CFTypeRefs.
         let ptr = unsafe {
             sys::CFDictionaryCreate(
                 ptr::null_mut(),
@@ -86,6 +91,8 @@ impl<K: CoreType, V: CoreType> CFDictionary<K, V> {
                 &sys::kCFTypeDictionaryValueCallBacks,
             )
         };
-        CFDictionary::new_owned(NonNull::new(ptr.cast_mut()).unwrap())
+        let ptr = NonNull::new(ptr.cast_mut()).unwrap();
+        // SAFETY: If non-null, pointer from CFDictionaryCreate is a new, owned CFDictionary.
+        unsafe { CFDictionary::new_owned(ptr) }
     }
 }

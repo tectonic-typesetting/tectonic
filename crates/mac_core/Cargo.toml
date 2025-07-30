@@ -1,3 +1,5 @@
+lints.workspace = true
+
 [package]
 name = "tectonic_mac_core"
 license = "MIT"

@@ -1,4 +1,4 @@
-#![allow(nonstandard_style)]
+#![allow(nonstandard_style, missing_docs)]
 
 #[repr(C)]
 pub struct CFAllocator(());

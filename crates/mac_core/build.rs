@@ -1,3 +1,5 @@
+//! Mac core library build script. Links to framework libraries when targeting MacOS.
+
 use tectonic_cfg_support::target_cfg;
 
 fn main() {
