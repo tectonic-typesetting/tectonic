@@ -1,12 +1,9 @@
 use std::fmt;
 use std::fmt::Formatter;
-use crate::{
-    log::{print_overflow},
-    ASCIICode, Bibtex, BibtexError, PoolPointer,
-};
 use std::ops::Range;
 
-const POOL_SIZE: usize = 65000;
+const POOL_SIZE: usize = 65536;
+const STRINGS_SIZE: usize = 2048;
 pub(crate) const MAX_PRINT_LINE: usize = 79;
 pub(crate) const MIN_PRINT_LINE: usize = 3;
 pub(crate) const MAX_STRINGS: usize = 35307;
@@ -47,12 +44,6 @@ impl Checkpoint {
     }
 }
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum LookupErr {
-    Invalid,
-    DoesntExist,
-}
-
 pub(crate) struct PoolCursor<'a> {
     pool: &'a mut StringPool,
     start: usize,
@@ -65,9 +56,6 @@ impl PoolCursor<'_> {
     }
 
     pub fn append(&mut self, c: u8) {
-        if self.pool.strings.len() < self.end + 1 {
-            self.pool.grow();
-        }
         self.pool.strings[self.end] = c;
         self.end += 1;
     }
@@ -78,7 +66,7 @@ impl PoolCursor<'_> {
     }
 
     pub fn append_substr(&mut self, str: StrNumber, range: Range<usize>) {
-        let start = self.pool.offsets[str.0];
+        let start = self.pool.str_start(str);
         self.pool.copy_range_raw(start+range.start..start+range.end, self.end);
     }
 
@@ -98,60 +86,65 @@ impl PoolCursor<'_> {
 pub(crate) struct StringPool {
     strings: Vec<u8>,
     // Stores string starting locations in the string pool
-    // length of string `s` is offsets[s + 1] - offsets[s]
+    // length of string `s` is offsets[s] - offsets[s-1]
     offsets: Vec<usize>,
-    pool_ptr: PoolPointer,
+    pool_ptr: usize,
     cur_strs: usize,
 }
 
 impl StringPool {
     pub fn new() -> StringPool {
+        let mut offsets = Vec::with_capacity(STRINGS_SIZE);
+        // First string always starts at 0
+        offsets.push(0);
         StringPool {
-            strings: vec![0; POOL_SIZE + 1],
-            offsets: vec![0; MAX_STRINGS + 1],
+            strings: Vec::with_capacity(POOL_SIZE),
+            offsets,
             pool_ptr: 0,
             cur_strs: 1,
         }
     }
 
-    pub fn try_get_str(&self, s: StrNumber) -> Result<&[u8], LookupErr> {
+    fn str_start(&self, str: StrNumber) -> usize {
+        self.offsets[str.0-1]
+    }
+
+    fn str_end(&self, str: StrNumber) -> usize {
+        self.offsets[str.0]
+    }
+
+    pub fn try_get_str(&self, s: StrNumber) -> Option<&[u8]> {
         // This is plus three because bst does weird stuff by popping and then sometimes re-adding
         // strings.
         // TODO: Fix bst execution to not rely on this behavior
-        if s.is_invalid() || s.0 >= self.cur_strs + 3 {
-            Err(LookupErr::DoesntExist)
-        } else if s.0 >= MAX_STRINGS {
-            Err(LookupErr::Invalid)
+        if s.is_invalid() || s.0 >= self.cur_strs + 3 || s.0 + 1 > self.offsets.len() {
+            None
         } else {
-            Ok(&self.strings[self.offsets[s.0]..self.offsets[s.0 + 1]])
+            Some(&self.strings[self.str_start(s)..self.str_end(s)])
         }
     }
 
     pub fn get_str(&self, s: StrNumber) -> &[u8] {
-        self.try_get_str(s).unwrap_or_else(|e| match e {
-            LookupErr::DoesntExist => panic!("String number {s} doesn't exist"),
-            LookupErr::Invalid => panic!("Invalid string number {s}"),
-        })
+        self.try_get_str(s).unwrap_or_else(|| panic!("String number {s} doesn't exist"))
     }
 
     pub fn add_string(
         &mut self,
-        ctx: &mut Bibtex<'_, '_>,
-        str: &[ASCIICode],
-    ) -> Result<StrNumber, BibtexError> {
+        str: &[u8],
+    ) -> StrNumber {
         while self.pool_ptr + str.len() > self.strings.len() {
             self.grow();
         }
         self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
         self.pool_ptr += str.len();
-        self.make_string(ctx)
+        self.make_string()
     }
 
-    pub fn write_str(&mut self, ctx: &mut Bibtex<'_, '_>, f: impl FnOnce(&mut PoolCursor)) -> Result<StrNumber, BibtexError> {
+    pub fn write_str(&mut self, f: impl FnOnce(&mut PoolCursor)) -> StrNumber {
         let mut cursor = PoolCursor { start: self.pool_ptr, end: self.pool_ptr, pool: self };
         f(&mut cursor);
         self.pool_ptr = cursor.end;
-        self.make_string(ctx)
+        self.make_string()
     }
 
     /// Check if the provided string is the last. If it is, remove it from the pool and return true.
@@ -161,7 +154,7 @@ impl StringPool {
             false
         } else {
             self.cur_strs -= 1;
-            self.pool_ptr = self.offsets[self.cur_strs];
+            self.pool_ptr = self.str_start(str);
             true
         }
     }
@@ -180,20 +173,19 @@ impl StringPool {
 
     /// Used while defining strings - declare the current `pool_ptr` as the end of the current
     /// string, increment `cur_strs`, and return the new string's `StrNumber`
-    fn make_string(&mut self, ctx: &mut Bibtex<'_, '_>) -> Result<StrNumber, BibtexError> {
-        if self.cur_strs == MAX_STRINGS {
-            print_overflow(ctx);
-            ctx.write_logs(&format!("number of strings {MAX_STRINGS}\n"));
-            return Err(BibtexError::Fatal);
+    fn make_string(&mut self) -> StrNumber {
+        if self.cur_strs + 1 > self.offsets.len() {
+            self.offsets.push(self.pool_ptr)
+        } else {
+            self.offsets[self.cur_strs] = self.pool_ptr
         }
         self.cur_strs += 1;
-        self.offsets[self.cur_strs] = self.pool_ptr;
-        Ok(StrNumber(self.cur_strs - 1))
+        StrNumber(self.cur_strs - 1)
     }
 
     fn copy_raw(&mut self, str: StrNumber, pos: usize) {
-        let start = self.offsets[str.0];
-        let end = self.offsets[str.0 + 1];
+        let start = self.str_start(str);
+        let end = self.str_end(str);
 
         while pos + (end - start) > self.strings.len() {
             self.grow();
@@ -213,33 +205,45 @@ impl StringPool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::BibtexConfig;
-    use crate::test_utils::with_cbs;
+
+    #[test]
+    fn test_invalid_str() {
+        let pool = StringPool::new();
+        assert_eq!(pool.try_get_str(StrNumber::invalid()), None);
+    }
+
+    #[test]
+    fn test_add_str() {
+        let mut pool = StringPool::new();
+
+        let str1 = pool.add_string(b"String 1");
+        let str2 = pool.add_string(b"String 2");
+
+        assert_ne!(str1, str2);
+        assert_eq!(pool.get_str(str1), b"String 1");
+        assert_eq!(pool.get_str(str2), b"String 2");
+    }
 
     #[test]
     fn test_write_str() {
-        with_cbs(|cbs| {
-            let mut ctx = Bibtex::new(cbs, BibtexConfig::default());
+        let mut pool = StringPool::new();
 
-            let mut pool = StringPool::new();
+        let str = pool.add_string(b"Hello World!");
 
-            let str = pool.add_string(&mut ctx, b"Hello World!").unwrap();
+        let new_str = pool.write_str(|cursor| {
+            cursor.append_str(str);
+        });
+        assert_ne!(str, new_str);
+        assert_eq!(pool.get_str(str), pool.get_str(new_str));
 
-            let new_str = pool.write_str(&mut ctx, |cursor| {
-                cursor.append_str(str);
-            }).unwrap();
-            assert_ne!(str, new_str);
-            assert_eq!(pool.get_str(str), pool.get_str(new_str));
-
-            assert!(pool.remove_last_str(new_str));
-            // Ensure we can get length of removed string
-            let str_len = pool.get_str(new_str).len();
-            // Ensure extending by that length restores the string
-            let new_str_2 = pool.write_str(&mut ctx, |cursor| {
-                cursor.extend(str_len);
-            }).unwrap();
-            assert_eq!(new_str, new_str_2);
-            assert_eq!(pool.get_str(str), pool.get_str(new_str_2));
-        })
+        assert!(pool.remove_last_str(new_str));
+        // Ensure we can get length of removed string
+        let str_len = pool.get_str(new_str).len();
+        // Ensure extending by that length restores the string
+        let new_str_2 = pool.write_str(|cursor| {
+            cursor.extend(str_len);
+        });
+        assert_eq!(new_str, new_str_2);
+        assert_eq!(pool.get_str(str), pool.get_str(new_str_2));
     }
 }

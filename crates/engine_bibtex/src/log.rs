@@ -118,7 +118,7 @@ pub(crate) fn out_pool_str(
     s: StrNumber,
 ) -> Result<(), BibtexError> {
     let str = pool.try_get_str(s);
-    if let Ok(str) = str {
+    if let Some(str) = str {
         ctx.write_log_file(str);
         Ok(())
     } else {
@@ -134,7 +134,7 @@ pub(crate) fn print_a_pool_str(
     pool: &StringPool,
 ) -> Result<(), BibtexError> {
     let str = pool.try_get_str(s);
-    if let Ok(str) = str {
+    if let Some(str) = str {
         ctx.write_logs(str);
         Ok(())
     } else {
@@ -238,7 +238,7 @@ pub(crate) fn print_bib_name(
     print_a_pool_str(ctx, name, pool)?;
     let res = pool
         .try_get_str(name)
-        .map_err(|_| BibtexError::Fatal)
+        .ok_or(BibtexError::Fatal)
         .map(|str| str.ends_with(b".bib"))?;
     if !res {
         ctx.write_logs(".bib");
@@ -256,7 +256,7 @@ pub(crate) fn log_pr_bib_name(
     let res = pool
         .try_get_str(name)
         .map(|str| str.ends_with(b".bib"))
-        .map_err(|_| BibtexError::Fatal)?;
+        .ok_or(BibtexError::Fatal)?;
     if !res {
         ctx.write_log_file(".bib");
     }

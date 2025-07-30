@@ -17,7 +17,7 @@ use crate::{
         check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
         von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
     },
-    ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, PoolPointer, StrIlk,
+    ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, StrIlk,
 };
 use std::ops::{Deref, DerefMut, Index};
 use crate::pool::{Checkpoint, MAX_PRINT_LINE, MIN_PRINT_LINE};
@@ -290,7 +290,7 @@ fn pop_whole_stack(
     Ok(())
 }
 
-pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i32) -> PoolPointer {
+pub fn skip_brace_level_greater_than_one(str: &[ASCIICode], brace_level: &mut i32) -> usize {
     let mut pos = 0;
     while *brace_level > 1 && pos < str.len() {
         if str[pos] == b'}' {
@@ -741,7 +741,7 @@ fn add_pool_buf_and_push(
 ) -> Result<(), BibtexError> {
     buffers.set_offset(BufTy::Ex, 1, buffers.init(BufTy::Ex));
     let str = &buffers.buffer(BufTy::Ex)[0..buffers.init(BufTy::Ex)];
-    let val = ExecVal::String(pool.add_string(ctx, str)?);
+    let val = ExecVal::String(pool.add_string(str));
     ctx.push_stack(val);
     Ok(())
 }
@@ -918,7 +918,7 @@ fn interp_concat(
         // Both strings are 'scratch', they must be next to each-other due to external invariants,
         // se we just make one new string covering both
         let new_len = pool.get_str(s1).len() + pool.get_str(s2).len();
-        let new = pool.write_str(ctx, |cursor| cursor.extend(new_len))?;
+        let new = pool.write_str(|cursor| cursor.extend(new_len));
         ctx.push_stack(ExecVal::String(new));
     } else if ctx.checkpoint.is_before(s2) {
         if pool.get_str(s2).is_empty() {
@@ -926,10 +926,10 @@ fn interp_concat(
         } else {
             // s2 is scratch, we add s1 to its end and return the new scratch string
             let s2_len = pool.get_str(s2).len();
-            let new = pool.write_str(ctx, |cursor| {
+            let new = pool.write_str(|cursor| {
                 cursor.extend(s2_len);
                 cursor.append_str(s1);
-            })?;
+            });
             ctx.push_stack(ExecVal::String(new));
         }
     } else if ctx.checkpoint.is_before(s1) {
@@ -939,7 +939,7 @@ fn interp_concat(
         if str2.is_empty() {
             // s1 is scratch and s2 is empty - just save s1 and return it
             let s1_len = str1.len();
-            let new = pool.write_str(ctx, |cursor| cursor.extend(s1_len))?;
+            let new = pool.write_str(|cursor| cursor.extend(s1_len));
             ctx.push_stack(ExecVal::String(new));
         } else if str1.is_empty() {
             // s1 is empty - just return s2
@@ -950,12 +950,12 @@ fn interp_concat(
 
             // s1 is scratch and s2 is not - we want to copy s1 forward by the length of s2,
             // then write s2 in where it was, returning the new scratch string
-            let new = pool.write_str(ctx, |cursor| {
+            let new = pool.write_str(|cursor| {
                 cursor.extend(s1_len + s2_len);
                 let raw = cursor.bytes();
                 raw.copy_within(0..s1_len, s2_len);
                 cursor.insert_str(s2, 0);
-            })?;
+            });
             let val = ExecVal::String(new);
             ctx.push_stack(val);
         }
@@ -969,10 +969,10 @@ fn interp_concat(
             ctx.push_stack(pop1);
         } else {
             // Neither is scratch or empty - make a new scratch string from the concat of both
-            let new = pool.write_str(ctx, |cursor| {
+            let new = pool.write_str(|cursor| {
                 cursor.append_str(s2);
                 cursor.append_str(s1);
-            })?;
+            });
             let val = ExecVal::String(new);
             ctx.push_stack(val);
         }
@@ -1091,7 +1091,7 @@ fn interp_add_period(
             // If scratch, save
             if ctx.checkpoint.is_before(s1) {
                 let s1_len = pool.get_str(s1).len();
-                let new = pool.write_str(ctx, |cursor| cursor.extend(s1_len))?;
+                let new = pool.write_str(|cursor| cursor.extend(s1_len));
                 ctx.push_stack(ExecVal::String(new));
             } else {
                 ctx.push_stack(pop1);
@@ -1100,14 +1100,14 @@ fn interp_add_period(
         _ => {
             let is_bst_str = ctx.checkpoint.is_before(s1);
             let s1_len = pool.get_str(s1).len();
-            let new = pool.write_str(ctx, |cursor| {
+            let new = pool.write_str(|cursor| {
                 if is_bst_str {
                     cursor.extend(s1_len);
                 } else {
                     cursor.append_str(s1);
                 }
                 cursor.append(b'.');
-            })?;
+            });
             let val = ExecVal::String(new);
             ctx.push_stack(val);
         }
@@ -1277,7 +1277,7 @@ fn interp_change_case(
                 idx += 1;
             }
             check_brace_level(ctx, pool, cites, s2, brace_level)?;
-            let val = ExecVal::String(pool.add_string(ctx, &scratch)?);
+            let val = ExecVal::String(pool.add_string(&scratch));
             ctx.push_stack(val);
         }
         (ExecVal::String(_), _) => {
@@ -1346,12 +1346,12 @@ fn interp_dup(
                 ctx.push_stack(pop1);
             } else {
                 let str_len = pool.get_str(s1).len();
-                let _ = pool.write_str(ctx, |cursor| {
+                let _ = pool.write_str(|cursor| {
                     cursor.extend(str_len);
-                })?;
-                let new = pool.write_str(ctx, |cursor| {
+                });
+                let new = pool.write_str(|cursor| {
                     cursor.append_str(s1);
-                })?;
+                });
                 let val = ExecVal::String(new);
                 ctx.push_stack(val);
             }
@@ -1693,7 +1693,7 @@ fn interp_int_to_chr(
         bst_ex_warn_print(ctx, pool, cites)?;
         ctx.push_stack(ExecVal::String(ctx.s_null));
     } else {
-        let val = ExecVal::String(pool.add_string(ctx, &[i1 as u8])?);
+        let val = ExecVal::String(pool.add_string(&[i1 as u8]));
         ctx.push_stack(val);
     }
     Ok(())
@@ -1716,7 +1716,7 @@ fn interp_int_to_str(
     };
 
     let scratch = i1.to_string();
-    let val = ExecVal::String(pool.add_string(ctx, scratch.as_bytes())?);
+    let val = ExecVal::String(pool.add_string(scratch.as_bytes()));
     ctx.push_stack(val);
     Ok(())
 }
@@ -1790,7 +1790,7 @@ fn interp_preamble(
     for s in bibs.preamble() {
         out.extend(pool.get_str(*s));
     }
-    let s = pool.add_string(ctx, &out)?;
+    let s = pool.add_string(&out);
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1888,14 +1888,14 @@ fn interp_purify(
     }
 
     scratch.truncate(write_idx);
-    let out = pool.add_string(ctx, &scratch)?;
+    let out = pool.add_string(&scratch);
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
 }
 
 fn interp_quote(ctx: &mut ExecCtx<'_, '_, '_>, pool: &mut StringPool) -> Result<(), BibtexError> {
-    let s = pool.add_string(ctx, b"\"")?;
+    let s = pool.add_string(b"\"");
     ctx.push_stack(ExecVal::String(s));
     Ok(())
 }
@@ -1968,16 +1968,16 @@ fn interp_substr(
     if len >= str.len() && (start == 1 || start == -1) {
         if ctx.checkpoint.is_before(s3) {
             let str_len = pool.get_str(s3).len();
-            let _ = pool.write_str(ctx, |cursor| cursor.extend(str_len))?;
+            let _ = pool.write_str(|cursor| cursor.extend(str_len));
         }
         ctx.push_stack(pop3);
         return Ok(());
     }
 
     if start == 1 && ctx.checkpoint.is_before(s3) {
-        let new = pool.write_str(ctx, |cursor| {
+        let new = pool.write_str(|cursor| {
             cursor.extend(len);
-        })?;
+        });
         ctx.push_stack(ExecVal::String(new));
         return Ok(());
     }
@@ -1985,7 +1985,7 @@ fn interp_substr(
     // TODO: Remove this intermediate allocation, currently can't pass a `&str` from a StringPool
     //       to that StringPool.
     let new_str = Vec::from(&str[SLRange { start, len }]);
-    let out = pool.add_string(ctx, &new_str)?;
+    let out = pool.add_string(&new_str);
     ctx.push_stack(ExecVal::String(out));
 
     Ok(())
@@ -2004,20 +2004,20 @@ fn interp_swap(
             if ctx.checkpoint.is_before(s1) && ctx.checkpoint.is_before(s2) =>
         {
             let tmp = Vec::from(pool.get_str(s2));
-            let new = pool.write_str(ctx, |cursor| {
+            let new = pool.write_str(|cursor| {
                 cursor.append_str(s1);
-            })?;
+            });
             let val = ExecVal::String(new);
             ctx.push_stack(val);
-            let val = ExecVal::String(pool.add_string(ctx, &tmp)?);
+            let val = ExecVal::String(pool.add_string(&tmp));
             ctx.push_stack(val);
             return Ok(());
         }
         (ExecVal::String(s), _) | (_, ExecVal::String(s)) if ctx.checkpoint.is_before(s) => {
             let str_len = pool.get_str(s).len();
-            let _ = pool.write_str(ctx, |cursor| {
+            let _ = pool.write_str(|cursor| {
                 cursor.extend(str_len);
-            })?;
+            });
         }
         (_, _) => (),
     }
@@ -2133,7 +2133,7 @@ fn interp_text_prefix(
     }
 
     let is_before = ctx.checkpoint.is_before(s2);
-    let new = pool.write_str(ctx, |cursor| {
+    let new = pool.write_str(|cursor| {
         if is_before {
             cursor.extend(idx)
         } else {
@@ -2142,7 +2142,7 @@ fn interp_text_prefix(
         for _ in 0..brace_level {
             cursor.append(b'}');
         }
-    })?;
+    });
 
     let val = ExecVal::String(new);
     ctx.push_stack(val);
@@ -2541,7 +2541,7 @@ pub(crate) fn execute_fn(
             } else {
                 let str_ent_ptr = globals.cites.ptr() * globals.entries.num_ent_strs() + *entry;
                 let str = globals.entries.strs(str_ent_ptr);
-                let val = ExecVal::String(globals.pool.add_string(ctx, str)?);
+                let val = ExecVal::String(globals.pool.add_string(str));
                 ctx.push_stack(val);
                 Ok(())
             }
@@ -2556,7 +2556,7 @@ pub(crate) fn execute_fn(
                 ctx.push_stack(ExecVal::String(str_ptr));
             } else {
                 let str = globals.globals.str(*glb_ptr);
-                let val = ExecVal::String(globals.pool.add_string(ctx, str)?);
+                let val = ExecVal::String(globals.pool.add_string(str));
                 ctx.push_stack(val);
             }
             Ok(())

@@ -371,7 +371,6 @@ pub(crate) enum StrIlk {
 type CiteNumber = usize;
 type ASCIICode = u8;
 type BufPointer = usize;
-type PoolPointer = usize;
 type HashPointer = usize;
 type BibNumber = usize;
 type FieldLoc = usize;

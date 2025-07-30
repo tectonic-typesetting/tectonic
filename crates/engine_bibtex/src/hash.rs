@@ -1,4 +1,4 @@
-use crate::{auxi::AuxCommand, bibs::BibCommand, bst::BstCommand, exec::ControlSeq, hash, pool, pool::StrNumber, ASCIICode, Bibtex, BibtexError, CiteNumber, FnDefLoc, HashPointer, LookupRes, StrIlk};
+use crate::{auxi::AuxCommand, bibs::BibCommand, bst::BstCommand, exec::ControlSeq, pool, pool::StrNumber, ASCIICode, Bibtex, BibtexError, CiteNumber, FnDefLoc, HashPointer, LookupRes, StrIlk};
 use crate::log::print_overflow;
 use crate::pool::StringPool;
 
@@ -231,7 +231,7 @@ impl HashData {
 
     pub fn lookup_str(&self, pool: &StringPool, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
         let h = self.hash_str(str);
-        let mut p = h as HashPointer + hash::HASH_BASE as HashPointer;
+        let mut p = h as HashPointer + HASH_BASE as HashPointer;
 
         let exists = loop {
             let existing = self.text(p);
@@ -263,14 +263,14 @@ impl HashData {
         let h = self.hash_str(str);
         let mut str_num = StrNumber::default();
         // Get position by adding HASH_BASE
-        let mut p = (h + hash::HASH_BASE) as HashPointer;
+        let mut p = (h + HASH_BASE) as HashPointer;
 
         // Look for an existing match, or the last slot
         let existing = loop {
             // Get the current text at the position
             let existing = self.text(p);
             // If the text exists and is the same as the text we're adding
-            if pool.try_get_str(existing) == Ok(str) {
+            if pool.try_get_str(existing) == Some(str) {
                 // If an existing hash entry exists for this type, return it
                 if self.node(p).kind() == ilk.kind() {
                     return Ok(LookupRes {
@@ -296,7 +296,7 @@ impl HashData {
             loop {
                 if self.len() == HASH_BASE {
                     print_overflow(ctx);
-                    ctx.write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
+                    ctx.write_logs(&format!("hash size {}\n", HASH_SIZE));
                     return Err(BibtexError::Fatal);
                 }
                 self.set_len(self.len() - 1);
@@ -316,8 +316,7 @@ impl HashData {
             self.set_text(p, str_num);
         // The string isn't in the string pool - add it
         } else {
-            let num = pool.add_string(ctx, str)?;
-            self.set_text(p, num);
+            self.set_text(p, pool.add_string(str));
         }
 
         // Set the type of this slot
@@ -334,7 +333,7 @@ impl HashData {
 mod tests {
     use super::*;
     use crate::{Bibtex, BibtexConfig};
-    use crate::pool::{LookupErr, StringPool};
+    use crate::pool::StringPool;
     use crate::test_utils::with_cbs;
 
     #[test]
@@ -349,7 +348,7 @@ mod tests {
             assert!(!res.exists);
             assert_eq!(
                 pool.try_get_str(hash.text(res.loc)),
-                Ok(b"a cool string" as &[_])
+                Some(b"a cool string" as &[_])
             );
 
             let res2 = hash
@@ -358,21 +357,21 @@ mod tests {
             assert!(res2.exists);
             assert_eq!(
                 pool.try_get_str(hash.text(res2.loc)),
-                Ok(b"a cool string" as &[_])
+                Some(b"a cool string" as &[_])
             );
 
             let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text);
             assert!(res3.exists);
             assert_eq!(
                 pool.try_get_str(hash.text(res3.loc)),
-                Ok(b"a cool string" as &[_])
+                Some(b"a cool string" as &[_])
             );
 
             let res4 = hash.lookup_str(&pool, b"a bad string", StrIlk::Text);
             assert!(!res4.exists);
             assert_eq!(
                 pool.try_get_str(hash.text(res4.loc)),
-                Err(LookupErr::DoesntExist)
+                None,
             );
         })
     }
