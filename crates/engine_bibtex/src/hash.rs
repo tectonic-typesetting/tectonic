@@ -175,14 +175,14 @@ impl HashNode {
 // TODO: Split string-pool stuff into string pool, executor stuff into execution context
 pub(crate) struct HashData {
     hash_data: Vec<HashNode>,
-    len: usize,
+    open_slot: usize,
 }
 
 impl HashData {
     pub fn new() -> HashData {
         HashData {
             hash_data: vec![HashNode::default(); HASH_MAX + 1],
-            len: HASH_MAX + 1,
+            open_slot: HASH_MAX + 1,
         }
     }
 
@@ -218,14 +218,6 @@ impl HashData {
         self.hash_data[pos].next = val
     }
 
-    fn len(&self) -> usize {
-        self.len
-    }
-
-    fn set_len(&mut self, val: usize) {
-        self.len = val;
-    }
-
     fn prime(&self) -> usize {
         HASH_PRIME
     }
@@ -236,26 +228,24 @@ impl HashData {
             .fold(0, |acc, &c| ((2 * acc) + c as usize) % prime)
     }
 
-    pub fn lookup_str(&self, pool: &StringPool, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
+    pub fn lookup_str(&self, pool: &StringPool, str: &[ASCIICode], ilk: StrIlk) -> Option<usize> {
         let h = self.hash_str(str);
         let mut p = h as HashPointer + HASH_BASE as HashPointer;
 
-        let exists = loop {
+        loop {
             let existing = self.text(p);
 
             if !existing.is_invalid() && pool.get_str(existing) == str && self.node(p).kind() == ilk
             {
-                break true;
+                break Some(p);
             }
 
             if self.next(p) == 0 {
-                break false;
+                break None;
             }
 
             p = self.next(p);
-        };
-
-        LookupRes { loc: p, exists }
+        }
     }
 
     /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
@@ -302,21 +292,21 @@ impl HashData {
             // Walk backwards from our current len to our first empty slot.
             // If all slots are full, error
             loop {
-                if self.len() == HASH_BASE {
+                if self.open_slot == HASH_BASE {
                     print_overflow(ctx);
                     ctx.write_logs(&format!("hash size {HASH_SIZE}\n"));
                     return Err(BibtexError::Fatal);
                 }
-                self.set_len(self.len() - 1);
+                self.open_slot -= 1;
 
-                if self.text(self.len()).is_invalid() {
+                if self.text(self.open_slot).is_invalid() {
                     break;
                 }
             }
             // Set the next item to our new lowest open slot
-            self.set_next(p, self.len());
+            self.set_next(p, self.open_slot);
             // Operate on the new empty slot
-            p = self.len();
+            p = self.open_slot;
         }
 
         // We found the string in the string pool while hunting for a slot
@@ -366,16 +356,14 @@ mod tests {
                 Some(b"a cool string" as &[_])
             );
 
-            let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text);
-            assert!(res3.exists);
+            let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text)
+                .unwrap();
             assert_eq!(
-                pool.try_get_str(hash.text(res3.loc)),
+                pool.try_get_str(hash.text(res3)),
                 Some(b"a cool string" as &[_])
             );
 
-            let res4 = hash.lookup_str(&pool, b"a bad string", StrIlk::Text);
-            assert!(!res4.exists);
-            assert_eq!(pool.try_get_str(hash.text(res4.loc)), None,);
+            assert!(hash.lookup_str(&pool, b"a bad string", StrIlk::Text).is_none());
         })
     }
 }

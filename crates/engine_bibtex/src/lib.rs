@@ -339,11 +339,8 @@ pub(crate) struct LookupRes {
 
 #[derive(Debug)]
 pub(crate) struct FindCiteLocs {
-    cite_loc: CiteNumber,
-    lc_cite_loc: CiteNumber,
-
-    cite_found: bool,
-    lc_found: bool,
+    cite: Option<CiteNumber>,
+    lc_cite: Option<CiteNumber>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]

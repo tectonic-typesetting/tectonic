@@ -1180,8 +1180,8 @@ fn interp_change_case(
                             let res =
                                 hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
 
-                            if res.exists {
-                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
+                            if let Some(loc) = res {
+                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 match conv_ty {
@@ -1839,8 +1839,8 @@ fn interp_purify(
 
                             let res =
                                 hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
-                            if res.exists {
-                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
+                            if let Some(loc) = res {
+                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 scratch[write_idx] = scratch[old_idx];
@@ -2225,8 +2225,8 @@ fn interp_width(
                             idx += 1;
                         } else {
                             let res = hash.lookup_str(pool, &str[old_idx..idx], StrIlk::ControlSeq);
-                            if res.exists {
-                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
+                            if let Some(loc) = res {
+                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 match seq {

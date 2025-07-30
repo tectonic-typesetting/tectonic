@@ -168,13 +168,11 @@ pub(crate) fn find_cite_locs_for_this_cite_key(
 ) -> FindCiteLocs {
     let val = pool.get_str(cite_str);
 
-    let cite_hash = hash.lookup_str(pool, val, StrIlk::Cite);
-    let lc_cite_hash = hash.lookup_str(pool, &val.to_ascii_lowercase(), StrIlk::LcCite);
+    let cite = hash.lookup_str(pool, val, StrIlk::Cite);
+    let lc_cite = hash.lookup_str(pool, &val.to_ascii_lowercase(), StrIlk::LcCite);
 
     FindCiteLocs {
-        cite_loc: cite_hash.loc,
-        cite_found: cite_hash.exists,
-        lc_cite_loc: lc_cite_hash.loc,
-        lc_found: lc_cite_hash.exists,
+        cite,
+        lc_cite,
     }
 }

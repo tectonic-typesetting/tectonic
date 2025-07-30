@@ -11,7 +11,7 @@ use crate::{
     peekable::input_ln,
     pool::{StrNumber, StringPool},
     scan::{scan_and_store_the_field_value_and_eat_white, scan_identifier, Scan, ScanRes},
-    BibNumber, Bibtex, BibtexError, File, GlobalItems, HashPointer, StrIlk,
+    BibNumber, Bibtex, BibtexError, File, GlobalItems, HashPointer, LookupRes, StrIlk,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -196,8 +196,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let mut lc_cite_loc = 0;
 
-    if res.exists {
-        let HashExtra::BibCommand(cmd) = globals.hash.node(res.loc).extra else {
+    if let Some(loc) = res {
+        let HashExtra::BibCommand(cmd) = globals.hash.node(loc).extra else {
             panic!("BibCommand lookup didn't have BibCommand extra");
         };
 
@@ -439,16 +439,15 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let range = globals.buffers.offset(BufTy::Base, 1)..globals.buffers.offset(BufTy::Base, 2);
     let bst_fn = &mut globals.buffers.buffer_mut(BufTy::Base)[range];
-    let bst_res = globals.hash.lookup_str(globals.pool, bst_fn, StrIlk::BstFn);
-
-    let type_exists = if bst_res.exists {
-        matches!(
-            globals.hash.node(bst_res.loc).extra,
-            HashExtra::BstFn(BstFn::Wizard(_))
-        )
-    } else {
-        false
-    };
+    let bst_res = globals
+        .hash
+        .lookup_str(globals.pool, bst_fn, StrIlk::BstFn)
+        .filter(|&loc| {
+            matches!(
+                globals.hash.node(loc).extra,
+                HashExtra::BstFn(BstFn::Wizard(_))
+            )
+        });
 
     if !eat_bib_white_space(ctx, globals.buffers, globals.bibs) {
         eat_bib_print(
@@ -521,6 +520,13 @@ pub(crate) fn get_bib_command_or_entry_and_process(
         globals
             .hash
             .lookup_str(globals.pool, lc_cite, StrIlk::LcCite)
+            .map_or(
+                LookupRes {
+                    loc: usize::MAX,
+                    exists: false,
+                },
+                |loc| LookupRes { loc, exists: true },
+            )
     };
 
     let mut res = lc_res;
@@ -579,7 +585,14 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
                 let lc_res2 = globals
                     .hash
-                    .lookup_str(globals.pool, lc_cite, StrIlk::LcCite);
+                    .lookup_str(globals.pool, lc_cite, StrIlk::LcCite)
+                    .map_or(
+                        LookupRes {
+                            loc: usize::MAX,
+                            exists: false,
+                        },
+                        |loc| LookupRes { loc, exists: true },
+                    );
 
                 res = lc_res2;
 
@@ -660,10 +673,8 @@ pub(crate) fn get_bib_command_or_entry_and_process(
     };
 
     if store_entry {
-        if type_exists {
-            globals
-                .cites
-                .set_type(globals.cites.entry_ptr(), bst_res.loc);
+        if let Some(loc) = bst_res {
+            globals.cites.set_type(globals.cites.entry_ptr(), loc);
         } else {
             globals
                 .cites
@@ -746,11 +757,17 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
             let res = globals.hash.lookup_str(globals.pool, bst_fn, StrIlk::BstFn);
 
-            *field_name_loc = res.loc;
-            if res.exists {
-                if let HashExtra::BstFn(BstFn::Field(_)) = &globals.hash.node(res.loc).extra {
+            match res {
+                Some(loc)
+                    if matches!(
+                        globals.hash.node(loc).extra,
+                        HashExtra::BstFn(BstFn::Field(_))
+                    ) =>
+                {
+                    *field_name_loc = loc;
                     store_field = true;
                 }
+                _ => (),
             }
         }
 

@@ -285,7 +285,7 @@ fn aux_citation_command(
             let cite = &buffers.buffer(BufTy::Base)
                 [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
             let uc_res = hash.lookup_str(pool, cite, StrIlk::Cite);
-            if !uc_res.exists {
+            if uc_res.is_none() {
                 let HashExtra::Cite(cite) = hash.node(cite_loc).extra else {
                     panic!("LcCite location didn't have a Cite extra");
                 };
@@ -424,8 +424,8 @@ pub(crate) fn get_aux_command_and_process(
         .hash
         .lookup_str(globals.pool, line, StrIlk::AuxCommand);
 
-    if res.exists {
-        let HashExtra::AuxCommand(cmd) = globals.hash.node(res.loc).extra else {
+    if let Some(loc) = res {
+        let HashExtra::AuxCommand(cmd) = globals.hash.node(loc).extra else {
             panic!("AuxCommand lookup didn't have AuxCommand extra");
         };
 

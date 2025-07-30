@@ -215,16 +215,14 @@ fn bst_execute_command(
     eat_bst_white!(ctx, globals, "execute");
     bst_ident!(ctx, globals, "execute", b'}', b'#', b'#');
 
-    let mut fn_loc = 0;
-    if bad_argument_token(
+    let Some(fn_loc) = bad_argument_token(
         ctx,
-        Some(&mut fn_loc),
         globals.buffers,
         globals.pool,
         globals.hash,
-    )? {
+    )? else {
         return Ok(());
-    }
+    };
 
     eat_bst_white!(ctx, globals, "execute");
     bst_brace!('}', ctx, globals, "execute");
@@ -346,16 +344,14 @@ fn bst_iterate_command(
     eat_bst_white!(ctx, globals, "iterate");
     bst_ident!(ctx, globals, "iterate", b'}', b'#', b'#');
 
-    let mut fn_loc = 0;
-    if bad_argument_token(
+    let Some(fn_loc) = bad_argument_token(
         ctx,
-        Some(&mut fn_loc),
         globals.buffers,
         globals.pool,
         globals.hash,
-    )? {
+    )? else {
         return Ok(());
-    }
+    };
     eat_bst_white!(ctx, globals, "iterate");
     bst_brace!('}', ctx, globals, "iterate");
     globals
@@ -567,8 +563,8 @@ fn bst_read_command(
                 globals.other.field(field_ptr),
             );
 
-            if find.lc_found {
-                let HashExtra::LcCite(cite_loc) = globals.hash.node(find.lc_cite_loc).extra else {
+            if let Some(lc_loc) = find.lc_cite {
+                let HashExtra::LcCite(cite_loc) = globals.hash.node(lc_loc).extra else {
                     panic!("LcCite lookup didn't have LcCite extra");
                 };
                 globals
@@ -602,30 +598,16 @@ fn bst_read_command(
                 globals.other.field(field_ptr),
             );
 
-            if !find.lc_found {
-                if find.cite_found {
-                    hash_cite_confusion(ctx);
-                    return Err(BibtexError::Fatal);
-                }
-                nonexistent_cross_reference_error(
-                    ctx,
-                    globals.pool,
-                    globals.cites,
-                    globals.other,
-                    cite_ptr,
-                    field_ptr,
-                )?;
-                globals.other.set_field(field_ptr, StrNumber::invalid());
-            } else {
-                let HashExtra::LcCite(cite_loc) = globals.hash.node(find.lc_cite_loc).extra else {
+            if let Some(lc_loc) = find.lc_cite {
+                let HashExtra::LcCite(cite_loc) = globals.hash.node(lc_loc).extra else {
                     panic!("LcCite lookup didn't have LcCite extra");
                 };
-                if find.cite_loc != cite_loc {
+                if find.cite != Some(cite_loc) {
                     hash_cite_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
 
-                let HashExtra::Cite(cite) = globals.hash.node(find.cite_loc).extra else {
+                let HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra else {
                     panic!("Cite lookup didn't have Cite extra");
                 };
                 let cite_parent_ptr = cite;
@@ -657,11 +639,25 @@ fn bst_read_command(
                     if !ctx.all_entries
                         && cite_parent_ptr >= globals.cites.old_num_cites()
                         && globals.cites.info(cite_parent_ptr).to_raw_dangerous()
-                            < ctx.config.min_crossrefs as usize
+                        < ctx.config.min_crossrefs as usize
                     {
                         globals.other.set_field(field_ptr, StrNumber::invalid());
                     }
                 }
+            } else {
+                if find.cite.is_some() {
+                    hash_cite_confusion(ctx);
+                    return Err(BibtexError::Fatal);
+                }
+                nonexistent_cross_reference_error(
+                    ctx,
+                    globals.pool,
+                    globals.cites,
+                    globals.other,
+                    cite_ptr,
+                    field_ptr,
+                )?;
+                globals.other.set_field(field_ptr, StrNumber::invalid());
             }
         }
     }
@@ -692,20 +688,24 @@ fn bst_read_command(
                     globals.hash,
                     globals.cites.get_cite(cite_ptr),
                 );
-                if !find.lc_found {
-                    cite_key_disappeared_confusion(ctx);
-                    return Err(BibtexError::Fatal);
-                }
 
-                let HashExtra::LcCite(cite_loc) = globals.hash.node(find.lc_cite_loc).extra else {
+                let lc_loc = match find.lc_cite {
+                    Some(lc_loc) => lc_loc,
+                    None => {
+                        cite_key_disappeared_confusion(ctx);
+                        return Err(BibtexError::Fatal);
+                    }
+                };
+
+                let HashExtra::LcCite(cite_loc) = globals.hash.node(lc_loc).extra else {
                     panic!("LcCite lookup didn't have LcCite extra");
                 };
-                if !find.cite_found || find.cite_loc != cite_loc {
+                if find.cite.is_none_or(|loc| loc != cite_loc) {
                     hash_cite_confusion(ctx);
                     return Err(BibtexError::Fatal);
                 }
 
-                globals.hash.node_mut(find.cite_loc).extra = HashExtra::Cite(ctx.cite_xptr);
+                globals.hash.node_mut(cite_loc).extra = HashExtra::Cite(ctx.cite_xptr);
 
                 let start = ctx.cite_xptr * globals.other.num_fields();
                 let end = start + globals.other.num_fields();
@@ -771,16 +771,14 @@ fn bst_reverse_command(
     eat_bst_white!(ctx, globals, "reverse");
     bst_ident!(ctx, globals, "reverse", b'}', b'#', b'#');
 
-    let mut fn_loc = 0;
-    if bad_argument_token(
+    let Some(fn_loc) = bad_argument_token(
         ctx,
-        Some(&mut fn_loc),
         globals.buffers,
         globals.pool,
         globals.hash,
-    )? {
+    )? else {
         return Ok(());
-    }
+    };
 
     eat_bst_white!(ctx, globals, "reverse");
     bst_brace!('}', ctx, globals, "reverse");
@@ -873,35 +871,34 @@ fn bst_strings_command(
 
 fn bad_argument_token(
     ctx: &mut Bibtex<'_, '_>,
-    fn_out: Option<&mut HashPointer>,
     buffers: &mut GlobalBuffer,
     pool: &StringPool,
     hash: &HashData,
-) -> Result<bool, BibtexError> {
+) -> Result<Option<HashPointer>, BibtexError> {
     let range = buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2);
     let bst_fn = &mut buffers.buffer_mut(BufTy::Base)[range];
     bst_fn.make_ascii_lowercase();
 
     let res = hash.lookup_str(pool, bst_fn, StrIlk::BstFn);
 
-    if let Some(fn_out) = fn_out {
-        *fn_out = res.loc;
-    }
-
-    if !res.exists {
-        print_a_token(ctx, buffers);
-        ctx.write_logs(" is an unknown function");
-        bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
-        Ok(true)
-    } else if let HashExtra::BstFn(BstFn::Builtin(_) | BstFn::Wizard(_)) = hash.node(res.loc).extra
-    {
-        Ok(false)
-    } else {
-        print_a_token(ctx, buffers);
-        ctx.write_logs(" has bad function type");
-        print_fn_class(ctx, hash, res.loc);
-        bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
-        Ok(true)
+    match res {
+        Some(loc) => {
+            if let HashExtra::BstFn(BstFn::Builtin(_) | BstFn::Wizard(_)) = hash.node(loc).extra {
+                Ok(Some(loc))
+            } else {
+                print_a_token(ctx, buffers);
+                ctx.write_logs(" has bad function type");
+                print_fn_class(ctx, hash, loc);
+                bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
+                Ok(None)
+            }
+        }
+        None => {
+            print_a_token(ctx, buffers);
+            ctx.write_logs(" is an unknown function");
+            bst_err_print_and_look_for_blank_line(ctx, buffers, pool)?;
+            Ok(None)
+        }
     }
 }
 
@@ -929,14 +926,17 @@ pub(crate) fn get_bst_command_and_process(
     let res = globals
         .hash
         .lookup_str(globals.pool, bst_cmd, StrIlk::BstCommand);
-    if !res.exists {
-        print_a_token(ctx, globals.buffers);
-        ctx.write_logs(" is an illegal style-file command");
-        bst_err_print_and_look_for_blank_line(ctx, globals.buffers, globals.pool)?;
-        return Ok(());
-    }
+    let loc = match res {
+        Some(loc) => loc,
+        None => {
+            print_a_token(ctx, globals.buffers);
+            ctx.write_logs(" is an illegal style-file command");
+            bst_err_print_and_look_for_blank_line(ctx, globals.buffers, globals.pool)?;
+            return Ok(());
+        }
+    };
 
-    let HashExtra::BstCommand(cmd) = globals.hash.node(res.loc).extra else {
+    let HashExtra::BstCommand(cmd) = globals.hash.node(loc).extra else {
         panic!("BstCommand lookup didn't have BstCommand extra");
     };
 

@@ -263,14 +263,16 @@ fn handle_char(
             let str = &globals.buffers.buffer(BufTy::Base)[range];
             let res = globals.hash.lookup_str(globals.pool, str, StrIlk::BstFn);
 
-            if !res.exists {
-                return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool);
-            } else if res.loc == wiz_loc {
-                return print_recursion_illegal(ctx, globals.buffers, globals.pool);
+            match res {
+                None => return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool),
+                Some(loc) if loc == wiz_loc => {
+                    return print_recursion_illegal(ctx, globals.buffers, globals.pool);
+                }
+                Some(loc) => {
+                    single_function.push(QUOTE_NEXT_FN);
+                    single_function.push(loc);
+                }
             }
-
-            single_function.push(QUOTE_NEXT_FN);
-            single_function.push(res.loc);
         }
         b'{' => {
             globals
@@ -312,13 +314,16 @@ fn handle_char(
 
             let str = &globals.buffers.buffer(BufTy::Base)[range];
             let res = globals.hash.lookup_str(globals.pool, str, StrIlk::BstFn);
-            if !res.exists {
-                return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool);
-            } else if res.loc == wiz_loc {
-                return print_recursion_illegal(ctx, globals.buffers, globals.pool);
-            }
 
-            single_function.push(res.loc);
+            match res {
+                None => return skip_token_unknown_function_print(ctx, globals.buffers, globals.pool),
+                Some(loc) if loc == wiz_loc => {
+                    return print_recursion_illegal(ctx, globals.buffers, globals.pool);
+                }
+                Some(loc) => {
+                    single_function.push(loc);
+                }
+            }
         }
     }
     Ok(())
@@ -635,23 +640,25 @@ fn scan_a_field_token_and_eat_white(
                 let str = &globals.buffers.buffer(BufTy::Base)[range];
 
                 let res = globals.hash.lookup_str(globals.pool, str, StrIlk::Macro);
-                let mut store_token = true;
-                if command == Some(BibCommand::String) && res.loc == cur_macro_loc {
-                    store_token = false;
+
+                let mut store_token = res;
+                // Second case should only be true if res is Some anyways
+                if command == Some(BibCommand::String) && res.is_some_and(|loc| loc == cur_macro_loc) {
+                    store_token = None;
                     macro_warn_print(ctx, globals.buffers);
                     ctx.write_logs("used in its own definition\n");
                     bib_warn_print(ctx, globals.pool, globals.bibs)?;
                 }
 
-                if !res.exists {
-                    store_token = false;
+                if res.is_none() {
+                    store_token = None;
                     macro_warn_print(ctx, globals.buffers);
                     ctx.write_logs("undefined\n");
                     bib_warn_print(ctx, globals.pool, globals.bibs)?;
                 }
 
-                if store_token {
-                    let HashExtra::Macro(strnum) = globals.hash.node(res.loc).extra else {
+                if let Some(loc) = store_token {
+                    let HashExtra::Macro(strnum) = globals.hash.node(loc).extra else {
                         panic!("Macro lookup didn't have Macro extra");
                     };
                     let mut str = globals.pool.get_str(strnum);
@@ -1024,15 +1031,13 @@ pub(crate) fn von_token_found(
                     let str = &buffers.buffer(BufTy::Sv)[name_bf_yptr..*name_bf_ptr];
                     let res = hash.lookup_str(pool, str, StrIlk::ControlSeq);
                     let ilk = res
-                        .exists
-                        .then(|| {
-                            if let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra {
+                        .and_then(|loc| {
+                            if let HashExtra::ControlSeq(seq) = hash.node(loc).extra {
                                 Some(seq)
                             } else {
                                 None
                             }
-                        })
-                        .flatten();
+                        });
                     if let Some(seq) = ilk {
                         return match seq {
                             ControlSeq::UpperOE
