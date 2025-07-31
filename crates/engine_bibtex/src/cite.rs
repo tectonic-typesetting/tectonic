@@ -155,9 +155,9 @@ pub(crate) fn add_database_cite(
     }
     other.check_field_overflow(other.num_fields() * (new_cite + 1));
 
-    cites.set_cite(new_cite, hash.text(cite_loc));
-    *hash.node_mut(cite_loc).extra_mut() = HashExtra::Cite(new_cite);
-    *hash.node_mut(lc_cite_loc).extra_mut() = HashExtra::LcCite(cite_loc);
+    cites.set_cite(new_cite, hash.get(cite_loc).text());
+    *hash.get_mut(cite_loc).extra_mut() = HashExtra::Cite(new_cite);
+    *hash.get_mut(lc_cite_loc).extra_mut() = HashExtra::LcCite(cite_loc);
     new_cite + 1
 }
 

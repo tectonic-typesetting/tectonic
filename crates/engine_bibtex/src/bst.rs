@@ -266,7 +266,7 @@ fn bst_function_command(
         return Ok(());
     }
 
-    if globals.hash.text(res.loc) == ctx.s_default {
+    if globals.hash.get(res.loc).text() == ctx.s_default {
         ctx.default = res.loc;
     }
 
@@ -406,7 +406,7 @@ fn bst_macro_command(
         return Ok(());
     }
     // This is always unused if the macro is successfully defined, but appears to be a fallback for invalid macros.
-    *globals.hash.node_mut(res.loc).extra_mut() = HashExtra::Macro(globals.hash.text(res.loc));
+    *globals.hash.get_mut(res.loc).extra_mut() = HashExtra::Macro(globals.hash.get(res.loc).text());
 
     eat_bst_white!(ctx, globals, "macro");
     bst_brace!('}', ctx, globals, "macro");
@@ -440,7 +440,7 @@ fn bst_macro_command(
         .hash
         .lookup_str_insert(globals.pool, text, HashExtra::Text);
 
-    *globals.hash.node_mut(res.loc).extra_mut() = HashExtra::Macro(globals.hash.text(res2.loc));
+    *globals.hash.get_mut(res.loc).extra_mut() = HashExtra::Macro(globals.hash.get(res2.loc).text());
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.offset(BufTy::Base, 2) + 1);
@@ -559,15 +559,15 @@ fn bst_read_command(
             );
 
             if let Some(lc_loc) = find.lc_cite {
-                let &HashExtra::LcCite(cite_loc) = globals.hash.node(lc_loc).extra() else {
+                let &HashExtra::LcCite(cite_loc) = globals.hash.get(lc_loc).extra() else {
                     panic!("LcCite lookup didn't have LcCite extra");
                 };
                 globals
                     .other
-                    .set_field(field_ptr, globals.hash.text(cite_loc));
+                    .set_field(field_ptr, globals.hash.get(cite_loc).text());
 
                 let field_start = cite_ptr * globals.other.num_fields();
-                let &HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra() else {
+                let &HashExtra::Cite(cite) = globals.hash.get(cite_loc).extra() else {
                     panic!("LcCite location didn't have Cite extra");
                 };
                 let mut parent =
@@ -594,7 +594,7 @@ fn bst_read_command(
             );
 
             if let Some(lc_loc) = find.lc_cite {
-                let &HashExtra::LcCite(cite_loc) = globals.hash.node(lc_loc).extra() else {
+                let &HashExtra::LcCite(cite_loc) = globals.hash.get(lc_loc).extra() else {
                     panic!("LcCite lookup didn't have LcCite extra");
                 };
                 if find.cite != Some(cite_loc) {
@@ -602,7 +602,7 @@ fn bst_read_command(
                     return Err(BibtexError::Fatal);
                 }
 
-                let &HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra() else {
+                let &HashExtra::Cite(cite) = globals.hash.get(cite_loc).extra() else {
                     panic!("Cite lookup didn't have Cite extra");
                 };
                 let cite_parent_ptr = cite;
@@ -692,7 +692,7 @@ fn bst_read_command(
                     }
                 };
 
-                let &HashExtra::LcCite(cite_loc) = globals.hash.node(lc_loc).extra() else {
+                let &HashExtra::LcCite(cite_loc) = globals.hash.get(lc_loc).extra() else {
                     panic!("LcCite lookup didn't have LcCite extra");
                 };
                 if find.cite.is_none_or(|loc| loc != cite_loc) {
@@ -700,7 +700,7 @@ fn bst_read_command(
                     return Err(BibtexError::Fatal);
                 }
 
-                *globals.hash.node_mut(cite_loc).extra_mut() = HashExtra::Cite(ctx.cite_xptr);
+                *globals.hash.get_mut(cite_loc).extra_mut() = HashExtra::Cite(ctx.cite_xptr);
 
                 let start = ctx.cite_xptr * globals.other.num_fields();
                 let end = start + globals.other.num_fields();
@@ -877,7 +877,7 @@ fn bad_argument_token(
 
     match res {
         Some(loc) => {
-            if let HashExtra::BstFn(BstFn::Builtin(_) | BstFn::Wizard(_)) = hash.node(loc).extra() {
+            if let HashExtra::BstFn(BstFn::Builtin(_) | BstFn::Wizard(_)) = hash.get(loc).extra() {
                 Ok(Some(loc))
             } else {
                 print_a_token(ctx, buffers);
@@ -930,7 +930,7 @@ pub(crate) fn get_bst_command_and_process(
         }
     };
 
-    let HashExtra::BstCommand(cmd) = globals.hash.node(loc).extra() else {
+    let HashExtra::BstCommand(cmd) = globals.hash.get(loc).extra() else {
         panic!("BstCommand lookup didn't have BstCommand extra");
     };
 

@@ -525,7 +525,7 @@ pub(crate) fn braces_unbalanced_complaint(
 }
 
 pub(crate) fn print_fn_class(ctx: &mut Bibtex<'_, '_>, hash: &HashData, fn_loc: HashPointer) {
-    match hash.node(fn_loc).extra() {
+    match hash.get(fn_loc).extra() {
         HashExtra::BstFn(BstFn::Builtin(_)) => ctx.write_logs("built-in"),
         HashExtra::BstFn(BstFn::Wizard(_)) => ctx.write_logs("wizard-defined"),
         HashExtra::Integer(_) => ctx.write_logs("integer-literal"),
@@ -565,7 +565,7 @@ pub(crate) fn already_seen_function_print(
     hash: &HashData,
     seen_fn_loc: HashPointer,
 ) -> Result<(), BibtexError> {
-    print_a_pool_str(ctx, hash.text(seen_fn_loc), pool)?;
+    print_a_pool_str(ctx, hash.get(seen_fn_loc).text(), pool)?;
     ctx.write_logs(" is already a type \"");
     print_fn_class(ctx, hash, seen_fn_loc);
     ctx.write_logs("\" function name\n");

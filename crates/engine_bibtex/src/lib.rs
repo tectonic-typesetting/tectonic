@@ -441,7 +441,7 @@ pub(crate) fn pre_def_certain_strings(
     }: &mut GlobalItems<'_>,
 ) {
     let res = hash.lookup_str_insert(pool, b".aux", HashExtra::FileExt);
-    ctx.s_aux_extension = hash.text(res.loc);
+    ctx.s_aux_extension = hash.get(res.loc).text();
 
     hash.lookup_str_insert(
         pool,
@@ -566,9 +566,9 @@ pub(crate) fn pre_def_certain_strings(
     build_in(b"write$", BstBuiltin::Write);
 
     let res = hash.lookup_str_insert(pool, b"", HashExtra::Text);
-    ctx.s_null = hash.text(res.loc);
+    ctx.s_null = hash.get(res.loc).text();
     let res = hash.lookup_str_insert(pool, b"default.type", HashExtra::Text);
-    ctx.s_default = hash.text(res.loc);
+    ctx.s_default = hash.get(res.loc).text();
     ctx.b_default = skip_loc;
 
     hash.lookup_str_insert(pool, b"i", HashExtra::ControlSeq(ControlSeq::LowerI));
@@ -736,7 +736,7 @@ pub(crate) fn get_the_top_level_aux_file_name(
         hash.lookup_str_insert(pool, &path[..path.len() - 1], HashExtra::AuxFile);
 
     aux.push_file(File {
-        name: hash.text(lookup.loc),
+        name: hash.get(lookup.loc).text(),
         file: aux_file,
         line: 0,
     });

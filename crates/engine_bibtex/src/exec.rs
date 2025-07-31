@@ -145,7 +145,7 @@ pub(crate) fn print_lit(
             ctx.write_logs("\n");
         }
         ExecVal::Function(f) => {
-            print_a_pool_str(ctx, hash.text(f), pool)?;
+            print_a_pool_str(ctx, hash.get(f).text(), pool)?;
             ctx.write_logs("\n");
         }
         ExecVal::Missing(s) => {
@@ -175,7 +175,7 @@ pub(crate) fn print_stk_lit(
         }
         ExecVal::Function(f) => {
             ctx.write_logs("`");
-            print_a_pool_str(ctx, hash.text(f), pool)?;
+            print_a_pool_str(ctx, hash.get(f).text(), pool)?;
             ctx.write_logs("` is a function literal");
         }
         ExecVal::Missing(s) => {
@@ -998,7 +998,7 @@ fn interp_gets(
         }
     };
 
-    match hash.node(f1).extra() {
+    match hash.get(f1).extra() {
         HashExtra::BstFn(BstFn::IntEntry(_) | BstFn::StrEntry(_)) if !ctx.mess_with_entries => {
             bst_cant_mess_with_entries_print(ctx, pool, cites)?;
         }
@@ -1025,7 +1025,7 @@ fn interp_gets(
         }
         HashExtra::BstFn(BstFn::IntGlbl(_)) => {
             if let ExecVal::Integer(i2) = pop2 {
-                *hash.node_mut(f1).extra_mut() = HashExtra::BstFn(BstFn::IntGlbl(i2));
+                *hash.get_mut(f1).extra_mut() = HashExtra::BstFn(BstFn::IntGlbl(i2));
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
@@ -1183,7 +1183,7 @@ fn interp_change_case(
                                 hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
 
                             if let Some(loc) = res {
-                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra() else {
+                                let HashExtra::ControlSeq(seq) = hash.get(loc).extra() else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 match conv_ty {
@@ -1842,7 +1842,7 @@ fn interp_purify(
                             let res =
                                 hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
                             if let Some(loc) = res {
-                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra() else {
+                                let HashExtra::ControlSeq(seq) = hash.get(loc).extra() else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 scratch[write_idx] = scratch[old_idx];
@@ -2163,7 +2163,7 @@ fn interp_ty(
     let s = if ty.is_null() || ty == HashData::undefined() {
         ctx.s_null
     } else {
-        hash.text(ty)
+        hash.get(ty).text()
     };
     ctx.push_stack(ExecVal::String(s));
     Ok(())
@@ -2228,7 +2228,7 @@ fn interp_width(
                         } else {
                             let res = hash.lookup_str(pool, &str[old_idx..idx], StrIlk::ControlSeq);
                             if let Some(loc) = res {
-                                let HashExtra::ControlSeq(seq) = hash.node(loc).extra() else {
+                                let HashExtra::ControlSeq(seq) = hash.get(loc).extra() else {
                                     panic!("ControlSeq lookup didn't have ControlSeq extra");
                                 };
                                 match seq {
@@ -2301,9 +2301,9 @@ pub(crate) fn execute_fn(
     globals: &mut GlobalItems<'_>,
     ex_fn_loc: HashPointer,
 ) -> Result<(), BibtexError> {
-    match globals.hash.node(ex_fn_loc).extra() {
+    match globals.hash.get(ex_fn_loc).extra() {
         HashExtra::Text => {
-            ctx.push_stack(ExecVal::String(globals.hash.text(ex_fn_loc)));
+            ctx.push_stack(ExecVal::String(globals.hash.get(ex_fn_loc).text()));
             Ok(())
         }
         HashExtra::Integer(i) => {
@@ -2516,7 +2516,7 @@ pub(crate) fn execute_fn(
 
                 let field = globals.other.field(field_ptr);
                 if field.is_invalid() {
-                    ctx.push_stack(ExecVal::Missing(globals.hash.text(ex_fn_loc)));
+                    ctx.push_stack(ExecVal::Missing(globals.hash.get(ex_fn_loc).text()));
                 } else {
                     ctx.push_stack(ExecVal::String(field));
                 }

@@ -353,7 +353,7 @@ pub(crate) fn scan_fn_def(
 
     single_function.push(WizOp::EndOfDef);
 
-    *globals.hash.node_mut(fn_hash_loc).extra_mut() =
+    *globals.hash.get_mut(fn_hash_loc).extra_mut() =
         HashExtra::BstFn(BstFn::Wizard(globals.other.wiz_func_len()));
 
     globals.other.extend_wiz_data(single_function);
@@ -650,7 +650,7 @@ fn scan_a_field_token_and_eat_white(
                 }
 
                 if let Some(loc) = store_token {
-                    let &HashExtra::Macro(strnum) = globals.hash.node(loc).extra() else {
+                    let &HashExtra::Macro(strnum) = globals.hash.get(loc).extra() else {
                         panic!("Macro lookup didn't have Macro extra");
                     };
                     let mut str = globals.pool.get_str(strnum);
@@ -803,14 +803,14 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
             match command {
                 // TODO: Should this be `unreachable!`? This way will cover errors, but also shouldn't misbehave
                 BibCommand::Comment => (),
-                BibCommand::Preamble => globals.bibs.add_preamble(globals.hash.text(res.loc)),
+                BibCommand::Preamble => globals.bibs.add_preamble(globals.hash.get(res.loc).text()),
                 BibCommand::String => {
-                    *globals.hash.node_mut(cur_macro_loc).extra_mut() =
-                        HashExtra::Macro(globals.hash.text(res.loc))
+                    *globals.hash.get_mut(cur_macro_loc).extra_mut() =
+                        HashExtra::Macro(globals.hash.get(res.loc).text())
                 }
             }
         } else {
-            let &HashExtra::BstFn(BstFn::Field(field)) = globals.hash.node(field_name_loc).extra()
+            let &HashExtra::BstFn(BstFn::Field(field)) = globals.hash.get(field_name_loc).extra()
             else {
                 panic!("field_name_loc wasn't a BstFn::Field");
             };
@@ -831,13 +831,13 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     globals.pool,
                 )?;
                 ctx.write_logs("'s extra \"");
-                print_a_pool_str(ctx, globals.hash.text(field_name_loc), globals.pool)?;
+                print_a_pool_str(ctx, globals.hash.get(field_name_loc).text(), globals.pool)?;
                 ctx.write_logs("\" field\n");
                 bib_warn_print(ctx, globals.pool, globals.bibs)?;
             } else {
                 globals
                     .other
-                    .set_field(field_ptr, globals.hash.text(res.loc));
+                    .set_field(field_ptr, globals.hash.get(res.loc).text());
                 if field == globals.other.crossref_num() && !ctx.all_entries {
                     let end = globals.buffers.offset(BufTy::Ex, 1);
                     // Move Ex to Out, at the same position
@@ -858,11 +858,11 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     if let Some(cite_out) = cite_out {
                         *cite_out = lc_res.loc;
                     }
-                    let &HashExtra::LcCite(cite_loc) = globals.hash.node(lc_res.loc).extra() else {
+                    let &HashExtra::LcCite(cite_loc) = globals.hash.get(lc_res.loc).extra() else {
                         panic!("LcCite lookup didn't have LcCite extra");
                     };
                     if lc_res.exists {
-                        let &HashExtra::Cite(cite) = globals.hash.node(cite_loc).extra() else {
+                        let &HashExtra::Cite(cite) = globals.hash.get(cite_loc).extra() else {
                             panic!("LcCite location didn't have Cite extra");
                         };
 
@@ -892,7 +892,7 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                             lc_res.loc,
                         );
 
-                        let &HashExtra::Cite(cite) = globals.hash.node(c_res.loc).extra() else {
+                        let &HashExtra::Cite(cite) = globals.hash.get(c_res.loc).extra() else {
                             panic!("Cite lookup didn't have Cite extra");
                         };
                         globals.cites.set_ptr(new_ptr);
@@ -1022,7 +1022,7 @@ pub(crate) fn von_token_found(
                     let res = hash.lookup_str(pool, str, StrIlk::ControlSeq);
                     let ilk = res
                         .and_then(|loc| {
-                            if let &HashExtra::ControlSeq(seq) = hash.node(loc).extra() {
+                            if let &HashExtra::ControlSeq(seq) = hash.get(loc).extra() {
                                 Some(seq)
                             } else {
                                 None

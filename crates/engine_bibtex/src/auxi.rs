@@ -109,24 +109,24 @@ fn aux_bib_data_command(
         let res = hash.lookup_str_insert(pool, file, HashExtra::BibFile);
         if res.exists {
             ctx.write_logs("This database file appears more than once: ");
-            print_bib_name(ctx, pool, hash.text(res.loc))?;
+            print_bib_name(ctx, pool, hash.get(res.loc).text())?;
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
 
-        let name = pool.get_str(hash.text(res.loc));
+        let name = pool.get_str(hash.get(res.loc).text());
         let fname = CString::new(name).unwrap();
         let bib_in = PeekableInput::open(ctx, &fname, FileFormat::Bib);
         match bib_in {
             Err(_) => {
                 ctx.write_logs("I couldn't open database file ");
-                print_bib_name(ctx, pool, hash.text(res.loc))?;
+                print_bib_name(ctx, pool, hash.get(res.loc).text())?;
                 aux_err_print(ctx, buffers, aux, pool)?;
                 return Ok(());
             }
             Ok(file) => {
                 bibs.push_file(File {
-                    name: hash.text(res.loc),
+                    name: hash.get(res.loc).text(),
                     file,
                     line: 0,
                 });
@@ -184,20 +184,20 @@ fn aux_bib_style_command(
         return Err(BibtexError::Fatal);
     }
 
-    let name = pool.get_str(hash.text(res.loc));
+    let name = pool.get_str(hash.get(res.loc).text());
     let fname = CString::new(name).unwrap();
     let bst_file = PeekableInput::open(ctx, &fname, FileFormat::Bst);
     match bst_file {
         Err(_) => {
             ctx.write_logs("I couldn't open style file ");
-            print_bst_name(ctx, pool, hash.text(res.loc))?;
+            print_bst_name(ctx, pool, hash.get(res.loc).text())?;
             ctx.bst = None;
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
         Ok(file) => {
             ctx.bst = Some(File {
-                name: hash.text(res.loc),
+                name: hash.get(res.loc).text(),
                 file,
                 line: 0,
             });
@@ -279,7 +279,7 @@ fn aux_citation_command(
 
         let lc_res = hash.lookup_str_insert(pool, lc_cite, HashExtra::LcCite(HashPointer::default()));
         if lc_res.exists {
-            let &HashExtra::LcCite(cite_loc) = hash.node(lc_res.loc).extra() else {
+            let &HashExtra::LcCite(cite_loc) = hash.get(lc_res.loc).extra() else {
                 panic!("LcCite lookup didn't have LcCite extra");
             };
 
@@ -287,7 +287,7 @@ fn aux_citation_command(
                 [buffers.offset(BufTy::Base, 1)..buffers.offset(BufTy::Base, 2)];
             let uc_res = hash.lookup_str(pool, cite, StrIlk::Cite);
             if uc_res.is_none() {
-                let &HashExtra::Cite(cite) = hash.node(cite_loc).extra() else {
+                let &HashExtra::Cite(cite) = hash.get(cite_loc).extra() else {
                     panic!("LcCite location didn't have a Cite extra");
                 };
 
@@ -312,9 +312,9 @@ fn aux_citation_command(
                 cites.grow();
             }
 
-            cites.set_cite(cites.ptr(), hash.text(uc_res.loc));
-            *hash.node_mut(uc_res.loc).extra_mut() = HashExtra::Cite(cites.ptr());
-            *hash.node_mut(lc_res.loc).extra_mut() = HashExtra::LcCite(uc_res.loc);
+            cites.set_cite(cites.ptr(), hash.get(uc_res.loc).text());
+            *hash.get_mut(uc_res.loc).extra_mut() = HashExtra::Cite(cites.ptr());
+            *hash.get_mut(lc_res.loc).extra_mut() = HashExtra::LcCite(uc_res.loc);
             cites.set_ptr(cites.ptr() + 1);
         }
     }
@@ -379,24 +379,24 @@ fn aux_input_command(
     let res = hash.lookup_str_insert(pool, file, HashExtra::AuxFile);
     if res.exists {
         ctx.write_logs("Already encountered file ");
-        print_aux_name(ctx, pool, hash.text(res.loc))?;
+        print_aux_name(ctx, pool, hash.get(res.loc).text())?;
         aux_err_print(ctx, buffers, aux, pool)?;
         return Ok(());
     }
 
-    let name = pool.get_str(hash.text(res.loc));
+    let name = pool.get_str(hash.get(res.loc).text());
     let fname = CString::new(name).unwrap();
     let file = PeekableInput::open(ctx, &fname, FileFormat::Tex);
     match file {
         Err(_) => {
             ctx.write_logs("I couldn't open auxiliary file ");
-            print_aux_name(ctx, pool, hash.text(res.loc))?;
+            print_aux_name(ctx, pool, hash.get(res.loc).text())?;
             aux_err_print(ctx, buffers, aux, pool)?;
             return Ok(());
         }
         Ok(file) => {
             aux.push_file(File {
-                name: hash.text(res.loc),
+                name: hash.get(res.loc).text(),
                 file,
                 line: 0,
             });
@@ -426,7 +426,7 @@ pub(crate) fn get_aux_command_and_process(
         .lookup_str(globals.pool, line, StrIlk::AuxCommand);
 
     if let Some(loc) = res {
-        let &HashExtra::AuxCommand(cmd) = globals.hash.node(loc).extra() else {
+        let &HashExtra::AuxCommand(cmd) = globals.hash.get(loc).extra() else {
             panic!("AuxCommand lookup didn't have AuxCommand extra");
         };
 

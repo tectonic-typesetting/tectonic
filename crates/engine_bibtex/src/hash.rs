@@ -201,16 +201,12 @@ impl HashData {
         HashPointer::from(KeyData::from_ffi(0x0000_0001_FFFF_FFFE))
     }
 
-    pub fn node(&self, pos: HashPointer) -> &Node {
+    pub fn get(&self, pos: HashPointer) -> &Node {
         &self.data[pos]
     }
 
-    pub fn node_mut(&mut self, pos: HashPointer) -> &mut Node {
+    pub fn get_mut(&mut self, pos: HashPointer) -> &mut Node {
         &mut self.data[pos]
-    }
-
-    pub fn text(&self, pos: HashPointer) -> StrNumber {
-        self.data[pos].text
     }
 
     pub fn lookup_str(&self, pool: &StringPool, str: &[u8], ilk: StrIlk) -> Option<HashPointer> {
@@ -281,7 +277,7 @@ mod tests {
             .lookup_str_insert(&mut pool, b"a cool string", HashExtra::Text);
         assert!(!res.exists);
         assert_eq!(
-            pool.try_get_str(hash.text(res.loc)),
+            pool.try_get_str(hash.get(res.loc).text()),
             Some(b"a cool string" as &[_])
         );
 
@@ -289,14 +285,14 @@ mod tests {
             .lookup_str_insert(&mut pool, b"a cool string", HashExtra::Text);
         assert!(res2.exists);
         assert_eq!(
-            pool.try_get_str(hash.text(res2.loc)),
+            pool.try_get_str(hash.get(res2.loc).text()),
             Some(b"a cool string" as &[_])
         );
 
         let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text)
             .unwrap();
         assert_eq!(
-            pool.try_get_str(hash.text(res3)),
+            pool.try_get_str(hash.get(res3).text()),
             Some(b"a cool string" as &[_])
         );
 
