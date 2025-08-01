@@ -324,6 +324,8 @@ pub(crate) fn figure_out_the_formatted_name(
     let str = pool.get_str(s1);
     let mut idx = 0;
 
+    buffers.set_init(BufTy::Ex, 0);
+    add_buf_pool(pool, buffers, s1);
     buffers.set_offset(BufTy::Ex, 1, 0);
 
     while idx < str.len() {
@@ -651,23 +653,17 @@ pub(crate) fn add_out_pool(
     str: StrNumber,
 ) {
     let str = pool.get_str(str);
+    let out = buffers.out();
 
-    while buffers.init(BufTy::Out) + str.len() > buffers.len() {
-        buffers.grow_all();
-    }
-
-    let out_offset = buffers.init(BufTy::Out);
-    buffers.copy_from(BufTy::Out, out_offset, str);
-    buffers.set_init(BufTy::Out, out_offset + str.len());
+    out.extend(str);
 
     let mut unbreakable_tail = false;
-    while buffers.init(BufTy::Out) > MAX_PRINT_LINE && !unbreakable_tail {
-        let end_ptr = buffers.init(BufTy::Out);
+    while out.len() > MAX_PRINT_LINE && !unbreakable_tail {
+        let end_ptr = out.len();
         let mut out_offset = MAX_PRINT_LINE;
         let mut break_pt_found = false;
 
-        while LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace
-            && out_offset >= MIN_PRINT_LINE
+        while LexClass::of(out[out_offset]) != LexClass::Whitespace && out_offset >= MIN_PRINT_LINE
         {
             out_offset -= 1;
         }
@@ -675,7 +671,7 @@ pub(crate) fn add_out_pool(
         if out_offset == MIN_PRINT_LINE - 1 {
             out_offset = MAX_PRINT_LINE + 1;
             while out_offset < end_ptr {
-                if LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace {
+                if LexClass::of(out[out_offset]) != LexClass::Whitespace {
                     out_offset += 1;
                 } else {
                     break;
@@ -687,8 +683,7 @@ pub(crate) fn add_out_pool(
             } else {
                 break_pt_found = true;
                 while out_offset + 1 < end_ptr {
-                    if LexClass::of(buffers.at(BufTy::Out, out_offset + 1)) == LexClass::Whitespace
-                    {
+                    if LexClass::of(out[out_offset + 1]) == LexClass::Whitespace {
                         out_offset += 1;
                     } else {
                         break;
@@ -699,15 +694,15 @@ pub(crate) fn add_out_pool(
             break_pt_found = true;
         }
 
+        // Write `out` up to break, then prepend two spaces to the rest and shift it left
         if break_pt_found {
-            buffers.set_init(BufTy::Out, out_offset);
-            let break_ptr = buffers.init(BufTy::Out) + 1;
-            output_bbl_line(ctx, buffers);
-            buffers.set_at(BufTy::Out, 0, b' ');
-            buffers.set_at(BufTy::Out, 1, b' ');
+            let break_ptr = out_offset + 1;
+            output_bbl_line(ctx, &out[..out_offset]);
+            out[0] = b' ';
+            out[1] = b' ';
             let len = end_ptr - break_ptr;
-            buffers.copy_within(BufTy::Out, BufTy::Out, break_ptr, 2, len);
-            buffers.set_init(BufTy::Out, len + 2);
+            out.copy_within(break_ptr..end_ptr, 2);
+            out.truncate(len + 2);
         }
     }
 }
@@ -1421,19 +1416,18 @@ fn interp_format_name(
 
     let mut brace_level = 0;
     let mut xptr = 0;
-    buffers.set_init(BufTy::Ex, 0);
-    add_buf_pool(pool, buffers, s3);
-    buffers.set_offset(BufTy::Ex, 1, 0);
+    let str = pool.get_str(s3);
+    let mut str_idx = 0;
 
     let mut num_names = 0;
-    while num_names < i2 && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
+    while num_names < i2 && str_idx < str.len() {
         num_names += 1;
-        xptr = buffers.offset(BufTy::Ex, 1);
-        name_scan_for_and(ctx, pool, buffers, cites, s3, &mut brace_level)?;
+        xptr = str_idx;
+        name_scan_for_and(ctx, pool, cites, str, &mut str_idx, s3, &mut brace_level)?;
     }
 
-    if buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
-        buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 4);
+    if str_idx < str.len() {
+        str_idx -= 4;
     }
 
     if num_names < i2 {
@@ -1447,18 +1441,18 @@ fn interp_format_name(
         bst_ex_warn_print(ctx, pool, cites)?;
     }
 
-    while buffers.offset(BufTy::Ex, 1) > xptr {
-        match LexClass::of(buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1)) {
+    while str_idx > xptr {
+        match LexClass::of(str[str_idx - 1]) {
             LexClass::Whitespace | LexClass::Sep => {
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
+                str_idx -= 1;
             }
             _ => {
-                if buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) - 1) == b',' {
+                if str[str_idx - 1] == b',' {
                     ctx.write_logs(&format!("Name {i2} in \""));
                     print_a_pool_str(ctx, s3, pool)?;
                     ctx.write_logs("\" has a comma at the end");
                     bst_ex_warn_print(ctx, pool, cites)?;
-                    buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) - 1);
+                    str_idx -= 1;
                 } else {
                     break;
                 }
@@ -1477,8 +1471,8 @@ fn interp_format_name(
     let mut name_ptr = 0;
     let mut token_starting = true;
 
-    while xptr < buffers.offset(BufTy::Ex, 1) {
-        match buffers.at(BufTy::Ex, xptr) {
+    while xptr < str_idx {
+        match str[xptr] {
             b',' => {
                 match commas {
                     Commas::None => {
@@ -1505,16 +1499,16 @@ fn interp_format_name(
                     buffers.set_name_tok(num_tokens, name_ptr);
                     num_tokens += 1;
                 }
-                buffers.set_at(BufTy::Sv, name_ptr, buffers.at(BufTy::Ex, xptr));
+                buffers.set_at(BufTy::Sv, name_ptr, str[xptr]);
                 name_ptr += 1;
                 xptr += 1;
-                while brace_level > 0 && xptr < buffers.offset(BufTy::Ex, 1) {
-                    match buffers.at(BufTy::Ex, xptr) {
+                while brace_level > 0 && xptr < str_idx {
+                    match str[xptr] {
                         b'{' => brace_level += 1,
                         b'}' => brace_level -= 1,
                         _ => (),
                     }
-                    buffers.set_at(BufTy::Sv, name_ptr, buffers.at(BufTy::Ex, xptr));
+                    buffers.set_at(BufTy::Sv, name_ptr, str[xptr]);
                     name_ptr += 1;
                     xptr += 1;
                 }
@@ -1533,7 +1527,7 @@ fn interp_format_name(
                 xptr += 1;
                 token_starting = false;
             }
-            _ => match LexClass::of(buffers.at(BufTy::Ex, xptr)) {
+            _ => match LexClass::of(str[xptr]) {
                 LexClass::Whitespace => {
                     if !token_starting {
                         buffers.set_at(BufTy::NameSep, num_tokens, b' ');
@@ -1543,7 +1537,7 @@ fn interp_format_name(
                 }
                 LexClass::Sep => {
                     if !token_starting {
-                        buffers.set_at(BufTy::NameSep, num_tokens, buffers.at(BufTy::Ex, xptr));
+                        buffers.set_at(BufTy::NameSep, num_tokens, str[xptr]);
                     }
                     xptr += 1;
                     token_starting = true;
@@ -1553,7 +1547,7 @@ fn interp_format_name(
                         buffers.set_name_tok(num_tokens, name_ptr);
                         num_tokens += 1;
                     }
-                    buffers.set_at(BufTy::Sv, name_ptr, buffers.at(BufTy::Ex, xptr));
+                    buffers.set_at(BufTy::Sv, name_ptr, str[xptr]);
                     name_ptr += 1;
                     xptr += 1;
                     token_starting = false;
@@ -1645,8 +1639,6 @@ fn interp_format_name(
         }
     }
 
-    buffers.set_init(BufTy::Ex, 0);
-    add_buf_pool(pool, buffers, s1);
     figure_out_the_formatted_name(
         ctx,
         buffers,
@@ -1751,20 +1743,18 @@ fn interp_missing(
 fn interp_num_names(
     ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &mut StringPool,
-    buffers: &mut GlobalBuffer,
     hash: &HashData,
     cites: &CiteInfo,
 ) -> Result<(), BibtexError> {
     let pop1 = ctx.pop_stack(pool, cites)?;
     match pop1 {
         ExecVal::String(s1) => {
-            buffers.set_init(BufTy::Ex, 0);
-            add_buf_pool(pool, buffers, s1);
-            buffers.set_offset(BufTy::Ex, 1, 0);
+            let str = pool.get_str(s1);
+            let mut idx = 0;
             let mut num_names = 0;
-            while buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
+            while idx < str.len() {
                 let mut brace_level = 0;
-                name_scan_for_and(ctx, pool, buffers, cites, s1, &mut brace_level)?;
+                name_scan_for_and(ctx, pool, cites, str, &mut idx, s1, &mut brace_level)?;
                 num_names += 1;
             }
             ctx.push_stack(ExecVal::Integer(num_names))
@@ -2388,16 +2378,14 @@ pub(crate) fn execute_fn(
             }
             BstBuiltin::Missing => interp_missing(ctx, globals.pool, globals.hash, globals.cites),
             BstBuiltin::Newline => {
-                output_bbl_line(ctx, globals.buffers);
+                let to_print = globals.buffers.out();
+                output_bbl_line(ctx, to_print);
+                to_print.clear();
                 Ok(())
             }
-            BstBuiltin::NumNames => interp_num_names(
-                ctx,
-                globals.pool,
-                globals.buffers,
-                globals.hash,
-                globals.cites,
-            ),
+            BstBuiltin::NumNames => {
+                interp_num_names(ctx, globals.pool, globals.hash, globals.cites)
+            }
             BstBuiltin::Pop => ctx.pop_stack(globals.pool, globals.cites).map(|_| ()),
             BstBuiltin::Preamble => interp_preamble(ctx, globals.pool, globals.bibs),
             BstBuiltin::Purify => interp_purify(ctx, globals.pool, globals.hash, globals.cites),

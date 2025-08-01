@@ -842,19 +842,11 @@ pub(crate) fn scan_and_store_the_field_value_and_eat_white(
                     .set_field(field_ptr, globals.hash.get(res.loc).text());
                 if field == globals.other.crossref_num() && !ctx.all_entries {
                     let end = globals.buffers.offset(BufTy::Ex, 1);
-                    // Move Ex to Out, at the same position
-                    globals.buffers.copy_within(
-                        BufTy::Ex,
-                        BufTy::Out,
-                        ex_buf_xptr,
-                        ex_buf_xptr,
-                        end - ex_buf_xptr,
-                    );
-                    globals.buffers.buffer_mut(BufTy::Out)[ex_buf_xptr..end].make_ascii_lowercase();
-                    let str = &globals.buffers.buffer(BufTy::Out)[ex_buf_xptr..end];
+                    let str =
+                        globals.buffers.buffer(BufTy::Ex)[ex_buf_xptr..end].to_ascii_lowercase();
                     let lc_res = globals.hash.lookup_str_insert::<hash::LcCite>(
                         globals.pool,
-                        str,
+                        &str,
                         HashPointer::default(),
                     );
                     if let Some(cite_out) = cite_out {
@@ -935,54 +927,51 @@ pub(crate) fn check_brace_level(
 pub(crate) fn name_scan_for_and(
     ctx: &mut ExecCtx<'_, '_, '_>,
     pool: &StringPool,
-    buffers: &mut GlobalBuffer,
     cites: &CiteInfo,
+    buf: &[u8],
+    idx: &mut usize,
     pop_lit_var: StrNumber,
     brace_level: &mut i32,
 ) -> Result<(), BibtexError> {
     let mut preceding_white = false;
     let mut and_found = false;
 
-    while !and_found && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
-        match buffers.at_offset(BufTy::Ex, 1) {
+    while !and_found && *idx < buf.len() {
+        match buf[*idx] {
             b'A' | b'a' => {
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                *idx += 1;
                 if preceding_white
-                    && buffers.offset(BufTy::Ex, 1) <= buffers.init(BufTy::Ex).saturating_sub(3)
-                    && buffers.at_offset(BufTy::Ex, 1).eq_ignore_ascii_case(&b'n')
-                    && buffers
-                        .at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 1)
-                        .eq_ignore_ascii_case(&b'd')
-                    && LexClass::of(buffers.at(BufTy::Ex, buffers.offset(BufTy::Ex, 1) + 2))
-                        == LexClass::Whitespace
+                    && *idx <= buf.len().saturating_sub(3)
+                    && buf[*idx].eq_ignore_ascii_case(&b'n')
+                    && buf[*idx + 1].eq_ignore_ascii_case(&b'd')
+                    && LexClass::of(buf[*idx + 2]) == LexClass::Whitespace
                 {
-                    buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 2);
+                    *idx += 2;
                     and_found = true;
                 }
                 preceding_white = false;
             }
             b'{' => {
                 *brace_level += 1;
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
-                while *brace_level > 0 && buffers.offset(BufTy::Ex, 1) < buffers.init(BufTy::Ex) {
-                    match buffers.at_offset(BufTy::Ex, 1) {
+                *idx += 1;
+                while *brace_level > 0 && *idx < buf.len() {
+                    match buf[*idx] {
                         b'{' => *brace_level += 1,
                         b'}' => *brace_level -= 1,
                         _ => (),
                     }
-                    buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                    *idx += 1;
                 }
                 preceding_white = false;
             }
             b'}' => {
                 decr_brace_level(ctx, pool, cites, pop_lit_var, brace_level)?;
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                *idx += 1;
                 preceding_white = false;
             }
             _ => {
-                preceding_white =
-                    LexClass::of(buffers.at_offset(BufTy::Ex, 1)) == LexClass::Whitespace;
-                buffers.set_offset(BufTy::Ex, 1, buffers.offset(BufTy::Ex, 1) + 1);
+                preceding_white = LexClass::of(buf[*idx]) == LexClass::Whitespace;
+                *idx += 1;
             }
         }
     }
