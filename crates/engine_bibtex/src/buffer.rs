@@ -144,16 +144,6 @@ impl GlobalBuffer {
         self.name_tok[pos] = val;
     }
 
-    // pub fn incr_offset(&mut self, ty: BufTy, offset: usize) {
-    //     match ty {
-    //         BufTy::Base => self.buffer.offset[offset - 1] += 1,
-    //         BufTy::Ex => self.ex_buf.offset[offset - 1] += 1,
-    //         BufTy::Sv | BufTy::Out | BufTy::NameSep => {
-    //             unreachable!("Buffer {:?} has no offsets", ty)
-    //         }
-    //     }
-    // }
-
     pub fn offset(&self, ty: BufTy, offset: usize) -> BufPointer {
         match ty {
             BufTy::Base => self.buffer.offset[offset - 1],

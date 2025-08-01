@@ -21,7 +21,7 @@ edition = "2021"
 
 [dependencies]
 libc = "^0.2"
-slotmap = "1.0"
+indexmap = "2.0"
 tectonic_io_base = { path = "../io_base", version = '0.0.0-dev.0' }
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }

@@ -1,4 +1,3 @@
-use std::ops::ControlFlow;
 use crate::{
     auxi::AuxCommand,
     bibs::BibCommand,
@@ -6,9 +5,14 @@ use crate::{
     exec::ControlSeq,
     pool,
     pool::{StrNumber, StringPool},
-    CiteNumber, LookupRes, StrIlk,
+    CiteNumber, LookupRes,
 };
-use slotmap::{KeyData, SlotMap};
+use indexmap::{set::MutableValues, Equivalent, IndexSet};
+use std::{
+    fmt,
+    hash::{BuildHasher, Hash, Hasher},
+    marker::PhantomData,
+};
 
 pub(crate) const HASH_SIZE: usize = if pool::MAX_STRINGS > 5000 {
     pool::MAX_STRINGS
@@ -118,147 +122,454 @@ pub(crate) enum BstFn {
     StrGlbl(usize),
 }
 
-#[derive(Clone, Default, Debug)]
-pub enum HashExtra {
-    #[default]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum StrIlk {
     Text,
-    Integer(i64),
-    AuxCommand(AuxCommand),
+    Integer,
+    AuxCommand,
     AuxFile,
-    BstCommand(BstCommand),
+    BstCommand,
     BstFile,
     BibFile,
     FileExt,
-    Cite(CiteNumber),
-    LcCite(HashPointer),
-    BstFn(BstFn),
-    BibCommand(BibCommand),
-    Macro(StrNumber),
-    ControlSeq(ControlSeq),
+    Cite,
+    LcCite,
+    BstFn,
+    BibCommand,
+    Macro,
+    ControlSeq,
 }
 
-impl HashExtra {
-    pub(crate) fn kind(&self) -> StrIlk {
-        match self {
-            HashExtra::Text => StrIlk::Text,
-            HashExtra::Integer(_) => StrIlk::Integer,
-            HashExtra::AuxCommand(_) => StrIlk::AuxCommand,
-            HashExtra::AuxFile => StrIlk::AuxFile,
-            HashExtra::BstCommand(_) => StrIlk::BstCommand,
-            HashExtra::BstFile => StrIlk::BstFile,
-            HashExtra::BibFile => StrIlk::BibFile,
-            HashExtra::FileExt => StrIlk::FileExt,
-            HashExtra::Cite(_) => StrIlk::Cite,
-            HashExtra::LcCite(_) => StrIlk::LcCite,
-            HashExtra::BstFn(_) => StrIlk::BstFn,
-            HashExtra::BibCommand(_) => StrIlk::BibCommand,
-            HashExtra::Macro(_) => StrIlk::Macro,
-            HashExtra::ControlSeq(_) => StrIlk::ControlSeq,
-        }
+pub trait Ilk {
+    type Extra;
+    fn ilk() -> StrIlk;
+    fn get(slot: &ExtraSlot) -> &Self::Extra;
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        let _ = (slot, extra);
     }
 }
 
-#[derive(Debug)]
-pub struct Node {
-    text: StrNumber,
-    extra: HashExtra,
+pub struct Text;
+impl Ilk for Text {
+    type Extra = ();
+
+    fn ilk() -> StrIlk {
+        StrIlk::Text
+    }
+
+    fn get(_: &ExtraSlot) -> &Self::Extra {
+        &()
+    }
 }
 
-impl Node {
+pub struct Integer;
+impl Ilk for Integer {
+    type Extra = i64;
+
+    fn ilk() -> StrIlk {
+        StrIlk::Integer
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.0
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.0 = extra;
+    }
+}
+
+impl Ilk for AuxCommand {
+    type Extra = Self;
+
+    fn ilk() -> StrIlk {
+        StrIlk::AuxCommand
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.1
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.1 = extra;
+    }
+}
+
+pub struct AuxFile;
+impl Ilk for AuxFile {
+    type Extra = ();
+
+    fn ilk() -> StrIlk {
+        StrIlk::AuxFile
+    }
+
+    fn get(_: &ExtraSlot) -> &Self::Extra {
+        &()
+    }
+}
+
+impl Ilk for BstCommand {
+    type Extra = Self;
+
+    fn ilk() -> StrIlk {
+        StrIlk::BstCommand
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.2
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.2 = extra;
+    }
+}
+
+pub struct BibFile;
+impl Ilk for BibFile {
+    type Extra = ();
+
+    fn ilk() -> StrIlk {
+        StrIlk::BibFile
+    }
+
+    fn get(_: &ExtraSlot) -> &Self::Extra {
+        &()
+    }
+}
+
+pub struct BstFile;
+impl Ilk for BstFile {
+    type Extra = ();
+
+    fn ilk() -> StrIlk {
+        StrIlk::BstFile
+    }
+
+    fn get(_: &ExtraSlot) -> &Self::Extra {
+        &()
+    }
+}
+
+pub struct FileExt;
+impl Ilk for FileExt {
+    type Extra = ();
+
+    fn ilk() -> StrIlk {
+        StrIlk::FileExt
+    }
+
+    fn get(_: &ExtraSlot) -> &Self::Extra {
+        &()
+    }
+}
+
+pub struct Cite;
+impl Ilk for Cite {
+    type Extra = CiteNumber;
+
+    fn ilk() -> StrIlk {
+        StrIlk::Cite
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.3
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.3 = extra;
+    }
+}
+
+pub struct LcCite;
+impl Ilk for LcCite {
+    type Extra = HashPointer<Cite>;
+
+    fn ilk() -> StrIlk {
+        StrIlk::LcCite
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.4
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.4 = extra;
+    }
+}
+
+impl Ilk for BstFn {
+    type Extra = Self;
+
+    fn ilk() -> StrIlk {
+        StrIlk::BstFn
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.5
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.5 = extra;
+    }
+}
+
+impl Ilk for BibCommand {
+    type Extra = BibCommand;
+
+    fn ilk() -> StrIlk {
+        StrIlk::BibCommand
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.6
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.6 = extra;
+    }
+}
+
+pub struct Macro;
+impl Ilk for Macro {
+    type Extra = StrNumber;
+
+    fn ilk() -> StrIlk {
+        StrIlk::Macro
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.7
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.7 = extra;
+    }
+}
+
+impl Ilk for ControlSeq {
+    type Extra = Self;
+
+    fn ilk() -> StrIlk {
+        StrIlk::ControlSeq
+    }
+
+    fn get(slot: &ExtraSlot) -> &Self::Extra {
+        &slot.data.8
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        slot.data.8 = extra;
+    }
+}
+
+pub struct ExtraSlot {
+    exists: u16,
+    data: (
+        i64,
+        AuxCommand,
+        BstCommand,
+        CiteNumber,
+        HashPointer<Cite>,
+        BstFn,
+        BibCommand,
+        StrNumber,
+        ControlSeq,
+    ),
+}
+
+impl ExtraSlot {
+    fn new() -> ExtraSlot {
+        ExtraSlot {
+            exists: 0,
+            // SAFETY: All values should be valid as zeroed
+            data: unsafe { core::mem::zeroed() },
+        }
+    }
+
+    fn contains(&self, ilk: StrIlk) -> bool {
+        let idx = ilk as u16;
+        (self.exists & (1 << idx)) != 0
+    }
+
+    fn set_present(&mut self, ilk: StrIlk) {
+        let idx = ilk as u16;
+        self.exists |= 1 << idx;
+    }
+}
+
+struct Node {
+    hash_val: u64,
+    text: StrNumber,
+    extra: ExtraSlot,
+}
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        self.hash_val == other.hash_val && self.text == other.text
+    }
+}
+
+impl Eq for Node {}
+
+impl Hash for Node {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.hash_val.hash(state)
+    }
+}
+
+struct FindNode<'a> {
+    hash_val: u64,
+    pool: &'a StringPool,
+    str: &'a [u8],
+}
+
+impl Hash for FindNode<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.hash_val.hash(state);
+    }
+}
+
+impl Equivalent<Node> for FindNode<'_> {
+    fn equivalent(&self, key: &Node) -> bool {
+        self.hash_val == key.hash_val && self.str == self.pool.get_str(key.text)
+    }
+}
+
+pub struct HashPointer<T>(usize, PhantomData<T>);
+
+impl<T> PartialEq for HashPointer<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.0 == other.0
+    }
+}
+
+impl<T> Eq for HashPointer<T> {}
+
+impl<T> Default for HashPointer<T> {
+    fn default() -> Self {
+        HashPointer(0, PhantomData)
+    }
+}
+
+impl<T> fmt::Debug for HashPointer<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_tuple("HashPointer").field(&self.0).finish()
+    }
+}
+
+impl<T> Clone for HashPointer<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+impl<T> Copy for HashPointer<T> {}
+
+impl<T: Ilk> HashPointer<T> {
+    pub fn is_null(self) -> bool {
+        self.0 == 0
+    }
+}
+
+pub struct HashVal<'a, T: Ilk> {
+    text: StrNumber,
+    extra: &'a T::Extra,
+}
+
+impl<T: Ilk> HashVal<'_, T> {
     pub fn text(&self) -> StrNumber {
         self.text
     }
 
-    pub fn extra(&self) -> &HashExtra {
-        &self.extra
+    pub fn extra(&self) -> &T::Extra {
+        self.extra
     }
-
-    pub fn extra_mut(&mut self) -> &mut HashExtra {
-        &mut self.extra
-    }
-
-    pub fn kind(&self) -> StrIlk {
-        self.extra.kind()
-    }
-}
-
-slotmap::new_key_type! {
-    pub struct HashPointer;
 }
 
 pub(crate) struct HashData {
-    data: SlotMap<HashPointer, Node>,
+    data: IndexSet<Node>,
 }
 
 impl HashData {
     pub fn new() -> HashData {
         HashData {
-            data: SlotMap::with_key(),
+            data: IndexSet::new(),
         }
     }
 
-    pub fn undefined() -> HashPointer {
-        HashPointer::from(KeyData::from_ffi(0x0000_0001_FFFF_FFFE))
+    pub fn undefined() -> HashPointer<BstFn> {
+        HashPointer(usize::MAX, PhantomData)
     }
 
-    pub fn get(&self, pos: HashPointer) -> &Node {
-        &self.data[pos]
+    pub fn get<T: Ilk>(&self, pos: HashPointer<T>) -> HashVal<'_, T> {
+        let node = self.data.get_index(pos.0).unwrap();
+        HashVal {
+            text: node.text,
+            extra: T::get(&node.extra),
+        }
     }
 
-    pub fn get_mut(&mut self, pos: HashPointer) -> &mut Node {
-        &mut self.data[pos]
+    pub fn set_extra<T: Ilk>(&mut self, pos: HashPointer<T>, val: T::Extra) {
+        let node = self.data.get_index_mut2(pos.0).unwrap();
+        T::insert(&mut node.extra, val);
+        node.extra.set_present(T::ilk());
     }
 
-    pub fn lookup_str(&self, pool: &StringPool, str: &[u8], ilk: StrIlk) -> Option<HashPointer> {
-        self.data.iter()
-            .find_map(|(key, value)| {
-                if pool.get_str(value.text) == str && value.kind() == ilk {
-                    Some(key)
-                } else {
-                    None
-                }
+    pub fn lookup_str<T: Ilk>(&self, pool: &StringPool, str: &[u8]) -> Option<HashPointer<T>> {
+        let hash_val = self.data.hasher().hash_one(str);
+        self.data
+            .get_index_of(&FindNode {
+                hash_val,
+                str,
+                pool,
             })
+            .filter(|node| self.data[*node].extra.contains(T::ilk()))
+            .map(|node| HashPointer(node, PhantomData))
     }
 
     /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
     /// string is found or not, only returning `Err` if a called function fails.
-    pub fn lookup_str_insert(
+    pub fn lookup_str_insert<T: Ilk>(
         &mut self,
         pool: &mut StringPool,
         str: &[u8],
-        ilk: HashExtra,
-    ) -> LookupRes {
-        let kind = ilk.kind();
-
-        enum Found {
-            Found(HashPointer),
-            Str(StrNumber),
-            NotFound,
-        }
-        let (ControlFlow::Break(found) | ControlFlow::Continue(found)) = self.data.iter()
-            .try_fold(Found::NotFound, |acc, (key, value)| {
-                if pool.get_str(value.text) == str {
-                    if value.kind() == kind {
-                        ControlFlow::Break(Found::Found(key))
-                    } else {
-                        ControlFlow::Continue(Found::Str(value.text))
+        extra: T::Extra,
+    ) -> LookupRes<T> {
+        let hash_val = self.data.hasher().hash_one(str);
+        match self.data.get_index_of(&FindNode {
+            hash_val,
+            str,
+            pool,
+        }) {
+            Some(idx) => {
+                let node = self.data.get_index_mut2(idx).unwrap();
+                if node.extra.contains(T::ilk()) {
+                    LookupRes {
+                        exists: true,
+                        loc: HashPointer(idx, PhantomData),
                     }
                 } else {
-                    ControlFlow::Continue(acc)
+                    T::insert(&mut node.extra, extra);
+                    node.extra.set_present(T::ilk());
+                    LookupRes {
+                        exists: false,
+                        loc: HashPointer(idx, PhantomData),
+                    }
                 }
-            });
-        match found {
-            Found::Found(loc) => {
-                LookupRes { loc, exists: true }
             }
-            Found::Str(text) => {
-                let loc = self.data.insert(Node { extra: ilk, text });
-                LookupRes { loc, exists: false }
-            }
-            Found::NotFound => {
+            None => {
                 let text = pool.add_string(str);
-                let loc = self.data.insert(Node { extra: ilk, text });
-                LookupRes { loc, exists: false }
+                let mut slot = ExtraSlot::new();
+                T::insert(&mut slot, extra);
+                slot.set_present(T::ilk());
+                let (idx, _) = self.data.insert_full(Node {
+                    hash_val,
+                    text,
+                    extra: slot,
+                });
+                LookupRes {
+                    exists: false,
+                    loc: HashPointer(idx, PhantomData),
+                }
             }
         }
     }
@@ -273,29 +584,45 @@ mod tests {
     fn test_lookup_str() {
         let mut hash = HashData::new();
         let mut pool = StringPool::new();
-        let res = hash
-            .lookup_str_insert(&mut pool, b"a cool string", HashExtra::Text);
+        let res = hash.lookup_str_insert::<Text>(&mut pool, b"a cool string", ());
         assert!(!res.exists);
         assert_eq!(
             pool.try_get_str(hash.get(res.loc).text()),
             Some(b"a cool string" as &[_])
         );
 
-        let res2 = hash
-            .lookup_str_insert(&mut pool, b"a cool string", HashExtra::Text);
+        let res2 = hash.lookup_str_insert::<Text>(&mut pool, b"a cool string", ());
         assert!(res2.exists);
         assert_eq!(
             pool.try_get_str(hash.get(res2.loc).text()),
             Some(b"a cool string" as &[_])
         );
 
-        let res3 = hash.lookup_str(&pool, b"a cool string", StrIlk::Text)
-            .unwrap();
+        let res3 = hash.lookup_str::<Text>(&pool, b"a cool string").unwrap();
         assert_eq!(
             pool.try_get_str(hash.get(res3).text()),
             Some(b"a cool string" as &[_])
         );
 
-        assert!(hash.lookup_str(&pool, b"a bad string", StrIlk::Text).is_none());
+        assert!(hash.lookup_str::<Text>(&pool, b"a bad string").is_none());
+    }
+
+    #[test]
+    fn test_lookup_ilk() {
+        let mut hash = HashData::new();
+        let mut pool = StringPool::new();
+
+        let res = hash.lookup_str_insert::<Text>(&mut pool, b"Hello World!", ());
+        assert!(!res.exists);
+        let res2 = hash.lookup_str_insert::<Integer>(&mut pool, b"Hello World!", 1);
+        assert!(!res.exists);
+
+        assert_eq!(res.loc.0, res2.loc.0);
+
+        let res3 = hash.lookup_str::<Integer>(&pool, b"Hello World!");
+        assert_eq!(res3, Some(res2.loc));
+
+        let res4 = hash.lookup_str::<Cite>(&pool, b"Hello World!");
+        assert_eq!(res4, None);
     }
 }

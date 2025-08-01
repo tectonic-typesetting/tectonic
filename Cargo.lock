@@ -2775,15 +2775,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "slotmap"
-version = "1.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbff4acf519f630b3a3ddcfaea6c06b42174d9a44bc70c620e9ed1649d58b82a"
-dependencies = [
- "version_check",
-]
-
-[[package]]
 name = "slug"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3067,8 +3058,8 @@ dependencies = [
 name = "tectonic_engine_bibtex"
 version = "0.0.0-dev.0"
 dependencies = [
+ "indexmap",
  "libc",
- "slotmap",
  "tectonic_bridge_core",
  "tectonic_errors",
  "tectonic_io_base",

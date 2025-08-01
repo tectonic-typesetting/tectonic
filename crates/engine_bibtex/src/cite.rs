@@ -1,9 +1,10 @@
 use crate::{
     entries::EntryData,
-    hash::{HashData, HashExtra},
+    hash,
+    hash::{Cite, HashData, LcCite},
     other::OtherData,
     pool::{StrNumber, StringPool},
-    CiteNumber, FindCiteLocs, HashPointer, StrIlk,
+    CiteNumber, FindCiteLocs, HashPointer,
 };
 use std::{cmp::Ordering, ops::IndexMut};
 
@@ -12,7 +13,7 @@ pub(crate) const MAX_CITES: usize = 750;
 pub(crate) struct CiteInfo {
     cite_list: Vec<StrNumber>,
     cite_info: Vec<StrNumber>,
-    type_list: Vec<HashPointer>,
+    type_list: Vec<HashPointer<hash::BstFn>>,
     entry_exists: Vec<bool>,
     cite_ptr: CiteNumber,
 
@@ -42,7 +43,8 @@ impl CiteInfo {
             .resize(self.cite_list.len() + MAX_CITES, StrNumber::invalid());
         self.cite_info
             .resize(self.cite_info.len() + MAX_CITES, StrNumber::invalid());
-        self.type_list.resize(self.type_list.len() + MAX_CITES, HashPointer::default());
+        self.type_list
+            .resize(self.type_list.len() + MAX_CITES, HashPointer::default());
         self.entry_exists
             .resize(self.entry_exists.len() + MAX_CITES, false);
     }
@@ -63,11 +65,11 @@ impl CiteInfo {
         self.cite_info[offset] = num;
     }
 
-    pub fn get_type(&self, offset: usize) -> HashPointer {
+    pub fn get_type(&self, offset: usize) -> HashPointer<hash::BstFn> {
         self.type_list[offset]
     }
 
-    pub fn set_type(&mut self, offset: usize, ty: HashPointer) {
+    pub fn set_type(&mut self, offset: usize, ty: HashPointer<hash::BstFn>) {
         self.type_list[offset] = ty;
     }
 
@@ -147,8 +149,8 @@ pub(crate) fn add_database_cite(
     other: &mut OtherData,
     hash: &mut HashData,
     new_cite: CiteNumber,
-    cite_loc: HashPointer,
-    lc_cite_loc: HashPointer,
+    cite_loc: HashPointer<Cite>,
+    lc_cite_loc: HashPointer<LcCite>,
 ) -> CiteNumber {
     if new_cite == cites.cite_list.len() {
         cites.grow();
@@ -156,8 +158,8 @@ pub(crate) fn add_database_cite(
     other.check_field_overflow(other.num_fields() * (new_cite + 1));
 
     cites.set_cite(new_cite, hash.get(cite_loc).text());
-    *hash.get_mut(cite_loc).extra_mut() = HashExtra::Cite(new_cite);
-    *hash.get_mut(lc_cite_loc).extra_mut() = HashExtra::LcCite(cite_loc);
+    hash.set_extra(cite_loc, new_cite);
+    hash.set_extra(lc_cite_loc, cite_loc);
     new_cite + 1
 }
 
@@ -168,11 +170,8 @@ pub(crate) fn find_cite_locs_for_this_cite_key(
 ) -> FindCiteLocs {
     let val = pool.get_str(cite_str);
 
-    let cite = hash.lookup_str(pool, val, StrIlk::Cite);
-    let lc_cite = hash.lookup_str(pool, &val.to_ascii_lowercase(), StrIlk::LcCite);
+    let cite = hash.lookup_str::<hash::Cite>(pool, val);
+    let lc_cite = hash.lookup_str::<hash::LcCite>(pool, &val.to_ascii_lowercase());
 
-    FindCiteLocs {
-        cite,
-        lc_cite,
-    }
+    FindCiteLocs { cite, lc_cite }
 }

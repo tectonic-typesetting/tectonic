@@ -1,11 +1,13 @@
-use crate::{pool::StrNumber, FieldLoc, HashPointer};
+use crate::{hash, pool::StrNumber, FieldLoc, HashPointer};
 
 const MAX_FIELDS: usize = 17250;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum WizOp {
-    Exec(HashPointer),
-    Quote(HashPointer),
+    Text(HashPointer<hash::Text>),
+    Int(HashPointer<hash::Integer>),
+    Exec(HashPointer<hash::BstFn>),
+    Quote(HashPointer<hash::BstFn>),
     EndOfDef,
 }
 
@@ -74,7 +76,7 @@ impl OtherData {
     pub fn extend_wiz_data(&mut self, ops: impl IntoIterator<Item = WizOp>) {
         self.wiz_functions.extend(ops);
     }
-    
+
     pub fn wiz_function(&self, pos: usize) -> WizOp {
         self.wiz_functions[pos]
     }
