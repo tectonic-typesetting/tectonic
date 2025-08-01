@@ -122,10 +122,6 @@ pub(crate) fn compress_bib_white(
     Ok(true)
 }
 
-// TODO: This function is unnecessarily complicated
-//       - Most at_bib_command uses are statically known
-//       - tied to that, command_num is only used when at_bib_command is true
-//       - There's some messed up control flow that's porting weird `goto` style, can probably be simplified
 pub(crate) fn get_bib_command_or_entry_and_process(
     ctx: &mut Bibtex<'_, '_>,
     globals: &mut GlobalItems<'_>,
@@ -522,8 +518,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
     let mut cite_exists = lc_res.exists;
 
-    // TODO: Improve this tangled control flow
-    let mut inner = || {
+    'a: {
         if lc_res.exists {
             let &cite_loc = globals.hash.get(lc_res.loc).extra();
             let &cite = globals.hash.get(cite_loc).extra();
@@ -556,7 +551,7 @@ pub(crate) fn get_bib_command_or_entry_and_process(
                         }
                     }
                     // Break out of if
-                    return None;
+                    break 'a;
                 }
             } else if !globals.cites.exists(entry_ptr) {
                 let s = globals.pool.get_str(globals.cites.info(entry_ptr));
@@ -579,33 +574,28 @@ pub(crate) fn get_bib_command_or_entry_and_process(
 
                 if !lc_res2.exists {
                     cite_key_disappeared_confusion(ctx);
-                    return Some(Err(BibtexError::Fatal));
+                    return Err(BibtexError::Fatal);
                 }
                 if lc_res2.loc == lc_res.loc {
-                    return None;
+                    break 'a;
                 }
             }
 
             if globals.cites.get_type(entry_ptr).is_null() {
                 ctx.write_logs("The cite list is messed up");
                 print_confusion(ctx);
-                return Some(Err(BibtexError::Fatal));
+                return Err(BibtexError::Fatal);
             }
 
             ctx.write_logs("Repeated entry");
-            return Some(bib_err_print(
+            return bib_err_print(
                 ctx,
                 globals.buffers,
                 globals.pool,
                 globals.bibs,
                 bib_command,
-            ));
+            );
         }
-        None
-    };
-
-    if let Some(ret) = inner() {
-        return ret;
     }
 
     let store_entry = if ctx.all_entries {

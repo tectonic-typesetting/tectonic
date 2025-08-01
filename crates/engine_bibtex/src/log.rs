@@ -5,7 +5,6 @@ use crate::{
     char_info::LexClass,
     cite::CiteInfo,
     exec::{bst_ex_warn_print, bst_ln_num_print, ExecCtx},
-    hash,
     hash::{BstFn, HashData},
     other::OtherData,
     peekable::input_ln,
