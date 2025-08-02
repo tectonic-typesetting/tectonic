@@ -5,7 +5,7 @@
 //! provide bindings to other tectonic crates.
 
 #![deny(clippy::undocumented_unsafe_blocks)]
-#![allow(clippy::unnecessary_cast)]
+#![allow(clippy::unnecessary_cast, missing_docs)]
 
 use std::ffi::CStr;
 use std::marker::PhantomData;

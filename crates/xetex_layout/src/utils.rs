@@ -16,6 +16,7 @@ pub fn raw_to_rs(font: RawPlatformFontRef) -> Option<PlatformFontRef> {
         NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
     };
     #[cfg(not(target_os = "macos"))]
+    // SAFETY: Pointer must be from us, and is thus a borrowed ref
     let out = { unsafe { NonNull::new(font).map(|p| PlatformFontRef::from_raw_borrowed(p)) } };
     out
 }

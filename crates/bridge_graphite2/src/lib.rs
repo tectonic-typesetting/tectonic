@@ -7,7 +7,7 @@
 //! [Tectonic]: https://tectonic-typesetting.github.io/
 
 #![deny(clippy::undocumented_unsafe_blocks)]
-#![allow(clippy::unnecessary_cast)]
+#![allow(clippy::unnecessary_cast, missing_docs)]
 
 use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
