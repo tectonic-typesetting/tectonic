@@ -385,6 +385,7 @@ impl<'a> CoreBridgeState<'a> {
         /// Ensures we only enter the state once at a time, globally
         static GLOBAL: Mutex<()> = Mutex::new(());
         let _lock = GLOBAL.lock().unwrap();
+        // SAFETY: Pointer is either null or valid, set by the engine on entrance
         let state = unsafe { _ttbc_get_core_state().as_mut() }
             .expect("Currently within an engine context in C");
         f(state)
