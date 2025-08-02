@@ -6,8 +6,8 @@ pub(crate) const MAX_PRINT_LINE: usize = 79;
 pub(crate) const MIN_PRINT_LINE: usize = 3;
 pub(crate) const MAX_STRINGS: usize = 35307;
 
-#[derive(Default, Debug, PartialEq, PartialOrd, Copy, Clone)]
-pub(crate) struct StrNumber(usize);
+#[derive(Default, Debug, PartialEq, PartialOrd, Copy, Clone, Hash)]
+pub struct StrNumber(usize);
 
 impl fmt::Display for StrNumber {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {

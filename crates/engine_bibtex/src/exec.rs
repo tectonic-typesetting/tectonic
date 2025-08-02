@@ -5,19 +5,21 @@ use crate::{
     cite::CiteInfo,
     entries::{EntryData, ENT_STR_SIZE},
     global::{GlobalData, GLOB_STR_SIZE},
-    hash::{BstBuiltin, BstFn, HashData, HashExtra},
+    hash,
+    hash::{BstBuiltin, BstFn, HashData},
     log::{
         brace_lvl_one_letters_complaint, braces_unbalanced_complaint,
         bst_1print_string_size_exceeded, bst_2print_string_size_exceeded,
         bst_cant_mess_with_entries_print, output_bbl_line, print_a_pool_str, print_confusion,
         print_fn_class,
     },
+    other::WizOp,
     pool::{Checkpoint, StrNumber, StringPool, MAX_PRINT_LINE, MIN_PRINT_LINE},
     scan::{
         check_brace_level, decr_brace_level, enough_text_chars, name_scan_for_and,
-        von_name_ends_and_last_name_starts_stuff, von_token_found, QUOTE_NEXT_FN,
+        von_name_ends_and_last_name_starts_stuff, von_token_found,
     },
-    ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer, StrIlk,
+    ASCIICode, Bibtex, BibtexError, BufPointer, GlobalItems, HashPointer,
 };
 use std::ops::{Deref, DerefMut, Index};
 
@@ -51,7 +53,7 @@ pub(crate) enum StkType {
 pub(crate) enum ExecVal {
     Integer(i64),
     String(StrNumber),
-    Function(HashPointer),
+    Function(HashPointer<hash::BstFn>),
     Missing(StrNumber),
     Illegal,
 }
@@ -70,7 +72,7 @@ impl ExecVal {
 
 pub(crate) struct ExecCtx<'a, 'bib, 'cbs> {
     glbl_ctx: &'a mut Bibtex<'bib, 'cbs>,
-    pub default: HashPointer,
+    pub default: HashPointer<hash::BstFn>,
     pub(crate) lit_stack: Vec<ExecVal>,
     pub mess_with_entries: bool,
     /// Pointer to the current top of the string pool, used to optimize certain string operations
@@ -81,7 +83,7 @@ impl<'a, 'bib, 'cbs> ExecCtx<'a, 'bib, 'cbs> {
     pub(crate) fn new(glbl_ctx: &'a mut Bibtex<'bib, 'cbs>) -> ExecCtx<'a, 'bib, 'cbs> {
         ExecCtx {
             glbl_ctx,
-            default: 0,
+            default: HashPointer::default(),
             lit_stack: Vec::new(),
             mess_with_entries: false,
             checkpoint: Checkpoint::default(),
@@ -143,7 +145,7 @@ pub(crate) fn print_lit(
             ctx.write_logs("\n");
         }
         ExecVal::Function(f) => {
-            print_a_pool_str(ctx, hash.text(f), pool)?;
+            print_a_pool_str(ctx, hash.get(f).text(), pool)?;
             ctx.write_logs("\n");
         }
         ExecVal::Missing(s) => {
@@ -173,7 +175,7 @@ pub(crate) fn print_stk_lit(
         }
         ExecVal::Function(f) => {
             ctx.write_logs("`");
-            print_a_pool_str(ctx, hash.text(f), pool)?;
+            print_a_pool_str(ctx, hash.get(f).text(), pool)?;
             ctx.write_logs("` is a function literal");
         }
         ExecVal::Missing(s) => {
@@ -996,18 +998,18 @@ fn interp_gets(
         }
     };
 
-    match &hash.node(f1).extra {
-        HashExtra::BstFn(BstFn::IntEntry(_) | BstFn::StrEntry(_)) if !ctx.mess_with_entries => {
+    match hash.get(f1).extra() {
+        BstFn::IntEntry(_) | BstFn::StrEntry(_) if !ctx.mess_with_entries => {
             bst_cant_mess_with_entries_print(ctx, pool, cites)?;
         }
-        HashExtra::BstFn(BstFn::IntEntry(entry)) => {
+        BstFn::IntEntry(entry) => {
             if let ExecVal::Integer(i2) = pop2 {
                 entries.set_int(cites.ptr() * entries.num_ent_ints() + *entry, i2)
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
         }
-        HashExtra::BstFn(BstFn::StrEntry(entry)) => {
+        BstFn::StrEntry(entry) => {
             if let ExecVal::String(s2) = pop2 {
                 let mut s = pool.get_str(s2);
                 if s.len() > ENT_STR_SIZE {
@@ -1021,14 +1023,14 @@ fn interp_gets(
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
         }
-        HashExtra::BstFn(BstFn::IntGlbl(_)) => {
+        BstFn::IntGlbl(_) => {
             if let ExecVal::Integer(i2) = pop2 {
-                hash.node_mut(f1).extra = HashExtra::BstFn(BstFn::IntGlbl(i2));
+                hash.set_extra(f1, BstFn::IntGlbl(i2));
             } else {
                 print_wrong_stk_lit(ctx, pool, hash, cites, pop2, StkType::Integer)?;
             }
         }
-        HashExtra::BstFn(BstFn::StrGlbl(str_ptr)) => {
+        BstFn::StrGlbl(str_ptr) => {
             if let ExecVal::String(s2) = pop2 {
                 if !ctx.checkpoint.is_before(s2) {
                     globals.set_str_ptr(*str_ptr, s2);
@@ -1177,13 +1179,10 @@ fn interp_change_case(
                                 idx += 1;
                             }
 
-                            let res =
-                                hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
+                            let res = hash.lookup_str::<ControlSeq>(pool, &scratch[old_idx..idx]);
 
-                            if res.exists {
-                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
-                                    panic!("ControlSeq lookup didn't have ControlSeq extra");
-                                };
+                            if let Some(loc) = res {
+                                let seq = *hash.get(loc).extra();
                                 match conv_ty {
                                     ConvTy::TitleLower | ConvTy::AllLower => match seq {
                                         ControlSeq::UpperOE
@@ -1837,12 +1836,9 @@ fn interp_purify(
                                 idx += 1;
                             }
 
-                            let res =
-                                hash.lookup_str(pool, &scratch[old_idx..idx], StrIlk::ControlSeq);
-                            if res.exists {
-                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
-                                    panic!("ControlSeq lookup didn't have ControlSeq extra");
-                                };
+                            let res = hash.lookup_str::<ControlSeq>(pool, &scratch[old_idx..idx]);
+                            if let Some(loc) = res {
+                                let seq = *hash.get(loc).extra();
                                 scratch[write_idx] = scratch[old_idx];
                                 write_idx += 1;
                                 match seq {
@@ -2158,10 +2154,10 @@ fn interp_ty(
     }
 
     let ty = cites.get_type(cites.ptr());
-    let s = if ty == HashData::undefined() || ty == 0 {
+    let s = if ty.is_null() || ty == HashData::undefined() {
         ctx.s_null
     } else {
-        hash.text(ty)
+        hash.get(ty).text()
     };
     ctx.push_stack(ExecVal::String(s));
     Ok(())
@@ -2224,11 +2220,9 @@ fn interp_width(
                         if idx < str.len() && idx == old_idx {
                             idx += 1;
                         } else {
-                            let res = hash.lookup_str(pool, &str[old_idx..idx], StrIlk::ControlSeq);
-                            if res.exists {
-                                let HashExtra::ControlSeq(seq) = hash.node(res.loc).extra else {
-                                    panic!("ControlSeq lookup didn't have ControlSeq extra");
-                                };
+                            let res = hash.lookup_str::<ControlSeq>(pool, &str[old_idx..idx]);
+                            if let Some(loc) = res {
+                                let seq = *hash.get(loc).extra();
                                 match seq {
                                     ControlSeq::LowerSS => string_width += 500,
                                     ControlSeq::LowerAE => string_width += 722,
@@ -2297,18 +2291,10 @@ fn interp_write(
 pub(crate) fn execute_fn(
     ctx: &mut ExecCtx<'_, '_, '_>,
     globals: &mut GlobalItems<'_>,
-    ex_fn_loc: HashPointer,
+    ex_fn_loc: HashPointer<BstFn>,
 ) -> Result<(), BibtexError> {
-    match &globals.hash.node(ex_fn_loc).extra {
-        HashExtra::Text => {
-            ctx.push_stack(ExecVal::String(globals.hash.text(ex_fn_loc)));
-            Ok(())
-        }
-        HashExtra::Integer(i) => {
-            ctx.push_stack(ExecVal::Integer(*i));
-            Ok(())
-        }
-        HashExtra::BstFn(BstFn::Builtin(builtin)) => match builtin {
+    match globals.hash.get(ex_fn_loc).extra() {
+        BstFn::Builtin(builtin) => match builtin {
             BstBuiltin::Eq => interp_eq(ctx, globals.pool, globals.hash, globals.cites),
             BstBuiltin::Gt => interp_gt(ctx, globals.pool, globals.hash, globals.cites),
             BstBuiltin::Lt => interp_lt(ctx, globals.pool, globals.hash, globals.cites),
@@ -2333,7 +2319,7 @@ pub(crate) fn execute_fn(
                     Ok(())
                 } else if default == HashData::undefined() {
                     execute_fn(ctx, globals, ctx.default)
-                } else if default != 0 {
+                } else if !default.is_null() {
                     execute_fn(ctx, globals, default)
                 } else {
                     Ok(())
@@ -2485,22 +2471,28 @@ pub(crate) fn execute_fn(
                 globals.cites,
             ),
         },
-        HashExtra::BstFn(BstFn::Wizard(mut wiz_ptr)) => {
-            let mut cur_fn = globals.other.wiz_function(wiz_ptr);
-            while cur_fn != HashData::end_of_def() {
-                if cur_fn != QUOTE_NEXT_FN {
-                    execute_fn(ctx, globals, cur_fn)?;
-                } else {
-                    wiz_ptr += 1;
-                    cur_fn = globals.other.wiz_function(wiz_ptr);
-                    ctx.push_stack(ExecVal::Function(cur_fn))
+        BstFn::Wizard(mut wiz_ptr) => {
+            loop {
+                match globals.other.wiz_function(wiz_ptr) {
+                    WizOp::EndOfDef => break,
+                    WizOp::Quote(ptr) => {
+                        ctx.push_stack(ExecVal::Function(ptr));
+                    }
+                    WizOp::Exec(ptr) => {
+                        execute_fn(ctx, globals, ptr)?;
+                    }
+                    WizOp::Text(text) => {
+                        ctx.push_stack(ExecVal::String(globals.hash.get(text).text()));
+                    }
+                    WizOp::Int(int) => {
+                        ctx.push_stack(ExecVal::Integer(*globals.hash.get(int).extra()));
+                    }
                 }
                 wiz_ptr += 1;
-                cur_fn = globals.other.wiz_function(wiz_ptr);
             }
             Ok(())
         }
-        HashExtra::BstFn(BstFn::Field(field)) => {
+        BstFn::Field(field) => {
             if !ctx.mess_with_entries {
                 bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)
             } else {
@@ -2513,14 +2505,14 @@ pub(crate) fn execute_fn(
 
                 let field = globals.other.field(field_ptr);
                 if field.is_invalid() {
-                    ctx.push_stack(ExecVal::Missing(globals.hash.text(ex_fn_loc)));
+                    ctx.push_stack(ExecVal::Missing(globals.hash.get(ex_fn_loc).text()));
                 } else {
                     ctx.push_stack(ExecVal::String(field));
                 }
                 Ok(())
             }
         }
-        HashExtra::BstFn(BstFn::IntEntry(entry)) => {
+        BstFn::IntEntry(entry) => {
             if !ctx.mess_with_entries {
                 bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)
             } else {
@@ -2532,7 +2524,7 @@ pub(crate) fn execute_fn(
                 Ok(())
             }
         }
-        HashExtra::BstFn(BstFn::StrEntry(entry)) => {
+        BstFn::StrEntry(entry) => {
             if !ctx.mess_with_entries {
                 bst_cant_mess_with_entries_print(ctx, globals.pool, globals.cites)
             } else {
@@ -2543,11 +2535,11 @@ pub(crate) fn execute_fn(
                 Ok(())
             }
         }
-        HashExtra::BstFn(BstFn::IntGlbl(value)) => {
+        BstFn::IntGlbl(value) => {
             ctx.push_stack(ExecVal::Integer(*value));
             Ok(())
         }
-        HashExtra::BstFn(BstFn::StrGlbl(glb_ptr)) => {
+        BstFn::StrGlbl(glb_ptr) => {
             let str_ptr = globals.globals.str_ptr(*glb_ptr);
             if !str_ptr.is_invalid() {
                 ctx.push_stack(ExecVal::String(str_ptr));
@@ -2558,7 +2550,6 @@ pub(crate) fn execute_fn(
             }
             Ok(())
         }
-        _ => panic!("Invalid node passed as ex_fn_loc"),
     }
 }
 
