@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! "Local" parameters defined by the engine.
 //!
 //! These are mostly token lists, but there is also the `parshape` parameter

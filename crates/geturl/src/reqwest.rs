@@ -10,7 +10,6 @@ use reqwest::{
     StatusCode, Url,
 };
 use tectonic_errors::{anyhow::bail, Result};
-use tectonic_status_base::{tt_note, StatusBackend};
 
 use crate::{GetUrlBackend, RangeReader};
 
@@ -24,7 +23,7 @@ impl GetUrlBackend for ReqwestBackend {
     type Response = Response;
     type RangeReader = ReqwestRangeReader;
 
-    fn get_url(&mut self, url: &str, _status: &mut dyn StatusBackend) -> Result<Response> {
+    fn get_url(&mut self, url: &str) -> Result<Response> {
         let res = Client::new().get(url).send()?;
         if !res.status().is_success() {
             bail!(
@@ -36,13 +35,11 @@ impl GetUrlBackend for ReqwestBackend {
         Ok(res)
     }
 
-    fn resolve_url(&mut self, url: &str, status: &mut dyn StatusBackend) -> Result<String> {
-        tt_note!(status, "connecting to {}", url);
-
+    fn resolve_url(&mut self, url: &str) -> Result<String> {
         let parsed = Url::parse(url)?;
         let original_filename = parsed
             .path_segments()
-            .and_then(|s| s.last())
+            .and_then(|mut s| s.next_back())
             .unwrap_or(".") // if the filename is this, the `contains('.')` will already match
             .to_owned();
 
@@ -63,9 +60,9 @@ impl GetUrlBackend for ReqwestBackend {
             // match the original filename.
             if attempt.previous().len() >= MAX_HTTP_REDIRECTS_ALLOWED {
                 attempt.error("too many redirections")
-            } else if let Some(segments) = attempt.url().clone().path_segments() {
+            } else if let Some(mut segments) = attempt.url().clone().path_segments() {
                 let follow = segments
-                    .last()
+                    .next_back()
                     .map(|file| file.contains('.') || file == original_filename)
                     .unwrap_or(true);
                 if follow {
@@ -96,10 +93,6 @@ impl GetUrlBackend for ReqwestBackend {
         }
 
         let final_url: String = res.url().clone().into();
-        if final_url != url {
-            tt_note!(status, "resolved to {}", final_url);
-        }
-
         Ok(final_url)
     }
 

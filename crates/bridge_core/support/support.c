@@ -285,6 +285,11 @@ ttstub_input_read(rust_input_handle_t handle, char *data, size_t len)
     return ttbc_input_read(tectonic_global_bridge_core, handle, (uint8_t *) data, len);
 }
 
+ssize_t
+ttstub_input_read_partial(rust_input_handle_t handle, char *data, size_t len)
+{
+    return ttbc_input_read_partial(tectonic_global_bridge_core, handle, (uint8_t *) data, len);
+}
 
 int
 ttstub_input_getc(rust_input_handle_t handle)

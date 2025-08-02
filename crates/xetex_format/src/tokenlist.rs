@@ -1,6 +1,8 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(missing_docs)]
+
 //! Handling TeX token lists.
 //!
 //! Token lists are linked lists of compressed entries that can express either

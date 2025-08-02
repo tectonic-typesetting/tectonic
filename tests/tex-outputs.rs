@@ -1,6 +1,8 @@
 // Copyright 2016-2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Test suite for the TeX engine
+
 use std::collections::HashSet;
 use std::path::Path;
 use std::time;
@@ -40,17 +42,17 @@ impl TestCase {
         }
     }
 
-    fn check_synctex(&mut self, check_synctex: bool) -> &mut Self {
+    fn check_synctex(mut self, check_synctex: bool) -> Self {
         self.check_synctex = check_synctex;
         self
     }
 
-    fn check_pdf(&mut self, check_pdf: bool) -> &mut Self {
+    fn check_pdf(mut self, check_pdf: bool) -> Self {
         self.check_pdf = check_pdf;
         self
     }
 
-    fn with_fs(&mut self, path: &Path) -> &mut Self {
+    fn with_fs(mut self, path: &Path) -> Self {
         self.extra_io.push(Box::new(FilesystemIo::new(
             path,
             false,
@@ -60,21 +62,21 @@ impl TestCase {
         self
     }
 
-    fn with_unstables(&mut self, unstables: UnstableOptions) -> &mut Self {
+    fn with_unstables(mut self, unstables: UnstableOptions) -> Self {
         self.unstables = unstables;
         self
     }
 
-    fn expect(&mut self, result: Result<TexOutcome>) -> &mut Self {
+    fn expect(mut self, result: Result<TexOutcome>) -> Self {
         self.expected_result = result;
         self
     }
 
-    fn expect_msg(&mut self, msg: &str) -> &mut Self {
+    fn expect_msg(self, msg: &str) -> Self {
         self.expect(Err(anyhow!("{}", msg)))
     }
 
-    fn go(&mut self) {
+    fn go(mut self) {
         util::set_test_root();
 
         let expect_xdv = self.expected_result.is_ok();
@@ -125,7 +127,7 @@ impl TestCase {
                 .shell_escape(self.unstables.shell_escape)
                 .process(&mut launcher, "plain.fmt", &texname);
 
-            if self.check_pdf && tex_res.definitely_same(&Ok(TexOutcome::Spotless)) {
+            if self.check_pdf && tex_res.definitely_same(&self.expected_result) {
                 let mut engine = XdvipdfmxEngine::default();
 
                 engine
@@ -147,19 +149,13 @@ impl TestCase {
             tex_res
         };
 
-        if !res.definitely_same(&self.expected_result) {
-            eprintln!(
-                "expected TeX result {:?}, got {:?}",
-                self.expected_result, res
-            );
-            panic!("the TeX engine returned an unexpected result code");
-        }
-
         // Check that outputs match expectations.
 
         let files = mem.files.borrow();
 
-        let mut expect = Expected::new().file(expected_log.collection(&files));
+        let mut expect = Expected::new()
+            .res(self.expected_result, res)
+            .file(expected_log.collection(&files));
 
         if expect_xdv {
             expect =
@@ -205,6 +201,16 @@ fn file_encoding() {
         .go()
 }
 
+// Works around an issue where old (~2.7) Harfbuzz lays out glyphs differently.
+// Remove this once all external Harfbuzz versions don't exhibit the glyph-swapping behavior.
+#[cfg(not(any(feature = "external-harfbuzz", target_arch = "x86")))]
+#[test]
+fn utf8_chars() {
+    TestCase::new("utf8_chars")
+        .expect(Ok(TexOutcome::Warnings))
+        .go();
+}
+
 /// An issue triggered by a bug in how the I/O subsystem reported file offsets
 /// after an ungetc() call.
 #[test]
@@ -227,6 +233,18 @@ fn negative_roman_numeral() {
 #[test]
 fn otf_basic() {
     TestCase::new("otf_basic")
+        .expect(Ok(TexOutcome::Warnings))
+        .go()
+}
+
+#[test]
+fn graphite_basic() {
+    TestCase::new("graphite_basic").go()
+}
+
+#[test]
+fn otf_ot_shaper() {
+    TestCase::new("otf_ot_shaper")
         .expect(Ok(TexOutcome::Warnings))
         .go()
 }
@@ -343,4 +361,25 @@ fn tectoniccodatokens_ok() {
 #[test]
 fn the_letter_a() {
     TestCase::new("the_letter_a").check_pdf(true).go()
+}
+
+#[test]
+fn xetex_g_builtins() {
+    TestCase::new("xetex_g_builtins").check_pdf(true).go()
+}
+
+#[test]
+fn xetex_ot_builtins() {
+    TestCase::new("xetex_ot_builtins").check_pdf(true).go()
+}
+
+#[test]
+fn pdf_fstream() {
+    // Need to do this here since we call test_path unusually early.
+    util::set_test_root();
+
+    TestCase::new("pdf_fstream")
+        .with_fs(&test_path(&["tex-outputs"]))
+        .check_pdf(true)
+        .go()
 }

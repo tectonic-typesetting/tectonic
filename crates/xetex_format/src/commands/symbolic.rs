@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//#![deny(missing_docs)]
-
 //! Commands whose arguments come from the symbol table, but not one of the
 //! enumerations.
 

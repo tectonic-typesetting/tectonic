@@ -1,6 +1,9 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! XeTeX engine build script. Builds and links our locally modified copy of the XeTeX typesetting
+//! engine.
+
 use std::{env, path::PathBuf};
 use tectonic_cfg_support::*;
 
@@ -25,6 +28,7 @@ fn main() {
     let profile_target_requires_frame_pointer: bool =
         target_cfg!(not(all(target_os = "linux", target_arch = "x86_64")));
 
+    #[allow(unexpected_cfgs)]
     const PROFILE_BUILD_ENABLED: bool = cfg!(feature = "profile");
 
     let profile_config = |cfg: &mut cc::Build| {

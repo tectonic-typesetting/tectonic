@@ -1,0 +1,158 @@
+name: "Deploy"
+
+on:
+  workflow_call:
+    inputs:
+      is-dev:
+        required: true
+        type: boolean
+      is-release:
+        required: true
+        type: boolean
+
+jobs:
+  update-book:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Deployment Setup"
+        id: deploy-setup
+        uses: ./.github/actions/deploy-setup
+        with:
+          is-dev: ${{ inputs.is-dev }}
+          is-release: ${{ inputs.is-release }}
+      - name: "Update book HTML"
+        if: ${{ steps.deploy-setup.outputs.top-level != 'skip' }}
+        run: |
+          # Worth adding better Cranko support for this? reboot-branch is close
+          dist/force-push-tree.sh \
+            $GITHUB_WORKSPACE/book \
+            https://github.com/tectonic-typesetting/book.git \
+            "${{ steps.deploy-setup.outputs.top-level }}" \
+            "docs mdbook"
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOOK_TOKEN }}
+  recreate-continuous:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.is-dev }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Deployment Setup"
+        id: deploy-setup
+        uses: ./.github/actions/deploy-setup
+        with:
+          is-dev: ${{ inputs.is-dev }}
+          is-release: ${{ inputs.is-release }}
+          setup-git: 'true'
+      - name: "Recreate continuous-deployment GitHub release"
+        run: |
+          # Allow this to fail, in case the release isn't present
+          cranko github delete-release continuous || true
+          git tag -f continuous HEAD
+          git push -f origin refs/tags/continuous
+          cranko github create-custom-release \
+            --name "Continuous Deployment" \
+            --prerelease \
+            --desc "Continuous deployment of commit $(git rev-parse --short HEAD)" \
+            continuous
+          cranko github upload-artifacts --by-tag continuous \
+            $GITHUB_WORKSPACE/binary-*/* \
+            $GITHUB_WORKSPACE/appimage/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  branch-and-tag:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.is-main }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Deployment Setup"
+        id: deploy-setup
+        uses: ./.github/actions/deploy-setup
+        with:
+          is-dev: ${{ inputs.is-dev }}
+          is-release: ${{ inputs.is-release }}
+      - name: "Tag and push"
+        run: |
+          cranko release-workflow tag
+          git push --tags origin release:release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  github-releases:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.is-main }}
+    needs: branch-and-tag
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Deployment Setup"
+        id: deploy-setup
+        uses: ./.github/actions/deploy-setup
+        with:
+          is-dev: ${{ inputs.is-dev }}
+          is-release: ${{ inputs.is-release }}
+      - name: "Create per-project GitHub releases"
+        run: |
+          cranko github create-releases
+
+          if cranko show if-released --exit-code tectonic; then
+            cranko github upload-artifacts tectonic \
+              $GITHUB_WORKSPACE/binary-*/* \
+              $GITHUB_WORKSPACE/appimage/*
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  cargo-publish:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.is-main }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Deployment Setup"
+        id: deploy-setup
+        uses: ./.github/actions/deploy-setup
+        with:
+          is-dev: ${{ inputs.is-dev }}
+          is-release: ${{ inputs.is-release }}
+      - name: "Publish updated Cargo crates"
+        run: cranko cargo foreach-released --pause=30 -- publish --no-verify
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+  update-website:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.is-main }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Deployment Setup"
+        id: deploy-setup
+        uses: ./.github/actions/deploy-setup
+        with:
+          is-dev: ${{ inputs.is-dev }}
+          is-release: ${{ inputs.is-release }}
+          setup-git: 'true'
+      - name: "Update GitHub Pages website"
+        if: ${{ steps.deploy-setup.outputs.top-level != 'skip' }}
+        run: bash dist/update-website.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,8 +1,6 @@
 // Copyright 2020 the Tectonic Project.
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Generic error handling for Tectonic.
 //!
 //! This crate provides a generic boxed error type, plus supporting utilities.
@@ -37,7 +35,7 @@ pub use anyhow;
 /// recommended way to use this for error context is using `atry!` or related
 /// macros.
 ///
-/// The `std::fmt::Display` of this type yields its primary “message”. Consumers
+/// The `std::fmt::Display` of this type yields its primary "message". Consumers
 /// that are aware of this type can obtain additional context through its
 /// `notes()` method.
 #[derive(Debug, Default)]
@@ -74,7 +72,7 @@ impl fmt::Display for AnnotatedMessage {
 
 impl error::Error for AnnotatedMessage {}
 
-/// "Annotated try” — like `try!`, but with the ability to add extended context
+/// "Annotated try" — like `try!`, but with the ability to add extended context
 /// to the error message. This tries to provide a bit more syntactic sugar than
 /// anyhow's `with_context()`, and it supports our AnnotatedMessage context type.
 ///
@@ -122,7 +120,7 @@ macro_rules! atry {
     }};
 }
 
-/// "annotated ok_or” — like `Option::ok_or_else()?`, but with the ability to
+/// "annotated ok_or" — like `Option::ok_or_else()?`, but with the ability to
 /// add extended context to the error. This yields an `AnnotatedMessage` as its
 /// error type.
 #[macro_export]
@@ -139,7 +137,7 @@ macro_rules! a_ok_or {
     }};
 }
 
-/// A “prelude” module providing a collection of useful names, without
+/// A "prelude" module providing a collection of useful names, without
 /// causing compiler complaints about the ones you don’t use.
 ///
 /// Provided names are:

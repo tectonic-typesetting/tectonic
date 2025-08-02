@@ -380,7 +380,7 @@ pdf_ximage_load_image (const char *ident, const char *filename, load_options opt
      */
 
     handle = ttstub_input_open(filename, TTBC_FILE_FORMAT_PICT, 0);
-    if (handle == NULL) {
+    if (handle == INVALID_HANDLE) {
         if (dpx_conf.compat_mode == dpx_mode_compat_mode) {
             dpx_warning("Error opening image file \"%s\"", filename);
         } else {
