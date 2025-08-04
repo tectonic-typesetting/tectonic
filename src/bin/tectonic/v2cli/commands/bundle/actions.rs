@@ -82,7 +82,7 @@ pub(super) fn select(cli: &BundleCreateCommand) -> Result<()> {
 
     // Check output hash
     {
-        let mut file = File::open(cli.build_dir.join("content/SHA256SUM"))?;
+        let mut file = File::open(build_dir.join("content/SHA256SUM"))?;
         let mut hash = String::new();
         file.read_to_string(&mut hash)?;
         let hash = hash.trim();
@@ -107,7 +107,7 @@ pub(super) fn pack(cli: &BundleCreateCommand) -> Result<()> {
 
     let build_dir = cli.build_dir.join(&bundle_config.bundle.name);
 
-    if !cli.build_dir.join("content").is_dir() {
+    if !build_dir.join("content").is_dir() {
         error!(
             "content directory `{}/content` doesn't exist, can't continue",
             build_dir.to_str().unwrap()
