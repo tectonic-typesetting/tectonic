@@ -2998,9 +2998,12 @@ name = "tectonic_bridge_harfbuzz"
 version = "0.0.0-dev.0"
 dependencies = [
  "cc",
+ "libc",
+ "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_cfg_support",
  "tectonic_dep_support",
+ "tectonic_mac_core",
 ]
 
 [[package]]
