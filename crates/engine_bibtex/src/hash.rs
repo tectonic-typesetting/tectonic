@@ -122,30 +122,37 @@ pub(crate) enum BstFn {
     StrGlbl(usize),
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(u16)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum StrIlk {
-    Text,
-    Integer,
-    AuxCommand,
-    AuxFile,
-    BstCommand,
-    BstFile,
-    BibFile,
-    FileExt,
-    Cite,
-    LcCite,
-    BstFn,
-    BibCommand,
-    Macro,
-    ControlSeq,
+    Text = 0x0001,
+    Integer = 0x0002,
+    AuxCommand = 0x0004,
+    AuxFile = 0x0008,
+    BstCommand = 0x0010,
+    BstFile = 0x0020,
+    BibFile = 0x0040,
+    FileExt = 0x0080,
+    Cite = 0x0100,
+    LcCite = 0x0200,
+    BstFn = 0x0400,
+    BibCommand = 0x0800,
+    Macro = 0x1000,
+    ControlSeq = 0x2000,
 }
 
 pub trait Ilk {
     type Extra;
     fn ilk() -> StrIlk;
     fn get(slot: &ExtraSlot) -> &Self::Extra;
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         let _ = (slot, extra);
+    }
+
+    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+        Self::set(slot, extra);
+        slot.set_present(Self::ilk());
     }
 }
 
@@ -174,7 +181,7 @@ impl Ilk for Integer {
         &slot.data.0
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.0 = extra;
     }
 }
@@ -190,7 +197,7 @@ impl Ilk for AuxCommand {
         &slot.data.1
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.1 = extra;
     }
 }
@@ -219,7 +226,7 @@ impl Ilk for BstCommand {
         &slot.data.2
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.2 = extra;
     }
 }
@@ -275,7 +282,7 @@ impl Ilk for Cite {
         &slot.data.3
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.3 = extra;
     }
 }
@@ -292,7 +299,7 @@ impl Ilk for LcCite {
         &slot.data.4
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.4 = extra;
     }
 }
@@ -308,7 +315,7 @@ impl Ilk for BstFn {
         &slot.data.5
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.5 = extra;
     }
 }
@@ -324,7 +331,7 @@ impl Ilk for BibCommand {
         &slot.data.6
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.6 = extra;
     }
 }
@@ -341,7 +348,7 @@ impl Ilk for Macro {
         &slot.data.7
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.7 = extra;
     }
 }
@@ -357,7 +364,7 @@ impl Ilk for ControlSeq {
         &slot.data.8
     }
 
-    fn insert(slot: &mut ExtraSlot, extra: Self::Extra) {
+    fn set(slot: &mut ExtraSlot, extra: Self::Extra) {
         slot.data.8 = extra;
     }
 }
@@ -388,12 +395,12 @@ impl ExtraSlot {
 
     fn contains(&self, ilk: StrIlk) -> bool {
         let idx = ilk as u16;
-        (self.exists & (1 << idx)) != 0
+        (self.exists & idx) != 0
     }
 
     fn set_present(&mut self, ilk: StrIlk) {
         let idx = ilk as u16;
-        self.exists |= 1 << idx;
+        self.exists |= idx;
     }
 }
 
@@ -511,7 +518,6 @@ impl HashData {
     pub fn set_extra<T: Ilk>(&mut self, pos: HashPointer<T>, val: T::Extra) {
         let node = self.data.get_index_mut2(pos.0).unwrap();
         T::insert(&mut node.extra, val);
-        node.extra.set_present(T::ilk());
     }
 
     pub fn lookup_str<T: Ilk>(&self, pool: &StringPool, str: &[u8]) -> Option<HashPointer<T>> {
@@ -549,7 +555,6 @@ impl HashData {
                     }
                 } else {
                     T::insert(&mut node.extra, extra);
-                    node.extra.set_present(T::ilk());
                     LookupRes {
                         exists: false,
                         loc: HashPointer(idx, PhantomData),
@@ -560,7 +565,6 @@ impl HashData {
                 let text = pool.add_string(str);
                 let mut slot = ExtraSlot::new();
                 T::insert(&mut slot, extra);
-                slot.set_present(T::ilk());
                 let (idx, _) = self.data.insert_full(Node {
                     hash_val,
                     text,
