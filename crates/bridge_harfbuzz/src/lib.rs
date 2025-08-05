@@ -733,6 +733,22 @@ mod tests {
     use crate::test_util::{get_font_funcs, test_faces};
 
     #[test]
+    fn test_tag() {
+        let raw = u32::from_be_bytes([b't', b'e', b's', b't']);
+
+        assert_eq!(Tag::new(raw).to_raw(), raw);
+        assert_eq!(Tag::from_str("test"), Tag::new(raw));
+        assert_eq!(Tag::from_cstr(c"test"), Tag::new(raw));
+    }
+
+    #[test]
+    fn test_language() {
+        assert_eq!(Language::from_string("en-US").to_string(), Some(c"en-us"));
+        assert_eq!(Language::from_cstr(c"en-gb").to_string(), Some(c"en-gb"));
+        assert!(Language::default().to_string().is_none());
+    }
+
+    #[test]
     fn test_face_ot_math_data() {
         for (_, face) in test_faces() {
             assert!(!face.as_ref().has_ot_math_data())
@@ -775,40 +791,55 @@ mod tests {
                 .add_utf16(&"Hello World!".encode_utf16().collect::<Vec<_>>());
             buffer.as_mut().guess_segment_properties();
 
-            let mut plan = ShapePlan::new(
+            let plan1 = ShapePlan::new(
                 face.as_ref(),
                 &buffer.as_ref().get_segment_properties(),
                 &[],
                 None,
             );
-            assert_eq!(plan.as_ref().get_shaper(), Some(c"ot"));
-
-            assert!(plan.as_mut().execute(font.as_ref(), buffer.as_mut(), &[]));
-
-            assert_eq!(
-                buffer.as_ref().get_script().get_horizontal_direction(),
-                Direction::Ltr
+            let plan2 = ShapePlan::new_cached(
+                face.as_ref(),
+                &buffer.as_ref().get_segment_properties(),
+                &[],
+                None,
             );
 
-            let glyph_info = buffer.as_ref().glyph_info().unwrap();
-            assert_eq!(glyph_info.len(), 12);
-            assert_eq!(glyph_info[0].cluster, 0);
-            assert_eq!(glyph_info[0].codepoint, 62);
+            for mut plan in [plan1, plan2] {
+                assert_eq!(plan.as_ref().get_shaper(), Some(c"ot"));
 
-            assert_eq!(glyph_info[1].cluster, 1);
-            assert_eq!(glyph_info[1].codepoint, 50);
+                assert!(plan.as_mut().execute(font.as_ref(), buffer.as_mut(), &[]));
 
-            let glyph_pos = buffer.as_ref().glyph_positions().unwrap();
-            assert_eq!(glyph_pos.len(), 12);
-            assert_eq!(glyph_pos[0].x_advance, 734);
-            assert_eq!(glyph_pos[0].y_advance, 0);
-            assert_eq!(glyph_pos[0].x_offset, 0);
-            assert_eq!(glyph_pos[0].y_offset, 0);
+                assert_eq!(
+                    buffer.as_ref().get_script().get_horizontal_direction(),
+                    Direction::Ltr
+                );
 
-            assert_eq!(glyph_pos[1].x_advance, 435);
-            assert_eq!(glyph_pos[1].y_advance, 0);
-            assert_eq!(glyph_pos[1].x_offset, 0);
-            assert_eq!(glyph_pos[1].y_offset, 0);
+                let glyph_info = buffer.as_ref().glyph_info().unwrap();
+                assert_eq!(glyph_info.len(), 12);
+                assert_eq!(glyph_info[0].cluster, 0);
+                assert_eq!(glyph_info[0].codepoint, 62);
+
+                assert_eq!(glyph_info[1].cluster, 1);
+                assert_eq!(glyph_info[1].codepoint, 50);
+
+                let glyph_pos = buffer.as_ref().glyph_positions().unwrap();
+                assert_eq!(glyph_pos.len(), 12);
+                assert_eq!(glyph_pos[0].x_advance, 734);
+                assert_eq!(glyph_pos[0].y_advance, 0);
+                assert_eq!(glyph_pos[0].x_offset, 0);
+                assert_eq!(glyph_pos[0].y_offset, 0);
+
+                assert_eq!(glyph_pos[1].x_advance, 435);
+                assert_eq!(glyph_pos[1].y_advance, 0);
+                assert_eq!(glyph_pos[1].x_offset, 0);
+                assert_eq!(glyph_pos[1].y_offset, 0);
+
+                buffer.as_mut().reset();
+                buffer
+                    .as_mut()
+                    .add_utf16(&"Hello World!".encode_utf16().collect::<Vec<_>>());
+                buffer.as_mut().guess_segment_properties();
+            }
         }
     }
 }
