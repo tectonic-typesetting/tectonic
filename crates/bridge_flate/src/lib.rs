@@ -198,3 +198,6 @@ pub unsafe extern "C" fn tectonic_flate_free_decompressor(handle: *mut libc::c_v
     let _dc = Box::from_raw(handle.cast::<Decompressor>());
     // The box will be freed as we exit.
 }
+
+#[test]
+fn linkage() {}
