@@ -145,7 +145,8 @@ unsafe extern "C" fn glyph_contour_point<
     let font = FontRef::from_raw(NonNull::new(font).unwrap());
     let data = &*font_data.cast::<T>();
     let func = &*user_data.cast::<F>();
-    match func(font, data, gid, index as u32) {
+    #[allow(clippy::useless_conversion)]
+    match func(font, data, gid, index.into()) {
         Some(val) => {
             *x = val.0;
             *y = val.1;
@@ -184,6 +185,7 @@ unsafe extern "C" fn glyph_name<T, F: Fn(FontRef<'_>, &T, Codepoint, &mut [u8]) 
     }
 }
 
+/// A borrowed reference to a [`FontFuncs`]
 pub struct FontFuncsRef<'a, T>(
     NonNull<sys::hb_font_funcs_t>,
     PhantomData<(&'a sys::hb_font_funcs_t, T)>,
@@ -195,6 +197,7 @@ impl<T> FontFuncsRef<'_, T> {
     }
 }
 
+/// A borrowed mutable reference to a [`FontFuncs`]
 pub struct FontFuncsMut<'a, T>(
     FontFuncsRef<'a, T>,
     PhantomData<&'a mut sys::hb_font_funcs_t>,
@@ -205,6 +208,7 @@ impl<T> FontFuncsMut<'_, T> {
         self.0.as_ptr()
     }
 
+    /// Set the nominal glyph function
     pub fn nominal_glyph_func<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint) -> Option<Codepoint> + 'static,
@@ -221,6 +225,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the variation glyph function
     pub fn variation_glyph_func<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Option<Codepoint> + 'static,
@@ -237,6 +242,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the horizontal glyph advance function
     pub fn glyph_h_advance<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint) -> Position + 'static,
@@ -253,6 +259,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the vertical glyph advance function
     pub fn glyph_v_advance<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint) -> Position + 'static,
@@ -269,6 +276,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the horizontal glyph origin function
     pub fn glyph_h_origin<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint) -> Option<(Position, Position)> + 'static,
@@ -285,6 +293,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the vertical glyph origin function
     pub fn glyph_v_origin<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint) -> Option<(Position, Position)> + 'static,
@@ -301,6 +310,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the horizontal glyph kerning function
     pub fn glyph_h_kerning<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Position + 'static,
@@ -317,6 +327,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the vertical glyph kerning function
     pub fn glyph_v_kerning<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint, Codepoint) -> Position + 'static,
@@ -333,6 +344,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the glyph extents function
     pub fn glyph_extents<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint) -> Option<GlyphExtents> + 'static,
@@ -349,6 +361,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the contour point function
     pub fn glyph_contour_point<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint, u32) -> Option<(Position, Position)> + 'static,
@@ -365,6 +378,7 @@ impl<T> FontFuncsMut<'_, T> {
         }
     }
 
+    /// Set the glyph name function
     pub fn glyph_name<F>(&mut self, f: F)
     where
         F: Fn(FontRef<'_>, &T, Codepoint, &mut [u8]) -> usize + 'static,
@@ -390,23 +404,31 @@ impl<'a, T> Deref for FontFuncsMut<'a, T> {
     }
 }
 
+/// A font function table. These functions allow in-depth customization of glyph shaping for a font.
+/// The `T` parameter represents user-provided data when the functions are linked to a font, that
+/// will be passed to each function and thus be used as part of generating the result value.
 pub struct FontFuncs<T>(NonNull<sys::hb_font_funcs_t>, PhantomData<T>);
 
 impl<T> FontFuncs<T> {
+    /// Create a new font function table with no functions set
     pub fn new() -> FontFuncs<T> {
         // SAFETY: This is always safe to call
         let ptr = unsafe { sys::hb_font_funcs_create() };
         FontFuncs(NonNull::new(ptr).unwrap(), PhantomData)
     }
 
+    /// Convert into a shared reference
     pub fn as_ref(&self) -> FontFuncsRef<'_, T> {
         FontFuncsRef(self.0, PhantomData)
     }
 
+    /// Convert into a mutable reference
     pub fn as_mut(&mut self) -> FontFuncsMut<'_, T> {
         FontFuncsMut(self.as_ref(), PhantomData)
     }
 
+    /// Convert this table into an [`ImmutFontFuncs`], rendering future attempts to alter it into
+    /// no-ops. This makes the value safe to share between threads.
     pub fn make_immutable(self) -> ImmutFontFuncs<T> {
         let this = ManuallyDrop::new(self);
         // SAFETY: Internal pointer guaranteed valid. This cannot cause clones to exhibit UB -
@@ -437,9 +459,12 @@ impl<T> Drop for FontFuncs<T> {
     }
 }
 
+/// An immutable [`FontFuncs`] variant. This allows the value to become [`Send`] and [`Sync`]
+/// (assuming T is [`Send`] and [`Sync`]), as it may no longer be mutated by any other caller.
 pub struct ImmutFontFuncs<T>(NonNull<sys::hb_font_funcs_t>, PhantomData<T>);
 
 impl<T> ImmutFontFuncs<T> {
+    /// Convert into a shared reference
     pub fn as_ref(&self) -> FontFuncsRef<'_, T> {
         FontFuncsRef(self.0, PhantomData)
     }
@@ -464,9 +489,9 @@ impl<T> Drop for ImmutFontFuncs<T> {
 //         future attempts to change the value no-ops. This in turn means the object becomes safe to
 //         send to other threads. The contained data isn't bound because it is tied to the font,
 //         which is not Send or Sync and as such will not use the data across threads.
-unsafe impl<T> Send for ImmutFontFuncs<T> {}
+unsafe impl<T: Send> Send for ImmutFontFuncs<T> {}
 // SAFETY: ImmutFontFuncs is gained by calling `make_immutable` on a FontFuncs object, which renders
 //         future attempts to change the value no-ops. This in turn means the object becomes safe to
 //         reference from other threads. The contained data isn't bound because it is tied to the font,
 //         which is not Send or Sync and as such will not use the data across threads.
-unsafe impl<T> Sync for ImmutFontFuncs<T> {}
+unsafe impl<T: Sync> Sync for ImmutFontFuncs<T> {}

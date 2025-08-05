@@ -1,10 +1,29 @@
-use crate::{sys, FaceRef, GTag, LayoutSizeParams, Tag};
+//! OpenType layout support for Harfbuzz
+
+use crate::{sys, FaceRef, GTag, OtNameId, Tag};
 use std::ptr;
 
+/// Optical size data for a face
+pub struct LayoutSizeParams {
+    // TODO: Better doc comments
+    /// Design size
+    pub design_size: u32,
+    /// Sub-family ID
+    pub subfamily_id: u32,
+    /// Sub-family Name ID
+    pub subfamily_name_id: OtNameId,
+    /// Start
+    pub start: u32,
+    /// End
+    pub end: u32,
+}
+
+/// OpenType layout helper for [`FaceRef`] - helper for calling methods related to opentype layout.
 #[derive(Copy, Clone)]
 pub struct Layout<'a>(pub(crate) FaceRef<'a>);
 
 impl<'a> Layout<'a> {
+    /// Get the optical size feature data for this face.
     pub fn size_params(self) -> Option<LayoutSizeParams> {
         let mut design_size = 0;
         let mut subfamily_id = 0;
@@ -25,27 +44,31 @@ impl<'a> Layout<'a> {
         };
 
         if res != 0 {
+            #[allow(clippy::useless_conversion)]
             Some(LayoutSizeParams {
-                design_size: design_size as u32,
-                subfamily_id: subfamily_id as u32,
+                design_size: design_size.into(),
+                subfamily_id: subfamily_id.into(),
                 subfamily_name_id,
-                start: start as u32,
-                end: end as u32,
+                start: start.into(),
+                end: end.into(),
             })
         } else {
             None
         }
     }
 
+    /// Get information about an OpenType glyph table
     pub fn table(self, tag: GTag) -> Table<'a> {
         Table(self.0, tag)
     }
 }
 
+/// Information associated with an OpenType glyph table for a specific face
 #[derive(Copy, Clone)]
 pub struct Table<'a>(FaceRef<'a>, GTag);
 
 impl<'a> Table<'a> {
+    /// Number of script tags present on this table
     pub fn script_tags_len(self) -> usize {
         let tag = self.1.as_tag();
 
@@ -62,6 +85,7 @@ impl<'a> Table<'a> {
         len as usize
     }
 
+    /// Find a script by tag, if present in this table
     pub fn find_script(self, script: Tag) -> Option<Script<'a>> {
         let tag = self.1.as_tag();
 
@@ -86,6 +110,7 @@ impl<'a> Table<'a> {
         }
     }
 
+    /// Get the script information for a given index
     pub fn script(self, idx: usize) -> Option<Script<'a>> {
         if idx < self.script_tags_len() {
             Some(Script {
@@ -99,6 +124,7 @@ impl<'a> Table<'a> {
     }
 }
 
+/// A script in a table for a specific face
 #[derive(Copy, Clone)]
 pub struct Script<'a> {
     face: FaceRef<'a>,
@@ -107,6 +133,7 @@ pub struct Script<'a> {
 }
 
 impl<'a> Script<'a> {
+    /// The tag associated with this script
     pub fn tag(self) -> Tag {
         let mut len = 1;
         let mut out = 0;
@@ -124,6 +151,7 @@ impl<'a> Script<'a> {
         Tag::new(out)
     }
 
+    /// Number of language tags associated with this script
     pub fn language_tags_len(self) -> usize {
         let tag = self.table.as_tag();
 
@@ -141,6 +169,8 @@ impl<'a> Script<'a> {
         len as usize
     }
 
+    /// Attempt to find a language matching one of the provided tags under this script. If none
+    /// are found, an `Err` is returned containing the default language.
     pub fn select_lang(self, langs: &[Tag]) -> Result<Language<'a>, Language<'a>> {
         let tag = self.table.as_tag();
 
@@ -169,6 +199,7 @@ impl<'a> Script<'a> {
         }
     }
 
+    /// Get the language information for a given index
     pub fn lang(self, idx: usize) -> Option<Language<'a>> {
         if idx < self.language_tags_len() {
             Some(Language {
@@ -182,6 +213,8 @@ impl<'a> Script<'a> {
         }
     }
 
+    /// Attempt to get this script on the opposite [`GTag`] from the current one. If not present
+    /// on that table, returns `None`.
     pub fn swap_table(self) -> Option<Script<'a>> {
         let table = match self.table {
             GTag::GPos => GTag::GSub,
@@ -191,6 +224,7 @@ impl<'a> Script<'a> {
     }
 }
 
+/// A language in a table for a specific script and face
 #[derive(Copy, Clone)]
 pub struct Language<'a> {
     face: FaceRef<'a>,
@@ -200,6 +234,7 @@ pub struct Language<'a> {
 }
 
 impl Language<'_> {
+    /// The tag associated with this language
     pub fn tag(self) -> Tag {
         let mut len = 1;
         let mut out = 0;
@@ -219,6 +254,7 @@ impl Language<'_> {
         Tag::new(out)
     }
 
+    /// Number of feature tags associated with this language
     pub fn feature_tags_len(self) -> usize {
         let tag = self.table.as_tag();
 
@@ -237,6 +273,7 @@ impl Language<'_> {
         len as usize
     }
 
+    /// Get the feature tag for a given index
     pub fn feature(self, idx: usize) -> Option<Tag> {
         let mut len = 1;
         let mut out = 0;

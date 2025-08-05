@@ -4,9 +4,6 @@
 //! This crate exists to export the Harfbuzz *C/C++* API into the Cargo framework, as well as
 //! provide bindings to other tectonic crates.
 
-#![deny(clippy::undocumented_unsafe_blocks)]
-#![allow(clippy::unnecessary_cast, missing_docs)]
-
 use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ops::Deref;
@@ -15,6 +12,7 @@ use std::{ptr, slice};
 
 mod font_funcs;
 pub mod ot;
+#[doc(hidden)]
 pub mod sys;
 #[cfg(test)]
 mod test_util;
@@ -49,58 +47,71 @@ unsafe extern "C" fn dealloc<T: 'static>(user_data: *mut ()) {
     let _ = unsafe { Box::from_raw(user_data.cast::<T>()) };
 }
 
+/// Data type representing different script values
 #[repr(transparent)]
 pub struct Script(sys::hb_script_t);
 
 impl Script {
+    /// The invalid script
     pub const INVALID: Script = Script(sys::HB_SCRIPT_INVALID);
 
+    /// Get the text layout direction of this script
     pub fn get_horizontal_direction(&self) -> Direction {
         // SAFETY: This is always safe to call
         unsafe { sys::hb_script_get_horizontal_direction(self.0) }
     }
 }
 
+/// Tag identifiers - used to identify tables, scripts, etc.
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(transparent)]
 pub struct Tag(sys::hb_tag_t);
 
 impl Tag {
+    /// Create a new tag from a raw 4-byte integer
     pub fn new(val: u32) -> Tag {
         Tag(val)
     }
 
+    /// Create a new tag from a string. Strings shorter than 4 characters will be padded with
+    /// spaces, those longer than 4 characters will be truncated.
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(val: &str) -> Tag {
         // SAFETY: The provided string is not used past this call, and not read past len
         Tag(unsafe { sys::hb_tag_from_string(val.as_ptr().cast(), val.len() as libc::c_int) })
     }
 
+    /// Same as [`Self::from_str`], but accepts a C-string
     pub fn from_cstr(val: &CStr) -> Tag {
         // SAFETY: The provided string is not used past this call, and not read past the terminating
         //         null
         Tag(unsafe { sys::hb_tag_from_string(val.as_ptr(), -1) })
     }
 
+    /// Convert this tag into a 4-byte integer
     pub fn to_raw(self) -> u32 {
         self.0
     }
 
+    /// Convert this tag into a [`Script`]
     pub fn to_script(self) -> Script {
         // SAFETY: This is always safe to call
         Script(unsafe { sys::hb_ot_tag_to_script(self.0) })
     }
 
+    /// Convert this tag into a [`Language`]
     pub fn to_language(self) -> Language {
         // SAFETY: This is always safe to call
         Language(unsafe { sys::hb_ot_tag_to_language(self.0) })
     }
 }
 
+/// Data type representing BCP 47 language tags
 #[derive(Copy, Clone)]
 pub struct Language(*mut sys::hb_language_impl_t);
 
 impl Language {
+    /// Convert the provided string into a language tag
     pub fn from_string(str: &str) -> Language {
         // SAFETY: The provided string is not used past this call, and not read past len
         Language(unsafe {
@@ -108,12 +119,14 @@ impl Language {
         })
     }
 
+    /// Same as [`Self::from_string`], but accepts a C-string
     pub fn from_cstr(str: &CStr) -> Language {
         // SAFETY: The provided string is not used past this call, and not read past the terminating
         //         null
         Language(unsafe { sys::hb_language_from_string(str.as_ptr(), -1) })
     }
 
+    /// Convert this tag into its string representation
     pub fn to_string(&self) -> Option<&CStr> {
         // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_language_to_string(self.0) };
@@ -135,6 +148,7 @@ impl Default for Language {
     }
 }
 
+/// A borrowed reference to a [`Buffer`]
 #[derive(Copy, Clone)]
 pub struct BufferRef<'a>(NonNull<sys::hb_buffer_t>, PhantomData<&'a sys::hb_buffer_t>);
 
@@ -143,15 +157,19 @@ impl<'a> BufferRef<'a> {
         self.0.as_ptr()
     }
 
+    /// Get the number of items in this buffer
     pub fn len(self) -> usize {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_get_length(self.as_ptr()) as usize }
     }
 
+    /// Whether this buffer is empty
     pub fn is_empty(self) -> bool {
         self.len() == 0
     }
 
+    /// Get a slice of glyph information. Will return `None` if no information as present, such
+    /// as before this buffer is shaped via a call to [`ShapePlanMut::execute`].
     pub fn glyph_info(self) -> Option<&'a [GlyphInfo]> {
         let mut len = 0;
         // SAFETY: Internal pointer guaranteed valid
@@ -168,6 +186,8 @@ impl<'a> BufferRef<'a> {
         }
     }
 
+    /// Get a slice of glyph positions. Will return `None` if no information as present, such
+    /// as before this buffer is shaped via a call to [`ShapePlanMut::execute`].
     pub fn glyph_positions(self) -> Option<&'a [GlyphPosition]> {
         let mut len = 0;
         // SAFETY: Internal pointer guaranteed valid
@@ -182,11 +202,13 @@ impl<'a> BufferRef<'a> {
         }
     }
 
+    /// Get the script of this buffer
     pub fn get_script(self) -> Script {
         // SAFETY: Internal pointer guaranteed valid
         Script(unsafe { sys::hb_buffer_get_script(self.as_ptr()) })
     }
 
+    /// Get the segment properties of this buffer
     pub fn get_segment_properties(self) -> SegmentProperties {
         let mut props = SegmentProperties::default();
         // SAFETY: Internal pointer guaranteed valid
@@ -195,6 +217,7 @@ impl<'a> BufferRef<'a> {
     }
 }
 
+/// A borrowed mutable reference to a [`Buffer`]
 pub struct BufferMut<'a>(BufferRef<'a>, PhantomData<&'a mut sys::hb_buffer_t>);
 
 impl BufferMut<'_> {
@@ -202,45 +225,53 @@ impl BufferMut<'_> {
         self.0.as_ptr()
     }
 
+    /// Set the content type of this buffer. This should rarely need called, as most methods that
+    /// mutate a buffer transition the content type themselves.
     pub fn set_content_type(&mut self, content: BufferContentType) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_content_type(self.as_ptr_mut(), content) }
     }
 
+    /// Set the text direction for this buffer.
     pub fn set_direction(&mut self, direction: Direction) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_direction(self.as_ptr_mut(), direction) }
     }
 
+    /// Set the language for this buffer.
     pub fn set_language(&mut self, lang: Language) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_language(self.as_ptr_mut(), lang.0) }
     }
 
+    /// Set the script for this buffer.
     pub fn set_script(&mut self, script: Script) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_set_script(self.as_ptr_mut(), script.0) }
     }
 
-    pub fn add_utf16(&mut self, text: &[u16], offset: usize, len: Option<usize>) {
-        // SAFETY: Internal pointer guaranteed valid. Provided text isn't held past this call,
-        //         and only accessed from [offset..offset+len] in UTF16 chars.
+    /// Add UTF-16 codepoints to the contents of the buffer.
+    pub fn add_utf16(&mut self, text: &[u16]) {
+        // SAFETY: Internal pointer guaranteed valid. Provided text isn't held past this call.
         unsafe {
             sys::hb_buffer_add_utf16(
                 self.as_ptr_mut(),
                 text.as_ptr(),
                 text.len() as libc::c_int,
-                offset as libc::c_uint,
-                len.unwrap_or(text.len()) as libc::c_int,
+                0,
+                text.len() as libc::c_int,
             )
         }
     }
 
+    /// Set properties that haven't been set manually based on the current contents of the buffer.
     pub fn guess_segment_properties(&mut self) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_guess_segment_properties(self.as_ptr_mut()) }
     }
 
+    /// Reset the buffer to a freshly created status. More efficient than calling [`Buffer::new`]
+    /// repeatedly.
     pub fn reset(&mut self) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_buffer_reset(self.as_ptr_mut()) }
@@ -255,19 +286,24 @@ impl<'a> Deref for BufferMut<'a> {
     }
 }
 
+/// Container for text and associated properties before shaping, then glyphs and associated
+/// information after shaping.
 pub struct Buffer(NonNull<sys::hb_buffer_t>);
 
 impl Buffer {
+    /// Create a new buffer to use when shaping text
     pub fn new() -> Buffer {
         // SAFETY: This is always safe to call
         let ptr = unsafe { sys::hb_buffer_create() };
         Buffer(NonNull::new(ptr).unwrap())
     }
 
+    /// Convert into a shared reference
     pub fn as_ref(&self) -> BufferRef<'_> {
         BufferRef(self.0, PhantomData)
     }
 
+    /// Convert into a mutable reference
     pub fn as_mut(&mut self) -> BufferMut<'_> {
         BufferMut(self.as_ref(), PhantomData)
     }
@@ -286,9 +322,12 @@ impl Drop for Buffer {
     }
 }
 
+/// Blob of binary data. Facilitates interaction of program blobs (such as static memory or [`Vec`])
+/// with the Harfbuzz library's lifecycle management.
 pub struct Blob(NonNull<sys::hb_blob_t>);
 
 impl Blob {
+    /// Create a new blob from a [`Vec`] of bytes
     pub fn new(data: Vec<u8>) -> Blob {
         unsafe extern "C" fn blob_dealloc(ptr: *mut ()) {
             let slice = Box::from_raw(ptr.cast::<(*mut (), usize)>());
@@ -315,9 +354,12 @@ impl Blob {
     }
 }
 
+/// Valid tags for use in OpenType layout-related methods
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum GTag {
+    /// GPOS table, Glyph Positioning
     GPos,
+    /// GSUB table, Glyph Substitutions
     GSub,
 }
 
@@ -330,16 +372,9 @@ impl GTag {
     }
 }
 
-pub struct LayoutSizeParams {
-    pub design_size: u32,
-    pub subfamily_id: u32,
-    pub subfamily_name_id: OtNameId,
-    pub start: u32,
-    pub end: u32,
-}
-
 // TODO: OTLayout/OTTable/OTScript/OTLanguage
 
+/// A borrowed reference to a [`Face`]
 #[derive(Copy, Clone)]
 pub struct FaceRef<'a>(NonNull<sys::hb_face_t>, PhantomData<&'a sys::hb_face_t>);
 
@@ -352,11 +387,13 @@ impl<'a> FaceRef<'a> {
         self.0.as_ptr()
     }
 
+    /// Check whether this font has an OpenType math table
     pub fn has_ot_math_data(self) -> bool {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_ot_math_has_data(self.as_ptr()) != 0 }
     }
 
+    /// Helper for retrieving OpenType layout information for this face
     pub fn ot_layout(self) -> ot::Layout<'a> {
         ot::Layout(self)
     }
@@ -370,6 +407,7 @@ impl<'a> FaceRef<'a> {
     // }
 }
 
+/// A borrowed mutable reference to a [`Face`]
 pub struct FaceMut<'a>(FaceRef<'a>, PhantomData<&'a mut sys::hb_face_t>);
 
 impl FaceMut<'_> {
@@ -377,19 +415,26 @@ impl FaceMut<'_> {
         self.0.as_ptr()
     }
 
+    /// Set the index of this face. This has no effect on the face directly.
     pub fn set_index(&mut self, index: u32) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_face_set_index(self.as_ptr_mut(), index as libc::c_uint) }
     }
 
+    /// Set the units-per-em for this face
     pub fn set_upem(&mut self, upem: u32) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_face_set_upem(self.as_ptr_mut(), upem as libc::c_uint) }
     }
 }
+
+/// A typographic face - a typeface combined with a style, loaded from a binary blob. Not yet
+/// associated with a size or variation. See [`Font`].
 pub struct Face(NonNull<sys::hb_face_t>);
 
 impl Face {
+    /// Create a new [`Face`], where it is easier to provide individual tables rather than a blob
+    /// of all font data. Retrieving all table won't work for faces created this way by default.
     pub fn new_tables<T: Fn(FaceRef<'_>, Tag) -> Option<Blob> + 'static>(f: T) -> Face {
         unsafe extern "C" fn get_table<T: Fn(FaceRef<'_>, Tag) -> Option<Blob> + 'static>(
             face: *mut sys::hb_face_t,
@@ -422,10 +467,12 @@ impl Face {
         Face(NonNull::new(face).unwrap())
     }
 
+    /// Convert into a shared reference
     pub fn as_ref(&self) -> FaceRef<'_> {
         FaceRef(self.0, PhantomData)
     }
 
+    /// Convert into a mutable reference
     pub fn as_mut(&mut self) -> FaceMut<'_> {
         FaceMut(self.as_ref(), PhantomData)
     }
@@ -438,6 +485,7 @@ impl Drop for Face {
     }
 }
 
+/// A borrowed reference to a [`Font`]
 #[derive(Copy, Clone)]
 pub struct FontRef<'a>(NonNull<sys::hb_font_t>, PhantomData<&'a sys::hb_font_t>);
 
@@ -446,22 +494,26 @@ impl<'a> FontRef<'a> {
         FontRef(ptr, PhantomData)
     }
 
+    #[doc(hidden)]
     pub fn as_ptr(self) -> *mut sys::hb_font_t {
         self.0.as_ptr()
     }
 
+    /// Get the [`Face`] for this font.
     pub fn face(self) -> FaceRef<'a> {
         // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_font_get_face(self.as_ptr()) };
         FaceRef(NonNull::new(ptr).unwrap(), PhantomData)
     }
 
+    /// Get the point size of this font
     pub fn ptem(self) -> f32 {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_font_get_ptem(self.as_ptr()) }
     }
 }
 
+/// A borrowed mutable reference to a [`Font`]
 pub struct FontMut<'a>(FontRef<'a>, PhantomData<&'a mut sys::hb_font_t>);
 
 impl FontMut<'_> {
@@ -469,16 +521,19 @@ impl FontMut<'_> {
         self.0.as_ptr()
     }
 
+    /// Set the horizontal and vertical scale of this font
     pub fn set_scale(&mut self, x: i32, y: i32) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_font_set_scale(self.as_ptr_mut(), x as libc::c_int, y as libc::c_int) }
     }
 
+    /// Set the pixels-per-em of this font
     pub fn set_ppem(&mut self, x: u32, y: u32) {
         // SAFETY: Internal pointer guaranteed valid
         unsafe { sys::hb_font_set_ppem(self.as_ptr_mut(), x as libc::c_uint, y as libc::c_uint) }
     }
 
+    /// Set the font functions associated with this font
     pub fn set_funcs<T>(&mut self, funcs: FontFuncsRef<'static, T>, data: T)
     where
         T: 'static,
@@ -499,19 +554,24 @@ impl FontMut<'_> {
     }
 }
 
+/// A [`Face`] that has been associated with a specific size and, possibly, variation. Ready for
+/// use in shaping.
 pub struct Font(NonNull<sys::hb_font_t>);
 
 impl Font {
+    /// Create a new font from the given [`Face`].
     pub fn new(face: FaceRef<'_>) -> Font {
         // SAFETY: The pointer from FaceRef is guaranteed valid
         let ptr = unsafe { sys::hb_font_create(face.as_ptr()) };
         Font(NonNull::new(ptr).unwrap())
     }
 
+    /// Convert into a shared reference
     pub fn as_ref(&self) -> FontRef<'_> {
         FontRef(self.0, PhantomData)
     }
 
+    /// Convert into a mutable reference
     pub fn as_mut(&mut self) -> FontMut<'_> {
         FontMut(self.as_ref(), PhantomData)
     }
@@ -524,6 +584,7 @@ impl Drop for Font {
     }
 }
 
+/// A borrowed reference to a [`ShapePlan`]
 pub struct ShapePlanRef<'a>(
     NonNull<sys::hb_shape_plan_t>,
     PhantomData<&'a sys::hb_shape_plan_t>,
@@ -534,19 +595,23 @@ impl ShapePlanRef<'_> {
         self.0.as_ptr()
     }
 
+    /// Get the shaper that will be used for this [`ShapePlan`]. May be `None` if no shaper was
+    /// provided and no default could be found, in which case attempting to shape text will likely
+    /// fail.
     pub fn get_shaper(&self) -> Option<&CStr> {
         // SAFETY: Internal pointer guaranteed valid
         let ptr = unsafe { sys::hb_shape_plan_get_shaper(self.as_ptr()) };
         // FIXME(CraftSpider): See BufferRef::get_glyph_info
-        // SAFETY: The returned pointer is guaranteed valid for as long as ShapePlan isn't updated.
         if ptr.is_null() {
             None
         } else {
+            // SAFETY: The returned pointer is guaranteed valid for as long as ShapePlan isn't updated.
             Some(unsafe { CStr::from_ptr(ptr) })
         }
     }
 }
 
+/// A borrowed mutable reference to a [`ShapePlan`]
 pub struct ShapePlanMut<'a>(ShapePlanRef<'a>, PhantomData<&'a mut sys::hb_shape_plan_t>);
 
 impl ShapePlanMut<'_> {
@@ -554,6 +619,7 @@ impl ShapePlanMut<'_> {
         self.0.as_ptr()
     }
 
+    /// Shape a buffer using the provided [`Font`] and [`Feature`]s
     pub fn execute(
         &mut self,
         font: FontRef<'_>,
@@ -583,9 +649,15 @@ impl<'a> Deref for ShapePlanMut<'a> {
     }
 }
 
+/// A shaping plan, information about how Harfbuzz will shape a text segment based on the segment's
+/// properties.
 pub struct ShapePlan(NonNull<sys::hb_shape_plan_t>);
 
 impl ShapePlan {
+    /// Create a new shaping plan for a given [`Face`], [`Feature`]s, and [`SegmentProperties`].
+    ///
+    /// The shaper list will be the list of shapers to try. If `None`, then Harfbuzz will attempt
+    /// to locate a default shaper to use.
     pub fn new(
         face: FaceRef<'_>,
         props: &SegmentProperties,
@@ -610,6 +682,9 @@ impl ShapePlan {
         ShapePlan(NonNull::new(ptr).unwrap())
     }
 
+    /// Create a new shape plan for a given [`Face`], [`Feature`]s, and [`SegmentProperties`]. This
+    /// shape plan is cached by Harfbuzz, which can make creation faster if the same arguments
+    /// are expected to be used frequently.
     pub fn new_cached(
         face: FaceRef<'_>,
         props: &SegmentProperties,
@@ -634,10 +709,12 @@ impl ShapePlan {
         ShapePlan(NonNull::new(ptr).unwrap())
     }
 
+    /// Convert into a shared reference
     pub fn as_ref(&self) -> ShapePlanRef<'_> {
         ShapePlanRef(self.0, PhantomData)
     }
 
+    /// Convert into a mutable reference
     pub fn as_mut(&mut self) -> ShapePlanMut<'_> {
         ShapePlanMut(self.as_ref(), PhantomData)
     }
@@ -678,7 +755,7 @@ mod tests {
 
     #[test]
     fn test_font() {
-        for (ft_face, face) in test_faces() {
+        for (_, face) in test_faces() {
             let font = Font::new(face.as_ref());
 
             assert_eq!(font.as_ref().ptem(), 0.0);
@@ -695,7 +772,7 @@ mod tests {
             let mut buffer = Buffer::new();
             buffer
                 .as_mut()
-                .add_utf16(&"Hello World!".encode_utf16().collect::<Vec<_>>(), 0, None);
+                .add_utf16(&"Hello World!".encode_utf16().collect::<Vec<_>>());
             buffer.as_mut().guess_segment_properties();
 
             let mut plan = ShapePlan::new(

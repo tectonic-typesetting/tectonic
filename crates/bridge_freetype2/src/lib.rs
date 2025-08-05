@@ -610,6 +610,13 @@ impl Drop for Face {
     }
 }
 
+// SAFETY: Functions that are not safe to share across threads (such as FT_Done_Face) are protected
+//         by mutex to ensure they are only called once per thread.
+unsafe impl Send for Face {}
+// SAFETY: Functions that are not safe to share across threads (such as FT_Done_Face) are protected
+//         by mutex to ensure they are only called once per thread.
+unsafe impl Sync for Face {}
+
 #[cfg(test)]
 mod tests {
     use super::*;
