@@ -297,3 +297,44 @@ impl Language<'_> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_util::test_faces;
+
+    #[test]
+    fn test_ot_layout_tables() {
+        for (_, face) in test_faces() {
+            let layout = face.as_ref().ot_layout();
+            for table in [layout.table(GTag::GSub), layout.table(GTag::GPos)] {
+                assert_eq!(table.script_tags_len(), 3);
+            }
+        }
+    }
+
+    #[test]
+    fn test_ot_layout_table_scripts() {
+        for (_, face) in test_faces() {
+            let layout = face.as_ref().ot_layout();
+            for table in [layout.table(GTag::GSub), layout.table(GTag::GPos)] {
+                let script = table.script(0).unwrap();
+                assert_eq!(script.tag(), Tag::from_str("DFLT"));
+                assert_eq!(script.language_tags_len(), 0);
+                assert_eq!(
+                    script.script,
+                    table.find_script(script.tag()).unwrap().script
+                );
+
+                let script2 = table.script(1).unwrap();
+
+                assert_eq!(script2.tag(), Tag::from_str("cyrl"));
+                assert_eq!(script2.language_tags_len(), 0);
+                assert_eq!(
+                    script2.script,
+                    table.find_script(script2.tag()).unwrap().script
+                );
+            }
+        }
+    }
+}
