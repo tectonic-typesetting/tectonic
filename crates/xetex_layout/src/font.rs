@@ -1,3 +1,5 @@
+//! Font handling - specific fonts used by an engine while shaping text.
+
 use crate::c_api::{Fixed, GlyphBBox, GlyphID, PlatformFontRef};
 use crate::utils::fix_to_d;
 use std::ffi::{CStr, CString};
@@ -33,7 +35,7 @@ fn get_glyph_advance(face: &ft::Face, gid: libc::c_uint, vertical: bool) -> ft::
     out as ft::Fixed
 }
 
-pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Arc<Mutex<ft::Face>>> {
+fn get_font_funcs() -> hb::FontFuncsRef<'static, Arc<Mutex<ft::Face>>> {
     static FONTS: OnceLock<hb::ImmutFontFuncs<Arc<Mutex<ft::Face>>>> = OnceLock::new();
 
     FONTS
@@ -130,7 +132,7 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Arc<Mutex<ft::Face>>> {
         .as_ref()
 }
 
-pub fn get_larger_script_list_table_ot(font: &Font) -> hb::ot::Table<'_> {
+pub(crate) fn get_larger_script_list_table_ot(font: &Font) -> hb::ot::Table<'_> {
     let layout = font.hb_font().face().ot_layout();
 
     let sl_sub = layout.table(hb::GTag::GSub);
@@ -149,8 +151,7 @@ enum FontKind {
     Mac(CTFontDescriptor, Option<CTFont>),
 }
 
-/// cbindgen:rename-all=camelCase
-#[repr(C)]
+/// A font, with all the information needed by TeX to shape it for typesetting.
 pub struct Font {
     units_per_em: libc::c_ushort,
     point_size: f32,
@@ -358,7 +359,7 @@ impl Font {
     }
 
     #[cfg(target_os = "macos")]
-    pub fn initialize_mac(&mut self) -> i32 {
+    fn initialize_mac(&mut self) -> i32 {
         let FontKind::Mac(descriptor, font_ref) = &mut self.kind else {
             return 1;
         };

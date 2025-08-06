@@ -280,7 +280,7 @@ pub unsafe extern "C" fn layoutChars(
 ) -> libc::c_int {
     let chars = slice::from_raw_parts(chars, max as usize);
     let engine = &mut *engine;
-    engine.layout_chars(chars, offset, count, rtl) as libc::c_int
+    engine.layout_chars(&chars[offset as usize..(offset + count) as usize], rtl) as libc::c_int
 }
 
 #[no_mangle]

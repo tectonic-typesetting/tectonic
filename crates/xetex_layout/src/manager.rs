@@ -1,3 +1,5 @@
+//! Font management - backend API for resolving fonts and caching them for future use.
+
 use crate::c_api::{Fixed, PlatformFontRef};
 use crate::font::Font;
 use crate::utils::{d_to_fix, fix_to_d};
@@ -18,7 +20,7 @@ thread_local! {
 }
 
 #[derive(Default)]
-pub struct OpSizeRec {
+pub(crate) struct OpSizeRec {
     design_size: f64,
     min_size: f64,
     max_size: f64,
@@ -27,7 +29,7 @@ pub struct OpSizeRec {
 }
 
 #[allow(dead_code)]
-pub struct FontInfo {
+struct FontInfo {
     full_name: Option<CString>,
     ps_name: CString,
     family_name: CString,
@@ -72,7 +74,7 @@ impl FontInfo {
 }
 
 #[derive(Default)]
-pub struct FamilyInfo {
+struct FamilyInfo {
     styles: HashMap<CString, usize>,
     min_weight: u16,
     max_weight: u16,
@@ -89,14 +91,14 @@ impl FamilyInfo {
 }
 
 #[derive(Default)]
-pub struct NameCollection {
+struct NameCollection {
     family_names: Vec<CString>,
     style_names: Vec<CString>,
     full_names: Vec<CString>,
     ps_name: Option<CString>,
 }
 
-pub trait FontManagerBackend {
+trait FontManagerBackend {
     fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr>;
     fn get_op_size_rec_and_style_flags(&self, font: &mut FontInfo);
     fn search_for_host_platform_fonts(&mut self, maps: &mut FontMaps, name: &CStr);
@@ -155,7 +157,7 @@ fn base_get_op_size_rec_and_style_flags(font: &mut FontInfo) {
 }
 
 #[derive(Default)]
-pub struct FontMaps {
+struct FontMaps {
     fonts: Vec<FontInfo>,
     families: Vec<FamilyInfo>,
 
@@ -166,7 +168,7 @@ pub struct FontMaps {
 }
 
 impl FontMaps {
-    pub fn add_to_maps(
+    fn add_to_maps(
         &mut self,
         backend: &dyn FontManagerBackend,
         pfont: PlatformFontRef,
@@ -270,12 +272,17 @@ impl FontMaps {
     }
 }
 
+/// The font engine to use
 #[derive(Copy, Clone, Debug, PartialEq)]
 #[repr(u8)]
 pub enum Engine {
+    /// Use the platform default
     Default = 0,
+    /// Use the Apple font engine
     Apple = b'A',
+    /// Use OpenType
     OpenType = b'O',
+    /// Use Graphite2
     Graphite = b'G',
 }
 
@@ -293,6 +300,8 @@ impl TryFrom<u8> for Engine {
     }
 }
 
+/// Font manager - combines a font management backend such as FreeType or CoreText with a cache of
+/// loaded fonts and the engine to use.
 pub struct FontManager {
     backend: Box<dyn FontManagerBackend>,
     maps: FontMaps,
@@ -323,6 +332,7 @@ impl FontManager {
         });
     }
 
+    /// Access the global font manager. Initialize it if necessary.
     pub fn with_font_manager<T>(f: impl FnOnce(&mut FontManager) -> T) -> T {
         let init = FONT_MGR.with_borrow(|mgr| mgr.is_none());
         if init {
@@ -331,12 +341,14 @@ impl FontManager {
         FONT_MGR.with_borrow_mut(|mgr| f(mgr.as_mut().unwrap()))
     }
 
+    /// Destroy the global font manager
     pub fn destroy() {
         FONT_MGR.with_borrow_mut(|mgr| {
             *mgr = None;
         })
     }
 
+    /// Get the font for a given name, variant, and point size
     pub fn find_font(
         &mut self,
         name: &CStr,
@@ -685,17 +697,18 @@ impl FontManager {
         Some(font.font_ref.clone())
     }
 
-    pub fn get_full_name(&self, font: PlatformFontRef) -> *const libc::c_char {
+    /// Get the full name of a font as a C-string
+    pub fn get_full_name(&self, font: PlatformFontRef) -> &CStr {
         let font_pos = *self
             .maps
             .platform_ref_to_font
             .get(&font)
             .unwrap_or_else(|| panic!("internal error {} in FontManager", 2));
         let font = &self.maps.fonts[font_pos];
-        let name = font.full_name.as_ref().unwrap_or(&font.ps_name);
-        name.as_ptr()
+        font.full_name.as_ref().unwrap_or(&font.ps_name)
     }
 
+    /// Get the design size of a font
     pub fn get_design_size(&self, font: &Font) -> f64 {
         let size_rec = Self::get_op_size(font);
         match size_rec {
@@ -704,7 +717,7 @@ impl FontManager {
         }
     }
 
-    pub fn weight_and_width_diff(a: &FontInfo, b: &FontInfo) -> libc::c_int {
+    fn weight_and_width_diff(a: &FontInfo, b: &FontInfo) -> libc::c_int {
         if a.weight == 0 && a.width == 0 {
             return if a.is_bold == b.is_bold { 0 } else { 10000 };
         }
@@ -717,7 +730,7 @@ impl FontManager {
         (u16::abs_diff(a.weight, b.weight) + wid_diff) as libc::c_int
     }
 
-    pub fn style_diff(
+    fn style_diff(
         a: &FontInfo,
         wt: libc::c_int,
         wd: libc::c_int,
@@ -733,7 +746,7 @@ impl FontManager {
             + wid_diff as u32) as libc::c_int
     }
 
-    pub fn best_match_from_family(
+    fn best_match_from_family(
         &self,
         family: &FamilyInfo,
         wt: libc::c_int,
@@ -759,18 +772,19 @@ impl FontManager {
         best_match
     }
 
-    pub fn append_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
+    fn append_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
         if !list.iter().any(|s| **s == *str.as_ref()) {
             list.push(str.into())
         }
     }
 
-    pub fn prepend_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
+    #[cfg_attr(target_os = "macos", allow(unused))]
+    fn prepend_to_list<T: Into<CString> + AsRef<CStr>>(list: &mut Vec<CString>, str: T) {
         *list = list.drain(..).filter(|s| **s != *str.as_ref()).collect();
         list.insert(0, str.into());
     }
 
-    pub fn get_op_size(font: &Font) -> Option<OpSizeRec> {
+    fn get_op_size(font: &Font) -> Option<OpSizeRec> {
         let hb_font = font.try_hb_font()?;
 
         hb_font
@@ -787,27 +801,34 @@ impl FontManager {
             })
     }
 
-    pub fn search_for_host_platform_fonts(&mut self, name: &CStr) {
+    fn search_for_host_platform_fonts(&mut self, name: &CStr) {
         self.backend
             .search_for_host_platform_fonts(&mut self.maps, name)
     }
 
+    /// Get the platform-specific font file location
     pub fn get_platform_font_desc<'a>(&'a self, font: &'a PlatformFontRef) -> Cow<'a, CStr> {
         self.backend.get_platform_font_desc(font)
     }
 
+    // TODO: Design size shouldn't really be a global property, as it's specific to last-loaded font
+    /// Get the last loaded font's design size
     pub fn font_design_size(&self) -> Fixed {
         self.loaded_font_design_size
     }
 
+    /// Set the design size to return for the last loaded font
     pub fn set_font_design_size(&mut self, val: Fixed) {
         self.loaded_font_design_size = val;
     }
 
+    /// Get the requested engine to use
     pub fn get_req_engine(&self) -> Engine {
         self.req_engine
     }
 
+    /// Set the engine to request - this engine will be used if possible, falling back to a
+    /// platform-specific list of other options.
     pub fn set_req_engine(&mut self, engine: Engine) {
         self.req_engine = engine;
     }

@@ -139,7 +139,6 @@ impl FontManagerBackend for MacBackend {
         let matched = find_font_with_name(name_str, FontAttribute::FamilyName);
         if let Some(matched) = matched {
             self.add_family_to_caches(maps, matched);
-            return;
         }
     }
 

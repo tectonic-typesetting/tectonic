@@ -1,3 +1,5 @@
+//! Base engine for laying out fonts.
+
 use crate::font::Font;
 use crate::manager::{Engine, FontManager};
 use std::borrow::Cow;
@@ -7,8 +9,11 @@ use std::ptr;
 use tectonic_bridge_graphite2 as gr;
 use tectonic_bridge_harfbuzz as hb;
 
+/// Item that may be borrowed or owned. Similar to `Cow`, but with mutable references.
 pub enum MaybeBorrow<'a, T> {
+    /// Owned item
     Owned(Box<T>),
+    /// Borrowed item
     Borrowed(&'a mut T),
 }
 
@@ -32,12 +37,13 @@ impl<T> DerefMut for MaybeBorrow<'_, T> {
     }
 }
 
-pub struct GrBreak {
+pub(crate) struct GrBreak {
     pub(crate) segment: gr::Segment,
     pub(crate) slot: gr::Slot,
     pub(crate) text_len: libc::c_uint,
 }
 
+/// Base layout engine. Combines all the information needed to shape a font for TeX.
 #[repr(C)]
 pub struct LayoutEngine {
     font: MaybeBorrow<'static, Font>,
@@ -57,6 +63,7 @@ pub struct LayoutEngine {
 }
 
 impl LayoutEngine {
+    /// Create a new layout engine from the needed information
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         font: MaybeBorrow<'static, Font>,
@@ -97,34 +104,42 @@ impl LayoutEngine {
         }
     }
 
+    /// Get the font script used
     pub fn script(&self) -> hb::Tag {
         self.script
     }
 
+    /// Get the extend
     pub fn extend(&self) -> f32 {
         self.extend
     }
 
+    /// Get the slant
     pub fn slant(&self) -> f32 {
         self.slant
     }
 
+    /// Get the embolden
     pub fn embolden(&self) -> f32 {
         self.embolden
     }
 
+    /// Get the RGB
     pub fn rgb(&self) -> u32 {
         self.rgb_value
     }
 
+    /// Get the font
     pub fn font(&self) -> &Font {
         &self.font
     }
 
+    /// Get a mutable reference to the font
     pub fn font_mut(&mut self) -> &mut Font {
         &mut self.font
     }
 
+    /// Get the default direction
     pub fn default_dir(&self) -> u8 {
         pub const UBIDI_DEFAULT_LTR: u8 = 0xFE;
         pub const UBIDI_DEFAULT_RTL: u8 = 0xFF;
@@ -137,21 +152,25 @@ impl LayoutEngine {
         }
     }
 
+    /// Check whether we're using the graphite shaper
     pub fn used_graphite(&self) -> bool {
         self.shaper
             .as_ref()
             .is_some_and(|s| s.to_bytes() == b"graphite2")
     }
 
+    /// Check whether we're using the OpenType shaper
     pub fn used_ot(&self) -> bool {
         self.shaper.as_ref().is_some_and(|s| s.to_bytes() == b"ot")
     }
 
+    /// Get the harfbuzz buffer
     pub fn hb_buffer(&self) -> hb::BufferRef<'_> {
         self.hb_buffer.as_ref()
     }
 
-    pub fn layout_chars(&mut self, chars: &[u16], offset: i32, count: i32, rtl: bool) -> usize {
+    /// Get the number of characters in the given slice
+    pub fn layout_chars(&mut self, chars: &[u16], rtl: bool) -> usize {
         let hb_font = self.font.hb_font();
         let hb_face = hb_font.face();
 
@@ -202,9 +221,7 @@ impl LayoutEngine {
         //     hb_buffer_set_unicode_funcs(engine.hb_buffer, funcs.0);
         // }
 
-        self.hb_buffer
-            .as_mut()
-            .add_utf16(&chars[offset as usize..(offset + count) as usize]);
+        self.hb_buffer.as_mut().add_utf16(chars);
         self.hb_buffer.as_mut().set_direction(direction);
         self.hb_buffer.as_mut().set_script(script);
         self.hb_buffer.as_mut().set_language(self.language);
@@ -235,12 +252,9 @@ impl LayoutEngine {
 
         if res {
             self.shaper = shape_plan.as_ref().get_shaper().map(CStr::to_owned);
-            self.hb_buffer
-                .as_mut()
-                .set_content_type(hb::BufferContentType::Glyphs);
         } else {
             // all selected shapers failed, retrying with default
-            // we don't use _cached here as the cached plain will always fail.
+            // we don't use _cached here as the cached plan will always fail.
             shape_plan = hb::ShapePlan::new(hb_face, &segment_props, &self.features, None);
             let res = shape_plan
                 .as_mut()
@@ -248,44 +262,12 @@ impl LayoutEngine {
 
             if res {
                 self.shaper = shape_plan.as_ref().get_shaper().map(CStr::to_owned);
-                self.hb_buffer
-                    .as_mut()
-                    .set_content_type(hb::BufferContentType::Glyphs);
             } else {
                 panic!("all shapers failed");
             }
         }
 
-        let glyph_count = self.hb_buffer.as_ref().len();
-
-        // #[cfg(feature = "debug")]
-        // {
-        //     use std::ffi::CStr;
-        //
-        //     let mut buf = [0u8; 1024];
-        //     let mut consumed = 0;
-        //     println!("shaper: {}", CStr::from_ptr(engine.shaper));
-        //
-        //     let flags = HB_BUFFER_SERIALIZE_FLAGS_DEFAULT;
-        //     let format = HB_BUFFER_SERIALIZE_FORMAT_JSON;
-        //
-        //     hb_buffer_serialize_glyphs(
-        //         engine.hb_buffer,
-        //         0,
-        //         glyph_count,
-        //         &mut buf,
-        //         1024,
-        //         &mut consumed,
-        //         hb_font,
-        //         format,
-        //         flags,
-        //     );
-        //     if consumed != 0 {
-        //         println!("buffer glyphs: {}", CStr::from_ptr(&buf));
-        //     }
-        // }
-
-        glyph_count
+        self.hb_buffer.as_ref().len()
     }
 }
 

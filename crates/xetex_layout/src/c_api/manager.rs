@@ -66,7 +66,7 @@ pub extern "C" fn setReqEngine(engine: libc::c_char) {
 #[no_mangle]
 pub unsafe extern "C" fn getFullName(font: RawPlatformFontRef) -> *const libc::c_char {
     match raw_to_rs(font) {
-        Some(font) => FontManager::with_font_manager(|mgr| mgr.get_full_name(font)),
+        Some(font) => FontManager::with_font_manager(|mgr| mgr.get_full_name(font).as_ptr()),
         None => ptr::null_mut(),
     }
 }
