@@ -326,6 +326,8 @@ mod tests {
                     table.find_script(script.tag()).unwrap().script
                 );
 
+                script.swap_table().unwrap();
+
                 let script2 = table.script(1).unwrap();
 
                 assert_eq!(script2.tag(), Tag::from_str("cyrl"));
@@ -334,6 +336,8 @@ mod tests {
                     script2.script,
                     table.find_script(script2.tag()).unwrap().script
                 );
+
+                script2.swap_table().unwrap();
             }
         }
     }
