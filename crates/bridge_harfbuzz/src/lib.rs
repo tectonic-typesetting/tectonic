@@ -9,6 +9,7 @@ use std::marker::PhantomData;
 use std::ops::Deref;
 use std::ptr::NonNull;
 use std::{ptr, slice};
+use tectonic_bridge_graphite2 as gr;
 
 mod font_funcs;
 pub mod ot;
@@ -36,10 +37,8 @@ mod linkage {
     #[allow(unused_imports)]
     use tectonic_bridge_freetype2 as clippyrenamehack1;
     #[allow(unused_imports)]
-    use tectonic_bridge_graphite2 as clippyrenamehack2;
     #[cfg(target_os = "macos")]
-    #[allow(unused_imports)]
-    use tectonic_mac_core as clippyrenamehack3;
+    use tectonic_mac_core as clippyrenamehack2;
 }
 
 unsafe extern "C" fn dealloc<T: 'static>(user_data: *mut ()) {
@@ -398,13 +397,13 @@ impl<'a> FaceRef<'a> {
         ot::Layout(self)
     }
 
-    // TODO: Uncomment once graphite2 bridge is available
-    // pub fn gr_face(self) -> Option<gr::FaceRef<'a>> {
-    //     // SAFETY: Internal pointer guaranteed valid
-    //     let ptr = unsafe { sys::hb_graphite2_face_get_gr_face(self.as_ptr()) };
-    //     // SAFETY: If non-null, returned pointer is a valid (non-retained) graphite face reference.
-    //     NonNull::new(ptr).map(|ptr| unsafe { gr::FaceRef::from_raw(ptr) })
-    // }
+    /// Get the graphite2 face for this font
+    pub fn gr_face(self) -> Option<gr::FaceRef<'a>> {
+        // SAFETY: Internal pointer guaranteed valid
+        let ptr = unsafe { sys::hb_graphite2_face_get_gr_face(self.as_ptr()) };
+        // SAFETY: If non-null, returned pointer is a valid (non-retained) graphite face reference.
+        NonNull::new(ptr).map(|ptr| unsafe { gr::FaceRef::from_raw(ptr) })
+    }
 }
 
 /// A borrowed mutable reference to a [`Face`]

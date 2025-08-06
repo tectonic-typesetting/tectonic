@@ -20,6 +20,9 @@ license = "MIT"
 edition = "2021"
 links = "graphite2"
 
+[dependencies]
+libc = "0.2"
+
 [build-dependencies]
 tectonic_dep_support = { path = "../dep_support", version = "0.0.0-dev.0" }
 
