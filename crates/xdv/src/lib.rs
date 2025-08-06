@@ -1414,3 +1414,53 @@ enum NativeFontFlags {
     Slant = 0x2000,
     Embolden = 0x4000,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::OsStr;
+    use std::fs;
+    use std::path::{Path, PathBuf};
+
+    fn tex_outputs() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/tex-outputs")
+            .canonicalize()
+            .unwrap()
+    }
+
+    // Run the parser on all XDV files in tex-outputs, to ensure it successfully handles
+    // all the outputs we expect to produce.
+    #[test]
+    fn test_output_xdvs() {
+        struct TestEvents;
+
+        impl XdvEvents for TestEvents {
+            type Error = XdvError;
+
+            fn handle_header(
+                &mut self,
+                filetype: FileType,
+                comment: &[u8],
+            ) -> Result<(), Self::Error> {
+                assert_eq!(filetype, FileType::Xdv);
+                assert_eq!(comment, b"tectonic");
+                Ok(())
+            }
+        }
+
+        let xdvs = fs::read_dir(tex_outputs()).unwrap().filter_map(|f| {
+            f.ok()
+                .filter(|dir| dir.path().extension() == Some(OsStr::new("xdv")))
+        });
+
+        for xdv in xdvs {
+            let file = fs::read(xdv.path()).unwrap();
+
+            let mut parser = XdvParser::new(TestEvents);
+            let (consumed, keep_going) = parser.parse(&file).unwrap();
+            assert!(keep_going);
+            assert_eq!(consumed, file.len());
+        }
+    }
+}
