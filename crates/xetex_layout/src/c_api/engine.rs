@@ -298,7 +298,7 @@ pub unsafe extern "C" fn freeFontFilename(filename: *const libc::c_char) {
 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) {
-    let hb_glyphs = (*engine).hb_buffer().glyph_info();
+    let hb_glyphs = (*engine).hb_buffer().glyph_info().unwrap();
 
     for (idx, glyph) in hb_glyphs.iter().enumerate() {
         *glyphs.add(idx) = glyph.codepoint;
@@ -308,7 +308,7 @@ pub unsafe extern "C" fn getGlyphs(engine: XeTeXLayoutEngine, glyphs: *mut u32) 
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *mut f32) {
     let engine = &*engine;
-    let hb_positions = engine.hb_buffer().glyph_positions();
+    let hb_positions = engine.hb_buffer().glyph_positions().unwrap();
 
     for (i, pos) in hb_positions.iter().enumerate() {
         let advance = if engine.font().layout_dir_vertical() {
@@ -324,7 +324,7 @@ pub unsafe extern "C" fn getGlyphAdvances(engine: XeTeXLayoutEngine, advances: *
 #[no_mangle]
 pub unsafe extern "C" fn getGlyphPositions(engine: XeTeXLayoutEngine, positions: *mut FloatPoint) {
     let engine = &mut *engine;
-    let hb_positions = engine.hb_buffer().glyph_positions();
+    let hb_positions = engine.hb_buffer().glyph_positions().unwrap();
 
     let mut x: f32 = 0.0;
     let mut y: f32 = 0.0;
@@ -503,12 +503,14 @@ pub unsafe extern "C" fn initGraphiteBreaking(
         }
     }
 
+    // SAFETY: Required pointer must be to an array of at least len
+    let text = unsafe { slice::from_raw_parts(txt_ptr, txt_len as usize) };
     let gr_seg = gr::Segment::new(
         gr_font.as_ref(),
         gr_face,
         engine.script().to_raw(),
         gr_feature_values.as_ref(),
-        &(txt_ptr, txt_len as usize),
+        text,
     )
     .unwrap();
 

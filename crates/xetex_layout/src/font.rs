@@ -1,11 +1,9 @@
 use crate::c_api::{Fixed, GlyphBBox, GlyphID, PlatformFontRef};
 use crate::utils::fix_to_d;
-use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::path::Path;
-use std::rc::Rc;
 use std::str::FromStr;
-use std::sync::OnceLock;
+use std::sync::{Arc, Mutex, OnceLock};
 use tectonic_bridge_core::{CoreBridgeState, FileFormat};
 #[cfg(not(target_os = "macos"))]
 use tectonic_bridge_fontconfig as fc;
@@ -35,25 +33,28 @@ fn get_glyph_advance(face: &ft::Face, gid: libc::c_uint, vertical: bool) -> ft::
     out as ft::Fixed
 }
 
-pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
-    static FONTS: OnceLock<hb::ImmutFontFuncs<Rc<RefCell<ft::Face>>>> = OnceLock::new();
+pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Arc<Mutex<ft::Face>>> {
+    static FONTS: OnceLock<hb::ImmutFontFuncs<Arc<Mutex<ft::Face>>>> = OnceLock::new();
 
     FONTS
         .get_or_init(|| {
-            let mut funcs = hb::FontFuncs::<Rc<RefCell<ft::Face>>>::new();
+            let mut funcs = hb::FontFuncs::<Arc<Mutex<ft::Face>>>::new();
 
             let mut f = funcs.as_mut();
-            f.nominal_glyph_func(|_, face, ch| face.borrow().get_char_index(ch).map(|cc| cc.get()));
+            f.nominal_glyph_func(|_, face, ch| {
+                face.lock().unwrap().get_char_index(ch).map(|cc| cc.get())
+            });
             f.variation_glyph_func(|_, face, ch, vs| {
-                face.borrow()
+                face.lock()
+                    .unwrap()
                     .get_char_variant_index(ch, vs)
                     .map(|cc| cc.get())
             });
             f.glyph_h_advance(|_, face, gid| {
-                get_glyph_advance(&face.borrow(), gid, false) as hb::Position
+                get_glyph_advance(&face.lock().unwrap(), gid, false) as hb::Position
             });
             f.glyph_v_advance(|_, face, gid| {
-                get_glyph_advance(&face.borrow(), gid, true) as hb::Position
+                get_glyph_advance(&face.lock().unwrap(), gid, true) as hb::Position
             });
             f.glyph_h_origin(|_, _, _| Some((0, 0)));
             f.glyph_v_origin(|_, _, _| {
@@ -80,7 +81,8 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
             });
             f.glyph_h_kerning(|_, face, gid1, gid2| {
                 match face
-                    .borrow()
+                    .lock()
+                    .unwrap()
                     .get_kerning(gid1, gid2, ft::KerningMode::Unscaled)
                 {
                     Ok(vec) => vec.x as hb::Position,
@@ -89,7 +91,7 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
             });
             f.glyph_v_kerning(|_, _, _, _| 0);
             f.glyph_extents(|_, face, gid| {
-                let mut face = face.borrow_mut();
+                let mut face = face.lock().unwrap();
                 if let Ok(glyph) = face.load_glyph(gid, ft::LoadFlags::NO_SCALE) {
                     Some(hb::GlyphExtents {
                         x_bearing: glyph.metrics().horiBearingX as hb::Position,
@@ -102,7 +104,7 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
                 }
             });
             f.glyph_contour_point(|_, face, gid, point_index| {
-                let mut face = face.borrow_mut();
+                let mut face = face.lock().unwrap();
 
                 if let Ok(glyph) = face.load_glyph(gid, ft::LoadFlags::NO_SCALE) {
                     if let Some(outline) = glyph.outline() {
@@ -116,7 +118,7 @@ pub fn get_font_funcs() -> hb::FontFuncsRef<'static, Rc<RefCell<ft::Face>>> {
                 None
             });
             f.glyph_name(
-                |_, face, gid, buf| match face.borrow().get_glyph_name(gid, buf) {
+                |_, face, gid, buf| match face.lock().unwrap().get_glyph_name(gid, buf) {
                     Ok(str) if !str.to_bytes().is_empty() && str.to_bytes()[0] == 0 => 0,
                     Err(_) => 0,
                     Ok(str) => str.to_bytes().len(),
@@ -163,7 +165,7 @@ pub struct Font {
     filename: CString,
     index: u32,
 
-    ft_face: Option<Rc<RefCell<ft::Face>>>,
+    ft_face: Option<Arc<Mutex<ft::Face>>>,
     hb_font: Option<hb::Font>,
 
     kind: FontKind,
@@ -258,7 +260,7 @@ impl Font {
             engine.input_close(handle);
 
             self.ft_face = match ft::Face::new_memory(backing_data, index) {
-                Ok(face) => Some(Rc::new(RefCell::new(face))),
+                Ok(face) => Some(Arc::new(Mutex::new(face))),
                 Err(_) => return 1,
             };
 
@@ -282,7 +284,7 @@ impl Font {
                         .input_read(handle, &mut backing_data2)
                         .expect("failed to read AFM file");
 
-                    self.ft_face_mut().attach_stream_mem(backing_data2).unwrap();
+                    self.ft_face().attach_stream_mem(backing_data2).unwrap();
                     engine.input_close(afm_handle);
                 }
             }
@@ -324,10 +326,11 @@ impl Font {
         self.cap_height = ch;
         self.x_height = xh;
 
-        let ft_face = Rc::clone(self.ft_face.as_ref().unwrap());
+        let ft_face = Arc::clone(self.ft_face.as_ref().unwrap());
         let mut hb_face = hb::Face::new_tables(move |_, tag| {
             if let Ok(table) = ft_face
-                .borrow()
+                .lock()
+                .unwrap()
                 .load_sfnt_table(ft::TableTag::Other(tag.to_raw()))
             {
                 Some(hb::Blob::new(table))
@@ -343,7 +346,7 @@ impl Font {
 
         hb_font
             .as_mut()
-            .set_funcs(get_font_funcs(), Rc::clone(self.ft_face.as_ref().unwrap()));
+            .set_funcs(get_font_funcs(), Arc::clone(self.ft_face.as_ref().unwrap()));
         hb_font
             .as_mut()
             .set_scale(self.units_per_em as i32, self.units_per_em as i32);
@@ -374,12 +377,8 @@ impl Font {
         self.initialize_ft(pathname.to_str().unwrap(), index as usize)
     }
 
-    pub(crate) fn ft_face(&self) -> std::cell::Ref<'_, ft::Face> {
-        self.ft_face.as_ref().unwrap().borrow()
-    }
-
-    fn ft_face_mut(&mut self) -> std::cell::RefMut<'_, ft::Face> {
-        self.ft_face.as_mut().unwrap().borrow_mut()
+    pub(crate) fn ft_face(&self) -> std::sync::MutexGuard<'_, ft::Face> {
+        self.ft_face.as_ref().unwrap().lock().unwrap()
     }
 
     pub(crate) fn get_glyph_name(&self, gid: u16) -> Option<CString> {
@@ -457,7 +456,7 @@ impl Font {
     }
 
     pub(crate) fn get_glyph_bounds(&mut self, gid: GlyphID) -> GlyphBBox {
-        let mut ft_face = self.ft_face_mut();
+        let mut ft_face = self.ft_face();
 
         let glyph = ft_face
             .load_glyph(gid as u32, ft::LoadFlags::NO_SCALE)
@@ -571,7 +570,8 @@ impl Font {
 pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CString> {
     let url = ct_font
         .attr(FontAttribute::URL)
-        .and_then(|t| t.downcast::<CFUrl>().ok())?;
+        // SAFETY: CFUrl has no generic parameters
+        .and_then(|t| unsafe { t.downcast::<CFUrl>() }.ok())?;
 
     let pathname = url.fs_representation()?;
     *index = 0;

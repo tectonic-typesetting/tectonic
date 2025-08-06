@@ -13,7 +13,8 @@ pub fn raw_to_rs(font: RawPlatformFontRef) -> Option<PlatformFontRef> {
     #[cfg(target_os = "macos")]
     let out = {
         use tectonic_mac_core::CoreType;
-        NonNull::new(font.cast_mut()).map(PlatformFontRef::new_borrowed)
+        // SAFETY: Pointer must be from us, and is thus a borrowed ref
+        NonNull::new(font.cast_mut()).map(|ptr| unsafe { PlatformFontRef::new_borrowed(ptr) })
     };
     #[cfg(not(target_os = "macos"))]
     // SAFETY: Pointer must be from us, and is thus a borrowed ref

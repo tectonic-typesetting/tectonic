@@ -204,7 +204,7 @@ impl LayoutEngine {
 
         self.hb_buffer
             .as_mut()
-            .add_utf16(chars, offset as usize, count as usize);
+            .add_utf16(&chars[offset as usize..(offset + count) as usize]);
         self.hb_buffer.as_mut().set_direction(direction);
         self.hb_buffer.as_mut().set_script(script);
         self.hb_buffer.as_mut().set_language(self.language);
@@ -234,7 +234,7 @@ impl LayoutEngine {
         self.shaper = None;
 
         if res {
-            self.shaper = Some(shape_plan.as_ref().get_shaper().to_owned());
+            self.shaper = shape_plan.as_ref().get_shaper().map(CStr::to_owned);
             self.hb_buffer
                 .as_mut()
                 .set_content_type(hb::BufferContentType::Glyphs);
@@ -247,7 +247,7 @@ impl LayoutEngine {
                 .execute(hb_font, self.hb_buffer.as_mut(), &self.features);
 
             if res {
-                self.shaper = Some(shape_plan.as_ref().get_shaper().to_owned());
+                self.shaper = shape_plan.as_ref().get_shaper().map(CStr::to_owned);
                 self.hb_buffer
                     .as_mut()
                     .set_content_type(hb::BufferContentType::Glyphs);

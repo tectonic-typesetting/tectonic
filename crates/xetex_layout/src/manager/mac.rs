@@ -56,11 +56,9 @@ impl MacBackend {
 
     fn add_font_and_siblings_to_caches(&self, maps: &mut FontMaps, font: &CTFontDescriptor) {
         let font = CTFont::new_descriptor(font, 10.0);
-        let family = font
-            .attr(FontAttribute::FamilyName)
-            .unwrap()
-            .downcast::<CFString>()
-            .unwrap();
+        let attr = font.attr(FontAttribute::FamilyName).unwrap();
+        // SAFETY: CFString has no generic parameters
+        let family = unsafe { attr.downcast::<CFString>() }.unwrap();
         let matched = find_fonts_with_name(family, FontAttribute::FamilyName);
         self.add_fonts_to_caches(maps, matched);
     }
@@ -68,7 +66,8 @@ impl MacBackend {
     fn add_family_to_caches(&self, maps: &mut FontMaps, family: CTFontDescriptor) {
         let name_str = family
             .attr(FontAttribute::FamilyName)
-            .and_then(|ty| ty.downcast::<CFString>().ok());
+            // SAFETY: CFString has no generic parameters
+            .and_then(|ty| unsafe { ty.downcast::<CFString>() }.ok());
         if let Some(name_str) = name_str {
             let members = find_fonts_with_name(name_str, FontAttribute::FamilyName);
             self.add_fonts_to_caches(maps, members);
@@ -83,7 +82,8 @@ impl FontManagerBackend for MacBackend {
         let ct_font = CTFont::new_descriptor(font, 0.0);
         let url = ct_font
             .attr(FontAttribute::URL)
-            .and_then(|ty| ty.downcast::<CFUrl>().ok());
+            // SAFETY: CFUrl has no generic parameters
+            .and_then(|ty| unsafe { ty.downcast::<CFUrl>() }.ok());
 
         if let Some(url) = url {
             if let Some(fs_path) = url.fs_representation() {
@@ -150,7 +150,8 @@ impl FontManagerBackend for MacBackend {
             Some(ps_name) => ps_name,
             None => return names,
         };
-        let ps_name = ps_name.downcast::<CFString>().unwrap();
+        // SAFETY: CFString has no generic parameters
+        let ps_name = unsafe { ps_name.downcast::<CFString>() }.unwrap();
 
         names.ps_name = Some(ps_name.get_cstring());
 
