@@ -18,6 +18,7 @@ fn main() {
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
     let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
+    let freetype_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
     let fontconfig_include_path = env::var("DEP_FONTCONFIG_INCLUDE_PATH");
     let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
@@ -74,6 +75,11 @@ fn main() {
     }
 
     for item in harfbuzz_include_path.split(';') {
+        c_cfg.include(item);
+        cxx_cfg.include(item);
+    }
+
+    for item in freetype_include_path.split(';') {
         c_cfg.include(item);
         cxx_cfg.include(item);
     }
