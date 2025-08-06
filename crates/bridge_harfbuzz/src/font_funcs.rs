@@ -495,3 +495,24 @@ unsafe impl<T: Send> Send for ImmutFontFuncs<T> {}
 //         reference from other threads. The contained data isn't bound because it is tied to the font,
 //         which is not Send or Sync and as such will not use the data across threads.
 unsafe impl<T: Sync> Sync for ImmutFontFuncs<T> {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_clone_drop() {
+        let funcs = FontFuncs::<()>::default();
+        let f2 = funcs.clone();
+
+        assert_eq!(f2.0, funcs.0);
+
+        let f2 = f2.make_immutable();
+        let f3 = f2.clone();
+
+        assert_eq!(f2.0, f3.0);
+
+        drop(funcs);
+        drop(f2);
+    }
+}
