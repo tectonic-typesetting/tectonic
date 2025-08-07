@@ -326,15 +326,14 @@ jobs:
           HOST_GID=$(id -g)
           echo "CROSS_ROOTLESS_CONTAINER_ENGINE=1" >> "$GITHUB_ENV"
           echo "DOCKER_OPTS=--privileged -e HOST_UID=${HOST_UID} -e HOST_GID=${HOST_GID}" >> "$GITHUB_ENV"
-          # TODO: This for a bug in rustdoc linking when cross-compiling that I can't track down right now.
-          echo "RUSTDOC=true" >> "$GITHUB_ENV"
       # TODO: Add font files to the cross images so we can include fontconfig_bridge in tests
+      # TODO: Figure out why doctests are broken so we can drop all-targets
       - name: "Build and Test"
         uses: ./.github/actions/build-and-test
         with:
           target: ${{ matrix.target }}
           publish: 'true'
           executable: 'cross'
-          test-flags: '--exclude tectonic_bridge_fontconfig'
+          test-flags: '--all-targets --exclude tectonic_bridge_fontconfig'
           package-flags: '--command-name=cross --reroot=.'
 

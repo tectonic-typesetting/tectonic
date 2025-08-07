@@ -52,11 +52,11 @@ runs:
     - name: "cargo build for ${{ inputs.target }}"
       shell: bash
       run: |
-        ${{ inputs.executable }} build --all --target ${{ inputs.target }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
+        ${{ inputs.executable }} build --workspace --target ${{ inputs.target }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "cargo test"
       shell: bash
       run: |
-        ${{ inputs.executable }} test --all --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
+        ${{ inputs.executable }} test --workspace --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "Package test failure files"
       id: package-tests
       if: ${{ failure() }}
