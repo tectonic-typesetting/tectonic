@@ -256,6 +256,9 @@ mod linkage {
 
     #[allow(unused_imports)]
     use tectonic_xetex_layout as clipyrenamehack2;
+
+    #[allow(unused_imports)]
+    use tectonic_bridge_icu as clipyrenamehack3;
 }
 
 /// Does our resulting executable link correctly?

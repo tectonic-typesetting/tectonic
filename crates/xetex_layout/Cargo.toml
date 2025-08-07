@@ -26,18 +26,25 @@ tectonic_bridge_freetype2 = { path = "../bridge_freetype2", version = "0.0.0-dev
 tectonic_bridge_graphite2 = { path = "../bridge_graphite2", version = "0.0.0-dev.0" }
 tectonic_bridge_harfbuzz = { path = "../bridge_harfbuzz", version = "0.0.0-dev.0" }
 tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
-
-[target.'cfg(not(target_os = "macos"))'.dependencies]
-tectonic_bridge_fontconfig = { path = "../bridge_fontconfig", version = "0.0.0-dev.0" }
+tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
+libc = "0.2"
+enrede = { version = "0.2", features = ["alloc"] }
 
 [build-dependencies]
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
 
+[target.'cfg(not(target_os = "macos"))'.dependencies]
+tectonic_bridge_fontconfig = { path = "../bridge_fontconfig", version = "0.0.0-dev.0" }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+tectonic_mac_core = { path = "../mac_core", version = "0.0.0-dev.0" }
+
 [features]
 external-harfbuzz = ["tectonic_bridge_harfbuzz/external-harfbuzz"]
 
 [package.metadata.internal_dep_versions]
+tectonic_mac_core = "6932d5f15fec0fb5c219b887bdd11b72641af07a"
 tectonic_bridge_core = "thiscommit:2021-01-16:wie2Ejoh"
 tectonic_bridge_fontconfig = "89268e8317eee0e23f9c0d572aa764d4504d85b5"
 tectonic_bridge_graphite2 = "2722731f9e32c6963fe8c8566a201b33672c5c5a"
@@ -45,3 +52,4 @@ tectonic_bridge_freetype2 = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_icu = "thiscommit:2023-09-17:6uIZ4lA"
 tectonic_cfg_support = "thiscommit:aeRoo7oa"
+tectonic_io_base = "41168a9fa2902401afc79e60bbefa638bde6df2d"

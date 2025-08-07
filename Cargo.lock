@@ -297,6 +297,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytemuck"
+version = "1.23.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5c76a5792e44e4abe34d3abf15636779261d45a7450612059293d1d2cfc63422"
+dependencies = [
+ "bytemuck_derive",
+]
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "441473f2b4b0459a68628c744bc61d23e730fb00128b841d30fa4bb3972257e4"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.103",
+]
+
+[[package]]
 name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -600,6 +620,18 @@ name = "endian-type"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c34f04666d835ff5d62e058c3995147c06f42fe86ff053337632bca83e42702d"
+
+[[package]]
+name = "enrede"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42685d561e9e3f84c7cf5c9ec917e6112052b82b741ffe5f9dd373bfc19504cd"
+dependencies = [
+ "arrayvec",
+ "bytemuck",
+ "phf",
+ "serde",
+]
 
 [[package]]
 name = "env_home"
@@ -2126,6 +2158,7 @@ version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fd6780a80ae0c52cc120a26a1a42c1ae51b247a253e4e06113d23d2c2edd078"
 dependencies = [
+ "phf_macros",
  "phf_shared",
 ]
 
@@ -2147,6 +2180,19 @@ checksum = "3c80231409c20246a13fddb31776fb942c38553c51e871f8cbd687a4cfb5843d"
 dependencies = [
  "phf_shared",
  "rand",
+]
+
+[[package]]
+name = "phf_macros"
+version = "0.11.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f84ac04429c13a7ff43785d75ad27569f2951ce0ffd30a3321230db2fc727216"
+dependencies = [
+ "phf_generator",
+ "phf_shared",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.103",
 ]
 
 [[package]]
@@ -3108,8 +3154,10 @@ dependencies = [
  "libc",
  "tectonic_bridge_core",
  "tectonic_bridge_flate",
+ "tectonic_bridge_freetype2",
  "tectonic_bridge_graphite2",
  "tectonic_bridge_harfbuzz",
+ "tectonic_bridge_icu",
  "tectonic_cfg_support",
  "tectonic_errors",
  "tectonic_pdf_io",
@@ -3196,6 +3244,8 @@ name = "tectonic_xetex_layout"
 version = "0.0.0-dev.0"
 dependencies = [
  "cc",
+ "enrede",
+ "libc",
  "tectonic_bridge_core",
  "tectonic_bridge_fontconfig",
  "tectonic_bridge_freetype2",
@@ -3203,6 +3253,8 @@ dependencies = [
  "tectonic_bridge_harfbuzz",
  "tectonic_bridge_icu",
  "tectonic_cfg_support",
+ "tectonic_io_base",
+ "tectonic_mac_core",
 ]
 
 [[package]]
