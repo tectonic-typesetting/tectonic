@@ -169,6 +169,8 @@ pub struct Font {
     ft_face: Option<Arc<Mutex<ft::Face>>>,
     hb_font: Option<hb::Font>,
 
+    // Currently only used on MacOS
+    #[allow(dead_code)]
     kind: FontKind,
 }
 
