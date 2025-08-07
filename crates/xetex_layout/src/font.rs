@@ -176,7 +176,7 @@ pub struct Font {
 
 impl Font {
     #[cfg(not(target_os = "macos"))]
-    pub(crate) fn new(font: PlatformFontRef, point_size: f32) -> Result<Font, i32> {
+    pub(crate) fn new(font: PlatformFontRef, point_size: f32) -> Result<Font, ()> {
         let path = font
             .as_ref()
             .get::<fc::pat::File>(0)
@@ -188,7 +188,7 @@ impl Font {
     }
 
     #[cfg(target_os = "macos")]
-    pub(crate) fn new(descriptor: PlatformFontRef, point_size: f32) -> Result<Font, i32> {
+    pub(crate) fn new(descriptor: PlatformFontRef, point_size: f32) -> Result<Font, ()> {
         let mut out = Font {
             units_per_em: 0,
             point_size,
@@ -204,19 +204,15 @@ impl Font {
             hb_font: None,
             kind: FontKind::Mac(descriptor, None),
         };
-        let status = out.initialize_mac();
-        if status != 0 {
-            Err(status)
-        } else {
-            Ok(out)
-        }
+        out.initialize_mac()?;
+        Ok(out)
     }
 
     pub(crate) fn new_path_index(
         path: Option<&str>,
         index: usize,
         point_size: f32,
-    ) -> Result<Font, i32> {
+    ) -> Result<Font, ()> {
         let mut out = Font {
             units_per_em: 0,
             point_size,
@@ -232,26 +228,20 @@ impl Font {
             hb_font: None,
             kind: FontKind::FtFont,
         };
-        let status = if let Some(path) = path {
-            out.initialize_ft(path, index)
-        } else {
-            0
-        };
-        if status != 0 {
-            Err(status)
-        } else {
-            Ok(out)
+        if let Some(path) = path {
+            out.initialize_ft(path, index)?;
         }
+        Ok(out)
     }
 
-    fn initialize_ft(&mut self, pathname: &str, index: usize) -> i32 {
-        let res = CoreBridgeState::with_global_state(|engine| {
+    fn initialize_ft(&mut self, pathname: &str, index: usize) -> Result<(), ()> {
+        CoreBridgeState::with_global_state(|engine| {
             let handle = engine
                 .input_open(pathname, FileFormat::OpenType, false)
                 .or_else(|| engine.input_open(pathname, FileFormat::TrueType, false))
                 .or_else(|| engine.input_open(pathname, FileFormat::Type1, false));
             let Some(handle) = handle else {
-                return 1;
+                return Err(());
             };
 
             let sz = engine.input_get_size(handle);
@@ -264,11 +254,11 @@ impl Font {
 
             self.ft_face = match ft::Face::new_memory(backing_data, index) {
                 Ok(face) => Some(Arc::new(Mutex::new(face))),
-                Err(_) => return 1,
+                Err(_) => return Err(()),
             };
 
             if !self.ft_face().is_scalable() {
-                return 1;
+                return Err(());
             }
 
             if index == 0 && !self.ft_face().is_sfnt() {
@@ -291,11 +281,8 @@ impl Font {
                     engine.input_close(afm_handle);
                 }
             }
-            0
-        });
-        if res != 0 {
-            return res;
-        }
+            Ok(())
+        })?;
 
         self.filename = CString::from_str(pathname).unwrap();
         self.index = index as u32;
@@ -357,13 +344,13 @@ impl Font {
 
         self.hb_font = Some(hb_font);
 
-        0
+        Ok(())
     }
 
     #[cfg(target_os = "macos")]
-    fn initialize_mac(&mut self) -> i32 {
+    fn initialize_mac(&mut self) -> Result<(), ()> {
         let FontKind::Mac(descriptor, font_ref) = &mut self.kind else {
-            return 1;
+            return Err(());
         };
 
         let empty_cascade_list = CFArray::<CFType>::empty();
