@@ -1,12 +1,14 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(missing_docs)]
+
 //! The hash table for multi-letter control sequences.
 
 use nom::{
     multi::count,
     number::complete::{be_i32, be_u8},
-    IResult,
+    IResult, Parser,
 };
 use tectonic_errors::prelude::*;
 
@@ -80,7 +82,7 @@ impl ControlSeqHash {
             p = new_p;
 
             // TODO: load directly into `hash`?
-            let (ii, block) = count(be_u8, 8)(ii)?;
+            let (ii, block) = count(be_u8, 8).parse(ii)?;
             let ofs = index(p);
             need_offset_hash[ofs..ofs + 8].copy_from_slice(&block[..]);
 
@@ -95,7 +97,7 @@ impl ControlSeqHash {
         let nb = ((engine.symbols.lookup("UNDEFINED_CONTROL_SEQUENCE") as i32 - 1) - hash_used)
             as usize
             * SIZEOF_MEMORY_WORD;
-        let (input, block) = count(be_u8, nb)(input)?;
+        let (input, block) = count(be_u8, nb).parse(input)?;
         let ofs = index(hash_used + 1);
         need_offset_hash[ofs..ofs + nb].copy_from_slice(&block[..]);
 
@@ -103,7 +105,7 @@ impl ControlSeqHash {
 
         if hash_high > 0 {
             let nb = hash_high as usize * SIZEOF_MEMORY_WORD;
-            let (new_input, block) = count(be_u8, nb)(input)?;
+            let (new_input, block) = count(be_u8, nb).parse(input)?;
             input = new_input;
             let ofs = index(eqtb_size + 1);
             need_offset_hash[ofs..ofs + nb].copy_from_slice(&block[..]);

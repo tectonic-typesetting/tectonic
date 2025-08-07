@@ -1499,13 +1499,13 @@ t1_load_UnicodeCMap (const char *font_name,
 {
     int       cmap_id = -1;
     cff_font *cffont;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
 
     if (!font_name)
         return -1;
 
     handle = dpx_open_type1_file(font_name);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return -1;
 
     cffont = t1_load_font(NULL, 1, handle);

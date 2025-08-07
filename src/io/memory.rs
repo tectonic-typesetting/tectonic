@@ -26,7 +26,9 @@ pub struct MemoryFileInfo {
     // TODO: smarter buffering structure than Vec<u8>? E.g., linked list of 4k
     // chunks or something. In the current scheme reallocations will get
     // expensive.
+    /// Raw file bytes
     pub data: Vec<u8>,
+    /// Last modification time of the in-memory file
     pub unix_mtime: Option<i64>,
 }
 
@@ -146,12 +148,16 @@ impl Drop for MemoryIoItem {
     }
 }
 
+/// An I/O driver backed by a collection of in-memory files.
 pub struct MemoryIo {
+    /// Map of file paths to in-memory file data in this I/O provider.
     pub files: Rc<RefCell<MemoryFileCollection>>,
     stdout_allowed: bool,
 }
 
 impl MemoryIo {
+    /// Create a new memory-backed I/O. `stdout_allowed` controls whether attempts to open stdout
+    /// on this type succeed or fail.
     pub fn new(stdout_allowed: bool) -> MemoryIo {
         MemoryIo {
             files: Rc::new(RefCell::new(HashMap::new())),
@@ -159,6 +165,8 @@ impl MemoryIo {
         }
     }
 
+    /// Create a new entry into the backing file collection, with automatically generated
+    /// modification time.
     pub fn create_entry(&mut self, name: &str, data: Vec<u8>) {
         let mut mfiles = self.files.borrow_mut();
         mfiles.insert(
@@ -170,6 +178,7 @@ impl MemoryIo {
         );
     }
 
+    /// Name to use for stdout file
     pub fn stdout_key(&self) -> &str {
         ""
     }

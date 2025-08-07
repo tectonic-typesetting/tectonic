@@ -5,7 +5,7 @@
 This crate is part of [the Tectonic
 project](https://tectonic-typesetting.github.io/en-US/). It provides a C API to
 core I/O services provided by the Tectonic Rust code. This API is then consumed
-by the various C/C++ “engines” implementing the TeX software.
+by the various C/C++ "engines" implementing the TeX software.
 
 - [API documentation](https://docs.rs/tectonic_bridge_core/).
 - [Main Git repository](https://github.com/tectonic-typesetting/tectonic/).

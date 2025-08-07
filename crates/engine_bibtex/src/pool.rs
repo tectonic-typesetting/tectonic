@@ -1,231 +1,134 @@
-use crate::{
-    buffer::{BufTy, GlobalBuffer},
-    char_info::LexClass,
-    entries::ENT_STR_SIZE,
-    global::GLOB_STR_SIZE,
-    hash,
-    hash::{FnClass, HashData},
-    log::{output_bbl_line, print_overflow, write_logs},
-    xbuf::XBuf,
-    ASCIICode, Bibtex, BibtexError, GlobalItems, HashPointer, LookupRes, PoolPointer, StrIlk,
-    StrNumber,
-};
-use std::ops::Range;
+use std::{fmt, fmt::Formatter, ops::Range};
 
-const POOL_SIZE: usize = 65000;
+const POOL_SIZE: usize = 65536;
+const STRINGS_SIZE: usize = 2048;
 pub(crate) const MAX_PRINT_LINE: usize = 79;
 pub(crate) const MIN_PRINT_LINE: usize = 3;
 pub(crate) const MAX_STRINGS: usize = 35307;
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum LookupErr {
-    Invalid,
-    DoesntExist,
+#[derive(Default, Debug, PartialEq, PartialOrd, Copy, Clone, Hash)]
+pub struct StrNumber(usize);
+
+impl fmt::Display for StrNumber {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl StrNumber {
+    pub fn invalid() -> StrNumber {
+        StrNumber(0)
+    }
+
+    pub fn from_raw_dangerous(val: usize) -> StrNumber {
+        StrNumber(val)
+    }
+
+    pub fn to_raw_dangerous(self) -> usize {
+        self.0
+    }
+
+    pub fn is_invalid(self) -> bool {
+        self.0 == 0
+    }
+}
+
+#[derive(Default, Debug, PartialEq, Copy, Clone)]
+pub(crate) struct Checkpoint(usize);
+
+impl Checkpoint {
+    pub fn is_before(self, num: StrNumber) -> bool {
+        num.0 >= self.0
+    }
+}
+
+pub(crate) struct PoolCursor<'a> {
+    pool: &'a mut StringPool,
+    start: usize,
+    end: usize,
+}
+
+impl PoolCursor<'_> {
+    pub fn extend(&mut self, len: usize) {
+        self.end += len;
+    }
+
+    pub fn append(&mut self, c: u8) {
+        self.pool.strings[self.end] = c;
+        self.end += 1;
+    }
+
+    pub fn append_str(&mut self, str: StrNumber) {
+        self.pool.copy_raw(str, self.end);
+        self.end += self.pool.get_str(str).len();
+    }
+
+    pub fn append_substr(&mut self, str: StrNumber, range: Range<usize>) {
+        let start = self.pool.str_start(str);
+        self.pool
+            .copy_range_raw(start + range.start..start + range.end, self.end);
+    }
+
+    pub fn insert_str(&mut self, str: StrNumber, offset: usize) {
+        self.pool.copy_raw(str, self.start + offset);
+        let len = self.pool.get_str(str).len();
+        if self.start + offset + len > self.end {
+            self.end = self.start + offset + len;
+        }
+    }
+
+    pub fn bytes(&mut self) -> &mut [u8] {
+        &mut self.pool.strings[self.start..self.end]
+    }
 }
 
 pub(crate) struct StringPool {
-    strings: XBuf<u8>,
+    strings: Vec<u8>,
     // Stores string starting locations in the string pool
-    // length of string `s` is offsets[s + 1] - offsets[s]
-    offsets: XBuf<usize>,
-    pool_ptr: PoolPointer,
-    str_ptr: StrNumber,
+    // length of string `s` is offsets[s] - offsets[s-1]
+    offsets: Vec<usize>,
+    pool_ptr: usize,
+    cur_strs: usize,
 }
 
 impl StringPool {
-    pub(crate) fn new() -> StringPool {
+    pub fn new() -> StringPool {
+        let mut offsets = Vec::with_capacity(STRINGS_SIZE);
+        // First string always starts at 0
+        offsets.push(0);
         StringPool {
-            strings: XBuf::new(POOL_SIZE),
-            offsets: XBuf::new(MAX_STRINGS),
+            strings: Vec::with_capacity(POOL_SIZE),
+            offsets,
             pool_ptr: 0,
-            str_ptr: 1,
+            cur_strs: 1,
         }
     }
 
-    pub fn try_get_str(&self, s: usize) -> Result<&[u8], LookupErr> {
-        // TODO: Why plus three? Should probably find if somewhere relies on that
-        if s == 0 || s >= self.str_ptr + 3 {
-            Err(LookupErr::DoesntExist)
-        } else if s >= MAX_STRINGS {
-            Err(LookupErr::Invalid)
+    fn str_start(&self, str: StrNumber) -> usize {
+        self.offsets[str.0 - 1]
+    }
+
+    fn str_end(&self, str: StrNumber) -> usize {
+        self.offsets[str.0]
+    }
+
+    pub fn try_get_str(&self, s: StrNumber) -> Option<&[u8]> {
+        // This is plus three because bst does weird stuff by popping and then sometimes re-adding
+        // strings.
+        // TODO: Fix bst execution to not rely on this behavior
+        if s.is_invalid() || s.0 >= self.cur_strs + 3 || s.0 + 1 > self.offsets.len() {
+            None
         } else {
-            Ok(&self.strings[self.offsets[s]..self.offsets[s + 1]])
+            Some(&self.strings[self.str_start(s)..self.str_end(s)])
         }
     }
 
-    pub fn get_str(&self, s: usize) -> &[u8] {
-        self.try_get_str(s).unwrap_or_else(|e| match e {
-            LookupErr::DoesntExist => panic!("String number {} doesn't exist", s),
-            LookupErr::Invalid => panic!("Invalid string number {}", s),
-        })
+    pub fn get_str(&self, s: StrNumber) -> &[u8] {
+        self.try_get_str(s)
+            .unwrap_or_else(|| panic!("String number {s} doesn't exist"))
     }
 
-    pub fn grow(&mut self) {
-        self.strings.grow(POOL_SIZE);
-    }
-
-    /// Used while defining strings - declare the current `pool_ptr` as the end of the current
-    /// string, increment the `str_ptr`, and return the new string's `StrNumber`
-    pub fn make_string(&mut self) -> Result<StrNumber, BibtexError> {
-        if self.str_ptr == MAX_STRINGS {
-            print_overflow();
-            write_logs(&format!("number of strings {}\n", MAX_STRINGS));
-            return Err(BibtexError::Fatal);
-        }
-        self.str_ptr += 1;
-        self.offsets[self.str_ptr] = self.pool_ptr;
-        Ok(self.str_ptr - 1)
-    }
-
-    fn hash_str(hash: &HashData, str: &[ASCIICode]) -> usize {
-        let prime = hash.prime();
-        str.iter()
-            .fold(0, |acc, &c| ((2 * acc) + c as usize) % prime)
-    }
-
-    pub fn lookup_str(&self, hash: &HashData, str: &[ASCIICode], ilk: StrIlk) -> LookupRes {
-        let h = Self::hash_str(hash, str);
-        let mut p = h as HashPointer + hash::HASH_BASE as HashPointer;
-
-        loop {
-            let existing = hash.text(p);
-
-            if existing > 0 && self.get_str(existing) == str && hash.hash_ilk(p) == ilk {
-                return LookupRes {
-                    loc: p,
-                    exists: true,
-                };
-            }
-
-            if hash.next(p) == 0 {
-                return LookupRes {
-                    loc: p,
-                    exists: false,
-                };
-            }
-            p = hash.next(p);
-        }
-    }
-
-    /// Lookup a string, inserting it if it isn't found. Note that this returns `Ok` whether the
-    /// string is found or not, only returning `Err` if a called function fails.
-    pub(crate) fn lookup_str_insert(
-        &mut self,
-        hash: &mut HashData,
-        str: &[ASCIICode],
-        ilk: StrIlk,
-    ) -> Result<LookupRes, BibtexError> {
-        let h = Self::hash_str(hash, str);
-        let mut str_num = 0;
-        let mut p = (h + hash::HASH_BASE) as HashPointer;
-
-        loop {
-            let existing = hash.text(p);
-            if existing > 0 && self.try_get_str(existing) == Ok(str) {
-                if hash.hash_ilk(p) == ilk {
-                    return Ok(LookupRes {
-                        loc: p,
-                        exists: true,
-                    });
-                } else {
-                    str_num = existing;
-                }
-            }
-
-            if hash.next(p) == 0 {
-                if existing > 0 {
-                    loop {
-                        if hash.used() == hash::HASH_BASE {
-                            print_overflow();
-                            write_logs(&format!("hash size {}\n", hash::HASH_SIZE));
-                            return Err(BibtexError::Fatal);
-                        }
-                        hash.set_used(hash.used() - 1);
-
-                        if hash.text(hash.used()) == 0 {
-                            break;
-                        }
-                    }
-                    hash.set_next(p, hash.used());
-                    p = hash.used();
-                }
-
-                if str_num > 0 {
-                    hash.set_text(p, str_num);
-                } else {
-                    while self.pool_ptr + str.len() > self.strings.len() {
-                        self.grow();
-                    }
-                    self.strings[self.pool_ptr..self.pool_ptr + str.len()].copy_from_slice(str);
-                    self.pool_ptr += str.len();
-
-                    match self.make_string() {
-                        Ok(str) => hash.set_text(p, str),
-                        Err(err) => return Err(err),
-                    }
-                }
-
-                hash.set_hash_ilk(p, ilk);
-
-                return Ok(LookupRes {
-                    loc: p,
-                    exists: false,
-                });
-            }
-
-            p = hash.next(p);
-        }
-    }
-
-    pub fn str_ptr(&self) -> usize {
-        self.str_ptr
-    }
-
-    pub fn set_str_ptr(&mut self, val: usize) {
-        self.str_ptr = val;
-    }
-
-    pub fn pool_ptr(&self) -> usize {
-        self.pool_ptr
-    }
-
-    pub fn set_pool_ptr(&mut self, val: usize) {
-        self.pool_ptr = val;
-    }
-
-    pub fn str_start(&self, str: StrNumber) -> usize {
-        self.offsets[str]
-    }
-
-    // TODO: Encapsulate better
-    pub fn set_start(&mut self, str: StrNumber, start: usize) {
-        self.offsets[str] = start;
-    }
-
-    pub fn copy_raw(&mut self, str: StrNumber, pos: usize) {
-        let start = self.offsets[str];
-        let end = self.offsets[str + 1];
-
-        while pos + (end - start) > self.strings.len() {
-            self.grow();
-        }
-
-        self.strings.copy_within(start..end, pos);
-    }
-
-    pub fn copy_range_raw(&mut self, range: Range<usize>, pos: usize) {
-        while pos + (range.end - range.start) > self.strings.len() {
-            self.grow();
-        }
-        self.strings.copy_within(range, pos)
-    }
-
-    pub fn append(&mut self, c: ASCIICode) {
-        self.strings[self.pool_ptr] = c;
-        self.pool_ptr += 1;
-    }
-
-    pub fn add_string_raw(&mut self, str: &[ASCIICode]) -> Result<PoolPointer, BibtexError> {
+    pub fn add_string(&mut self, str: &[u8]) -> StrNumber {
         while self.pool_ptr + str.len() > self.strings.len() {
             self.grow();
         }
@@ -234,245 +137,69 @@ impl StringPool {
         self.make_string()
     }
 
-    #[allow(clippy::len_without_is_empty)]
-    pub fn len(&self) -> usize {
-        self.strings.len()
-    }
-}
-
-pub(crate) fn add_buf_pool(pool: &StringPool, buffers: &mut GlobalBuffer, str: StrNumber) {
-    let str = pool.get_str(str);
-
-    if buffers.init(BufTy::Ex) + str.len() > buffers.len() {
-        buffers.grow_all();
+    pub fn write_str(&mut self, f: impl FnOnce(&mut PoolCursor)) -> StrNumber {
+        let mut cursor = PoolCursor {
+            start: self.pool_ptr,
+            end: self.pool_ptr,
+            pool: self,
+        };
+        f(&mut cursor);
+        self.pool_ptr = cursor.end;
+        self.make_string()
     }
 
-    let start = buffers.init(BufTy::Ex);
-    buffers.copy_from(BufTy::Ex, start, str);
-    buffers.set_offset(BufTy::Ex, 1, start + str.len());
-    buffers.set_init(BufTy::Ex, start + str.len());
-}
-
-pub(crate) fn pre_def_certain_strings(
-    ctx: &mut Bibtex<'_, '_>,
-    GlobalItems {
-        pool,
-        hash,
-        other,
-        entries,
-        ..
-    }: &mut GlobalItems<'_>,
-) -> Result<(), BibtexError> {
-    let res = pool.lookup_str_insert(hash, b".aux", StrIlk::FileExt)?;
-    ctx.s_aux_extension = hash.text(res.loc);
-
-    let res = pool.lookup_str_insert(hash, b"\\citation", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 2);
-    let res = pool.lookup_str_insert(hash, b"\\bibdata", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(hash, b"\\bibstyle", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(hash, b"\\@input", StrIlk::AuxCommand)?;
-    hash.set_ilk_info(res.loc, 3);
-
-    let res = pool.lookup_str_insert(hash, b"entry", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(hash, b"execute", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(hash, b"function", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 2);
-    let res = pool.lookup_str_insert(hash, b"integers", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 3);
-    let res = pool.lookup_str_insert(hash, b"iterate", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 4);
-    let res = pool.lookup_str_insert(hash, b"macro", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 5);
-    let res = pool.lookup_str_insert(hash, b"read", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 6);
-    let res = pool.lookup_str_insert(hash, b"reverse", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 7);
-    let res = pool.lookup_str_insert(hash, b"sort", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 8);
-    let res = pool.lookup_str_insert(hash, b"strings", StrIlk::BstCommand)?;
-    hash.set_ilk_info(res.loc, 9);
-
-    let res = pool.lookup_str_insert(hash, b"comment", StrIlk::BibCommand)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(hash, b"preamble", StrIlk::BibCommand)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(hash, b"string", StrIlk::BibCommand)?;
-    hash.set_ilk_info(res.loc, 2);
-
-    let mut build_in = |pds: &[ASCIICode], blt_in_num| {
-        let res = pool.lookup_str_insert(hash, pds, StrIlk::BstFn)?;
-        hash.set_ty(res.loc, FnClass::Builtin);
-        hash.set_ilk_info(res.loc, blt_in_num);
-        Ok(res.loc)
-    };
-
-    build_in(b"=", 0)?;
-    build_in(b">", 1)?;
-    build_in(b"<", 2)?;
-    build_in(b"+", 3)?;
-    build_in(b"-", 4)?;
-    build_in(b"*", 5)?;
-    build_in(b":=", 6)?;
-    build_in(b"add.period$", 7)?;
-    build_in(b"call.type$", 8)?;
-    build_in(b"change.case$", 9)?;
-    build_in(b"chr.to.int$", 10)?;
-    build_in(b"cite$", 11)?;
-    build_in(b"duplicate$", 12)?;
-    build_in(b"empty$", 13)?;
-    build_in(b"format.name$", 14)?;
-    build_in(b"if$", 15)?;
-    build_in(b"int.to.chr$", 16)?;
-    build_in(b"int.to.str$", 17)?;
-    build_in(b"missing$", 18)?;
-    build_in(b"newline$", 19)?;
-    build_in(b"num.names$", 20)?;
-    build_in(b"pop$", 21)?;
-    build_in(b"preamble$", 22)?;
-    build_in(b"purify$", 23)?;
-    build_in(b"quote$", 24)?;
-    let skip_loc = build_in(b"skip$", 25)?;
-    build_in(b"stack$", 26)?;
-    build_in(b"substring$", 27)?;
-    build_in(b"swap$", 28)?;
-    build_in(b"text.length$", 29)?;
-    build_in(b"text.prefix$", 30)?;
-    build_in(b"top$", 31)?;
-    build_in(b"type$", 32)?;
-    build_in(b"warning$", 33)?;
-    build_in(b"while$", 34)?;
-    build_in(b"width$", 35)?;
-    build_in(b"write$", 36)?;
-
-    let res = pool.lookup_str_insert(hash, b"", StrIlk::Text)?;
-    hash.set_ty(res.loc, FnClass::StrLit);
-    ctx.s_null = hash.text(res.loc);
-    let res = pool.lookup_str_insert(hash, b"default.type", StrIlk::Text)?;
-    hash.set_ty(res.loc, FnClass::StrLit);
-    ctx.s_default = hash.text(res.loc);
-    ctx.b_default = skip_loc;
-
-    let res = pool.lookup_str_insert(hash, b"i", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 0);
-    let res = pool.lookup_str_insert(hash, b"j", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 1);
-    let res = pool.lookup_str_insert(hash, b"oe", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 2);
-    let res = pool.lookup_str_insert(hash, b"OE", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 3);
-    let res = pool.lookup_str_insert(hash, b"ae", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 4);
-    let res = pool.lookup_str_insert(hash, b"AE", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 5);
-    let res = pool.lookup_str_insert(hash, b"aa", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 6);
-    let res = pool.lookup_str_insert(hash, b"AA", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 7);
-    let res = pool.lookup_str_insert(hash, b"o", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 8);
-    let res = pool.lookup_str_insert(hash, b"O", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 9);
-    let res = pool.lookup_str_insert(hash, b"l", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 10);
-    let res = pool.lookup_str_insert(hash, b"L", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 11);
-    let res = pool.lookup_str_insert(hash, b"ss", StrIlk::ControlSeq)?;
-    hash.set_ilk_info(res.loc, 12);
-
-    let res = pool.lookup_str_insert(hash, b"crossref", StrIlk::BstFn)?;
-    let num_fields = other.num_fields();
-    hash.set_ty(res.loc, FnClass::Field);
-    hash.set_ilk_info(res.loc, num_fields as i32);
-    other.set_crossref_num(num_fields);
-    other.set_num_fields(num_fields + 1);
-    other.set_pre_defined_fields(num_fields + 1);
-
-    let res = pool.lookup_str_insert(hash, b"sort.key$", StrIlk::BstFn)?;
-    hash.set_ty(res.loc, FnClass::StrEntryVar);
-    hash.set_ilk_info(res.loc, entries.num_ent_strs() as i32);
-    entries.set_sort_key_num(entries.num_ent_strs());
-    entries.set_num_ent_strs(entries.num_ent_strs() + 1);
-
-    let res = pool.lookup_str_insert(hash, b"entry.max$", StrIlk::BstFn)?;
-    hash.set_ty(res.loc, FnClass::IntGlblVar);
-    hash.set_ilk_info(res.loc, ENT_STR_SIZE as i32);
-
-    let res = pool.lookup_str_insert(hash, b"global.max$", StrIlk::BstFn)?;
-    hash.set_ty(res.loc, FnClass::IntGlblVar);
-    hash.set_ilk_info(res.loc, GLOB_STR_SIZE as i32);
-
-    Ok(())
-}
-
-pub(crate) fn add_out_pool(
-    ctx: &mut Bibtex<'_, '_>,
-    buffers: &mut GlobalBuffer,
-    pool: &StringPool,
-    str: StrNumber,
-) {
-    let str = pool.get_str(str);
-
-    while buffers.init(BufTy::Out) + str.len() > buffers.len() {
-        buffers.grow_all();
-    }
-
-    let out_offset = buffers.init(BufTy::Out);
-    buffers.copy_from(BufTy::Out, out_offset, str);
-    buffers.set_init(BufTy::Out, out_offset + str.len());
-
-    let mut unbreakable_tail = false;
-    while buffers.init(BufTy::Out) > MAX_PRINT_LINE && !unbreakable_tail {
-        let end_ptr = buffers.init(BufTy::Out);
-        let mut out_offset = MAX_PRINT_LINE;
-        let mut break_pt_found = false;
-
-        while LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace
-            && out_offset >= MIN_PRINT_LINE
-        {
-            out_offset -= 1;
-        }
-
-        if out_offset == MIN_PRINT_LINE - 1 {
-            out_offset = MAX_PRINT_LINE + 1;
-            while out_offset < end_ptr {
-                if LexClass::of(buffers.at(BufTy::Out, out_offset)) != LexClass::Whitespace {
-                    out_offset += 1;
-                } else {
-                    break;
-                }
-            }
-
-            if out_offset == end_ptr {
-                unbreakable_tail = true;
-            } else {
-                break_pt_found = true;
-                while out_offset + 1 < end_ptr {
-                    if LexClass::of(buffers.at(BufTy::Out, out_offset + 1)) == LexClass::Whitespace
-                    {
-                        out_offset += 1;
-                    } else {
-                        break;
-                    }
-                }
-            }
+    /// Check if the provided string is the last. If it is, remove it from the pool and return true.
+    /// Otherwise, return false.
+    pub fn remove_last_str(&mut self, str: StrNumber) -> bool {
+        if str.0 != self.cur_strs - 1 {
+            false
         } else {
-            break_pt_found = true;
+            self.cur_strs -= 1;
+            self.pool_ptr = self.str_start(str);
+            true
+        }
+    }
+
+    pub fn checkpoint(&self) -> Checkpoint {
+        Checkpoint(self.cur_strs)
+    }
+
+    pub fn is_at(&self, check: Checkpoint) -> bool {
+        self.cur_strs == check.0
+    }
+
+    fn grow(&mut self) {
+        self.strings.resize(self.strings.len() + POOL_SIZE, 0);
+    }
+
+    /// Used while defining strings - declare the current `pool_ptr` as the end of the current
+    /// string, increment `cur_strs`, and return the new string's `StrNumber`
+    fn make_string(&mut self) -> StrNumber {
+        if self.cur_strs + 1 > self.offsets.len() {
+            self.offsets.push(self.pool_ptr)
+        } else {
+            self.offsets[self.cur_strs] = self.pool_ptr
+        }
+        self.cur_strs += 1;
+        StrNumber(self.cur_strs - 1)
+    }
+
+    fn copy_raw(&mut self, str: StrNumber, pos: usize) {
+        let start = self.str_start(str);
+        let end = self.str_end(str);
+
+        while pos + (end - start) > self.strings.len() {
+            self.grow();
         }
 
-        if break_pt_found {
-            buffers.set_init(BufTy::Out, out_offset);
-            let break_ptr = buffers.init(BufTy::Out) + 1;
-            output_bbl_line(ctx, buffers);
-            buffers.set_at(BufTy::Out, 0, b' ');
-            buffers.set_at(BufTy::Out, 1, b' ');
-            let len = end_ptr - break_ptr;
-            buffers.copy_within(BufTy::Out, BufTy::Out, break_ptr, 2, len);
-            buffers.set_init(BufTy::Out, len + 2);
+        self.strings.copy_within(start..end, pos);
+    }
+
+    fn copy_range_raw(&mut self, range: Range<usize>, pos: usize) {
+        while pos + (range.end - range.start) > self.strings.len() {
+            self.grow();
         }
+        self.strings.copy_within(range, pos)
     }
 }
 
@@ -481,39 +208,43 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_pool() {
-        let mut hash = HashData::new();
-        let mut new_pool = StringPool::new();
-        let res = new_pool
-            .lookup_str_insert(&mut hash, b"a cool string", StrIlk::Text)
-            .unwrap();
-        assert!(!res.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res.loc)),
-            Ok(b"a cool string" as &[_])
-        );
+    fn test_invalid_str() {
+        let pool = StringPool::new();
+        assert_eq!(pool.try_get_str(StrNumber::invalid()), None);
+    }
 
-        let res2 = new_pool
-            .lookup_str_insert(&mut hash, b"a cool string", StrIlk::Text)
-            .unwrap();
-        assert!(res2.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res2.loc)),
-            Ok(b"a cool string" as &[_])
-        );
+    #[test]
+    fn test_add_str() {
+        let mut pool = StringPool::new();
 
-        let res3 = new_pool.lookup_str(&hash, b"a cool string", StrIlk::Text);
-        assert!(res3.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res3.loc)),
-            Ok(b"a cool string" as &[_])
-        );
+        let str1 = pool.add_string(b"String 1");
+        let str2 = pool.add_string(b"String 2");
 
-        let res4 = new_pool.lookup_str(&hash, b"a bad string", StrIlk::Text);
-        assert!(!res4.exists);
-        assert_eq!(
-            new_pool.try_get_str(hash.text(res4.loc)),
-            Err(LookupErr::DoesntExist)
-        );
+        assert_ne!(str1, str2);
+        assert_eq!(pool.get_str(str1), b"String 1");
+        assert_eq!(pool.get_str(str2), b"String 2");
+    }
+
+    #[test]
+    fn test_write_str() {
+        let mut pool = StringPool::new();
+
+        let str = pool.add_string(b"Hello World!");
+
+        let new_str = pool.write_str(|cursor| {
+            cursor.append_str(str);
+        });
+        assert_ne!(str, new_str);
+        assert_eq!(pool.get_str(str), pool.get_str(new_str));
+
+        assert!(pool.remove_last_str(new_str));
+        // Ensure we can get length of removed string
+        let str_len = pool.get_str(new_str).len();
+        // Ensure extending by that length restores the string
+        let new_str_2 = pool.write_str(|cursor| {
+            cursor.extend(str_len);
+        });
+        assert_eq!(new_str, new_str_2);
+        assert_eq!(pool.get_str(str), pool.get_str(new_str_2));
     }
 }

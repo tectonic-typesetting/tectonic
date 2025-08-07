@@ -9,6 +9,7 @@
 
 use app_dirs2::AppDataType;
 use std::path::PathBuf;
+use std::{env, fs};
 use tectonic_errors::prelude::*;
 
 /// The instance of the `app_dirs2` crate that this crate links to.
@@ -61,6 +62,27 @@ pub fn ensure_user_config() -> Result<PathBuf> {
 /// - macOS: `$HOME/Library/Caches/Tectonic`
 /// - Others: `$XDG_CACHE_HOME/Tectonic` if defined, otherwise
 ///   `$HOME/.cache/Tectonic`
-pub fn ensure_user_cache_dir(path: &str) -> Result<PathBuf> {
-    Ok(app_dirs2::app_dir(AppDataType::UserCache, &APP_INFO, path)?)
+///
+///
+/// The cache location defaults to the `AppDataType::UserCache`
+/// provided by `app_dirs2` but can be overwritten using the
+/// `TECTONIC_CACHE_DIR` environment variable.
+///
+/// This method may perform I/O to create the user cache directory, so it is
+/// fallible. (Due to its `app_dirs2` implementation, it would have to be
+/// fallible even if it didn't perform I/O.)
+pub fn get_user_cache_dir(subdir: &str) -> Result<PathBuf> {
+    let env_cache_path = env::var_os("TECTONIC_CACHE_DIR");
+
+    let cache_path = match env_cache_path {
+        Some(env_cache_path) => {
+            let mut env_cache_path: PathBuf = env_cache_path.into();
+            env_cache_path.push(subdir);
+            fs::create_dir_all(&env_cache_path)?;
+            env_cache_path
+        }
+        None => app_dirs2::app_dir(AppDataType::UserCache, &APP_INFO, subdir)?,
+    };
+
+    Ok(cache_path)
 }

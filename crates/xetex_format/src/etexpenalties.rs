@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! e-TeX penalties parameters defined by the engine.
 //!
 //! These are modified using the `SET_SHAPE` command, which in plain TeX is only

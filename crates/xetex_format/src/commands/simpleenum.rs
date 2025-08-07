@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//#![deny(missing_docs)]
-
 //! Commands that have have primitives with argument codes associated with
 //! "simple" enums, whose numerical values we know at compile-time.
 
