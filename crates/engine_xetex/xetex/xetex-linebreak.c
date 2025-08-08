@@ -13,6 +13,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "tectonic_bridge_core.h"
+#include "xetex_bindings.h"
 
 #define AWFUL_BAD 0x3FFFFFFF
 
@@ -1770,12 +1771,12 @@ try_break(int32_t pi, small_number break_type)
                         if (g <= 0)
                             goto not_found;
 
-                        arith_error = false;
+                        set_arith_error(false);
                         g = fract(g, ACTIVE_NODE_shortfall(r), ACTIVE_NODE_glue(r), MAX_HALFWORD);
                         if (INTPAR(last_line_fit) < 1000)
                             g = fract(g, INTPAR(last_line_fit), 1000, MAX_HALFWORD);
 
-                        if (arith_error) {
+                        if (arith_error()) {
                             if (ACTIVE_NODE_shortfall(r) > 0)
                                 g = MAX_HALFWORD;
                             else

@@ -22,6 +22,8 @@ use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
+mod ty;
+
 /// A serial number describing the detailed binary layout of the TeX "format
 /// files" used by this crate. This number will occasionally increment,
 /// indicating that the format file structure has changed. There is no provision
@@ -231,6 +233,8 @@ pub mod c_api {
     // If you change the interfaces here, rerun cbindgen as described in the README!
 
     use tectonic_bridge_core::CoreBridgeState;
+
+    mod scaled_math;
 
     #[allow(improper_ctypes)] // for CoreBridgeState
     extern "C" {

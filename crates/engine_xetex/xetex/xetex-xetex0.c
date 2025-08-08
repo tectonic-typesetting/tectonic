@@ -6,6 +6,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
+#include "xetex_bindings.h"
 
 #include <stdio.h> /* for EOF */
 
@@ -8222,7 +8223,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
     int32_t save_cur_val;
 
     f = 0;
-    arith_error = false;
+    set_arith_error(false);
     cur_order = NORMAL;
     negative = false;
 
@@ -8403,7 +8404,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             prepare_mag();
             if (INTPAR(mag) != 1000) {
                 cur_val = xn_over_d(cur_val, 1000, INTPAR(mag));
-                f = (1000 * f + 65536L * tex_remainder) / INTPAR(mag);
+                f = (1000 * f + 65536L * tex_remainder()) / INTPAR(mag);
                 cur_val = cur_val + (f / 65536L);
                 f = f % 65536L;
             }
@@ -8451,7 +8452,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         }
 
         cur_val = xn_over_d(cur_val, num, denom);
-        f = (num * f + 65536L * tex_remainder) / denom;
+        f = (num * f + 65536L * tex_remainder()) / denom;
         cur_val = cur_val + (f / 65536L);
         f = f % 65536L;
 
@@ -8460,7 +8461,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
     attach_fraction:
 
         if (cur_val >= 16384)
-            arith_error = true;
+            set_arith_error(true);
         else
             cur_val = cur_val * 65536L + f;
 
@@ -8470,13 +8471,13 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             back_input();
     } else { /* if(requires_units) */
         if (cur_val >= 16384)
-            arith_error = true;
+            set_arith_error(true);
         else
             cur_val = cur_val * 65536L + f;
     }
 
 attach_sign:
-    if (arith_error || abs(cur_val) >= 0x40000000) { /*479:*/
+    if (arith_error() || abs(cur_val) >= 0x40000000) { /*479:*/
         error_here_with_diagnostic("Dimension too large");
         capture_to_diagnostic(NULL);
 
@@ -8485,7 +8486,7 @@ attach_sign:
         help_line[0] = "Continue and I'll use the largest value I can.";
         error();
         cur_val = MAX_HALFWORD;
-        arith_error = false;
+        set_arith_error(false);
     }
 
     if (negative)
@@ -8574,14 +8575,14 @@ int32_t add_or_sub(int32_t x, int32_t y, int32_t max_answer, bool negative)
             a = x + y;
         else {
 
-            arith_error = true;
+            set_arith_error(true);
             a = 0;
         }
     } else if (y >= -(int32_t) max_answer - x)
         a = x + y;
     else {
 
-        arith_error = true;
+        set_arith_error(true);
         a = 0;
     }
     return a;
@@ -8592,7 +8593,7 @@ int32_t quotient(int32_t n, int32_t d)
     bool negative;
     int32_t a;
     if (d == 0) {
-        arith_error = true;
+        set_arith_error(true);
         a = 0;
     } else {
 
@@ -8705,7 +8706,7 @@ found1:
     goto done;
 too_big:
     {
-        arith_error = true;
+        set_arith_error(true);
         a = 0;
     }
  done:
@@ -8726,7 +8727,7 @@ void scan_expr(void)
     int32_t p;
     int32_t q;
     l = cur_val_level;
-    a = arith_error;
+    a = arith_error();
     b = false;
     p = TEX_NULL;
 
@@ -8799,22 +8800,22 @@ found: /*1572:*//*424:*/
             back_error();
         }
     }
-    arith_error = b;
+    set_arith_error(b);
     if ((l == INT_VAL) || (s > EXPR_SUB)) {
         if ((f > TEX_INFINITY) || (f < -TEX_INFINITY)) {
-            arith_error = true;
+            set_arith_error(true);
             f = 0;
         }
     } else if (l == DIMEN_VAL) {
         if (abs(f) > MAX_HALFWORD) {
-            arith_error = true;
+            set_arith_error(true);
             f = 0;
         }
     } else {
 
         if ((abs(mem[f + 1].b32.s1) > MAX_HALFWORD) || (abs(mem[f + 2].b32.s1) > MAX_HALFWORD)
             || (abs(mem[f + 3].b32.s1) > MAX_HALFWORD)) {
-            arith_error = true;
+            set_arith_error(true);
             delete_glue_ref(f);
             f = new_spec(0);
         }
@@ -8903,7 +8904,7 @@ found: /*1572:*//*424:*/
         }
         r = o;
     }
-    b = arith_error;
+    b = arith_error();
     if (o != EXPR_NONE)
         goto continue_;
     if (p != TEX_NULL) {     /*1577: */
@@ -8939,7 +8940,7 @@ found: /*1572:*//*424:*/
         } else
             e = 0;
     }
-    arith_error = a;
+    set_arith_error(a);
     cur_val = e;
     cur_val_level = l;
 }
@@ -15785,7 +15786,7 @@ found:
     else
         scan_keyword("by");
 
-    arith_error = false;
+    set_arith_error(false);
 
     if (q < MULTIPLY) { /*1273:*/
         if (p < GLUE_VAL) {
@@ -15857,7 +15858,7 @@ found:
         }
     }
 
-    if (arith_error) {
+    if (arith_error()) {
         error_here_with_diagnostic("Arithmetic overflow");
         capture_to_diagnostic(NULL);
 
