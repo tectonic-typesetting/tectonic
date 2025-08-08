@@ -6,6 +6,7 @@
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "tectonic_bridge_core.h"
+#include "xetex_bindings.h"
 
 
 static scaled_t math_x_height(int32_t size_code);
@@ -1586,7 +1587,7 @@ math_glue(int32_t g, scaled_t m)
     int32_t n;
     scaled_t f;
     n = x_over_n(m, 65536L);
-    f = tex_remainder;
+    f = tex_remainder();
     if (f < 0) {
         n--;
         f = f + 65536L;
@@ -1614,7 +1615,7 @@ math_kern(int32_t p, scaled_t m)
     scaled_t f;
     if (mem[p].b16.s0 == MU_GLUE) {
         n = x_over_n(m, 65536L);
-        f = tex_remainder;
+        f = tex_remainder();
         if (f < 0) {
             n--;
             f = f + 65536L;
