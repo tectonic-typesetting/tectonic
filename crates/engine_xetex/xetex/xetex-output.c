@@ -9,18 +9,6 @@
 #include "tectonic_bridge_core.h"
 #include "xetex_bindings.h"
 
-static ttbc_diagnostic_t *current_diagnostic = 0;
-
-void
-capture_to_diagnostic(ttbc_diagnostic_t *diagnostic)
-{
-    if (current_diagnostic) {
-        ttstub_diag_finish(current_diagnostic);
-    }
-
-    current_diagnostic = diagnostic;
-}
-
 ttbc_diagnostic_t *
 diagnostic_begin_capture_warning_here(void)
 {
@@ -52,9 +40,9 @@ error_here_with_diagnostic(const char* message)
 static void
 warn_char(int c)
 {
-    if (current_diagnostic) {
+    if (current_diagnostic()) {
         char bytes[2] = { c, 0 };
-        ttbc_diag_append(current_diagnostic, bytes);
+        ttbc_diag_append(current_diagnostic(), bytes);
     }
 }
 

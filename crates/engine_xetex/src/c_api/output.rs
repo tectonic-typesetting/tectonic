@@ -1,19 +1,24 @@
 use crate::c_api::engine::with_tex_string;
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use std::cell::RefCell;
-use tectonic_bridge_core::Diagnostic;
+use std::hash::Hasher;
+use std::ptr;
+use std::ptr::NonNull;
+use tectonic_bridge_core::{CoreBridgeState, Diagnostic};
 
 thread_local! {
     pub static OUTPUT_CTX: RefCell<OutputCtx> = const { RefCell::new(OutputCtx::new()) }
 }
 
 pub struct OutputCtx {
+    current_diagnostic: Option<Box<Diagnostic>>,
     file_line_error_style_p: i32,
 }
 
 impl OutputCtx {
     const fn new() -> OutputCtx {
         OutputCtx {
+            current_diagnostic: None,
             file_line_error_style_p: 0,
         }
     }
@@ -27,6 +32,40 @@ pub extern "C" fn file_line_error_style_p() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_file_line_error_style_p(val: i32) {
     OUTPUT_CTX.with_borrow_mut(|out| out.file_line_error_style_p = val)
+}
+
+#[no_mangle]
+pub extern "C" fn current_diagnostic() -> *mut Diagnostic {
+    OUTPUT_CTX.with_borrow_mut(|out| {
+        out.current_diagnostic
+            .as_mut()
+            .map(|b| ptr::from_mut(&mut **b))
+            .unwrap_or(ptr::null_mut())
+    })
+}
+
+fn rs_capture_to_diagnostic(
+    state: &mut CoreBridgeState<'_>,
+    out: &mut OutputCtx,
+    diagnostic: Option<Box<Diagnostic>>,
+) {
+    if let Some(diag) = out.current_diagnostic.take() {
+        state.finish_diagnostic(*diag);
+    }
+    out.current_diagnostic = diagnostic;
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn capture_to_diagnostic(diagnostic: Option<NonNull<Diagnostic>>) {
+    OUTPUT_CTX.with_borrow_mut(|out| {
+        CoreBridgeState::with_global_state(|state| {
+            rs_capture_to_diagnostic(
+                state,
+                out,
+                diagnostic.map(|ptr| Box::from_raw(ptr.as_ptr())),
+            )
+        })
+    })
 }
 
 unsafe fn rs_diagnostic_print_file_line(files: &mut FileCtx, diag: &mut Diagnostic) {

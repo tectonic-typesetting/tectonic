@@ -61,6 +61,10 @@ int32_t file_line_error_style_p(void);
 
 void set_file_line_error_style_p(int32_t val);
 
+ttbc_diagnostic_t *current_diagnostic(void);
+
+void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
+
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
 
 bool arith_error(void);

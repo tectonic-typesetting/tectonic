@@ -746,6 +746,12 @@ impl<'a> CoreBridgeState<'a> {
             true
         }
     }
+
+    /// Finish and emit a diagnostic
+    pub fn finish_diagnostic(&mut self, diag: Diagnostic) {
+        self.status
+            .report(diag.kind, format_args!("{}", diag.message), None);
+    }
 }
 
 /// A type for storing settings about potentially insecure engine features.
@@ -1307,8 +1313,7 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 pub unsafe extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
     let rdiag = Box::from_raw(diag);
-    es.status
-        .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+    es.finish_diagnostic(*rdiag);
 }
 
 /// Run a shell command
