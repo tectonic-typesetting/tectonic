@@ -277,7 +277,7 @@ found:
     mem[r].b32.s1 = TEX_NULL;
     if (s >= MEDIUM_NODE_SIZE) {
         mem[r + s - 1].b32.s0 = cur_input.synctex_tag;
-        mem[r + s - 1].b32.s1 = line;
+        mem[r + s - 1].b32.s1 = line();
     }
     return r;
 }
@@ -1715,7 +1715,7 @@ void push_nest(void)
     cur_list.head = get_avail();
     cur_list.tail = cur_list.head;
     cur_list.prev_graf = 0;
-    cur_list.mode_line = line;
+    cur_list.mode_line = line();
     cur_list.eTeX_aux = TEX_NULL;
 }
 
@@ -4000,7 +4000,7 @@ void group_warning(void)
 
     base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
-    i = in_open;
+    i = in_open();
     w = false;
     while ((grp_stack[i] == cur_boundary) && (i > 0)) {
 
@@ -4037,7 +4037,7 @@ void if_warning(void)
 
     base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
-    i = in_open;
+    i = in_open();
     w = false;
     while (if_stack[i] == cond_ptr) {
 
@@ -4082,7 +4082,7 @@ void file_warning(void)
     l = cur_level;
     c = cur_group;
     save_ptr = cur_boundary;
-    while (grp_stack[in_open] != save_ptr) {
+    while (grp_stack[in_open()] != save_ptr) {
         cur_level--;
 
         print_nl_cstr("Warning: ");
@@ -4102,7 +4102,7 @@ void file_warning(void)
     l = if_limit;
     c = cur_if;
     i = if_line;
-    while (if_stack[in_open] != cond_ptr) {
+    while (if_stack[in_open()] != cond_ptr) {
         print_nl_cstr("Warning: ");
         diagnostic_begin_capture_warning_here();
         print_cstr("end of file when ");
@@ -4330,7 +4330,7 @@ void new_save_level(group_code c)
             overflow("save size", save_size);
     }
 
-    save_stack[save_ptr + 0].b32.s1 = line;
+    save_stack[save_ptr + 0].b32.s1 = line();
     save_ptr++;
     save_stack[save_ptr].b16.s1 = LEVEL_BOUNDARY;
     save_stack[save_ptr].b16.s0 = cur_group;
@@ -4526,7 +4526,7 @@ void unsave(void)
         }
 
     done:
-        if (grp_stack[in_open] == cur_boundary)
+        if (grp_stack[in_open()] == cur_boundary)
             group_warning();
         cur_group = save_stack[save_ptr].b16.s0;
         cur_boundary = save_stack[save_ptr].b32.s1;
@@ -4623,7 +4623,7 @@ void show_cur_cmd_chr(void)
                 } else {
 
                     n = 1;
-                    l = line;
+                    l = line();
                 }
                 p = cond_ptr;
                 while (p != TEX_NULL) {
@@ -4700,10 +4700,10 @@ void show_context(void)
                     } else {
 
                         print_nl_cstr("l.");
-                        if (cur_input.index == in_open)
-                            print_int(line);
+                        if (cur_input.index == in_open())
+                            print_int(line());
                         else
-                            print_int(line_stack[cur_input.index + 1]);
+                            print_int(line_stack(cur_input.index + 1));
                     }
                     print_char(' ');
                     {
@@ -5006,11 +5006,11 @@ ins_error(void)
 
 void begin_file_reading(void)
 {
-    if (in_open == max_in_open)
+    if (in_open() == max_in_open)
         overflow("text input levels", max_in_open);
     if (first == buf_size)
         overflow("buffer size", buf_size);
-    in_open++;
+    set_in_open(in_open()+1);
     {
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
@@ -5020,13 +5020,13 @@ void begin_file_reading(void)
         input_stack[input_ptr] = cur_input;
         input_ptr++;
     }
-    cur_input.index = in_open;
+    cur_input.index = in_open();
     source_filename_stack[cur_input.index] = 0;
-    full_source_filename_stack[cur_input.index] = 0;
+    set_full_source_filename_stack(cur_input.index, 0);
     eof_seen[cur_input.index] = false;
     grp_stack[cur_input.index] = cur_boundary;
     if_stack[cur_input.index] = cond_ptr;
-    line_stack[cur_input.index] = line;
+    set_line_stack(cur_input.index, line());
     cur_input.start = first;
     cur_input.state = MID_LINE;
     cur_input.name = 0;
@@ -5037,7 +5037,7 @@ void
 end_file_reading(void)
 {
     first = cur_input.start;
-    line = line_stack[cur_input.index];
+    set_line(line_stack(cur_input.index));
 
     if (cur_input.name == 18 || cur_input.name == 19) {
         pseudo_close();
@@ -5048,7 +5048,7 @@ end_file_reading(void)
 
     input_ptr--;
     cur_input = input_stack[input_ptr];
-    in_open--;
+    set_in_open(in_open() - 1);
 }
 
 
@@ -5499,7 +5499,7 @@ restart:
             cur_input.state = NEW_LINE;
 
             if (cur_input.name > 17) { /*374:*/
-                line++;
+                set_line(line()+1);
                 first = cur_input.start;
 
                 if (!force_eof) {
@@ -5530,7 +5530,7 @@ restart:
 
                 if (force_eof) {
                     if (INTPAR(tracing_nesting) > 0) {
-                        if (grp_stack[in_open] != cur_boundary || if_stack[in_open] != cond_ptr)
+                        if (grp_stack[in_open()] != cur_boundary || if_stack[in_open()] != cond_ptr)
                             file_warning();
                     }
 
@@ -6383,7 +6383,7 @@ reswitch:
                 while (cur_chr != FI_CODE)
                     pass_text();
 
-                if (if_stack[in_open] == cond_ptr)
+                if (if_stack[in_open()] == cond_ptr)
                     if_warning();
                 p = cond_ptr;
                 if_line = mem[p + 1].b32.s1;
@@ -7598,7 +7598,7 @@ restart:
             } else { /* if(m >= XETEX_DIM) */
                 switch (m) {
                 case INPUT_LINE_NO_CODE:
-                    cur_val = line;
+                    cur_val = line();
                     break;
 
                 case BADNESS_CODE:
@@ -9115,7 +9115,7 @@ void pseudo_start(void)
         pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     }
     begin_file_reading();
-    line = 0;
+    set_line(0);
     cur_input.limit = cur_input.start;
     cur_input.loc = cur_input.limit + 1;
     if (INTPAR(tracing_scan_tokens) > 0) {
@@ -10153,7 +10153,7 @@ void pass_text(void)
     save_scanner_status = scanner_status;
     scanner_status = SKIPPING;
     l = 0;
-    skip_line = line;
+    skip_line = line();
 
     while (true) {
 
@@ -10220,7 +10220,7 @@ conditional(void)
     cond_ptr = p;
     cur_if = cur_chr;
     if_limit = IF_CODE;
-    if_line = line;
+    if_line = line();
 
     save_cond_ptr = cond_ptr;
     is_unless = (cur_chr >= UNLESS_CODE);
@@ -10511,7 +10511,7 @@ conditional(void)
                 else
                     goto common_ending;
             } else if (cur_chr == FI_CODE) { /*515:*/
-                if (if_stack[in_open] == cond_ptr)
+                if (if_stack[in_open()] == cond_ptr)
                     if_warning();
                 p = cond_ptr;
                 if_line = mem[p + 1].b32.s1;
@@ -10575,7 +10575,7 @@ conditional(void)
             help_line[0] = "I'm ignoring this; it doesn't match any \\if.";
             error();
         } else if (cur_chr == FI_CODE) { /*515:*/
-            if (if_stack[in_open] == cond_ptr)
+            if (if_stack[in_open()] == cond_ptr)
                 if_warning();
             p = cond_ptr;
             if_line = mem[p + 1].b32.s1;
@@ -10588,7 +10588,7 @@ conditional(void)
 
 common_ending:
     if (cur_chr == FI_CODE) { /*515:*/
-        if (if_stack[in_open] == cond_ptr)
+        if (if_stack[in_open()] == cond_ptr)
             if_warning();
         p = cond_ptr;
         if_line = mem[p + 1].b32.s1;
@@ -10996,11 +10996,11 @@ start_input(const char *primary_input_name)
      * `cur_{name,area,ext}`. */
 
     cur_input.name = make_name_string();
-    source_filename_stack[in_open] = cur_input.name;
+    source_filename_stack[in_open()] = cur_input.name;
 
     /* *This* variant is a TeX string made out of `name_of_input_file`. */
 
-    full_source_filename_stack[in_open] = maketexstring(name_of_input_file);
+    set_full_source_filename_stack(in_open(), maketexstring(name_of_input_file));
     if (cur_input.name == str_ptr - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
@@ -11017,13 +11017,13 @@ start_input(const char *primary_input_name)
         open_log_file();
     }
 
-    if (term_offset + length(full_source_filename_stack[in_open]) > max_print_line - 2)
+    if (term_offset + length(full_source_filename_stack(in_open())) > max_print_line - 2)
         print_ln();
     else if (term_offset > 0 || file_offset > 0)
         print_char(' ');
     print_char('(');
     open_parens++;
-    print(full_source_filename_stack[in_open]);
+    print(full_source_filename_stack(in_open()));
     ttstub_output_flush(rust_stdout);
 
     if (INTPAR(tracing_stack_levels) > 0) {
@@ -11054,7 +11054,7 @@ start_input(const char *primary_input_name)
 
     synctex_start_input();
 
-    line = 1;
+    set_line(1);
     input_line(input_file[cur_input.index]);
     cur_input.limit = last;
 
@@ -11089,7 +11089,7 @@ void char_warning(internal_font_number f, int32_t c)
             INTPAR(tracing_online) = 1;
 
         if (INTPAR(tracing_lost_chars) > 2) {
-            if (file_line_error_style_p)
+            if (file_line_error_style_p())
                 print_file_line();
             else
                 print_nl_cstr("! ");
@@ -11534,7 +11534,7 @@ void bad_utf8_warning(void)
     else {
 
         print_cstr(" at line ");
-        print_int(line);
+        print_int(line());
     }
     print_cstr(" replaced by U+FFFD.");
     capture_to_diagnostic(NULL);
@@ -12521,7 +12521,7 @@ common_ending:
             print_cstr("--");
         } else
             print_cstr(") detected at line ");
-        print_int(line);
+        print_int(line());
     }
 
     capture_to_diagnostic(NULL);
@@ -12781,7 +12781,7 @@ common_ending:
             print_cstr("--");
         } else
             print_cstr(") detected at line ");
-        print_int(line);
+        print_int(line());
         print_ln();
     }
 
@@ -16355,7 +16355,7 @@ void show_whatever(void)
     capture_to_diagnostic(NULL);
     end_diagnostic(true);
     {
-        if (file_line_error_style_p)
+        if (file_line_error_style_p())
             print_file_line();
         else
             print_nl_cstr("! ");
@@ -16574,7 +16574,7 @@ void do_extension(void)
                 }
                 error();
             } else
-                set_input_file_encoding(input_file[in_open], i, j);
+                set_input_file_encoding(input_file[in_open()], i, j);
         }
         break;
 
@@ -16628,36 +16628,36 @@ insert_src_special(void)
 {
     int32_t toklist, p, q;
 
-    if (source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line)) {
+    if (source_filename_stack[in_open()] > 0 && is_new_source(source_filename_stack[in_open()], line())) {
         toklist = get_avail();
         p = toklist;
         mem[p].b32.s0 = CS_TOKEN_FLAG + FROZEN_SPECIAL;
         mem[p].b32.s1 = get_avail();
         p = LLIST_link(p);
         mem[p].b32.s0 = (LEFT_BRACE_TOKEN + '{' );
-        q = str_toks(make_src_special(source_filename_stack[in_open], line));
+        q = str_toks(make_src_special(source_filename_stack[in_open()], line()));
         mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
         p = q;
         mem[p].b32.s1 = get_avail();
         p = LLIST_link(p);
         mem[p].b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
         begin_token_list(toklist, INSERTED);
-        remember_source_info(source_filename_stack[in_open], line);
+        remember_source_info(source_filename_stack[in_open()], line());
     }
 }
 
 
 void append_src_special(void)
 {
-    if ((source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line))) {
+    if ((source_filename_stack[in_open()] > 0 && is_new_source(source_filename_stack[in_open()], line()))) {
         new_whatsit(SPECIAL_NODE, WRITE_NODE_SIZE);
         mem[cur_list.tail + 1].b32.s0 = 0;
         def_ref = get_avail();
         mem[def_ref].b32.s0 = TEX_NULL;
-        str_toks(make_src_special(source_filename_stack[in_open], line));
+        str_toks(make_src_special(source_filename_stack[in_open()], line()));
         mem[def_ref].b32.s1 = mem[TEMP_HEAD].b32.s1;
         mem[cur_list.tail + 1].b32.s1 = def_ref;
-        remember_source_info(source_filename_stack[in_open], line);
+        remember_source_info(source_filename_stack[in_open()], line());
     }
 }
 

@@ -48,7 +48,6 @@ int32_t param_size;
 int32_t nest_size;
 int32_t save_size;
 int32_t expand_depth;
-int file_line_error_style_p;
 int halt_on_error_p;
 bool quoted_filename;
 bool insert_src_special_auto;
@@ -135,13 +134,9 @@ input_state_t *input_stack;
 int32_t input_ptr;
 int32_t max_in_stack;
 input_state_t cur_input;
-int32_t in_open;
 int32_t open_parens;
 UFILE **input_file;
-int32_t line;
-int32_t *line_stack;
 str_number *source_filename_stack;
-str_number *full_source_filename_stack;
 unsigned char scanner_status;
 int32_t warning_index;
 int32_t def_ref;
@@ -3485,7 +3480,7 @@ tt_cleanup(void) {
         }
     }
 
-    for (int i = 1; i <= in_open; i++) {
+    for (int i = 1; i <= in_open(); i++) {
         if (input_file[i] != NULL) {
             u_close(input_file[i]);
         }
@@ -3497,12 +3492,12 @@ tt_cleanup(void) {
     free(save_stack);
     free(input_stack);
     free(input_file);
-    free(line_stack);
+    clear_line_stack();
     free(eof_seen);
     free(grp_stack);
     free(if_stack);
     free(source_filename_stack);
-    free(full_source_filename_stack);
+    clear_full_source_filename_stack();
     free(param_stack);
     free(hyph_word);
     free(hyph_list);
@@ -3571,8 +3566,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     /* Not sure why these get custom initializations. */
 
-    if (file_line_error_style_p < 0)
-        file_line_error_style_p = 0;
+    if (file_line_error_style_p() < 0)
+        set_file_line_error_style_p(0);
 
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
@@ -3605,12 +3600,10 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     save_stack = xmalloc_array(memory_word, save_size);
     input_stack = xmalloc_array(input_state_t, stack_size);
     input_file = xmalloc_array(UFILE *, max_in_open);
-    line_stack = xmalloc_array(int32_t, max_in_open);
     eof_seen = xmalloc_array(bool, max_in_open);
     grp_stack = xmalloc_array(save_pointer, max_in_open);
     if_stack = xmalloc_array(int32_t, max_in_open);
     source_filename_stack = xmalloc_array(str_number, max_in_open);
-    full_source_filename_stack = xmalloc_array(str_number, max_in_open);
     param_stack = xmalloc_array(int32_t, param_size);
     hyph_word = xmalloc_array(str_number, hyph_size);
     hyph_list = xmalloc_array(int32_t, hyph_size);
@@ -3716,8 +3709,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     input_ptr = 0;
     max_in_stack = 0;
     source_filename_stack[0] = 0;
-    full_source_filename_stack[0] = 0;
-    in_open = 0;
+    set_full_source_filename_stack(0, 0);
+    set_in_open(0);
     open_parens = 0;
     max_buf_stack = 0;
     grp_stack[0] = 0;
@@ -3736,7 +3729,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     cur_input.state = NEW_LINE;
     cur_input.start = 1;
     cur_input.index = 0;
-    line = 0;
+    set_line(0);
     cur_input.name = 0;
     force_eof = false;
     align_state = 1000000L;

@@ -18,6 +18,10 @@
  */
 #define FORMAT_SERIAL 33
 
+#define MAX_IN_OPEN 15
+
+typedef int32_t StrNumber;
+
 typedef int32_t Scaled;
 
 #ifdef __cplusplus
@@ -30,6 +34,34 @@ extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *dump_name,
                                 const char *input_file_name,
                                 uint64_t build_date);
+
+extern char *gettexstring(StrNumber s);
+
+int32_t in_open(void);
+
+void set_in_open(int32_t val);
+
+StrNumber full_source_filename_stack(uintptr_t idx);
+
+void set_full_source_filename_stack(uintptr_t idx, StrNumber val);
+
+void clear_full_source_filename_stack(void);
+
+int32_t line(void);
+
+void set_line(int32_t val);
+
+int32_t line_stack(uintptr_t idx);
+
+void set_line_stack(uintptr_t idx, int32_t val);
+
+void clear_line_stack(void);
+
+int32_t file_line_error_style_p(void);
+
+void set_file_line_error_style_p(int32_t val);
+
+void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
 
 bool arith_error(void);
 
@@ -68,6 +100,8 @@ void new_randoms(void);
 void init_randoms(int32_t seed);
 
 int32_t unif_rand(int32_t x);
+
+int32_t norm_rand(void);
 
 #ifdef __cplusplus
 }  // extern "C"
