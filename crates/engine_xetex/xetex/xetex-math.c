@@ -429,7 +429,7 @@ scan_delimiter(int32_t p, bool r)
     }
 
     if (cur_val < 0) {
-        if (file_line_error_style_p)
+        if (file_line_error_style_p())
             print_file_line();
         else
             print_nl_cstr("! ");
@@ -657,7 +657,7 @@ math_fraction(void)
         if (c % DELIMITED_CODE == ABOVE_CODE)
             scan_dimen(false, false, false);
 
-        if (file_line_error_style_p)
+        if (file_line_error_style_p())
             print_file_line();
         else
             print_nl_cstr("! ");

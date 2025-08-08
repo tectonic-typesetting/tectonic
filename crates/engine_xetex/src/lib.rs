@@ -234,6 +234,9 @@ pub mod c_api {
 
     use tectonic_bridge_core::CoreBridgeState;
 
+    mod engine;
+    mod inputs;
+    mod output;
     mod scaled_math;
 
     #[allow(improper_ctypes)] // for CoreBridgeState

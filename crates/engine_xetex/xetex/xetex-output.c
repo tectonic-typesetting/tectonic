@@ -7,6 +7,7 @@
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "tectonic_bridge_core.h"
+#include "xetex_bindings.h"
 
 static ttbc_diagnostic_t *current_diagnostic = 0;
 
@@ -18,30 +19,6 @@ capture_to_diagnostic(ttbc_diagnostic_t *diagnostic)
     }
 
     current_diagnostic = diagnostic;
-}
-
-static void
-diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic)
-{
-    // Add file/line number information
-    // This duplicates logic from print_file_line
-
-    int32_t level = in_open;
-    while (level > 0 && full_source_filename_stack[level] == 0)
-        level--;
-
-    if (level == 0) {
-        ttbc_diag_append(diagnostic, "!");
-    } else {
-        int32_t source_line = line;
-        if (level != in_open) {
-            source_line = line_stack[level + 1];
-        }
-
-        char* filename = gettexstring(full_source_filename_stack[level]);
-        ttstub_diag_printf(diagnostic, "%s:%d: ", filename, source_line);
-        free(filename);
-    }
 }
 
 ttbc_diagnostic_t *
@@ -61,7 +38,7 @@ error_here_with_diagnostic(const char* message)
     diagnostic_print_file_line(error);
     ttstub_diag_printf(error, "%s", message);
 
-    if (file_line_error_style_p)
+    if (file_line_error_style_p())
         print_file_line();
     else
         print_nl_cstr("! ");
@@ -625,21 +602,21 @@ print_sa_num(int32_t q)
 void
 print_file_line(void)
 {
-    int32_t level = in_open;
+    int32_t level = in_open();
 
-    while ((level > 0) && (full_source_filename_stack[level] == 0))
+    while ((level > 0) && (full_source_filename_stack(level) == 0))
         level--;
 
     if (level == 0)
         print_nl_cstr("! ");
     else {
         print_nl_cstr("");
-        print(full_source_filename_stack[level]);
+        print(full_source_filename_stack(level));
         print(':');
-        if (level == in_open)
-            print_int(line);
+        if (level == in_open())
+            print_int(line());
         else
-            print_int(line_stack[level + 1]);
+            print_int(line_stack(level + 1));
         print_cstr(": ");
     }
 }
