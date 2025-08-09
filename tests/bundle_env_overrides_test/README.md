@@ -1,6 +1,6 @@
 # Bundle URL overrides Test
 
-This is a simple test program used by the integration tests in the `tectonic_bundles` crate to test the `get_fallback_bundle_url` function with different compile-time environment variable overrides.
+This is a simple test program used by the integration tests to test the [`tectonic_bundles::get_fallback_bundle_url`] function with different compile-time environment variable overrides.
 
 ## Purpose
 

@@ -58,11 +58,18 @@ fn test_bundle_locked() {
 fn test_bundle_prefix() {
     let url_prefixed = run_test_program(
         PRE_FORMAT_VERSION,
-        &[("TECTONIC_BUNDLE_PREFIX", TEST_BUNDLE_PREFIX)],
+        &[
+            ("TECTONIC_BUNDLE_PREFIX", TEST_BUNDLE_PREFIX),
+            ("TECTONIC_BUNDLE_LOCKED", ""),
+            // ^ locked url should be ignored if empty
+        ],
     );
     let url_prefixed_versioned = run_test_program(
         TEST_FORMAT_VERSION,
-        &[("TECTONIC_BUNDLE_PREFIX", TEST_BUNDLE_PREFIX)],
+        &[
+            ("TECTONIC_BUNDLE_PREFIX", TEST_BUNDLE_PREFIX),
+            ("TECTONIC_BUNDLE_LOCKED", ""),
+        ],
     );
 
     assert_eq!(
@@ -85,19 +92,4 @@ fn test_precedence_locked_over_prefix() {
         ],
     );
     assert_eq!(url_both_env_set, TEST_BUNDLE_LOCKED);
-}
-
-#[test]
-fn test_empty_locked_bundle_ignored() {
-    let url_empty_locked = run_test_program(
-        TEST_FORMAT_VERSION,
-        &[
-            ("TECTONIC_BUNDLE_LOCKED", ""),
-            ("TECTONIC_BUNDLE_PREFIX", TEST_BUNDLE_PREFIX),
-        ],
-    );
-    assert_eq!(
-        url_empty_locked,
-        format!("{TEST_BUNDLE_PREFIX}/default_bundle_v{TEST_FORMAT_VERSION}.tar",)
-    );
 }
