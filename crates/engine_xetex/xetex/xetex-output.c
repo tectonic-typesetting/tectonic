@@ -37,15 +37,6 @@ error_here_with_diagnostic(const char* message)
     return error;
 }
 
-static void
-warn_char(int c)
-{
-    if (current_diagnostic()) {
-        char bytes[2] = { c, 0 };
-        ttbc_diag_append(current_diagnostic(), bytes);
-    }
-}
-
 void
 print_ln(void)
 {

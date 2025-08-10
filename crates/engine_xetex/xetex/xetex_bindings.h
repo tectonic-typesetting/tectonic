@@ -18,8 +18,6 @@
  */
 #define FORMAT_SERIAL 33
 
-#define MAX_IN_OPEN 15
-
 typedef int32_t StrNumber;
 
 typedef int32_t Scaled;
@@ -66,6 +64,8 @@ ttbc_diagnostic_t *current_diagnostic(void);
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
+
+void warn_char(int c);
 
 bool arith_error(void);
 
