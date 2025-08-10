@@ -1,7 +1,6 @@
 use crate::c_api::engine::with_tex_string;
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use std::cell::RefCell;
-use std::hash::Hasher;
 use std::ptr;
 use std::ptr::NonNull;
 use tectonic_bridge_core::{CoreBridgeState, Diagnostic};
