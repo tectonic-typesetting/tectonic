@@ -1,7 +1,7 @@
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 
-pub const MAX_IN_OPEN: usize = 15;
+// pub const MAX_IN_OPEN: usize = 15;
 
 thread_local! {
     pub static FILE_CTX: RefCell<FileCtx> = const { RefCell::new(FileCtx::new()) };

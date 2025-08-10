@@ -1,6 +1,8 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(clippy::undocumented_unsafe_blocks)]
+
 //! The [XeTeX] program as a reusable crate.
 //!
 //! [XeTeX]: http://www.xetex.org/
