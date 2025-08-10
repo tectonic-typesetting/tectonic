@@ -92,6 +92,15 @@ pub unsafe extern "C" fn diagnostic_print_file_line(diagnostic: *mut Diagnostic)
     FILE_CTX.with_borrow_mut(|files| rs_diagnostic_print_file_line(files, &mut *diagnostic))
 }
 
+#[no_mangle]
+pub extern "C" fn warn_char(c: libc::c_int) {
+    OUTPUT_CTX.with_borrow_mut(|out| {
+        if let Some(diag) = out.current_diagnostic.as_deref_mut() {
+            diag.append_char(char::from_u32(c as u32).unwrap_or(char::REPLACEMENT_CHARACTER));
+        }
+    })
+}
+
 // #[no_mangle]
 // pub unsafe extern "C" fn error_here_with_diagnostic(
 //     message: *const libc::c_char,

@@ -1277,6 +1277,11 @@ impl Diagnostic {
     pub fn append(&mut self, msg: impl AsRef<str>) {
         self.message.push_str(msg.as_ref());
     }
+
+    /// Append a single character to a diagnostic
+    pub fn append_char(&mut self, c: char) {
+        self.message.push(c);
+    }
 }
 
 /// Create a new diagnostic that will be reported as a warning.
