@@ -191,7 +191,7 @@ pub extern "C" fn round_xn_over_d(mut x: Scaled, n: i32, d: i32) -> Scaled {
     } else {
         u = 32768 * (u / d) + (v / d);
     }
-    v = v % d;
+    v %= d;
     if 2 * v >= d {
         u += 1;
     }
@@ -215,7 +215,7 @@ pub extern "C" fn make_frac(mut p: i32, mut q: i32) -> i32 {
     }
 
     let mut n = p / q;
-    p = p % q;
+    p %= q;
 
     if n >= 8 {
         set_arith_error(true);
@@ -231,12 +231,12 @@ pub extern "C" fn make_frac(mut p: i32, mut q: i32) -> i32 {
         let mut be_careful;
         loop {
             be_careful = p - q;
-            p = be_careful + p;
+            p += be_careful;
             if p >= 0 {
                 f = f + f + 1;
             } else {
                 f = f + f;
-                p = p + q;
+                p += q;
             }
 
             if f >= 0x10000000 {
@@ -275,17 +275,17 @@ pub extern "C" fn take_frac(mut q: i32, mut f: i32) -> i32 {
         n = 0;
     } else {
         n = f / 0x10000000;
-        f = f % 0x10000000;
+        f %= 0x10000000;
 
         if q <= 0x7FFFFFFF / n {
-            n = n * q;
+            n *= q;
         } else {
             set_arith_error(true);
             n = 0x7FFFFFFF;
         }
     }
 
-    f = f + 0x10000000;
+    f += 0x10000000;
     let mut p = 0x08000000;
 
     if q < 0x40000000 {
@@ -293,9 +293,9 @@ pub extern "C" fn take_frac(mut q: i32, mut f: i32) -> i32 {
             if f % 2 != 0 {
                 p = (p + q) / 2;
             } else {
-                p = p / 2;
+                p /= 2;
             }
-            f = f / 2;
+            f /= 2;
             if f == 1 {
                 break;
             }
@@ -305,9 +305,9 @@ pub extern "C" fn take_frac(mut q: i32, mut f: i32) -> i32 {
             if f % 2 != 0 {
                 p = p + (q - p) / 2;
             } else {
-                p = p / 2;
+                p /= 2;
             }
-            f = f / 2;
+            f /= 2;
             if f == 1 {
                 break;
             }
