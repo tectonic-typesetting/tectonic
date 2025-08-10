@@ -65,6 +65,8 @@ void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
 
+ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
+
 void warn_char(int c);
 
 bool arith_error(void);

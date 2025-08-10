@@ -9,15 +9,6 @@
 #include "tectonic_bridge_core.h"
 #include "xetex_bindings.h"
 
-ttbc_diagnostic_t *
-diagnostic_begin_capture_warning_here(void)
-{
-    ttbc_diagnostic_t *warning = ttbc_diag_begin_warning();
-    diagnostic_print_file_line(warning);
-    capture_to_diagnostic(warning);
-    return warning;
-}
-
 // This replaces the "print file+line number" block at the start of errors
 ttbc_diagnostic_t *
 error_here_with_diagnostic(const char* message)

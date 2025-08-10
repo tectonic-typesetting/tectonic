@@ -93,6 +93,18 @@ pub unsafe extern "C" fn diagnostic_print_file_line(diagnostic: *mut Diagnostic)
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn diagnostic_begin_capture_warning_here() -> *mut Diagnostic {
+    let mut warning = Diagnostic::warning();
+    FILE_CTX.with_borrow_mut(|files| rs_diagnostic_print_file_line(files, &mut warning));
+    OUTPUT_CTX.with_borrow_mut(|out| {
+        CoreBridgeState::with_global_state(|state| {
+            rs_capture_to_diagnostic(state, out, Some(Box::new(warning)));
+            ptr::from_mut(out.current_diagnostic.as_deref_mut().unwrap())
+        })
+    })
+}
+
+#[no_mangle]
 pub extern "C" fn warn_char(c: libc::c_int) {
     OUTPUT_CTX.with_borrow_mut(|out| {
         if let Some(diag) = out.current_diagnostic.as_deref_mut() {
