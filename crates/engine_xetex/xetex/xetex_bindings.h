@@ -37,6 +37,10 @@ uint32_t selector(void);
 
 void set_selector(uint32_t val);
 
+int32_t tally(void);
+
+void set_tally(int32_t val);
+
 extern char *gettexstring(StrNumber s);
 
 int32_t in_open(void);

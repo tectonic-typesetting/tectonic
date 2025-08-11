@@ -56,7 +56,6 @@ bool insert_src_special_every_vbox;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
 unsigned char dig[23];
-int32_t tally;
 UTF16_code trick_buf[256];
 int32_t trick_count;
 int32_t first_count;
@@ -3701,7 +3700,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     init_start_time(build_date);
 
     set_selector(SELECTOR_TERM_ONLY);
-    tally = 0;
+    set_tally(0);
     set_term_offset(0);
     set_file_offset(0);
     job_name = 0;

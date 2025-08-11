@@ -72,8 +72,8 @@ print_raw_char(UTF16_code s, bool incr_offset)
     case SELECTOR_NO_PRINT:
         break;
     case SELECTOR_PSEUDO:
-        if (tally < trick_count)
-            trick_buf[tally % error_line] = s;
+        if (tally() < trick_count)
+            trick_buf[tally() % error_line] = s;
         break;
     case SELECTOR_NEW_STRING:
         if (pool_ptr() < pool_size()) {
@@ -85,7 +85,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
         ttstub_output_putc(write_file(selector()), s);
         break;
     }
-    tally++;
+    set_tally(tally()+1);
 }
 
 

@@ -8,12 +8,14 @@ thread_local! {
 
 pub struct EngineCtx {
     pub(crate) selector: Selector,
+    tally: i32,
 }
 
 impl EngineCtx {
     const fn new() -> EngineCtx {
         EngineCtx {
             selector: Selector::File(0),
+            tally: 0,
         }
     }
 }
@@ -68,6 +70,16 @@ pub extern "C" fn selector() -> u32 {
 #[no_mangle]
 pub extern "C" fn set_selector(val: u32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.selector = Selector::try_from(val).unwrap());
+}
+
+#[no_mangle]
+pub extern "C" fn tally() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.tally)
+}
+
+#[no_mangle]
+pub extern "C" fn set_tally(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.tally = val)
 }
 
 pub fn with_tex_string<T>(s: StrNumber, f: impl FnOnce(&CStr) -> T) -> T {

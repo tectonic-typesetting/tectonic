@@ -58,13 +58,13 @@ show_token_list(int32_t p, int32_t q, int32_t l)
 
     match_chr = '#' ;
     n = '0' ;
-    tally = 0;
+    set_tally(0);
 
-    while (p != TEX_NULL && tally < l) {
+    while (p != TEX_NULL && tally() < l) {
         /*332:*/
         if (p == q) {
-            first_count = tally;
-            trick_count = tally + 1 + error_line - half_error_line;
+            first_count = tally();
+            trick_count = tally() + 1 + error_line - half_error_line;
             if (trick_count < error_line)
                 trick_count = error_line;
         }
@@ -4677,7 +4677,7 @@ void show_context(void)
         if ((base_ptr == input_ptr) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
             if ((base_ptr == input_ptr) || (cur_input.state != TOKEN_LIST)
                 || (cur_input.index != BACKED_UP) || (cur_input.loc != TEX_NULL)) {
-                tally = 0;
+                set_tally(0);
                 old_setting = selector();
                 if (cur_input.state != TOKEN_LIST) {
                     if (cur_input.name <= 17) {
@@ -4707,8 +4707,8 @@ void show_context(void)
                     }
                     print_char(' ');
                     {
-                        l = tally;
-                        tally = 0;
+                        l = tally();
+                        set_tally(0);
                         set_selector(SELECTOR_PSEUDO);
                         trick_count = 1000000L;
                     }
@@ -4723,8 +4723,8 @@ void show_context(void)
                         if (i <= for_end)
                             do {
                                 if (i == cur_input.loc) {
-                                    first_count = tally;
-                                    trick_count = tally + 1 + error_line - half_error_line;
+                                    first_count = tally();
+                                    trick_count = tally() + 1 + error_line - half_error_line;
                                     if (trick_count < error_line)
                                         trick_count = error_line;
                                 }
@@ -4800,8 +4800,8 @@ void show_context(void)
                         break;
                     }
                     {
-                        l = tally;
-                        tally = 0;
+                        l = tally();
+                        set_tally(0);
                         set_selector(SELECTOR_PSEUDO);
                         trick_count = 1000000L;
                     }
@@ -4812,13 +4812,13 @@ void show_context(void)
                 }
                 set_selector(old_setting);
                 if (trick_count == 1000000L) {
-                    first_count = tally;
-                    trick_count = tally + 1 + error_line - half_error_line;
+                    first_count = tally();
+                    trick_count = tally() + 1 + error_line - half_error_line;
                     if (trick_count < error_line)
                         trick_count = error_line;
                 }
-                if (tally < trick_count)
-                    m = tally - first_count;
+                if (tally() < trick_count)
+                    m = tally() - first_count;
                 else
                     m = trick_count - first_count;
                 if (l + first_count <= half_error_line) {
