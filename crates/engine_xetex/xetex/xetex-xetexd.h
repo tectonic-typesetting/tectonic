@@ -427,7 +427,6 @@ extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
 extern rust_output_handle_t rust_stdout;
 extern rust_output_handle_t log_file;
-extern selector_t selector;
 extern unsigned char dig[23];
 extern int32_t tally;
 extern int32_t term_offset;

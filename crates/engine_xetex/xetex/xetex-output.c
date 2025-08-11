@@ -31,7 +31,7 @@ error_here_with_diagnostic(const char* message)
 void
 print_ln(void)
 {
-    switch (selector) {
+    switch (selector()) {
     case SELECTOR_TERM_AND_LOG:
         warn_char('\n');
         ttstub_output_putc(rust_stdout, '\n');
@@ -54,7 +54,7 @@ print_ln(void)
     case SELECTOR_NEW_STRING:
         break;
     default:
-        ttstub_output_putc(write_file[selector], '\n');
+        ttstub_output_putc(write_file[selector()], '\n');
         break;
     }
 }
@@ -63,7 +63,7 @@ print_ln(void)
 void
 print_raw_char(UTF16_code s, bool incr_offset)
 {
-    switch (selector) {
+    switch (selector()) {
     case SELECTOR_TERM_AND_LOG:
         warn_char(s);
         ttstub_output_putc(rust_stdout, s);
@@ -114,7 +114,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
         }
         break;
     default:
-        ttstub_output_putc(write_file[selector], s);
+        ttstub_output_putc(write_file[selector()], s);
         break;
     }
     tally++;
@@ -126,7 +126,7 @@ print_char(int32_t s)
 {
     small_number l;
 
-    if ((selector > SELECTOR_PSEUDO) && (!doing_special)) {
+    if ((selector() > SELECTOR_PSEUDO) && (!doing_special)) {
         if (s >= 0x10000) {
             print_raw_char(0xD800 + (s - 0x10000) / 1024, true);
             print_raw_char(0xDC00 + (s - 0x10000) % 1024, true);
@@ -136,7 +136,7 @@ print_char(int32_t s)
     }
 
     if ( /*252: */ s == INTPAR(new_line_char) /*:252 */ ) {
-        if (selector < SELECTOR_PSEUDO) {
+        if (selector() < SELECTOR_PSEUDO) {
             print_ln();
             return;
         }
@@ -171,7 +171,7 @@ print_char(int32_t s)
             print_raw_char('0' + l, true);
         else
             print_raw_char('a' + l - 10, true);
-    } else if (selector == SELECTOR_PSEUDO) {
+    } else if (selector() == SELECTOR_PSEUDO) {
         print_raw_char(s, true);
     } else {
         if (s < 2048) {
@@ -202,13 +202,13 @@ print(int32_t s)
         if (s < 0)
             return print_cstr("???");
         else {
-            if (selector > SELECTOR_PSEUDO) {
+            if (selector() > SELECTOR_PSEUDO) {
                 print_char(s);
                 return;
             }
 
             if ( /*252: */ s == INTPAR(new_line_char) /*:252 */ ) {
-                if (selector < SELECTOR_PSEUDO) {
+                if (selector() < SELECTOR_PSEUDO) {
                     print_ln();
                     return;
                 }
@@ -257,7 +257,7 @@ print_cstr(const char* str)
 void
 print_nl(str_number s)
 {
-    if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
+    if (((term_offset > 0) && (odd(selector()))) || ((file_offset > 0) && (selector() >= SELECTOR_LOG_ONLY)))
         print_ln();
     print(s);
 }
@@ -265,7 +265,7 @@ print_nl(str_number s)
 void
 print_nl_cstr(const char* str)
 {
-    if (((term_offset > 0) && (odd(selector))) || ((file_offset > 0) && (selector >= SELECTOR_LOG_ONLY)))
+    if (((term_offset > 0) && (odd(selector()))) || ((file_offset > 0) && (selector() >= SELECTOR_LOG_ONLY)))
         print_ln();
     print_cstr(str);
 }

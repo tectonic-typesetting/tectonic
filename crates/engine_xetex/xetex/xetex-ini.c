@@ -62,7 +62,6 @@ pool_pointer init_pool_ptr;
 str_number init_str_ptr;
 rust_output_handle_t rust_stdout;
 rust_output_handle_t log_file;
-selector_t selector;
 unsigned char dig[23];
 int32_t tally;
 int32_t term_offset;
@@ -2093,7 +2092,7 @@ store_fmt_file(void)
         _tt_abort("\\dump inside a group");
     }
 
-    selector = SELECTOR_NEW_STRING;
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr(" (preloaded format=");
     print(job_name);
     print_char(' ');
@@ -2105,9 +2104,9 @@ store_fmt_file(void)
     print_char(')');
 
     if (interaction == BATCH_MODE)
-        selector = SELECTOR_LOG_ONLY;
+        set_selector(SELECTOR_LOG_ONLY);
     else
-        selector = SELECTOR_TERM_AND_LOG;
+        set_selector(SELECTOR_TERM_AND_LOG);
 
     if (pool_ptr + 1 > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
@@ -2974,10 +2973,10 @@ final_cleanup(void)
     if (history != HISTORY_SPOTLESS) {
         if ((history == HISTORY_WARNING_ISSUED || (interaction < ERROR_STOP_MODE))) {
 
-            if (selector == SELECTOR_TERM_AND_LOG) {
-                selector = SELECTOR_TERM_ONLY;
+            if (selector() == SELECTOR_TERM_AND_LOG) {
+                set_selector(SELECTOR_TERM_ONLY);
                 print_nl_cstr("(see the transcript file for additional information)");
-                selector = SELECTOR_TERM_AND_LOG;
+                set_selector(SELECTOR_TERM_AND_LOG);
             }
         }
     }
@@ -3693,7 +3692,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     get_seconds_and_micros(&epochseconds, &microseconds);
     init_start_time(build_date);
 
-    selector = SELECTOR_TERM_ONLY;
+    set_selector(SELECTOR_TERM_ONLY);
     tally = 0;
     term_offset = 0;
     file_offset = 0;
@@ -3849,9 +3848,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     init_randoms(random_seed);
 
     if (interaction == BATCH_MODE)
-        selector = SELECTOR_NO_PRINT;
+        set_selector(SELECTOR_NO_PRINT);
     else
-        selector = SELECTOR_TERM_ONLY; /*:79*/
+        set_selector(SELECTOR_TERM_ONLY); /*:79*/
 
     if (semantic_pagination_enabled)
         INTPAR(xetex_generate_actual_text) = 1;

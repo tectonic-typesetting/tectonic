@@ -2106,10 +2106,10 @@ void print_param(int32_t n)
 void begin_diagnostic(void)
 {
 
-    old_setting = selector;
+    old_setting = selector();
 
-    if (INTPAR(tracing_online) <= 0 && selector == SELECTOR_TERM_AND_LOG) {
-        selector--;
+    if (INTPAR(tracing_online) <= 0 && selector() == SELECTOR_TERM_AND_LOG) {
+        set_selector(selector()-1);
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
     }
@@ -2120,7 +2120,7 @@ void end_diagnostic(bool blank_line)
     print_nl_cstr("");
     if (blank_line)
         print_ln();
-    selector = old_setting;
+    set_selector(old_setting);
 }
 
 void print_length_param(int32_t n)
@@ -4678,7 +4678,7 @@ void show_context(void)
             if ((base_ptr == input_ptr) || (cur_input.state != TOKEN_LIST)
                 || (cur_input.index != BACKED_UP) || (cur_input.loc != TEX_NULL)) {
                 tally = 0;
-                old_setting = selector;
+                old_setting = selector();
                 if (cur_input.state != TOKEN_LIST) {
                     if (cur_input.name <= 17) {
 
@@ -4709,7 +4709,7 @@ void show_context(void)
                     {
                         l = tally;
                         tally = 0;
-                        selector = SELECTOR_PSEUDO;
+                        set_selector(SELECTOR_PSEUDO);
                         trick_count = 1000000L;
                     }
                     if (buffer[cur_input.limit] == INTPAR(end_line_char))
@@ -4802,7 +4802,7 @@ void show_context(void)
                     {
                         l = tally;
                         tally = 0;
-                        selector = SELECTOR_PSEUDO;
+                        set_selector(SELECTOR_PSEUDO);
                         trick_count = 1000000L;
                     }
                     if (cur_input.index < MACRO)
@@ -4810,7 +4810,7 @@ void show_context(void)
                     else
                         show_token_list(mem[cur_input.start].b32.s1, cur_input.loc, 100000L);
                 }
-                selector = old_setting;
+                set_selector(old_setting);
                 if (trick_count == 1000000L) {
                     first_count = tally;
                     trick_count = tally + 1 + error_line - half_error_line;
@@ -5576,7 +5576,7 @@ restart:
                     goto restart;
                 }
 
-                if (selector < SELECTOR_LOG_ONLY)
+                if (selector() < SELECTOR_LOG_ONLY)
                     open_log_file();
 
                 fatal_error("*** (job aborted, no legal \\end found)");
@@ -9050,10 +9050,10 @@ void pseudo_start(void)
     int32_t nl, sz;
 
     scan_general_text();
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     token_show(TEMP_HEAD);
-    selector = old_setting;
+    set_selector(old_setting);
     flush_list(mem[TEMP_HEAD].b32.s1);
     {
         if (pool_ptr + 1 > pool_size)
@@ -9211,14 +9211,14 @@ int32_t the_toks(void)
             return cur_val;
         else {
 
-            old_setting = selector;
-            selector = SELECTOR_NEW_STRING ;
+            old_setting = selector();
+            set_selector(SELECTOR_NEW_STRING);
             b = pool_ptr;
             p = get_avail();
             mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
             token_show(p);
             flush_list(p);
-            selector = old_setting;
+            set_selector(old_setting);
             return str_toks(b);
         }
     }
@@ -9257,8 +9257,8 @@ int32_t the_toks(void)
         return p;
     } else {
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING ;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
         b = pool_ptr;
         switch (cur_val_level) {
         case 0:
@@ -9283,7 +9283,7 @@ int32_t the_toks(void)
             }
             break;
         }
-        selector = old_setting;
+        set_selector(old_setting);
         return str_toks(b);
     }
 }
@@ -9392,13 +9392,13 @@ conv_toks(void)
             u = 0;
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
         show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
@@ -9428,13 +9428,13 @@ conv_toks(void)
             u = 0;
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
         show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
@@ -9467,13 +9467,13 @@ conv_toks(void)
         boolvar = scan_keyword("file");
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
         show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
@@ -9541,13 +9541,13 @@ conv_toks(void)
 
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
         show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
@@ -9675,8 +9675,8 @@ conv_toks(void)
         break;
     }
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     b = pool_ptr;
 
     switch (c) {
@@ -9840,7 +9840,7 @@ conv_toks(void)
         break;
     }
 
-    selector = old_setting;
+    set_selector(old_setting);
     mem[GARBAGE].b32.s1 = str_toks_cat(b, cat);
     begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
 }
@@ -10793,10 +10793,10 @@ scan_file_name_braced(void)
     cur_cs = warning_index;
     scan_toks(false, true);
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-    selector = old_setting;
+    set_selector(old_setting);
     s = make_string();
     delete_token_ref(def_ref);
     def_ref = save_def_ref;
@@ -10871,7 +10871,7 @@ open_log_file(void)
     int32_t k;
     int32_t l;
 
-    old_setting = selector;
+    old_setting = selector();
     if (job_name == 0)
         job_name = maketexstring("texput");
 
@@ -10882,7 +10882,7 @@ open_log_file(void)
         _tt_abort ("cannot open log file output \"%s\"", name_of_file);
 
     texmf_log_name = make_name_string();
-    selector = SELECTOR_LOG_ONLY;
+    set_selector(SELECTOR_LOG_ONLY);
     log_opened = true;
 
     input_stack[input_ptr] = cur_input;
@@ -10899,7 +10899,7 @@ open_log_file(void)
         print(buffer[k]);
 
     print_ln();
-    selector = old_setting + 2;
+    set_selector(old_setting + 2);
 }
 
 
@@ -11135,15 +11135,15 @@ void char_warning(internal_font_number f, int32_t c)
     {
         char *fn = gettexstring(font_name[f]);
         char *chr = NULL;
-        selector_t prev_selector = selector;
+        selector_t prev_selector = selector();
         int s;
 
-        selector = SELECTOR_NEW_STRING;
+        set_selector(SELECTOR_NEW_STRING);
         if (c < 0x10000)
             print(c);
         else
             print_char(c);
-        selector = prev_selector;
+        set_selector(prev_selector);
         s = make_string();
         chr = gettexstring(s);
         str_ptr--; /* this is the "flush_string" macro which discards the most recent string */
@@ -16039,11 +16039,11 @@ void new_font(small_number a)
             t = u - SINGLE_BASE;
     } else {
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING ;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
         print_cstr("FONT");
         print(u - 1);
-        selector = old_setting;
+        set_selector(old_setting);
         {
             if (pool_ptr + 1 > pool_size)
                 overflow("pool size", pool_size - init_pool_ptr);
@@ -16151,11 +16151,11 @@ void new_interaction(void)
     print_ln();
     interaction = cur_chr;
     if (interaction == BATCH_MODE)
-        selector = SELECTOR_NO_PRINT;
+        set_selector(SELECTOR_NO_PRINT);
     else
-        selector = SELECTOR_TERM_ONLY/*:79 */ ;
+        set_selector(SELECTOR_TERM_ONLY);
     if (log_opened)
-        selector = selector + 2;
+        set_selector(selector() + 2);
 }
 
 void issue_message(void)
@@ -16166,10 +16166,10 @@ void issue_message(void)
 
     c = cur_chr;
     mem[GARBAGE].b32.s1 = scan_toks(false, true);
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     token_show(def_ref);
-    selector = old_setting;
+    set_selector(old_setting);
     flush_list(def_ref);
     {
         if (pool_ptr + 1 > pool_size)
@@ -16361,12 +16361,12 @@ void show_whatever(void)
             print_nl_cstr("! ");
         print_cstr("OK");
     }
-    if (selector == SELECTOR_TERM_AND_LOG) {
+    if (selector() == SELECTOR_TERM_AND_LOG) {
 
         if (INTPAR(tracing_online) <= 0) {
-            selector = SELECTOR_TERM_ONLY;
+            set_selector(SELECTOR_TERM_ONLY);
             print_cstr(" (see the transcript file)");
-            selector = SELECTOR_TERM_AND_LOG;
+            set_selector(SELECTOR_TERM_AND_LOG);
         }
     }
 
@@ -18434,8 +18434,8 @@ close_files_and_terminate(void)
     if (log_opened) {
         ttstub_output_putc (log_file, '\n');
         ttstub_output_close (log_file);
-        selector = selector - 2;
-        if (selector == SELECTOR_TERM_ONLY) {
+        set_selector(selector() - 2);
+        if (selector() == SELECTOR_TERM_ONLY) {
             print_nl_cstr("Transcript written on ");
             print(texmf_log_name);
             print_char('.');
@@ -18456,12 +18456,12 @@ void flush_str(str_number s)
 
 str_number tokens_to_string(int32_t p)
 {
-    if (selector == SELECTOR_NEW_STRING )
+    if (selector() == SELECTOR_NEW_STRING )
         pdf_error("tokens", "tokens_to_string() called while selector = new_string");
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     show_token_list(mem[p].b32.s1, TEX_NULL, pool_size - pool_ptr);
-    selector = old_setting;
+    set_selector(old_setting);
     return make_string();
 }
 
