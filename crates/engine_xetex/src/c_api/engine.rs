@@ -9,6 +9,9 @@ thread_local! {
 pub struct EngineCtx {
     pub(crate) selector: Selector,
     tally: i32,
+    error_line: i32,
+    trick_count: i32,
+    trick_buf: [u16; 256],
 }
 
 impl EngineCtx {
@@ -16,6 +19,9 @@ impl EngineCtx {
         EngineCtx {
             selector: Selector::File(0),
             tally: 0,
+            error_line: 0,
+            trick_count: 0,
+            trick_buf: [0; 256],
         }
     }
 }
@@ -80,6 +86,26 @@ pub extern "C" fn tally() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_tally(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.tally = val)
+}
+
+#[no_mangle]
+pub extern "C" fn error_line() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.error_line)
+}
+
+#[no_mangle]
+pub extern "C" fn set_error_line(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.error_line = val)
+}
+
+#[no_mangle]
+pub extern "C" fn trick_count() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.trick_count)
+}
+
+#[no_mangle]
+pub extern "C" fn set_trick_count(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.trick_count = val)
 }
 
 pub fn with_tex_string<T>(s: StrNumber, f: impl FnOnce(&CStr) -> T) -> T {

@@ -41,6 +41,14 @@ int32_t tally(void);
 
 void set_tally(int32_t val);
 
+int32_t error_line(void);
+
+void set_error_line(int32_t val);
+
+int32_t trick_count(void);
+
+void set_trick_count(int32_t val);
+
 extern char *gettexstring(StrNumber s);
 
 int32_t in_open(void);

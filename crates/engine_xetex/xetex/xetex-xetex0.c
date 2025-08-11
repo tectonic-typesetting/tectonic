@@ -64,9 +64,9 @@ show_token_list(int32_t p, int32_t q, int32_t l)
         /*332:*/
         if (p == q) {
             first_count = tally();
-            trick_count = tally() + 1 + error_line - half_error_line;
-            if (trick_count < error_line)
-                trick_count = error_line;
+            set_trick_count(tally() + 1 + error_line() - half_error_line);
+            if (trick_count() < error_line())
+                set_trick_count(error_line());
         }
 
         if (p < hi_mem_min || p > mem_end) {
@@ -163,7 +163,7 @@ runaway(void)
 
         print_char('?');
         print_ln();
-        show_token_list(mem[p].b32.s1, TEX_NULL, error_line - 10);
+        show_token_list(mem[p].b32.s1, TEX_NULL, error_line() - 10);
     }
 }
 
@@ -4710,7 +4710,7 @@ void show_context(void)
                         l = tally();
                         set_tally(0);
                         set_selector(SELECTOR_PSEUDO);
-                        trick_count = 1000000L;
+                        set_trick_count(1000000L);
                     }
                     if (buffer[cur_input.limit] == INTPAR(end_line_char))
                         j = cur_input.limit;
@@ -4724,9 +4724,9 @@ void show_context(void)
                             do {
                                 if (i == cur_input.loc) {
                                     first_count = tally();
-                                    trick_count = tally() + 1 + error_line - half_error_line;
-                                    if (trick_count < error_line)
-                                        trick_count = error_line;
+                                    set_trick_count(tally() + 1 + error_line() - half_error_line);
+                                    if (trick_count() < error_line())
+                                        set_trick_count(error_line());
                                 }
                                 print_char(buffer[i]);
                             }
@@ -4803,7 +4803,7 @@ void show_context(void)
                         l = tally();
                         set_tally(0);
                         set_selector(SELECTOR_PSEUDO);
-                        trick_count = 1000000L;
+                        set_trick_count(1000000L);
                     }
                     if (cur_input.index < MACRO)
                         show_token_list(cur_input.start, cur_input.loc, 100000L);
@@ -4811,16 +4811,16 @@ void show_context(void)
                         show_token_list(mem[cur_input.start].b32.s1, cur_input.loc, 100000L);
                 }
                 set_selector(old_setting);
-                if (trick_count == 1000000L) {
+                if (trick_count() == 1000000L) {
                     first_count = tally();
-                    trick_count = tally() + 1 + error_line - half_error_line;
-                    if (trick_count < error_line)
-                        trick_count = error_line;
+                    set_trick_count(tally() + 1 + error_line() - half_error_line);
+                    if (trick_count() < error_line())
+                        set_trick_count(error_line());
                 }
-                if (tally() < trick_count)
+                if (tally() < trick_count())
                     m = tally() - first_count;
                 else
-                    m = trick_count - first_count;
+                    m = trick_count() - first_count;
                 if (l + first_count <= half_error_line) {
                     p = 0;
                     n = l + first_count;
@@ -4836,7 +4836,7 @@ void show_context(void)
                     for_end = first_count - 1;
                     if (q <= for_end)
                         do
-                            print_char(trick_buf[q % error_line]);
+                            print_char(trick_buf[q % error_line()]);
                         while (q++ < for_end);
                 }
                 print_ln();
@@ -4849,20 +4849,20 @@ void show_context(void)
                             print_raw_char(' ', true);
                         while (q++ < for_end);
                 }
-                if (m + n <= error_line)
+                if (m + n <= error_line())
                     p = first_count + m;
                 else
-                    p = first_count + (error_line - n - 3);
+                    p = first_count + (error_line() - n - 3);
                 {
                     register int32_t for_end;
                     q = first_count;
                     for_end = p - 1;
                     if (q <= for_end)
                         do
-                            print_char(trick_buf[q % error_line]);
+                            print_char(trick_buf[q % error_line()]);
                         while (q++ < for_end);
                 }
-                if (m + n > error_line)
+                if (m + n > error_line())
                     print_cstr("...");
                 nn++;
             }

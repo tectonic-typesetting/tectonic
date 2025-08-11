@@ -29,7 +29,6 @@ int32_t first;
 int32_t last;
 int32_t max_buf_stack;
 bool in_initex_mode;
-int32_t error_line;
 int32_t half_error_line;
 int32_t max_print_line;
 int32_t max_strings;
@@ -57,7 +56,6 @@ pool_pointer init_pool_ptr;
 str_number init_str_ptr;
 unsigned char dig[23];
 UTF16_code trick_buf[256];
-int32_t trick_count;
 int32_t first_count;
 bool doing_special;
 UTF16_code *native_text;
@@ -3593,7 +3591,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     param_size = 10000;
     save_size = 80000L;
     stack_size = 5000;
-    error_line = 79;
+    set_error_line(79);
     half_error_line = 50;
     max_print_line = 79;
     hash_extra = 600000L;
@@ -3645,7 +3643,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     history = HISTORY_FATAL_ERROR;
     bad = 0;
 
-    if (half_error_line < 30 || half_error_line > error_line - 15)
+    if (half_error_line < 30 || half_error_line > error_line() - 15)
         bad = 1;
     if (max_print_line < 60)
         bad = 2;
