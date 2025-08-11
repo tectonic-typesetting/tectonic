@@ -18,6 +18,31 @@
  */
 #define FORMAT_SERIAL 33
 
+typedef enum {
+  Selector_File0 = 0,
+  Selector_File1,
+  Selector_File2,
+  Selector_File3,
+  Selector_File4,
+  Selector_File5,
+  Selector_File6,
+  Selector_File7,
+  Selector_File8,
+  Selector_File9,
+  Selector_File10,
+  Selector_File11,
+  Selector_File12,
+  Selector_File13,
+  Selector_File14,
+  Selector_File15 = 15,
+  Selector_NoPrint = 16,
+  Selector_TermOnly = 17,
+  Selector_LogOnly = 18,
+  Selector_TermAndLog = 19,
+  Selector_Pseudo = 20,
+  Selector_NewString = 21,
+} Selector;
+
 typedef int32_t StrNumber;
 
 typedef int32_t Scaled;
@@ -32,6 +57,10 @@ extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *dump_name,
                                 const char *input_file_name,
                                 uint64_t build_date);
+
+Selector selector(void);
+
+void set_selector(uint32_t val);
 
 extern char *gettexstring(StrNumber s);
 

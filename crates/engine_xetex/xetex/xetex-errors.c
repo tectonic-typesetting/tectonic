@@ -5,6 +5,7 @@
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
+#include "xetex_bindings.h"
 
 #include <stdarg.h>
 
@@ -16,15 +17,15 @@ pre_error_message (void)
     /* FKA normalize_selector(): */
 
     if (log_opened)
-        selector = SELECTOR_TERM_AND_LOG;
+        set_selector(SELECTOR_TERM_AND_LOG);
     else
-        selector = SELECTOR_TERM_ONLY;
+        set_selector(SELECTOR_TERM_ONLY);
 
     if (job_name == 0)
         open_log_file();
 
     if (interaction == BATCH_MODE)
-        selector--;
+        set_selector(selector()-1);
 
     error_here_with_diagnostic("");
 }
@@ -76,7 +77,7 @@ error(void)
     }
 
     if (interaction > BATCH_MODE)
-        selector--;
+        set_selector(selector()-1);
 
     if (use_err_help) {
         print_ln();
@@ -90,7 +91,7 @@ error(void)
 
     print_ln();
     if (interaction > BATCH_MODE)
-        selector++;
+        set_selector(selector()+1);
     print_ln();
 }
 

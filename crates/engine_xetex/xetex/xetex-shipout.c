@@ -224,8 +224,8 @@ ship_out(int32_t p)
 
     /* Generate a PDF pagesize special unilaterally */
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr("pdf:pagesize ");
     if (DIMENPAR(pdf_page_width) <= 0 || DIMENPAR(pdf_page_height) <= 0) {
         print_cstr("default");
@@ -240,7 +240,7 @@ ship_out(int32_t p)
         print_scaled(DIMENPAR(pdf_page_height));
         print_cstr("pt");
     }
-    selector = old_setting;
+    set_selector(old_setting);
 
     dvi_out(XXX1);
     dvi_out(cur_length());
@@ -1765,11 +1765,11 @@ out_what(int32_t p)
         write_open[j] = true;
 
         if (log_opened) {
-            old_setting = selector;
+            old_setting = selector();
             if (INTPAR(tracing_online) <= 0)
-                selector = SELECTOR_LOG_ONLY;
+                set_selector(SELECTOR_LOG_ONLY);
             else
-                selector = SELECTOR_TERM_AND_LOG;
+                set_selector(SELECTOR_TERM_AND_LOG);
             print_nl_cstr("\\openout");
             print_int(j);
             print_cstr(" = `");
@@ -1777,7 +1777,7 @@ out_what(int32_t p)
             print_cstr("'.");
             print_nl_cstr("");
             print_ln();
-            selector = old_setting;
+            set_selector(old_setting);
         }
         break;
 
@@ -2078,10 +2078,10 @@ special_out(int32_t p)
         dvi_v = cur_v;
     }
     doing_special = true;
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size - pool_ptr);
-    selector = old_setting;
+    set_selector(old_setting);
 
     if (pool_ptr + 1 > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
@@ -2150,16 +2150,16 @@ write_out(int32_t p)
 
     cur_list.mode = old_mode;
     end_token_list();
-    old_setting = selector;
+    old_setting = selector();
     j = mem[p + 1].b32.s0;
 
     if (j == 18) {
-        selector = SELECTOR_NEW_STRING;
+        set_selector(SELECTOR_NEW_STRING);
     } else if (write_open[j]) {
-        selector = j;
+        set_selector(j);
     } else {
-        if (j == 17 && selector == SELECTOR_TERM_AND_LOG)
-            selector = SELECTOR_LOG_ONLY;
+        if (j == 17 && selector() == SELECTOR_TERM_AND_LOG)
+            set_selector(SELECTOR_LOG_ONLY);
         print_nl_cstr("");
     }
 
@@ -2169,12 +2169,12 @@ write_out(int32_t p)
 
     if (j == 18) {
         if (INTPAR(tracing_online) <= 0)
-            selector = SELECTOR_LOG_ONLY;
+            set_selector(SELECTOR_LOG_ONLY);
         else
-            selector = SELECTOR_TERM_AND_LOG;
+            set_selector(SELECTOR_TERM_AND_LOG);
 
         if (!log_opened)
-            selector = SELECTOR_TERM_ONLY;
+            set_selector(SELECTOR_TERM_ONLY);
 
         // Tectonic: don't emit warnings for shell-escape invocations when
         // enabled; we can provide a better UX inside the driver code.
@@ -2200,7 +2200,7 @@ write_out(int32_t p)
         pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
     }
 
-    selector = old_setting;
+    set_selector(old_setting);
 }
 
 
@@ -2221,8 +2221,8 @@ pic_out(int32_t p)
         dvi_v = cur_v;
     }
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr("pdf:image ");
     print_cstr("matrix ");
     print_scaled(mem[p + 5].b32.s0);
@@ -2266,7 +2266,7 @@ pic_out(int32_t p)
         print_raw_char(PIC_NODE_path(p)[i], true);
     print(')');
 
-    selector = old_setting;
+    set_selector(old_setting);
     if (cur_length() < 256) {
         dvi_out(XXX1);
         dvi_out(cur_length());
