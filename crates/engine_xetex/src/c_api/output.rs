@@ -17,7 +17,7 @@ pub struct OutputCtx {
     file_offset: i32,
     rust_stdout: Option<OutputId>,
     log_file: Option<OutputId>,
-    write_file: Vec<OutputId>,
+    write_file: Vec<Option<OutputId>>,
 }
 
 impl OutputCtx {
@@ -95,18 +95,17 @@ pub extern "C" fn set_log_file(val: Option<OutputId>) {
 }
 
 #[no_mangle]
-pub extern "C" fn write_file(idx: usize) -> OutputId {
+pub extern "C" fn write_file(idx: usize) -> Option<OutputId> {
     OUTPUT_CTX.with_borrow(|out| out.write_file[idx])
 }
 
 #[no_mangle]
-pub extern "C" fn set_write_file(idx: usize, val: OutputId) {
+pub extern "C" fn set_write_file(idx: usize, val: Option<OutputId>) {
     OUTPUT_CTX.with_borrow_mut(|out| {
-        if out.write_file.len() == idx {
-            out.write_file.push(val);
-        } else {
-            out.write_file[idx] = val
+        if out.write_file.len() < idx + 1 {
+            out.write_file.resize(idx + 1, None);
         }
+        out.write_file[idx] = val;
     })
 }
 
@@ -190,7 +189,11 @@ pub extern "C" fn warn_char(c: libc::c_int) {
 pub fn rs_print_ln(state: &mut CoreBridgeState<'_>, engine: &mut EngineCtx, out: &mut OutputCtx) {
     match engine.selector {
         Selector::File(val) => {
-            write!(state.get_output(out.write_file[val as usize]), "\n").unwrap();
+            write!(
+                state.get_output(out.write_file[val as usize].unwrap()),
+                "\n"
+            )
+            .unwrap();
         }
         Selector::TermOnly => {
             rs_warn_char(out, '\n');
