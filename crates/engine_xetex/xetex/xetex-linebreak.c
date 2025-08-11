@@ -2053,9 +2053,9 @@ hyphenate(void)
             goto not_found;
         if (length(k) == hn) {
             j = 1;
-            u = str_start[(k) - 65536L];
+            u = str_start((k) - 65536L);
             do {
-                if (str_pool[u] != hc[j])
+                if (str_pool(u) != hc[j])
                     goto done;
                 j++;
                 u++;

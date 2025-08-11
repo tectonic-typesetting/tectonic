@@ -666,8 +666,8 @@ print_subsidiary_data(int32_t p, UTF16_code c)
         if (mem[p].b32.s1 != EMPTY)
             print_cstr(" []");
     } else {
-        str_pool[pool_ptr] = c;
-        pool_ptr++;
+        set_str_pool(pool_ptr(), c);
+        set_pool_ptr(pool_ptr()+1);
         temp_ptr = p;
 
         switch (mem[p].b32.s1) {
@@ -692,7 +692,7 @@ print_subsidiary_data(int32_t p, UTF16_code c)
             break;
         }
 
-        pool_ptr--;
+        set_pool_ptr(pool_ptr()-1);
     }
 }
 
@@ -880,10 +880,10 @@ show_node_list(int32_t p)
                         print_cstr(", display");
                 }
 
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.');
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 5].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case RULE_NODE:
@@ -906,10 +906,10 @@ show_node_list(int32_t p)
                 print_scaled(mem[p + 2].b32.s1);
                 print_cstr("); float cost ");
                 print_int(mem[p + 1].b32.s1);
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.');
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 4].b32.s0);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case WHATSIT_NODE:
@@ -980,10 +980,10 @@ show_node_list(int32_t p)
                         print_char('x');
                     print_cstr("leaders ");
                     print_spec(mem[p + 1].b32.s0, NULL);
-                    str_pool[pool_ptr] = '.' ;
-                    pool_ptr++;
+                    set_str_pool(pool_ptr(), '.');
+                    set_pool_ptr(pool_ptr()+1);
                     show_node_list(mem[p + 1].b32.s1);
-                    pool_ptr--;
+                    set_pool_ptr(pool_ptr()-1);
                 } else {
                     print_esc_cstr("glue");
 
@@ -1083,14 +1083,14 @@ show_node_list(int32_t p)
                     print_int(mem[p].b16.s0);
                 }
 
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.');
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s0);
-                pool_ptr--;
-                str_pool[pool_ptr] = '|' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), '|' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case MARK_NODE:
@@ -1107,10 +1107,10 @@ show_node_list(int32_t p)
                 if (mem[p].b16.s0 != 0)
                     print_cstr(" pre ");
 
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case STYLE_NODE:
@@ -1119,22 +1119,22 @@ show_node_list(int32_t p)
 
             case CHOICE_NODE:
                 print_esc_cstr("mathchoice");
-                str_pool[pool_ptr] = 'D' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), 'D' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s0);
-                pool_ptr--;
-                str_pool[pool_ptr] = 'T' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), 'T' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s1);
-                pool_ptr--;
-                str_pool[pool_ptr] = 'S' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), 'S' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 2].b32.s0);
-                pool_ptr--;
-                str_pool[pool_ptr] = 's' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), 's' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 2].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case ORD_NOAD:
@@ -1268,8 +1268,8 @@ void show_box(int32_t p)
     breadth_max = INTPAR(show_box_breadth) /*:244 */ ;
     if (breadth_max <= 0)
         breadth_max = 5;
-    if (pool_ptr + depth_threshold >= pool_size)
-        depth_threshold = pool_size - pool_ptr - 1;
+    if (pool_ptr() + depth_threshold >= pool_size)
+        depth_threshold = pool_size - pool_ptr() - 1;
     show_node_list(p);
     print_ln();
 }
@@ -1277,7 +1277,7 @@ void show_box(int32_t p)
 void short_display_n(int32_t p, int32_t m)
 {
     breadth_max = m;
-    depth_threshold = pool_size - pool_ptr - 1;
+    depth_threshold = pool_size - pool_ptr() - 1;
     show_node_list(p);
 }
 
@@ -3473,7 +3473,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             quote_char = '"' ;
 
             for (n = 0; n <= for_end; n++) {
-                if (str_pool[str_start[(font_name_str) - 65536L] + n] == '"' )
+                if (str_pool(str_start((font_name_str) - 65536L) + n) == '"' )
                     quote_char = '\'' ;
             }
 
@@ -3746,30 +3746,30 @@ id_lookup(int32_t j, int32_t l)
                     }
                 }
 
-                if (pool_ptr + ll > pool_size)
+                if (pool_ptr() + ll > pool_size)
                     overflow("pool size", pool_size - init_pool_ptr);
 
                 d = cur_length();
 
-                while (pool_ptr > str_start[str_ptr - TOO_BIG_CHAR]) {
-                    pool_ptr--;
-                    str_pool[pool_ptr + l] = str_pool[pool_ptr];
+                while (pool_ptr() > str_start(str_ptr() - TOO_BIG_CHAR)) {
+                    set_pool_ptr(pool_ptr()-1);
+                    set_str_pool(pool_ptr() + l, str_pool(pool_ptr()));
                 }
 
                 for (k = j; k <= j + l - 1; k++) {
                     if (buffer[k] < 65536L) {
-                        str_pool[pool_ptr] = buffer[k];
-                        pool_ptr++;
+                        set_str_pool(pool_ptr(), buffer[k]);
+                        set_pool_ptr(pool_ptr()+1);
                     } else {
-                        str_pool[pool_ptr] = 0xD800 + (buffer[k] - 65536L) / 1024;
-                        pool_ptr++;
-                        str_pool[pool_ptr] = 0xDC00 + (buffer[k] - 65536L) % 1024;
-                        pool_ptr++;
+                        set_str_pool(pool_ptr(), 0xD800 + (buffer[k] - 65536L) / 1024);
+                        set_pool_ptr(pool_ptr()+1);
+                        set_str_pool(pool_ptr(), 0xDC00 + (buffer[k] - 65536L) % 1024);
+                        set_pool_ptr(pool_ptr()+1);
                     }
                 }
 
                 hash[p].s1 = make_string();
-                pool_ptr += d;
+                set_pool_ptr(pool_ptr() + d);
             }
             goto found;
 
@@ -3798,19 +3798,19 @@ int32_t prim_lookup(str_number s)
             p = (s % PRIM_PRIME) + 1;
     } else {
 
-        j = str_start[(s) - 65536L];
-        if (s == str_ptr)
+        j = str_start((s) - 65536L);
+        if (s == str_ptr())
             l = (cur_length());
         else
             l = length(s);
-        h = str_pool[j];
+        h = str_pool(j);
         {
             register int32_t for_end;
             k = j + 1;
             for_end = j + l - 1;
             if (k <= for_end)
                 do {
-                    h = h + h + str_pool[k];
+                    h = h + h + str_pool(k);
                     while (h >= PRIM_PRIME)
                         h = h - PRIM_PRIME;
                 }
@@ -9056,19 +9056,19 @@ void pseudo_start(void)
     set_selector(old_setting);
     flush_list(mem[TEMP_HEAD].b32.s1);
     {
-        if (pool_ptr + 1 > pool_size)
+        if (pool_ptr() + 1 > pool_size)
             overflow("pool size", pool_size - init_pool_ptr);
     }
     s = make_string();
-    str_pool[pool_ptr] = ' ' ;
-    l = str_start[(s) - 65536L];
+    set_str_pool(pool_ptr(), ' ' );
+    l = str_start((s) - 65536L);
     nl = INTPAR(new_line_char);
     p = get_avail();
     q = p;
-    while (l < pool_ptr) {
+    while (l < pool_ptr()) {
 
         m = l;
-        while ((l < pool_ptr) && (str_pool[l] != nl))
+        while ((l < pool_ptr()) && (str_pool(l) != nl))
             l++;
         sz = (l - m + 7) / 4;
         if (sz == 1)
@@ -9081,10 +9081,10 @@ void pseudo_start(void)
 
             sz--;
             r++;
-            w.s3 = str_pool[m];
-            w.s2 = str_pool[m + 1];
-            w.s1 = str_pool[m + 2];
-            w.s0 = str_pool[m + 3];
+            w.s3 = str_pool(m);
+            w.s2 = str_pool(m + 1);
+            w.s1 = str_pool(m + 2);
+            w.s0 = str_pool(m + 3);
             mem[r].b16 = w;
             m = m + 4;
         }
@@ -9093,26 +9093,26 @@ void pseudo_start(void)
         w.s1 = ' ' ;
         w.s0 = ' ' ;
         if (l > m) {
-            w.s3 = str_pool[m];
+            w.s3 = str_pool(m);
             if (l > m + 1) {
-                w.s2 = str_pool[m + 1];
+                w.s2 = str_pool(m + 1);
                 if (l > m + 2) {
-                    w.s1 = str_pool[m + 2];
+                    w.s1 = str_pool(m + 2);
                     if (l > m + 3)
-                        w.s0 = str_pool[m + 3];
+                        w.s0 = str_pool(m + 3);
                 }
             }
         }
         mem[r + 1].b16 = w;
-        if (str_pool[l] == nl)
+        if (str_pool(l) == nl)
             l++;
     }
     mem[p].b32.s0 = mem[p].b32.s1;
     mem[p].b32.s1 = pseudo_files;
     pseudo_files = /*:1542 */ p;
     {
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
     begin_file_reading();
     set_line(0);
@@ -9145,22 +9145,22 @@ str_toks_cat(pool_pointer b, small_number cat)
     int32_t t;
     pool_pointer k;
 
-    if (pool_ptr + 1 > pool_size)
+    if (pool_ptr() + 1 > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
     p = TEMP_HEAD;
     LLIST_link(p) = TEX_NULL;
     k = b;
 
-    while (k < pool_ptr) {
-        t = str_pool[k];
+    while (k < pool_ptr()) {
+        t = str_pool(k);
 
         if (t == ' ' && cat == 0) {
             t = SPACE_TOKEN;
         } else {
-            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr && str_pool[k + 1] >= 0xDC00 && str_pool[k + 1] < 0xE000) {
+            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr() && str_pool(k + 1) >= 0xDC00 && str_pool(k + 1) < 0xE000) {
                 k++;
-                t = 0x10000 + ((t - 0xD800) << 10) + (str_pool[k] - 0xDC00);
+                t = 0x10000 + ((t - 0xD800) << 10) + (str_pool(k) - 0xDC00);
             }
 
             if (cat == 0)
@@ -9186,7 +9186,7 @@ str_toks_cat(pool_pointer b, small_number cat)
         k++;
     }
 
-    pool_ptr = b;
+    set_pool_ptr(b);
     return p;
 }
 
@@ -9213,7 +9213,7 @@ int32_t the_toks(void)
 
             old_setting = selector();
             set_selector(SELECTOR_NEW_STRING);
-            b = pool_ptr;
+            b = pool_ptr();
             p = get_avail();
             mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
             token_show(p);
@@ -9259,7 +9259,7 @@ int32_t the_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        b = pool_ptr;
+        b = pool_ptr();
         switch (cur_val_level) {
         case 0:
             print_int(cur_val);
@@ -9342,7 +9342,7 @@ conv_toks(void)
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9354,7 +9354,7 @@ conv_toks(void)
         avail = def_ref;
         def_ref = save_def_ref;
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case LEFT_MARGIN_KERN_CODE:
@@ -9376,7 +9376,7 @@ conv_toks(void)
         break;
 
     case PDF_CREATION_DATE_CODE:
-        b = pool_ptr;
+        b = pool_ptr();
         getcreationdate();
         mem[GARBAGE].b32.s1 = str_toks(b);
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
@@ -9386,7 +9386,7 @@ conv_toks(void)
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9397,32 +9397,32 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getfilemoddate(s);  /* <= the difference-maker */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case PDF_FILE_SIZE_CODE:
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9433,25 +9433,25 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getfilesize(s);  /* <= the difference-maker */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case PDF_MDFIVE_SUM_CODE:
@@ -9459,7 +9459,7 @@ conv_toks(void)
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9472,25 +9472,25 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getmd5sum(s, boolvar); /* <== the difference-maker */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
         break;
 
@@ -9499,7 +9499,7 @@ conv_toks(void)
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9546,32 +9546,32 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getfiledump(s, i, j); /* <=== non-boilerplate */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case PDF_STRCMP_CODE:
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9580,7 +9580,7 @@ conv_toks(void)
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         break;
 
     case XETEX_UCHAR_CODE:
@@ -9677,7 +9677,7 @@ conv_toks(void)
 
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
-    b = pool_ptr;
+    b = pool_ptr();
 
     switch (c) {
     case NUMBER_CODE:
@@ -9706,7 +9706,7 @@ conv_toks(void)
             quote_char = '"' ;
 
             for (i = 0; i <= length(font_name_str) - 1; i++)
-                if (str_pool[str_start[(font_name_str) - 65536L] + i] == '"' )
+                if (str_pool(str_start((font_name_str) - 65536L) + i) == '"' )
                     quote_char = '\'' ;
 
             print_char(quote_char);
@@ -10629,10 +10629,11 @@ more_name(UTF16_code c)
         return true;
     }
 
-    if (pool_ptr + 1 > pool_size)
+    if (pool_ptr() + 1 > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
-    str_pool[pool_ptr++] = c;
+    set_str_pool(pool_ptr(), c);
+    set_pool_ptr(pool_ptr()+1);
 
     if (IS_DIR_SEP(c)) {
         area_delimiter = cur_length();
@@ -10651,7 +10652,7 @@ end_name(void)
     str_number temp_str;
     pool_pointer j;
 
-    if (str_ptr + 3 > max_strings)
+    if (str_ptr() + 3 > max_strings)
         overflow("number of strings", max_strings - init_str_ptr);
 
     /* area_delimiter is the length from the start of the filename to the
@@ -10662,19 +10663,19 @@ end_name(void)
     if (area_delimiter == 0) {
         cur_area = EMPTY_STRING;
     } else {
-        cur_area = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - TOO_BIG_CHAR] + area_delimiter;
-        str_ptr++;
+        cur_area = str_ptr();
+        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + area_delimiter);
+        set_str_ptr(str_ptr()+1);
         temp_str = search_string(cur_area);
 
         if (temp_str > 0) {
             cur_area = temp_str;
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
 
-            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
-                str_pool[j - area_delimiter] = str_pool[j];
+            for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
+                set_str_pool(j - area_delimiter, str_pool(j));
 
-            pool_ptr = pool_ptr - area_delimiter;
+            set_pool_ptr(pool_ptr() - area_delimiter);
         }
     }
 
@@ -10686,22 +10687,22 @@ end_name(void)
         cur_ext = EMPTY_STRING;
         cur_name = slow_make_string();
     } else {
-        cur_name = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - TOO_BIG_CHAR] + ext_delimiter - area_delimiter - 1;
-        str_ptr++;
+        cur_name = str_ptr();
+        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + ext_delimiter - area_delimiter - 1);
+        set_str_ptr(str_ptr()+1);
 
         cur_ext = make_string();
-        str_ptr--;
+        set_str_ptr(str_ptr()-1);
         temp_str = search_string(cur_name);
 
         if (temp_str > 0) {
             cur_name = temp_str;
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
 
-            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
-                str_pool[j - ext_delimiter + area_delimiter + 1] = str_pool[j];
+            for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
+                set_str_pool(j - ext_delimiter + area_delimiter + 1, str_pool(j));
 
-            pool_ptr = pool_ptr - ext_delimiter + area_delimiter + 1;
+            set_pool_ptr(pool_ptr() - ext_delimiter + area_delimiter + 1);
         }
 
         cur_ext = slow_make_string();
@@ -10745,13 +10746,15 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if (pool_ptr + name_length > pool_size || str_ptr == max_strings || cur_length() > 0)
+    if (pool_ptr() + name_length > pool_size || str_ptr() == max_strings || cur_length() > 0)
         return '?';
 
     make_utf16_name();
 
-    for (k = 0; k < name_length16; k++)
-        str_pool[pool_ptr++] = name_of_file16[k];
+    for (k = 0; k < name_length16; k++) {
+        set_str_pool(pool_ptr(), name_of_file16[k]);
+        set_pool_ptr(pool_ptr()+1);
+    }
 
 
     str_number Result = make_string();
@@ -10795,7 +10798,7 @@ scan_file_name_braced(void)
 
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
-    show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
+    show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
     set_selector(old_setting);
     s = make_string();
     delete_token_ref(def_ref);
@@ -10806,8 +10809,8 @@ scan_file_name_braced(void)
 
     begin_name();
 
-    for (i = str_start[s - TOO_BIG_CHAR]; i < str_start[s + 1 - TOO_BIG_CHAR]; i++)
-        more_name(str_pool[i]);
+    for (i = str_start(s - TOO_BIG_CHAR); i < str_start(s + 1 - TOO_BIG_CHAR); i++)
+        more_name(str_pool(i));
 
     stop_at_space = save_stop_at_space;
 }
@@ -10924,7 +10927,7 @@ start_input(const char *primary_input_name)
 
         const unsigned char *cp = (const unsigned char *) primary_input_name;
 
-        if (pool_ptr + strlen(primary_input_name) * 2 >= pool_size)
+        if (pool_ptr() + strlen(primary_input_name) * 2 >= pool_size)
             _tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
 
         UInt32 rval;
@@ -10941,10 +10944,13 @@ start_input(const char *primary_input_name)
             rval -= offsetsFromUTF8[extraBytes];
             if (rval > 0xffff) {
                 rval -= 0x10000;
-                str_pool[pool_ptr++] = 0xd800 + rval / 0x0400;
-                str_pool[pool_ptr++] = 0xdc00 + rval % 0x0400;
+                set_str_pool(pool_ptr(), 0xd800 + rval / 0x0400);
+                set_pool_ptr(pool_ptr()+1);
+                set_str_pool(pool_ptr(), 0xdc00 + rval % 0x0400);
+                set_pool_ptr(pool_ptr()+1);
             } else {
-                str_pool[pool_ptr++] = rval;
+                set_str_pool(pool_ptr(), rval);
+                set_pool_ptr(pool_ptr()+1);
             }
 
             if (IS_DIR_SEP(rval)) {
@@ -11001,12 +11007,12 @@ start_input(const char *primary_input_name)
     /* *This* variant is a TeX string made out of `name_of_input_file`. */
 
     set_full_source_filename_stack(in_open(), maketexstring(name_of_input_file));
-    if (cur_input.name == str_ptr - 1) {
+    if (cur_input.name == str_ptr() - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
             cur_input.name = temp_str;
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
     }
 
@@ -11146,8 +11152,8 @@ void char_warning(internal_font_number f, int32_t c)
         set_selector(prev_selector);
         s = make_string();
         chr = gettexstring(s);
-        str_ptr--; /* this is the "flush_string" macro which discards the most recent string */
-        pool_ptr = str_start[str_ptr - 0x10000];
+        set_str_ptr(str_ptr()-1); /* this is the "flush_string" macro which discards the most recent string */
+        set_pool_ptr(str_start(str_ptr() - 0x10000));
 
         ttstub_issue_warning("could not represent character \"%s\" (0x%" PRIx32 ") in font \"%s\"", chr, c, fn);
 
@@ -11195,27 +11201,27 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
     if (font_mapping[f] != NULL) {
         if (c > 65535L) {
-            if (pool_ptr + 2 > pool_size)
+            if (pool_ptr() + 2 > pool_size)
                 overflow("pool size", pool_size - init_pool_ptr);
 
-            str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
-            pool_ptr++;
-            str_pool[pool_ptr] = (c - 65536L) % 1024 + 0xDC00;
-            pool_ptr++;
+            set_str_pool(pool_ptr(), (c - 65536L) / 1024 + 0xD800);
+            set_pool_ptr(pool_ptr()+1);
+            set_str_pool(pool_ptr(), (c - 65536L) % 1024 + 0xDC00);
+            set_pool_ptr(pool_ptr()+1);
         } else {
-            if (pool_ptr + 1 > pool_size)
+            if (pool_ptr() + 1 > pool_size)
                 overflow("pool size", pool_size - init_pool_ptr);
 
-            str_pool[pool_ptr] = c;
-            pool_ptr++;
+            set_str_pool(pool_ptr(), c);
+            set_pool_ptr(pool_ptr()+1);
         }
 
         len = apply_mapping(
             font_mapping[f],
-            &str_pool[str_start[str_ptr - TOO_BIG_CHAR]],
+            str_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)),
             cur_length()
         );
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
         i = 0;
 
@@ -11355,11 +11361,13 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     else
         actual_size = get_loaded_font_design_size();
 
-    if (pool_ptr + name_length > pool_size)
+    if (pool_ptr() + name_length > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
-    for (k = 0; k < name_length; k++)
-        str_pool[pool_ptr++] = name_of_file[k];
+    for (k = 0; k < name_length; k++) {
+        set_str_pool(pool_ptr(), name_of_file[k]);
+        set_pool_ptr(pool_ptr()+1);
+    }
 
     full_name = make_string();
 
@@ -11367,8 +11375,8 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         if (font_area[f] == native_font_type_flag && str_eq_str(font_name[f], full_name) && font_size[f] == actual_size) {
             release_font_engine(font_engine, native_font_type_flag);
 
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
             return f;
         }
@@ -16045,7 +16053,7 @@ void new_font(small_number a)
         print(u - 1);
         set_selector(old_setting);
         {
-            if (pool_ptr + 1 > pool_size)
+            if (pool_ptr() + 1 > pool_size)
                 overflow("pool size", pool_size - init_pool_ptr);
         }
         t = make_string();
@@ -16117,8 +16125,8 @@ void new_font(small_number a)
                 append_str(cur_ext);
                 if (str_eq_str(font_name[f], make_string())) {
                     {
-                        str_ptr--;
-                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                        set_str_ptr(str_ptr()-1);
+                        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                     }
                     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
                         if (s > 0) {
@@ -16129,8 +16137,8 @@ void new_font(small_number a)
                     }
                 } else {
 
-                    str_ptr--;
-                    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                    set_str_ptr(str_ptr()-1);
+                    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                 }
             }
             while (f++ < for_end);
@@ -16172,7 +16180,7 @@ void issue_message(void)
     set_selector(old_setting);
     flush_list(def_ref);
     {
-        if (pool_ptr + 1 > pool_size)
+        if (pool_ptr() + 1 > pool_size)
             overflow("pool size", pool_size - init_pool_ptr);
     }
     s = make_string();
@@ -16209,8 +16217,8 @@ void issue_message(void)
         use_err_help = false;
     }
     {
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 }
 
@@ -16667,14 +16675,16 @@ void
 tt_insert_special(const char *ascii_text)
 {
     int32_t toklist_start, p, q;
-    pool_pointer start_pool_ptr = pool_ptr;
+    pool_pointer start_pool_ptr = pool_ptr();
 
     /* Copy the text into the string pool so that we can use str_toks() */
-    if (pool_ptr + strlen(ascii_text) >= (size_t) pool_size)
+    if (pool_ptr() + strlen(ascii_text) >= (size_t) pool_size)
         _tt_abort("string pool overflow");
 
-    while (*ascii_text)
-        str_pool[pool_ptr++] = *ascii_text++;
+    while (*ascii_text) {
+        set_str_pool(pool_ptr(), *ascii_text++);
+        set_pool_ptr(pool_ptr()+1);
+    }
 
     /* Create the linked list of inserted tokens */
     p = toklist_start = get_avail();
@@ -18448,9 +18458,9 @@ close_files_and_terminate(void)
 
 void flush_str(str_number s)
 {
-    if (s == str_ptr - 1) {
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    if (s == str_ptr() - 1) {
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 }
 
@@ -18460,7 +18470,7 @@ str_number tokens_to_string(int32_t p)
         pdf_error("tokens", "tokens_to_string() called while selector = new_string");
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
-    show_token_list(mem[p].b32.s1, TEX_NULL, pool_size - pool_ptr);
+    show_token_list(mem[p].b32.s1, TEX_NULL, pool_size - pool_ptr());
     set_selector(old_setting);
     return make_string();
 }
@@ -18488,17 +18498,17 @@ void compare_strings(void)
     }
     s2 = tokens_to_string(def_ref);
     delete_token_ref(def_ref);
-    i1 = str_start[(s1) - 65536L];
-    j1 = str_start[(s1 + 1) - 65536L];
-    i2 = str_start[(s2) - 65536L];
-    j2 = str_start[(s2 + 1) - 65536L];
+    i1 = str_start((s1) - 65536L);
+    j1 = str_start((s1 + 1) - 65536L);
+    i2 = str_start((s2) - 65536L);
+    j2 = str_start((s2 + 1) - 65536L);
     while ((i1 < j1) && (i2 < j2)) {
 
-        if (str_pool[i1] < str_pool[i2]) {
+        if (str_pool(i1) < str_pool(i2)) {
             cur_val = -1;
             goto done;
         }
-        if (str_pool[i1] > str_pool[i2]) {
+        if (str_pool(i1) > str_pool(i2)) {
             cur_val = 1;
             goto done;
         }

@@ -101,14 +101,16 @@ getcreationdate(void)
     /* In e-pTeX, "init len => call init_start_time()" (as pdftexdir/utils.c)
        yields  unintentional output. */
 
-    if ((unsigned) (pool_ptr + len) >= (unsigned) (pool_size)) {
-        pool_ptr = pool_size;
+    if ((unsigned) (pool_ptr() + len) >= (unsigned) (pool_size)) {
+        set_pool_ptr(pool_size);
         /* error by str_toks that calls str_room(1) */
         return;
     }
 
-    for (i = 0; i < len; i++)
-        str_pool[pool_ptr++] = (uint16_t)start_time_str[i];
+    for (i = 0; i < len; i++) {
+        set_str_pool(pool_ptr(), (uint16_t)start_time_str[i]);
+        set_pool_ptr(pool_ptr() + 1);
+    }
 }
 
 
@@ -167,14 +169,16 @@ getfilemoddate(str_number s)
   makepdftime(mtime, buf, /* utc= */true);
   text_len = strlen(buf);
 
-  if ((unsigned) (pool_ptr + text_len) >= (unsigned) pool_size) {
-    pool_ptr = pool_size;
+  if ((unsigned) (pool_ptr() + text_len) >= (unsigned) pool_size) {
+    set_pool_ptr(pool_size);
     /* error by str_toks that calls str_room(1) */
   } else {
     int i;
 
-    for (i = 0; i < text_len; i++)
-      str_pool[pool_ptr++] = (uint16_t) buf[i];
+    for (i = 0; i < text_len; i++) {
+      set_str_pool(pool_ptr(), (uint16_t) buf[i]);
+      set_pool_ptr(pool_ptr()+1);
+    }
   }
 }
 
@@ -203,14 +207,16 @@ getfilesize(str_number s)
   check_nprintf(i, sizeof(buf));
   text_len = strlen(buf);
 
-  if ((unsigned) (pool_ptr + text_len) >= (unsigned) pool_size) {
-      pool_ptr = pool_size;
+  if ((unsigned) (pool_ptr() + text_len) >= (unsigned) pool_size) {
+      set_pool_ptr(pool_size);
       /* error by str_toks that calls str_room(1) */
   } else {
       int i;
 
-      for (i = 0; i < text_len; i++)
-          str_pool[pool_ptr++] = (uint16_t) buf[i];
+      for (i = 0; i < text_len; i++) {
+          set_str_pool(pool_ptr(), (uint16_t) buf[i]);
+          set_pool_ptr(pool_ptr()+1);
+      }
   }
 }
 
@@ -226,15 +232,15 @@ void getfiledump(int32_t s, int offset, int length)
   if (length == 0)
     return; /* => evaluate to the empty string; intentional */
 
-  if (pool_ptr + 2 * length + 1 >= pool_size) {
+  if (pool_ptr() + 2 * length + 1 >= pool_size) {
       /* not enough room to hold the result; trigger an error back in TeX: */
-      pool_ptr = pool_size;
+      set_pool_ptr(pool_size);
       return;
   }
 
   buffer = (unsigned char *) xmalloc(length + 1);
   if (buffer == NULL) {
-      pool_ptr = pool_size;
+      set_pool_ptr(pool_size);
       return;
   }
 
@@ -254,8 +260,10 @@ void getfiledump(int32_t s, int offset, int length)
   for (j = 0; j < actual; j++) {
     i = snprintf(strbuf, 3, "%.2X", (unsigned int) buffer[j]);
     check_nprintf(i, 3);
-    for (k = 0; k < i; k++)
-        str_pool[pool_ptr++] = (uint16_t) strbuf[k];
+    for (k = 0; k < i; k++) {
+        set_str_pool(pool_ptr(), (uint16_t) strbuf[k]);
+        set_pool_ptr(pool_ptr()+1);
+    }
   }
 
   free(buffer);
@@ -281,7 +289,7 @@ maketexstring(const char *s)
     return EMPTY_STRING;
 
   len = strlen(s);
-  checkpool_pointer (pool_ptr, len); /* in the XeTeX case, this may be more than enough */
+  checkpool_pointer (pool_ptr(), len); /* in the XeTeX case, this may be more than enough */
 
   while ((rval = *(cp++)) != 0) {
     UInt16 extraBytes = bytesFromUTF8[rval];
@@ -296,11 +304,15 @@ maketexstring(const char *s)
     rval -= offsetsFromUTF8[extraBytes];
     if (rval > 0xffff) {
       rval -= 0x10000;
-      str_pool[pool_ptr++] = 0xd800 + rval / 0x0400;
-      str_pool[pool_ptr++] = 0xdc00 + rval % 0x0400;
+      set_str_pool(pool_ptr(), 0xd800 + rval / 0x0400);
+      set_pool_ptr(pool_ptr()+1);
+      set_str_pool(pool_ptr(), 0xdc00 + rval % 0x0400);
+      set_pool_ptr(pool_ptr()+1);
     }
-    else
-      str_pool[pool_ptr++] = rval;
+    else {
+      set_str_pool(pool_ptr(), rval);
+      set_pool_ptr(pool_ptr()+1);
+    }
   }
 
   return make_string();
@@ -315,16 +327,16 @@ gettexstring (str_number s)
   char *name;
 
   if (s >= 65536L)
-      len = str_start[s + 1 - 65536L] - str_start[s - 65536L];
+      len = str_start(s + 1 - 65536L) - str_start(s - 65536L);
   else
       len = 0;
 
   name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
                                   (code units, not bytes) */
   for (i = 0, j = 0; i < len; i++) {
-    uint32_t c = str_pool[i + str_start[s - 65536L]];
+    uint32_t c = str_pool(i + str_start(s - 65536L));
     if (c >= 0xD800 && c <= 0xDBFF) {
-      uint32_t lo = str_pool[++i + str_start[s - 65536L]];
+      uint32_t lo = str_pool(++i + str_start(s - 65536L));
       if (lo >= 0xDC00 && lo <= 0xDFFF)
         c = (c - 0xD800) * 0x0400 + lo - 0xDC00 + 0x10000;
       else
@@ -392,7 +404,7 @@ remember_source_info (str_number srcfilename, int lineno)
 pool_pointer
 make_src_special (str_number srcfilename, int lineno)
 {
-  pool_pointer oldpool_ptr = pool_ptr;
+  pool_pointer oldpool_ptr = pool_ptr();
   char *filename = gettexstring(srcfilename);
   /* FIXME: Magic number. */
   char buf[40];
@@ -403,16 +415,20 @@ make_src_special (str_number srcfilename, int lineno)
    */
   sprintf (buf, "src:%d ", lineno);
 
-  if (pool_ptr + strlen(buf) + strlen(filename) >= (size_t)pool_size)
+  if (pool_ptr() + strlen(buf) + strlen(filename) >= (size_t)pool_size)
       _tt_abort ("string pool overflow");
 
   s = buf;
-  while (*s)
-    str_pool[pool_ptr++] = *s++;
+  while (*s) {
+    set_str_pool(pool_ptr(), *s++);
+    set_pool_ptr(pool_ptr()+1);
+  }
 
   s = filename;
-  while (*s)
-    str_pool[pool_ptr++] = *s++;
+  while (*s) {
+    set_str_pool(pool_ptr(), *s++);
+    set_pool_ptr(pool_ptr()+1);
+  }
 
   return (oldpool_ptr);
 }
@@ -456,12 +472,14 @@ void getmd5sum(str_number s, bool file)
     if (ret)
         return;
 
-    if (pool_ptr + 2 * DIGEST_SIZE >= pool_size) {
+    if (pool_ptr() + 2 * DIGEST_SIZE >= pool_size) {
         /* error by str_toks that calls str_room(1) */
         return;
     }
 
     convertStringToHexString((char *) digest, outbuf, DIGEST_SIZE);
-    for (i = 0; i < 2 * DIGEST_SIZE; i++)
-        str_pool[pool_ptr++] = (uint16_t)outbuf[i];
+    for (i = 0; i < 2 * DIGEST_SIZE; i++) {
+        set_str_pool(pool_ptr(), (uint16_t)outbuf[i]);
+        set_pool_ptr(pool_ptr()+1);
+    }
 }

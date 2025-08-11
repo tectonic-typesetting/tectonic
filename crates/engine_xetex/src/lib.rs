@@ -239,6 +239,7 @@ pub mod c_api {
     mod engine;
     mod inputs;
     mod output;
+    mod pool;
     mod scaled_math;
 
     #[allow(improper_ctypes)] // for CoreBridgeState

@@ -11,6 +11,7 @@
 #include "teckit-Common.h"
 #include "xetex-ext.h"
 #include "tectonic_bridge_core.h"
+#include "xetex_bindings.h"
 
 /* xetex_format.h needs this: */
 typedef unsigned char eight_bits;
@@ -419,10 +420,6 @@ extern bool insert_src_special_auto;
 extern bool insert_src_special_every_par;
 extern bool insert_src_special_every_math;
 extern bool insert_src_special_every_vbox;
-extern packed_UTF16_code *str_pool;
-extern pool_pointer *str_start;
-extern pool_pointer pool_ptr;
-extern str_number str_ptr;
 extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
 extern unsigned char dig[23];
@@ -1151,7 +1148,7 @@ print_c_string(const char *str) {
 static inline pool_pointer
 cur_length(void) {
     /*41: The length of the current string in the pool */
-    return pool_ptr - str_start[str_ptr - TOO_BIG_CHAR];
+    return pool_ptr() - str_start(str_ptr() - TOO_BIG_CHAR);
 }
 
 
