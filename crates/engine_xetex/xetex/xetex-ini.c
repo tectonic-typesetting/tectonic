@@ -35,7 +35,6 @@ int32_t max_print_line;
 int32_t max_strings;
 int32_t strings_free;
 int32_t string_vacancies;
-int32_t pool_size;
 int32_t pool_free;
 int32_t font_mem_size;
 int32_t font_max;
@@ -1230,8 +1229,8 @@ not_found1: /*970:*/
             if (n > 1) { /*974:*/
                 n++;
                 hc[n] = cur_lang;
-                if (pool_ptr() + n > pool_size)
-                    overflow("pool size", pool_size - init_pool_ptr);
+                if (pool_ptr() + n > pool_size())
+                    overflow("pool size", pool_size() - init_pool_ptr);
                 h = 0;
 
                 for (j = 1; j <= n; j++) {
@@ -2116,8 +2115,8 @@ store_fmt_file(void)
     else
         set_selector(SELECTOR_TERM_AND_LOG);
 
-    if (pool_ptr() + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     format_ident = make_string();
     pack_job_name(".fmt");
@@ -2556,8 +2555,8 @@ load_fmt_file(void)
         _tt_abort ("must increase string_pool_size");
     set_pool_ptr(x);
 
-    if (pool_size < pool_ptr() + pool_free)
-        pool_size = pool_ptr() + pool_free;
+    if (pool_size() < pool_ptr() + pool_free)
+        set_pool_size(pool_ptr() + pool_free);
 
     undump_int(x);
     if (x < 0)
@@ -2572,7 +2571,7 @@ load_fmt_file(void)
     resize_str_start(max_strings);
     uint32_t* ptr = str_start_ptr(0);
     undump_checked_ptr(0, pool_ptr(), ptr, str_ptr() - TOO_BIG_CHAR + 1);
-    resize_str_pool(pool_size);
+    resize_str_pool(pool_size());
 
     undump_ptr(str_pool_ptr(0), pool_ptr());
 
@@ -3455,7 +3454,7 @@ get_strings_started(void)
     set_str_start(0, 0);
     set_str_ptr(TOO_BIG_CHAR);
 
-    if (load_pool_strings(pool_size - string_vacancies) == 0)
+    if (load_pool_strings(pool_size() - string_vacancies) == 0)
         _tt_abort ("must increase pool_size");
 }
 /*:1001*/
@@ -3580,7 +3579,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
 
-    pool_size = 6250000L;
+    set_pool_size(6250000L);
     string_vacancies = 90000L;
     pool_free = 47500L;
     max_strings = 565536L;
@@ -3638,7 +3637,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
         eqtb = xcalloc_array(memory_word, eqtb_top);
         resize_str_start(max_strings);
-        resize_str_pool(pool_size);
+        resize_str_pool(pool_size());
         font_info = xmalloc_array(memory_word, font_mem_size);
     }
 

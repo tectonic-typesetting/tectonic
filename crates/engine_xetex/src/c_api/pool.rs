@@ -10,6 +10,7 @@ pub struct StringPool {
     str_start: Vec<u32>,
     pool_ptr: usize,
     str_ptr: usize,
+    pool_size: usize,
 }
 
 impl StringPool {
@@ -19,6 +20,7 @@ impl StringPool {
             str_start: Vec::new(),
             pool_ptr: 0,
             str_ptr: 0,
+            pool_size: 0,
         }
     }
 }
@@ -91,4 +93,14 @@ pub extern "C" fn str_ptr() -> usize {
 #[no_mangle]
 pub extern "C" fn set_str_ptr(val: usize) {
     STRING_POOL.with_borrow_mut(|strings| strings.str_ptr = val)
+}
+
+#[no_mangle]
+pub extern "C" fn pool_size() -> usize {
+    STRING_POOL.with_borrow(|strings| strings.pool_size)
+}
+
+#[no_mangle]
+pub extern "C" fn set_pool_size(val: usize) {
+    STRING_POOL.with_borrow_mut(|strings| strings.pool_size = val)
 }

@@ -76,7 +76,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
             trick_buf[tally % error_line] = s;
         break;
     case SELECTOR_NEW_STRING:
-        if (pool_ptr() < pool_size) {
+        if (pool_ptr() < pool_size()) {
             set_str_pool(pool_ptr(), s);
             set_pool_ptr(pool_ptr()+1);
         }

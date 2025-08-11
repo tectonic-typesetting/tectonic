@@ -101,8 +101,8 @@ getcreationdate(void)
     /* In e-pTeX, "init len => call init_start_time()" (as pdftexdir/utils.c)
        yields  unintentional output. */
 
-    if ((unsigned) (pool_ptr() + len) >= (unsigned) (pool_size)) {
-        set_pool_ptr(pool_size);
+    if ((unsigned) (pool_ptr() + len) >= (unsigned) (pool_size())) {
+        set_pool_ptr(pool_size());
         /* error by str_toks that calls str_room(1) */
         return;
     }
@@ -169,8 +169,8 @@ getfilemoddate(str_number s)
   makepdftime(mtime, buf, /* utc= */true);
   text_len = strlen(buf);
 
-  if ((unsigned) (pool_ptr() + text_len) >= (unsigned) pool_size) {
-    set_pool_ptr(pool_size);
+  if ((unsigned) (pool_ptr() + text_len) >= (unsigned) pool_size()) {
+    set_pool_ptr(pool_size());
     /* error by str_toks that calls str_room(1) */
   } else {
     int i;
@@ -207,8 +207,8 @@ getfilesize(str_number s)
   check_nprintf(i, sizeof(buf));
   text_len = strlen(buf);
 
-  if ((unsigned) (pool_ptr() + text_len) >= (unsigned) pool_size) {
-      set_pool_ptr(pool_size);
+  if ((unsigned) (pool_ptr() + text_len) >= (unsigned) pool_size()) {
+      set_pool_ptr(pool_size());
       /* error by str_toks that calls str_room(1) */
   } else {
       int i;
@@ -232,15 +232,15 @@ void getfiledump(int32_t s, int offset, int length)
   if (length == 0)
     return; /* => evaluate to the empty string; intentional */
 
-  if (pool_ptr() + 2 * length + 1 >= pool_size) {
+  if (pool_ptr() + 2 * length + 1 >= pool_size()) {
       /* not enough room to hold the result; trigger an error back in TeX: */
-      set_pool_ptr(pool_size);
+      set_pool_ptr(pool_size());
       return;
   }
 
   buffer = (unsigned char *) xmalloc(length + 1);
   if (buffer == NULL) {
-      set_pool_ptr(pool_size);
+      set_pool_ptr(pool_size());
       return;
   }
 
@@ -273,8 +273,8 @@ void getfiledump(int32_t s, int offset, int length)
 static void
 checkpool_pointer (pool_pointer pool_ptr, size_t len)
 {
-    if (pool_ptr + len >= pool_size)
-        _tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
+    if (pool_ptr + len >= pool_size())
+        _tt_abort ("string pool overflow [%i bytes]", (int) pool_size());
 }
 
 
@@ -415,7 +415,7 @@ make_src_special (str_number srcfilename, int lineno)
    */
   sprintf (buf, "src:%d ", lineno);
 
-  if (pool_ptr() + strlen(buf) + strlen(filename) >= (size_t)pool_size)
+  if (pool_ptr() + strlen(buf) + strlen(filename) >= (size_t)pool_size())
       _tt_abort ("string pool overflow");
 
   s = buf;
@@ -472,7 +472,7 @@ void getmd5sum(str_number s, bool file)
     if (ret)
         return;
 
-    if (pool_ptr() + 2 * DIGEST_SIZE >= pool_size) {
+    if (pool_ptr() + 2 * DIGEST_SIZE >= pool_size()) {
         /* error by str_toks that calls str_room(1) */
         return;
     }
