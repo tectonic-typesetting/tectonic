@@ -401,7 +401,6 @@ extern int32_t max_print_line;
 extern int32_t max_strings;
 extern int32_t strings_free;
 extern int32_t string_vacancies;
-extern int32_t pool_size;
 extern int32_t pool_free;
 extern int32_t font_mem_size;
 extern int32_t font_max;

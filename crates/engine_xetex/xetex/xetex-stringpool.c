@@ -76,8 +76,8 @@ append_str(str_number s)
 
     i = length(s);
 
-    if (pool_ptr() + i > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + i > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     j = str_start(s - 65536L);
 

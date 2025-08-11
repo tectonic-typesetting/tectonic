@@ -123,6 +123,10 @@ uintptr_t str_ptr(void);
 
 void set_str_ptr(uintptr_t val);
 
+uintptr_t pool_size(void);
+
+void set_pool_size(uintptr_t val);
+
 bool arith_error(void);
 
 void set_arith_error(bool val);

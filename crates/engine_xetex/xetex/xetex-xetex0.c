@@ -1268,8 +1268,8 @@ void show_box(int32_t p)
     breadth_max = INTPAR(show_box_breadth) /*:244 */ ;
     if (breadth_max <= 0)
         breadth_max = 5;
-    if (pool_ptr() + depth_threshold >= pool_size)
-        depth_threshold = pool_size - pool_ptr() - 1;
+    if (pool_ptr() + depth_threshold >= pool_size())
+        depth_threshold = pool_size() - pool_ptr() - 1;
     show_node_list(p);
     print_ln();
 }
@@ -1277,7 +1277,7 @@ void show_box(int32_t p)
 void short_display_n(int32_t p, int32_t m)
 {
     breadth_max = m;
-    depth_threshold = pool_size - pool_ptr() - 1;
+    depth_threshold = pool_size() - pool_ptr() - 1;
     show_node_list(p);
 }
 
@@ -3746,8 +3746,8 @@ id_lookup(int32_t j, int32_t l)
                     }
                 }
 
-                if (pool_ptr() + ll > pool_size)
-                    overflow("pool size", pool_size - init_pool_ptr);
+                if (pool_ptr() + ll > pool_size())
+                    overflow("pool size", pool_size() - init_pool_ptr);
 
                 d = cur_length();
 
@@ -9056,8 +9056,8 @@ void pseudo_start(void)
     set_selector(old_setting);
     flush_list(mem[TEMP_HEAD].b32.s1);
     {
-        if (pool_ptr() + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
+        if (pool_ptr() + 1 > pool_size())
+            overflow("pool size", pool_size() - init_pool_ptr);
     }
     s = make_string();
     set_str_pool(pool_ptr(), ' ' );
@@ -9145,8 +9145,8 @@ str_toks_cat(pool_pointer b, small_number cat)
     int32_t t;
     pool_pointer k;
 
-    if (pool_ptr() + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     p = TEMP_HEAD;
     LLIST_link(p) = TEX_NULL;
@@ -9397,7 +9397,7 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
@@ -9433,7 +9433,7 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
@@ -9472,7 +9472,7 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
@@ -9546,7 +9546,7 @@ conv_toks(void)
 
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
         set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
@@ -10629,8 +10629,8 @@ more_name(UTF16_code c)
         return true;
     }
 
-    if (pool_ptr() + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     set_str_pool(pool_ptr(), c);
     set_pool_ptr(pool_ptr()+1);
@@ -10746,7 +10746,7 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if (pool_ptr() + name_length > pool_size || str_ptr() == max_strings || cur_length() > 0)
+    if (pool_ptr() + name_length > pool_size() || str_ptr() == max_strings || cur_length() > 0)
         return '?';
 
     make_utf16_name();
@@ -10798,7 +10798,7 @@ scan_file_name_braced(void)
 
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
-    show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr());
+    show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
     set_selector(old_setting);
     s = make_string();
     delete_token_ref(def_ref);
@@ -10927,8 +10927,8 @@ start_input(const char *primary_input_name)
 
         const unsigned char *cp = (const unsigned char *) primary_input_name;
 
-        if (pool_ptr() + strlen(primary_input_name) * 2 >= pool_size)
-            _tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
+        if (pool_ptr() + strlen(primary_input_name) * 2 >= pool_size())
+            _tt_abort ("string pool overflow [%i bytes]", (int) pool_size());
 
         UInt32 rval;
         while ((rval = *(cp++)) != 0) {
@@ -11201,16 +11201,16 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
     if (font_mapping[f] != NULL) {
         if (c > 65535L) {
-            if (pool_ptr() + 2 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
+            if (pool_ptr() + 2 > pool_size())
+                overflow("pool size", pool_size() - init_pool_ptr);
 
             set_str_pool(pool_ptr(), (c - 65536L) / 1024 + 0xD800);
             set_pool_ptr(pool_ptr()+1);
             set_str_pool(pool_ptr(), (c - 65536L) % 1024 + 0xDC00);
             set_pool_ptr(pool_ptr()+1);
         } else {
-            if (pool_ptr() + 1 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
+            if (pool_ptr() + 1 > pool_size())
+                overflow("pool size", pool_size() - init_pool_ptr);
 
             set_str_pool(pool_ptr(), c);
             set_pool_ptr(pool_ptr()+1);
@@ -11361,8 +11361,8 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     else
         actual_size = get_loaded_font_design_size();
 
-    if (pool_ptr() + name_length > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + name_length > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     for (k = 0; k < name_length; k++) {
         set_str_pool(pool_ptr(), name_of_file[k]);
@@ -16053,8 +16053,8 @@ void new_font(small_number a)
         print(u - 1);
         set_selector(old_setting);
         {
-            if (pool_ptr() + 1 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
+            if (pool_ptr() + 1 > pool_size())
+                overflow("pool size", pool_size() - init_pool_ptr);
         }
         t = make_string();
     }
@@ -16180,8 +16180,8 @@ void issue_message(void)
     set_selector(old_setting);
     flush_list(def_ref);
     {
-        if (pool_ptr() + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
+        if (pool_ptr() + 1 > pool_size())
+            overflow("pool size", pool_size( )- init_pool_ptr);
     }
     s = make_string();
     if (c == 0) {               /*1315: */
@@ -16678,7 +16678,7 @@ tt_insert_special(const char *ascii_text)
     pool_pointer start_pool_ptr = pool_ptr();
 
     /* Copy the text into the string pool so that we can use str_toks() */
-    if (pool_ptr() + strlen(ascii_text) >= (size_t) pool_size)
+    if (pool_ptr() + strlen(ascii_text) >= (size_t) pool_size())
         _tt_abort("string pool overflow");
 
     while (*ascii_text) {
@@ -18470,7 +18470,7 @@ str_number tokens_to_string(int32_t p)
         pdf_error("tokens", "tokens_to_string() called while selector = new_string");
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
-    show_token_list(mem[p].b32.s1, TEX_NULL, pool_size - pool_ptr());
+    show_token_list(mem[p].b32.s1, TEX_NULL, pool_size() - pool_ptr());
     set_selector(old_setting);
     return make_string();
 }
