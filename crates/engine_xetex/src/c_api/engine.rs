@@ -7,42 +7,40 @@ thread_local! {
 }
 
 pub struct EngineCtx {
-    selector: Selector,
+    pub(crate) selector: Selector,
 }
 
 impl EngineCtx {
     const fn new() -> EngineCtx {
         EngineCtx {
-            selector: Selector::File0,
+            selector: Selector::File(0),
         }
     }
 }
 
 #[derive(Copy, Clone, PartialEq)]
-#[repr(C)]
 pub enum Selector {
-    File0 = 0,
-    File1,
-    File2,
-    File3,
-    File4,
-    File5,
-    File6,
-    File7,
-    File8,
-    File9,
-    File10,
-    File11,
-    File12,
-    File13,
-    File14,
-    File15 = 15,
-    NoPrint = 16,
-    TermOnly = 17,
-    LogOnly = 18,
-    TermAndLog = 19,
-    Pseudo = 20,
-    NewString = 21,
+    File(u8),
+    NoPrint,
+    TermOnly,
+    LogOnly,
+    TermAndLog,
+    Pseudo,
+    NewString,
+}
+
+impl From<Selector> for u32 {
+    fn from(value: Selector) -> Self {
+        match value {
+            Selector::File(val) => val as u32,
+            Selector::NoPrint => 16,
+            Selector::TermOnly => 17,
+            Selector::LogOnly => 18,
+            Selector::TermAndLog => 19,
+            Selector::Pseudo => 20,
+            Selector::NewString => 21,
+        }
+    }
 }
 
 impl TryFrom<u32> for Selector {
@@ -50,22 +48,7 @@ impl TryFrom<u32> for Selector {
 
     fn try_from(value: u32) -> Result<Self, Self::Error> {
         match value {
-            0 => Ok(Selector::File0),
-            1 => Ok(Selector::File1),
-            2 => Ok(Selector::File2),
-            3 => Ok(Selector::File3),
-            4 => Ok(Selector::File4),
-            5 => Ok(Selector::File5),
-            6 => Ok(Selector::File6),
-            7 => Ok(Selector::File7),
-            8 => Ok(Selector::File8),
-            9 => Ok(Selector::File9),
-            10 => Ok(Selector::File10),
-            11 => Ok(Selector::File11),
-            12 => Ok(Selector::File12),
-            13 => Ok(Selector::File13),
-            14 => Ok(Selector::File14),
-            15 => Ok(Selector::File15),
+            val @ 0..16 => Ok(Selector::File(val as u8)),
             16 => Ok(Selector::NoPrint),
             17 => Ok(Selector::TermOnly),
             18 => Ok(Selector::LogOnly),
@@ -78,8 +61,8 @@ impl TryFrom<u32> for Selector {
 }
 
 #[no_mangle]
-pub extern "C" fn selector() -> Selector {
-    ENGINE_CTX.with_borrow(|engine| engine.selector)
+pub extern "C" fn selector() -> u32 {
+    ENGINE_CTX.with_borrow(|engine| engine.selector.into())
 }
 
 #[no_mangle]

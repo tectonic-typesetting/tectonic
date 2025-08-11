@@ -60,8 +60,6 @@ pool_pointer pool_ptr;
 str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-rust_output_handle_t rust_stdout;
-rust_output_handle_t log_file;
 unsigned char dig[23];
 int32_t tally;
 UTF16_code trick_buf[256];
@@ -2086,7 +2084,7 @@ store_fmt_file(void)
 
         history = HISTORY_FATAL_ERROR;
         close_files_and_terminate();
-        ttstub_output_flush (rust_stdout);
+        ttstub_output_flush(rust_stdout());
         _tt_abort("\\dump inside a group");
     }
 
@@ -3554,7 +3552,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     /* Get our stdout handle */
 
-    rust_stdout = ttstub_output_open_stdout ();
+    set_rust_stdout(ttstub_output_open_stdout());
 
     size_t len = strlen (dump_name);
     TEX_format_default = xmalloc (len + 1);

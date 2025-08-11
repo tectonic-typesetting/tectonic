@@ -18,31 +18,6 @@
  */
 #define FORMAT_SERIAL 33
 
-typedef enum {
-  Selector_File0 = 0,
-  Selector_File1,
-  Selector_File2,
-  Selector_File3,
-  Selector_File4,
-  Selector_File5,
-  Selector_File6,
-  Selector_File7,
-  Selector_File8,
-  Selector_File9,
-  Selector_File10,
-  Selector_File11,
-  Selector_File12,
-  Selector_File13,
-  Selector_File14,
-  Selector_File15 = 15,
-  Selector_NoPrint = 16,
-  Selector_TermOnly = 17,
-  Selector_LogOnly = 18,
-  Selector_TermAndLog = 19,
-  Selector_Pseudo = 20,
-  Selector_NewString = 21,
-} Selector;
-
 typedef int32_t StrNumber;
 
 typedef int32_t Scaled;
@@ -58,7 +33,7 @@ extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *input_file_name,
                                 uint64_t build_date);
 
-Selector selector(void);
+uint32_t selector(void);
 
 void set_selector(uint32_t val);
 
@@ -97,6 +72,14 @@ void set_term_offset(int32_t val);
 int32_t file_offset(void);
 
 void set_file_offset(int32_t val);
+
+Option_OutputId rust_stdout(void);
+
+void set_rust_stdout(Option_OutputId val);
+
+Option_OutputId log_file(void);
+
+void set_log_file(Option_OutputId val);
 
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 

@@ -34,19 +34,19 @@ print_ln(void)
     switch (selector()) {
     case SELECTOR_TERM_AND_LOG:
         warn_char('\n');
-        ttstub_output_putc(rust_stdout, '\n');
-        ttstub_output_putc(log_file, '\n');
+        ttstub_output_putc(rust_stdout(), '\n');
+        ttstub_output_putc(log_file(), '\n');
         set_term_offset(0);
         set_file_offset(0);
         break;
     case SELECTOR_LOG_ONLY:
         warn_char('\n');
-        ttstub_output_putc(log_file, '\n');
+        ttstub_output_putc(log_file(), '\n');
         set_file_offset(0);
         break;
     case SELECTOR_TERM_ONLY:
         warn_char('\n');
-        ttstub_output_putc(rust_stdout, '\n');
+        ttstub_output_putc(rust_stdout(), '\n');
         set_term_offset(0);
         break;
     case SELECTOR_NO_PRINT:
@@ -66,38 +66,38 @@ print_raw_char(UTF16_code s, bool incr_offset)
     switch (selector()) {
     case SELECTOR_TERM_AND_LOG:
         warn_char(s);
-        ttstub_output_putc(rust_stdout, s);
-        ttstub_output_putc(log_file, s);
+        ttstub_output_putc(rust_stdout(), s);
+        ttstub_output_putc(log_file(), s);
         if (incr_offset) {
             set_term_offset(term_offset()+1);
             set_file_offset(file_offset()+1);
         }
         if (term_offset() == max_print_line) {
-            ttstub_output_putc(rust_stdout, '\n');
+            ttstub_output_putc(rust_stdout(), '\n');
             set_term_offset(0);
         }
         if (file_offset() == max_print_line) {
-            ttstub_output_putc(log_file, '\n');
+            ttstub_output_putc(log_file(), '\n');
             set_file_offset(0);
         }
         break;
     case SELECTOR_LOG_ONLY:
         warn_char(s);
-        ttstub_output_putc(log_file, s);
+        ttstub_output_putc(log_file(), s);
         if (incr_offset)
             set_file_offset(file_offset()+1);
         if (file_offset() == max_print_line) {
-            ttstub_output_putc(log_file, '\n');
+            ttstub_output_putc(log_file(), '\n');
             set_file_offset(0);
         }
         break;
     case SELECTOR_TERM_ONLY:
         warn_char(s);
-        ttstub_output_putc(rust_stdout, s);
+        ttstub_output_putc(rust_stdout(), s);
         if (incr_offset)
             set_term_offset(term_offset()+1);
         if (term_offset() == max_print_line) {
-            ttstub_output_putc(rust_stdout, '\n');
+            ttstub_output_putc(rust_stdout(), '\n');
             set_term_offset(0);
         }
         break;

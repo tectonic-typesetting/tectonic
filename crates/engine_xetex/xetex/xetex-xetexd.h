@@ -425,8 +425,6 @@ extern pool_pointer pool_ptr;
 extern str_number str_ptr;
 extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
-extern rust_output_handle_t rust_stdout;
-extern rust_output_handle_t log_file;
 extern unsigned char dig[23];
 extern int32_t tally;
 extern UTF16_code trick_buf[256];
