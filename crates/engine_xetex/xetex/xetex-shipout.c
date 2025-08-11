@@ -5,6 +5,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
+#include "xetex_bindings.h"
 #include "tectonic_bridge_core.h"
 
 
@@ -98,9 +99,9 @@ ship_out(int32_t p)
         print_cstr("Completed box being shipped out");
     }
 
-    if (term_offset > max_print_line - 9)
+    if (term_offset() > max_print_line - 9)
         print_ln();
-    else if (term_offset > 0 || file_offset > 0)
+    else if (term_offset() > 0 || file_offset() > 0)
         print_char(' ' );
 
     print_char('[' );

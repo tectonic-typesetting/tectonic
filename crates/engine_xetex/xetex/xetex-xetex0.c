@@ -9119,9 +9119,9 @@ void pseudo_start(void)
     cur_input.limit = cur_input.start;
     cur_input.loc = cur_input.limit + 1;
     if (INTPAR(tracing_scan_tokens) > 0) {
-        if (term_offset > max_print_line - 3)
+        if (term_offset() > max_print_line - 3)
             print_ln();
-        else if ((term_offset > 0) || (file_offset > 0))
+        else if ((term_offset() > 0) || (file_offset() > 0))
             print_char(' ');
         cur_input.name = 19;
         print_cstr("( ");
@@ -11017,9 +11017,9 @@ start_input(const char *primary_input_name)
         open_log_file();
     }
 
-    if (term_offset + length(full_source_filename_stack(in_open())) > max_print_line - 2)
+    if (term_offset() + length(full_source_filename_stack(in_open())) > max_print_line - 2)
         print_ln();
-    else if (term_offset > 0 || file_offset > 0)
+    else if (term_offset() > 0 || file_offset() > 0)
         print_char(' ');
     print_char('(');
     open_parens++;
@@ -16177,9 +16177,9 @@ void issue_message(void)
     }
     s = make_string();
     if (c == 0) {               /*1315: */
-        if (term_offset + length(s) > max_print_line - 2)
+        if (term_offset() + length(s) > max_print_line - 2)
             print_ln();
-        else if ((term_offset > 0) || (file_offset > 0))
+        else if ((term_offset() > 0) || (file_offset() > 0))
             print_char(' ');
         print(s);
         ttstub_output_flush (rust_stdout);

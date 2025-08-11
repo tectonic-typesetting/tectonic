@@ -90,6 +90,14 @@ void set_file_line_error_style_p(int32_t val);
 
 ttbc_diagnostic_t *current_diagnostic(void);
 
+int32_t term_offset(void);
+
+void set_term_offset(int32_t val);
+
+int32_t file_offset(void);
+
+void set_file_offset(int32_t val);
+
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);

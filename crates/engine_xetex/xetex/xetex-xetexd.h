@@ -429,8 +429,6 @@ extern rust_output_handle_t rust_stdout;
 extern rust_output_handle_t log_file;
 extern unsigned char dig[23];
 extern int32_t tally;
-extern int32_t term_offset;
-extern int32_t file_offset;
 extern UTF16_code trick_buf[256];
 extern int32_t trick_count;
 extern int32_t first_count;
