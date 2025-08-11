@@ -422,7 +422,6 @@ extern bool insert_src_special_every_vbox;
 extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
 extern unsigned char dig[23];
-extern int32_t tally;
 extern UTF16_code trick_buf[256];
 extern int32_t trick_count;
 extern int32_t first_count;
