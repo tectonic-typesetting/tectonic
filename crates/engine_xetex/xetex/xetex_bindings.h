@@ -81,9 +81,9 @@ Option_OutputId log_file(void);
 
 void set_log_file(Option_OutputId val);
 
-rust_output_handle_t write_file(uintptr_t idx);
+Option_OutputId write_file(uintptr_t idx);
 
-void set_write_file(uintptr_t idx, rust_output_handle_t val);
+void set_write_file(uintptr_t idx, Option_OutputId val);
 
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
