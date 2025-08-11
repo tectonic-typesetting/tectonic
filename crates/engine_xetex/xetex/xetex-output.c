@@ -29,38 +29,6 @@ error_here_with_diagnostic(const char* message)
 }
 
 void
-print_ln(void)
-{
-    switch (selector()) {
-    case SELECTOR_TERM_AND_LOG:
-        warn_char('\n');
-        ttstub_output_putc(rust_stdout(), '\n');
-        ttstub_output_putc(log_file(), '\n');
-        set_term_offset(0);
-        set_file_offset(0);
-        break;
-    case SELECTOR_LOG_ONLY:
-        warn_char('\n');
-        ttstub_output_putc(log_file(), '\n');
-        set_file_offset(0);
-        break;
-    case SELECTOR_TERM_ONLY:
-        warn_char('\n');
-        ttstub_output_putc(rust_stdout(), '\n');
-        set_term_offset(0);
-        break;
-    case SELECTOR_NO_PRINT:
-    case SELECTOR_PSEUDO:
-    case SELECTOR_NEW_STRING:
-        break;
-    default:
-        ttstub_output_putc(write_file[selector()], '\n');
-        break;
-    }
-}
-
-
-void
 print_raw_char(UTF16_code s, bool incr_offset)
 {
     switch (selector()) {
@@ -114,7 +82,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
         }
         break;
     default:
-        ttstub_output_putc(write_file[selector()], s);
+        ttstub_output_putc(write_file(selector()), s);
         break;
     }
     tally++;

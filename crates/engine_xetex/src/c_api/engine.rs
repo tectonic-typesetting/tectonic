@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::ffi::CStr;
 
 thread_local! {
-    static ENGINE_CTX: RefCell<EngineCtx> = const { RefCell::new(EngineCtx::new()) }
+    pub static ENGINE_CTX: RefCell<EngineCtx> = const { RefCell::new(EngineCtx::new()) }
 }
 
 pub struct EngineCtx {

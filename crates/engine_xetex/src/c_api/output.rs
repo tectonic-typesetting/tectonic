@@ -1,6 +1,7 @@
-use crate::c_api::engine::{with_tex_string, EngineCtx, Selector};
+use crate::c_api::engine::{with_tex_string, EngineCtx, Selector, ENGINE_CTX};
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use std::cell::RefCell;
+use std::io::Write;
 use std::ptr;
 use std::ptr::NonNull;
 use tectonic_bridge_core::{CoreBridgeState, Diagnostic, OutputId};
@@ -16,6 +17,7 @@ pub struct OutputCtx {
     file_offset: i32,
     rust_stdout: Option<OutputId>,
     log_file: Option<OutputId>,
+    write_file: Vec<OutputId>,
 }
 
 impl OutputCtx {
@@ -27,6 +29,7 @@ impl OutputCtx {
             file_offset: 0,
             rust_stdout: None,
             log_file: None,
+            write_file: Vec::new(),
         }
     }
 }
@@ -89,6 +92,22 @@ pub extern "C" fn log_file() -> Option<OutputId> {
 #[no_mangle]
 pub extern "C" fn set_log_file(val: Option<OutputId>) {
     OUTPUT_CTX.with_borrow_mut(|out| out.log_file = val)
+}
+
+#[no_mangle]
+pub extern "C" fn write_file(idx: usize) -> OutputId {
+    OUTPUT_CTX.with_borrow(|out| out.write_file[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_write_file(idx: usize, val: OutputId) {
+    OUTPUT_CTX.with_borrow_mut(|out| {
+        if out.write_file.len() == idx {
+            out.write_file.push(val);
+        } else {
+            out.write_file[idx] = val
+        }
+    })
 }
 
 fn rs_capture_to_diagnostic(
@@ -168,57 +187,40 @@ pub extern "C" fn warn_char(c: libc::c_int) {
     })
 }
 
-/*
-void
-print_ln(void)
-{
-    switch (selector) {
-    case SELECTOR_TERM_AND_LOG:
-        warn_char('\n');
-        ttstub_output_putc(rust_stdout, '\n');
-        ttstub_output_putc(log_file, '\n');
-        term_offset = 0;
-        file_offset = 0;
-        break;
-    case SELECTOR_LOG_ONLY:
-        warn_char('\n');
-        ttstub_output_putc(log_file, '\n');
-        file_offset = 0;
-        break;
-    case SELECTOR_TERM_ONLY:
-        warn_char('\n');
-        ttstub_output_putc(rust_stdout, '\n');
-        term_offset = 0;
-        break;
-    case SELECTOR_NO_PRINT:
-    case SELECTOR_PSEUDO:
-    case SELECTOR_NEW_STRING:
-        break;
-    default:
-        ttstub_output_putc(write_file[selector], '\n');
-        break;
+pub fn rs_print_ln(state: &mut CoreBridgeState<'_>, engine: &mut EngineCtx, out: &mut OutputCtx) {
+    match engine.selector {
+        Selector::File(val) => {
+            write!(state.get_output(out.write_file[val as usize]), "\n").unwrap();
+        }
+        Selector::TermOnly => {
+            rs_warn_char(out, '\n');
+            write!(state.get_output(out.rust_stdout.unwrap()), "\n").unwrap();
+            out.term_offset = 0;
+        }
+        Selector::LogOnly => {
+            rs_warn_char(out, '\n');
+            write!(state.get_output(out.log_file.unwrap()), "\n").unwrap();
+            out.file_offset = 0;
+        }
+        Selector::TermAndLog => {
+            rs_warn_char(out, '\n');
+            write!(state.get_output(out.rust_stdout.unwrap()), "\n").unwrap();
+            write!(state.get_output(out.log_file.unwrap()), "\n").unwrap();
+            out.term_offset = 0;
+            out.file_offset = 0;
+        }
+        Selector::NoPrint | Selector::Pseudo | Selector::NewString => {}
     }
 }
- */
 
-// pub fn rs_print_ln(engine: &mut EngineCtx, out: &mut OutputCtx) {
-//     match engine.selector {
-//         Selector::File(val) => {
-//
-//         }
-//         Selector::TermOnly => {
-//             rs_warn_char(out, '\n');
-//         }
-//         Selector::LogOnly => {}
-//         Selector::TermAndLog => {}
-//         Selector::NoPrint | Selector::Pseudo | Selector::NewString => {}
-//     }
-// }
-//
-// #[no_mangle]
-// pub extern "C" fn print_ln() {
-//
-// }
+#[no_mangle]
+pub extern "C" fn print_ln() {
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| rs_print_ln(state, engine, out))
+        })
+    })
+}
 
 // #[no_mangle]
 // pub unsafe extern "C" fn error_here_with_diagnostic(
