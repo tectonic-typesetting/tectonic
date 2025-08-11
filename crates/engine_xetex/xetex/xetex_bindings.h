@@ -81,6 +81,10 @@ Option_OutputId log_file(void);
 
 void set_log_file(Option_OutputId val);
 
+rust_output_handle_t write_file(uintptr_t idx);
+
+void set_write_file(uintptr_t idx, rust_output_handle_t val);
+
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
@@ -88,6 +92,8 @@ void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
 ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
 
 void warn_char(int c);
+
+void print_ln(void);
 
 bool arith_error(void);
 

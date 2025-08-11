@@ -674,7 +674,6 @@ extern int32_t cur_box;
 extern int32_t after_token;
 extern bool long_help_seen;
 extern str_number format_ident;
-extern rust_output_handle_t write_file[16];
 extern bool write_open[18];
 extern int32_t write_loc;
 extern scaled_t cur_page_width;

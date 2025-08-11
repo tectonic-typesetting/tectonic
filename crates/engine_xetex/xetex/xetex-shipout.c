@@ -1739,7 +1739,7 @@ out_what(int32_t p)
         }
 
         if (write_open[j])
-            ttstub_output_close(write_file[j]);
+            ttstub_output_close(write_file(j));
 
         if (mem[p].b16.s0 == CLOSE_NODE) {
             write_open[j] = false;
@@ -1759,8 +1759,8 @@ out_what(int32_t p)
 
         pack_file_name(cur_name, cur_area, cur_ext);
 
-        write_file[j] = ttstub_output_open(name_of_file, 0);
-        if (write_file[j] == INVALID_HANDLE)
+        set_write_file(j, ttstub_output_open(name_of_file, 0));
+        if (write_file(j) == INVALID_HANDLE)
             _tt_abort("cannot open output file \"%s\"", name_of_file);
 
         write_open[j] = true;
