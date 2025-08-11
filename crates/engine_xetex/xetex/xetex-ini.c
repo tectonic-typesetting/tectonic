@@ -64,8 +64,6 @@ rust_output_handle_t rust_stdout;
 rust_output_handle_t log_file;
 unsigned char dig[23];
 int32_t tally;
-int32_t term_offset;
-int32_t file_offset;
 UTF16_code trick_buf[256];
 int32_t trick_count;
 int32_t first_count;
@@ -3694,8 +3692,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     set_selector(SELECTOR_TERM_ONLY);
     tally = 0;
-    term_offset = 0;
-    file_offset = 0;
+    set_term_offset(0);
+    set_file_offset(0);
     job_name = 0;
     name_in_progress = false;
     log_opened = false;

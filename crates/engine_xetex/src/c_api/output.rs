@@ -12,6 +12,8 @@ thread_local! {
 pub struct OutputCtx {
     current_diagnostic: Option<Box<Diagnostic>>,
     file_line_error_style_p: i32,
+    term_offset: i32,
+    file_offset: i32,
 }
 
 impl OutputCtx {
@@ -19,6 +21,8 @@ impl OutputCtx {
         OutputCtx {
             current_diagnostic: None,
             file_line_error_style_p: 0,
+            term_offset: 0,
+            file_offset: 0,
         }
     }
 }
@@ -41,6 +45,26 @@ pub extern "C" fn current_diagnostic() -> *mut Diagnostic {
             .map(|b| ptr::from_mut(&mut **b))
             .unwrap_or(ptr::null_mut())
     })
+}
+
+#[no_mangle]
+pub extern "C" fn term_offset() -> i32 {
+    OUTPUT_CTX.with_borrow(|out| out.term_offset)
+}
+
+#[no_mangle]
+pub extern "C" fn set_term_offset(val: i32) {
+    OUTPUT_CTX.with_borrow_mut(|out| out.term_offset = val)
+}
+
+#[no_mangle]
+pub extern "C" fn file_offset() -> i32 {
+    OUTPUT_CTX.with_borrow(|out| out.file_offset)
+}
+
+#[no_mangle]
+pub extern "C" fn set_file_offset(val: i32) {
+    OUTPUT_CTX.with_borrow_mut(|out| out.file_offset = val)
 }
 
 fn rs_capture_to_diagnostic(
