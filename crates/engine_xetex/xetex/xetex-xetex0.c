@@ -5537,7 +5537,7 @@ restart:
                     if (cur_input.name >= 19) {
                         print_char(')');
                         open_parens--;
-                        ttstub_output_flush(rust_stdout);
+                        ttstub_output_flush(rust_stdout());
                     }
 
                     force_eof = false;
@@ -9126,7 +9126,7 @@ void pseudo_start(void)
         cur_input.name = 19;
         print_cstr("( ");
         open_parens++;
-        ttstub_output_flush (rust_stdout);
+        ttstub_output_flush(rust_stdout());
     } else {
 
         cur_input.name = 18;
@@ -10877,8 +10877,8 @@ open_log_file(void)
 
     pack_job_name(".log");
 
-    log_file = ttstub_output_open (name_of_file, 0);
-    if (log_file == INVALID_HANDLE)
+    set_log_file(ttstub_output_open(name_of_file, 0));
+    if (log_file() == INVALID_HANDLE)
         _tt_abort ("cannot open log file output \"%s\"", name_of_file);
 
     texmf_log_name = make_name_string();
@@ -11024,7 +11024,7 @@ start_input(const char *primary_input_name)
     print_char('(');
     open_parens++;
     print(full_source_filename_stack(in_open()));
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
 
     if (INTPAR(tracing_stack_levels) > 0) {
         int32_t v;
@@ -16182,7 +16182,7 @@ void issue_message(void)
         else if ((term_offset() > 0) || (file_offset() > 0))
             print_char(' ');
         print(s);
-        ttstub_output_flush (rust_stdout);
+        ttstub_output_flush(rust_stdout());
     } else {                    /*1318: */
         error_here_with_diagnostic("");
         print(s);
@@ -18432,8 +18432,8 @@ close_files_and_terminate(void)
     synctex_terminate(log_opened);
 
     if (log_opened) {
-        ttstub_output_putc (log_file, '\n');
-        ttstub_output_close (log_file);
+        ttstub_output_putc(log_file(), '\n');
+        ttstub_output_close(log_file());
         set_selector(selector() - 2);
         if (selector() == SELECTOR_TERM_ONLY) {
             print_nl_cstr("Transcript written on ");

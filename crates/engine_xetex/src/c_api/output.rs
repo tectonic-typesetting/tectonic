@@ -1,9 +1,9 @@
-use crate::c_api::engine::with_tex_string;
+use crate::c_api::engine::{with_tex_string, EngineCtx, Selector};
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use std::cell::RefCell;
 use std::ptr;
 use std::ptr::NonNull;
-use tectonic_bridge_core::{CoreBridgeState, Diagnostic};
+use tectonic_bridge_core::{CoreBridgeState, Diagnostic, OutputId};
 
 thread_local! {
     pub static OUTPUT_CTX: RefCell<OutputCtx> = const { RefCell::new(OutputCtx::new()) }
@@ -14,6 +14,8 @@ pub struct OutputCtx {
     file_line_error_style_p: i32,
     term_offset: i32,
     file_offset: i32,
+    rust_stdout: Option<OutputId>,
+    log_file: Option<OutputId>,
 }
 
 impl OutputCtx {
@@ -23,6 +25,8 @@ impl OutputCtx {
             file_line_error_style_p: 0,
             term_offset: 0,
             file_offset: 0,
+            rust_stdout: None,
+            log_file: None,
         }
     }
 }
@@ -65,6 +69,26 @@ pub extern "C" fn file_offset() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_file_offset(val: i32) {
     OUTPUT_CTX.with_borrow_mut(|out| out.file_offset = val)
+}
+
+#[no_mangle]
+pub extern "C" fn rust_stdout() -> Option<OutputId> {
+    OUTPUT_CTX.with_borrow(|out| out.rust_stdout)
+}
+
+#[no_mangle]
+pub extern "C" fn set_rust_stdout(val: Option<OutputId>) {
+    OUTPUT_CTX.with_borrow_mut(|out| out.rust_stdout = val)
+}
+
+#[no_mangle]
+pub extern "C" fn log_file() -> Option<OutputId> {
+    OUTPUT_CTX.with_borrow(|out| out.log_file)
+}
+
+#[no_mangle]
+pub extern "C" fn set_log_file(val: Option<OutputId>) {
+    OUTPUT_CTX.with_borrow_mut(|out| out.log_file = val)
 }
 
 fn rs_capture_to_diagnostic(
@@ -128,12 +152,19 @@ pub unsafe extern "C" fn diagnostic_begin_capture_warning_here() -> *mut Diagnos
     })
 }
 
+pub fn rs_warn_char(out: &mut OutputCtx, c: char) {
+    if let Some(diag) = out.current_diagnostic.as_deref_mut() {
+        diag.append_char(c);
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn warn_char(c: libc::c_int) {
     OUTPUT_CTX.with_borrow_mut(|out| {
-        if let Some(diag) = out.current_diagnostic.as_deref_mut() {
-            diag.append_char(char::from_u32(c as u32).unwrap_or(char::REPLACEMENT_CHARACTER));
-        }
+        rs_warn_char(
+            out,
+            char::from_u32(c as u32).unwrap_or(char::REPLACEMENT_CHARACTER),
+        );
     })
 }
 
@@ -169,6 +200,25 @@ print_ln(void)
     }
 }
  */
+
+// pub fn rs_print_ln(engine: &mut EngineCtx, out: &mut OutputCtx) {
+//     match engine.selector {
+//         Selector::File(val) => {
+//
+//         }
+//         Selector::TermOnly => {
+//             rs_warn_char(out, '\n');
+//         }
+//         Selector::LogOnly => {}
+//         Selector::TermAndLog => {}
+//         Selector::NoPrint | Selector::Pseudo | Selector::NewString => {}
+//     }
+// }
+//
+// #[no_mangle]
+// pub extern "C" fn print_ln() {
+//
+// }
 
 // #[no_mangle]
 // pub unsafe extern "C" fn error_here_with_diagnostic(
@@ -236,9 +286,4 @@ print_file_line(void)
 //         }
 //         print_str(": ");
 //     }
-// }
-
-// #[no_mangle]
-// pub extern "C" fn print_file_line() {
-//     let level =
 // }

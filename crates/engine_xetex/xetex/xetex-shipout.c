@@ -115,7 +115,7 @@ ship_out(int32_t p)
             print_char('.' );
     }
 
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
 
     if (INTPAR(tracing_output) > 0) {
         print_char(']' );
@@ -286,7 +286,7 @@ done:
         print_char(']');
 
     dead_cycles = 0;
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
     flush_node_list(p);
     synctex_teehs();
 }
