@@ -76,9 +76,9 @@ print_raw_char(UTF16_code s, bool incr_offset)
             trick_buf[tally % error_line] = s;
         break;
     case SELECTOR_NEW_STRING:
-        if (pool_ptr < pool_size) {
-            str_pool[pool_ptr] = s;
-            pool_ptr++;
+        if (pool_ptr() < pool_size) {
+            set_str_pool(pool_ptr(), s);
+            set_pool_ptr(pool_ptr()+1);
         }
         break;
     default:
@@ -164,7 +164,7 @@ print(int32_t s)
 {
     int32_t nl;
 
-    if (s >= str_ptr)
+    if (s >= str_ptr())
         return print_cstr("???");
     else if (s <= BIGGEST_CHAR) {
         if (s < 0)
@@ -192,22 +192,22 @@ print(int32_t s)
 
     int32_t pool_idx = s - 0x10000;
 
-    for (pool_pointer i = str_start[pool_idx]; i < str_start[pool_idx + 1]; i++) {
+    for (pool_pointer i = str_start(pool_idx); i < str_start(pool_idx + 1); i++) {
         if (
-            (str_pool[i] >= 0xD800) &&
-            (str_pool[i] < 0xDC00) &&
-            (i + 1 < str_start[pool_idx + 1]) &&
-            (str_pool[i + 1] >= 0xDC00) &&
-            (str_pool[i + 1] < 0xE000)
+            (str_pool(i) >= 0xD800) &&
+            (str_pool(i) < 0xDC00) &&
+            (i + 1 < str_start(pool_idx + 1)) &&
+            (str_pool(i + 1) >= 0xDC00) &&
+            (str_pool(i + 1) < 0xE000)
         ) {
             print_char(
                 0x10000 +
-                (str_pool[i] - 0xD800) * 1024 +
-                str_pool[i + 1] - 0xDC00
+                (str_pool(i) - 0xD800) * 1024 +
+                str_pool(i + 1) - 0xDC00
             );
             i++;
         } else {
-            print_char(str_pool[i]);
+            print_char(str_pool(i));
         }
     }
 }
@@ -329,7 +329,7 @@ print_cs(int32_t p)
             print_char(p - 1);
     } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
         print_esc_cstr("IMPOSSIBLE.");
-    } else if (hash[p].s1 >= str_ptr) {
+    } else if (hash[p].s1 >= str_ptr()) {
         print_esc_cstr("NONEXISTENT.");
     } else {
         if (p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT)
@@ -369,39 +369,39 @@ print_file_name(int32_t n, int32_t a, int32_t e)
     pool_pointer j;
 
     if (a != 0) {
-        j = str_start[(a) - 0x10000];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(a + 1) - 0x10000])) {
-            if (str_pool[j] == ' ' )
+        j = str_start((a) - 0x10000);
+        while (((!must_quote) || (quote_char == 0)) && (j < str_start((a + 1) - 0x10000))) {
+            if (str_pool(j) == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
+            else if ((str_pool(j) == '"' ) || (str_pool(j) == '\'' )) {
                 must_quote = true;
-                quote_char = 73 /*""" 39 */  - str_pool[j];
+                quote_char = 73 /*""" 39 */  - str_pool(j);
             }
             j++;
         }
     }
 
     if (n != 0) {
-        j = str_start[(n) - 0x10000];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(n + 1) - 0x10000])) {
-            if (str_pool[j] == ' ' )
+        j = str_start((n) - 0x10000);
+        while (((!must_quote) || (quote_char == 0)) && (j < str_start((n + 1) - 0x10000))) {
+            if (str_pool(j) == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
+            else if ((str_pool(j) == '"' ) || (str_pool(j) == '\'' )) {
                 must_quote = true;
-                quote_char = 73 /*""" 39 */  - str_pool[j];
+                quote_char = 73 /*""" 39 */  - str_pool(j);
             }
             j++;
         }
     }
 
     if (e != 0) {
-        j = str_start[(e) - 0x10000];
-        while (((!must_quote) || (quote_char == 0)) && (j < str_start[(e + 1) - 0x10000])) {
-            if (str_pool[j] == ' ' )
+        j = str_start((e) - 0x10000);
+        while (((!must_quote) || (quote_char == 0)) && (j < str_start((e + 1) - 0x10000))) {
+            if (str_pool(j) == ' ' )
                 must_quote = true;
-            else if ((str_pool[j] == '"' ) || (str_pool[j] == '\'' )) {
+            else if ((str_pool(j) == '"' ) || (str_pool(j) == '\'' )) {
                 must_quote = true;
-                quote_char = 73 /*""" 39 */  - str_pool[j];
+                quote_char = 73 /*""" 39 */  - str_pool(j);
             }
             j++;
         }
@@ -415,48 +415,48 @@ print_file_name(int32_t n, int32_t a, int32_t e)
 
     if (a != 0) {
         register int32_t for_end;
-        j = str_start[(a) - 0x10000];
-        for_end = str_start[(a + 1) - 0x10000] - 1;
+        j = str_start((a) - 0x10000);
+        for_end = str_start((a + 1) - 0x10000) - 1;
         if (j <= for_end)
             do {
-                if (str_pool[j] == quote_char) {
+                if (str_pool(j) == quote_char) {
                     print(quote_char);
                     quote_char = 73 /*""" 39 */  - quote_char;
                     print(quote_char);
                 }
-                print(str_pool[j]);
+                print(str_pool(j));
             }
             while (j++ < for_end);
     }
 
     if (n != 0) {
         register int32_t for_end;
-        j = str_start[(n) - 0x10000];
-        for_end = str_start[(n + 1) - 0x10000] - 1;
+        j = str_start((n) - 0x10000);
+        for_end = str_start((n + 1) - 0x10000) - 1;
         if (j <= for_end)
             do {
-                if (str_pool[j] == quote_char) {
+                if (str_pool(j) == quote_char) {
                     print(quote_char);
                     quote_char = 73 /*""" 39 */  - quote_char;
                     print(quote_char);
                 }
-                print(str_pool[j]);
+                print(str_pool(j));
             }
             while (j++ < for_end);
     }
 
     if (e != 0) {
         register int32_t for_end;
-        j = str_start[(e) - 0x10000];
-        for_end = str_start[(e + 1) - 0x10000] - 1;
+        j = str_start((e) - 0x10000);
+        for_end = str_start((e + 1) - 0x10000) - 1;
         if (j <= for_end)
             do {
-                if (str_pool[j] == quote_char) {
+                if (str_pool(j) == quote_char) {
                     print(quote_char);
                     quote_char = 73 /*""" 39 */  - quote_char;
                     print(quote_char);
                 }
-                print(str_pool[j]);
+                print(str_pool(j));
             }
             while (j++ < for_end);
     }
@@ -627,10 +627,10 @@ print_roman_int(int32_t n)
 void
 print_current_string(void)
 {
-    pool_pointer j = str_start[str_ptr - 0x10000];
+    pool_pointer j = str_start(str_ptr() - 0x10000);
 
-    while (j < pool_ptr) {
-        print_char(str_pool[j]);
+    while (j < pool_ptr()) {
+        print_char(str_pool(j));
         j++;
     }
 }

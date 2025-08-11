@@ -246,10 +246,10 @@ ship_out(int32_t p)
     dvi_out(XXX1);
     dvi_out(cur_length());
 
-    for (s = str_start[str_ptr - TOO_BIG_CHAR]; s < pool_ptr; s++)
-        dvi_out(str_pool[s]);
+    for (s = str_start(str_ptr() - TOO_BIG_CHAR); s < pool_ptr(); s++)
+        dvi_out(str_pool(s));
 
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
     /* Done with the synthesized special. The meat: emit this page box. */
 
@@ -443,7 +443,7 @@ hlist_out(void)
                      * and p to the last." */
 
                     if (p != r) {
-                        if (pool_ptr + k > pool_size)
+                        if (pool_ptr() + k > pool_size)
                             overflow("pool size", pool_size - init_pool_ptr);
 
                         k = 0;
@@ -453,15 +453,15 @@ hlist_out(void)
                             if (NODE_type(q) == WHATSIT_NODE) {
                                 if (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT) {
                                     for (j = 0; j < NATIVE_NODE_length(q); j++) {
-                                        str_pool[pool_ptr] = NATIVE_NODE_text(q)[j];
-                                        pool_ptr++;
+                                        set_str_pool(pool_ptr(), NATIVE_NODE_text(q)[j]);
+                                        set_pool_ptr(pool_ptr()+1);
                                     }
 
                                     k += BOX_width(q);
                                 }
                             } else if (NODE_type(q) == GLUE_NODE) {
-                                str_pool[pool_ptr] = ' ';
-                                pool_ptr++;
+                                set_str_pool(pool_ptr(), ' ');
+                                set_pool_ptr(pool_ptr()+1);
                                 g = GLUE_NODE_glue_ptr(q);
                                 k += BOX_width(g);
 
@@ -488,7 +488,7 @@ hlist_out(void)
                         NODE_subtype(q) = NODE_subtype(r);
 
                         for (j = 0; j < cur_length(); j++)
-                            NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - TOO_BIG_CHAR] + j];
+                            NATIVE_NODE_text(q)[j] = str_pool(str_start(str_ptr() - TOO_BIG_CHAR) + j);
 
                         /* "Link q into the list in place of r...p" */
 
@@ -525,7 +525,7 @@ hlist_out(void)
                         }
 
                         flush_node_list(r);
-                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                         p = q;
                     }
                 }
@@ -1836,12 +1836,12 @@ dvi_font_def(internal_font_number f)
         dvi_four(font_dsize[f]);
         dvi_out(length(font_area[f]));
         l = 0;
-        k = str_start[(font_name[f]) - 65536L];
+        k = str_start((font_name[f]) - 65536L);
 
-        while ((l == 0) && (k < str_start[(font_name[f] + 1) - 65536L])) {
+        while ((l == 0) && (k < str_start((font_name[f] + 1) - 65536L))) {
 
-            if (str_pool[k] == ':' )
-                l = k - str_start[(font_name[f]) - 65536L];
+            if (str_pool(k) == ':' )
+                l = k - str_start((font_name[f]) - 65536L);
             k++;
         }
 
@@ -1852,22 +1852,22 @@ dvi_font_def(internal_font_number f)
 
         {
             register int32_t for_end;
-            k = str_start[(font_area[f]) - 65536L];
-            for_end = str_start[(font_area[f] + 1) - 65536L] - 1;
+            k = str_start((font_area[f]) - 65536L);
+            for_end = str_start((font_area[f] + 1) - 65536L) - 1;
             if (k <= for_end)
                 do {
-                    dvi_out(str_pool[k]);
+                    dvi_out(str_pool(k));
                 }
                 while (k++ < for_end);
         }
 
         {
             register int32_t for_end;
-            k = str_start[(font_name[f]) - 65536L];
-            for_end = str_start[(font_name[f]) - 65536L] + l - 1;
+            k = str_start((font_name[f]) - 65536L);
+            for_end = str_start((font_name[f]) - 65536L) + l - 1;
             if (k <= for_end)
                 do {
-                    dvi_out(str_pool[k]);
+                    dvi_out(str_pool(k));
                 }
                 while (k++ < for_end);
         }
@@ -2081,10 +2081,10 @@ special_out(int32_t p)
     doing_special = true;
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
-    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size - pool_ptr);
+    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size - pool_ptr());
     set_selector(old_setting);
 
-    if (pool_ptr + 1 > pool_size)
+    if (pool_ptr() + 1 > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
     if (cur_length() < 256) {
@@ -2097,15 +2097,15 @@ special_out(int32_t p)
 
     {
         register int32_t for_end;
-        k = str_start[str_ptr - TOO_BIG_CHAR];
-        for_end = pool_ptr - 1;
+        k = str_start(str_ptr() - TOO_BIG_CHAR);
+        for_end = pool_ptr() - 1;
         if (k <= for_end)
             do {
-                dvi_out(str_pool[k]);
+                dvi_out(str_pool(k));
             }
             while (k++ < for_end);
     }
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     doing_special = false;
 }
 
@@ -2185,7 +2185,7 @@ write_out(int32_t p)
 
             print_nl_cstr("runsystem(");
             for (d = 0; d <= (cur_length()) - 1; d++)
-                print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
+                print(str_pool(str_start(str_ptr() - TOO_BIG_CHAR) + d));
 
             print_cstr(")...");
             print_cstr("disabled");
@@ -2194,11 +2194,11 @@ write_out(int32_t p)
             print_nl_cstr("");
             print_ln();
         } else {
-            ttstub_shell_escape(&str_pool[str_start[str_ptr - TOO_BIG_CHAR]], cur_length());
+            ttstub_shell_escape(str_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)), cur_length());
         }
 
         // Clear shell escape command
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 
     set_selector(old_setting);
@@ -2276,10 +2276,10 @@ pic_out(int32_t p)
         dvi_four(cur_length());
     }
 
-    for (k = str_start[str_ptr - TOO_BIG_CHAR]; k < pool_ptr; k++)
-        dvi_out(str_pool[k]);
+    for (k = str_start(str_ptr() - TOO_BIG_CHAR); k < pool_ptr(); k++)
+        dvi_out(str_pool(k));
 
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR]; /* discard the string we just made */
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)); /* discard the string we just made */
 }
 
 

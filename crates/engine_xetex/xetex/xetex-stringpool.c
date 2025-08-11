@@ -29,8 +29,10 @@ load_pool_strings(int32_t spare_size)
         if (total_len >= spare_size)
             return 0;
 
-        while (len-- > 0)
-            str_pool[pool_ptr++] = *s++;
+        while (len-- > 0) {
+            set_str_pool(pool_ptr(), *s++);
+            set_pool_ptr(pool_ptr() + 1);
+        }
 
         g = make_string(); /* Returns 0 on error. */
     }
@@ -43,7 +45,7 @@ int32_t
 length(str_number s)
 {
     if (s >= 65536L)
-        return str_start[s + 1 - 65536L] - str_start[s - 65536L];
+        return str_start(s + 1 - 65536L) - str_start(s - 65536L);
     if (s >= 32 && s < 127)
         return 1;
     if (s <= 127)
@@ -57,12 +59,12 @@ length(str_number s)
 str_number
 make_string(void)
 {
-    if (str_ptr == max_strings)
+    if (str_ptr() == max_strings)
         overflow("number of strings", max_strings - init_str_ptr);
 
-    str_ptr++;
-    str_start[str_ptr - TOO_BIG_CHAR] = pool_ptr;
-    return str_ptr - 1;
+    set_str_ptr(str_ptr()+1);
+    set_str_start(str_ptr() - TOO_BIG_CHAR, pool_ptr());
+    return str_ptr() - 1;
 }
 
 
@@ -74,14 +76,14 @@ append_str(str_number s)
 
     i = length(s);
 
-    if (pool_ptr + i > pool_size)
+    if (pool_ptr() + i > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
-    j = str_start[s - 65536L];
+    j = str_start(s - 65536L);
 
     while (i > 0) {
-        str_pool[pool_ptr] = str_pool[j];
-        pool_ptr++;
+        set_str_pool(pool_ptr(), str_pool(j));
+        set_pool_ptr(pool_ptr()+1);
         j++;
         i--;
     }
@@ -93,18 +95,18 @@ str_eq_buf(str_number s, int32_t k)
 {
     pool_pointer j;
 
-    j = str_start[s - 65536L];
+    j = str_start(s - 65536L);
 
-    while (j < str_start[s + 1 - 65536L]) {
+    while (j < str_start(s + 1 - 65536L)) {
         if (buffer[k] >= 65536L) {
-            if (str_pool[j] != 55296L + (buffer[k] - 65536L) / 1024) {
+            if (str_pool(j) != 55296L + (buffer[k] - 65536L) / 1024) {
                 return false;
-            } else if (str_pool[j + 1] != 56320L + (buffer[k] - 65536L) % 1024) {
+            } else if (str_pool(j + 1) != 56320L + (buffer[k] - 65536L) % 1024) {
                 return false;
             } else {
                 j++;
             }
-        } else if (str_pool[j] != buffer[k]) {
+        } else if (str_pool(j) != buffer[k]) {
             return false;
         }
 
@@ -130,24 +132,24 @@ str_eq_str(str_number s, str_number t)
                 if (s != t)
                     return false;
             } else {
-                if (s != str_pool[str_start[t - 65536L]])
+                if (s != str_pool(str_start(t - 65536L)))
                     return false;
             }
         } else {
             if (t < 65536L) {
-                if (str_pool[str_start[s - 65536L]] != t)
+                if (str_pool(str_start(s - 65536L)) != t)
                     return false;
             } else {
-                if (str_pool[str_start[s - 65536L]] != str_pool[str_start[t - 65536L]])
+                if (str_pool(str_start(s - 65536L)) != str_pool(str_start(t - 65536L)))
                     return false;
             }
         }
     } else {
-        j = str_start[s - 65536L];
-        k = str_start[t - 65536L];
+        j = str_start(s - 65536L);
+        k = str_start(t - 65536L);
 
-        while (j < str_start[s + 1 - 65536L]) {
-            if (str_pool[j] != str_pool[k])
+        while (j < str_start(s + 1 - 65536L)) {
+            if (str_pool(j) != str_pool(k))
                 return false;
 
             j++;
@@ -197,8 +199,8 @@ slow_make_string(void)
     s = search_string(t);
 
     if (s > 0) {
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         return s;
     }
 

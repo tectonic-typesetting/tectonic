@@ -95,6 +95,34 @@ void warn_char(int c);
 
 void print_ln(void);
 
+void resize_str_pool(uintptr_t size);
+
+void clear_str_pool(void);
+
+uint16_t str_pool(uintptr_t idx);
+
+uint16_t *str_pool_ptr(uintptr_t idx);
+
+void set_str_pool(uintptr_t idx, uint16_t val);
+
+uint32_t str_start(uintptr_t idx);
+
+uint32_t *str_start_ptr(uintptr_t idx);
+
+void resize_str_start(uintptr_t size);
+
+void clear_str_start(void);
+
+void set_str_start(uintptr_t idx, uint32_t val);
+
+uintptr_t pool_ptr(void);
+
+void set_pool_ptr(uintptr_t val);
+
+uintptr_t str_ptr(void);
+
+void set_str_ptr(uintptr_t val);
+
 bool arith_error(void);
 
 void set_arith_error(bool val);

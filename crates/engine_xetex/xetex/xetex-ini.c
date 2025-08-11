@@ -54,10 +54,6 @@ bool insert_src_special_auto;
 bool insert_src_special_every_par;
 bool insert_src_special_every_math;
 bool insert_src_special_every_vbox;
-packed_UTF16_code *str_pool;
-pool_pointer *str_start;
-pool_pointer pool_ptr;
-str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
 unsigned char dig[23];
@@ -463,11 +459,28 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
     swap_items (p, nitems, item_size);
 }
 
-
+#define dump_ptr(base, len) \
+    do_dump ((char *) (base), sizeof *(base), (size_t) (len), fmt_out)
 #define dump_things(base, len) \
     do_dump ((char *) &(base), sizeof (base), (size_t) (len), fmt_out)
+#define undump_ptr(base, len) \
+    do_undump ((char *) (base), sizeof *(base), (size_t) (len), fmt_in)
 #define undump_things(base, len) \
     do_undump ((char *) &(base), sizeof (base), (size_t) (len), fmt_in)
+
+#define undump_checked_ptr(low, high, base, len)                        \
+    do {                                                                \
+        int i;                                                          \
+        undump_ptr (base, len);                                         \
+        for (i = 0; i < (len); i++) {                                   \
+            if ((base)[i] < (low) || (base)[i] > (high)) {              \
+                _tt_abort ("item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR \
+                           " <%" PRIdPTR " or >%" PRIdPTR,              \
+                           i, (uintptr_t) (base)[i], (uintptr_t) (base),\
+                           (uintptr_t) low, (uintptr_t) high);          \
+            }                                                           \
+        }                                                               \
+    } while (0)
 
 /* Like do_undump, but check each value against LOW and HIGH.  The
    slowdown isn't significant, and this improves the chances of
@@ -593,8 +606,8 @@ primitive(const char* ident, uint16_t c, int32_t o)
             buffer[first + i] = ident[i];
 
         cur_val = id_lookup(first, len);
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         hash[cur_val].s1 = s;
         prim_val = prim_lookup(s);
     } else {
@@ -1217,14 +1230,14 @@ not_found1: /*970:*/
             if (n > 1) { /*974:*/
                 n++;
                 hc[n] = cur_lang;
-                if (pool_ptr + n > pool_size)
+                if (pool_ptr() + n > pool_size)
                     overflow("pool size", pool_size - init_pool_ptr);
                 h = 0;
 
                 for (j = 1; j <= n; j++) {
                     h = (h + h + hc[j]) % HYPH_PRIME;
-                    str_pool[pool_ptr] = hc[j];
-                    pool_ptr++;
+                    set_str_pool(pool_ptr(), hc[j]);
+                    set_pool_ptr(pool_ptr()+1);
                 }
 
                 s = make_string();
@@ -1244,18 +1257,18 @@ not_found1: /*970:*/
                     if (length(k) != length(s))
                         goto not_found;
 
-                    u = str_start[(k) - 65536L];
-                    v = str_start[(s) - 65536L];
+                    u = str_start((k) - 65536L);
+                    v = str_start((s) - 65536L);
 
                     do {
-                        if (str_pool[u] != str_pool[v])
+                        if (str_pool(u) != str_pool(v))
                             goto not_found;
                         u++;
                         v++;
-                    } while (u != str_start[(k + 1) - 65536L]);
+                    } while (u != str_start((k + 1) - 65536L));
 
-                    str_ptr--;
-                    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                    set_str_ptr(str_ptr()-1);
+                    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                     s = hyph_word[h];
                     hyph_count--;
                     goto found;
@@ -2103,7 +2116,7 @@ store_fmt_file(void)
     else
         set_selector(SELECTOR_TERM_AND_LOG);
 
-    if (pool_ptr + 1 > pool_size)
+    if (pool_ptr() + 1 > pool_size)
         overflow("pool size", pool_size - init_pool_ptr);
 
     format_ident = make_string();
@@ -2116,8 +2129,8 @@ store_fmt_file(void)
     print_nl_cstr("Beginning to dump on file ");
     print(make_name_string());
 
-    str_ptr--;
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    set_str_ptr(str_ptr()-1);
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
     print_nl_cstr("");
     print(format_ident);
@@ -2138,15 +2151,15 @@ store_fmt_file(void)
 
     /* string pool */
 
-    dump_int(pool_ptr);
-    dump_int(str_ptr);
-    dump_things(str_start[0], str_ptr - TOO_BIG_CHAR + 1);
-    dump_things(str_pool[0], pool_ptr);
+    dump_int(pool_ptr());
+    dump_int(str_ptr());
+    dump_ptr(str_start_ptr(0), str_ptr() - TOO_BIG_CHAR + 1);
+    dump_ptr(str_pool_ptr(0), pool_ptr());
 
     print_ln();
-    print_int(str_ptr);
+    print_int(str_ptr());
     print_cstr(" strings of total length ");
-    print_int(pool_ptr);
+    print_int(pool_ptr());
 
     /* "memory locations" */
 
@@ -2459,8 +2472,8 @@ load_fmt_file(void)
 
     if (in_initex_mode) {
         free(font_info);
-        free(str_pool);
-        free(str_start);
+        clear_str_pool();
+        clear_str_start();
         free(yhash);
         free(eqtb);
         free(mem);
@@ -2541,29 +2554,30 @@ load_fmt_file(void)
         goto bad_fmt;
     if (x > sup_pool_size - pool_free)
         _tt_abort ("must increase string_pool_size");
-    pool_ptr = x;
+    set_pool_ptr(x);
 
-    if (pool_size < pool_ptr + pool_free)
-        pool_size = pool_ptr + pool_free;
+    if (pool_size < pool_ptr() + pool_free)
+        pool_size = pool_ptr() + pool_free;
 
     undump_int(x);
     if (x < 0)
         goto bad_fmt;
     if (x > sup_max_strings - strings_free)
         _tt_abort ("must increase sup_strings");
-    str_ptr = x;
+    set_str_ptr(x);
 
-    if (max_strings < str_ptr + strings_free)
-        max_strings = str_ptr + strings_free;
+    if (max_strings < str_ptr() + strings_free)
+        max_strings = str_ptr() + strings_free;
 
-    str_start = xmalloc_array(pool_pointer, max_strings);
-    undump_checked_things(0, pool_ptr, str_start[0], str_ptr - TOO_BIG_CHAR + 1);
-    str_pool = xmalloc_array(packed_UTF16_code, pool_size);
+    resize_str_start(max_strings);
+    uint32_t* ptr = str_start_ptr(0);
+    undump_checked_ptr(0, pool_ptr(), ptr, str_ptr() - TOO_BIG_CHAR + 1);
+    resize_str_pool(pool_size);
 
-    undump_things(str_pool[0], pool_ptr);
+    undump_ptr(str_pool_ptr(0), pool_ptr());
 
-    init_str_ptr = str_ptr;
-    init_pool_ptr = pool_ptr; /*:1345 */
+    init_str_ptr = str_ptr();
+    init_pool_ptr = pool_ptr(); /*:1345 */
 
     /* "By sorting the list of available spaces in the variable-size portion
      * of |mem|, we are usually able to get by without having to dump very
@@ -2762,8 +2776,8 @@ load_fmt_file(void)
     undump_checked_things(MIN_HALFWORD, MAX_HALFWORD, font_params[FONT_BASE], font_ptr + 1);
     undump_things(hyphen_char[FONT_BASE], font_ptr + 1);
     undump_things(skew_char[FONT_BASE], font_ptr + 1);
-    undump_upper_check_things(str_ptr, font_name[FONT_BASE], font_ptr + 1);
-    undump_upper_check_things(str_ptr, font_area[FONT_BASE], font_ptr + 1);
+    undump_upper_check_things(str_ptr(), font_name[FONT_BASE], font_ptr + 1);
+    undump_upper_check_things(str_ptr(), font_area[FONT_BASE], font_ptr + 1);
     undump_things(font_bc[FONT_BASE], font_ptr + 1);
     undump_things(font_ec[FONT_BASE], font_ptr + 1);
     undump_things(char_base[FONT_BASE], font_ptr + 1);
@@ -2815,7 +2829,7 @@ load_fmt_file(void)
         hyph_link[j] = hyph_next;
 
         undump_int(x);
-        if (x < 0 || x > str_ptr)
+        if (x < 0 || x > str_ptr())
             goto bad_fmt;
         else
             hyph_word[j] = x;
@@ -3436,10 +3450,10 @@ initialize_primitives(void)
 static void
 get_strings_started(void)
 {
-    pool_ptr = 0;
-    str_ptr = 0;
-    str_start[0] = 0;
-    str_ptr = TOO_BIG_CHAR;
+    set_pool_ptr(0);
+    set_str_ptr(0);
+    set_str_start(0, 0);
+    set_str_ptr(TOO_BIG_CHAR);
 
     if (load_pool_strings(pool_size - string_vacancies) == 0)
         _tt_abort ("must increase pool_size");
@@ -3504,8 +3518,8 @@ tt_cleanup(void) {
     free(yhash);
     free(eqtb);
     free(mem);
-    free(str_start);
-    free(str_pool);
+    clear_str_start();
+    clear_str_pool();
     free(font_info);
 
     free(font_mapping);
@@ -3623,8 +3637,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
             hash[hash_used] = hash[HASH_BASE];
 
         eqtb = xcalloc_array(memory_word, eqtb_top);
-        str_start = xmalloc_array(pool_pointer, max_strings);
-        str_pool = xmalloc_array(packed_UTF16_code, pool_size);
+        resize_str_start(max_strings);
+        resize_str_pool(pool_size);
         font_info = xmalloc_array(memory_word, font_mem_size);
     }
 
@@ -3675,8 +3689,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         get_strings_started();
         initialize_more_initex_variables();
         initialize_primitives();
-        init_str_ptr = str_ptr;
-        init_pool_ptr = pool_ptr;
+        init_str_ptr = str_ptr();
+        init_pool_ptr = pool_ptr();
     }
 
     /*55:*/
