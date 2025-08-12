@@ -108,6 +108,16 @@ pub extern "C" fn set_trick_count(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.trick_count = val)
 }
 
+#[no_mangle]
+pub extern "C" fn trick_buf(idx: usize) -> u16 {
+    ENGINE_CTX.with_borrow(|engine| engine.trick_buf[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_trick_buf(idx: usize, val: u16) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.trick_buf[idx] = val)
+}
+
 pub fn with_tex_string<T>(s: StrNumber, f: impl FnOnce(&CStr) -> T) -> T {
     let ptr = unsafe { gettexstring(s) };
     let str = unsafe { CStr::from_ptr(ptr) };

@@ -73,7 +73,7 @@ print_raw_char(UTF16_code s, bool incr_offset)
         break;
     case SELECTOR_PSEUDO:
         if (tally() < trick_count())
-            trick_buf[tally() % error_line()] = s;
+            set_trick_buf(tally() % error_line(), s);
         break;
     case SELECTOR_NEW_STRING:
         if (pool_ptr() < pool_size()) {

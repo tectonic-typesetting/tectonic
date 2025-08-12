@@ -49,6 +49,10 @@ int32_t trick_count(void);
 
 void set_trick_count(int32_t val);
 
+uint16_t trick_buf(uintptr_t idx);
+
+void set_trick_buf(uintptr_t idx, uint16_t val);
+
 extern char *gettexstring(StrNumber s);
 
 int32_t in_open(void);
