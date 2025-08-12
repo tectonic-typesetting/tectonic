@@ -401,7 +401,7 @@ int32_t new_param_glue(small_number n)
     NODE_type(p) = GLUE_NODE;
     mem[p].b16.s0 = n + 1;
     mem[p + 1].b32.s1 = TEX_NULL;
-    q = /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ ;
+    q = /*232: */ eqtb_ptr(GLUE_BASE + n)->b32.s1 /*:232 */ ;
     mem[p + 1].b32.s0 = q;
     GLUE_SPEC_ref_count(q)++;
     return p;
@@ -423,7 +423,7 @@ int32_t new_skip_param(small_number n)
 {
     int32_t p;
 
-    temp_ptr = new_spec( /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ );
+    temp_ptr = new_spec( /*232: */ eqtb_ptr(GLUE_BASE + n)->b32.s1 /*:232 */ );
     p = new_glue(temp_ptr);
     mem[temp_ptr].b32.s1 = TEX_NULL;
     mem[p].b16.s0 = n + 1;
@@ -4389,7 +4389,7 @@ void eq_save(int32_t p, uint16_t l)
         save_stack[save_ptr].b16.s1 = RESTORE_ZERO;
     else {
 
-        save_stack[save_ptr] = eqtb[p];
+        save_stack[save_ptr] = eqtb(p);
         save_ptr++;
         save_stack[save_ptr].b16.s1 = RESTORE_OLD_VALUE;
     }
@@ -4402,48 +4402,48 @@ void
 eq_define(int32_t p, uint16_t t, int32_t e)
 {
 
-    if (eqtb[p].b16.s1 == t && eqtb[p].b32.s1 == e) {
-        eq_destroy(eqtb[p]);
+    if (eqtb(p).b16.s1 == t && eqtb(p).b32.s1 == e) {
+        eq_destroy(eqtb(p));
         return;
     }
 
-    if (eqtb[p].b16.s0 == cur_level)
-        eq_destroy(eqtb[p]);
+    if (eqtb(p).b16.s0 == cur_level)
+        eq_destroy(eqtb(p));
     else if (cur_level > LEVEL_ONE)
-        eq_save(p, eqtb[p].b16.s0);
+        eq_save(p, eqtb(p).b16.s0);
 
-    eqtb[p].b16.s0 = cur_level;
-    eqtb[p].b16.s1 = t;
-    eqtb[p].b32.s1 = e;
+    eqtb_ptr(p)->b16.s0 = cur_level;
+    eqtb_ptr(p)->b16.s1 = t;
+    eqtb_ptr(p)->b32.s1 = e;
 }
 
 void
 eq_word_define(int32_t p, int32_t w)
 {
 
-    if (eqtb[p].b32.s1 == w)
+    if (eqtb(p).b32.s1 == w)
         return;
 
     if (XEQ_LEVEL(p) != cur_level) {
         eq_save(p, XEQ_LEVEL(p));
         XEQ_LEVEL(p) = cur_level;
     }
-    eqtb[p].b32.s1 = w;
+    eqtb_ptr(p)->b32.s1 = w;
 }
 
 void geq_define(int32_t p, uint16_t t, int32_t e)
 {
 
-    eq_destroy(eqtb[p]);
-    eqtb[p].b16.s0 = LEVEL_ONE;
-    eqtb[p].b16.s1 = t;
-    eqtb[p].b32.s1 = e;
+    eq_destroy(eqtb(p));
+    eqtb_ptr(p)->b16.s0 = LEVEL_ONE;
+    eqtb_ptr(p)->b16.s1 = t;
+    eqtb_ptr(p)->b32.s1 = e;
 }
 
 void geq_word_define(int32_t p, int32_t w)
 {
 
-    eqtb[p].b32.s1 = w;
+    eqtb_ptr(p)->b32.s1 = w;
     XEQ_LEVEL(p) = LEVEL_ONE;
 }
 
@@ -4509,17 +4509,17 @@ void unsave(void)
                     l = save_stack[save_ptr].b16.s0;
                     save_ptr--;
                 } else
-                    save_stack[save_ptr] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+                    save_stack[save_ptr] = eqtb(UNDEFINED_CONTROL_SEQUENCE);
                 if ((p < INT_BASE) || (p > EQTB_SIZE)) {
 
-                    if (eqtb[p].b16.s0 == LEVEL_ONE) {
+                    if (eqtb_ptr(p)->b16.s0 == LEVEL_ONE) {
                         eq_destroy(save_stack[save_ptr]);
                     } else {
-                        eq_destroy(eqtb[p]);
-                        eqtb[p] = save_stack[save_ptr];
+                        eq_destroy(eqtb(p));
+                        set_eqtb(p, save_stack[save_ptr]);
                     }
                 } else if (XEQ_LEVEL(p) != LEVEL_ONE) {
-                    eqtb[p] = save_stack[save_ptr];
+                    set_eqtb(p, save_stack[save_ptr]);
                     XEQ_LEVEL(p) = l;
                 }
             }
@@ -5365,16 +5365,16 @@ restart:
                 }
 
             found:
-                cur_cmd = eqtb[cur_cs].b16.s1;
-                cur_chr = eqtb[cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                 if (cur_cmd >= OUTER_CALL)
                     check_outer_validity();
                 break;
 
             ANY_STATE_PLUS(ACTIVE_CHAR):
                 cur_cs = cur_chr + 1;
-                cur_cmd = eqtb[cur_cs].b16.s1;
-                cur_chr = eqtb[cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                 cur_input.state = MID_LINE;
                 if (cur_cmd >= OUTER_CALL)
                     check_outer_validity();
@@ -5461,8 +5461,8 @@ restart:
             case NEW_LINE + CAR_RET:
                 cur_input.loc = cur_input.limit + 1;
                 cur_cs = par_loc;
-                cur_cmd = eqtb[cur_cs].b16.s1;
-                cur_chr = eqtb[cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                 if (cur_cmd >= OUTER_CALL)
                     check_outer_validity();
                 break;
@@ -5589,15 +5589,15 @@ restart:
 
         if (t >= CS_TOKEN_FLAG) {
             cur_cs = t - CS_TOKEN_FLAG;
-            cur_cmd = eqtb[cur_cs].b16.s1;
-            cur_chr = eqtb[cur_cs].b32.s1;
+            cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+            cur_chr = eqtb_ptr(cur_cs)->b32.s1;
 
             if (cur_cmd >= OUTER_CALL) {
                 if (cur_cmd == DONT_EXPAND) { /*370:*/
                     cur_cs = mem[cur_input.loc].b32.s0 - CS_TOKEN_FLAG;
                     cur_input.loc = TEX_NULL;
-                    cur_cmd = eqtb[cur_cs].b16.s1;
-                    cur_chr = eqtb[cur_cs].b32.s1;
+                    cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                    cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                     if (cur_cmd > MAX_COMMAND) {
                         cur_cmd = RELAX;
                         cur_chr = NO_EXPAND_FLAG;
@@ -5721,7 +5721,7 @@ macro_call(void)
     if (mem[r].b32.s0 != END_MATCH_TOKEN) { /*409:*/
         scanner_status = MATCHING;
         unbalance = 0;
-        long_state = eqtb[cur_cs].b16.s1;
+        long_state = eqtb_ptr(cur_cs)->b16.s1;
 
         if (long_state >= OUTER_CALL)
             long_state = long_state - 2;
@@ -6268,10 +6268,10 @@ reswitch:
                     cur_cs = prim_lookup(hash[cur_cs].s1);
 
                 if (cur_cs != UNDEFINED_PRIMITIVE) {
-                    t = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
+                    t = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
                     if (t > MAX_COMMAND) {
                         cur_cmd = t;
-                        cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+                        cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
                         cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                         cur_cs = 0;
                         goto reswitch;
@@ -6342,7 +6342,7 @@ reswitch:
 
             flush_list(r);
 
-            if (eqtb[cur_cs].b16.s1 == UNDEFINED_CS)
+            if (eqtb_ptr(cur_cs)->b16.s1 == UNDEFINED_CS)
                 eq_define(cur_cs, RELAX, TOO_BIG_USV);
 
             cur_tok = cur_cs + CS_TOKEN_FLAG;
@@ -6737,8 +6737,8 @@ reswitch:
             if (math_char(c) == ACTIVE_MATH_CHAR) {
                 {
                     cur_cs = cur_chr + 1;
-                    cur_cmd = eqtb[cur_cs].b16.s1;
-                    cur_chr = eqtb[cur_cs].b32.s1;
+                    cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                    cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                     x_token();
                     back_input();
                 }
@@ -6825,8 +6825,8 @@ void set_math_char(int32_t c)
 
     if (math_char(c) == ACTIVE_MATH_CHAR) {        /*1187: */
         cur_cs = cur_chr + 1;
-        cur_cmd = eqtb[cur_cs].b16.s1;
-        cur_chr = eqtb[cur_cs].b32.s1;
+        cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+        cur_chr = eqtb_ptr(cur_cs)->b32.s1;
         x_token();
         back_input();
     } else {
@@ -7015,13 +7015,13 @@ void scan_font_ident(void)
     } while (cur_cmd == SPACER);
 
     if (cur_cmd == DEF_FONT)
-        f = eqtb[CUR_FONT_LOC].b32.s1;
+        f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     else if (cur_cmd == SET_FONT)
         f = cur_chr;
     else if (cur_cmd == DEF_FAMILY) {
         m = cur_chr;
         scan_math_fam_int();
-        f = eqtb[m + cur_val].b32.s1;
+        f = eqtb_ptr(m + cur_val)->b32.s1;
     } else {
         error_here_with_diagnostic("Missing font identifier");
         capture_to_diagnostic(NULL);
@@ -7139,13 +7139,13 @@ restart:
                 cur_val_level = INT_VAL;
             }
         } else if (m < SF_CODE_BASE) {
-            cur_val = eqtb[m + cur_val].b32.s1;
+            cur_val = eqtb_ptr(m + cur_val)->b32.s1;
             cur_val_level = INT_VAL;
         } else if (m < MATH_CODE_BASE) {
-            cur_val = eqtb[m + cur_val].b32.s1 % 65536L;
+            cur_val = eqtb_ptr(m + cur_val)->b32.s1 % 65536L;
             cur_val_level = INT_VAL;
         } else {
-            cur_val = eqtb[m + cur_val].b32.s1;
+            cur_val = eqtb_ptr(m + cur_val)->b32.s1;
             cur_val_level = INT_VAL;
         }
         break;
@@ -7227,7 +7227,7 @@ restart:
                 else
                     cur_val = mem[cur_ptr + 1].b32.s1;
             } else {
-                cur_val = eqtb[m].b32.s1;
+                cur_val = eqtb_ptr(m)->b32.s1;
             }
             cur_val_level = TOK_VAL;
         } else {
@@ -7239,22 +7239,22 @@ restart:
         break;
 
     case ASSIGN_INT:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = INT_VAL;
         break;
 
     case ASSIGN_DIMEN:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = DIMEN_VAL;
         break;
 
     case ASSIGN_GLUE:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = GLUE_VAL;
         break;
 
     case ASSIGN_MU_GLUE:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = MU_VAL;
         break;
 
@@ -7328,12 +7328,12 @@ restart:
     case SET_SHAPE:
         if (m > LOCAL_BASE + LOCAL__par_shape) { /*1654:*/
             scan_int();
-            if (eqtb[m].b32.s1 == TEX_NULL || cur_val < 0) {
+            if (eqtb(m).b32.s1 == TEX_NULL || cur_val < 0) {
                 cur_val = 0;
             } else {
-                if (cur_val > mem[eqtb[m].b32.s1 + 1].b32.s1)
-                    cur_val = mem[eqtb[m].b32.s1 + 1].b32.s1;
-                cur_val = mem[eqtb[m].b32.s1 + cur_val + 1].b32.s1;
+                if (cur_val > mem[eqtb(m).b32.s1 + 1].b32.s1)
+                    cur_val = mem[eqtb(m).b32.s1 + 1].b32.s1;
+                cur_val = mem[eqtb(m).b32.s1 + cur_val + 1].b32.s1;
             }
         } else if (LOCAL(par_shape) == TEX_NULL) {
             cur_val = 0;
@@ -7496,8 +7496,8 @@ restart:
             if (m >= XETEX_DIM) {
                 switch (m) { /*1435:*/
                 case XETEX_GLYPH_BOUNDS_CODE:
-                    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
+                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
                         if (n < 1 || n > 4) {
@@ -7510,10 +7510,10 @@ restart:
                             cur_val = 0;
                         } else {
                             scan_int();
-                            cur_val = get_glyph_bounds(eqtb[CUR_FONT_LOC].b32.s1, n, cur_val);
+                            cur_val = get_glyph_bounds(eqtb_ptr(CUR_FONT_LOC)->b32.s1, n, cur_val);
                         }
                     } else {
-                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].b32.s1);
+                        not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
                     break;
@@ -7804,24 +7804,24 @@ restart:
                     break;
 
                 case XETEX_MAP_CHAR_TO_GLYPH_CODE:
-                    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
+                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
-                        cur_val = map_char_to_glyph(eqtb[CUR_FONT_LOC].b32.s1, n);
+                        cur_val = map_char_to_glyph(eqtb_ptr(CUR_FONT_LOC)->b32.s1, n);
                     } else {
-                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].b32.s1);
+                        not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
                     break;
 
                 case XETEX_GLYPH_INDEX_CODE:
-                    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
+                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
                         scan_and_pack_name();
-                        cur_val = map_glyph_to_index(eqtb[CUR_FONT_LOC].b32.s1);
+                        cur_val = map_glyph_to_index(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                     } else {
-                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].b32.s1);
+                        not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
                     break;
@@ -7991,8 +7991,8 @@ restart:
             }
 
             if (cur_cs != UNDEFINED_PRIMITIVE) {
-                cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
-                cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
                 cur_cs = PRIM_EQTB_BASE + cur_cs;
                 cur_tok = CS_TOKEN_FLAG + cur_cs;
             } else {
@@ -8113,8 +8113,8 @@ restart:
         }
 
         if (cur_cs != UNDEFINED_PRIMITIVE) {
-            cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
-            cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+            cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
+            cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
             cur_cs = PRIM_EQTB_BASE + cur_cs;
             cur_tok = CS_TOKEN_FLAG + cur_cs;
         } else {
@@ -8368,9 +8368,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             goto not_found;
 
         if (scan_keyword("em"))
-            v = font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+            v = font_info[QUAD_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
         else if (scan_keyword("ex"))
-            v = font_info[X_HEIGHT_CODE + param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+            v = font_info[X_HEIGHT_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
         else
             goto not_found;
 
@@ -10370,7 +10370,7 @@ conditional(void)
             b = (cur_chr == q);
         } else { /*527:*/
             p = mem[cur_chr].b32.s1;
-            q = mem[eqtb[n].b32.s1].b32.s1;
+            q = mem[eqtb_ptr(n)->b32.s1].b32.s1;
             if (p == q) {
                 b = true;
             } else {
@@ -10465,7 +10465,7 @@ conditional(void)
             cur_cs = id_lookup(first, m - first); /*:1556*/
 
         flush_list(n);
-        b = (eqtb[cur_cs].b16.s1 != UNDEFINED_CS);
+        b = (eqtb_ptr(cur_cs)->b16.s1 != UNDEFINED_CS);
         is_in_csname = e;
         break;
 
@@ -10536,8 +10536,8 @@ conditional(void)
             m = prim_lookup(hash[cur_cs].s1);
         b = (cur_cmd != UNDEFINED_CS
              && m != UNDEFINED_PRIMITIVE
-             && cur_cmd == eqtb[PRIM_EQTB_BASE + m].b16.s1
-             && cur_chr == eqtb[PRIM_EQTB_BASE + m].b32.s1);
+             && cur_cmd == eqtb_ptr(PRIM_EQTB_BASE + m)->b16.s1
+             && cur_chr == eqtb_ptr(PRIM_EQTB_BASE + m)->b32.s1);
         break;
     }
 
@@ -14159,21 +14159,21 @@ void app_space(void)
             main_p = GLUEPAR(space_skip);
         else {                  /*1077: */
 
-            main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
+            main_p = font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
             if (main_p == TEX_NULL) {
                 main_p = new_spec(0);
-                main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
+                main_k = param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1] + 2;
                 mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
                 mem[main_p + 2].b32.s1 = font_info[main_k + 1].b32.s1;
                 mem[main_p + 3].b32.s1 = font_info[main_k + 2].b32.s1;
-                font_glue[eqtb[CUR_FONT_LOC].b32.s1] = main_p;
+                font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1] = main_p;
             }
         }
         main_p = new_spec(main_p);
         if (cur_list.aux.b32.s0 >= 2000)
             mem[main_p + 1].b32.s1 =
                 mem[main_p + 1].b32.s1 + font_info[EXTRA_SPACE_CODE +
-                                                 param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+                                                 param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
         mem[main_p + 2].b32.s1 = xn_over_d(mem[main_p + 2].b32.s1, cur_list.aux.b32.s0, 1000);
         mem[main_p + 3].b32.s1 = xn_over_d(mem[main_p + 3].b32.s1, 1000, cur_list.aux.b32.s0) /*:1079 */ ;
         q = new_glue(main_p);
@@ -14793,7 +14793,7 @@ new_graf(bool indented)
     if (indented) {
         cur_list.tail = new_null_box();
         mem[cur_list.head].b32.s1 = cur_list.tail;
-        mem[cur_list.tail + 1].b32.s1 = eqtb[DIMEN_BASE].b32.s1;
+        mem[cur_list.tail + 1].b32.s1 = eqtb_ptr(DIMEN_BASE)->b32.s1;
         if (insert_src_special_every_par)
             insert_src_special();
     }
@@ -14811,7 +14811,7 @@ void indent_in_hmode(void)
 
     if (cur_chr > 0) {
         p = new_null_box();
-        mem[p + 1].b32.s1 = eqtb[DIMEN_BASE].b32.s1;
+        mem[p + 1].b32.s1 = eqtb_ptr(DIMEN_BASE)->b32.s1;
         if (abs(cur_list.mode) == HMODE)
             cur_list.aux.b32.s0 = 1000;
         else {
@@ -15140,11 +15140,11 @@ void append_discretionary(void)
     cur_list.tail = LLIST_link(cur_list.tail);
 
     if (cur_chr == 1) {
-        c = hyphen_char[eqtb[CUR_FONT_LOC].b32.s1];
+        c = hyphen_char[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
         if (c >= 0) {
 
             if (c <= BIGGEST_CHAR)
-                mem[cur_list.tail + 1].b32.s0 = new_character(eqtb[CUR_FONT_LOC].b32.s1, c);
+                mem[cur_list.tail + 1].b32.s0 = new_character(eqtb_ptr(CUR_FONT_LOC)->b32.s1, c);
         }
     } else {
 
@@ -15272,7 +15272,7 @@ void make_accent(void)
     b16x4 i;
 
     scan_char_num();
-    f = eqtb[CUR_FONT_LOC].b32.s1;
+    f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     p = new_character(f, cur_val);
 
     if (p != TEX_NULL) {
@@ -15287,7 +15287,7 @@ void make_accent(void)
                                      effective_char(true, f, CHAR_NODE_character(p)));
         do_assignments();
         q = TEX_NULL;
-        f = eqtb[CUR_FONT_LOC].b32.s1;
+        f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
         if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN)) {
             q = new_character(f, cur_chr);
             cur_val = cur_chr;
@@ -15782,11 +15782,11 @@ found:
         if (e)
             w = mem[l + 2].b32.s1;
         else
-            w = eqtb[l].b32.s1;
+            w = eqtb_ptr(l)->b32.s1;
     } else if (e) {
         s = mem[l + 1].b32.s1;
     } else {
-        s = eqtb[l].b32.s1; /*:1272*/
+        s = eqtb_ptr(l)->b32.s1; /*:1272*/
     }
 
     if (q == REGISTER)
@@ -16150,7 +16150,7 @@ common_ending:
         geq_define(u, SET_FONT, f);
     else
         eq_define(u, SET_FONT, f);
-    eqtb[FONT_ID_BASE + f] = eqtb[u];
+    set_eqtb(FONT_ID_BASE + f, eqtb(u));
     hash[FONT_ID_BASE + f].s1 = t;
 }
 
@@ -16239,8 +16239,8 @@ shift_case(void)
         t = mem[p].b32.s0;
         if (t < CS_TOKEN_FLAG + SINGLE_BASE) {
             c = t % MAX_CHAR_VAL;
-            if (eqtb[b + c].b32.s1 != 0)
-                mem[p].b32.s0 = t - c + eqtb[b + c].b32.s1;
+            if (eqtb_ptr(b + c)->b32.s1 != 0)
+                mem[p].b32.s0 = t - c + eqtb_ptr(b + c)->b32.s1;
         }
         p = LLIST_link(p);
     }
@@ -16541,8 +16541,8 @@ void do_extension(void)
                 report_illegal_case();
             else {
 
-                if (((font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG)
-                     || (font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG))) {
+                if (((font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG)
+                     || (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG))) {
                     new_whatsit(GLYPH_NODE, GLYPH_NODE_SIZE);
                     scan_int();
                     if ((cur_val < 0) || (cur_val > 65535L)) {
@@ -16558,12 +16558,12 @@ void do_extension(void)
                         int_error(cur_val);
                         cur_val = 0;
                     }
-                    mem[cur_list.tail + 4].b16.s2 = eqtb[CUR_FONT_LOC].b32.s1;
+                    mem[cur_list.tail + 4].b16.s2 = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
                     mem[cur_list.tail + 4].b16.s1 = cur_val;
                     set_native_glyph_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
                 } else
                     not_native_font_error(EXTENSION, GLYPH_CODE,
-                                          eqtb[CUR_FONT_LOC].b32.s1);
+                                          eqtb_ptr(CUR_FONT_LOC)->b32.s1);
             }
         }
         break;
@@ -17038,8 +17038,8 @@ reswitch:
                 cur_cs = prim_lookup(hash[cur_cs].s1);
 
             if (cur_cs != UNDEFINED_PRIMITIVE) {
-                cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
-                cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
                 cur_tok = CS_TOKEN_FLAG + PRIM_EQTB_BASE + cur_cs;
             }
         }
@@ -17512,14 +17512,14 @@ main_loop: /*1069: */
 
     prev_class = CHAR_CLASS_LIMIT - 1;
 
-    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG || font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG || font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
         if (cur_list.mode > 0) {
             if (INTPAR(language) != cur_list.aux.b32.s1)
                 fix_language();
         }
 
         main_h = 0;
-        main_f = eqtb[CUR_FONT_LOC].b32.s1;
+        main_f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
         native_len = 0;
 
 collect_native:
@@ -17986,7 +17986,7 @@ collected:
         prev_class = space_class;
     }
 
-    main_f = eqtb[CUR_FONT_LOC].b32.s1;
+    main_f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     bchar = font_bchar[main_f];
     false_bchar = font_false_bchar[main_f];
 
@@ -18400,14 +18400,14 @@ append_normal_space:
     }
 
     if (GLUEPAR(space_skip) == 0) {
-        main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
+        main_p = font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
         if (main_p == TEX_NULL) {
             main_p = new_spec(0);
-            main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
+            main_k = param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1] + 2;
             mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
             mem[main_p + 2].b32.s1 = font_info[main_k + 1].b32.s1;
             mem[main_p + 3].b32.s1 = font_info[main_k + 2].b32.s1;
-            font_glue[eqtb[CUR_FONT_LOC].b32.s1] = main_p;
+            font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1] = main_p;
         }
         temp_ptr = new_glue(main_p);
     } else

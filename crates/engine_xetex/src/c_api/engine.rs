@@ -1,6 +1,11 @@
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ffi::CStr;
+use std::ptr;
+
+mod memory;
+
+pub use memory::*;
 
 thread_local! {
     pub static ENGINE_CTX: RefCell<EngineCtx> = const { RefCell::new(EngineCtx::new()) }
@@ -12,6 +17,8 @@ pub struct EngineCtx {
     pub(crate) error_line: i32,
     pub(crate) trick_count: i32,
     pub(crate) trick_buf: [u16; 256],
+
+    pub(crate) eqtb: Vec<MemoryWord>,
 }
 
 impl EngineCtx {
@@ -22,6 +29,8 @@ impl EngineCtx {
             error_line: 0,
             trick_count: 0,
             trick_buf: [0; 256],
+
+            eqtb: Vec::new(),
         }
     }
 }
@@ -116,6 +125,38 @@ pub extern "C" fn trick_buf(idx: usize) -> u16 {
 #[no_mangle]
 pub extern "C" fn set_trick_buf(idx: usize, val: u16) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.trick_buf[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn eqtb(idx: usize) -> MemoryWord {
+    ENGINE_CTX.with_borrow(|engine| engine.eqtb[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_eqtb(idx: usize, val: MemoryWord) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn eqtb_ptr(idx: usize) -> *mut MemoryWord {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.eqtb[idx]))
+}
+
+#[no_mangle]
+pub extern "C" fn resize_eqtb(len: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| {
+        engine.eqtb.resize(
+            len,
+            MemoryWord {
+                ptr: ptr::null_mut(),
+            },
+        )
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn clear_eqtb() {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb.clear())
 }
 
 pub fn with_tex_string<T>(s: StrNumber, f: impl FnOnce(&CStr) -> T) -> T {
