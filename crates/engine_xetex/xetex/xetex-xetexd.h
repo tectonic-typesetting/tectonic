@@ -1073,7 +1073,6 @@ void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 ttbc_diagnostic_t *error_here_with_diagnostic(const char* message);
 
 void print_ln(void);
-void print_raw_char(UTF16_code s, bool incr_offset);
 void print_char(int32_t s);
 void print(int32_t s);
 void print_cstr(const char* s);

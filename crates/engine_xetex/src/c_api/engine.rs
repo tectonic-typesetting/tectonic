@@ -8,10 +8,10 @@ thread_local! {
 
 pub struct EngineCtx {
     pub(crate) selector: Selector,
-    tally: i32,
-    error_line: i32,
-    trick_count: i32,
-    trick_buf: [u16; 256],
+    pub(crate) tally: i32,
+    pub(crate) error_line: i32,
+    pub(crate) trick_count: i32,
+    pub(crate) trick_buf: [u16; 256],
 }
 
 impl EngineCtx {
