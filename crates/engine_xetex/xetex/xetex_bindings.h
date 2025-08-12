@@ -18,6 +18,8 @@
  */
 #define FORMAT_SERIAL 33
 
+#define MAX_PRINT_LINE 79
+
 typedef int32_t StrNumber;
 
 typedef int32_t Scaled;
@@ -110,6 +112,8 @@ ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
 void warn_char(int c);
 
 void print_ln(void);
+
+void print_raw_char(uint16_t s, uint8_t offset);
 
 void resize_str_pool(uintptr_t size);
 

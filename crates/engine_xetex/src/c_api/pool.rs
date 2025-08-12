@@ -6,11 +6,11 @@ thread_local! {
 }
 
 pub struct StringPool {
-    str_pool: Vec<u16>,
+    pub(crate) str_pool: Vec<u16>,
     str_start: Vec<u32>,
-    pool_ptr: usize,
-    str_ptr: usize,
-    pool_size: usize,
+    pub(crate) pool_ptr: usize,
+    pub(crate) str_ptr: usize,
+    pub(crate) pool_size: usize,
 }
 
 impl StringPool {

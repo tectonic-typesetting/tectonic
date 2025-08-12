@@ -29,67 +29,6 @@ error_here_with_diagnostic(const char* message)
 }
 
 void
-print_raw_char(UTF16_code s, bool incr_offset)
-{
-    switch (selector()) {
-    case SELECTOR_TERM_AND_LOG:
-        warn_char(s);
-        ttstub_output_putc(rust_stdout(), s);
-        ttstub_output_putc(log_file(), s);
-        if (incr_offset) {
-            set_term_offset(term_offset()+1);
-            set_file_offset(file_offset()+1);
-        }
-        if (term_offset() == max_print_line) {
-            ttstub_output_putc(rust_stdout(), '\n');
-            set_term_offset(0);
-        }
-        if (file_offset() == max_print_line) {
-            ttstub_output_putc(log_file(), '\n');
-            set_file_offset(0);
-        }
-        break;
-    case SELECTOR_LOG_ONLY:
-        warn_char(s);
-        ttstub_output_putc(log_file(), s);
-        if (incr_offset)
-            set_file_offset(file_offset()+1);
-        if (file_offset() == max_print_line) {
-            ttstub_output_putc(log_file(), '\n');
-            set_file_offset(0);
-        }
-        break;
-    case SELECTOR_TERM_ONLY:
-        warn_char(s);
-        ttstub_output_putc(rust_stdout(), s);
-        if (incr_offset)
-            set_term_offset(term_offset()+1);
-        if (term_offset() == max_print_line) {
-            ttstub_output_putc(rust_stdout(), '\n');
-            set_term_offset(0);
-        }
-        break;
-    case SELECTOR_NO_PRINT:
-        break;
-    case SELECTOR_PSEUDO:
-        if (tally() < trick_count())
-            set_trick_buf(tally() % error_line(), s);
-        break;
-    case SELECTOR_NEW_STRING:
-        if (pool_ptr() < pool_size()) {
-            set_str_pool(pool_ptr(), s);
-            set_pool_ptr(pool_ptr()+1);
-        }
-        break;
-    default:
-        ttstub_output_putc(write_file(selector()), s);
-        break;
-    }
-    set_tally(tally()+1);
-}
-
-
-void
 print_char(int32_t s)
 {
     small_number l;

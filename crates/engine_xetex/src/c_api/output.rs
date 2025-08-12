@@ -1,10 +1,13 @@
 use crate::c_api::engine::{with_tex_string, EngineCtx, Selector, ENGINE_CTX};
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
+use crate::c_api::pool::{StringPool, STRING_POOL};
 use std::cell::RefCell;
 use std::io::Write;
 use std::ptr;
 use std::ptr::NonNull;
 use tectonic_bridge_core::{CoreBridgeState, Diagnostic, OutputId};
+
+pub const MAX_PRINT_LINE: usize = 79;
 
 thread_local! {
     pub static OUTPUT_CTX: RefCell<OutputCtx> = const { RefCell::new(OutputCtx::new()) }
@@ -189,6 +192,7 @@ pub extern "C" fn warn_char(c: libc::c_int) {
 pub fn rs_print_ln(state: &mut CoreBridgeState<'_>, engine: &mut EngineCtx, out: &mut OutputCtx) {
     match engine.selector {
         Selector::File(val) => {
+            // TODO: Replace all write!(get_output) with output_write on state
             write!(
                 state.get_output(out.write_file[val as usize].unwrap()),
                 "\n"
@@ -221,6 +225,98 @@ pub extern "C" fn print_ln() {
     CoreBridgeState::with_global_state(|state| {
         ENGINE_CTX.with_borrow_mut(|engine| {
             OUTPUT_CTX.with_borrow_mut(|out| rs_print_ln(state, engine, out))
+        })
+    })
+}
+
+pub fn rs_print_raw_char(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    s: u16,
+    incr_offset: bool,
+) {
+    let raw = &[s as u8];
+    let c = char::from_u32(s as u32).unwrap_or(char::REPLACEMENT_CHARACTER);
+    match engine.selector {
+        Selector::TermAndLog => {
+            // TODO: This produces a malformed warning currently, since we add unicode byte-by-byte
+            rs_warn_char(out, c);
+            state
+                .get_output(out.rust_stdout.unwrap())
+                .write(raw)
+                .unwrap();
+            state.get_output(out.log_file.unwrap()).write(raw).unwrap();
+            if incr_offset {
+                out.term_offset += 1;
+                out.file_offset += 1;
+            }
+            if out.term_offset as usize == MAX_PRINT_LINE {
+                writeln!(state.get_output(out.rust_stdout.unwrap())).unwrap();
+                out.term_offset = 0;
+            }
+            if out.file_offset as usize == MAX_PRINT_LINE {
+                writeln!(state.get_output(out.log_file.unwrap())).unwrap();
+                out.file_offset = 0;
+            }
+        }
+        Selector::LogOnly => {
+            rs_warn_char(out, c);
+            state.get_output(out.log_file.unwrap()).write(raw).unwrap();
+            if incr_offset {
+                out.file_offset += 1;
+            }
+            if out.file_offset as usize == MAX_PRINT_LINE {
+                writeln!(state.get_output(out.log_file.unwrap())).unwrap();
+                out.file_offset = 0;
+            }
+        }
+        Selector::TermOnly => {
+            rs_warn_char(out, c);
+            state
+                .get_output(out.rust_stdout.unwrap())
+                .write(raw)
+                .unwrap();
+            if incr_offset {
+                out.term_offset += 1;
+            }
+            if out.term_offset as usize == MAX_PRINT_LINE {
+                writeln!(state.get_output(out.rust_stdout.unwrap())).unwrap();
+                out.term_offset = 0;
+            }
+        }
+        Selector::NoPrint => (),
+        Selector::Pseudo => {
+            if engine.tally < engine.trick_count {
+                engine.trick_buf[(engine.tally % engine.error_line) as usize] = s;
+            }
+        }
+        Selector::NewString => {
+            if strings.pool_ptr < strings.pool_size {
+                strings.str_pool[strings.pool_ptr] = s;
+                strings.pool_ptr += 1;
+            }
+        }
+        Selector::File(val) => {
+            state
+                .get_output(out.write_file[val as usize].unwrap())
+                .write(raw)
+                .unwrap();
+        }
+    }
+    engine.tally += 1;
+}
+
+#[no_mangle]
+pub extern "C" fn print_raw_char(s: u16, offset: u8) {
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL.with_borrow_mut(|strings| {
+                    rs_print_raw_char(state, engine, out, strings, s, offset != 0)
+                })
+            })
         })
     })
 }
