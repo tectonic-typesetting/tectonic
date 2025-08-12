@@ -24,6 +24,8 @@
 
 #define MAX_PRINT_LINE 79
 
+#define BIGGEST_USV 1114111
+
 #if defined(WORDS_BIGENDIAN)
 typedef struct {
   int32_t s1;
@@ -173,6 +175,12 @@ void print_ln(void);
 void print_raw_char(uint16_t s, uint8_t offset);
 
 void print_char(int32_t s);
+
+void print_cstr(const char *str);
+
+void print_nl_cstr(const char *str);
+
+void print_esc_cstr(const char *str);
 
 void resize_str_pool(uintptr_t size);
 
