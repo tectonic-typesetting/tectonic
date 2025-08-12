@@ -12,5 +12,8 @@ include_guard = "TECTONIC_ENGINE_XETEX_BINDGEN_H"
 [export]
 exclude = ["Option_OutputId", "Option_InputId"]
 
+[defines]
+"target_endian = big" = "WORDS_BIGENDIAN"
+
 [enum]
 prefix_with_name = true

@@ -20,6 +20,45 @@
 
 #define MAX_PRINT_LINE 79
 
+#if defined(WORDS_BIGENDIAN)
+typedef struct {
+  int32_t s1;
+  int32_t s0;
+} B32x2;
+#endif
+
+#if !defined(WORDS_BIGENDIAN)
+typedef struct {
+  int32_t s0;
+  int32_t s1;
+} B32x2;
+#endif
+
+#if defined(WORDS_BIGENDIAN)
+typedef struct {
+  uint16_t s3;
+  uint16_t s2;
+  uint16_t s1;
+  uint16_t s0;
+} B16x4;
+#endif
+
+#if !defined(WORDS_BIGENDIAN)
+typedef struct {
+  uint16_t s0;
+  uint16_t s1;
+  uint16_t s2;
+  uint16_t s3;
+} B16x4;
+#endif
+
+typedef union {
+  B32x2 b32;
+  B16x4 b16;
+  double gr;
+  void *ptr;
+} MemoryWord;
+
 typedef int32_t StrNumber;
 
 typedef int32_t Scaled;
@@ -54,6 +93,16 @@ void set_trick_count(int32_t val);
 uint16_t trick_buf(uintptr_t idx);
 
 void set_trick_buf(uintptr_t idx, uint16_t val);
+
+MemoryWord eqtb(uintptr_t idx);
+
+void set_eqtb(uintptr_t idx, MemoryWord val);
+
+MemoryWord *eqtb_ptr(uintptr_t idx);
+
+void resize_eqtb(uintptr_t len);
+
+void clear_eqtb(void);
 
 extern char *gettexstring(StrNumber s);
 

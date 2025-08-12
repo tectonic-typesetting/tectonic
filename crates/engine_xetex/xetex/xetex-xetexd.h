@@ -85,24 +85,28 @@ typedef unsigned char four_choices;
  *
  */
 
-#ifdef WORDS_BIGENDIAN
+//#ifdef WORDS_BIGENDIAN
+//
+//typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
+//typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
+//
+//#else
+//
+//typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
+//typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
+//
+//#endif /*WORDS_BIGENDIAN*/
 
-typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
-typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
+typedef B16x4 b16x4;
+typedef B32x2 b32x2;
+typedef MemoryWord memory_word;
 
-#else
-
-typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
-typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
-
-#endif /*WORDS_BIGENDIAN*/
-
-typedef union {
-    b32x2 b32;
-    b16x4 b16;
-    double gr;
-    void *ptr;
-} memory_word;
+//typedef union {
+//    b32x2 b32;
+//    b16x4 b16;
+//    double gr;
+//    void *ptr;
+//} memory_word;
 
 /* ## THE ORIGINAL SITUATION (archived for posterity)
  *
@@ -384,7 +388,6 @@ void remember_source_info(str_number, int);
 
 /* All the following variables are defined in xetexini.c */
 extern bool shell_escape_enabled;
-extern memory_word *eqtb;
 extern int32_t bad;
 extern char *name_of_file;
 extern UTF16_code *name_of_file16;

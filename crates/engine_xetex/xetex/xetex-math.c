@@ -146,7 +146,7 @@ void init_math(void)
                 just_copy(mem[just_box + 5].b32.s1, p, new_math(0, END_L_CODE));
                 cur_dir = RIGHT_TO_LEFT;
             }
-            v = v + 2 * font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+            v = v + 2 * font_info[QUAD_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
             if (INTPAR(texxet) > 0) {    /*1497: */
                 temp_ptr = get_avail();
                 mem[temp_ptr].b32.s0 = BEFORE;
@@ -3325,7 +3325,7 @@ mlist_to_hlist(void)
                 break;
             }
             if (x != 0) {
-                y = math_glue(eqtb[GLUE_BASE + x].b32.s1, cur_mu);
+                y = math_glue(eqtb_ptr(GLUE_BASE + x)->b32.s1, cur_mu);
                 z = new_glue(y);
                 mem[y].b32.s1 = TEX_NULL;
                 mem[p].b32.s1 = z;
