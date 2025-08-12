@@ -33,7 +33,7 @@ print_char(int32_t s)
 {
     small_number l;
 
-    if ((selector() > SELECTOR_PSEUDO) && (!doing_special)) {
+    if ((selector() > SELECTOR_PSEUDO) && (!doing_special())) {
         if (s >= 0x10000) {
             print_raw_char(0xD800 + (s - 0x10000) / 1024, true);
             print_raw_char(0xDC00 + (s - 0x10000) % 1024, true);
@@ -49,21 +49,21 @@ print_char(int32_t s)
         }
     }
 
-    if (s < 32 && !doing_special) {
+    if (s < 32 && !doing_special()) {
         print_raw_char('^' , true);
         print_raw_char('^' , true);
         print_raw_char(s + 64, true);
     } else if (s < 127) {
         print_raw_char(s, true);
     } else if (s == 127) {
-        if (!doing_special) {
+        if (!doing_special()) {
             print_raw_char('^' , true);
             print_raw_char('^' , true);
             print_raw_char('?' , true);
         } else {
             print_raw_char(s, true);
         }
-    } else if (s < 160 && !doing_special) {
+    } else if (s < 160 && !doing_special()) {
         print_raw_char('^' , true);
         print_raw_char('^' , true);
 

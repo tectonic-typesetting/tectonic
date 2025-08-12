@@ -21,6 +21,7 @@ pub struct OutputCtx {
     rust_stdout: Option<OutputId>,
     log_file: Option<OutputId>,
     write_file: Vec<Option<OutputId>>,
+    doing_special: bool,
 }
 
 impl OutputCtx {
@@ -33,6 +34,7 @@ impl OutputCtx {
             rust_stdout: None,
             log_file: None,
             write_file: Vec::new(),
+            doing_special: false,
         }
     }
 }
@@ -110,6 +112,16 @@ pub extern "C" fn set_write_file(idx: usize, val: Option<OutputId>) {
         }
         out.write_file[idx] = val;
     })
+}
+
+#[no_mangle]
+pub extern "C" fn doing_special() -> bool {
+    OUTPUT_CTX.with_borrow(|out| out.doing_special)
+}
+
+#[no_mangle]
+pub extern "C" fn set_doing_special(val: bool) {
+    OUTPUT_CTX.with_borrow_mut(|out| out.doing_special = val)
 }
 
 fn rs_capture_to_diagnostic(
