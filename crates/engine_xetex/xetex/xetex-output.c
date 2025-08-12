@@ -83,30 +83,12 @@ print(int32_t s)
 
 
 void
-print_cstr(const char* str)
-{
-    for (unsigned int i = 0; i < strlen(str); i++) {
-        print_char(str[i]);
-    }
-}
-
-
-void
 print_nl(str_number s)
 {
     if (((term_offset() > 0) && (odd(selector()))) || ((file_offset() > 0) && (selector() >= SELECTOR_LOG_ONLY)))
         print_ln();
     print(s);
 }
-
-void
-print_nl_cstr(const char* str)
-{
-    if (((term_offset() > 0) && (odd(selector()))) || ((file_offset() > 0) && (selector() >= SELECTOR_LOG_ONLY)))
-        print_ln();
-    print_cstr(str);
-}
-
 
 void
 print_esc(str_number s)
@@ -118,18 +100,6 @@ print_esc(str_number s)
         print_char(c);
     print(s);
 }
-
-void
-print_esc_cstr(const char* s)
-{
-
-    int32_t c = INTPAR(escape_char) /*:251 */ ;
-
-    if (c >= 0 && c <= BIGGEST_USV)
-        print_char(c);
-    print_cstr(s);
-}
-
 
 static void
 print_the_digs(eight_bits k)

@@ -2,12 +2,14 @@ use crate::c_api::engine::{with_tex_string, EngineCtx, IntPar, Selector, ENGINE_
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use crate::c_api::pool::{StringPool, STRING_POOL};
 use std::cell::RefCell;
+use std::ffi::CStr;
 use std::io::Write;
 use std::ptr;
 use std::ptr::NonNull;
 use tectonic_bridge_core::{CoreBridgeState, Diagnostic, OutputId};
 
 pub const MAX_PRINT_LINE: usize = 79;
+pub const BIGGEST_USV: i32 = 0x10FFFF;
 
 thread_local! {
     pub static OUTPUT_CTX: RefCell<OutputCtx> = const { RefCell::new(OutputCtx::new()) }
@@ -443,6 +445,89 @@ pub extern "C" fn print_char(s: i32) {
         ENGINE_CTX.with_borrow_mut(|engine| {
             OUTPUT_CTX.with_borrow_mut(|out| {
                 STRING_POOL.with_borrow_mut(|strings| rs_print_char(state, engine, out, strings, s))
+            })
+        })
+    })
+}
+
+pub fn rs_print_bytes(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    bytes: &[u8],
+) {
+    for b in bytes {
+        rs_print_char(state, engine, out, strings, *b as i32)
+    }
+}
+
+pub fn rs_print_nl_bytes(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    bytes: &[u8],
+) {
+    if (out.term_offset > 0 && matches!(engine.selector, Selector::TermOnly | Selector::TermAndLog))
+        || (out.file_offset > 0
+            && matches!(engine.selector, Selector::LogOnly | Selector::TermAndLog))
+    {
+        rs_print_ln(state, engine, out);
+    }
+    rs_print_bytes(state, engine, out, strings, bytes);
+}
+
+pub fn rs_print_esc_bytes(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    bytes: &[u8],
+) {
+    let c = engine.int_par(IntPar::EscapeChar);
+    if c >= 0 && c <= BIGGEST_USV {
+        rs_print_char(state, engine, out, strings, c);
+    }
+    rs_print_bytes(state, engine, out, strings, bytes);
+}
+
+#[no_mangle]
+pub extern "C" fn print_cstr(str: *const libc::c_char) {
+    let bytes = unsafe { CStr::from_ptr(str) }.to_bytes();
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL
+                    .with_borrow_mut(|strings| rs_print_bytes(state, engine, out, strings, bytes))
+            })
+        })
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn print_nl_cstr(str: *const libc::c_char) {
+    let bytes = unsafe { CStr::from_ptr(str) }.to_bytes();
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL.with_borrow_mut(|strings| {
+                    rs_print_nl_bytes(state, engine, out, strings, bytes)
+                })
+            })
+        })
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn print_esc_cstr(str: *const libc::c_char) {
+    let bytes = unsafe { CStr::from_ptr(str) }.to_bytes();
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL.with_borrow_mut(|strings| {
+                    rs_print_esc_bytes(state, engine, out, strings, bytes)
+                })
             })
         })
     })
