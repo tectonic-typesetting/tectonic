@@ -33,6 +33,10 @@ impl EngineCtx {
             eqtb: Vec::new(),
         }
     }
+
+    pub fn int_par(&self, par: IntPar) -> i32 {
+        unsafe { self.eqtb[INT_BASE + par as usize].b32.s1 }
+    }
 }
 
 #[derive(Copy, Clone, PartialEq)]

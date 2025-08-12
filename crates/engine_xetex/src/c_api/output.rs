@@ -1,4 +1,4 @@
-use crate::c_api::engine::{with_tex_string, EngineCtx, Selector, ENGINE_CTX};
+use crate::c_api::engine::{with_tex_string, EngineCtx, IntPar, Selector, ENGINE_CTX};
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use crate::c_api::pool::{StringPool, STRING_POOL};
 use std::cell::RefCell;
@@ -328,6 +328,121 @@ pub extern "C" fn print_raw_char(s: u16, offset: u8) {
                 STRING_POOL.with_borrow_mut(|strings| {
                     rs_print_raw_char(state, engine, out, strings, s, offset != 0)
                 })
+            })
+        })
+    })
+}
+
+pub fn rs_print_char(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    s: i32,
+) {
+    if engine.selector == Selector::NewString && !out.doing_special {
+        if let Ok(s) = s.try_into() {
+            rs_print_raw_char(state, engine, out, strings, s, true)
+        } else {
+            let s = (s - 0x10000) as u16;
+            rs_print_raw_char(state, engine, out, strings, 0xD800 + s / 1024, true);
+            rs_print_raw_char(state, engine, out, strings, 0xDC00 + 2 % 1024, true)
+        }
+        return;
+    }
+
+    if engine.int_par(IntPar::NewLineChar) == s
+        && !matches!(engine.selector, Selector::Pseudo | Selector::NewString)
+    {
+        rs_print_ln(state, engine, out);
+        return;
+    }
+
+    if s < 32 && !out.doing_special {
+        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
+        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
+        rs_print_raw_char(state, engine, out, strings, (s + 64) as u16, true);
+    } else if s < 127 {
+        rs_print_raw_char(state, engine, out, strings, s as u16, true);
+    } else if s == 127 {
+        if !out.doing_special {
+            rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
+            rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
+            rs_print_raw_char(state, engine, out, strings, b'?' as u16, true);
+        } else {
+            rs_print_raw_char(state, engine, out, strings, s as u16, true);
+        }
+    } else if s < 160 && !out.doing_special {
+        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
+        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
+
+        let l = (s % 256 / 16) as u16;
+        if l < 10 {
+            rs_print_raw_char(state, engine, out, strings, b'0' as u16 + l, true);
+        } else {
+            rs_print_raw_char(state, engine, out, strings, b'a' as u16 + l - 10, true);
+        }
+
+        let l = (s % 16) as u16;
+        if l < 10 {
+            rs_print_raw_char(state, engine, out, strings, b'0' as u16 + l, true);
+        } else {
+            rs_print_raw_char(state, engine, out, strings, b'a' as u16 + l - 10, true);
+        }
+    } else if engine.selector == Selector::Pseudo {
+        rs_print_raw_char(state, engine, out, strings, s as u16, true);
+    } else {
+        // Encode into UTF-8
+        if s < 2048 {
+            rs_print_raw_char(state, engine, out, strings, (192 + s / 64) as u16, false);
+            rs_print_raw_char(state, engine, out, strings, (128 + s % 64) as u16, true);
+        } else if s < 0x10000 {
+            rs_print_raw_char(state, engine, out, strings, (224 + s / 4096) as u16, false);
+            rs_print_raw_char(
+                state,
+                engine,
+                out,
+                strings,
+                (128 + s % 4096 / 64) as u16,
+                false,
+            );
+            rs_print_raw_char(state, engine, out, strings, (128 + s % 64) as u16, true);
+        } else {
+            rs_print_raw_char(
+                state,
+                engine,
+                out,
+                strings,
+                (240 + s / 0x40000) as u16,
+                false,
+            );
+            rs_print_raw_char(
+                state,
+                engine,
+                out,
+                strings,
+                (128 + s % 0x40000 / 4096) as u16,
+                false,
+            );
+            rs_print_raw_char(
+                state,
+                engine,
+                out,
+                strings,
+                (128 + s % 4096 / 64) as u16,
+                false,
+            );
+            rs_print_raw_char(state, engine, out, strings, (128 + s % 64) as u16, true);
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_char(s: i32) {
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL.with_borrow_mut(|strings| rs_print_char(state, engine, out, strings, s))
             })
         })
     })
