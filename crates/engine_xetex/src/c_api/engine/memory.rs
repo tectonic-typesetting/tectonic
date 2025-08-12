@@ -55,17 +55,17 @@ mod data {
     #[derive(Copy, Clone)]
     #[repr(C)]
     pub struct B32x2 {
-        s0: i32,
-        s1: i32,
+        pub(crate) s0: i32,
+        pub(crate) s1: i32,
     }
 
     #[derive(Copy, Clone)]
     #[repr(C)]
     pub struct B16x4 {
-        s0: u16,
-        s1: u16,
-        s2: u16,
-        s3: u16,
+        pub(crate) s0: u16,
+        pub(crate) s1: u16,
+        pub(crate) s2: u16,
+        pub(crate) s3: u16,
     }
 }
 
@@ -171,3 +171,93 @@ pub union MemoryWord {
  * - `two_halves` => `b32x2`
  *
  */
+
+pub const INT_BASE: usize = 0x776d29;
+pub const INT_PARS: usize = 83;
+
+/// Integer parameters
+pub enum IntPar {
+    PreTolerance = 0,
+    Tolerance,
+    LinePenalty,
+    HyphenPenalty,
+    ExHyphenPenalty,
+    ClubPenalty,
+    WidowPenalty,
+    DisplayWidowPenalty,
+    BrokenPenalty,
+    BinOpPenalty,
+    RelPenalty,
+    PreDisplayPenalty,
+    PostDisplayPenalty,
+    InterLinePenalty,
+    DoubleHyphenDemerits,
+    FinalHyphenDemerits,
+    AdjDemerits,
+    Mag,
+    DelimiterFactor,
+    Looseness,
+    Time,
+    Day,
+    Month,
+    Year,
+    ShowBoxBreadth,
+    ShowBoxDepth,
+    HBadness,
+    VBadness,
+    Pausing,
+    TracingOnline,
+    TracingMacros,
+    TracingStats,
+    TracingParagraphs,
+    TracingPages,
+    TracingOutput,
+    TracingLostChars,
+    TracingCommands,
+    TracingRestores,
+    UcHyph,
+    OutputPenalty,
+    MaxDeadCycles,
+    HangAfter,
+    FloatingPenalty,
+    GlobalDefs,
+    CurFam,
+    EscapeChar,
+    DefaultHyphenChar,
+    DefaultSkewChar,
+    EndLineChar,
+    NewLineChar,
+    Language,
+    LeftHyphenMin,
+    RightHyphenMin,
+    HoldingInserts,
+    ErrorContextLines,
+    TracingStackLevels,
+    TracingAssigns,
+    TracingGroups,
+    TracingIfs,
+    TracingScanTokens,
+    TracingNesting,
+    PreDisplayDirection,
+    LastLineFit,
+    SavingVDiscards,
+    SavingHyphCodes,
+    SuppressFontNotFoundError,
+    XetexLinebreakLocale,
+    XetexLinebreakPenalty,
+    XetexProtrudeChars,
+    Texxet,
+    XetexDashBreak,
+    XetexUpwards,
+    XetexUseGlyphMetrics,
+    XetexInterCharTokens,
+    XetexInputNormalization,
+    XetexDefaultInputMode,
+    XetexDefaultInputEncoding,
+    XetexTracingFonts,
+    XetexInterwordSpaceShaping,
+    XetexGenerateActualText,
+    XetexHyphenatableLength,
+    Synctex,
+    PdfOutput,
+}

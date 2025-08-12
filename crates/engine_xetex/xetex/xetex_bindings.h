@@ -18,6 +18,10 @@
  */
 #define FORMAT_SERIAL 33
 
+#define INT_BASE 7826729
+
+#define INT_PARS 83
+
 #define MAX_PRINT_LINE 79
 
 #if defined(WORDS_BIGENDIAN)
@@ -167,6 +171,8 @@ void warn_char(int c);
 void print_ln(void);
 
 void print_raw_char(uint16_t s, uint8_t offset);
+
+void print_char(int32_t s);
 
 void resize_str_pool(uintptr_t size);
 
