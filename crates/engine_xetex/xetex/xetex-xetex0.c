@@ -4836,7 +4836,7 @@ void show_context(void)
                     for_end = first_count - 1;
                     if (q <= for_end)
                         do
-                            print_char(trick_buf[q % error_line()]);
+                            print_char(trick_buf(q % error_line()));
                         while (q++ < for_end);
                 }
                 print_ln();
@@ -4859,7 +4859,7 @@ void show_context(void)
                     for_end = p - 1;
                     if (q <= for_end)
                         do
-                            print_char(trick_buf[q % error_line()]);
+                            print_char(trick_buf(q % error_line()));
                         while (q++ < for_end);
                 }
                 if (m + n > error_line())
