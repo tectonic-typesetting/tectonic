@@ -103,6 +103,10 @@ Option_OutputId write_file(uintptr_t idx);
 
 void set_write_file(uintptr_t idx, Option_OutputId val);
 
+bool doing_special(void);
+
+void set_doing_special(bool val);
+
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);

@@ -56,7 +56,6 @@ pool_pointer init_pool_ptr;
 str_number init_str_ptr;
 unsigned char dig[23];
 int32_t first_count;
-bool doing_special;
 UTF16_code *native_text;
 int32_t native_text_size;
 int32_t native_len;
@@ -3050,7 +3049,7 @@ initialize_more_variables(void)
     int32_t k;
     hyph_pointer z;
 
-    doing_special = false;
+    set_doing_special(false);
     native_text_size = 128;
     native_text = xmalloc(native_text_size * sizeof(UTF16_code));
 

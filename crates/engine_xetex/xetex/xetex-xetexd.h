@@ -422,7 +422,6 @@ extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
 extern unsigned char dig[23];
 extern int32_t first_count;
-extern bool doing_special;
 extern UTF16_code *native_text;
 extern int32_t native_text_size;
 extern int32_t native_len;

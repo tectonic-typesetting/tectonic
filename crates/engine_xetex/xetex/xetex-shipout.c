@@ -2078,7 +2078,7 @@ special_out(int32_t p)
         movement(cur_v - dvi_v, DOWN1);
         dvi_v = cur_v;
     }
-    doing_special = true;
+    set_doing_special(true);
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
     show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size() - pool_ptr());
@@ -2106,7 +2106,7 @@ special_out(int32_t p)
             while (k++ < for_end);
     }
     set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
-    doing_special = false;
+    set_doing_special(false);
 }
 
 
