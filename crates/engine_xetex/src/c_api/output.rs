@@ -545,6 +545,35 @@ pub extern "C" fn print_esc_cstr(str: *const libc::c_char) {
     })
 }
 
+pub fn rs_print_the_digs(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    k: usize,
+) {
+    for k in (0..k).rev() {
+        if out.digits[k] < 10 {
+            rs_print_char(state, engine, out, strings, (b'0' + out.digits[k]) as i32)
+        } else {
+            rs_print_char(state, engine, out, strings, (55 + out.digits[k]) as i32)
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_the_digs(k: u8) {
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL.with_borrow_mut(|strings| {
+                    rs_print_the_digs(state, engine, out, strings, k as usize)
+                })
+            })
+        })
+    })
+}
+
 // #[no_mangle]
 // pub unsafe extern "C" fn error_here_with_diagnostic(
 //     message: *const libc::c_char,
