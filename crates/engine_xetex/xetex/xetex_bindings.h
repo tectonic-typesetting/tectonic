@@ -186,6 +186,8 @@ void print_nl_cstr(const char *str);
 
 void print_esc_cstr(const char *str);
 
+void print_the_digs(uint8_t k);
+
 void resize_str_pool(uintptr_t size);
 
 void clear_str_pool(void);

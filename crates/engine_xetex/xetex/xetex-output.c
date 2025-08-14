@@ -101,18 +101,6 @@ print_esc(str_number s)
     print(s);
 }
 
-static void
-print_the_digs(eight_bits k)
-{
-    while (k > 0) {
-        k--;
-        if (dig(k) < 10)
-            print_char('0'  + dig(k));
-        else
-            print_char(55 /*"A" -10 */  + dig(k));
-    }
-}
-
 
 void
 print_int(int32_t n)
