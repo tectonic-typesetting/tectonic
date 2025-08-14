@@ -1,13 +1,12 @@
-use crate::c_api::engine::{with_tex_string, EngineCtx, IntPar, Selector, ENGINE_CTX};
-use crate::c_api::inputs::{FileCtx, FILE_CTX};
-use crate::c_api::pool::{StringPool, STRING_POOL};
+use crate::c_api::engine::{rs_gettexstring, IntPar, Selector};
+use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ffi::CStr;
 use std::io::Write;
 use std::ptr;
 use std::ptr::NonNull;
-use tectonic_bridge_core::{CoreBridgeState, Diagnostic, OutputId};
+use tectonic_bridge_core::{Diagnostic, OutputId};
 
 pub const MAX_PRINT_LINE: usize = 79;
 pub const BIGGEST_CHAR: i32 = 0xFFFF;
@@ -140,64 +139,51 @@ pub extern "C" fn set_dig(idx: usize, val: u8) {
     OUTPUT_CTX.with_borrow_mut(|out| out.digits[idx] = val)
 }
 
-fn rs_capture_to_diagnostic(
-    state: &mut CoreBridgeState<'_>,
-    out: &mut OutputCtx,
-    diagnostic: Option<Box<Diagnostic>>,
-) {
-    if let Some(diag) = out.current_diagnostic.take() {
-        state.finish_diagnostic(*diag);
+fn rs_capture_to_diagnostic(globals: &mut Globals<'_, '_>, diagnostic: Option<Box<Diagnostic>>) {
+    if let Some(diag) = globals.out.current_diagnostic.take() {
+        globals.state.finish_diagnostic(*diag);
     }
-    out.current_diagnostic = diagnostic;
+    globals.out.current_diagnostic = diagnostic;
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn capture_to_diagnostic(diagnostic: Option<NonNull<Diagnostic>>) {
-    OUTPUT_CTX.with_borrow_mut(|out| {
-        CoreBridgeState::with_global_state(|state| {
-            rs_capture_to_diagnostic(
-                state,
-                out,
-                diagnostic.map(|ptr| Box::from_raw(ptr.as_ptr())),
-            )
-        })
+    Globals::with(|globals| {
+        rs_capture_to_diagnostic(globals, diagnostic.map(|ptr| Box::from_raw(ptr.as_ptr())))
     })
 }
 
-unsafe fn rs_diagnostic_print_file_line(files: &mut FileCtx, diag: &mut Diagnostic) {
-    let mut level = files.in_open as usize;
-    while level > 0 && files.full_source_filename_stack[level] == 0 {
+unsafe fn rs_diagnostic_print_file_line(globals: &mut Globals<'_, '_>, diag: &mut Diagnostic) {
+    let mut level = globals.files.in_open as usize;
+    while level > 0 && globals.files.full_source_filename_stack[level] == 0 {
         level -= 1;
     }
 
     if level == 0 {
         diag.append("!");
     } else {
-        let mut source_line = files.line;
-        if level != files.in_open as usize {
-            source_line = files.line_stack[level + 1];
+        let mut source_line = globals.files.line;
+        if level != globals.files.in_open as usize {
+            source_line = globals.files.line_stack[level + 1];
         }
 
-        with_tex_string(files.full_source_filename_stack[level], |filename| {
-            diag.append(format!("{}:{}", filename.to_string_lossy(), source_line));
-        });
+        let filename = rs_gettexstring(globals, globals.files.full_source_filename_stack[level]);
+        diag.append(format!("{}:{}", filename, source_line));
     }
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn diagnostic_print_file_line(diagnostic: *mut Diagnostic) {
-    FILE_CTX.with_borrow_mut(|files| rs_diagnostic_print_file_line(files, &mut *diagnostic))
+    Globals::with(|globals| rs_diagnostic_print_file_line(globals, &mut *diagnostic))
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn diagnostic_begin_capture_warning_here() -> *mut Diagnostic {
     let mut warning = Diagnostic::warning();
-    FILE_CTX.with_borrow_mut(|files| rs_diagnostic_print_file_line(files, &mut warning));
-    OUTPUT_CTX.with_borrow_mut(|out| {
-        CoreBridgeState::with_global_state(|state| {
-            rs_capture_to_diagnostic(state, out, Some(Box::new(warning)));
-            ptr::from_mut(out.current_diagnostic.as_deref_mut().unwrap())
-        })
+    Globals::with(|globals| {
+        rs_diagnostic_print_file_line(globals, &mut warning);
+        rs_capture_to_diagnostic(globals, Some(Box::new(warning)));
+        ptr::from_mut(globals.out.current_diagnostic.as_deref_mut().unwrap())
     })
 }
 
@@ -217,32 +203,50 @@ pub extern "C" fn warn_char(c: libc::c_int) {
     })
 }
 
-pub fn rs_print_ln(state: &mut CoreBridgeState<'_>, engine: &mut EngineCtx, out: &mut OutputCtx) {
-    match engine.selector {
+pub fn rs_print_ln(globals: &mut Globals<'_, '_>) {
+    match globals.engine.selector {
         Selector::File(val) => {
             // TODO: Replace all write!(get_output) with output_write on state
             write!(
-                state.get_output(out.write_file[val as usize].unwrap()),
+                globals
+                    .state
+                    .get_output(globals.out.write_file[val as usize].unwrap()),
                 "\n"
             )
             .unwrap();
         }
         Selector::TermOnly => {
-            rs_warn_char(out, '\n');
-            write!(state.get_output(out.rust_stdout.unwrap()), "\n").unwrap();
-            out.term_offset = 0;
+            rs_warn_char(globals.out, '\n');
+            write!(
+                globals.state.get_output(globals.out.rust_stdout.unwrap()),
+                "\n"
+            )
+            .unwrap();
+            globals.out.term_offset = 0;
         }
         Selector::LogOnly => {
-            rs_warn_char(out, '\n');
-            write!(state.get_output(out.log_file.unwrap()), "\n").unwrap();
-            out.file_offset = 0;
+            rs_warn_char(globals.out, '\n');
+            write!(
+                globals.state.get_output(globals.out.log_file.unwrap()),
+                "\n"
+            )
+            .unwrap();
+            globals.out.file_offset = 0;
         }
         Selector::TermAndLog => {
-            rs_warn_char(out, '\n');
-            write!(state.get_output(out.rust_stdout.unwrap()), "\n").unwrap();
-            write!(state.get_output(out.log_file.unwrap()), "\n").unwrap();
-            out.term_offset = 0;
-            out.file_offset = 0;
+            rs_warn_char(globals.out, '\n');
+            write!(
+                globals.state.get_output(globals.out.rust_stdout.unwrap()),
+                "\n"
+            )
+            .unwrap();
+            write!(
+                globals.state.get_output(globals.out.log_file.unwrap()),
+                "\n"
+            )
+            .unwrap();
+            globals.out.term_offset = 0;
+            globals.out.file_offset = 0;
         }
         Selector::NoPrint | Selector::Pseudo | Selector::NewString => {}
     }
@@ -250,328 +254,247 @@ pub fn rs_print_ln(state: &mut CoreBridgeState<'_>, engine: &mut EngineCtx, out:
 
 #[no_mangle]
 pub extern "C" fn print_ln() {
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| rs_print_ln(state, engine, out))
-        })
-    })
+    Globals::with(|globals| rs_print_ln(globals))
 }
 
-pub fn rs_print_raw_char(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    s: u16,
-    incr_offset: bool,
-) {
+pub fn rs_print_raw_char(globals: &mut Globals<'_, '_>, s: u16, incr_offset: bool) {
     let raw = &[s as u8];
     let c = char::from_u32(s as u32).unwrap_or(char::REPLACEMENT_CHARACTER);
-    match engine.selector {
+    match globals.engine.selector {
         Selector::TermAndLog => {
             // TODO: This produces a malformed warning currently, since we add unicode byte-by-byte
-            rs_warn_char(out, c);
-            state
-                .get_output(out.rust_stdout.unwrap())
+            rs_warn_char(globals.out, c);
+            globals
+                .state
+                .get_output(globals.out.rust_stdout.unwrap())
                 .write(raw)
                 .unwrap();
-            state.get_output(out.log_file.unwrap()).write(raw).unwrap();
+            globals
+                .state
+                .get_output(globals.out.log_file.unwrap())
+                .write(raw)
+                .unwrap();
             if incr_offset {
-                out.term_offset += 1;
-                out.file_offset += 1;
+                globals.out.term_offset += 1;
+                globals.out.file_offset += 1;
             }
-            if out.term_offset as usize == MAX_PRINT_LINE {
-                writeln!(state.get_output(out.rust_stdout.unwrap())).unwrap();
-                out.term_offset = 0;
+            if globals.out.term_offset as usize == MAX_PRINT_LINE {
+                writeln!(globals.state.get_output(globals.out.rust_stdout.unwrap())).unwrap();
+                globals.out.term_offset = 0;
             }
-            if out.file_offset as usize == MAX_PRINT_LINE {
-                writeln!(state.get_output(out.log_file.unwrap())).unwrap();
-                out.file_offset = 0;
+            if globals.out.file_offset as usize == MAX_PRINT_LINE {
+                writeln!(globals.state.get_output(globals.out.log_file.unwrap())).unwrap();
+                globals.out.file_offset = 0;
             }
         }
         Selector::LogOnly => {
-            rs_warn_char(out, c);
-            state.get_output(out.log_file.unwrap()).write(raw).unwrap();
-            if incr_offset {
-                out.file_offset += 1;
-            }
-            if out.file_offset as usize == MAX_PRINT_LINE {
-                writeln!(state.get_output(out.log_file.unwrap())).unwrap();
-                out.file_offset = 0;
-            }
-        }
-        Selector::TermOnly => {
-            rs_warn_char(out, c);
-            state
-                .get_output(out.rust_stdout.unwrap())
+            rs_warn_char(globals.out, c);
+            globals
+                .state
+                .get_output(globals.out.log_file.unwrap())
                 .write(raw)
                 .unwrap();
             if incr_offset {
-                out.term_offset += 1;
+                globals.out.file_offset += 1;
             }
-            if out.term_offset as usize == MAX_PRINT_LINE {
-                writeln!(state.get_output(out.rust_stdout.unwrap())).unwrap();
-                out.term_offset = 0;
+            if globals.out.file_offset as usize == MAX_PRINT_LINE {
+                writeln!(globals.state.get_output(globals.out.log_file.unwrap())).unwrap();
+                globals.out.file_offset = 0;
+            }
+        }
+        Selector::TermOnly => {
+            rs_warn_char(globals.out, c);
+            globals
+                .state
+                .get_output(globals.out.rust_stdout.unwrap())
+                .write(raw)
+                .unwrap();
+            if incr_offset {
+                globals.out.term_offset += 1;
+            }
+            if globals.out.term_offset as usize == MAX_PRINT_LINE {
+                writeln!(globals.state.get_output(globals.out.rust_stdout.unwrap())).unwrap();
+                globals.out.term_offset = 0;
             }
         }
         Selector::NoPrint => (),
         Selector::Pseudo => {
-            if engine.tally < engine.trick_count {
-                engine.trick_buf[(engine.tally % engine.error_line) as usize] = s;
+            if globals.engine.tally < globals.engine.trick_count {
+                globals.engine.trick_buf
+                    [(globals.engine.tally % globals.engine.error_line) as usize] = s;
             }
         }
         Selector::NewString => {
-            if strings.pool_ptr < strings.pool_size {
-                strings.str_pool[strings.pool_ptr] = s;
-                strings.pool_ptr += 1;
+            if globals.strings.pool_ptr < globals.strings.pool_size {
+                globals.strings.str_pool[globals.strings.pool_ptr] = s;
+                globals.strings.pool_ptr += 1;
             }
         }
         Selector::File(val) => {
-            state
-                .get_output(out.write_file[val as usize].unwrap())
+            globals
+                .state
+                .get_output(globals.out.write_file[val as usize].unwrap())
                 .write(raw)
                 .unwrap();
         }
     }
-    engine.tally += 1;
+    globals.engine.tally += 1;
 }
 
 #[no_mangle]
 pub extern "C" fn print_raw_char(s: u16, offset: u8) {
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL.with_borrow_mut(|strings| {
-                    rs_print_raw_char(state, engine, out, strings, s, offset != 0)
-                })
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_raw_char(globals, s, offset != 0))
 }
 
-pub fn rs_print_char(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    s: i32,
-) {
-    if engine.selector == Selector::NewString && !out.doing_special {
+pub fn rs_print_char(globals: &mut Globals<'_, '_>, s: i32) {
+    if globals.engine.selector == Selector::NewString && !globals.out.doing_special {
         if let Ok(s) = s.try_into() {
-            rs_print_raw_char(state, engine, out, strings, s, true)
+            rs_print_raw_char(globals, s, true)
         } else {
             let s = (s - 0x10000) as u16;
-            rs_print_raw_char(state, engine, out, strings, 0xD800 + s / 1024, true);
-            rs_print_raw_char(state, engine, out, strings, 0xDC00 + s % 1024, true)
+            rs_print_raw_char(globals, 0xD800 + s / 1024, true);
+            rs_print_raw_char(globals, 0xDC00 + s % 1024, true)
         }
         return;
     }
 
-    if engine.int_par(IntPar::NewLineChar) == s
-        && !matches!(engine.selector, Selector::Pseudo | Selector::NewString)
+    if globals.engine.int_par(IntPar::NewLineChar) == s
+        && !matches!(
+            globals.engine.selector,
+            Selector::Pseudo | Selector::NewString
+        )
     {
-        rs_print_ln(state, engine, out);
+        rs_print_ln(globals);
         return;
     }
 
-    if s < 32 && !out.doing_special {
-        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
-        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
-        rs_print_raw_char(state, engine, out, strings, (s + 64) as u16, true);
+    if s < 32 && !globals.out.doing_special {
+        rs_print_raw_char(globals, b'^' as u16, true);
+        rs_print_raw_char(globals, b'^' as u16, true);
+        rs_print_raw_char(globals, (s + 64) as u16, true);
     } else if s < 127 {
-        rs_print_raw_char(state, engine, out, strings, s as u16, true);
+        rs_print_raw_char(globals, s as u16, true);
     } else if s == 127 {
-        if !out.doing_special {
-            rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
-            rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
-            rs_print_raw_char(state, engine, out, strings, b'?' as u16, true);
+        if !globals.out.doing_special {
+            rs_print_raw_char(globals, b'^' as u16, true);
+            rs_print_raw_char(globals, b'^' as u16, true);
+            rs_print_raw_char(globals, b'?' as u16, true);
         } else {
-            rs_print_raw_char(state, engine, out, strings, s as u16, true);
+            rs_print_raw_char(globals, s as u16, true);
         }
-    } else if s < 160 && !out.doing_special {
-        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
-        rs_print_raw_char(state, engine, out, strings, b'^' as u16, true);
+    } else if s < 160 && !globals.out.doing_special {
+        rs_print_raw_char(globals, b'^' as u16, true);
+        rs_print_raw_char(globals, b'^' as u16, true);
 
         let l = (s % 256 / 16) as u16;
         if l < 10 {
-            rs_print_raw_char(state, engine, out, strings, b'0' as u16 + l, true);
+            rs_print_raw_char(globals, b'0' as u16 + l, true);
         } else {
-            rs_print_raw_char(state, engine, out, strings, b'a' as u16 + l - 10, true);
+            rs_print_raw_char(globals, b'a' as u16 + l - 10, true);
         }
 
         let l = (s % 16) as u16;
         if l < 10 {
-            rs_print_raw_char(state, engine, out, strings, b'0' as u16 + l, true);
+            rs_print_raw_char(globals, b'0' as u16 + l, true);
         } else {
-            rs_print_raw_char(state, engine, out, strings, b'a' as u16 + l - 10, true);
+            rs_print_raw_char(globals, b'a' as u16 + l - 10, true);
         }
-    } else if engine.selector == Selector::Pseudo {
-        rs_print_raw_char(state, engine, out, strings, s as u16, true);
+    } else if globals.engine.selector == Selector::Pseudo {
+        rs_print_raw_char(globals, s as u16, true);
     } else {
         // Encode into UTF-8
         if s < 2048 {
-            rs_print_raw_char(state, engine, out, strings, (192 + s / 64) as u16, false);
-            rs_print_raw_char(state, engine, out, strings, (128 + s % 64) as u16, true);
+            rs_print_raw_char(globals, (192 + s / 64) as u16, false);
+            rs_print_raw_char(globals, (128 + s % 64) as u16, true);
         } else if s < 0x10000 {
-            rs_print_raw_char(state, engine, out, strings, (224 + s / 4096) as u16, false);
-            rs_print_raw_char(
-                state,
-                engine,
-                out,
-                strings,
-                (128 + s % 4096 / 64) as u16,
-                false,
-            );
-            rs_print_raw_char(state, engine, out, strings, (128 + s % 64) as u16, true);
+            rs_print_raw_char(globals, (224 + s / 4096) as u16, false);
+            rs_print_raw_char(globals, (128 + s % 4096 / 64) as u16, false);
+            rs_print_raw_char(globals, (128 + s % 64) as u16, true);
         } else {
-            rs_print_raw_char(
-                state,
-                engine,
-                out,
-                strings,
-                (240 + s / 0x40000) as u16,
-                false,
-            );
-            rs_print_raw_char(
-                state,
-                engine,
-                out,
-                strings,
-                (128 + s % 0x40000 / 4096) as u16,
-                false,
-            );
-            rs_print_raw_char(
-                state,
-                engine,
-                out,
-                strings,
-                (128 + s % 4096 / 64) as u16,
-                false,
-            );
-            rs_print_raw_char(state, engine, out, strings, (128 + s % 64) as u16, true);
+            rs_print_raw_char(globals, (240 + s / 0x40000) as u16, false);
+            rs_print_raw_char(globals, (128 + s % 0x40000 / 4096) as u16, false);
+            rs_print_raw_char(globals, (128 + s % 4096 / 64) as u16, false);
+            rs_print_raw_char(globals, (128 + s % 64) as u16, true);
         }
     }
 }
 
 #[no_mangle]
 pub extern "C" fn print_char(s: i32) {
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL.with_borrow_mut(|strings| rs_print_char(state, engine, out, strings, s))
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_char(globals, s))
 }
 
-pub fn rs_print_bytes(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    bytes: &[u8],
-) {
+pub fn rs_print_bytes(globals: &mut Globals<'_, '_>, bytes: &[u8]) {
     for b in bytes {
-        rs_print_char(state, engine, out, strings, *b as i32)
+        rs_print_char(globals, *b as i32)
     }
 }
 
-pub fn rs_print_nl_bytes(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    bytes: &[u8],
-) {
-    if (out.term_offset > 0 && matches!(engine.selector, Selector::TermOnly | Selector::TermAndLog))
-        || (out.file_offset > 0
-            && matches!(engine.selector, Selector::LogOnly | Selector::TermAndLog))
+pub fn rs_print_nl_bytes(globals: &mut Globals<'_, '_>, bytes: &[u8]) {
+    if (globals.out.term_offset > 0
+        && matches!(
+            globals.engine.selector,
+            Selector::TermOnly | Selector::TermAndLog
+        ))
+        || (globals.out.file_offset > 0
+            && matches!(
+                globals.engine.selector,
+                Selector::LogOnly | Selector::TermAndLog
+            ))
     {
-        rs_print_ln(state, engine, out);
+        rs_print_ln(globals);
     }
-    rs_print_bytes(state, engine, out, strings, bytes);
+    rs_print_bytes(globals, bytes);
 }
 
-pub fn rs_print_esc_bytes(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    bytes: &[u8],
-) {
-    let c = engine.int_par(IntPar::EscapeChar);
+pub fn rs_print_esc_bytes(globals: &mut Globals<'_, '_>, bytes: &[u8]) {
+    let c = globals.engine.int_par(IntPar::EscapeChar);
     if c >= 0 && c <= BIGGEST_USV {
-        rs_print_char(state, engine, out, strings, c);
+        rs_print_char(globals, c);
     }
-    rs_print_bytes(state, engine, out, strings, bytes);
+    rs_print_bytes(globals, bytes);
 }
 
 #[no_mangle]
 pub extern "C" fn print_cstr(str: *const libc::c_char) {
     let bytes = unsafe { CStr::from_ptr(str) }.to_bytes();
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL
-                    .with_borrow_mut(|strings| rs_print_bytes(state, engine, out, strings, bytes))
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_bytes(globals, bytes))
 }
 
 #[no_mangle]
 pub extern "C" fn print_nl_cstr(str: *const libc::c_char) {
     let bytes = unsafe { CStr::from_ptr(str) }.to_bytes();
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL.with_borrow_mut(|strings| {
-                    rs_print_nl_bytes(state, engine, out, strings, bytes)
-                })
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_nl_bytes(globals, bytes))
 }
 
 #[no_mangle]
 pub extern "C" fn print_esc_cstr(str: *const libc::c_char) {
     let bytes = unsafe { CStr::from_ptr(str) }.to_bytes();
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL.with_borrow_mut(|strings| {
-                    rs_print_esc_bytes(state, engine, out, strings, bytes)
-                })
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_esc_bytes(globals, bytes))
 }
 
-pub fn rs_print(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    str: StrNumber,
-) {
-    if str as usize >= strings.str_ptr {
-        rs_print_bytes(state, engine, out, strings, b"???");
+pub fn rs_print(globals: &mut Globals<'_, '_>, str: StrNumber) {
+    if str as usize >= globals.strings.str_ptr {
+        rs_print_bytes(globals, b"???");
         return;
     } else if str <= BIGGEST_CHAR {
         if str < 0 {
-            rs_print_bytes(state, engine, out, strings, b"???");
+            rs_print_bytes(globals, b"???");
         } else {
-            if engine.selector == Selector::NewString {
-                rs_print_char(state, engine, out, strings, str);
-            } else if engine.int_par(IntPar::NewLineChar) == str
-                && !matches!(engine.selector, Selector::Pseudo | Selector::NewString)
+            if globals.engine.selector == Selector::NewString {
+                rs_print_char(globals, str);
+            } else if globals.engine.int_par(IntPar::NewLineChar) == str
+                && !matches!(
+                    globals.engine.selector,
+                    Selector::Pseudo | Selector::NewString
+                )
             {
-                rs_print_ln(state, engine, out);
+                rs_print_ln(globals);
             } else {
-                let nl = engine.int_par(IntPar::NewLineChar);
-                engine.set_int_par(IntPar::NewLineChar, -1);
-                rs_print_char(state, engine, out, strings, str);
-                engine.set_int_par(IntPar::NewLineChar, nl);
+                let nl = globals.engine.int_par(IntPar::NewLineChar);
+                globals.engine.set_int_par(IntPar::NewLineChar, -1);
+                rs_print_char(globals, str);
+                globals.engine.set_int_par(IntPar::NewLineChar, nl);
             }
         }
         return;
@@ -579,121 +502,80 @@ pub fn rs_print(
 
     let pool_idx = str - 0x10000;
 
-    let str_len = strings.str(pool_idx).len();
+    let str_len = globals.strings.str(pool_idx).len();
     let mut idx = 0;
     while idx < str_len {
-        let str = strings.str(pool_idx);
+        let str = globals.strings.str(pool_idx);
         let byte = str[idx];
         if (0xD800..0xDC00).contains(&byte)
             && idx + 1 < str_len
             && (0xDC00..0xE000).contains(&str[idx + 1])
         {
             rs_print_char(
-                state,
-                engine,
-                out,
-                strings,
+                globals,
                 0x10000 + (byte as i32 - 0xD800) * 1024 + (str[idx + 1] as i32 - 0xDC00),
             );
             idx += 1;
         } else {
-            rs_print_char(state, engine, out, strings, byte as i32);
+            rs_print_char(globals, byte as i32);
         }
         idx += 1;
     }
 }
 
-pub fn rs_print_nl(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    str: StrNumber,
-) {
-    if (out.term_offset > 0 && matches!(engine.selector, Selector::TermOnly | Selector::TermAndLog))
-        || (out.file_offset > 0
-            && matches!(engine.selector, Selector::LogOnly | Selector::TermAndLog))
+pub fn rs_print_nl(globals: &mut Globals<'_, '_>, str: StrNumber) {
+    if (globals.out.term_offset > 0
+        && matches!(
+            globals.engine.selector,
+            Selector::TermOnly | Selector::TermAndLog
+        ))
+        || (globals.out.file_offset > 0
+            && matches!(
+                globals.engine.selector,
+                Selector::LogOnly | Selector::TermAndLog
+            ))
     {
-        rs_print_ln(state, engine, out);
+        rs_print_ln(globals);
     }
-    rs_print(state, engine, out, strings, str);
+    rs_print(globals, str);
 }
 
-pub fn rs_print_esc(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    str: StrNumber,
-) {
-    let c = engine.int_par(IntPar::EscapeChar);
+pub fn rs_print_esc(globals: &mut Globals<'_, '_>, str: StrNumber) {
+    let c = globals.engine.int_par(IntPar::EscapeChar);
     if c >= 0 && c <= BIGGEST_USV {
-        rs_print_char(state, engine, out, strings, c);
+        rs_print_char(globals, c);
     }
-    rs_print(state, engine, out, strings, str);
+    rs_print(globals, str);
 }
 
 #[no_mangle]
 pub extern "C" fn print(str: StrNumber) {
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL.with_borrow_mut(|strings| rs_print(state, engine, out, strings, str))
-            })
-        })
-    })
+    Globals::with(|globals| rs_print(globals, str))
 }
 
 #[no_mangle]
 pub extern "C" fn print_nl(str: StrNumber) {
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL.with_borrow_mut(|strings| rs_print_nl(state, engine, out, strings, str))
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_nl(globals, str))
 }
 
 #[no_mangle]
 pub extern "C" fn print_esc(str: StrNumber) {
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL
-                    .with_borrow_mut(|strings| rs_print_esc(state, engine, out, strings, str))
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_esc(globals, str))
 }
 
-pub fn rs_print_the_digs(
-    state: &mut CoreBridgeState,
-    engine: &mut EngineCtx,
-    out: &mut OutputCtx,
-    strings: &mut StringPool,
-    k: usize,
-) {
+pub fn rs_print_the_digs(globals: &mut Globals<'_, '_>, k: usize) {
     for k in (0..k).rev() {
-        if out.digits[k] < 10 {
-            rs_print_char(state, engine, out, strings, (b'0' + out.digits[k]) as i32)
+        if globals.out.digits[k] < 10 {
+            rs_print_char(globals, (b'0' + globals.out.digits[k]) as i32)
         } else {
-            rs_print_char(state, engine, out, strings, (55 + out.digits[k]) as i32)
+            rs_print_char(globals, (55 + globals.out.digits[k]) as i32)
         }
     }
 }
 
 #[no_mangle]
 pub extern "C" fn print_the_digs(k: u8) {
-    CoreBridgeState::with_global_state(|state| {
-        ENGINE_CTX.with_borrow_mut(|engine| {
-            OUTPUT_CTX.with_borrow_mut(|out| {
-                STRING_POOL.with_borrow_mut(|strings| {
-                    rs_print_the_digs(state, engine, out, strings, k as usize)
-                })
-            })
-        })
-    })
+    Globals::with(|globals| rs_print_the_digs(globals, k as usize))
 }
 
 // #[no_mangle]

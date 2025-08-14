@@ -112,7 +112,7 @@ void resize_eqtb(uintptr_t len);
 
 void clear_eqtb(void);
 
-extern char *gettexstring(StrNumber s);
+char *gettexstring(StrNumber s);
 
 int32_t in_open(void);
 

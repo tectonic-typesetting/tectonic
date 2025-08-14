@@ -1,10 +1,10 @@
 use crate::ty::StrNumber;
 use std::cell::RefCell;
-use std::ffi::CStr;
 use std::ptr;
 
 mod memory;
 
+use crate::c_api::globals::Globals;
 pub use memory::*;
 
 thread_local! {
@@ -39,7 +39,7 @@ impl EngineCtx {
     }
 
     pub fn set_int_par(&mut self, par: IntPar, val: i32) {
-        unsafe { self.eqtb[INT_BASE + par as usize].b32.s1 = val }
+        self.eqtb[INT_BASE + par as usize].b32.s1 = val
     }
 }
 
@@ -167,14 +167,21 @@ pub extern "C" fn clear_eqtb() {
     ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb.clear())
 }
 
-pub fn with_tex_string<T>(s: StrNumber, f: impl FnOnce(&CStr) -> T) -> T {
-    let ptr = unsafe { gettexstring(s) };
-    let str = unsafe { CStr::from_ptr(ptr) };
-    let out = f(str);
-    unsafe { libc::free(ptr.cast()) };
-    out
+pub fn rs_gettexstring(globals: &mut Globals<'_, '_>, s: StrNumber) -> String {
+    if s < 0x10000 {
+        return String::new();
+    }
+
+    let str = globals.strings.str(s - 0x10000);
+
+    String::from_utf16_lossy(str)
 }
 
-unsafe extern "C" {
-    fn gettexstring(s: StrNumber) -> *mut libc::c_char;
+#[no_mangle]
+pub unsafe extern "C" fn gettexstring(s: StrNumber) -> *mut libc::c_char {
+    let str = Globals::with(|globals| rs_gettexstring(globals, s));
+    let out = unsafe { libc::malloc(str.len() + 1) }.cast::<libc::c_char>();
+    unsafe { ptr::copy_nonoverlapping(str.as_ptr().cast(), out, str.len()) };
+    unsafe { out.add(str.len()).write(0) };
+    out
 }
