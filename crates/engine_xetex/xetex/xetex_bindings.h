@@ -162,6 +162,10 @@ bool doing_special(void);
 
 void set_doing_special(bool val);
 
+uint8_t dig(uintptr_t idx);
+
+void set_dig(uintptr_t idx, uint8_t val);
+
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);

@@ -106,10 +106,10 @@ print_the_digs(eight_bits k)
 {
     while (k > 0) {
         k--;
-        if (dig[k] < 10)
-            print_char('0'  + dig[k]);
+        if (dig(k) < 10)
+            print_char('0'  + dig(k));
         else
-            print_char(55 /*"A" -10 */  + dig[k]);
+            print_char(55 /*"A" -10 */  + dig(k));
     }
 }
 
@@ -130,16 +130,16 @@ print_int(int32_t n)
             m = (m % 10) + 1;
             k = 1;
             if (m < 10)
-                dig[0] = m;
+                set_dig(0, m);
             else {
-                dig[0] = 0;
+                set_dig(0, 0);
                 n++;
             }
         }
     }
 
     do {
-        dig[k] = n % 10;
+        set_dig(k, n % 10);
         n = n / 10;
         k++;
     } while (!(n == 0));
@@ -417,7 +417,7 @@ print_hex(int32_t n)
     print_char('"');
 
     do {
-        dig[k] = n % 16;
+        set_dig(k, n % 16);
         n = n / 16;
         k++;
     } while (n != 0);
@@ -508,13 +508,13 @@ print_ucs_code(UnicodeScalar n)
     print_cstr("U+");
 
     do {
-        dig[k] = n % 16;
+        set_dig(k, n % 16);
         n = n / 16;
         k++;
     } while (n != 0);
 
     while (k < 4) {
-        dig[k] = 0;
+        set_dig(k, 0);
         k++;
     }
 
