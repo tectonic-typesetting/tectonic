@@ -255,31 +255,6 @@ print_sa_num(int32_t q)
     print_int(n);
 }
 
-
-void
-print_file_line(void)
-{
-    int32_t level = in_open();
-
-    while ((level > 0) && (full_source_filename_stack(level) == 0))
-        level--;
-
-    if (level == 0)
-        print_nl_cstr("! ");
-    else {
-        print_nl_cstr("");
-        print(full_source_filename_stack(level));
-        print(':');
-        if (level == in_open())
-            print_int(line());
-        else
-            print_int(line_stack(level + 1));
-        print_cstr(": ");
-    }
-}
-/*:1660*/
-
-
 void
 print_two(int32_t n)
 {
