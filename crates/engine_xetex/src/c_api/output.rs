@@ -348,7 +348,7 @@ pub fn rs_print_char(
         } else {
             let s = (s - 0x10000) as u16;
             rs_print_raw_char(state, engine, out, strings, 0xD800 + s / 1024, true);
-            rs_print_raw_char(state, engine, out, strings, 0xDC00 + 2 % 1024, true)
+            rs_print_raw_char(state, engine, out, strings, 0xDC00 + s % 1024, true)
         }
         return;
     }
