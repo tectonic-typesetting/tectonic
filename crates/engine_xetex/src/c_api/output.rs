@@ -24,6 +24,7 @@ pub struct OutputCtx {
     log_file: Option<OutputId>,
     write_file: Vec<Option<OutputId>>,
     doing_special: bool,
+    digits: [u8; 23],
 }
 
 impl OutputCtx {
@@ -37,6 +38,7 @@ impl OutputCtx {
             log_file: None,
             write_file: Vec::new(),
             doing_special: false,
+            digits: [0; 23],
         }
     }
 }
@@ -124,6 +126,16 @@ pub extern "C" fn doing_special() -> bool {
 #[no_mangle]
 pub extern "C" fn set_doing_special(val: bool) {
     OUTPUT_CTX.with_borrow_mut(|out| out.doing_special = val)
+}
+
+#[no_mangle]
+pub extern "C" fn dig(idx: usize) -> u8 {
+    OUTPUT_CTX.with_borrow(|out| out.digits[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_dig(idx: usize, val: u8) {
+    OUTPUT_CTX.with_borrow_mut(|out| out.digits[idx] = val)
 }
 
 fn rs_capture_to_diagnostic(

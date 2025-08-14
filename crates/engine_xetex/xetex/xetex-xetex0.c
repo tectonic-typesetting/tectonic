@@ -8204,7 +8204,7 @@ round_decimals(small_number k)
 
     while (k > 0) {
         k--;
-        a = (a + dig[k] * 0x20000) / 10;
+        a = (a + dig(k) * 0x20000) / 10;
     }
 
     return (a + 1) / 2;
@@ -8296,7 +8296,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
             done1:
                 for (kk = k; kk >= 1; kk--) {
-                    dig[kk - 1] = mem[p].b32.s0;
+                    set_dig(kk - 1, mem[p].b32.s0);
                     q = p;
                     p = LLIST_link(p);
                     mem[q].b32.s1 = avail;

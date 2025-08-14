@@ -423,7 +423,6 @@ extern bool insert_src_special_every_math;
 extern bool insert_src_special_every_vbox;
 extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
-extern unsigned char dig[23];
 extern int32_t first_count;
 extern UTF16_code *native_text;
 extern int32_t native_text_size;

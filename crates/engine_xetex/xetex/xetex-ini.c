@@ -53,7 +53,6 @@ bool insert_src_special_every_math;
 bool insert_src_special_every_vbox;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-unsigned char dig[23];
 int32_t first_count;
 UTF16_code *native_text;
 int32_t native_text_size;
