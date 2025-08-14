@@ -1,3 +1,4 @@
+use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ptr;
 
@@ -7,7 +8,7 @@ thread_local! {
 
 pub struct StringPool {
     pub(crate) str_pool: Vec<u16>,
-    str_start: Vec<u32>,
+    pub(crate) str_start: Vec<u32>,
     pub(crate) pool_ptr: usize,
     pub(crate) str_ptr: usize,
     pub(crate) pool_size: usize,
@@ -22,6 +23,11 @@ impl StringPool {
             str_ptr: 0,
             pool_size: 0,
         }
+    }
+
+    pub fn str(&self, str: StrNumber) -> &[u16] {
+        let str = str as usize;
+        &self.str_pool[self.str_start[str] as usize..self.str_start[str + 1] as usize]
     }
 }
 
