@@ -606,6 +606,27 @@ pub fn rs_print_int(globals: &mut Globals<'_, '_>, mut n: i32) {
     rs_print_the_digs(globals, k);
 }
 
+pub fn rs_print_file_line(globals: &mut Globals<'_, '_>) {
+    let mut level = globals.files.in_open as usize;
+    while level > 0 && globals.files.full_source_filename_stack[level] == 0 {
+        level -= 1;
+    }
+
+    if level == 0 {
+        rs_print_nl_bytes(globals, b"! ")
+    } else {
+        rs_print_nl_bytes(globals, b"");
+        rs_print(globals, globals.files.full_source_filename_stack[level]);
+        rs_print(globals, ':' as i32);
+        if level == globals.files.in_open as usize {
+            rs_print_int(globals, globals.files.line);
+        } else {
+            rs_print_int(globals, globals.files.line_stack[level + 1])
+        }
+        rs_print_bytes(globals, b": ");
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn print_the_digs(k: u8) {
     Globals::with(|globals| rs_print_the_digs(globals, k as usize))
@@ -614,6 +635,11 @@ pub extern "C" fn print_the_digs(k: u8) {
 #[no_mangle]
 pub extern "C" fn print_int(n: i32) {
     Globals::with(|globals| rs_print_int(globals, n))
+}
+
+#[no_mangle]
+pub extern "C" fn print_file_line() {
+    Globals::with(|globals| rs_print_file_line(globals))
 }
 
 // #[no_mangle]
@@ -635,51 +661,4 @@ pub extern "C" fn print_int(n: i32) {
 //     rs_print_cstr(message);
 //     capture_to_diagnostic(&mut diag);
 //     Box::into_raw(Box::new(diag))
-// }
-
-/*
-void
-print_file_line(void)
-{
-    int32_t level = in_open();
-
-    while ((level > 0) && (full_source_filename_stack(level) == 0))
-        level--;
-
-    if (level == 0)
-        print_nl_cstr("! ");
-    else {
-        print_nl_cstr("");
-        print(full_source_filename_stack(level));
-        print(':');
-        if (level == in_open())
-            print_int(line());
-        else
-            print_int(line_stack(level + 1));
-        print_cstr(": ");
-    }
-}
- */
-
-// pub fn rs_print_file_line(files: &mut FileCtx) {
-//     let level = files.in_open;
-//     let mut level = files.in_open as usize;
-//     while level > 0 && files.full_source_filename_stack[level] == 0 {
-//         level -= 1;
-//     }
-//
-//     if level == 0 {
-//         rs_print_nl_str("! ");
-//     } else {
-//         rs_print_nl_str("");
-//         print(files.full_source_filename_stack[level]);
-//         print(':');
-//
-//         if level == files.in_open {
-//             print_int(files.line);
-//         } else {
-//             print_int(files.line_stack[level + 1]);
-//         }
-//         print_str(": ");
-//     }
 // }
