@@ -573,9 +573,47 @@ pub fn rs_print_the_digs(globals: &mut Globals<'_, '_>, k: usize) {
     }
 }
 
+pub fn rs_print_int(globals: &mut Globals<'_, '_>, mut n: i32) {
+    let mut k = 0;
+
+    if n < 0 {
+        rs_print_char(globals, b'-' as i32);
+        if n > -100000000 {
+            n = -n;
+        } else {
+            let mut m = -1 - n;
+            n = m / 10;
+            m = (m % 10) + 1;
+            k = 1;
+            if m < 10 {
+                globals.out.digits[0] = m as u8;
+            } else {
+                globals.out.digits[0] = 0;
+                n += 1;
+            }
+        }
+    }
+
+    loop {
+        globals.out.digits[k] = (n % 10) as u8;
+        n /= 10;
+        k += 1;
+        if n == 0 {
+            break;
+        }
+    }
+
+    rs_print_the_digs(globals, k);
+}
+
 #[no_mangle]
 pub extern "C" fn print_the_digs(k: u8) {
     Globals::with(|globals| rs_print_the_digs(globals, k as usize))
+}
+
+#[no_mangle]
+pub extern "C" fn print_int(n: i32) {
+    Globals::with(|globals| rs_print_int(globals, n))
 }
 
 // #[no_mangle]
