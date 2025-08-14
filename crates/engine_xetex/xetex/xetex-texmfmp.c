@@ -319,57 +319,6 @@ maketexstring(const char *s)
 }
 
 
-char *
-gettexstring (str_number s)
-{
-  unsigned int bytesToWrite = 0;
-  pool_pointer len, i, j;
-  char *name;
-
-  if (s >= 65536L)
-      len = str_start(s + 1 - 65536L) - str_start(s - 65536L);
-  else
-      len = 0;
-
-  name = xmalloc(len * 3 + 1); /* max UTF16->UTF8 expansion
-                                  (code units, not bytes) */
-  for (i = 0, j = 0; i < len; i++) {
-    uint32_t c = str_pool(i + str_start(s - 65536L));
-    if (c >= 0xD800 && c <= 0xDBFF) {
-      uint32_t lo = str_pool(++i + str_start(s - 65536L));
-      if (lo >= 0xDC00 && lo <= 0xDFFF)
-        c = (c - 0xD800) * 0x0400 + lo - 0xDC00 + 0x10000;
-      else
-        c = 0xFFFD;
-    }
-
-    if (c < 0x80)
-      bytesToWrite = 1;
-    else if (c < 0x800)
-      bytesToWrite = 2;
-    else if (c < 0x10000)
-      bytesToWrite = 3;
-    else if (c < 0x110000)
-      bytesToWrite = 4;
-    else {
-      bytesToWrite = 3;
-      c = 0xFFFD;
-    }
-
-    j += bytesToWrite;
-    switch (bytesToWrite) { /* note: everything falls through. */
-      case 4: name[--j] = ((c | 0x80) & 0xBF); c >>= 6;
-      case 3: name[--j] = ((c | 0x80) & 0xBF); c >>= 6;
-      case 2: name[--j] = ((c | 0x80) & 0xBF); c >>= 6;
-      case 1: name[--j] =  (c | firstByteMark[bytesToWrite]);
-    }
-    j += bytesToWrite;
-  }
-  name[j] = 0;
-  return name;
-}
-
-
 static int
 compare_paths (const char *p1, const char *p2)
 {
