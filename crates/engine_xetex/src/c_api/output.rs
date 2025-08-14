@@ -1,6 +1,7 @@
 use crate::c_api::engine::{with_tex_string, EngineCtx, IntPar, Selector, ENGINE_CTX};
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use crate::c_api::pool::{StringPool, STRING_POOL};
+use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ffi::CStr;
 use std::io::Write;
@@ -9,6 +10,7 @@ use std::ptr::NonNull;
 use tectonic_bridge_core::{CoreBridgeState, Diagnostic, OutputId};
 
 pub const MAX_PRINT_LINE: usize = 79;
+pub const BIGGEST_CHAR: i32 = 0xFFFF;
 pub const BIGGEST_USV: i32 = 0x10FFFF;
 
 thread_local! {
@@ -540,6 +542,126 @@ pub extern "C" fn print_esc_cstr(str: *const libc::c_char) {
                 STRING_POOL.with_borrow_mut(|strings| {
                     rs_print_esc_bytes(state, engine, out, strings, bytes)
                 })
+            })
+        })
+    })
+}
+
+pub fn rs_print(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    str: StrNumber,
+) {
+    if str as usize >= strings.str_ptr {
+        rs_print_bytes(state, engine, out, strings, b"???");
+        return;
+    } else if str <= BIGGEST_CHAR {
+        if str < 0 {
+            rs_print_bytes(state, engine, out, strings, b"???");
+        } else {
+            if engine.selector == Selector::NewString {
+                rs_print_char(state, engine, out, strings, str);
+            } else if engine.int_par(IntPar::NewLineChar) == str
+                && !matches!(engine.selector, Selector::Pseudo | Selector::NewString)
+            {
+                rs_print_ln(state, engine, out);
+            } else {
+                let nl = engine.int_par(IntPar::NewLineChar);
+                engine.set_int_par(IntPar::NewLineChar, -1);
+                rs_print_char(state, engine, out, strings, str);
+                engine.set_int_par(IntPar::NewLineChar, nl);
+            }
+        }
+        return;
+    }
+
+    let pool_idx = str - 0x10000;
+
+    let str_len = strings.str(pool_idx).len();
+    let mut idx = 0;
+    while idx < str_len {
+        let str = strings.str(pool_idx);
+        let byte = str[idx];
+        if (0xD800..0xDC00).contains(&byte)
+            && idx + 1 < str_len
+            && (0xDC00..0xE000).contains(&str[idx + 1])
+        {
+            rs_print_char(
+                state,
+                engine,
+                out,
+                strings,
+                0x10000 + (byte as i32 - 0xD800) * 1024 + (str[idx + 1] as i32 - 0xDC00),
+            );
+            idx += 1;
+        } else {
+            rs_print_char(state, engine, out, strings, byte as i32);
+        }
+        idx += 1;
+    }
+}
+
+pub fn rs_print_nl(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    str: StrNumber,
+) {
+    if (out.term_offset > 0 && matches!(engine.selector, Selector::TermOnly | Selector::TermAndLog))
+        || (out.file_offset > 0
+            && matches!(engine.selector, Selector::LogOnly | Selector::TermAndLog))
+    {
+        rs_print_ln(state, engine, out);
+    }
+    rs_print(state, engine, out, strings, str);
+}
+
+pub fn rs_print_esc(
+    state: &mut CoreBridgeState,
+    engine: &mut EngineCtx,
+    out: &mut OutputCtx,
+    strings: &mut StringPool,
+    str: StrNumber,
+) {
+    let c = engine.int_par(IntPar::EscapeChar);
+    if c >= 0 && c <= BIGGEST_USV {
+        rs_print_char(state, engine, out, strings, c);
+    }
+    rs_print(state, engine, out, strings, str);
+}
+
+#[no_mangle]
+pub extern "C" fn print(str: StrNumber) {
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL.with_borrow_mut(|strings| rs_print(state, engine, out, strings, str))
+            })
+        })
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn print_nl(str: StrNumber) {
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL.with_borrow_mut(|strings| rs_print_nl(state, engine, out, strings, str))
+            })
+        })
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn print_esc(str: StrNumber) {
+    CoreBridgeState::with_global_state(|state| {
+        ENGINE_CTX.with_borrow_mut(|engine| {
+            OUTPUT_CTX.with_borrow_mut(|out| {
+                STRING_POOL
+                    .with_borrow_mut(|strings| rs_print_esc(state, engine, out, strings, str))
             })
         })
     })

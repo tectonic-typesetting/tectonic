@@ -24,6 +24,8 @@
 
 #define MAX_PRINT_LINE 79
 
+#define BIGGEST_CHAR 65535
+
 #define BIGGEST_USV 1114111
 
 #if defined(WORDS_BIGENDIAN)
@@ -185,6 +187,12 @@ void print_cstr(const char *str);
 void print_nl_cstr(const char *str);
 
 void print_esc_cstr(const char *str);
+
+void print(StrNumber str);
+
+void print_nl(StrNumber str);
+
+void print_esc(StrNumber str);
 
 void print_the_digs(uint8_t k);
 
