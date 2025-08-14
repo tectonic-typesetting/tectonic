@@ -29,40 +29,6 @@ error_here_with_diagnostic(const char* message)
 }
 
 void
-print_int(int32_t n)
-{
-    unsigned char k = 0;
-    int32_t m;
-
-    if (n < 0) {
-        print_char('-');
-        if (n > -100000000L)
-            n = -(int32_t) n;
-        else {
-            m = -1 - n;
-            n = m / 10;
-            m = (m % 10) + 1;
-            k = 1;
-            if (m < 10)
-                set_dig(0, m);
-            else {
-                set_dig(0, 0);
-                n++;
-            }
-        }
-    }
-
-    do {
-        set_dig(k, n % 10);
-        n = n / 10;
-        k++;
-    } while (!(n == 0));
-
-    print_the_digs(k);
-}
-
-
-void
 print_cs(int32_t p)
 {
     if (p < HASH_BASE) {
