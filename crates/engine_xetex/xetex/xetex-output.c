@@ -9,25 +9,6 @@
 #include "tectonic_bridge_core.h"
 #include "xetex_bindings.h"
 
-// This replaces the "print file+line number" block at the start of errors
-ttbc_diagnostic_t *
-error_here_with_diagnostic(const char* message)
-{
-    ttbc_diagnostic_t *error = ttbc_diag_begin_error();
-    diagnostic_print_file_line(error);
-    ttstub_diag_printf(error, "%s", message);
-
-    if (file_line_error_style_p())
-        print_file_line();
-    else
-        print_nl_cstr("! ");
-    print_cstr(message);
-
-    capture_to_diagnostic(error);
-
-    return error;
-}
-
 void
 print_cs(int32_t p)
 {

@@ -153,7 +153,7 @@ pub unsafe extern "C" fn capture_to_diagnostic(diagnostic: Option<NonNull<Diagno
     })
 }
 
-unsafe fn rs_diagnostic_print_file_line(globals: &mut Globals<'_, '_>, diag: &mut Diagnostic) {
+pub fn rs_diagnostic_print_file_line(globals: &mut Globals<'_, '_>, diag: &mut Diagnostic) {
     let mut level = globals.files.in_open as usize;
     while level > 0 && globals.files.full_source_filename_stack[level] == 0 {
         level -= 1;
@@ -178,11 +178,36 @@ pub unsafe extern "C" fn diagnostic_print_file_line(diagnostic: *mut Diagnostic)
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn diagnostic_begin_capture_warning_here() -> *mut Diagnostic {
+pub extern "C" fn diagnostic_begin_capture_warning_here() -> *mut Diagnostic {
     let mut warning = Diagnostic::warning();
     Globals::with(|globals| {
         rs_diagnostic_print_file_line(globals, &mut warning);
         rs_capture_to_diagnostic(globals, Some(Box::new(warning)));
+        ptr::from_mut(globals.out.current_diagnostic.as_deref_mut().unwrap())
+    })
+}
+
+// From C code: This replaces the "print file+line number" block at the start of errors
+/// Start the error, print file line, and set the current diagnostic to a new one
+pub fn rs_error_here_with_diagnostic(globals: &mut Globals<'_, '_>, message: &[u8]) {
+    let mut diag = Diagnostic::error();
+    rs_diagnostic_print_file_line(globals, &mut diag);
+    diag.append(String::from_utf8_lossy(message));
+
+    if globals.out.file_line_error_style_p != 0 {
+        rs_print_file_line(globals)
+    } else {
+        rs_print_nl_bytes(globals, b"! ")
+    }
+    rs_print_bytes(globals, message);
+    rs_capture_to_diagnostic(globals, Some(Box::new(diag)));
+}
+
+#[no_mangle]
+pub extern "C" fn error_here_with_diagnostic(msg: *const libc::c_char) -> *mut Diagnostic {
+    let str = unsafe { CStr::from_ptr(msg) };
+    Globals::with(|globals| {
+        rs_error_here_with_diagnostic(globals, str.to_bytes());
         ptr::from_mut(globals.out.current_diagnostic.as_deref_mut().unwrap())
     })
 }

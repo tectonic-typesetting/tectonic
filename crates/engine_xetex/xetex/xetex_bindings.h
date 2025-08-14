@@ -174,6 +174,8 @@ void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
 
 ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
 
+ttbc_diagnostic_t *error_here_with_diagnostic(const char *msg);
+
 void warn_char(int c);
 
 void print_ln(void);
