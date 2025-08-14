@@ -4,7 +4,7 @@
 
 This crate is part of [the Tectonic
 project](https://tectonic-typesetting.github.io/en-US/). It implements various
-Tectonic “bundles” that provide access to collections of TeX support files.
+Tectonic "bundles" that provide access to collections of TeX support files.
 
 - [API documentation](https://docs.rs/tectonic_bundles/).
 - [Main Git repository](https://github.com/tectonic-typesetting/tectonic/).

@@ -19,6 +19,7 @@
 use lazy_static::lazy_static;
 
 lazy_static! {
+    /// Singleton initialized instance of the compilation target info
     pub static ref TARGET_CONFIG: TargetConfiguration = TargetConfiguration::default();
 }
 
@@ -31,13 +32,21 @@ lazy_static! {
 /// uppercased when they're loaded, to allow for case-insensitive comparisons
 /// later.
 pub struct TargetConfiguration {
+    /// Equivalent to `target_arch`
     pub arch: String,
+    /// Equivalent to `target_feature`
     pub feature: String,
+    /// Equivalent to `target_os`
     pub os: String,
+    /// Equivalent to `target_family`
     pub family: String,
+    /// Equivalent to `target_env`
     pub env: String,
+    /// Equivalent to `target_endian`
     pub endian: String,
+    /// Equivalent to `target_pointer_width`
     pub pointer_width: String,
+    /// Equivalent to `target_vendor`
     pub vendor: String,
 }
 

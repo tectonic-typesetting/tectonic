@@ -1,6 +1,8 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(missing_docs)]
+
 //! Enumerations within the engine.
 //!
 //! We divide these into two categories: "simple" enums that basically have

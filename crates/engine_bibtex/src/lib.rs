@@ -1,7 +1,6 @@
 // Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
 #![allow(clippy::assertions_on_constants)]
 
 //! The [bibtex] program as a reusable crate.
@@ -20,38 +19,32 @@
 
 use crate::{
     auxi::{
-        get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxData, AuxFile,
+        get_aux_command_and_process, last_check_for_aux_errors, pop_the_aux_stack, AuxCommand,
+        AuxData,
     },
-    bibs::BibData,
-    bst::get_bst_command_and_process,
+    bibs::{BibCommand, BibData},
+    bst::{get_bst_command_and_process, BstCommand},
     buffer::{BufTy, GlobalBuffer},
     cite::CiteInfo,
-    entries::EntryData,
-    exec::ExecCtx,
-    external::*,
-    global::GlobalData,
-    hash::HashData,
-    history::{get_history, History},
+    entries::{EntryData, ENT_STR_SIZE},
+    exec::{ControlSeq, ExecCtx},
+    global::{GlobalData, GLOB_STR_SIZE},
+    hash::{BstBuiltin, BstFn, HashData, HashPointer},
     log::{
-        bib_close_log, init_log_file, init_standard_output, log_pr_aux_name, print_aux_name,
-        print_confusion, sam_wrong_file_name_print, write_log_file, write_logs,
+        bib_close_log, log_pr_aux_name, print_aux_name, print_confusion, sam_wrong_file_name_print,
+        AsBytes,
     },
     other::OtherData,
-    peekable::{input_ln, peekable_close, PeekableInput},
-    pool::{pre_def_certain_strings, StringPool},
+    peekable::{input_ln, PeekableInput},
+    pool::{StrNumber, StringPool},
     scan::eat_bst_white_space,
 };
 use std::{
     ffi::{CStr, CString},
-    ptr::{self, NonNull},
+    io::Write,
 };
-use tectonic_bridge_core::{
-    ttbc_input_close, ttbc_input_open, ttbc_output_close, ttbc_output_open,
-    ttbc_output_open_stdout, CoreBridgeLauncher, CoreBridgeState, FileFormat,
-};
+use tectonic_bridge_core::{CoreBridgeLauncher, CoreBridgeState, FileFormat, OutputId};
 use tectonic_errors::prelude::*;
-use tectonic_io_base::OutputHandle;
-use xbuf::SafelyZero;
 
 pub(crate) mod auxi;
 pub(crate) mod bibs;
@@ -63,13 +56,19 @@ pub(crate) mod entries;
 pub(crate) mod exec;
 pub(crate) mod global;
 pub(crate) mod hash;
-pub(crate) mod history;
 pub(crate) mod log;
 pub(crate) mod other;
 pub(crate) mod peekable;
 pub(crate) mod pool;
 pub(crate) mod scan;
-pub(crate) mod xbuf;
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub(crate) enum History {
+    Spotless,
+    WarningIssued(u32),
+    ErrorIssued(u32),
+    FatalError,
+}
 
 #[doc(hidden)]
 #[derive(Debug)]
@@ -81,7 +80,7 @@ pub(crate) enum BibtexError {
 
 /// A possible outcome from a BibTeX engine invocation.
 ///
-/// The classic TeX implementation provides a fourth outcome: “fatal error”. In
+/// The classic TeX implementation provides a fourth outcome: "fatal error". In
 /// Tectonic, this outcome is represented as an `Err` result rather than a
 /// [`BibtexOutcome`].
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -92,7 +91,7 @@ pub enum BibtexOutcome {
     /// Warnings were issued.
     Warnings = 1,
 
-    /// Errors occurred. Note that, in TeX usage, “errors” are not necessarily
+    /// Errors occurred. Note that, in TeX usage, "errors" are not necessarily
     /// *fatal* errors: the engine will proceed and work around errors as best
     /// it can.
     Errors = 2,
@@ -100,7 +99,7 @@ pub enum BibtexOutcome {
 
 /// A struct for invoking the BibTeX engine.
 ///
-/// This struct has a fairly straightforward “builder” interface: you create it,
+/// This struct has a fairly straightforward "builder" interface: you create it,
 /// apply any settings that you wish, and eventually run the
 /// [`process()`](Self::process) method.
 ///
@@ -165,6 +164,12 @@ const _: () = assert!(hash::HASH_PRIME <= hash::HASH_SIZE);
 const _: () = assert!(pool::MAX_STRINGS <= hash::HASH_SIZE);
 const _: () = assert!(cite::MAX_CITES <= pool::MAX_STRINGS);
 
+pub(crate) struct File {
+    name: StrNumber,
+    file: PeekableInput,
+    line: u32,
+}
+
 pub(crate) struct GlobalItems<'a> {
     buffers: &'a mut GlobalBuffer,
     pool: &'a mut StringPool,
@@ -192,18 +197,23 @@ impl Default for BibtexConfig {
     }
 }
 
+#[derive(Default)]
+pub(crate) struct Logs {
+    stdout: Option<OutputId>,
+    file: Option<OutputId>,
+}
+
 pub(crate) struct Bibtex<'a, 'cbs> {
     pub engine: &'a mut CoreBridgeState<'cbs>,
     pub config: BibtexConfig,
-    pub bst_file: Option<NonNull<PeekableInput>>,
-    pub bst_str: StrNumber,
-    pub bst_line_num: usize,
+    pub history: History,
+    pub logs: Logs,
 
-    pub bbl_file: *mut OutputHandle,
+    pub bst: Option<File>,
+
+    pub bbl_file: Option<OutputId>,
     pub bbl_line_num: usize,
 
-    pub num_bib_files: usize,
-    pub num_preamble_strings: usize,
     pub impl_fn_num: usize,
     pub cite_xptr: usize,
 
@@ -216,10 +226,10 @@ pub(crate) struct Bibtex<'a, 'cbs> {
     pub reading_completed: bool,
     pub all_entries: bool,
 
-    pub b_default: HashPointer,
-    pub s_null: HashPointer,
-    pub s_default: HashPointer,
-    pub s_aux_extension: HashPointer,
+    pub b_default: HashPointer<hash::BstFn>,
+    pub s_null: StrNumber,
+    pub s_default: StrNumber,
+    pub s_aux_extension: StrNumber,
 }
 
 impl<'a, 'cbs> Bibtex<'a, 'cbs> {
@@ -230,13 +240,11 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
         Bibtex {
             engine,
             config,
-            bst_file: None,
-            bst_str: 0,
-            bst_line_num: 0,
-            bbl_file: ptr::null_mut(),
-            bbl_line_num: 0,
-            num_bib_files: 0,
-            num_preamble_strings: 0,
+            history: History::Spotless,
+            logs: Logs::default(),
+            bst: None,
+            bbl_file: None,
+            bbl_line_num: 1,
             impl_fn_num: 0,
             cite_xptr: 0,
             bib_seen: false,
@@ -247,68 +255,106 @@ impl<'a, 'cbs> Bibtex<'a, 'cbs> {
             read_performed: false,
             reading_completed: false,
             all_entries: false,
-            b_default: 0,
-            s_null: 0,
-            s_default: 0,
-            s_aux_extension: 0,
+            b_default: HashPointer::default(),
+            s_null: StrNumber::invalid(),
+            s_default: StrNumber::invalid(),
+            s_aux_extension: StrNumber::invalid(),
+        }
+    }
+
+    pub(crate) fn mark_warning(&mut self) {
+        match self.history {
+            History::WarningIssued(cur) => self.history = History::WarningIssued(cur + 1),
+            History::Spotless => self.history = History::WarningIssued(1),
+            _ => (),
+        }
+    }
+
+    pub(crate) fn mark_error(&mut self) {
+        match self.history {
+            History::Spotless | History::WarningIssued(_) => self.history = History::ErrorIssued(1),
+            History::ErrorIssued(cur) => self.history = History::ErrorIssued(cur + 1),
+            _ => (),
+        }
+    }
+
+    pub(crate) fn mark_fatal(&mut self) {
+        self.history = History::FatalError;
+    }
+
+    pub(crate) fn write_logs<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        let _ = self
+            .engine
+            .get_output(self.logs.file.unwrap())
+            .write_all(str.as_bytes());
+        let _ = self
+            .engine
+            .get_output(self.logs.stdout.unwrap())
+            .write_all(str.as_bytes());
+    }
+
+    pub(crate) fn write_stdout<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        let _ = self
+            .engine
+            .get_output(self.logs.stdout.unwrap())
+            .write_all(str.as_bytes());
+    }
+
+    pub(crate) fn write_log_file<B: ?Sized + AsBytes>(&mut self, str: &B) {
+        self.engine
+            .get_output(self.logs.file.unwrap())
+            .write_all(str.as_bytes())
+            .unwrap();
+    }
+
+    pub(crate) fn init_stdout(&mut self) -> bool {
+        if self.logs.stdout.is_none() {
+            self.logs.stdout = self.engine.output_open_stdout();
+            self.logs.stdout.is_some()
+        } else {
+            true
+        }
+    }
+
+    pub(crate) fn init_log_file(&mut self, file: &CStr) -> bool {
+        if self.logs.file.is_none() {
+            self.logs.file = self.engine.output_open(file.to_str().unwrap(), false);
+            self.logs.file.is_some()
+        } else {
+            true
         }
     }
 }
 
-#[derive(Copy, Clone, Debug)]
-pub(crate) struct LookupRes {
+#[derive(Debug)]
+pub(crate) struct LookupRes<T> {
     /// The location of the string - where it exists, was inserted, of if insert is false,
     /// where it *would* have been inserted
-    loc: usize,
+    loc: HashPointer<T>,
     /// Whether the string existed in the hash table already
     exists: bool,
 }
 
+impl<T> Clone for LookupRes<T> {
+    fn clone(&self) -> Self {
+        *self
+    }
+}
+
+impl<T> Copy for LookupRes<T> {}
+
 #[derive(Debug)]
 pub(crate) struct FindCiteLocs {
-    cite_loc: CiteNumber,
-    lc_cite_loc: CiteNumber,
-
-    cite_found: bool,
-    lc_found: bool,
+    cite: Option<HashPointer<hash::Cite>>,
+    lc_cite: Option<HashPointer<hash::LcCite>>,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum StrIlk {
-    Text,
-    Integer,
-    AuxCommand,
-    AuxFile,
-    BstCommand,
-    BstFile,
-    BibFile,
-    FileExt,
-    Cite,
-    LcCite,
-    BstFn,
-    BibCommand,
-    Macro,
-    ControlSeq,
-}
-
-// SAFETY: StrIlk is valid at zero as StrIlk::Text
-unsafe impl SafelyZero for StrIlk {}
-
-type StrNumber = usize;
 type CiteNumber = usize;
 type ASCIICode = u8;
 type BufPointer = usize;
-type PoolPointer = usize;
-type HashPointer = usize;
-type BibNumber = usize;
-type WizFnLoc = usize;
 type FieldLoc = usize;
-type FnDefLoc = usize;
 
 pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> History {
-    history::reset();
-    log::reset();
-
     let mut buffers = GlobalBuffer::new();
     let mut pool = StringPool::new();
     let mut hash = HashData::new();
@@ -333,43 +379,156 @@ pub(crate) fn bibtex_main(ctx: &mut Bibtex<'_, '_>, aux_file_name: &CStr) -> His
 
     let res = inner_bibtex_main(ctx, &mut globals, aux_file_name);
     match res {
-        Ok(History::Spotless) => (),
-        Ok(hist) => return hist,
-        Err(BibtexError::Recover) => {
-            // SAFETY: bst_file guaranteed valid at this point
-            unsafe { peekable_close(ctx, ctx.bst_file) };
-            ctx.bst_file = None;
-            ttbc_output_close(ctx.engine, ctx.bbl_file);
+        Err(BibtexError::Recover) | Ok(History::Spotless) => {
+            ctx.bst.take().map(|file| file.file.close(ctx));
+            if let Some(bbl) = ctx.bbl_file {
+                ctx.engine.output_close(bbl);
+            }
         }
         Err(BibtexError::NoBst) => {
-            ttbc_output_close(ctx.engine, ctx.bbl_file);
+            if let Some(bbl) = ctx.bbl_file {
+                ctx.engine.output_close(bbl);
+            }
         }
         Err(BibtexError::Fatal) => (),
+        Ok(hist) => return hist,
     }
 
-    match get_history() {
+    match ctx.history {
         History::Spotless => (),
         History::WarningIssued(warns) => {
             if warns == 1 {
-                write_logs("(There was 1 warning)\n")
+                ctx.write_logs("(There was 1 warning)\n")
             } else {
-                write_logs(&format!("(There were {} warnings)\n", warns))
+                ctx.write_logs(&format!("(There were {warns} warnings)\n"))
             }
         }
         History::ErrorIssued(errs) => {
             if errs == 1 {
-                write_logs("(There was 1 error message)\n")
+                ctx.write_logs("(There was 1 error message)\n")
             } else {
-                write_logs(&format!("(There were {} error messages)\n", errs))
+                ctx.write_logs(&format!("(There were {errs} error messages)\n"))
             }
         }
         History::FatalError => {
-            write_logs("(That was a fatal error)\n");
+            ctx.write_logs("(That was a fatal error)\n");
         }
     }
 
     bib_close_log(ctx);
-    get_history()
+    ctx.history
+}
+
+pub(crate) fn pre_def_certain_strings(
+    ctx: &mut Bibtex<'_, '_>,
+    GlobalItems {
+        pool,
+        hash,
+        other,
+        entries,
+        ..
+    }: &mut GlobalItems<'_>,
+) {
+    let res = hash.lookup_str_insert::<hash::FileExt>(pool, b".aux", ());
+    ctx.s_aux_extension = hash.get(res.loc).text();
+
+    hash.lookup_str_insert::<AuxCommand>(pool, b"\\bibdata", AuxCommand::Data);
+    hash.lookup_str_insert::<AuxCommand>(pool, b"\\bibstyle", AuxCommand::Style);
+    hash.lookup_str_insert::<AuxCommand>(pool, b"\\citation", AuxCommand::Citation);
+    hash.lookup_str_insert::<AuxCommand>(pool, b"\\@input", AuxCommand::Input);
+
+    hash.lookup_str_insert::<BstCommand>(pool, b"entry", BstCommand::Entry);
+    hash.lookup_str_insert::<BstCommand>(pool, b"execute", BstCommand::Execute);
+    hash.lookup_str_insert::<BstCommand>(pool, b"function", BstCommand::Function);
+    hash.lookup_str_insert::<BstCommand>(pool, b"integers", BstCommand::Integers);
+    hash.lookup_str_insert::<BstCommand>(pool, b"iterate", BstCommand::Iterate);
+    hash.lookup_str_insert::<BstCommand>(pool, b"macro", BstCommand::Macro);
+    hash.lookup_str_insert::<BstCommand>(pool, b"read", BstCommand::Read);
+    hash.lookup_str_insert::<BstCommand>(pool, b"reverse", BstCommand::Reverse);
+    hash.lookup_str_insert::<BstCommand>(pool, b"sort", BstCommand::Sort);
+    hash.lookup_str_insert::<BstCommand>(pool, b"strings", BstCommand::Strings);
+
+    hash.lookup_str_insert::<BibCommand>(pool, b"comment", BibCommand::Comment);
+    hash.lookup_str_insert::<BibCommand>(pool, b"preamble", BibCommand::Preamble);
+    hash.lookup_str_insert::<BibCommand>(pool, b"string", BibCommand::String);
+
+    let mut build_in = |pds: &[ASCIICode], builtin| {
+        hash.lookup_str_insert(pool, pds, BstFn::Builtin(builtin))
+            .loc
+    };
+
+    build_in(b"=", BstBuiltin::Eq);
+    build_in(b">", BstBuiltin::Gt);
+    build_in(b"<", BstBuiltin::Lt);
+    build_in(b"+", BstBuiltin::Plus);
+    build_in(b"-", BstBuiltin::Minus);
+    build_in(b"*", BstBuiltin::Concat);
+    build_in(b":=", BstBuiltin::Set);
+    build_in(b"add.period$", BstBuiltin::AddPeriod);
+    build_in(b"call.type$", BstBuiltin::CallType);
+    build_in(b"change.case$", BstBuiltin::ChangeCase);
+    build_in(b"chr.to.int$", BstBuiltin::ChrToInt);
+    build_in(b"cite$", BstBuiltin::Cite);
+    build_in(b"duplicate$", BstBuiltin::Duplicate);
+    build_in(b"empty$", BstBuiltin::Empty);
+    build_in(b"format.name$", BstBuiltin::FormatName);
+    build_in(b"if$", BstBuiltin::If);
+    build_in(b"int.to.chr$", BstBuiltin::IntToChr);
+    build_in(b"int.to.str$", BstBuiltin::IntToStr);
+    build_in(b"missing$", BstBuiltin::Missing);
+    build_in(b"newline$", BstBuiltin::Newline);
+    build_in(b"num.names$", BstBuiltin::NumNames);
+    build_in(b"pop$", BstBuiltin::Pop);
+    build_in(b"preamble$", BstBuiltin::Preamble);
+    build_in(b"purify$", BstBuiltin::Purify);
+    build_in(b"quote$", BstBuiltin::Quote);
+    let skip_loc = build_in(b"skip$", BstBuiltin::Skip);
+    build_in(b"stack$", BstBuiltin::Stack);
+    build_in(b"substring$", BstBuiltin::Substring);
+    build_in(b"swap$", BstBuiltin::Swap);
+    build_in(b"text.length$", BstBuiltin::TextLength);
+    build_in(b"text.prefix$", BstBuiltin::TextPrefix);
+    build_in(b"top$", BstBuiltin::Top);
+    build_in(b"type$", BstBuiltin::Type);
+    build_in(b"warning$", BstBuiltin::Warning);
+    build_in(b"while$", BstBuiltin::While);
+    build_in(b"width$", BstBuiltin::Width);
+    build_in(b"write$", BstBuiltin::Write);
+
+    let res = hash.lookup_str_insert::<hash::Text>(pool, b"", ());
+    ctx.s_null = hash.get(res.loc).text();
+    let res = hash.lookup_str_insert::<hash::Text>(pool, b"default.type", ());
+    ctx.s_default = hash.get(res.loc).text();
+    ctx.b_default = skip_loc;
+
+    hash.lookup_str_insert::<ControlSeq>(pool, b"i", ControlSeq::LowerI);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"j", ControlSeq::LowerJ);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"oe", ControlSeq::LowerOE);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"OE", ControlSeq::UpperOE);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"ae", ControlSeq::LowerAE);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"AE", ControlSeq::UpperAE);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"aa", ControlSeq::LowerAA);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"AA", ControlSeq::UpperAA);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"o", ControlSeq::LowerO);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"O", ControlSeq::UpperO);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"l", ControlSeq::LowerL);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"L", ControlSeq::UpperL);
+    hash.lookup_str_insert::<ControlSeq>(pool, b"ss", ControlSeq::LowerSS);
+
+    let num_fields = other.num_fields();
+    hash.lookup_str_insert::<BstFn>(pool, b"crossref", BstFn::Field(num_fields));
+    other.set_crossref_num(num_fields);
+    other.set_num_fields(num_fields + 1);
+    other.set_pre_defined_fields(num_fields + 1);
+
+    let num_ent_strs = entries.num_ent_strs();
+    hash.lookup_str_insert::<BstFn>(pool, b"sort.key$", BstFn::StrEntry(num_ent_strs));
+    entries.set_sort_key_num(num_ent_strs);
+    entries.set_num_ent_strs(num_ent_strs + 1);
+
+    hash.lookup_str_insert::<BstFn>(pool, b"entry.max$", BstFn::IntGlbl(ENT_STR_SIZE as i64));
+
+    hash.lookup_str_insert::<BstFn>(pool, b"global.max$", BstFn::IntGlbl(GLOB_STR_SIZE as i64));
 }
 
 pub(crate) fn inner_bibtex_main(
@@ -377,21 +536,22 @@ pub(crate) fn inner_bibtex_main(
     globals: &mut GlobalItems<'_>,
     aux_file_name: &CStr,
 ) -> Result<History, BibtexError> {
-    if !init_standard_output(ctx) {
+    if !ctx.init_stdout() {
         return Ok(History::FatalError);
     }
 
-    if initialize(ctx, globals, aux_file_name)? != 0 {
+    pre_def_certain_strings(ctx, globals);
+    if get_the_top_level_aux_file_name(ctx, globals, aux_file_name)? != 0 {
         return Ok(History::FatalError);
     }
 
     if ctx.config.verbose {
-        write_logs("This is BibTeX, Version 0.99d\n");
+        ctx.write_logs("This is BibTeX, Version 0.99d\n");
     } else {
-        write_log_file("This is BibTeX, Version 0.99d\n");
+        ctx.write_log_file("This is BibTeX, Version 0.99d\n");
     }
 
-    write_log_file(&format!(
+    ctx.write_log_file(&format!(
         "Capacity: max_strings={}, hash_size={}, hash_prime={}\n",
         pool::MAX_STRINGS,
         hash::HASH_SIZE,
@@ -399,17 +559,21 @@ pub(crate) fn inner_bibtex_main(
     ));
 
     if ctx.config.verbose {
-        write_logs("The top-level auxiliary file: ");
-        print_aux_name(globals.pool, globals.aux.top_file().name)?;
+        ctx.write_logs("The top-level auxiliary file: ");
+        print_aux_name(ctx, globals.pool, globals.aux.top_file().name)?;
     } else {
-        write_log_file("The top-level auxiliary file: ");
-        log_pr_aux_name(globals.aux, globals.pool)?;
+        ctx.write_log_file("The top-level auxiliary file: ");
+        log_pr_aux_name(ctx, globals.aux, globals.pool)?;
     }
 
     let last_aux = loop {
         globals.aux.top_file_mut().line += 1;
 
-        if !input_ln(Some(&mut globals.aux.top_file_mut().file), globals.buffers) {
+        if !input_ln(
+            ctx.engine,
+            &mut globals.aux.top_file_mut().file,
+            globals.buffers,
+        ) {
             if let Some(last) = pop_the_aux_stack(ctx, globals.aux) {
                 break last;
             }
@@ -420,19 +584,17 @@ pub(crate) fn inner_bibtex_main(
 
     last_check_for_aux_errors(ctx, globals.pool, globals.cites, globals.bibs, last_aux)?;
 
-    if ctx.bst_str == 0 {
+    if ctx.bst.is_none() {
         return Err(BibtexError::NoBst);
     }
 
-    ctx.bst_line_num = 0;
-    ctx.bbl_line_num = 1;
     globals
         .buffers
         .set_offset(BufTy::Base, 2, globals.buffers.init(BufTy::Base));
 
     let mut exec = ExecCtx::new(ctx);
     loop {
-        if !eat_bst_white_space(exec.glbl_ctx_mut(), globals.buffers) {
+        if !eat_bst_white_space(&mut exec, globals.buffers) {
             break;
         }
         get_bst_command_and_process(&mut exec, globals)?;
@@ -448,7 +610,6 @@ pub(crate) fn get_the_top_level_aux_file_name(
     }: &mut GlobalItems<'_>,
     aux_file_name: &CStr,
 ) -> Result<i32, BibtexError> {
-    let ctx = &mut *ctx;
     let aux_bytes = aux_file_name.to_bytes_with_nul();
 
     // This will be our scratch space for CStr filenames
@@ -464,80 +625,42 @@ pub(crate) fn get_the_top_level_aux_file_name(
     let aux_file = match PeekableInput::open(ctx, aux_file_name, FileFormat::Tex) {
         Ok(file) => file,
         Err(_) => {
-            sam_wrong_file_name_print(aux_file_name);
+            sam_wrong_file_name_print(ctx, aux_file_name);
             return Ok(1);
         }
     };
 
     set_extension(&mut path, b".blg");
     let log_file = CStr::from_bytes_with_nul(&path).unwrap();
-    if !init_log_file(ctx, log_file) {
-        sam_wrong_file_name_print(log_file);
+    if !ctx.init_log_file(log_file) {
+        sam_wrong_file_name_print(ctx, log_file);
         return Ok(1);
     }
 
     set_extension(&mut path, b".bbl");
     let bbl_file = CStr::from_bytes_with_nul(&path).unwrap();
-    // SAFETY: Function sound if provided a valid path pointer
-    ctx.bbl_file = unsafe { ttbc_output_open(ctx.engine, bbl_file.as_ptr(), 0) };
-    if ctx.bbl_file.is_null() {
-        sam_wrong_file_name_print(bbl_file);
+    ctx.bbl_file = ctx.engine.output_open(bbl_file.to_str().unwrap(), false);
+    if ctx.bbl_file.is_none() {
+        sam_wrong_file_name_print(ctx, bbl_file);
         return Ok(1);
     }
 
     set_extension(&mut path, b".aux");
-    let lookup = match pool.lookup_str_insert(hash, &path[..path.len() - 1], StrIlk::AuxFile) {
-        Ok(res) => res,
-        Err(_) => return Err(BibtexError::Fatal),
-    };
+    let lookup = hash.lookup_str_insert::<hash::AuxFile>(pool, &path[..path.len() - 1], ());
 
-    aux.push_file(AuxFile {
-        name: hash.text(lookup.loc),
+    aux.push_file(File {
+        name: hash.get(lookup.loc).text(),
         file: aux_file,
         line: 0,
     });
 
     if lookup.exists {
-        write_logs("Already encountered auxiliary file");
-        print_confusion();
+        ctx.write_logs("Already encountered auxiliary file");
+        print_confusion(ctx);
         return Err(BibtexError::Fatal);
     }
 
     Ok(0)
-}
-
-fn initialize(
-    ctx: &mut Bibtex<'_, '_>,
-    globals: &mut GlobalItems<'_>,
-    aux_file_name: &CStr,
-) -> Result<i32, BibtexError> {
-    globals.pool.set_pool_ptr(0);
-    globals.pool.set_str_ptr(1);
-    globals.pool.set_start(globals.pool.str_ptr(), 0);
-
-    ctx.bib_seen = false;
-    ctx.bst_seen = false;
-    ctx.citation_seen = false;
-    ctx.all_entries = false;
-
-    ctx.entry_seen = false;
-    ctx.read_seen = false;
-    ctx.read_performed = false;
-    ctx.reading_completed = false;
-    ctx.impl_fn_num = 0;
-    globals.buffers.set_init(BufTy::Out, 0);
-
-    pre_def_certain_strings(ctx, globals)?;
-    get_the_top_level_aux_file_name(ctx, globals, aux_file_name)
-}
-
-mod external {
-    #[allow(improper_ctypes)]
-    extern "C" {
-        pub(crate) fn xrealloc(ptr: *mut libc::c_void, size: libc::size_t) -> *mut libc::c_void;
-
-        pub(crate) fn xcalloc(elems: libc::size_t, elem_size: libc::size_t) -> *mut libc::c_void;
-    }
 }
 
 /// Does our resulting executable link correctly?

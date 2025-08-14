@@ -1,12 +1,14 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(missing_docs)]
+
 //! The TeX dynamic memory array.
 
 use nom::{
     multi::count,
     number::complete::{be_i32, be_u8},
-    IResult,
+    IResult, Parser,
 };
 
 use crate::{
@@ -42,7 +44,8 @@ impl Memory {
         let (input, _sa_roots) = count(
             parseutils::ranged_be_i32(MIN_HALFWORD, lo_mem_max),
             N_SERIALIZED_SA_ROOTS,
-        )(input)?;
+        )
+        .parse(input)?;
 
         // Compressed memory loading;
 
@@ -55,7 +58,7 @@ impl Memory {
             let nb = (q + 2 - p) as usize * SIZEOF_MEMORY_WORD;
 
             // TODO: read straight into mem?
-            let (new_input, block) = count(be_u8, nb)(input)?;
+            let (new_input, block) = count(be_u8, nb).parse(input)?;
             input = new_input;
             let idx = p as usize * SIZEOF_MEMORY_WORD;
             mem[idx..idx + nb].copy_from_slice(&block[..]);
@@ -73,7 +76,7 @@ impl Memory {
 
         // Loading the rest of low memory. TODO: straight into `mem`?
         let nb = (lo_mem_max + 1 - p) as usize * SIZEOF_MEMORY_WORD;
-        let (input, block) = count(be_u8, nb)(input)?;
+        let (input, block) = count(be_u8, nb).parse(input)?;
         let idx = p as usize * SIZEOF_MEMORY_WORD;
         mem[idx..idx + nb].copy_from_slice(&block[..]);
 
@@ -83,7 +86,7 @@ impl Memory {
         let (input, _avail) = parseutils::ranged_be_i32(MIN_HALFWORD, mem_top as i32)(input)?;
 
         let nb = (mem_top + 1 - hi_mem_min as usize) * SIZEOF_MEMORY_WORD;
-        let (input, block) = count(be_u8, nb)(input)?;
+        let (input, block) = count(be_u8, nb).parse(input)?;
         mem[hi_mem_min as usize * SIZEOF_MEMORY_WORD
             ..hi_mem_min as usize * SIZEOF_MEMORY_WORD + nb]
             .copy_from_slice(&block[..]);

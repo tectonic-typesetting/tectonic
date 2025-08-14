@@ -1,8 +1,6 @@
 // Copyright 2017-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! A framework for showing status messages to the user.
 //!
 //! A lot of the functionality here could be replaced by generic logging

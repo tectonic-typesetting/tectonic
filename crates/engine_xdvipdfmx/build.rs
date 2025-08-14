@@ -1,6 +1,8 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! xdvipdfmx build script. Builds and links our locally modified copy of the tool.
+
 use std::env;
 
 fn main() {

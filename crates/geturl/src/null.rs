@@ -10,7 +10,6 @@ use std::{
     result::Result as StdResult,
 };
 use tectonic_errors::Result;
-use tectonic_status_base::StatusBackend;
 
 use crate::{GetUrlBackend, RangeReader};
 
@@ -34,11 +33,11 @@ impl GetUrlBackend for NullBackend {
     type Response = Empty;
     type RangeReader = NullRangeReader;
 
-    fn get_url(&mut self, _url: &str, _status: &mut dyn StatusBackend) -> Result<Empty> {
+    fn get_url(&mut self, _url: &str) -> Result<Empty> {
         Err((NoGetUrlBackendError {}).into())
     }
 
-    fn resolve_url(&mut self, _url: &str, _status: &mut dyn StatusBackend) -> Result<String> {
+    fn resolve_url(&mut self, _url: &str) -> Result<String> {
         Err((NoGetUrlBackendError {}).into())
     }
 
