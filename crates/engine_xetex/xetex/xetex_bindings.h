@@ -22,6 +22,10 @@
 
 #define INT_PARS 83
 
+#define HASH_OFFSET 514
+
+#define HASH_BASE 2228226
+
 #define MAX_PRINT_LINE 79
 
 #define BIGGEST_CHAR 65535
@@ -113,6 +117,28 @@ void resize_eqtb(uintptr_t len);
 void clear_eqtb(void);
 
 char *gettexstring(StrNumber s);
+
+void resize_hash(uintptr_t len);
+
+B32x2 hash(uintptr_t idx);
+
+void set_hash(uintptr_t idx, B32x2 val);
+
+B32x2 *hash_ptr(uintptr_t idx);
+
+void clear_hash(void);
+
+int32_t hash_used(void);
+
+void set_hash_used(int32_t val);
+
+int32_t hash_extra(void);
+
+void set_hash_extra(int32_t val);
+
+int32_t hash_top(void);
+
+void set_hash_top(int32_t val);
 
 int32_t in_open(void);
 
