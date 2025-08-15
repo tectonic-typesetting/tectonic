@@ -6,6 +6,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
+#include "xetex_bindings.h"
 
 #include <stdio.h> /* for EOF */
 
@@ -57,15 +58,15 @@ show_token_list(int32_t p, int32_t q, int32_t l)
 
     match_chr = '#' ;
     n = '0' ;
-    tally = 0;
+    set_tally(0);
 
-    while (p != TEX_NULL && tally < l) {
+    while (p != TEX_NULL && tally() < l) {
         /*332:*/
         if (p == q) {
-            first_count = tally;
-            trick_count = tally + 1 + error_line - half_error_line;
-            if (trick_count < error_line)
-                trick_count = error_line;
+            first_count = tally();
+            set_trick_count(tally() + 1 + error_line() - half_error_line);
+            if (trick_count() < error_line())
+                set_trick_count(error_line());
         }
 
         if (p < hi_mem_min || p > mem_end) {
@@ -162,7 +163,7 @@ runaway(void)
 
         print_char('?');
         print_ln();
-        show_token_list(mem[p].b32.s1, TEX_NULL, error_line - 10);
+        show_token_list(mem[p].b32.s1, TEX_NULL, error_line() - 10);
     }
 }
 
@@ -276,7 +277,7 @@ found:
     mem[r].b32.s1 = TEX_NULL;
     if (s >= MEDIUM_NODE_SIZE) {
         mem[r + s - 1].b32.s0 = cur_input.synctex_tag;
-        mem[r + s - 1].b32.s1 = line;
+        mem[r + s - 1].b32.s1 = line();
     }
     return r;
 }
@@ -400,7 +401,7 @@ int32_t new_param_glue(small_number n)
     NODE_type(p) = GLUE_NODE;
     mem[p].b16.s0 = n + 1;
     mem[p + 1].b32.s1 = TEX_NULL;
-    q = /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ ;
+    q = /*232: */ eqtb_ptr(GLUE_BASE + n)->b32.s1 /*:232 */ ;
     mem[p + 1].b32.s0 = q;
     GLUE_SPEC_ref_count(q)++;
     return p;
@@ -422,7 +423,7 @@ int32_t new_skip_param(small_number n)
 {
     int32_t p;
 
-    temp_ptr = new_spec( /*232: */ eqtb[GLUE_BASE + n].b32.s1 /*:232 */ );
+    temp_ptr = new_spec( /*232: */ eqtb_ptr(GLUE_BASE + n)->b32.s1 /*:232 */ );
     p = new_glue(temp_ptr);
     mem[temp_ptr].b32.s1 = TEX_NULL;
     mem[p].b16.s0 = n + 1;
@@ -665,8 +666,8 @@ print_subsidiary_data(int32_t p, UTF16_code c)
         if (mem[p].b32.s1 != EMPTY)
             print_cstr(" []");
     } else {
-        str_pool[pool_ptr] = c;
-        pool_ptr++;
+        set_str_pool(pool_ptr(), c);
+        set_pool_ptr(pool_ptr()+1);
         temp_ptr = p;
 
         switch (mem[p].b32.s1) {
@@ -691,7 +692,7 @@ print_subsidiary_data(int32_t p, UTF16_code c)
             break;
         }
 
-        pool_ptr--;
+        set_pool_ptr(pool_ptr()-1);
     }
 }
 
@@ -879,10 +880,10 @@ show_node_list(int32_t p)
                         print_cstr(", display");
                 }
 
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.');
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 5].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case RULE_NODE:
@@ -905,10 +906,10 @@ show_node_list(int32_t p)
                 print_scaled(mem[p + 2].b32.s1);
                 print_cstr("); float cost ");
                 print_int(mem[p + 1].b32.s1);
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.');
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 4].b32.s0);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case WHATSIT_NODE:
@@ -979,10 +980,10 @@ show_node_list(int32_t p)
                         print_char('x');
                     print_cstr("leaders ");
                     print_spec(mem[p + 1].b32.s0, NULL);
-                    str_pool[pool_ptr] = '.' ;
-                    pool_ptr++;
+                    set_str_pool(pool_ptr(), '.');
+                    set_pool_ptr(pool_ptr()+1);
                     show_node_list(mem[p + 1].b32.s1);
-                    pool_ptr--;
+                    set_pool_ptr(pool_ptr()-1);
                 } else {
                     print_esc_cstr("glue");
 
@@ -1082,14 +1083,14 @@ show_node_list(int32_t p)
                     print_int(mem[p].b16.s0);
                 }
 
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.');
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s0);
-                pool_ptr--;
-                str_pool[pool_ptr] = '|' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), '|' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case MARK_NODE:
@@ -1106,10 +1107,10 @@ show_node_list(int32_t p)
                 if (mem[p].b16.s0 != 0)
                     print_cstr(" pre ");
 
-                str_pool[pool_ptr] = '.' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), '.' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case STYLE_NODE:
@@ -1118,22 +1119,22 @@ show_node_list(int32_t p)
 
             case CHOICE_NODE:
                 print_esc_cstr("mathchoice");
-                str_pool[pool_ptr] = 'D' ;
-                pool_ptr++;
+                set_str_pool(pool_ptr(), 'D' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s0);
-                pool_ptr--;
-                str_pool[pool_ptr] = 'T' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), 'T' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 1].b32.s1);
-                pool_ptr--;
-                str_pool[pool_ptr] = 'S' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), 'S' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 2].b32.s0);
-                pool_ptr--;
-                str_pool[pool_ptr] = 's' ;
-                pool_ptr++;
+                set_pool_ptr(pool_ptr()-1);
+                set_str_pool(pool_ptr(), 's' );
+                set_pool_ptr(pool_ptr()+1);
                 show_node_list(mem[p + 2].b32.s1);
-                pool_ptr--;
+                set_pool_ptr(pool_ptr()-1);
                 break;
 
             case ORD_NOAD:
@@ -1267,8 +1268,8 @@ void show_box(int32_t p)
     breadth_max = INTPAR(show_box_breadth) /*:244 */ ;
     if (breadth_max <= 0)
         breadth_max = 5;
-    if (pool_ptr + depth_threshold >= pool_size)
-        depth_threshold = pool_size - pool_ptr - 1;
+    if (pool_ptr() + depth_threshold >= pool_size())
+        depth_threshold = pool_size() - pool_ptr() - 1;
     show_node_list(p);
     print_ln();
 }
@@ -1276,7 +1277,7 @@ void show_box(int32_t p)
 void short_display_n(int32_t p, int32_t m)
 {
     breadth_max = m;
-    depth_threshold = pool_size - pool_ptr - 1;
+    depth_threshold = pool_size() - pool_ptr() - 1;
     show_node_list(p);
 }
 
@@ -1714,7 +1715,7 @@ void push_nest(void)
     cur_list.head = get_avail();
     cur_list.tail = cur_list.head;
     cur_list.prev_graf = 0;
-    cur_list.mode_line = line;
+    cur_list.mode_line = line();
     cur_list.eTeX_aux = TEX_NULL;
 }
 
@@ -2105,10 +2106,10 @@ void print_param(int32_t n)
 void begin_diagnostic(void)
 {
 
-    old_setting = selector;
+    old_setting = selector();
 
-    if (INTPAR(tracing_online) <= 0 && selector == SELECTOR_TERM_AND_LOG) {
-        selector--;
+    if (INTPAR(tracing_online) <= 0 && selector() == SELECTOR_TERM_AND_LOG) {
+        set_selector(selector()-1);
         if (history == HISTORY_SPOTLESS)
             history = HISTORY_WARNING_ISSUED;
     }
@@ -2119,7 +2120,7 @@ void end_diagnostic(bool blank_line)
     print_nl_cstr("");
     if (blank_line)
         print_ln();
-    selector = old_setting;
+    set_selector(old_setting);
 }
 
 void print_length_param(int32_t n)
@@ -3472,7 +3473,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             quote_char = '"' ;
 
             for (n = 0; n <= for_end; n++) {
-                if (str_pool[str_start[(font_name_str) - 65536L] + n] == '"' )
+                if (str_pool(str_start((font_name_str) - 65536L) + n) == '"' )
                     quote_char = '\'' ;
             }
 
@@ -3745,30 +3746,30 @@ id_lookup(int32_t j, int32_t l)
                     }
                 }
 
-                if (pool_ptr + ll > pool_size)
-                    overflow("pool size", pool_size - init_pool_ptr);
+                if (pool_ptr() + ll > pool_size())
+                    overflow("pool size", pool_size() - init_pool_ptr);
 
                 d = cur_length();
 
-                while (pool_ptr > str_start[str_ptr - TOO_BIG_CHAR]) {
-                    pool_ptr--;
-                    str_pool[pool_ptr + l] = str_pool[pool_ptr];
+                while (pool_ptr() > str_start(str_ptr() - TOO_BIG_CHAR)) {
+                    set_pool_ptr(pool_ptr()-1);
+                    set_str_pool(pool_ptr() + l, str_pool(pool_ptr()));
                 }
 
                 for (k = j; k <= j + l - 1; k++) {
                     if (buffer[k] < 65536L) {
-                        str_pool[pool_ptr] = buffer[k];
-                        pool_ptr++;
+                        set_str_pool(pool_ptr(), buffer[k]);
+                        set_pool_ptr(pool_ptr()+1);
                     } else {
-                        str_pool[pool_ptr] = 0xD800 + (buffer[k] - 65536L) / 1024;
-                        pool_ptr++;
-                        str_pool[pool_ptr] = 0xDC00 + (buffer[k] - 65536L) % 1024;
-                        pool_ptr++;
+                        set_str_pool(pool_ptr(), 0xD800 + (buffer[k] - 65536L) / 1024);
+                        set_pool_ptr(pool_ptr()+1);
+                        set_str_pool(pool_ptr(), 0xDC00 + (buffer[k] - 65536L) % 1024);
+                        set_pool_ptr(pool_ptr()+1);
                     }
                 }
 
                 hash[p].s1 = make_string();
-                pool_ptr += d;
+                set_pool_ptr(pool_ptr() + d);
             }
             goto found;
 
@@ -3797,19 +3798,19 @@ int32_t prim_lookup(str_number s)
             p = (s % PRIM_PRIME) + 1;
     } else {
 
-        j = str_start[(s) - 65536L];
-        if (s == str_ptr)
+        j = str_start((s) - 65536L);
+        if (s == str_ptr())
             l = (cur_length());
         else
             l = length(s);
-        h = str_pool[j];
+        h = str_pool(j);
         {
             register int32_t for_end;
             k = j + 1;
             for_end = j + l - 1;
             if (k <= for_end)
                 do {
-                    h = h + h + str_pool[k];
+                    h = h + h + str_pool(k);
                     while (h >= PRIM_PRIME)
                         h = h - PRIM_PRIME;
                 }
@@ -3999,7 +4000,7 @@ void group_warning(void)
 
     base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
-    i = in_open;
+    i = in_open();
     w = false;
     while ((grp_stack[i] == cur_boundary) && (i > 0)) {
 
@@ -4036,7 +4037,7 @@ void if_warning(void)
 
     base_ptr = input_ptr;
     input_stack[base_ptr] = cur_input;
-    i = in_open;
+    i = in_open();
     w = false;
     while (if_stack[i] == cond_ptr) {
 
@@ -4081,7 +4082,7 @@ void file_warning(void)
     l = cur_level;
     c = cur_group;
     save_ptr = cur_boundary;
-    while (grp_stack[in_open] != save_ptr) {
+    while (grp_stack[in_open()] != save_ptr) {
         cur_level--;
 
         print_nl_cstr("Warning: ");
@@ -4101,7 +4102,7 @@ void file_warning(void)
     l = if_limit;
     c = cur_if;
     i = if_line;
-    while (if_stack[in_open] != cond_ptr) {
+    while (if_stack[in_open()] != cond_ptr) {
         print_nl_cstr("Warning: ");
         diagnostic_begin_capture_warning_here();
         print_cstr("end of file when ");
@@ -4329,7 +4330,7 @@ void new_save_level(group_code c)
             overflow("save size", save_size);
     }
 
-    save_stack[save_ptr + 0].b32.s1 = line;
+    save_stack[save_ptr + 0].b32.s1 = line();
     save_ptr++;
     save_stack[save_ptr].b16.s1 = LEVEL_BOUNDARY;
     save_stack[save_ptr].b16.s0 = cur_group;
@@ -4388,7 +4389,7 @@ void eq_save(int32_t p, uint16_t l)
         save_stack[save_ptr].b16.s1 = RESTORE_ZERO;
     else {
 
-        save_stack[save_ptr] = eqtb[p];
+        save_stack[save_ptr] = eqtb(p);
         save_ptr++;
         save_stack[save_ptr].b16.s1 = RESTORE_OLD_VALUE;
     }
@@ -4401,48 +4402,48 @@ void
 eq_define(int32_t p, uint16_t t, int32_t e)
 {
 
-    if (eqtb[p].b16.s1 == t && eqtb[p].b32.s1 == e) {
-        eq_destroy(eqtb[p]);
+    if (eqtb(p).b16.s1 == t && eqtb(p).b32.s1 == e) {
+        eq_destroy(eqtb(p));
         return;
     }
 
-    if (eqtb[p].b16.s0 == cur_level)
-        eq_destroy(eqtb[p]);
+    if (eqtb(p).b16.s0 == cur_level)
+        eq_destroy(eqtb(p));
     else if (cur_level > LEVEL_ONE)
-        eq_save(p, eqtb[p].b16.s0);
+        eq_save(p, eqtb(p).b16.s0);
 
-    eqtb[p].b16.s0 = cur_level;
-    eqtb[p].b16.s1 = t;
-    eqtb[p].b32.s1 = e;
+    eqtb_ptr(p)->b16.s0 = cur_level;
+    eqtb_ptr(p)->b16.s1 = t;
+    eqtb_ptr(p)->b32.s1 = e;
 }
 
 void
 eq_word_define(int32_t p, int32_t w)
 {
 
-    if (eqtb[p].b32.s1 == w)
+    if (eqtb(p).b32.s1 == w)
         return;
 
     if (XEQ_LEVEL(p) != cur_level) {
         eq_save(p, XEQ_LEVEL(p));
         XEQ_LEVEL(p) = cur_level;
     }
-    eqtb[p].b32.s1 = w;
+    eqtb_ptr(p)->b32.s1 = w;
 }
 
 void geq_define(int32_t p, uint16_t t, int32_t e)
 {
 
-    eq_destroy(eqtb[p]);
-    eqtb[p].b16.s0 = LEVEL_ONE;
-    eqtb[p].b16.s1 = t;
-    eqtb[p].b32.s1 = e;
+    eq_destroy(eqtb(p));
+    eqtb_ptr(p)->b16.s0 = LEVEL_ONE;
+    eqtb_ptr(p)->b16.s1 = t;
+    eqtb_ptr(p)->b32.s1 = e;
 }
 
 void geq_word_define(int32_t p, int32_t w)
 {
 
-    eqtb[p].b32.s1 = w;
+    eqtb_ptr(p)->b32.s1 = w;
     XEQ_LEVEL(p) = LEVEL_ONE;
 }
 
@@ -4508,24 +4509,24 @@ void unsave(void)
                     l = save_stack[save_ptr].b16.s0;
                     save_ptr--;
                 } else
-                    save_stack[save_ptr] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+                    save_stack[save_ptr] = eqtb(UNDEFINED_CONTROL_SEQUENCE);
                 if ((p < INT_BASE) || (p > EQTB_SIZE)) {
 
-                    if (eqtb[p].b16.s0 == LEVEL_ONE) {
+                    if (eqtb_ptr(p)->b16.s0 == LEVEL_ONE) {
                         eq_destroy(save_stack[save_ptr]);
                     } else {
-                        eq_destroy(eqtb[p]);
-                        eqtb[p] = save_stack[save_ptr];
+                        eq_destroy(eqtb(p));
+                        set_eqtb(p, save_stack[save_ptr]);
                     }
                 } else if (XEQ_LEVEL(p) != LEVEL_ONE) {
-                    eqtb[p] = save_stack[save_ptr];
+                    set_eqtb(p, save_stack[save_ptr]);
                     XEQ_LEVEL(p) = l;
                 }
             }
         }
 
     done:
-        if (grp_stack[in_open] == cur_boundary)
+        if (grp_stack[in_open()] == cur_boundary)
             group_warning();
         cur_group = save_stack[save_ptr].b16.s0;
         cur_boundary = save_stack[save_ptr].b32.s1;
@@ -4622,7 +4623,7 @@ void show_cur_cmd_chr(void)
                 } else {
 
                     n = 1;
-                    l = line;
+                    l = line();
                 }
                 p = cond_ptr;
                 while (p != TEX_NULL) {
@@ -4676,8 +4677,8 @@ void show_context(void)
         if ((base_ptr == input_ptr) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
             if ((base_ptr == input_ptr) || (cur_input.state != TOKEN_LIST)
                 || (cur_input.index != BACKED_UP) || (cur_input.loc != TEX_NULL)) {
-                tally = 0;
-                old_setting = selector;
+                set_tally(0);
+                old_setting = selector();
                 if (cur_input.state != TOKEN_LIST) {
                     if (cur_input.name <= 17) {
 
@@ -4699,17 +4700,17 @@ void show_context(void)
                     } else {
 
                         print_nl_cstr("l.");
-                        if (cur_input.index == in_open)
-                            print_int(line);
+                        if (cur_input.index == in_open())
+                            print_int(line());
                         else
-                            print_int(line_stack[cur_input.index + 1]);
+                            print_int(line_stack(cur_input.index + 1));
                     }
                     print_char(' ');
                     {
-                        l = tally;
-                        tally = 0;
-                        selector = SELECTOR_PSEUDO;
-                        trick_count = 1000000L;
+                        l = tally();
+                        set_tally(0);
+                        set_selector(SELECTOR_PSEUDO);
+                        set_trick_count(1000000L);
                     }
                     if (buffer[cur_input.limit] == INTPAR(end_line_char))
                         j = cur_input.limit;
@@ -4722,10 +4723,10 @@ void show_context(void)
                         if (i <= for_end)
                             do {
                                 if (i == cur_input.loc) {
-                                    first_count = tally;
-                                    trick_count = tally + 1 + error_line - half_error_line;
-                                    if (trick_count < error_line)
-                                        trick_count = error_line;
+                                    first_count = tally();
+                                    set_trick_count(tally() + 1 + error_line() - half_error_line);
+                                    if (trick_count() < error_line())
+                                        set_trick_count(error_line());
                                 }
                                 print_char(buffer[i]);
                             }
@@ -4799,27 +4800,27 @@ void show_context(void)
                         break;
                     }
                     {
-                        l = tally;
-                        tally = 0;
-                        selector = SELECTOR_PSEUDO;
-                        trick_count = 1000000L;
+                        l = tally();
+                        set_tally(0);
+                        set_selector(SELECTOR_PSEUDO);
+                        set_trick_count(1000000L);
                     }
                     if (cur_input.index < MACRO)
                         show_token_list(cur_input.start, cur_input.loc, 100000L);
                     else
                         show_token_list(mem[cur_input.start].b32.s1, cur_input.loc, 100000L);
                 }
-                selector = old_setting;
-                if (trick_count == 1000000L) {
-                    first_count = tally;
-                    trick_count = tally + 1 + error_line - half_error_line;
-                    if (trick_count < error_line)
-                        trick_count = error_line;
+                set_selector(old_setting);
+                if (trick_count() == 1000000L) {
+                    first_count = tally();
+                    set_trick_count(tally() + 1 + error_line() - half_error_line);
+                    if (trick_count() < error_line())
+                        set_trick_count(error_line());
                 }
-                if (tally < trick_count)
-                    m = tally - first_count;
+                if (tally() < trick_count())
+                    m = tally() - first_count;
                 else
-                    m = trick_count - first_count;
+                    m = trick_count() - first_count;
                 if (l + first_count <= half_error_line) {
                     p = 0;
                     n = l + first_count;
@@ -4835,7 +4836,7 @@ void show_context(void)
                     for_end = first_count - 1;
                     if (q <= for_end)
                         do
-                            print_char(trick_buf[q % error_line]);
+                            print_char(trick_buf(q % error_line()));
                         while (q++ < for_end);
                 }
                 print_ln();
@@ -4848,20 +4849,20 @@ void show_context(void)
                             print_raw_char(' ', true);
                         while (q++ < for_end);
                 }
-                if (m + n <= error_line)
+                if (m + n <= error_line())
                     p = first_count + m;
                 else
-                    p = first_count + (error_line - n - 3);
+                    p = first_count + (error_line() - n - 3);
                 {
                     register int32_t for_end;
                     q = first_count;
                     for_end = p - 1;
                     if (q <= for_end)
                         do
-                            print_char(trick_buf[q % error_line]);
+                            print_char(trick_buf(q % error_line()));
                         while (q++ < for_end);
                 }
-                if (m + n > error_line)
+                if (m + n > error_line())
                     print_cstr("...");
                 nn++;
             }
@@ -5005,11 +5006,11 @@ ins_error(void)
 
 void begin_file_reading(void)
 {
-    if (in_open == max_in_open)
+    if (in_open() == max_in_open)
         overflow("text input levels", max_in_open);
     if (first == buf_size)
         overflow("buffer size", buf_size);
-    in_open++;
+    set_in_open(in_open()+1);
     {
         if (input_ptr > max_in_stack) {
             max_in_stack = input_ptr;
@@ -5019,13 +5020,13 @@ void begin_file_reading(void)
         input_stack[input_ptr] = cur_input;
         input_ptr++;
     }
-    cur_input.index = in_open;
+    cur_input.index = in_open();
     source_filename_stack[cur_input.index] = 0;
-    full_source_filename_stack[cur_input.index] = 0;
+    set_full_source_filename_stack(cur_input.index, 0);
     eof_seen[cur_input.index] = false;
     grp_stack[cur_input.index] = cur_boundary;
     if_stack[cur_input.index] = cond_ptr;
-    line_stack[cur_input.index] = line;
+    set_line_stack(cur_input.index, line());
     cur_input.start = first;
     cur_input.state = MID_LINE;
     cur_input.name = 0;
@@ -5036,7 +5037,7 @@ void
 end_file_reading(void)
 {
     first = cur_input.start;
-    line = line_stack[cur_input.index];
+    set_line(line_stack(cur_input.index));
 
     if (cur_input.name == 18 || cur_input.name == 19) {
         pseudo_close();
@@ -5047,7 +5048,7 @@ end_file_reading(void)
 
     input_ptr--;
     cur_input = input_stack[input_ptr];
-    in_open--;
+    set_in_open(in_open() - 1);
 }
 
 
@@ -5364,16 +5365,16 @@ restart:
                 }
 
             found:
-                cur_cmd = eqtb[cur_cs].b16.s1;
-                cur_chr = eqtb[cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                 if (cur_cmd >= OUTER_CALL)
                     check_outer_validity();
                 break;
 
             ANY_STATE_PLUS(ACTIVE_CHAR):
                 cur_cs = cur_chr + 1;
-                cur_cmd = eqtb[cur_cs].b16.s1;
-                cur_chr = eqtb[cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                 cur_input.state = MID_LINE;
                 if (cur_cmd >= OUTER_CALL)
                     check_outer_validity();
@@ -5460,8 +5461,8 @@ restart:
             case NEW_LINE + CAR_RET:
                 cur_input.loc = cur_input.limit + 1;
                 cur_cs = par_loc;
-                cur_cmd = eqtb[cur_cs].b16.s1;
-                cur_chr = eqtb[cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                 if (cur_cmd >= OUTER_CALL)
                     check_outer_validity();
                 break;
@@ -5498,7 +5499,7 @@ restart:
             cur_input.state = NEW_LINE;
 
             if (cur_input.name > 17) { /*374:*/
-                line++;
+                set_line(line()+1);
                 first = cur_input.start;
 
                 if (!force_eof) {
@@ -5529,14 +5530,14 @@ restart:
 
                 if (force_eof) {
                     if (INTPAR(tracing_nesting) > 0) {
-                        if (grp_stack[in_open] != cur_boundary || if_stack[in_open] != cond_ptr)
+                        if (grp_stack[in_open()] != cur_boundary || if_stack[in_open()] != cond_ptr)
                             file_warning();
                     }
 
                     if (cur_input.name >= 19) {
                         print_char(')');
                         open_parens--;
-                        ttstub_output_flush(rust_stdout);
+                        ttstub_output_flush(rust_stdout());
                     }
 
                     force_eof = false;
@@ -5575,7 +5576,7 @@ restart:
                     goto restart;
                 }
 
-                if (selector < SELECTOR_LOG_ONLY)
+                if (selector() < SELECTOR_LOG_ONLY)
                     open_log_file();
 
                 fatal_error("*** (job aborted, no legal \\end found)");
@@ -5588,15 +5589,15 @@ restart:
 
         if (t >= CS_TOKEN_FLAG) {
             cur_cs = t - CS_TOKEN_FLAG;
-            cur_cmd = eqtb[cur_cs].b16.s1;
-            cur_chr = eqtb[cur_cs].b32.s1;
+            cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+            cur_chr = eqtb_ptr(cur_cs)->b32.s1;
 
             if (cur_cmd >= OUTER_CALL) {
                 if (cur_cmd == DONT_EXPAND) { /*370:*/
                     cur_cs = mem[cur_input.loc].b32.s0 - CS_TOKEN_FLAG;
                     cur_input.loc = TEX_NULL;
-                    cur_cmd = eqtb[cur_cs].b16.s1;
-                    cur_chr = eqtb[cur_cs].b32.s1;
+                    cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                    cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                     if (cur_cmd > MAX_COMMAND) {
                         cur_cmd = RELAX;
                         cur_chr = NO_EXPAND_FLAG;
@@ -5720,7 +5721,7 @@ macro_call(void)
     if (mem[r].b32.s0 != END_MATCH_TOKEN) { /*409:*/
         scanner_status = MATCHING;
         unbalance = 0;
-        long_state = eqtb[cur_cs].b16.s1;
+        long_state = eqtb_ptr(cur_cs)->b16.s1;
 
         if (long_state >= OUTER_CALL)
             long_state = long_state - 2;
@@ -6267,10 +6268,10 @@ reswitch:
                     cur_cs = prim_lookup(hash[cur_cs].s1);
 
                 if (cur_cs != UNDEFINED_PRIMITIVE) {
-                    t = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
+                    t = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
                     if (t > MAX_COMMAND) {
                         cur_cmd = t;
-                        cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+                        cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
                         cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                         cur_cs = 0;
                         goto reswitch;
@@ -6341,7 +6342,7 @@ reswitch:
 
             flush_list(r);
 
-            if (eqtb[cur_cs].b16.s1 == UNDEFINED_CS)
+            if (eqtb_ptr(cur_cs)->b16.s1 == UNDEFINED_CS)
                 eq_define(cur_cs, RELAX, TOO_BIG_USV);
 
             cur_tok = cur_cs + CS_TOKEN_FLAG;
@@ -6382,7 +6383,7 @@ reswitch:
                 while (cur_chr != FI_CODE)
                     pass_text();
 
-                if (if_stack[in_open] == cond_ptr)
+                if (if_stack[in_open()] == cond_ptr)
                     if_warning();
                 p = cond_ptr;
                 if_line = mem[p + 1].b32.s1;
@@ -6736,8 +6737,8 @@ reswitch:
             if (math_char(c) == ACTIVE_MATH_CHAR) {
                 {
                     cur_cs = cur_chr + 1;
-                    cur_cmd = eqtb[cur_cs].b16.s1;
-                    cur_chr = eqtb[cur_cs].b32.s1;
+                    cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+                    cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                     x_token();
                     back_input();
                 }
@@ -6824,8 +6825,8 @@ void set_math_char(int32_t c)
 
     if (math_char(c) == ACTIVE_MATH_CHAR) {        /*1187: */
         cur_cs = cur_chr + 1;
-        cur_cmd = eqtb[cur_cs].b16.s1;
-        cur_chr = eqtb[cur_cs].b32.s1;
+        cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
+        cur_chr = eqtb_ptr(cur_cs)->b32.s1;
         x_token();
         back_input();
     } else {
@@ -7014,13 +7015,13 @@ void scan_font_ident(void)
     } while (cur_cmd == SPACER);
 
     if (cur_cmd == DEF_FONT)
-        f = eqtb[CUR_FONT_LOC].b32.s1;
+        f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     else if (cur_cmd == SET_FONT)
         f = cur_chr;
     else if (cur_cmd == DEF_FAMILY) {
         m = cur_chr;
         scan_math_fam_int();
-        f = eqtb[m + cur_val].b32.s1;
+        f = eqtb_ptr(m + cur_val)->b32.s1;
     } else {
         error_here_with_diagnostic("Missing font identifier");
         capture_to_diagnostic(NULL);
@@ -7138,13 +7139,13 @@ restart:
                 cur_val_level = INT_VAL;
             }
         } else if (m < SF_CODE_BASE) {
-            cur_val = eqtb[m + cur_val].b32.s1;
+            cur_val = eqtb_ptr(m + cur_val)->b32.s1;
             cur_val_level = INT_VAL;
         } else if (m < MATH_CODE_BASE) {
-            cur_val = eqtb[m + cur_val].b32.s1 % 65536L;
+            cur_val = eqtb_ptr(m + cur_val)->b32.s1 % 65536L;
             cur_val_level = INT_VAL;
         } else {
-            cur_val = eqtb[m + cur_val].b32.s1;
+            cur_val = eqtb_ptr(m + cur_val)->b32.s1;
             cur_val_level = INT_VAL;
         }
         break;
@@ -7226,7 +7227,7 @@ restart:
                 else
                     cur_val = mem[cur_ptr + 1].b32.s1;
             } else {
-                cur_val = eqtb[m].b32.s1;
+                cur_val = eqtb_ptr(m)->b32.s1;
             }
             cur_val_level = TOK_VAL;
         } else {
@@ -7238,22 +7239,22 @@ restart:
         break;
 
     case ASSIGN_INT:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = INT_VAL;
         break;
 
     case ASSIGN_DIMEN:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = DIMEN_VAL;
         break;
 
     case ASSIGN_GLUE:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = GLUE_VAL;
         break;
 
     case ASSIGN_MU_GLUE:
-        cur_val = eqtb[m].b32.s1;
+        cur_val = eqtb_ptr(m)->b32.s1;
         cur_val_level = MU_VAL;
         break;
 
@@ -7327,12 +7328,12 @@ restart:
     case SET_SHAPE:
         if (m > LOCAL_BASE + LOCAL__par_shape) { /*1654:*/
             scan_int();
-            if (eqtb[m].b32.s1 == TEX_NULL || cur_val < 0) {
+            if (eqtb(m).b32.s1 == TEX_NULL || cur_val < 0) {
                 cur_val = 0;
             } else {
-                if (cur_val > mem[eqtb[m].b32.s1 + 1].b32.s1)
-                    cur_val = mem[eqtb[m].b32.s1 + 1].b32.s1;
-                cur_val = mem[eqtb[m].b32.s1 + cur_val + 1].b32.s1;
+                if (cur_val > mem[eqtb(m).b32.s1 + 1].b32.s1)
+                    cur_val = mem[eqtb(m).b32.s1 + 1].b32.s1;
+                cur_val = mem[eqtb(m).b32.s1 + cur_val + 1].b32.s1;
             }
         } else if (LOCAL(par_shape) == TEX_NULL) {
             cur_val = 0;
@@ -7495,8 +7496,8 @@ restart:
             if (m >= XETEX_DIM) {
                 switch (m) { /*1435:*/
                 case XETEX_GLYPH_BOUNDS_CODE:
-                    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
+                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
                         if (n < 1 || n > 4) {
@@ -7509,10 +7510,10 @@ restart:
                             cur_val = 0;
                         } else {
                             scan_int();
-                            cur_val = get_glyph_bounds(eqtb[CUR_FONT_LOC].b32.s1, n, cur_val);
+                            cur_val = get_glyph_bounds(eqtb_ptr(CUR_FONT_LOC)->b32.s1, n, cur_val);
                         }
                     } else {
-                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].b32.s1);
+                        not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
                     break;
@@ -7597,7 +7598,7 @@ restart:
             } else { /* if(m >= XETEX_DIM) */
                 switch (m) {
                 case INPUT_LINE_NO_CODE:
-                    cur_val = line;
+                    cur_val = line();
                     break;
 
                 case BADNESS_CODE:
@@ -7803,24 +7804,24 @@ restart:
                     break;
 
                 case XETEX_MAP_CHAR_TO_GLYPH_CODE:
-                    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
+                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
-                        cur_val = map_char_to_glyph(eqtb[CUR_FONT_LOC].b32.s1, n);
+                        cur_val = map_char_to_glyph(eqtb_ptr(CUR_FONT_LOC)->b32.s1, n);
                     } else {
-                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].b32.s1);
+                        not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
                     break;
 
                 case XETEX_GLYPH_INDEX_CODE:
-                    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
+                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
                         scan_and_pack_name();
-                        cur_val = map_glyph_to_index(eqtb[CUR_FONT_LOC].b32.s1);
+                        cur_val = map_glyph_to_index(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                     } else {
-                        not_native_font_error(LAST_ITEM, m, eqtb[CUR_FONT_LOC].b32.s1);
+                        not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
                     break;
@@ -7990,8 +7991,8 @@ restart:
             }
 
             if (cur_cs != UNDEFINED_PRIMITIVE) {
-                cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
-                cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
                 cur_cs = PRIM_EQTB_BASE + cur_cs;
                 cur_tok = CS_TOKEN_FLAG + cur_cs;
             } else {
@@ -8112,8 +8113,8 @@ restart:
         }
 
         if (cur_cs != UNDEFINED_PRIMITIVE) {
-            cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
-            cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+            cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
+            cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
             cur_cs = PRIM_EQTB_BASE + cur_cs;
             cur_tok = CS_TOKEN_FLAG + cur_cs;
         } else {
@@ -8203,7 +8204,7 @@ round_decimals(small_number k)
 
     while (k > 0) {
         k--;
-        a = (a + dig[k] * 0x20000) / 10;
+        a = (a + dig(k) * 0x20000) / 10;
     }
 
     return (a + 1) / 2;
@@ -8222,7 +8223,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
     int32_t save_cur_val;
 
     f = 0;
-    arith_error = false;
+    set_arith_error(false);
     cur_order = NORMAL;
     negative = false;
 
@@ -8295,7 +8296,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
             done1:
                 for (kk = k; kk >= 1; kk--) {
-                    dig[kk - 1] = mem[p].b32.s0;
+                    set_dig(kk - 1, mem[p].b32.s0);
                     q = p;
                     p = LLIST_link(p);
                     mem[q].b32.s1 = avail;
@@ -8367,9 +8368,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             goto not_found;
 
         if (scan_keyword("em"))
-            v = font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+            v = font_info[QUAD_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
         else if (scan_keyword("ex"))
-            v = font_info[X_HEIGHT_CODE + param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+            v = font_info[X_HEIGHT_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
         else
             goto not_found;
 
@@ -8403,7 +8404,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             prepare_mag();
             if (INTPAR(mag) != 1000) {
                 cur_val = xn_over_d(cur_val, 1000, INTPAR(mag));
-                f = (1000 * f + 65536L * tex_remainder) / INTPAR(mag);
+                f = (1000 * f + 65536L * tex_remainder()) / INTPAR(mag);
                 cur_val = cur_val + (f / 65536L);
                 f = f % 65536L;
             }
@@ -8451,7 +8452,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         }
 
         cur_val = xn_over_d(cur_val, num, denom);
-        f = (num * f + 65536L * tex_remainder) / denom;
+        f = (num * f + 65536L * tex_remainder()) / denom;
         cur_val = cur_val + (f / 65536L);
         f = f % 65536L;
 
@@ -8460,7 +8461,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
     attach_fraction:
 
         if (cur_val >= 16384)
-            arith_error = true;
+            set_arith_error(true);
         else
             cur_val = cur_val * 65536L + f;
 
@@ -8470,13 +8471,13 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             back_input();
     } else { /* if(requires_units) */
         if (cur_val >= 16384)
-            arith_error = true;
+            set_arith_error(true);
         else
             cur_val = cur_val * 65536L + f;
     }
 
 attach_sign:
-    if (arith_error || abs(cur_val) >= 0x40000000) { /*479:*/
+    if (arith_error() || abs(cur_val) >= 0x40000000) { /*479:*/
         error_here_with_diagnostic("Dimension too large");
         capture_to_diagnostic(NULL);
 
@@ -8485,7 +8486,7 @@ attach_sign:
         help_line[0] = "Continue and I'll use the largest value I can.";
         error();
         cur_val = MAX_HALFWORD;
-        arith_error = false;
+        set_arith_error(false);
     }
 
     if (negative)
@@ -8574,14 +8575,14 @@ int32_t add_or_sub(int32_t x, int32_t y, int32_t max_answer, bool negative)
             a = x + y;
         else {
 
-            arith_error = true;
+            set_arith_error(true);
             a = 0;
         }
     } else if (y >= -(int32_t) max_answer - x)
         a = x + y;
     else {
 
-        arith_error = true;
+        set_arith_error(true);
         a = 0;
     }
     return a;
@@ -8592,7 +8593,7 @@ int32_t quotient(int32_t n, int32_t d)
     bool negative;
     int32_t a;
     if (d == 0) {
-        arith_error = true;
+        set_arith_error(true);
         a = 0;
     } else {
 
@@ -8705,7 +8706,7 @@ found1:
     goto done;
 too_big:
     {
-        arith_error = true;
+        set_arith_error(true);
         a = 0;
     }
  done:
@@ -8726,7 +8727,7 @@ void scan_expr(void)
     int32_t p;
     int32_t q;
     l = cur_val_level;
-    a = arith_error;
+    a = arith_error();
     b = false;
     p = TEX_NULL;
 
@@ -8799,22 +8800,22 @@ found: /*1572:*//*424:*/
             back_error();
         }
     }
-    arith_error = b;
+    set_arith_error(b);
     if ((l == INT_VAL) || (s > EXPR_SUB)) {
         if ((f > TEX_INFINITY) || (f < -TEX_INFINITY)) {
-            arith_error = true;
+            set_arith_error(true);
             f = 0;
         }
     } else if (l == DIMEN_VAL) {
         if (abs(f) > MAX_HALFWORD) {
-            arith_error = true;
+            set_arith_error(true);
             f = 0;
         }
     } else {
 
         if ((abs(mem[f + 1].b32.s1) > MAX_HALFWORD) || (abs(mem[f + 2].b32.s1) > MAX_HALFWORD)
             || (abs(mem[f + 3].b32.s1) > MAX_HALFWORD)) {
-            arith_error = true;
+            set_arith_error(true);
             delete_glue_ref(f);
             f = new_spec(0);
         }
@@ -8903,7 +8904,7 @@ found: /*1572:*//*424:*/
         }
         r = o;
     }
-    b = arith_error;
+    b = arith_error();
     if (o != EXPR_NONE)
         goto continue_;
     if (p != TEX_NULL) {     /*1577: */
@@ -8939,7 +8940,7 @@ found: /*1572:*//*424:*/
         } else
             e = 0;
     }
-    arith_error = a;
+    set_arith_error(a);
     cur_val = e;
     cur_val_level = l;
 }
@@ -9049,25 +9050,25 @@ void pseudo_start(void)
     int32_t nl, sz;
 
     scan_general_text();
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     token_show(TEMP_HEAD);
-    selector = old_setting;
+    set_selector(old_setting);
     flush_list(mem[TEMP_HEAD].b32.s1);
     {
-        if (pool_ptr + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
+        if (pool_ptr() + 1 > pool_size())
+            overflow("pool size", pool_size() - init_pool_ptr);
     }
     s = make_string();
-    str_pool[pool_ptr] = ' ' ;
-    l = str_start[(s) - 65536L];
+    set_str_pool(pool_ptr(), ' ' );
+    l = str_start((s) - 65536L);
     nl = INTPAR(new_line_char);
     p = get_avail();
     q = p;
-    while (l < pool_ptr) {
+    while (l < pool_ptr()) {
 
         m = l;
-        while ((l < pool_ptr) && (str_pool[l] != nl))
+        while ((l < pool_ptr()) && (str_pool(l) != nl))
             l++;
         sz = (l - m + 7) / 4;
         if (sz == 1)
@@ -9080,10 +9081,10 @@ void pseudo_start(void)
 
             sz--;
             r++;
-            w.s3 = str_pool[m];
-            w.s2 = str_pool[m + 1];
-            w.s1 = str_pool[m + 2];
-            w.s0 = str_pool[m + 3];
+            w.s3 = str_pool(m);
+            w.s2 = str_pool(m + 1);
+            w.s1 = str_pool(m + 2);
+            w.s0 = str_pool(m + 3);
             mem[r].b16 = w;
             m = m + 4;
         }
@@ -9092,40 +9093,40 @@ void pseudo_start(void)
         w.s1 = ' ' ;
         w.s0 = ' ' ;
         if (l > m) {
-            w.s3 = str_pool[m];
+            w.s3 = str_pool(m);
             if (l > m + 1) {
-                w.s2 = str_pool[m + 1];
+                w.s2 = str_pool(m + 1);
                 if (l > m + 2) {
-                    w.s1 = str_pool[m + 2];
+                    w.s1 = str_pool(m + 2);
                     if (l > m + 3)
-                        w.s0 = str_pool[m + 3];
+                        w.s0 = str_pool(m + 3);
                 }
             }
         }
         mem[r + 1].b16 = w;
-        if (str_pool[l] == nl)
+        if (str_pool(l) == nl)
             l++;
     }
     mem[p].b32.s0 = mem[p].b32.s1;
     mem[p].b32.s1 = pseudo_files;
     pseudo_files = /*:1542 */ p;
     {
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
     begin_file_reading();
-    line = 0;
+    set_line(0);
     cur_input.limit = cur_input.start;
     cur_input.loc = cur_input.limit + 1;
     if (INTPAR(tracing_scan_tokens) > 0) {
-        if (term_offset > max_print_line - 3)
+        if (term_offset() > max_print_line - 3)
             print_ln();
-        else if ((term_offset > 0) || (file_offset > 0))
+        else if ((term_offset() > 0) || (file_offset() > 0))
             print_char(' ');
         cur_input.name = 19;
         print_cstr("( ");
         open_parens++;
-        ttstub_output_flush (rust_stdout);
+        ttstub_output_flush(rust_stdout());
     } else {
 
         cur_input.name = 18;
@@ -9144,22 +9145,22 @@ str_toks_cat(pool_pointer b, small_number cat)
     int32_t t;
     pool_pointer k;
 
-    if (pool_ptr + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     p = TEMP_HEAD;
     LLIST_link(p) = TEX_NULL;
     k = b;
 
-    while (k < pool_ptr) {
-        t = str_pool[k];
+    while (k < pool_ptr()) {
+        t = str_pool(k);
 
         if (t == ' ' && cat == 0) {
             t = SPACE_TOKEN;
         } else {
-            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr && str_pool[k + 1] >= 0xDC00 && str_pool[k + 1] < 0xE000) {
+            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr() && str_pool(k + 1) >= 0xDC00 && str_pool(k + 1) < 0xE000) {
                 k++;
-                t = 0x10000 + ((t - 0xD800) << 10) + (str_pool[k] - 0xDC00);
+                t = 0x10000 + ((t - 0xD800) << 10) + (str_pool(k) - 0xDC00);
             }
 
             if (cat == 0)
@@ -9185,7 +9186,7 @@ str_toks_cat(pool_pointer b, small_number cat)
         k++;
     }
 
-    pool_ptr = b;
+    set_pool_ptr(b);
     return p;
 }
 
@@ -9210,14 +9211,14 @@ int32_t the_toks(void)
             return cur_val;
         else {
 
-            old_setting = selector;
-            selector = SELECTOR_NEW_STRING ;
-            b = pool_ptr;
+            old_setting = selector();
+            set_selector(SELECTOR_NEW_STRING);
+            b = pool_ptr();
             p = get_avail();
             mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
             token_show(p);
             flush_list(p);
-            selector = old_setting;
+            set_selector(old_setting);
             return str_toks(b);
         }
     }
@@ -9256,9 +9257,9 @@ int32_t the_toks(void)
         return p;
     } else {
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING ;
-        b = pool_ptr;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
+        b = pool_ptr();
         switch (cur_val_level) {
         case 0:
             print_int(cur_val);
@@ -9282,7 +9283,7 @@ int32_t the_toks(void)
             }
             break;
         }
-        selector = old_setting;
+        set_selector(old_setting);
         return str_toks(b);
     }
 }
@@ -9341,7 +9342,7 @@ conv_toks(void)
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9353,7 +9354,7 @@ conv_toks(void)
         avail = def_ref;
         def_ref = save_def_ref;
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case LEFT_MARGIN_KERN_CODE:
@@ -9375,7 +9376,7 @@ conv_toks(void)
         break;
 
     case PDF_CREATION_DATE_CODE:
-        b = pool_ptr;
+        b = pool_ptr();
         getcreationdate();
         mem[GARBAGE].b32.s1 = str_toks(b);
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
@@ -9385,72 +9386,72 @@ conv_toks(void)
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getfilemoddate(s);  /* <= the difference-maker */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case PDF_FILE_SIZE_CODE:
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getfilesize(s);  /* <= the difference-maker */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case PDF_MDFIVE_SUM_CODE:
@@ -9458,7 +9459,7 @@ conv_toks(void)
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9466,30 +9467,30 @@ conv_toks(void)
         boolvar = scan_keyword("file");
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getmd5sum(s, boolvar); /* <== the difference-maker */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
         break;
 
@@ -9498,7 +9499,7 @@ conv_toks(void)
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9540,37 +9541,37 @@ conv_toks(void)
 
         scan_pdf_ext_toks();
 
-        if (selector == SELECTOR_NEW_STRING)
+        if (selector() == SELECTOR_NEW_STRING)
             pdf_error("tokens", "tokens_to_string() called while selector = new_string");
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING;
-        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-        selector = old_setting;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
+        show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+        set_selector(old_setting);
         s = make_string();
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
-        b = pool_ptr;
+        b = pool_ptr();
         getfiledump(s, i, j); /* <=== non-boilerplate */
         mem[GARBAGE].b32.s1 = str_toks(b);
 
-        if (s == str_ptr - 1) {
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        if (s == str_ptr() - 1) {
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         return;
 
     case PDF_STRCMP_CODE:
         save_scanner_status = scanner_status;
         save_warning_index = warning_index;
         save_def_ref = def_ref;
-        if (str_start[str_ptr - TOO_BIG_CHAR] < pool_ptr)
+        if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
             u = make_string();
         else
             u = 0;
@@ -9579,7 +9580,7 @@ conv_toks(void)
         warning_index = save_warning_index;
         scanner_status = save_scanner_status;
         if (u != 0)
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
         break;
 
     case XETEX_UCHAR_CODE:
@@ -9674,9 +9675,9 @@ conv_toks(void)
         break;
     }
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
-    b = pool_ptr;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
+    b = pool_ptr();
 
     switch (c) {
     case NUMBER_CODE:
@@ -9705,7 +9706,7 @@ conv_toks(void)
             quote_char = '"' ;
 
             for (i = 0; i <= length(font_name_str) - 1; i++)
-                if (str_pool[str_start[(font_name_str) - 65536L] + i] == '"' )
+                if (str_pool(str_start((font_name_str) - 65536L) + i) == '"' )
                     quote_char = '\'' ;
 
             print_char(quote_char);
@@ -9839,7 +9840,7 @@ conv_toks(void)
         break;
     }
 
-    selector = old_setting;
+    set_selector(old_setting);
     mem[GARBAGE].b32.s1 = str_toks_cat(b, cat);
     begin_token_list(mem[TEMP_HEAD].b32.s1, INSERTED);
 }
@@ -10152,7 +10153,7 @@ void pass_text(void)
     save_scanner_status = scanner_status;
     scanner_status = SKIPPING;
     l = 0;
-    skip_line = line;
+    skip_line = line();
 
     while (true) {
 
@@ -10219,7 +10220,7 @@ conditional(void)
     cond_ptr = p;
     cur_if = cur_chr;
     if_limit = IF_CODE;
-    if_line = line;
+    if_line = line();
 
     save_cond_ptr = cond_ptr;
     is_unless = (cur_chr >= UNLESS_CODE);
@@ -10369,7 +10370,7 @@ conditional(void)
             b = (cur_chr == q);
         } else { /*527:*/
             p = mem[cur_chr].b32.s1;
-            q = mem[eqtb[n].b32.s1].b32.s1;
+            q = mem[eqtb_ptr(n)->b32.s1].b32.s1;
             if (p == q) {
                 b = true;
             } else {
@@ -10464,7 +10465,7 @@ conditional(void)
             cur_cs = id_lookup(first, m - first); /*:1556*/
 
         flush_list(n);
-        b = (eqtb[cur_cs].b16.s1 != UNDEFINED_CS);
+        b = (eqtb_ptr(cur_cs)->b16.s1 != UNDEFINED_CS);
         is_in_csname = e;
         break;
 
@@ -10510,7 +10511,7 @@ conditional(void)
                 else
                     goto common_ending;
             } else if (cur_chr == FI_CODE) { /*515:*/
-                if (if_stack[in_open] == cond_ptr)
+                if (if_stack[in_open()] == cond_ptr)
                     if_warning();
                 p = cond_ptr;
                 if_line = mem[p + 1].b32.s1;
@@ -10535,8 +10536,8 @@ conditional(void)
             m = prim_lookup(hash[cur_cs].s1);
         b = (cur_cmd != UNDEFINED_CS
              && m != UNDEFINED_PRIMITIVE
-             && cur_cmd == eqtb[PRIM_EQTB_BASE + m].b16.s1
-             && cur_chr == eqtb[PRIM_EQTB_BASE + m].b32.s1);
+             && cur_cmd == eqtb_ptr(PRIM_EQTB_BASE + m)->b16.s1
+             && cur_chr == eqtb_ptr(PRIM_EQTB_BASE + m)->b32.s1);
         break;
     }
 
@@ -10574,7 +10575,7 @@ conditional(void)
             help_line[0] = "I'm ignoring this; it doesn't match any \\if.";
             error();
         } else if (cur_chr == FI_CODE) { /*515:*/
-            if (if_stack[in_open] == cond_ptr)
+            if (if_stack[in_open()] == cond_ptr)
                 if_warning();
             p = cond_ptr;
             if_line = mem[p + 1].b32.s1;
@@ -10587,7 +10588,7 @@ conditional(void)
 
 common_ending:
     if (cur_chr == FI_CODE) { /*515:*/
-        if (if_stack[in_open] == cond_ptr)
+        if (if_stack[in_open()] == cond_ptr)
             if_warning();
         p = cond_ptr;
         if_line = mem[p + 1].b32.s1;
@@ -10628,10 +10629,11 @@ more_name(UTF16_code c)
         return true;
     }
 
-    if (pool_ptr + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
-    str_pool[pool_ptr++] = c;
+    set_str_pool(pool_ptr(), c);
+    set_pool_ptr(pool_ptr()+1);
 
     if (IS_DIR_SEP(c)) {
         area_delimiter = cur_length();
@@ -10650,7 +10652,7 @@ end_name(void)
     str_number temp_str;
     pool_pointer j;
 
-    if (str_ptr + 3 > max_strings)
+    if (str_ptr() + 3 > max_strings)
         overflow("number of strings", max_strings - init_str_ptr);
 
     /* area_delimiter is the length from the start of the filename to the
@@ -10661,19 +10663,19 @@ end_name(void)
     if (area_delimiter == 0) {
         cur_area = EMPTY_STRING;
     } else {
-        cur_area = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - TOO_BIG_CHAR] + area_delimiter;
-        str_ptr++;
+        cur_area = str_ptr();
+        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + area_delimiter);
+        set_str_ptr(str_ptr()+1);
         temp_str = search_string(cur_area);
 
         if (temp_str > 0) {
             cur_area = temp_str;
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
 
-            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
-                str_pool[j - area_delimiter] = str_pool[j];
+            for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
+                set_str_pool(j - area_delimiter, str_pool(j));
 
-            pool_ptr = pool_ptr - area_delimiter;
+            set_pool_ptr(pool_ptr() - area_delimiter);
         }
     }
 
@@ -10685,22 +10687,22 @@ end_name(void)
         cur_ext = EMPTY_STRING;
         cur_name = slow_make_string();
     } else {
-        cur_name = str_ptr;
-        str_start[(str_ptr + 1) - 65536L] = str_start[str_ptr - TOO_BIG_CHAR] + ext_delimiter - area_delimiter - 1;
-        str_ptr++;
+        cur_name = str_ptr();
+        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + ext_delimiter - area_delimiter - 1);
+        set_str_ptr(str_ptr()+1);
 
         cur_ext = make_string();
-        str_ptr--;
+        set_str_ptr(str_ptr()-1);
         temp_str = search_string(cur_name);
 
         if (temp_str > 0) {
             cur_name = temp_str;
-            str_ptr--;
+            set_str_ptr(str_ptr()-1);
 
-            for (j = str_start[(str_ptr + 1) - 65536L]; j <= pool_ptr - 1; j++)
-                str_pool[j - ext_delimiter + area_delimiter + 1] = str_pool[j];
+            for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
+                set_str_pool(j - ext_delimiter + area_delimiter + 1, str_pool(j));
 
-            pool_ptr = pool_ptr - ext_delimiter + area_delimiter + 1;
+            set_pool_ptr(pool_ptr() - ext_delimiter + area_delimiter + 1);
         }
 
         cur_ext = slow_make_string();
@@ -10744,13 +10746,15 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if (pool_ptr + name_length > pool_size || str_ptr == max_strings || cur_length() > 0)
+    if (pool_ptr() + name_length > pool_size() || str_ptr() == max_strings || cur_length() > 0)
         return '?';
 
     make_utf16_name();
 
-    for (k = 0; k < name_length16; k++)
-        str_pool[pool_ptr++] = name_of_file16[k];
+    for (k = 0; k < name_length16; k++) {
+        set_str_pool(pool_ptr(), name_of_file16[k]);
+        set_pool_ptr(pool_ptr()+1);
+    }
 
 
     str_number Result = make_string();
@@ -10792,10 +10796,10 @@ scan_file_name_braced(void)
     cur_cs = warning_index;
     scan_toks(false, true);
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
-    show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size - pool_ptr);
-    selector = old_setting;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
+    show_token_list(mem[def_ref].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+    set_selector(old_setting);
     s = make_string();
     delete_token_ref(def_ref);
     def_ref = save_def_ref;
@@ -10805,8 +10809,8 @@ scan_file_name_braced(void)
 
     begin_name();
 
-    for (i = str_start[s - TOO_BIG_CHAR]; i < str_start[s + 1 - TOO_BIG_CHAR]; i++)
-        more_name(str_pool[i]);
+    for (i = str_start(s - TOO_BIG_CHAR); i < str_start(s + 1 - TOO_BIG_CHAR); i++)
+        more_name(str_pool(i));
 
     stop_at_space = save_stop_at_space;
 }
@@ -10870,18 +10874,18 @@ open_log_file(void)
     int32_t k;
     int32_t l;
 
-    old_setting = selector;
+    old_setting = selector();
     if (job_name == 0)
         job_name = maketexstring("texput");
 
     pack_job_name(".log");
 
-    log_file = ttstub_output_open (name_of_file, 0);
-    if (log_file == INVALID_HANDLE)
+    set_log_file(ttstub_output_open(name_of_file, 0));
+    if (log_file() == INVALID_HANDLE)
         _tt_abort ("cannot open log file output \"%s\"", name_of_file);
 
     texmf_log_name = make_name_string();
-    selector = SELECTOR_LOG_ONLY;
+    set_selector(SELECTOR_LOG_ONLY);
     log_opened = true;
 
     input_stack[input_ptr] = cur_input;
@@ -10898,7 +10902,7 @@ open_log_file(void)
         print(buffer[k]);
 
     print_ln();
-    selector = old_setting + 2;
+    set_selector(old_setting + 2);
 }
 
 
@@ -10923,8 +10927,8 @@ start_input(const char *primary_input_name)
 
         const unsigned char *cp = (const unsigned char *) primary_input_name;
 
-        if (pool_ptr + strlen(primary_input_name) * 2 >= pool_size)
-            _tt_abort ("string pool overflow [%i bytes]", (int) pool_size);
+        if (pool_ptr() + strlen(primary_input_name) * 2 >= pool_size())
+            _tt_abort ("string pool overflow [%i bytes]", (int) pool_size());
 
         UInt32 rval;
         while ((rval = *(cp++)) != 0) {
@@ -10940,10 +10944,13 @@ start_input(const char *primary_input_name)
             rval -= offsetsFromUTF8[extraBytes];
             if (rval > 0xffff) {
                 rval -= 0x10000;
-                str_pool[pool_ptr++] = 0xd800 + rval / 0x0400;
-                str_pool[pool_ptr++] = 0xdc00 + rval % 0x0400;
+                set_str_pool(pool_ptr(), 0xd800 + rval / 0x0400);
+                set_pool_ptr(pool_ptr()+1);
+                set_str_pool(pool_ptr(), 0xdc00 + rval % 0x0400);
+                set_pool_ptr(pool_ptr()+1);
             } else {
-                str_pool[pool_ptr++] = rval;
+                set_str_pool(pool_ptr(), rval);
+                set_pool_ptr(pool_ptr()+1);
             }
 
             if (IS_DIR_SEP(rval)) {
@@ -10995,17 +11002,17 @@ start_input(const char *primary_input_name)
      * `cur_{name,area,ext}`. */
 
     cur_input.name = make_name_string();
-    source_filename_stack[in_open] = cur_input.name;
+    source_filename_stack[in_open()] = cur_input.name;
 
     /* *This* variant is a TeX string made out of `name_of_input_file`. */
 
-    full_source_filename_stack[in_open] = maketexstring(name_of_input_file);
-    if (cur_input.name == str_ptr - 1) {
+    set_full_source_filename_stack(in_open(), maketexstring(name_of_input_file));
+    if (cur_input.name == str_ptr() - 1) {
         temp_str = search_string(cur_input.name);
         if (temp_str > 0) {
             cur_input.name = temp_str;
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
     }
 
@@ -11016,14 +11023,14 @@ start_input(const char *primary_input_name)
         open_log_file();
     }
 
-    if (term_offset + length(full_source_filename_stack[in_open]) > max_print_line - 2)
+    if (term_offset() + length(full_source_filename_stack(in_open())) > max_print_line - 2)
         print_ln();
-    else if (term_offset > 0 || file_offset > 0)
+    else if (term_offset() > 0 || file_offset() > 0)
         print_char(' ');
     print_char('(');
     open_parens++;
-    print(full_source_filename_stack[in_open]);
-    ttstub_output_flush(rust_stdout);
+    print(full_source_filename_stack(in_open()));
+    ttstub_output_flush(rust_stdout());
 
     if (INTPAR(tracing_stack_levels) > 0) {
         int32_t v;
@@ -11053,7 +11060,7 @@ start_input(const char *primary_input_name)
 
     synctex_start_input();
 
-    line = 1;
+    set_line(1);
     input_line(input_file[cur_input.index]);
     cur_input.limit = last;
 
@@ -11088,7 +11095,7 @@ void char_warning(internal_font_number f, int32_t c)
             INTPAR(tracing_online) = 1;
 
         if (INTPAR(tracing_lost_chars) > 2) {
-            if (file_line_error_style_p)
+            if (file_line_error_style_p())
                 print_file_line();
             else
                 print_nl_cstr("! ");
@@ -11134,19 +11141,19 @@ void char_warning(internal_font_number f, int32_t c)
     {
         char *fn = gettexstring(font_name[f]);
         char *chr = NULL;
-        selector_t prev_selector = selector;
+        selector_t prev_selector = selector();
         int s;
 
-        selector = SELECTOR_NEW_STRING;
+        set_selector(SELECTOR_NEW_STRING);
         if (c < 0x10000)
             print(c);
         else
             print_char(c);
-        selector = prev_selector;
+        set_selector(prev_selector);
         s = make_string();
         chr = gettexstring(s);
-        str_ptr--; /* this is the "flush_string" macro which discards the most recent string */
-        pool_ptr = str_start[str_ptr - 0x10000];
+        set_str_ptr(str_ptr()-1); /* this is the "flush_string" macro which discards the most recent string */
+        set_pool_ptr(str_start(str_ptr() - 0x10000));
 
         ttstub_issue_warning("could not represent character \"%s\" (0x%" PRIx32 ") in font \"%s\"", chr, c, fn);
 
@@ -11194,27 +11201,27 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
     if (font_mapping[f] != NULL) {
         if (c > 65535L) {
-            if (pool_ptr + 2 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
+            if (pool_ptr() + 2 > pool_size())
+                overflow("pool size", pool_size() - init_pool_ptr);
 
-            str_pool[pool_ptr] = (c - 65536L) / 1024 + 0xD800;
-            pool_ptr++;
-            str_pool[pool_ptr] = (c - 65536L) % 1024 + 0xDC00;
-            pool_ptr++;
+            set_str_pool(pool_ptr(), (c - 65536L) / 1024 + 0xD800);
+            set_pool_ptr(pool_ptr()+1);
+            set_str_pool(pool_ptr(), (c - 65536L) % 1024 + 0xDC00);
+            set_pool_ptr(pool_ptr()+1);
         } else {
-            if (pool_ptr + 1 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
+            if (pool_ptr() + 1 > pool_size())
+                overflow("pool size", pool_size() - init_pool_ptr);
 
-            str_pool[pool_ptr] = c;
-            pool_ptr++;
+            set_str_pool(pool_ptr(), c);
+            set_pool_ptr(pool_ptr()+1);
         }
 
         len = apply_mapping(
             font_mapping[f],
-            &str_pool[str_start[str_ptr - TOO_BIG_CHAR]],
+            str_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)),
             cur_length()
         );
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
         i = 0;
 
@@ -11354,11 +11361,13 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     else
         actual_size = get_loaded_font_design_size();
 
-    if (pool_ptr + name_length > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + name_length > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
-    for (k = 0; k < name_length; k++)
-        str_pool[pool_ptr++] = name_of_file[k];
+    for (k = 0; k < name_length; k++) {
+        set_str_pool(pool_ptr(), name_of_file[k]);
+        set_pool_ptr(pool_ptr()+1);
+    }
 
     full_name = make_string();
 
@@ -11366,8 +11375,8 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         if (font_area[f] == native_font_type_flag && str_eq_str(font_name[f], full_name) && font_size[f] == actual_size) {
             release_font_engine(font_engine, native_font_type_flag);
 
-            str_ptr--;
-            pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+            set_str_ptr(str_ptr()-1);
+            set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
             return f;
         }
@@ -11533,7 +11542,7 @@ void bad_utf8_warning(void)
     else {
 
         print_cstr(" at line ");
-        print_int(line);
+        print_int(line());
     }
     print_cstr(" replaced by U+FFFD.");
     capture_to_diagnostic(NULL);
@@ -12520,7 +12529,7 @@ common_ending:
             print_cstr("--");
         } else
             print_cstr(") detected at line ");
-        print_int(line);
+        print_int(line());
     }
 
     capture_to_diagnostic(NULL);
@@ -12780,7 +12789,7 @@ common_ending:
             print_cstr("--");
         } else
             print_cstr(") detected at line ");
-        print_int(line);
+        print_int(line());
         print_ln();
     }
 
@@ -14150,21 +14159,21 @@ void app_space(void)
             main_p = GLUEPAR(space_skip);
         else {                  /*1077: */
 
-            main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
+            main_p = font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
             if (main_p == TEX_NULL) {
                 main_p = new_spec(0);
-                main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
+                main_k = param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1] + 2;
                 mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
                 mem[main_p + 2].b32.s1 = font_info[main_k + 1].b32.s1;
                 mem[main_p + 3].b32.s1 = font_info[main_k + 2].b32.s1;
-                font_glue[eqtb[CUR_FONT_LOC].b32.s1] = main_p;
+                font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1] = main_p;
             }
         }
         main_p = new_spec(main_p);
         if (cur_list.aux.b32.s0 >= 2000)
             mem[main_p + 1].b32.s1 =
                 mem[main_p + 1].b32.s1 + font_info[EXTRA_SPACE_CODE +
-                                                 param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+                                                 param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
         mem[main_p + 2].b32.s1 = xn_over_d(mem[main_p + 2].b32.s1, cur_list.aux.b32.s0, 1000);
         mem[main_p + 3].b32.s1 = xn_over_d(mem[main_p + 3].b32.s1, 1000, cur_list.aux.b32.s0) /*:1079 */ ;
         q = new_glue(main_p);
@@ -14784,7 +14793,7 @@ new_graf(bool indented)
     if (indented) {
         cur_list.tail = new_null_box();
         mem[cur_list.head].b32.s1 = cur_list.tail;
-        mem[cur_list.tail + 1].b32.s1 = eqtb[DIMEN_BASE].b32.s1;
+        mem[cur_list.tail + 1].b32.s1 = eqtb_ptr(DIMEN_BASE)->b32.s1;
         if (insert_src_special_every_par)
             insert_src_special();
     }
@@ -14802,7 +14811,7 @@ void indent_in_hmode(void)
 
     if (cur_chr > 0) {
         p = new_null_box();
-        mem[p + 1].b32.s1 = eqtb[DIMEN_BASE].b32.s1;
+        mem[p + 1].b32.s1 = eqtb_ptr(DIMEN_BASE)->b32.s1;
         if (abs(cur_list.mode) == HMODE)
             cur_list.aux.b32.s0 = 1000;
         else {
@@ -15131,11 +15140,11 @@ void append_discretionary(void)
     cur_list.tail = LLIST_link(cur_list.tail);
 
     if (cur_chr == 1) {
-        c = hyphen_char[eqtb[CUR_FONT_LOC].b32.s1];
+        c = hyphen_char[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
         if (c >= 0) {
 
             if (c <= BIGGEST_CHAR)
-                mem[cur_list.tail + 1].b32.s0 = new_character(eqtb[CUR_FONT_LOC].b32.s1, c);
+                mem[cur_list.tail + 1].b32.s0 = new_character(eqtb_ptr(CUR_FONT_LOC)->b32.s1, c);
         }
     } else {
 
@@ -15263,7 +15272,7 @@ void make_accent(void)
     b16x4 i;
 
     scan_char_num();
-    f = eqtb[CUR_FONT_LOC].b32.s1;
+    f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     p = new_character(f, cur_val);
 
     if (p != TEX_NULL) {
@@ -15278,7 +15287,7 @@ void make_accent(void)
                                      effective_char(true, f, CHAR_NODE_character(p)));
         do_assignments();
         q = TEX_NULL;
-        f = eqtb[CUR_FONT_LOC].b32.s1;
+        f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
         if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN)) {
             q = new_character(f, cur_chr);
             cur_val = cur_chr;
@@ -15773,11 +15782,11 @@ found:
         if (e)
             w = mem[l + 2].b32.s1;
         else
-            w = eqtb[l].b32.s1;
+            w = eqtb_ptr(l)->b32.s1;
     } else if (e) {
         s = mem[l + 1].b32.s1;
     } else {
-        s = eqtb[l].b32.s1; /*:1272*/
+        s = eqtb_ptr(l)->b32.s1; /*:1272*/
     }
 
     if (q == REGISTER)
@@ -15785,7 +15794,7 @@ found:
     else
         scan_keyword("by");
 
-    arith_error = false;
+    set_arith_error(false);
 
     if (q < MULTIPLY) { /*1273:*/
         if (p < GLUE_VAL) {
@@ -15857,7 +15866,7 @@ found:
         }
     }
 
-    if (arith_error) {
+    if (arith_error()) {
         error_here_with_diagnostic("Arithmetic overflow");
         capture_to_diagnostic(NULL);
 
@@ -16038,14 +16047,14 @@ void new_font(small_number a)
             t = u - SINGLE_BASE;
     } else {
 
-        old_setting = selector;
-        selector = SELECTOR_NEW_STRING ;
+        old_setting = selector();
+        set_selector(SELECTOR_NEW_STRING);
         print_cstr("FONT");
         print(u - 1);
-        selector = old_setting;
+        set_selector(old_setting);
         {
-            if (pool_ptr + 1 > pool_size)
-                overflow("pool size", pool_size - init_pool_ptr);
+            if (pool_ptr() + 1 > pool_size())
+                overflow("pool size", pool_size() - init_pool_ptr);
         }
         t = make_string();
     }
@@ -16116,8 +16125,8 @@ void new_font(small_number a)
                 append_str(cur_ext);
                 if (str_eq_str(font_name[f], make_string())) {
                     {
-                        str_ptr--;
-                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                        set_str_ptr(str_ptr()-1);
+                        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                     }
                     if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
                         if (s > 0) {
@@ -16128,8 +16137,8 @@ void new_font(small_number a)
                     }
                 } else {
 
-                    str_ptr--;
-                    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                    set_str_ptr(str_ptr()-1);
+                    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                 }
             }
             while (f++ < for_end);
@@ -16141,7 +16150,7 @@ common_ending:
         geq_define(u, SET_FONT, f);
     else
         eq_define(u, SET_FONT, f);
-    eqtb[FONT_ID_BASE + f] = eqtb[u];
+    set_eqtb(FONT_ID_BASE + f, eqtb(u));
     hash[FONT_ID_BASE + f].s1 = t;
 }
 
@@ -16150,11 +16159,11 @@ void new_interaction(void)
     print_ln();
     interaction = cur_chr;
     if (interaction == BATCH_MODE)
-        selector = SELECTOR_NO_PRINT;
+        set_selector(SELECTOR_NO_PRINT);
     else
-        selector = SELECTOR_TERM_ONLY/*:79 */ ;
+        set_selector(SELECTOR_TERM_ONLY);
     if (log_opened)
-        selector = selector + 2;
+        set_selector(selector() + 2);
 }
 
 void issue_message(void)
@@ -16165,23 +16174,23 @@ void issue_message(void)
 
     c = cur_chr;
     mem[GARBAGE].b32.s1 = scan_toks(false, true);
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     token_show(def_ref);
-    selector = old_setting;
+    set_selector(old_setting);
     flush_list(def_ref);
     {
-        if (pool_ptr + 1 > pool_size)
-            overflow("pool size", pool_size - init_pool_ptr);
+        if (pool_ptr() + 1 > pool_size())
+            overflow("pool size", pool_size( )- init_pool_ptr);
     }
     s = make_string();
     if (c == 0) {               /*1315: */
-        if (term_offset + length(s) > max_print_line - 2)
+        if (term_offset() + length(s) > max_print_line - 2)
             print_ln();
-        else if ((term_offset > 0) || (file_offset > 0))
+        else if ((term_offset() > 0) || (file_offset() > 0))
             print_char(' ');
         print(s);
-        ttstub_output_flush (rust_stdout);
+        ttstub_output_flush(rust_stdout());
     } else {                    /*1318: */
         error_here_with_diagnostic("");
         print(s);
@@ -16208,8 +16217,8 @@ void issue_message(void)
         use_err_help = false;
     }
     {
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 }
 
@@ -16230,8 +16239,8 @@ shift_case(void)
         t = mem[p].b32.s0;
         if (t < CS_TOKEN_FLAG + SINGLE_BASE) {
             c = t % MAX_CHAR_VAL;
-            if (eqtb[b + c].b32.s1 != 0)
-                mem[p].b32.s0 = t - c + eqtb[b + c].b32.s1;
+            if (eqtb_ptr(b + c)->b32.s1 != 0)
+                mem[p].b32.s0 = t - c + eqtb_ptr(b + c)->b32.s1;
         }
         p = LLIST_link(p);
     }
@@ -16354,18 +16363,18 @@ void show_whatever(void)
     capture_to_diagnostic(NULL);
     end_diagnostic(true);
     {
-        if (file_line_error_style_p)
+        if (file_line_error_style_p())
             print_file_line();
         else
             print_nl_cstr("! ");
         print_cstr("OK");
     }
-    if (selector == SELECTOR_TERM_AND_LOG) {
+    if (selector() == SELECTOR_TERM_AND_LOG) {
 
         if (INTPAR(tracing_online) <= 0) {
-            selector = SELECTOR_TERM_ONLY;
+            set_selector(SELECTOR_TERM_ONLY);
             print_cstr(" (see the transcript file)");
-            selector = SELECTOR_TERM_AND_LOG;
+            set_selector(SELECTOR_TERM_AND_LOG);
         }
     }
 
@@ -16532,8 +16541,8 @@ void do_extension(void)
                 report_illegal_case();
             else {
 
-                if (((font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG)
-                     || (font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG))) {
+                if (((font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG)
+                     || (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG))) {
                     new_whatsit(GLYPH_NODE, GLYPH_NODE_SIZE);
                     scan_int();
                     if ((cur_val < 0) || (cur_val > 65535L)) {
@@ -16549,12 +16558,12 @@ void do_extension(void)
                         int_error(cur_val);
                         cur_val = 0;
                     }
-                    mem[cur_list.tail + 4].b16.s2 = eqtb[CUR_FONT_LOC].b32.s1;
+                    mem[cur_list.tail + 4].b16.s2 = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
                     mem[cur_list.tail + 4].b16.s1 = cur_val;
                     set_native_glyph_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
                 } else
                     not_native_font_error(EXTENSION, GLYPH_CODE,
-                                          eqtb[CUR_FONT_LOC].b32.s1);
+                                          eqtb_ptr(CUR_FONT_LOC)->b32.s1);
             }
         }
         break;
@@ -16573,7 +16582,7 @@ void do_extension(void)
                 }
                 error();
             } else
-                set_input_file_encoding(input_file[in_open], i, j);
+                set_input_file_encoding(input_file[in_open()], i, j);
         }
         break;
 
@@ -16627,36 +16636,36 @@ insert_src_special(void)
 {
     int32_t toklist, p, q;
 
-    if (source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line)) {
+    if (source_filename_stack[in_open()] > 0 && is_new_source(source_filename_stack[in_open()], line())) {
         toklist = get_avail();
         p = toklist;
         mem[p].b32.s0 = CS_TOKEN_FLAG + FROZEN_SPECIAL;
         mem[p].b32.s1 = get_avail();
         p = LLIST_link(p);
         mem[p].b32.s0 = (LEFT_BRACE_TOKEN + '{' );
-        q = str_toks(make_src_special(source_filename_stack[in_open], line));
+        q = str_toks(make_src_special(source_filename_stack[in_open()], line()));
         mem[p].b32.s1 = mem[TEMP_HEAD].b32.s1;
         p = q;
         mem[p].b32.s1 = get_avail();
         p = LLIST_link(p);
         mem[p].b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
         begin_token_list(toklist, INSERTED);
-        remember_source_info(source_filename_stack[in_open], line);
+        remember_source_info(source_filename_stack[in_open()], line());
     }
 }
 
 
 void append_src_special(void)
 {
-    if ((source_filename_stack[in_open] > 0 && is_new_source(source_filename_stack[in_open], line))) {
+    if ((source_filename_stack[in_open()] > 0 && is_new_source(source_filename_stack[in_open()], line()))) {
         new_whatsit(SPECIAL_NODE, WRITE_NODE_SIZE);
         mem[cur_list.tail + 1].b32.s0 = 0;
         def_ref = get_avail();
         mem[def_ref].b32.s0 = TEX_NULL;
-        str_toks(make_src_special(source_filename_stack[in_open], line));
+        str_toks(make_src_special(source_filename_stack[in_open()], line()));
         mem[def_ref].b32.s1 = mem[TEMP_HEAD].b32.s1;
         mem[cur_list.tail + 1].b32.s1 = def_ref;
-        remember_source_info(source_filename_stack[in_open], line);
+        remember_source_info(source_filename_stack[in_open()], line());
     }
 }
 
@@ -16666,14 +16675,16 @@ void
 tt_insert_special(const char *ascii_text)
 {
     int32_t toklist_start, p, q;
-    pool_pointer start_pool_ptr = pool_ptr;
+    pool_pointer start_pool_ptr = pool_ptr();
 
     /* Copy the text into the string pool so that we can use str_toks() */
-    if (pool_ptr + strlen(ascii_text) >= (size_t) pool_size)
+    if (pool_ptr() + strlen(ascii_text) >= (size_t) pool_size())
         _tt_abort("string pool overflow");
 
-    while (*ascii_text)
-        str_pool[pool_ptr++] = *ascii_text++;
+    while (*ascii_text) {
+        set_str_pool(pool_ptr(), *ascii_text++);
+        set_pool_ptr(pool_ptr()+1);
+    }
 
     /* Create the linked list of inserted tokens */
     p = toklist_start = get_avail();
@@ -17027,8 +17038,8 @@ reswitch:
                 cur_cs = prim_lookup(hash[cur_cs].s1);
 
             if (cur_cs != UNDEFINED_PRIMITIVE) {
-                cur_cmd = eqtb[PRIM_EQTB_BASE + cur_cs].b16.s1;
-                cur_chr = eqtb[PRIM_EQTB_BASE + cur_cs].b32.s1;
+                cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
+                cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
                 cur_tok = CS_TOKEN_FLAG + PRIM_EQTB_BASE + cur_cs;
             }
         }
@@ -17501,14 +17512,14 @@ main_loop: /*1069: */
 
     prev_class = CHAR_CLASS_LIMIT - 1;
 
-    if (font_area[eqtb[CUR_FONT_LOC].b32.s1] == AAT_FONT_FLAG || font_area[eqtb[CUR_FONT_LOC].b32.s1] == OTGR_FONT_FLAG) {
+    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG || font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
         if (cur_list.mode > 0) {
             if (INTPAR(language) != cur_list.aux.b32.s1)
                 fix_language();
         }
 
         main_h = 0;
-        main_f = eqtb[CUR_FONT_LOC].b32.s1;
+        main_f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
         native_len = 0;
 
 collect_native:
@@ -17975,7 +17986,7 @@ collected:
         prev_class = space_class;
     }
 
-    main_f = eqtb[CUR_FONT_LOC].b32.s1;
+    main_f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     bchar = font_bchar[main_f];
     false_bchar = font_false_bchar[main_f];
 
@@ -18389,14 +18400,14 @@ append_normal_space:
     }
 
     if (GLUEPAR(space_skip) == 0) {
-        main_p = font_glue[eqtb[CUR_FONT_LOC].b32.s1];
+        main_p = font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
         if (main_p == TEX_NULL) {
             main_p = new_spec(0);
-            main_k = param_base[eqtb[CUR_FONT_LOC].b32.s1] + 2;
+            main_k = param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1] + 2;
             mem[main_p + 1].b32.s1 = font_info[main_k].b32.s1;
             mem[main_p + 2].b32.s1 = font_info[main_k + 1].b32.s1;
             mem[main_p + 3].b32.s1 = font_info[main_k + 2].b32.s1;
-            font_glue[eqtb[CUR_FONT_LOC].b32.s1] = main_p;
+            font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1] = main_p;
         }
         temp_ptr = new_glue(main_p);
     } else
@@ -18422,7 +18433,7 @@ close_files_and_terminate(void)
 
     for (k = 0; k <= 15; k++) {
         if (write_open[k])
-            ttstub_output_close(write_file[k]);
+            ttstub_output_close(write_file(k));
     }
 
     INTPAR(new_line_char) = -1;
@@ -18431,10 +18442,10 @@ close_files_and_terminate(void)
     synctex_terminate(log_opened);
 
     if (log_opened) {
-        ttstub_output_putc (log_file, '\n');
-        ttstub_output_close (log_file);
-        selector = selector - 2;
-        if (selector == SELECTOR_TERM_ONLY) {
+        ttstub_output_putc(log_file(), '\n');
+        ttstub_output_close(log_file());
+        set_selector(selector() - 2);
+        if (selector() == SELECTOR_TERM_ONLY) {
             print_nl_cstr("Transcript written on ");
             print(texmf_log_name);
             print_char('.');
@@ -18447,20 +18458,20 @@ close_files_and_terminate(void)
 
 void flush_str(str_number s)
 {
-    if (s == str_ptr - 1) {
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    if (s == str_ptr() - 1) {
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 }
 
 str_number tokens_to_string(int32_t p)
 {
-    if (selector == SELECTOR_NEW_STRING )
+    if (selector() == SELECTOR_NEW_STRING )
         pdf_error("tokens", "tokens_to_string() called while selector = new_string");
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
-    show_token_list(mem[p].b32.s1, TEX_NULL, pool_size - pool_ptr);
-    selector = old_setting;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
+    show_token_list(mem[p].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+    set_selector(old_setting);
     return make_string();
 }
 
@@ -18487,17 +18498,17 @@ void compare_strings(void)
     }
     s2 = tokens_to_string(def_ref);
     delete_token_ref(def_ref);
-    i1 = str_start[(s1) - 65536L];
-    j1 = str_start[(s1 + 1) - 65536L];
-    i2 = str_start[(s2) - 65536L];
-    j2 = str_start[(s2 + 1) - 65536L];
+    i1 = str_start((s1) - 65536L);
+    j1 = str_start((s1 + 1) - 65536L);
+    i2 = str_start((s2) - 65536L);
+    j2 = str_start((s2 + 1) - 65536L);
     while ((i1 < j1) && (i2 < j2)) {
 
-        if (str_pool[i1] < str_pool[i2]) {
+        if (str_pool(i1) < str_pool(i2)) {
             cur_val = -1;
             goto done;
         }
-        if (str_pool[i1] > str_pool[i2]) {
+        if (str_pool(i1) > str_pool(i2)) {
             cur_val = 1;
             goto done;
         }

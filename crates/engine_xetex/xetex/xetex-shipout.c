@@ -5,6 +5,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
+#include "xetex_bindings.h"
 #include "tectonic_bridge_core.h"
 
 
@@ -98,9 +99,9 @@ ship_out(int32_t p)
         print_cstr("Completed box being shipped out");
     }
 
-    if (term_offset > max_print_line - 9)
+    if (term_offset() > max_print_line - 9)
         print_ln();
-    else if (term_offset > 0 || file_offset > 0)
+    else if (term_offset() > 0 || file_offset() > 0)
         print_char(' ' );
 
     print_char('[' );
@@ -114,7 +115,7 @@ ship_out(int32_t p)
             print_char('.' );
     }
 
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
 
     if (INTPAR(tracing_output) > 0) {
         print_char(']' );
@@ -224,8 +225,8 @@ ship_out(int32_t p)
 
     /* Generate a PDF pagesize special unilaterally */
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr("pdf:pagesize ");
     if (DIMENPAR(pdf_page_width) <= 0 || DIMENPAR(pdf_page_height) <= 0) {
         print_cstr("default");
@@ -240,15 +241,15 @@ ship_out(int32_t p)
         print_scaled(DIMENPAR(pdf_page_height));
         print_cstr("pt");
     }
-    selector = old_setting;
+    set_selector(old_setting);
 
     dvi_out(XXX1);
     dvi_out(cur_length());
 
-    for (s = str_start[str_ptr - TOO_BIG_CHAR]; s < pool_ptr; s++)
-        dvi_out(str_pool[s]);
+    for (s = str_start(str_ptr() - TOO_BIG_CHAR); s < pool_ptr(); s++)
+        dvi_out(str_pool(s));
 
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
     /* Done with the synthesized special. The meat: emit this page box. */
 
@@ -285,7 +286,7 @@ done:
         print_char(']');
 
     dead_cycles = 0;
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
     flush_node_list(p);
     synctex_teehs();
 }
@@ -442,8 +443,8 @@ hlist_out(void)
                      * and p to the last." */
 
                     if (p != r) {
-                        if (pool_ptr + k > pool_size)
-                            overflow("pool size", pool_size - init_pool_ptr);
+                        if (pool_ptr() + k > pool_size())
+                            overflow("pool size", pool_size() - init_pool_ptr);
 
                         k = 0;
                         q = r;
@@ -452,15 +453,15 @@ hlist_out(void)
                             if (NODE_type(q) == WHATSIT_NODE) {
                                 if (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT) {
                                     for (j = 0; j < NATIVE_NODE_length(q); j++) {
-                                        str_pool[pool_ptr] = NATIVE_NODE_text(q)[j];
-                                        pool_ptr++;
+                                        set_str_pool(pool_ptr(), NATIVE_NODE_text(q)[j]);
+                                        set_pool_ptr(pool_ptr()+1);
                                     }
 
                                     k += BOX_width(q);
                                 }
                             } else if (NODE_type(q) == GLUE_NODE) {
-                                str_pool[pool_ptr] = ' ';
-                                pool_ptr++;
+                                set_str_pool(pool_ptr(), ' ');
+                                set_pool_ptr(pool_ptr()+1);
                                 g = GLUE_NODE_glue_ptr(q);
                                 k += BOX_width(g);
 
@@ -487,7 +488,7 @@ hlist_out(void)
                         NODE_subtype(q) = NODE_subtype(r);
 
                         for (j = 0; j < cur_length(); j++)
-                            NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - TOO_BIG_CHAR] + j];
+                            NATIVE_NODE_text(q)[j] = str_pool(str_start(str_ptr() - TOO_BIG_CHAR) + j);
 
                         /* "Link q into the list in place of r...p" */
 
@@ -524,7 +525,7 @@ hlist_out(void)
                         }
 
                         flush_node_list(r);
-                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                         p = q;
                     }
                 }
@@ -1738,7 +1739,7 @@ out_what(int32_t p)
         }
 
         if (write_open[j])
-            ttstub_output_close(write_file[j]);
+            ttstub_output_close(write_file(j));
 
         if (mem[p].b16.s0 == CLOSE_NODE) {
             write_open[j] = false;
@@ -1758,18 +1759,18 @@ out_what(int32_t p)
 
         pack_file_name(cur_name, cur_area, cur_ext);
 
-        write_file[j] = ttstub_output_open(name_of_file, 0);
-        if (write_file[j] == INVALID_HANDLE)
+        set_write_file(j, ttstub_output_open(name_of_file, 0));
+        if (write_file(j) == INVALID_HANDLE)
             _tt_abort("cannot open output file \"%s\"", name_of_file);
 
         write_open[j] = true;
 
         if (log_opened) {
-            old_setting = selector;
+            old_setting = selector();
             if (INTPAR(tracing_online) <= 0)
-                selector = SELECTOR_LOG_ONLY;
+                set_selector(SELECTOR_LOG_ONLY);
             else
-                selector = SELECTOR_TERM_AND_LOG;
+                set_selector(SELECTOR_TERM_AND_LOG);
             print_nl_cstr("\\openout");
             print_int(j);
             print_cstr(" = `");
@@ -1777,7 +1778,7 @@ out_what(int32_t p)
             print_cstr("'.");
             print_nl_cstr("");
             print_ln();
-            selector = old_setting;
+            set_selector(old_setting);
         }
         break;
 
@@ -1835,12 +1836,12 @@ dvi_font_def(internal_font_number f)
         dvi_four(font_dsize[f]);
         dvi_out(length(font_area[f]));
         l = 0;
-        k = str_start[(font_name[f]) - 65536L];
+        k = str_start((font_name[f]) - 65536L);
 
-        while ((l == 0) && (k < str_start[(font_name[f] + 1) - 65536L])) {
+        while ((l == 0) && (k < str_start((font_name[f] + 1) - 65536L))) {
 
-            if (str_pool[k] == ':' )
-                l = k - str_start[(font_name[f]) - 65536L];
+            if (str_pool(k) == ':' )
+                l = k - str_start((font_name[f]) - 65536L);
             k++;
         }
 
@@ -1851,22 +1852,22 @@ dvi_font_def(internal_font_number f)
 
         {
             register int32_t for_end;
-            k = str_start[(font_area[f]) - 65536L];
-            for_end = str_start[(font_area[f] + 1) - 65536L] - 1;
+            k = str_start((font_area[f]) - 65536L);
+            for_end = str_start((font_area[f] + 1) - 65536L) - 1;
             if (k <= for_end)
                 do {
-                    dvi_out(str_pool[k]);
+                    dvi_out(str_pool(k));
                 }
                 while (k++ < for_end);
         }
 
         {
             register int32_t for_end;
-            k = str_start[(font_name[f]) - 65536L];
-            for_end = str_start[(font_name[f]) - 65536L] + l - 1;
+            k = str_start((font_name[f]) - 65536L);
+            for_end = str_start((font_name[f]) - 65536L) + l - 1;
             if (k <= for_end)
                 do {
-                    dvi_out(str_pool[k]);
+                    dvi_out(str_pool(k));
                 }
                 while (k++ < for_end);
         }
@@ -2077,14 +2078,14 @@ special_out(int32_t p)
         movement(cur_v - dvi_v, DOWN1);
         dvi_v = cur_v;
     }
-    doing_special = true;
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
-    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size - pool_ptr);
-    selector = old_setting;
+    set_doing_special(true);
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
+    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+    set_selector(old_setting);
 
-    if (pool_ptr + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     if (cur_length() < 256) {
         dvi_out(XXX1);
@@ -2096,16 +2097,16 @@ special_out(int32_t p)
 
     {
         register int32_t for_end;
-        k = str_start[str_ptr - TOO_BIG_CHAR];
-        for_end = pool_ptr - 1;
+        k = str_start(str_ptr() - TOO_BIG_CHAR);
+        for_end = pool_ptr() - 1;
         if (k <= for_end)
             do {
-                dvi_out(str_pool[k]);
+                dvi_out(str_pool(k));
             }
             while (k++ < for_end);
     }
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
-    doing_special = false;
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
+    set_doing_special(false);
 }
 
 
@@ -2150,16 +2151,16 @@ write_out(int32_t p)
 
     cur_list.mode = old_mode;
     end_token_list();
-    old_setting = selector;
+    old_setting = selector();
     j = mem[p + 1].b32.s0;
 
     if (j == 18) {
-        selector = SELECTOR_NEW_STRING;
+        set_selector(SELECTOR_NEW_STRING);
     } else if (write_open[j]) {
-        selector = j;
+        set_selector(j);
     } else {
-        if (j == 17 && selector == SELECTOR_TERM_AND_LOG)
-            selector = SELECTOR_LOG_ONLY;
+        if (j == 17 && selector() == SELECTOR_TERM_AND_LOG)
+            set_selector(SELECTOR_LOG_ONLY);
         print_nl_cstr("");
     }
 
@@ -2169,12 +2170,12 @@ write_out(int32_t p)
 
     if (j == 18) {
         if (INTPAR(tracing_online) <= 0)
-            selector = SELECTOR_LOG_ONLY;
+            set_selector(SELECTOR_LOG_ONLY);
         else
-            selector = SELECTOR_TERM_AND_LOG;
+            set_selector(SELECTOR_TERM_AND_LOG);
 
         if (!log_opened)
-            selector = SELECTOR_TERM_ONLY;
+            set_selector(SELECTOR_TERM_ONLY);
 
         // Tectonic: don't emit warnings for shell-escape invocations when
         // enabled; we can provide a better UX inside the driver code.
@@ -2184,7 +2185,7 @@ write_out(int32_t p)
 
             print_nl_cstr("runsystem(");
             for (d = 0; d <= (cur_length()) - 1; d++)
-                print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
+                print(str_pool(str_start(str_ptr() - TOO_BIG_CHAR) + d));
 
             print_cstr(")...");
             print_cstr("disabled");
@@ -2193,14 +2194,14 @@ write_out(int32_t p)
             print_nl_cstr("");
             print_ln();
         } else {
-            ttstub_shell_escape(&str_pool[str_start[str_ptr - TOO_BIG_CHAR]], cur_length());
+            ttstub_shell_escape(str_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)), cur_length());
         }
 
         // Clear shell escape command
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 
-    selector = old_setting;
+    set_selector(old_setting);
 }
 
 
@@ -2221,8 +2222,8 @@ pic_out(int32_t p)
         dvi_v = cur_v;
     }
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr("pdf:image ");
     print_cstr("matrix ");
     print_scaled(mem[p + 5].b32.s0);
@@ -2266,7 +2267,7 @@ pic_out(int32_t p)
         print_raw_char(PIC_NODE_path(p)[i], true);
     print(')');
 
-    selector = old_setting;
+    set_selector(old_setting);
     if (cur_length() < 256) {
         dvi_out(XXX1);
         dvi_out(cur_length());
@@ -2275,10 +2276,10 @@ pic_out(int32_t p)
         dvi_four(cur_length());
     }
 
-    for (k = str_start[str_ptr - TOO_BIG_CHAR]; k < pool_ptr; k++)
-        dvi_out(str_pool[k]);
+    for (k = str_start(str_ptr() - TOO_BIG_CHAR); k < pool_ptr(); k++)
+        dvi_out(str_pool(k));
 
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR]; /* discard the string we just made */
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)); /* discard the string we just made */
 }
 
 

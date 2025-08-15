@@ -6,6 +6,7 @@
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
 #include "tectonic_bridge_core.h"
+#include "xetex_bindings.h"
 
 
 static scaled_t math_x_height(int32_t size_code);
@@ -145,7 +146,7 @@ void init_math(void)
                 just_copy(mem[just_box + 5].b32.s1, p, new_math(0, END_L_CODE));
                 cur_dir = RIGHT_TO_LEFT;
             }
-            v = v + 2 * font_info[QUAD_CODE + param_base[eqtb[CUR_FONT_LOC].b32.s1]].b32.s1;
+            v = v + 2 * font_info[QUAD_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
             if (INTPAR(texxet) > 0) {    /*1497: */
                 temp_ptr = get_avail();
                 mem[temp_ptr].b32.s0 = BEFORE;
@@ -428,7 +429,7 @@ scan_delimiter(int32_t p, bool r)
     }
 
     if (cur_val < 0) {
-        if (file_line_error_style_p)
+        if (file_line_error_style_p())
             print_file_line();
         else
             print_nl_cstr("! ");
@@ -656,7 +657,7 @@ math_fraction(void)
         if (c % DELIMITED_CODE == ABOVE_CODE)
             scan_dimen(false, false, false);
 
-        if (file_line_error_style_p)
+        if (file_line_error_style_p())
             print_file_line();
         else
             print_nl_cstr("! ");
@@ -1586,7 +1587,7 @@ math_glue(int32_t g, scaled_t m)
     int32_t n;
     scaled_t f;
     n = x_over_n(m, 65536L);
-    f = tex_remainder;
+    f = tex_remainder();
     if (f < 0) {
         n--;
         f = f + 65536L;
@@ -1614,7 +1615,7 @@ math_kern(int32_t p, scaled_t m)
     scaled_t f;
     if (mem[p].b16.s0 == MU_GLUE) {
         n = x_over_n(m, 65536L);
-        f = tex_remainder;
+        f = tex_remainder();
         if (f < 0) {
             n--;
             f = f + 65536L;
@@ -3324,7 +3325,7 @@ mlist_to_hlist(void)
                 break;
             }
             if (x != 0) {
-                y = math_glue(eqtb[GLUE_BASE + x].b32.s1, cur_mu);
+                y = math_glue(eqtb_ptr(GLUE_BASE + x)->b32.s1, cur_mu);
                 z = new_glue(y);
                 mem[y].b32.s1 = TEX_NULL;
                 mem[p].b32.s1 = z;

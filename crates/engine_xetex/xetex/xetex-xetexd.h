@@ -11,6 +11,7 @@
 #include "teckit-Common.h"
 #include "xetex-ext.h"
 #include "tectonic_bridge_core.h"
+#include "xetex_bindings.h"
 
 /* xetex_format.h needs this: */
 typedef unsigned char eight_bits;
@@ -84,24 +85,28 @@ typedef unsigned char four_choices;
  *
  */
 
-#ifdef WORDS_BIGENDIAN
+//#ifdef WORDS_BIGENDIAN
+//
+//typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
+//typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
+//
+//#else
+//
+//typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
+//typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
+//
+//#endif /*WORDS_BIGENDIAN*/
 
-typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
-typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
+typedef B16x4 b16x4;
+typedef B32x2 b32x2;
+typedef MemoryWord memory_word;
 
-#else
-
-typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
-typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
-
-#endif /*WORDS_BIGENDIAN*/
-
-typedef union {
-    b32x2 b32;
-    b16x4 b16;
-    double gr;
-    void *ptr;
-} memory_word;
+//typedef union {
+//    b32x2 b32;
+//    b16x4 b16;
+//    double gr;
+//    void *ptr;
+//} memory_word;
 
 /* ## THE ORIGINAL SITUATION (archived for posterity)
  *
@@ -383,7 +388,6 @@ void remember_source_info(str_number, int);
 
 /* All the following variables are defined in xetexini.c */
 extern bool shell_escape_enabled;
-extern memory_word *eqtb;
 extern int32_t bad;
 extern char *name_of_file;
 extern UTF16_code *name_of_file16;
@@ -394,13 +398,11 @@ extern int32_t first;
 extern int32_t last;
 extern int32_t max_buf_stack;
 extern bool in_initex_mode;
-extern int32_t error_line;
 extern int32_t half_error_line;
 extern int32_t max_print_line;
 extern int32_t max_strings;
 extern int32_t strings_free;
 extern int32_t string_vacancies;
-extern int32_t pool_size;
 extern int32_t pool_free;
 extern int32_t font_mem_size;
 extern int32_t font_max;
@@ -413,30 +415,15 @@ extern int32_t param_size;
 extern int32_t nest_size;
 extern int32_t save_size;
 extern int32_t expand_depth;
-extern int file_line_error_style_p;
 extern int halt_on_error_p;
 extern bool quoted_filename;
 extern bool insert_src_special_auto;
 extern bool insert_src_special_every_par;
 extern bool insert_src_special_every_math;
 extern bool insert_src_special_every_vbox;
-extern packed_UTF16_code *str_pool;
-extern pool_pointer *str_start;
-extern pool_pointer pool_ptr;
-extern str_number str_ptr;
 extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
-extern rust_output_handle_t rust_stdout;
-extern rust_output_handle_t log_file;
-extern selector_t selector;
-extern unsigned char dig[23];
-extern int32_t tally;
-extern int32_t term_offset;
-extern int32_t file_offset;
-extern UTF16_code trick_buf[256];
-extern int32_t trick_count;
 extern int32_t first_count;
-extern bool doing_special;
 extern UTF16_code *native_text;
 extern int32_t native_text_size;
 extern int32_t native_len;
@@ -449,10 +436,6 @@ extern signed char error_count;
 extern const char* help_line[6];
 extern unsigned char help_ptr;
 extern bool use_err_help;
-extern bool arith_error;
-extern scaled_t tex_remainder;
-extern int32_t randoms[55];
-extern unsigned char j_random;
 extern scaled_t random_seed;
 extern int32_t two_to_the[31];
 extern int32_t spec_log[29];
@@ -504,13 +487,9 @@ extern input_state_t *input_stack;
 extern int32_t input_ptr;
 extern int32_t max_in_stack;
 extern input_state_t cur_input;
-extern int32_t in_open;
 extern int32_t open_parens;
 extern UFILE **input_file;
-extern int32_t line;
-extern int32_t *line_stack;
 extern str_number *source_filename_stack;
-extern str_number *full_source_filename_stack;
 extern unsigned char scanner_status;
 extern int32_t warning_index;
 extern int32_t def_ref;
@@ -688,7 +667,6 @@ extern int32_t cur_box;
 extern int32_t after_token;
 extern bool long_help_seen;
 extern str_number format_ident;
-extern rust_output_handle_t write_file[16];
 extern bool write_open[18];
 extern int32_t write_loc;
 extern scaled_t cur_page_width;
@@ -1096,7 +1074,6 @@ void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 ttbc_diagnostic_t *error_here_with_diagnostic(const char* message);
 
 void print_ln(void);
-void print_raw_char(UTF16_code s, bool incr_offset);
 void print_char(int32_t s);
 void print(int32_t s);
 void print_cstr(const char* s);
@@ -1166,7 +1143,7 @@ print_c_string(const char *str) {
 static inline pool_pointer
 cur_length(void) {
     /*41: The length of the current string in the pool */
-    return pool_ptr - str_start[str_ptr - TOO_BIG_CHAR];
+    return pool_ptr() - str_start(str_ptr() - TOO_BIG_CHAR);
 }
 
 

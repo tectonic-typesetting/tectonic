@@ -18,7 +18,6 @@
 
 /* All the following variables are declared in xetex-xetexd.h */
 bool shell_escape_enabled = false;
-memory_word *eqtb;
 int32_t bad;
 char *name_of_file;
 UTF16_code *name_of_file16;
@@ -29,13 +28,11 @@ int32_t first;
 int32_t last;
 int32_t max_buf_stack;
 bool in_initex_mode;
-int32_t error_line;
 int32_t half_error_line;
 int32_t max_print_line;
 int32_t max_strings;
 int32_t strings_free;
 int32_t string_vacancies;
-int32_t pool_size;
 int32_t pool_free;
 int32_t font_mem_size;
 int32_t font_max;
@@ -48,30 +45,15 @@ int32_t param_size;
 int32_t nest_size;
 int32_t save_size;
 int32_t expand_depth;
-int file_line_error_style_p;
 int halt_on_error_p;
 bool quoted_filename;
 bool insert_src_special_auto;
 bool insert_src_special_every_par;
 bool insert_src_special_every_math;
 bool insert_src_special_every_vbox;
-packed_UTF16_code *str_pool;
-pool_pointer *str_start;
-pool_pointer pool_ptr;
-str_number str_ptr;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-rust_output_handle_t rust_stdout;
-rust_output_handle_t log_file;
-selector_t selector;
-unsigned char dig[23];
-int32_t tally;
-int32_t term_offset;
-int32_t file_offset;
-UTF16_code trick_buf[256];
-int32_t trick_count;
 int32_t first_count;
-bool doing_special;
 UTF16_code *native_text;
 int32_t native_text_size;
 int32_t native_len;
@@ -84,10 +66,6 @@ signed char error_count;
 const char* help_line[6];
 unsigned char help_ptr;
 bool use_err_help;
-bool arith_error;
-scaled_t tex_remainder;
-int32_t randoms[55];
-unsigned char j_random;
 scaled_t random_seed;
 int32_t two_to_the[31];
 int32_t spec_log[29];
@@ -139,13 +117,9 @@ input_state_t *input_stack;
 int32_t input_ptr;
 int32_t max_in_stack;
 input_state_t cur_input;
-int32_t in_open;
 int32_t open_parens;
 UFILE **input_file;
-int32_t line;
-int32_t *line_stack;
 str_number *source_filename_stack;
-str_number *full_source_filename_stack;
 unsigned char scanner_status;
 int32_t warning_index;
 int32_t def_ref;
@@ -314,7 +288,6 @@ int32_t cur_box;
 int32_t after_token;
 bool long_help_seen;
 str_number format_ident;
-rust_output_handle_t write_file[16];
 bool write_open[18];
 int32_t write_loc;
 scaled_t cur_page_width;
@@ -478,11 +451,28 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
     swap_items (p, nitems, item_size);
 }
 
-
+#define dump_ptr(base, len) \
+    do_dump ((char *) (base), sizeof *(base), (size_t) (len), fmt_out)
 #define dump_things(base, len) \
     do_dump ((char *) &(base), sizeof (base), (size_t) (len), fmt_out)
+#define undump_ptr(base, len) \
+    do_undump ((char *) (base), sizeof *(base), (size_t) (len), fmt_in)
 #define undump_things(base, len) \
     do_undump ((char *) &(base), sizeof (base), (size_t) (len), fmt_in)
+
+#define undump_checked_ptr(low, high, base, len)                        \
+    do {                                                                \
+        int i;                                                          \
+        undump_ptr (base, len);                                         \
+        for (i = 0; i < (len); i++) {                                   \
+            if ((base)[i] < (low) || (base)[i] > (high)) {              \
+                _tt_abort ("item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR \
+                           " <%" PRIdPTR " or >%" PRIdPTR,              \
+                           i, (uintptr_t) (base)[i], (uintptr_t) (base),\
+                           (uintptr_t) low, (uintptr_t) high);          \
+            }                                                           \
+        }                                                               \
+    } while (0)
 
 /* Like do_undump, but check each value against LOW and HIGH.  The
    slowdown isn't significant, and this improves the chances of
@@ -608,8 +598,8 @@ primitive(const char* ident, uint16_t c, int32_t o)
             buffer[first + i] = ident[i];
 
         cur_val = id_lookup(first, len);
-        str_ptr--;
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_str_ptr(str_ptr()-1);
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         hash[cur_val].s1 = s;
         prim_val = prim_lookup(s);
     } else {
@@ -617,12 +607,12 @@ primitive(const char* ident, uint16_t c, int32_t o)
         prim_val = prim_lookup(ident[0]);
     }
 
-    eqtb[cur_val].b16.s0 = LEVEL_ONE;
-    eqtb[cur_val].b16.s1 = c;
-    eqtb[cur_val].b32.s1 = o;
-    eqtb[PRIM_EQTB_BASE + prim_val].b16.s0 = LEVEL_ONE;
-    eqtb[PRIM_EQTB_BASE + prim_val].b16.s1 = c;
-    eqtb[PRIM_EQTB_BASE + prim_val].b32.s1 = o;
+    eqtb_ptr(cur_val)->b16.s0 = LEVEL_ONE;
+    eqtb_ptr(cur_val)->b16.s1 = c;
+    eqtb_ptr(cur_val)->b32.s1 = o;
+    eqtb_ptr(PRIM_EQTB_BASE + prim_val)->b16.s0 = LEVEL_ONE;
+    eqtb_ptr(PRIM_EQTB_BASE + prim_val)->b16.s1 = c;
+    eqtb_ptr(PRIM_EQTB_BASE + prim_val)->b32.s1 = o;
 }
 
 /*:925*//*977: */
@@ -1232,14 +1222,14 @@ not_found1: /*970:*/
             if (n > 1) { /*974:*/
                 n++;
                 hc[n] = cur_lang;
-                if (pool_ptr + n > pool_size)
-                    overflow("pool size", pool_size - init_pool_ptr);
+                if (pool_ptr() + n > pool_size())
+                    overflow("pool size", pool_size() - init_pool_ptr);
                 h = 0;
 
                 for (j = 1; j <= n; j++) {
                     h = (h + h + hc[j]) % HYPH_PRIME;
-                    str_pool[pool_ptr] = hc[j];
-                    pool_ptr++;
+                    set_str_pool(pool_ptr(), hc[j]);
+                    set_pool_ptr(pool_ptr()+1);
                 }
 
                 s = make_string();
@@ -1259,18 +1249,18 @@ not_found1: /*970:*/
                     if (length(k) != length(s))
                         goto not_found;
 
-                    u = str_start[(k) - 65536L];
-                    v = str_start[(s) - 65536L];
+                    u = str_start((k) - 65536L);
+                    v = str_start((s) - 65536L);
 
                     do {
-                        if (str_pool[u] != str_pool[v])
+                        if (str_pool(u) != str_pool(v))
                             goto not_found;
                         u++;
                         v++;
-                    } while (u != str_start[(k + 1) - 65536L]);
+                    } while (u != str_start((k + 1) - 65536L));
 
-                    str_ptr--;
-                    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                    set_str_ptr(str_ptr()-1);
+                    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                     s = hyph_word[h];
                     hyph_count--;
                     goto found;
@@ -1652,7 +1642,7 @@ prefixed_command(void)
                     else
                         q = mem[cur_ptr + 1].b32.s1;
                 } else {
-                    q = eqtb[cur_chr].b32.s1;
+                    q = eqtb_ptr(cur_chr)->b32.s1;
                 }
 
                 if (q == TEX_NULL) {
@@ -1862,7 +1852,7 @@ prefixed_command(void)
 
         if (p < MATH_CODE_BASE) {
             if (p >= SF_CODE_BASE) {
-                n = eqtb[p].b32.s1 / 65536L;
+                n = eqtb_ptr(p)->b32.s1 / 65536L;
                 if (a >= 4)
                     geq_define(p, DATA, n * 65536L + cur_val);
                 else
@@ -2098,11 +2088,11 @@ store_fmt_file(void)
 
         history = HISTORY_FATAL_ERROR;
         close_files_and_terminate();
-        ttstub_output_flush (rust_stdout);
+        ttstub_output_flush(rust_stdout());
         _tt_abort("\\dump inside a group");
     }
 
-    selector = SELECTOR_NEW_STRING;
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr(" (preloaded format=");
     print(job_name);
     print_char(' ');
@@ -2114,12 +2104,12 @@ store_fmt_file(void)
     print_char(')');
 
     if (interaction == BATCH_MODE)
-        selector = SELECTOR_LOG_ONLY;
+        set_selector(SELECTOR_LOG_ONLY);
     else
-        selector = SELECTOR_TERM_AND_LOG;
+        set_selector(SELECTOR_TERM_AND_LOG);
 
-    if (pool_ptr + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     format_ident = make_string();
     pack_job_name(".fmt");
@@ -2131,8 +2121,8 @@ store_fmt_file(void)
     print_nl_cstr("Beginning to dump on file ");
     print(make_name_string());
 
-    str_ptr--;
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    set_str_ptr(str_ptr()-1);
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
     print_nl_cstr("");
     print(format_ident);
@@ -2153,15 +2143,15 @@ store_fmt_file(void)
 
     /* string pool */
 
-    dump_int(pool_ptr);
-    dump_int(str_ptr);
-    dump_things(str_start[0], str_ptr - TOO_BIG_CHAR + 1);
-    dump_things(str_pool[0], pool_ptr);
+    dump_int(pool_ptr());
+    dump_int(str_ptr());
+    dump_ptr(str_start_ptr(0), str_ptr() - TOO_BIG_CHAR + 1);
+    dump_ptr(str_pool_ptr(0), pool_ptr());
 
     print_ln();
-    print_int(str_ptr);
+    print_int(str_ptr());
     print_cstr(" strings of total length ");
-    print_int(pool_ptr);
+    print_int(pool_ptr());
 
     /* "memory locations" */
 
@@ -2218,9 +2208,9 @@ store_fmt_file(void)
         j = k;
 
         while (j < INT_BASE - 1) {
-            if (eqtb[j].b32.s1 == eqtb[j + 1].b32.s1 &&
-                eqtb[j].b16.s1 == eqtb[j + 1].b16.s1 &&
-                eqtb[j].b16.s0 == eqtb[j + 1].b16.s0)
+            if (eqtb_ptr(j)->b32.s1 == eqtb_ptr(j + 1)->b32.s1 &&
+                eqtb_ptr(j)->b16.s1 == eqtb_ptr(j + 1)->b16.s1 &&
+                eqtb_ptr(j)->b16.s0 == eqtb_ptr(j + 1)->b16.s0)
                 goto found1;
             j++;
         }
@@ -2233,16 +2223,16 @@ store_fmt_file(void)
         l = j;
 
         while (j < INT_BASE - 1) {
-            if (eqtb[j].b32.s1 != eqtb[j + 1].b32.s1 ||
-                eqtb[j].b16.s1 != eqtb[j + 1].b16.s1 ||
-                eqtb[j].b16.s0 != eqtb[j + 1].b16.s0)
+            if (eqtb_ptr(j)->b32.s1 != eqtb_ptr(j + 1)->b32.s1 ||
+                eqtb_ptr(j)->b16.s1 != eqtb_ptr(j + 1)->b16.s1 ||
+                eqtb_ptr(j)->b16.s0 != eqtb_ptr(j + 1)->b16.s0)
                 goto done1;
             j++;
         }
     done1:
 
         dump_int(l - k);
-        dump_things(eqtb[k], l - k);
+        dump_ptr(eqtb_ptr(k), l - k);
         k = j + 1;
         dump_int(k - l);
     } while (k != INT_BASE); /*:1350*/
@@ -2251,7 +2241,7 @@ store_fmt_file(void)
         j = k;
 
         while (j < EQTB_SIZE) {
-            if (eqtb[j].b32.s1 == eqtb[j + 1].b32.s1)
+            if (eqtb_ptr(j)->b32.s1 == eqtb_ptr(j + 1)->b32.s1)
                 goto found2;
             j++;
         }
@@ -2264,20 +2254,20 @@ store_fmt_file(void)
         l = j;
 
         while (j < EQTB_SIZE) {
-            if (eqtb[j].b32.s1 != eqtb[j + 1].b32.s1)
+            if (eqtb_ptr(j)->b32.s1 != eqtb_ptr(j + 1)->b32.s1)
                 goto done2;
             j++;
         }
 
     done2:
         dump_int(l - k);
-        dump_things(eqtb[k], l - k);
+        dump_ptr(eqtb_ptr(k), l - k);
         k = j + 1;
         dump_int(k - l);
     } while (k <= EQTB_SIZE);
 
     if (hash_high > 0)
-        dump_things(eqtb[EQTB_SIZE + 1], hash_high);
+        dump_ptr(eqtb_ptr(EQTB_SIZE + 1), hash_high);
 
     dump_int(par_loc);
     dump_int(write_loc);
@@ -2474,10 +2464,10 @@ load_fmt_file(void)
 
     if (in_initex_mode) {
         free(font_info);
-        free(str_pool);
-        free(str_start);
+        clear_str_pool();
+        clear_str_start();
         free(yhash);
-        free(eqtb);
+        clear_eqtb();
         free(mem);
         mem = NULL;
     }
@@ -2515,13 +2505,13 @@ load_fmt_file(void)
     for (x = HASH_BASE + 1; x <= hash_top; x++)
         hash[x] = hash[HASH_BASE];
 
-    eqtb = xmalloc_array(memory_word, eqtb_top + 1);
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = TEX_NULL;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
+    resize_eqtb(eqtb_top + 1);
+    eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s1 = UNDEFINED_CS;
+    eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b32.s1 = TEX_NULL;
+    eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s0 = LEVEL_ZERO;
 
     for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
-        eqtb[x] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+        set_eqtb(x, eqtb(UNDEFINED_CONTROL_SEQUENCE));
 
     max_reg_num = 32767;
     max_reg_help_line = "A register number must be between 0 and 32767.";
@@ -2556,29 +2546,30 @@ load_fmt_file(void)
         goto bad_fmt;
     if (x > sup_pool_size - pool_free)
         _tt_abort ("must increase string_pool_size");
-    pool_ptr = x;
+    set_pool_ptr(x);
 
-    if (pool_size < pool_ptr + pool_free)
-        pool_size = pool_ptr + pool_free;
+    if (pool_size() < pool_ptr() + pool_free)
+        set_pool_size(pool_ptr() + pool_free);
 
     undump_int(x);
     if (x < 0)
         goto bad_fmt;
     if (x > sup_max_strings - strings_free)
         _tt_abort ("must increase sup_strings");
-    str_ptr = x;
+    set_str_ptr(x);
 
-    if (max_strings < str_ptr + strings_free)
-        max_strings = str_ptr + strings_free;
+    if (max_strings < str_ptr() + strings_free)
+        max_strings = str_ptr() + strings_free;
 
-    str_start = xmalloc_array(pool_pointer, max_strings);
-    undump_checked_things(0, pool_ptr, str_start[0], str_ptr - TOO_BIG_CHAR + 1);
-    str_pool = xmalloc_array(packed_UTF16_code, pool_size);
+    resize_str_start(max_strings);
+    uint32_t* ptr = str_start_ptr(0);
+    undump_checked_ptr(0, pool_ptr(), ptr, str_ptr() - TOO_BIG_CHAR + 1);
+    resize_str_pool(pool_size());
 
-    undump_things(str_pool[0], pool_ptr);
+    undump_ptr(str_pool_ptr(0), pool_ptr());
 
-    init_str_ptr = str_ptr;
-    init_pool_ptr = pool_ptr; /*:1345 */
+    init_str_ptr = str_ptr();
+    init_pool_ptr = pool_ptr(); /*:1345 */
 
     /* "By sorting the list of available spaces in the variable-size portion
      * of |mem|, we are usually able to get by without having to dump very
@@ -2651,7 +2642,7 @@ load_fmt_file(void)
         if (x < 1 || k + x > EQTB_SIZE + 1)
             goto bad_fmt;
 
-        undump_things(eqtb[k], x);
+        undump_ptr(eqtb_ptr(k), x);
         k = k + x;
 
         undump_int(x);
@@ -2659,13 +2650,13 @@ load_fmt_file(void)
             goto bad_fmt;
 
         for (j = k; j <= k + x - 1; j++)
-            eqtb[j] = eqtb[k - 1];
+            set_eqtb(j, eqtb(k - 1));
 
         k = k + x;
     } while (k <= EQTB_SIZE);
 
     if (hash_high > 0)
-        undump_things(eqtb[EQTB_SIZE + 1], hash_high);
+        undump_ptr(eqtb_ptr(EQTB_SIZE + 1), hash_high);
 
     undump_int(x);
     if (x < HASH_BASE || x > hash_top)
@@ -2777,8 +2768,8 @@ load_fmt_file(void)
     undump_checked_things(MIN_HALFWORD, MAX_HALFWORD, font_params[FONT_BASE], font_ptr + 1);
     undump_things(hyphen_char[FONT_BASE], font_ptr + 1);
     undump_things(skew_char[FONT_BASE], font_ptr + 1);
-    undump_upper_check_things(str_ptr, font_name[FONT_BASE], font_ptr + 1);
-    undump_upper_check_things(str_ptr, font_area[FONT_BASE], font_ptr + 1);
+    undump_upper_check_things(str_ptr(), font_name[FONT_BASE], font_ptr + 1);
+    undump_upper_check_things(str_ptr(), font_area[FONT_BASE], font_ptr + 1);
     undump_things(font_bc[FONT_BASE], font_ptr + 1);
     undump_things(font_ec[FONT_BASE], font_ptr + 1);
     undump_things(char_base[FONT_BASE], font_ptr + 1);
@@ -2830,7 +2821,7 @@ load_fmt_file(void)
         hyph_link[j] = hyph_next;
 
         undump_int(x);
-        if (x < 0 || x > str_ptr)
+        if (x < 0 || x > str_ptr())
             goto bad_fmt;
         else
             hyph_word[j] = x;
@@ -2983,10 +2974,10 @@ final_cleanup(void)
     if (history != HISTORY_SPOTLESS) {
         if ((history == HISTORY_WARNING_ISSUED || (interaction < ERROR_STOP_MODE))) {
 
-            if (selector == SELECTOR_TERM_AND_LOG) {
-                selector = SELECTOR_TERM_ONLY;
+            if (selector() == SELECTOR_TERM_AND_LOG) {
+                set_selector(SELECTOR_TERM_ONLY);
                 print_nl_cstr("(see the transcript file for additional information)");
-                selector = SELECTOR_TERM_AND_LOG;
+                set_selector(SELECTOR_TERM_AND_LOG);
             }
         }
     }
@@ -3056,7 +3047,7 @@ initialize_more_variables(void)
     int32_t k;
     hyph_pointer z;
 
-    doing_special = false;
+    set_doing_special(false);
     native_text_size = 128;
     native_text = xmalloc(native_text_size * sizeof(UTF16_code));
 
@@ -3262,51 +3253,51 @@ initialize_more_initex_variables(void)
     hi_mem_min = PRE_ADJUST_HEAD;
     var_used = 20;
     dyn_used = HI_MEM_STAT_USAGE;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s1 = UNDEFINED_CS;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b32.s1 = TEX_NULL;
-    eqtb[UNDEFINED_CONTROL_SEQUENCE].b16.s0 = LEVEL_ZERO;
+    eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s1 = UNDEFINED_CS;
+    eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b32.s1 = TEX_NULL;
+    eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s0 = LEVEL_ZERO;
 
     for (k = ACTIVE_BASE; k <= eqtb_top; k++)
-        eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+        set_eqtb(k, eqtb(UNDEFINED_CONTROL_SEQUENCE));
 
-    eqtb[GLUE_BASE].b32.s1 = 0;
-    eqtb[GLUE_BASE].b16.s0 = LEVEL_ONE;
-    eqtb[GLUE_BASE].b16.s1 = GLUE_REF;
+    eqtb_ptr(GLUE_BASE)->b32.s1 = 0;
+    eqtb_ptr(GLUE_BASE)->b16.s0 = LEVEL_ONE;
+    eqtb_ptr(GLUE_BASE)->b16.s1 = GLUE_REF;
 
     for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
-        eqtb[k] = eqtb[GLUE_BASE];
+        set_eqtb(k, eqtb(GLUE_BASE));
 
     mem[0].b32.s1 += 531;
     LOCAL(par_shape) = TEX_NULL;
-    eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s1 = SHAPE_REF;
-    eqtb[LOCAL_BASE + LOCAL__par_shape].b16.s0 = LEVEL_ONE;
+    eqtb_ptr(LOCAL_BASE + LOCAL__par_shape)->b16.s1 = SHAPE_REF;
+    eqtb_ptr(LOCAL_BASE + LOCAL__par_shape)->b16.s0 = LEVEL_ONE;
 
     for (k = ETEX_PEN_BASE; k <= NUM_ETEX_PENALTIES - 1; k++)
-        eqtb[k] = eqtb[LOCAL_BASE + LOCAL__par_shape];
+        set_eqtb(k, eqtb(LOCAL_BASE + LOCAL__par_shape));
 
     for (k = LOCAL_BASE + LOCAL__output_routine; k <= TOKS_BASE + NUMBER_REGS - 1; k++)
-        eqtb[k] = eqtb[UNDEFINED_CONTROL_SEQUENCE];
+        set_eqtb(k, eqtb(UNDEFINED_CONTROL_SEQUENCE));
 
-    eqtb[BOX_BASE].b32.s1 = TEX_NULL;
-    eqtb[BOX_BASE].b16.s1 = BOX_REF;
-    eqtb[BOX_BASE].b16.s0 = LEVEL_ONE;
+    eqtb_ptr(BOX_BASE)->b32.s1 = TEX_NULL;
+    eqtb_ptr(BOX_BASE)->b16.s1 = BOX_REF;
+    eqtb_ptr(BOX_BASE)->b16.s0 = LEVEL_ONE;
 
     for (k = BOX_BASE + 1; k <= BOX_BASE + NUMBER_REGS - 1; k++)
-        eqtb[k] = eqtb[BOX_BASE];
+        set_eqtb(k, eqtb(BOX_BASE));
 
-    eqtb[CUR_FONT_LOC].b32.s1 = FONT_BASE;
-    eqtb[CUR_FONT_LOC].b16.s1 = DATA;
-    eqtb[CUR_FONT_LOC].b16.s0 = LEVEL_ONE;
+    eqtb_ptr(CUR_FONT_LOC)->b32.s1 = FONT_BASE;
+    eqtb_ptr(CUR_FONT_LOC)->b16.s1 = DATA;
+    eqtb_ptr(CUR_FONT_LOC)->b16.s0 = LEVEL_ONE;
 
     for (k = MATH_FONT_BASE; k <= MATH_FONT_BASE + NUMBER_MATH_FONTS - 1; k++)
-        eqtb[k] = eqtb[CUR_FONT_LOC];
+        set_eqtb(k, eqtb(CUR_FONT_LOC));
 
-    eqtb[CAT_CODE_BASE].b32.s1 = 0;
-    eqtb[CAT_CODE_BASE].b16.s1 = DATA;
-    eqtb[CAT_CODE_BASE].b16.s0 = LEVEL_ONE;
+    eqtb_ptr(CAT_CODE_BASE)->b32.s1 = 0;
+    eqtb_ptr(CAT_CODE_BASE)->b16.s1 = DATA;
+    eqtb_ptr(CAT_CODE_BASE)->b16.s0 = LEVEL_ONE;
 
     for (k = CAT_CODE_BASE + 1; k <= INT_BASE - 1; k++)
-        eqtb[k] = eqtb[CAT_CODE_BASE];
+        set_eqtb(k, eqtb(CAT_CODE_BASE));
 
     for (k = 0; k <= NUMBER_USVS - 1; k++) {
         CAT_CODE(k) = OTHER_CHAR;
@@ -3319,7 +3310,7 @@ initialize_more_initex_variables(void)
     CAT_CODE(92) = ESCAPE;
     CAT_CODE(37) = COMMENT;
     CAT_CODE(127) = INVALID_CHAR;
-    eqtb[CAT_CODE_BASE].b32.s1 = IGNORE;
+    eqtb_ptr(CAT_CODE_BASE)->b32.s1 = IGNORE;
 
     for (k = '0'; k <= '9'; k++)
         MATH_CODE(k) = k + set_class(VAR_FAM_CLASS);
@@ -3337,7 +3328,7 @@ initialize_more_initex_variables(void)
     }
 
     for (k = INT_BASE; k <= DEL_CODE_BASE - 1; k++)
-        eqtb[k].b32.s1 = 0;
+        eqtb_ptr(k)->b32.s1 = 0;
 
     INTPAR(mag) = 1000;
     INTPAR(tolerance) = 10000;
@@ -3352,7 +3343,7 @@ initialize_more_initex_variables(void)
     DEL_CODE(46 /* '.' */) = 0;
 
     for (k = DIMEN_BASE; k <= EQTB_SIZE; k++)
-        eqtb[k].b32.s1 = 0;
+        eqtb_ptr(k)->b32.s1 = 0;
 
     prim_used = PRIM_SIZE;
     hash_used = FROZEN_CONTROL_SEQUENCE;
@@ -3413,36 +3404,36 @@ initialize_primitives(void)
                 default:
                     /* A "frozen" primitive */
                     hash[prim.extra_init].s1 = maketexstring(prim.name);
-                    eqtb[prim.extra_init] = eqtb[cur_val];
+                    set_eqtb(prim.extra_init, eqtb(cur_val));
                     break;
             }
         }
     }
 
     hash[FROZEN_END_TEMPLATE].s1 = maketexstring("endtemplate");
-    eqtb[FROZEN_END_TEMPLATE].b16.s1 = END_TEMPLATE;
-    eqtb[FROZEN_END_TEMPLATE].b32.s1 = NULL_LIST;
-    eqtb[FROZEN_END_TEMPLATE].b16.s0 = LEVEL_ONE;
+    eqtb_ptr(FROZEN_END_TEMPLATE)->b16.s1 = END_TEMPLATE;
+    eqtb_ptr(FROZEN_END_TEMPLATE)->b32.s1 = NULL_LIST;
+    eqtb_ptr(FROZEN_END_TEMPLATE)->b16.s0 = LEVEL_ONE;
 
     hash[FROZEN_ENDV].s1 = maketexstring("endtemplate");
-    eqtb[FROZEN_ENDV].b16.s1 = ENDV;
-    eqtb[FROZEN_ENDV].b32.s1 = NULL_LIST;
-    eqtb[FROZEN_ENDV].b16.s0 = LEVEL_ONE;
+    eqtb_ptr(FROZEN_ENDV)->b16.s1 = ENDV;
+    eqtb_ptr(FROZEN_ENDV)->b32.s1 = NULL_LIST;
+    eqtb_ptr(FROZEN_ENDV)->b16.s0 = LEVEL_ONE;
 
     hash[FROZEN_DONT_EXPAND].s1 = maketexstring("notexpanded:");
-    eqtb[FROZEN_DONT_EXPAND].b16.s1 = DONT_EXPAND;
+    eqtb_ptr(FROZEN_DONT_EXPAND)->b16.s1 = DONT_EXPAND;
 
     hash[FROZEN_PRIMITIVE].s1 = maketexstring("primitive");
-    eqtb[FROZEN_PRIMITIVE].b16.s1 = IGNORE_SPACES;
-    eqtb[FROZEN_PRIMITIVE].b32.s1 = 1;
-    eqtb[FROZEN_PRIMITIVE].b16.s0 = LEVEL_ONE;
+    eqtb_ptr(FROZEN_PRIMITIVE)->b16.s1 = IGNORE_SPACES;
+    eqtb_ptr(FROZEN_PRIMITIVE)->b32.s1 = 1;
+    eqtb_ptr(FROZEN_PRIMITIVE)->b16.s0 = LEVEL_ONE;
 
     hash[FROZEN_PROTECTION].s1 = maketexstring("inaccessible");
 
     hash[END_WRITE].s1 = maketexstring("endwrite");
-    eqtb[END_WRITE].b16.s0 = LEVEL_ONE;
-    eqtb[END_WRITE].b16.s1 = OUTER_CALL;
-    eqtb[END_WRITE].b32.s1 = TEX_NULL;
+    eqtb_ptr(END_WRITE)->b16.s0 = LEVEL_ONE;
+    eqtb_ptr(END_WRITE)->b16.s1 = OUTER_CALL;
+    eqtb_ptr(END_WRITE)->b32.s1 = TEX_NULL;
 
     no_new_control_sequence = true;
 }
@@ -3451,12 +3442,12 @@ initialize_primitives(void)
 static void
 get_strings_started(void)
 {
-    pool_ptr = 0;
-    str_ptr = 0;
-    str_start[0] = 0;
-    str_ptr = TOO_BIG_CHAR;
+    set_pool_ptr(0);
+    set_str_ptr(0);
+    set_str_start(0, 0);
+    set_str_ptr(TOO_BIG_CHAR);
 
-    if (load_pool_strings(pool_size - string_vacancies) == 0)
+    if (load_pool_strings(pool_size() - string_vacancies) == 0)
         _tt_abort ("must increase pool_size");
 }
 /*:1001*/
@@ -3489,7 +3480,7 @@ tt_cleanup(void) {
         }
     }
 
-    for (int i = 1; i <= in_open; i++) {
+    for (int i = 1; i <= in_open(); i++) {
         if (input_file[i] != NULL) {
             u_close(input_file[i]);
         }
@@ -3501,12 +3492,12 @@ tt_cleanup(void) {
     free(save_stack);
     free(input_stack);
     free(input_file);
-    free(line_stack);
+    clear_line_stack();
     free(eof_seen);
     free(grp_stack);
     free(if_stack);
     free(source_filename_stack);
-    free(full_source_filename_stack);
+    clear_full_source_filename_stack();
     free(param_stack);
     free(hyph_word);
     free(hyph_list);
@@ -3517,10 +3508,10 @@ tt_cleanup(void) {
 
     // Free arrays allocated in load_fmt_file
     free(yhash);
-    free(eqtb);
+    clear_eqtb();
     free(mem);
-    free(str_start);
-    free(str_pool);
+    clear_str_start();
+    clear_str_pool();
     free(font_info);
 
     free(font_mapping);
@@ -3566,7 +3557,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     /* Get our stdout handle */
 
-    rust_stdout = ttstub_output_open_stdout ();
+    set_rust_stdout(ttstub_output_open_stdout());
 
     size_t len = strlen (dump_name);
     TEX_format_default = xmalloc (len + 1);
@@ -3575,13 +3566,13 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     /* Not sure why these get custom initializations. */
 
-    if (file_line_error_style_p < 0)
-        file_line_error_style_p = 0;
+    if (file_line_error_style_p() < 0)
+        set_file_line_error_style_p(0);
 
     /* These various parameters were configurable in web2c TeX. We don't
      * bother to allow that. */
 
-    pool_size = 6250000L;
+    set_pool_size(6250000L);
     string_vacancies = 90000L;
     pool_free = 47500L;
     max_strings = 565536L;
@@ -3596,7 +3587,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     param_size = 10000;
     save_size = 80000L;
     stack_size = 5000;
-    error_line = 79;
+    set_error_line(79);
     half_error_line = 50;
     max_print_line = 79;
     hash_extra = 600000L;
@@ -3609,12 +3600,10 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     save_stack = xmalloc_array(memory_word, save_size);
     input_stack = xmalloc_array(input_state_t, stack_size);
     input_file = xmalloc_array(UFILE *, max_in_open);
-    line_stack = xmalloc_array(int32_t, max_in_open);
     eof_seen = xmalloc_array(bool, max_in_open);
     grp_stack = xmalloc_array(save_pointer, max_in_open);
     if_stack = xmalloc_array(int32_t, max_in_open);
     source_filename_stack = xmalloc_array(str_number, max_in_open);
-    full_source_filename_stack = xmalloc_array(str_number, max_in_open);
     param_stack = xmalloc_array(int32_t, param_size);
     hyph_word = xmalloc_array(str_number, hyph_size);
     hyph_list = xmalloc_array(int32_t, hyph_size);
@@ -3639,9 +3628,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         for (hash_used = HASH_BASE + 1; hash_used <= hash_top; hash_used++)
             hash[hash_used] = hash[HASH_BASE];
 
-        eqtb = xcalloc_array(memory_word, eqtb_top);
-        str_start = xmalloc_array(pool_pointer, max_strings);
-        str_pool = xmalloc_array(packed_UTF16_code, pool_size);
+		resize_eqtb(eqtb_top + 1);
+        resize_str_start(max_strings);
+        resize_str_pool(pool_size());
         font_info = xmalloc_array(memory_word, font_mem_size);
     }
 
@@ -3650,7 +3639,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     history = HISTORY_FATAL_ERROR;
     bad = 0;
 
-    if (half_error_line < 30 || half_error_line > error_line - 15)
+    if (half_error_line < 30 || half_error_line > error_line() - 15)
         bad = 1;
     if (max_print_line < 60)
         bad = 2;
@@ -3692,8 +3681,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         get_strings_started();
         initialize_more_initex_variables();
         initialize_primitives();
-        init_str_ptr = str_ptr;
-        init_pool_ptr = pool_ptr;
+        init_str_ptr = str_ptr();
+        init_pool_ptr = pool_ptr();
     }
 
     /*55:*/
@@ -3704,10 +3693,10 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     get_seconds_and_micros(&epochseconds, &microseconds);
     init_start_time(build_date);
 
-    selector = SELECTOR_TERM_ONLY;
-    tally = 0;
-    term_offset = 0;
-    file_offset = 0;
+    set_selector(SELECTOR_TERM_ONLY);
+    set_tally(0);
+    set_term_offset(0);
+    set_file_offset(0);
     job_name = 0;
     name_in_progress = false;
     log_opened = false;
@@ -3720,8 +3709,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     input_ptr = 0;
     max_in_stack = 0;
     source_filename_stack[0] = 0;
-    full_source_filename_stack[0] = 0;
-    in_open = 0;
+    set_full_source_filename_stack(0, 0);
+    set_in_open(0);
     open_parens = 0;
     max_buf_stack = 0;
     grp_stack[0] = 0;
@@ -3740,7 +3729,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     cur_input.state = NEW_LINE;
     cur_input.start = 1;
     cur_input.index = 0;
-    line = 0;
+    set_line(0);
     cur_input.name = 0;
     force_eof = false;
     align_state = 1000000L;
@@ -3860,9 +3849,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     init_randoms(random_seed);
 
     if (interaction == BATCH_MODE)
-        selector = SELECTOR_NO_PRINT;
+        set_selector(SELECTOR_NO_PRINT);
     else
-        selector = SELECTOR_TERM_ONLY; /*:79*/
+        set_selector(SELECTOR_TERM_ONLY); /*:79*/
 
     if (semantic_pagination_enabled)
         INTPAR(xetex_generate_actual_text) = 1;
