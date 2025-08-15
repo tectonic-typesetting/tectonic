@@ -494,7 +494,7 @@ short_display(int32_t p)
                     if (mem[p].b16.s1 > font_max)
                         print_char('*');
                     else /*279:*/
-                        print_esc(hash[FONT_ID_BASE + mem[p].b16.s1].s1);
+                        print_esc(hash(FONT_ID_BASE + mem[p].b16.s1).s1);
                     print_char(' ');
                     font_in_short_display = mem[p].b16.s1;
                 }
@@ -516,7 +516,7 @@ short_display(int32_t p)
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
                     if (mem[p + 4].b16.s2 != font_in_short_display) {
-                        print_esc(hash[FONT_ID_BASE + mem[p + 4].b16.s2].s1);
+                        print_esc(hash(FONT_ID_BASE + mem[p + 4].b16.s2).s1);
                         print_char(' ');
                         font_in_short_display = mem[p + 4].b16.s2;
                     }
@@ -573,7 +573,7 @@ void print_font_and_char(int32_t p)
         if ((mem[p].b16.s1 > font_max))
             print_char('*');
         else /*279: */
-            print_esc(hash[FONT_ID_BASE + mem[p].b16.s1].s1);
+            print_esc(hash(FONT_ID_BASE + mem[p].b16.s1).s1);
         print_char(' ');
         print(mem[p].b16.s0);
     }
@@ -944,12 +944,12 @@ show_node_list(int32_t p)
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    print_esc(hash[FONT_ID_BASE + mem[p + 4].b16.s2].s1);
+                    print_esc(hash(FONT_ID_BASE + mem[p + 4].b16.s2).s1);
                     print_char(' ');
                     print_native_word(p);
                     break;
                 case GLYPH_NODE:
-                    print_esc(hash[FONT_ID_BASE + mem[p + 4].b16.s2].s1);
+                    print_esc(hash(FONT_ID_BASE + mem[p + 4].b16.s2).s1);
                     print_cstr(" glyph#");
                     print_int(mem[p + 4].b16.s1);
                     break;
@@ -3718,31 +3718,31 @@ id_lookup(int32_t j, int32_t l)
     }
 
     while (true) {
-        if (hash[p].s1 > 0) {
-            if (length(hash[p].s1) == ll) {
-                if (str_eq_buf(hash[p].s1, j))
+        if (hash(p).s1 > 0) {
+            if (length(hash(p).s1) == ll) {
+                if (str_eq_buf(hash(p).s1, j))
                     goto found;
             }
         }
 
-        if (hash[p].s0 == 0) {
+        if (hash(p).s0 == 0) {
             if (no_new_control_sequence) {
                 p = UNDEFINED_CONTROL_SEQUENCE;
             } else { /*269:*/
-                if (hash[p].s1 > 0) {
-                    if (hash_high < hash_extra) {
+                if (hash(p).s1 > 0) {
+                    if (hash_high < hash_extra()) {
                         hash_high++;
-                        hash[p].s0 = hash_high + EQTB_SIZE;
+                        hash_ptr(p)->s0 = hash_high + EQTB_SIZE;
                         p = hash_high + EQTB_SIZE;
                     } else {
                         do {
-                            if (hash_used == HASH_BASE)
-                                overflow("hash size", HASH_SIZE + hash_extra);
-                            hash_used--;
-                        } while (hash[hash_used].s1 != 0);
+                            if (hash_used() == HASH_BASE)
+                                overflow("hash size", HASH_SIZE + hash_extra());
+                            set_hash_used(hash_used()-1);
+                        } while (hash(hash_used()).s1 != 0);
 
-                        hash[p].s0 = hash_used;
-                        p = hash_used;
+                        hash_ptr(p)->s0 = hash_used();
+                        p = hash_used();
                     }
                 }
 
@@ -3768,14 +3768,14 @@ id_lookup(int32_t j, int32_t l)
                     }
                 }
 
-                hash[p].s1 = make_string();
+                hash_ptr(p)->s1 = make_string();
                 set_pool_ptr(pool_ptr() + d);
             }
             goto found;
 
         }
 
-        p = hash[p].s0;
+        p = hash(p).s0;
     }
 
 found:
@@ -6265,7 +6265,7 @@ reswitch:
                 if (cur_cs < HASH_BASE)
                     cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
                 else
-                    cur_cs = prim_lookup(hash[cur_cs].s1);
+                    cur_cs = prim_lookup(hash(cur_cs).s1);
 
                 if (cur_cs != UNDEFINED_PRIMITIVE) {
                     t = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
@@ -7072,7 +7072,7 @@ void find_font_dimen(bool writing)
     }
     if (cur_val == fmem_ptr) {
         error_here_with_diagnostic("Font ");
-        print_esc(hash[FONT_ID_BASE + f].s1);
+        print_esc(hash(FONT_ID_BASE + f).s1);
         print_cstr(" has only ");
         print_int(font_params[f]);
         print_cstr(" fontdimen parameters");
@@ -7987,7 +7987,7 @@ restart:
             if (cur_cs < HASH_BASE) {
                 cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
             } else {
-                cur_cs = prim_lookup(hash[cur_cs].s1);
+                cur_cs = prim_lookup(hash(cur_cs).s1);
             }
 
             if (cur_cs != UNDEFINED_PRIMITIVE) {
@@ -8109,7 +8109,7 @@ restart:
         if (cur_cs < HASH_BASE) {
             cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
         } else {
-            cur_cs = prim_lookup(hash[cur_cs].s1);
+            cur_cs = prim_lookup(hash(cur_cs).s1);
         }
 
         if (cur_cs != UNDEFINED_PRIMITIVE) {
@@ -10533,7 +10533,7 @@ conditional(void)
         if (cur_cs < HASH_BASE)
             m = prim_lookup(cur_cs - SINGLE_BASE);
         else
-            m = prim_lookup(hash[cur_cs].s1);
+            m = prim_lookup(hash(cur_cs).s1);
         b = (cur_cmd != UNDEFINED_CS
              && m != UNDEFINED_PRIMITIVE
              && cur_cmd == eqtb_ptr(PRIM_EQTB_BASE + m)->b16.s1
@@ -11552,7 +11552,7 @@ void bad_utf8_warning(void)
 int32_t get_input_normalization_state(void)
 {
 
-    if (eqtb == NULL)
+    if (eqtb_ptr(0) == NULL)
         return 0;
     else
         return INTPAR(xetex_input_normalization);
@@ -16038,7 +16038,7 @@ void new_font(small_number a)
     get_r_token();
     u = cur_cs;
     if (u >= HASH_BASE)
-        t = hash[u].s1;
+        t = hash(u).s1;
     else if (u >= SINGLE_BASE) {
 
         if (u == NULL_CS)
@@ -16151,7 +16151,7 @@ common_ending:
     else
         eq_define(u, SET_FONT, f);
     set_eqtb(FONT_ID_BASE + f, eqtb(u));
-    hash[FONT_ID_BASE + f].s1 = t;
+    hash_ptr(FONT_ID_BASE + f)->s1 = t;
 }
 
 void new_interaction(void)
@@ -17035,7 +17035,7 @@ reswitch:
             if (cur_cs < HASH_BASE)
                 cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
             else
-                cur_cs = prim_lookup(hash[cur_cs].s1);
+                cur_cs = prim_lookup(hash(cur_cs).s1);
 
             if (cur_cs != UNDEFINED_PRIMITIVE) {
                 cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;

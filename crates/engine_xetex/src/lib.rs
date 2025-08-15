@@ -238,6 +238,7 @@ pub mod c_api {
 
     mod engine;
     mod globals;
+    mod hash;
     mod inputs;
     mod output;
     mod pool;

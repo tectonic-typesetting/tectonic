@@ -92,10 +92,6 @@ int32_t max_nest_stack;
 list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
-b32x2 *hash;
-int32_t hash_used;
-int32_t hash_extra;
-int32_t hash_top;
 int32_t eqtb_top;
 int32_t hash_high;
 bool no_new_control_sequence;
@@ -600,7 +596,7 @@ primitive(const char* ident, uint16_t c, int32_t o)
         cur_val = id_lookup(first, len);
         set_str_ptr(str_ptr()-1);
         set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
-        hash[cur_val].s1 = s;
+        hash_ptr(cur_val)->s1 = s;
         prim_val = prim_lookup(s);
     } else {
         cur_val = ident[0] + SINGLE_BASE;
@@ -2277,20 +2273,20 @@ store_fmt_file(void)
 
     /* control sequences */
 
-    dump_int(hash_used);
-    cs_count = (FROZEN_CONTROL_SEQUENCE - 1) - hash_used + hash_high;
+    dump_int(hash_used());
+    cs_count = (FROZEN_CONTROL_SEQUENCE - 1) - hash_used() + hash_high;
 
-    for (p = HASH_BASE; p <= hash_used; p++) {
-        if (hash[p].s1 != 0) {
+    for (p = HASH_BASE; p <= hash_used(); p++) {
+        if (hash(p).s1 != 0) {
             dump_int(p);
-            dump_b32(hash[p]);
+            dump_ptr(hash_ptr(p), 1);
             cs_count++;
         }
     }
 
-    dump_things(hash[hash_used + 1], (UNDEFINED_CONTROL_SEQUENCE - 1) - hash_used);
+    dump_ptr(hash_ptr(hash_used() + 1), (UNDEFINED_CONTROL_SEQUENCE - 1) - hash_used());
     if (hash_high > 0)
-        dump_things(hash[EQTB_SIZE + 1], hash_high);
+        dump_ptr(hash_ptr(EQTB_SIZE + 1), hash_high);
 
     dump_int(cs_count);
 
@@ -2329,7 +2325,7 @@ store_fmt_file(void)
 
     for (k = FONT_BASE; k <= font_ptr; k++) {
         print_nl_cstr("\\font");
-        print_esc(hash[FONT_ID_BASE + k].s1);
+        print_esc(hash(FONT_ID_BASE + k).s1);
         print_char('=');
 
         if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
@@ -2488,22 +2484,21 @@ load_fmt_file(void)
     undump_int(hash_high);
     if (hash_high < 0 || hash_high > sup_hash_extra)
         goto bad_fmt;
-    if (hash_extra < hash_high)
-        hash_extra = hash_high;
+    if (hash_extra() < hash_high)
+        set_hash_extra(hash_high);
 
-    eqtb_top = EQTB_SIZE + hash_extra;
-    if (hash_extra == 0)
-        hash_top = UNDEFINED_CONTROL_SEQUENCE;
+    eqtb_top = EQTB_SIZE + hash_extra();
+    if (hash_extra() == 0)
+        set_hash_top(UNDEFINED_CONTROL_SEQUENCE);
     else
-        hash_top = eqtb_top;
+        set_hash_top(eqtb_top);
 
-    yhash = xmalloc_array(b32x2, 1 + hash_top - hash_offset);
-    hash = yhash - hash_offset;
-    hash[HASH_BASE].s0 = 0;
-    hash[HASH_BASE].s1 = 0;
+    resize_hash(1 + hash_top() - hash_offset);
+    hash_ptr(HASH_BASE)->s0 = 0;
+    hash_ptr(HASH_BASE)->s1 = 0;
 
-    for (x = HASH_BASE + 1; x <= hash_top; x++)
-        hash[x] = hash[HASH_BASE];
+    for (x = HASH_BASE + 1; x <= hash_top(); x++)
+        set_hash(x, hash(HASH_BASE));
 
     resize_eqtb(eqtb_top + 1);
     eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s1 = UNDEFINED_CS;
@@ -2659,7 +2654,7 @@ load_fmt_file(void)
         undump_ptr(eqtb_ptr(EQTB_SIZE + 1), hash_high);
 
     undump_int(x);
-    if (x < HASH_BASE || x > hash_top)
+    if (x < HASH_BASE || x > hash_top())
         goto bad_fmt;
     else
         par_loc = x;
@@ -2667,7 +2662,7 @@ load_fmt_file(void)
     par_token = CS_TOKEN_FLAG + par_loc;
 
     undump_int(x);
-    if (x < HASH_BASE || x > hash_top)
+    if (x < HASH_BASE || x > hash_top())
         goto bad_fmt;
     else
         write_loc = x;
@@ -2688,23 +2683,23 @@ load_fmt_file(void)
     if (x < HASH_BASE || x > FROZEN_CONTROL_SEQUENCE)
         goto bad_fmt;
     else
-        hash_used = x;
+        set_hash_used(x);
 
     p = HASH_BASE - 1;
 
     do {
         undump_int(x);
-        if (x < p + 1 || x > hash_used)
+        if (x < p + 1 || x > hash_used())
             goto bad_fmt;
         else
             p = x;
-        undump_b32(hash[p]);
-    } while (p != hash_used);
+        undump_ptr(hash_ptr(p), 1);
+    } while (p != hash_used());
 
-    undump_things(hash[hash_used + 1], (UNDEFINED_CONTROL_SEQUENCE - 1) - hash_used);
+    undump_ptr(hash_ptr(hash_used() + 1), (UNDEFINED_CONTROL_SEQUENCE - 1) - hash_used());
 
     if (hash_high > 0)
-        undump_things(hash[EQTB_SIZE + 1], hash_high);
+        undump_ptr(hash_ptr(EQTB_SIZE + 1), hash_high);
 
     undump_int(cs_count);
 
@@ -3346,7 +3341,7 @@ initialize_more_initex_variables(void)
         eqtb_ptr(k)->b32.s1 = 0;
 
     prim_used = PRIM_SIZE;
-    hash_used = FROZEN_CONTROL_SEQUENCE;
+    set_hash_used(FROZEN_CONTROL_SEQUENCE);
     hash_high = 0;
     cs_count = 0;
 
@@ -3403,34 +3398,35 @@ initialize_primitives(void)
 
                 default:
                     /* A "frozen" primitive */
-                    hash[prim.extra_init].s1 = maketexstring(prim.name);
+                    hash_ptr(prim.extra_init)->s1 = maketexstring(prim.name);
                     set_eqtb(prim.extra_init, eqtb(cur_val));
                     break;
             }
         }
     }
 
-    hash[FROZEN_END_TEMPLATE].s1 = maketexstring("endtemplate");
+    hash_ptr(FROZEN_END_TEMPLATE)->s1 = maketexstring("endtemplate");
     eqtb_ptr(FROZEN_END_TEMPLATE)->b16.s1 = END_TEMPLATE;
     eqtb_ptr(FROZEN_END_TEMPLATE)->b32.s1 = NULL_LIST;
     eqtb_ptr(FROZEN_END_TEMPLATE)->b16.s0 = LEVEL_ONE;
 
-    hash[FROZEN_ENDV].s1 = maketexstring("endtemplate");
+
+    hash_ptr(FROZEN_ENDV)->s1 = maketexstring("endtemplate");
     eqtb_ptr(FROZEN_ENDV)->b16.s1 = ENDV;
     eqtb_ptr(FROZEN_ENDV)->b32.s1 = NULL_LIST;
     eqtb_ptr(FROZEN_ENDV)->b16.s0 = LEVEL_ONE;
 
-    hash[FROZEN_DONT_EXPAND].s1 = maketexstring("notexpanded:");
+    hash_ptr(FROZEN_DONT_EXPAND)->s1 = maketexstring("notexpanded:");
     eqtb_ptr(FROZEN_DONT_EXPAND)->b16.s1 = DONT_EXPAND;
 
-    hash[FROZEN_PRIMITIVE].s1 = maketexstring("primitive");
+    hash_ptr(FROZEN_PRIMITIVE)->s1 = maketexstring("primitive");
     eqtb_ptr(FROZEN_PRIMITIVE)->b16.s1 = IGNORE_SPACES;
     eqtb_ptr(FROZEN_PRIMITIVE)->b32.s1 = 1;
     eqtb_ptr(FROZEN_PRIMITIVE)->b16.s0 = LEVEL_ONE;
 
-    hash[FROZEN_PROTECTION].s1 = maketexstring("inaccessible");
+    hash_ptr(FROZEN_PROTECTION)->s1 = maketexstring("inaccessible");
 
-    hash[END_WRITE].s1 = maketexstring("endwrite");
+    hash_ptr(END_WRITE)->s1 = maketexstring("endwrite");
     eqtb_ptr(END_WRITE)->b16.s0 = LEVEL_ONE;
     eqtb_ptr(END_WRITE)->b16.s1 = OUTER_CALL;
     eqtb_ptr(END_WRITE)->b32.s1 = TEX_NULL;
@@ -3590,7 +3586,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_error_line(79);
     half_error_line = 50;
     max_print_line = 79;
-    hash_extra = 600000L;
+    set_hash_extra(600000L);
     expand_depth = 10000;
 
     /* Allocate many of our big arrays. */
@@ -3613,20 +3609,19 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     if (in_initex_mode) {
         mem = xmalloc_array(memory_word, MEM_TOP + 1);
-        eqtb_top = EQTB_SIZE + hash_extra;
+        eqtb_top = EQTB_SIZE + hash_extra();
 
-        if (hash_extra == 0)
-            hash_top = UNDEFINED_CONTROL_SEQUENCE;
+        if (hash_extra() == 0)
+            set_hash_top(UNDEFINED_CONTROL_SEQUENCE);
         else
-            hash_top = eqtb_top;
+            set_hash_top(eqtb_top);
 
-        yhash = xmalloc_array(b32x2, 1 + hash_top - hash_offset);
-        hash = yhash - hash_offset;
-        hash[HASH_BASE].s0 = 0;
-        hash[HASH_BASE].s1 = 0;
+        resize_hash(1 + hash_top() - hash_offset);
+        hash_ptr(HASH_BASE)->s0 = 0;
+        hash_ptr(HASH_BASE)->s1 = 0;
 
-        for (hash_used = HASH_BASE + 1; hash_used <= hash_top; hash_used++)
-            hash[hash_used] = hash[HASH_BASE];
+        for (set_hash_used(HASH_BASE + 1); hash_used() <= hash_top(); set_hash_used(hash_used()+1))
+            set_hash(hash_used(), hash(HASH_BASE));
 
 		resize_eqtb(eqtb_top + 1);
         resize_str_start(max_strings);
@@ -3661,7 +3656,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         bad = 17;
     if (buf_size > MAX_HALFWORD)
         bad = 18;
-    if (CS_TOKEN_FLAG + EQTB_SIZE + hash_extra > MAX_HALFWORD)
+    if (CS_TOKEN_FLAG + EQTB_SIZE + hash_extra() > MAX_HALFWORD)
         bad = 21;
     if (hash_offset < 0 || hash_offset > HASH_BASE)
         bad = 42;
