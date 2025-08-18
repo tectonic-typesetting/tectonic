@@ -172,8 +172,46 @@ pub union MemoryWord {
  *
  */
 
+pub const EQTB_SIZE: usize = 0x886f92;
+
+pub const ACTIVE_BASE: usize = 0x1;
+pub const SINGLE_BASE: usize = 0x110001;
+pub const PRIM_EQTB_BASE: usize = 0x223aa6;
+pub const CAT_CODE_BASE: usize = 0x226d29;
 pub const INT_BASE: usize = 0x776d29;
 pub const INT_PARS: usize = 83;
+
+#[derive(Copy, Clone, PartialEq)]
+pub enum CatCode {
+    Escape = 0,
+    CarRet = 5,
+    Ignore = 9,
+    Spacer = 10,
+    Letter = 11,
+    OtherChar = 12,
+    Comment = 14,
+    InvalidChar = 15,
+    Data = 122,
+}
+
+impl TryFrom<i32> for CatCode {
+    type Error = i32;
+
+    fn try_from(value: i32) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => CatCode::Escape,
+            5 => CatCode::CarRet,
+            9 => CatCode::Ignore,
+            10 => CatCode::Spacer,
+            11 => CatCode::Letter,
+            12 => CatCode::OtherChar,
+            14 => CatCode::Comment,
+            15 => CatCode::InvalidChar,
+            122 => CatCode::Data,
+            _ => return Err(value),
+        })
+    }
+}
 
 /// Integer parameters
 pub enum IntPar {

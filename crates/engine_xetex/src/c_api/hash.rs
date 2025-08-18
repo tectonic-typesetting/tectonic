@@ -25,6 +25,10 @@ impl HashCtx {
             hash_top: 0,
         }
     }
+
+    pub fn hash(&self, idx: usize) -> B32x2 {
+        self.hash[idx - HASH_BASE]
+    }
 }
 
 #[no_mangle]
