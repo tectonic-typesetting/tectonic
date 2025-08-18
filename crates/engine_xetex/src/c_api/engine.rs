@@ -12,6 +12,10 @@ pub const PRIM_SIZE: usize = 2100;
 pub const UNDEFINED_CONTROL_SEQUENCE: usize = 0x226603;
 pub const FROZEN_NULL_FONT: usize = 0x2242da;
 
+pub const TEXT_SIZE: usize = 0;
+pub const SCRIPT_SIZE: usize = 256;
+pub const SCRIPT_SCRIPT_SIZE: usize = 512;
+
 thread_local! {
     pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
 }
