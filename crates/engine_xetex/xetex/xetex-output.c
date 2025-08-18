@@ -9,37 +9,6 @@
 #include "tectonic_bridge_core.h"
 #include "xetex_bindings.h"
 
-void
-print_cs(int32_t p)
-{
-    if (p < HASH_BASE) {
-        if (p >= SINGLE_BASE) {
-            if (p == NULL_CS) {
-                print_esc_cstr("csname");
-                print_esc_cstr("endcsname");
-                print_char(' ');
-            } else {
-                print_esc(p - SINGLE_BASE);
-                if (CAT_CODE(p - SINGLE_BASE) == LETTER)
-                    print_char(' ');
-            }
-        } else if (p < ACTIVE_BASE)
-            print_esc_cstr("IMPOSSIBLE.");
-        else
-            print_char(p - 1);
-    } else if (((p >= UNDEFINED_CONTROL_SEQUENCE) && (p <= EQTB_SIZE)) || (p > eqtb_top)) {
-        print_esc_cstr("IMPOSSIBLE.");
-    } else if (hash(p).s1 >= str_ptr()) {
-        print_esc_cstr("NONEXISTENT.");
-    } else {
-        if (p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT)
-            print_esc(prim(p - PRIM_EQTB_BASE).s1 - 1);
-        else
-            print_esc(hash(p).s1);
-        print_char(' ');
-    }
-}
-
 
 void
 sprint_cs(int32_t p)

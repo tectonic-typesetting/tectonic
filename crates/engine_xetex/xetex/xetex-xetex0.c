@@ -15682,7 +15682,7 @@ restart:
         get_token();
     } while (cur_tok == SPACE_TOKEN);
 
-    if (cur_cs == 0 || cur_cs > eqtb_top || (cur_cs > FROZEN_CONTROL_SEQUENCE && cur_cs <= EQTB_SIZE)) {
+    if (cur_cs == 0 || cur_cs > eqtb_top() || (cur_cs > FROZEN_CONTROL_SEQUENCE && cur_cs <= EQTB_SIZE)) {
         error_here_with_diagnostic("Missing control sequence inserted");
         capture_to_diagnostic(NULL);
 

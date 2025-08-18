@@ -1,5 +1,9 @@
-use crate::c_api::engine::{rs_gettexstring, IntPar, Selector};
+use crate::c_api::engine::{
+    rs_gettexstring, CatCode, IntPar, Selector, ACTIVE_BASE, EQTB_SIZE, FROZEN_NULL_FONT, NULL_CS,
+    PRIM_EQTB_BASE, SINGLE_BASE, UNDEFINED_CONTROL_SEQUENCE,
+};
 use crate::c_api::globals::Globals;
+use crate::c_api::hash::HASH_BASE;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ffi::CStr;
@@ -665,4 +669,44 @@ pub extern "C" fn print_int(n: i32) {
 #[no_mangle]
 pub extern "C" fn print_file_line() {
     Globals::with(|globals| rs_print_file_line(globals))
+}
+
+pub fn rs_print_cs(globals: &mut Globals<'_, '_>, p: i32) {
+    let p = p as usize;
+    if p < HASH_BASE {
+        if p >= SINGLE_BASE {
+            if p == NULL_CS {
+                rs_print_esc_bytes(globals, b"csname");
+                rs_print_esc_bytes(globals, b"endcsname");
+                rs_print_char(globals, b' ' as i32);
+            } else {
+                rs_print_esc(globals, (p - SINGLE_BASE) as i32);
+                if globals.engine.cat_code(p - SINGLE_BASE) == Ok(CatCode::Letter) {
+                    rs_print_char(globals, b' ' as i32);
+                }
+            }
+        } else if p < ACTIVE_BASE {
+            rs_print_esc_bytes(globals, b"IMPOSSIBLE.");
+        } else {
+            rs_print_char(globals, (p - 1) as i32);
+        }
+    } else if (p >= UNDEFINED_CONTROL_SEQUENCE && p <= EQTB_SIZE)
+        || (p > globals.engine.eqtb_top as usize)
+    {
+        rs_print_esc_bytes(globals, b"IMPOSSIBLE.");
+    } else if globals.hash.hash(p).s1 as usize >= globals.strings.str_ptr {
+        rs_print_esc_bytes(globals, b"NONEXISTENT.");
+    } else {
+        if p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT {
+            rs_print_esc(globals, globals.engine.prim[p - PRIM_EQTB_BASE].s1 - 1);
+        } else {
+            rs_print_esc(globals, globals.hash.hash(p).s1);
+        }
+        rs_print_char(globals, b' ' as i32);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_cs(p: i32) {
+    Globals::with(|globals| rs_print_cs(globals, p))
 }

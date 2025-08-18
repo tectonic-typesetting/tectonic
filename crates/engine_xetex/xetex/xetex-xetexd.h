@@ -462,7 +462,6 @@ extern int32_t max_nest_stack;
 extern list_state_record cur_list;
 extern short shown_mode;
 extern unsigned char old_setting;
-extern int32_t eqtb_top;
 extern int32_t hash_high;
 extern bool no_new_control_sequence;
 extern int32_t cs_count;

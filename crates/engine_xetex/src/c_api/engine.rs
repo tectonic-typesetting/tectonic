@@ -7,7 +7,10 @@ mod memory;
 use crate::c_api::globals::Globals;
 pub use memory::*;
 
+pub const NULL_CS: usize = 0x220001;
 pub const PRIM_SIZE: usize = 2100;
+pub const UNDEFINED_CONTROL_SEQUENCE: usize = 0x226603;
+pub const FROZEN_NULL_FONT: usize = 0x2242da;
 
 thread_local! {
     pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
@@ -19,6 +22,7 @@ pub struct EngineCtx {
     pub(crate) error_line: i32,
     pub(crate) trick_count: i32,
     pub(crate) trick_buf: [u16; 256],
+    pub(crate) eqtb_top: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -32,6 +36,7 @@ impl EngineCtx {
             error_line: 0,
             trick_count: 0,
             trick_buf: [0; 256],
+            eqtb_top: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -44,6 +49,11 @@ impl EngineCtx {
 
     pub fn set_int_par(&mut self, par: IntPar, val: i32) {
         self.eqtb[INT_BASE + par as usize].b32.s1 = val
+    }
+
+    pub fn cat_code(&self, p: usize) -> Result<CatCode, i32> {
+        let val = unsafe { self.eqtb[CAT_CODE_BASE + p].b32.s1 };
+        CatCode::try_from(val)
     }
 }
 
@@ -137,6 +147,16 @@ pub extern "C" fn trick_buf(idx: usize) -> u16 {
 #[no_mangle]
 pub extern "C" fn set_trick_buf(idx: usize, val: u16) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.trick_buf[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn eqtb_top() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.eqtb_top)
+}
+
+#[no_mangle]
+pub extern "C" fn set_eqtb_top(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb_top = val)
 }
 
 #[no_mangle]

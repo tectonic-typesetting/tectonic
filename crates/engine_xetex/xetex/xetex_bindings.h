@@ -18,7 +18,25 @@
  */
 #define FORMAT_SERIAL 33
 
+#define NULL_CS 2228225
+
 #define PRIM_SIZE 2100
+
+#define UNDEFINED_CONTROL_SEQUENCE 2254339
+
+#define FROZEN_NULL_FONT 2245338
+
+#define EQTB_SIZE 8941458
+
+#define EQTB_TOP 9541458
+
+#define ACTIVE_BASE 1
+
+#define SINGLE_BASE 1114113
+
+#define PRIM_EQTB_BASE 2243238
+
+#define CAT_CODE_BASE 2256169
 
 #define INT_BASE 7826729
 
@@ -107,6 +125,10 @@ void set_trick_count(int32_t val);
 uint16_t trick_buf(uintptr_t idx);
 
 void set_trick_buf(uintptr_t idx, uint16_t val);
+
+int32_t eqtb_top(void);
+
+void set_eqtb_top(int32_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 
@@ -235,6 +257,8 @@ void print_the_digs(uint8_t k);
 void print_int(int32_t n);
 
 void print_file_line(void);
+
+void print_cs(int32_t p);
 
 void resize_str_pool(uintptr_t size);
 

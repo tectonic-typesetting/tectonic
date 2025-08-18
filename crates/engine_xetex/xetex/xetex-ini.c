@@ -92,7 +92,6 @@ int32_t max_nest_stack;
 list_state_record cur_list;
 short shown_mode;
 unsigned char old_setting;
-int32_t eqtb_top;
 int32_t hash_high;
 bool no_new_control_sequence;
 int32_t cs_count;
@@ -2486,11 +2485,11 @@ load_fmt_file(void)
     if (hash_extra() < hash_high)
         set_hash_extra(hash_high);
 
-    eqtb_top = EQTB_SIZE + hash_extra();
+    set_eqtb_top(EQTB_SIZE + hash_extra());
     if (hash_extra() == 0)
         set_hash_top(UNDEFINED_CONTROL_SEQUENCE);
     else
-        set_hash_top(eqtb_top);
+        set_hash_top(eqtb_top());
 
     resize_hash(1 + hash_top() - hash_offset);
     hash_ptr(HASH_BASE)->s0 = 0;
@@ -2499,12 +2498,12 @@ load_fmt_file(void)
     for (x = HASH_BASE + 1; x <= hash_top(); x++)
         set_hash(x, hash(HASH_BASE));
 
-    resize_eqtb(eqtb_top + 1);
+    resize_eqtb(eqtb_top() + 1);
     eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s1 = UNDEFINED_CS;
     eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b32.s1 = TEX_NULL;
     eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s0 = LEVEL_ZERO;
 
-    for (x = EQTB_SIZE + 1; x <= eqtb_top; x++)
+    for (x = EQTB_SIZE + 1; x <= eqtb_top(); x++)
         set_eqtb(x, eqtb(UNDEFINED_CONTROL_SEQUENCE));
 
     max_reg_num = 32767;
@@ -3251,7 +3250,7 @@ initialize_more_initex_variables(void)
     eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b32.s1 = TEX_NULL;
     eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s0 = LEVEL_ZERO;
 
-    for (k = ACTIVE_BASE; k <= eqtb_top; k++)
+    for (k = ACTIVE_BASE; k <= eqtb_top(); k++)
         set_eqtb(k, eqtb(UNDEFINED_CONTROL_SEQUENCE));
 
     eqtb_ptr(GLUE_BASE)->b32.s1 = 0;
@@ -3608,12 +3607,12 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     if (in_initex_mode) {
         mem = xmalloc_array(memory_word, MEM_TOP + 1);
-        eqtb_top = EQTB_SIZE + hash_extra();
+        set_eqtb_top(EQTB_SIZE + hash_extra());
 
         if (hash_extra() == 0)
             set_hash_top(UNDEFINED_CONTROL_SEQUENCE);
         else
-            set_hash_top(eqtb_top);
+            set_hash_top(eqtb_top());
 
         resize_hash(1 + hash_top() - hash_offset);
         hash_ptr(HASH_BASE)->s0 = 0;
@@ -3622,7 +3621,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         for (set_hash_used(HASH_BASE + 1); hash_used() <= hash_top(); set_hash_used(hash_used()+1))
             set_hash(hash_used(), hash(HASH_BASE));
 
-		resize_eqtb(eqtb_top + 1);
+		resize_eqtb(eqtb_top() + 1);
         resize_str_start(max_strings);
         resize_str_pool(pool_size());
         font_info = xmalloc_array(memory_word, font_mem_size);
