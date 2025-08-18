@@ -7,8 +7,10 @@ mod memory;
 use crate::c_api::globals::Globals;
 pub use memory::*;
 
+pub const PRIM_SIZE: usize = 2100;
+
 thread_local! {
-    pub static ENGINE_CTX: RefCell<EngineCtx> = const { RefCell::new(EngineCtx::new()) }
+    pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
 }
 
 pub struct EngineCtx {
@@ -19,10 +21,11 @@ pub struct EngineCtx {
     pub(crate) trick_buf: [u16; 256],
 
     pub(crate) eqtb: Vec<MemoryWord>,
+    pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
 }
 
 impl EngineCtx {
-    const fn new() -> EngineCtx {
+    fn new() -> EngineCtx {
         EngineCtx {
             selector: Selector::File(0),
             tally: 0,
@@ -31,6 +34,7 @@ impl EngineCtx {
             trick_buf: [0; 256],
 
             eqtb: Vec::new(),
+            prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
         }
     }
 
@@ -165,6 +169,21 @@ pub extern "C" fn resize_eqtb(len: usize) {
 #[no_mangle]
 pub extern "C" fn clear_eqtb() {
     ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb.clear())
+}
+
+#[no_mangle]
+pub extern "C" fn prim(idx: usize) -> B32x2 {
+    ENGINE_CTX.with_borrow(|engine| engine.prim[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_prim(idx: usize, val: B32x2) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.prim[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn prim_ptr(idx: usize) -> *mut B32x2 {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.prim[idx]))
 }
 
 pub fn rs_gettexstring(globals: &mut Globals<'_, '_>, s: StrNumber) -> String {

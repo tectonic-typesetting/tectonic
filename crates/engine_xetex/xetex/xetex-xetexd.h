@@ -466,7 +466,6 @@ extern int32_t eqtb_top;
 extern int32_t hash_high;
 extern bool no_new_control_sequence;
 extern int32_t cs_count;
-extern b32x2 prim[PRIM_SIZE + 1];
 extern int32_t prim_used;
 extern memory_word *save_stack;
 extern int32_t save_ptr;

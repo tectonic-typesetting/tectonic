@@ -33,7 +33,7 @@ print_cs(int32_t p)
         print_esc_cstr("NONEXISTENT.");
     } else {
         if (p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT)
-            print_esc(prim[p - PRIM_EQTB_BASE].s1 - 1);
+            print_esc(prim(p - PRIM_EQTB_BASE).s1 - 1);
         else
             print_esc(hash(p).s1);
         print_char(' ');
@@ -54,7 +54,7 @@ sprint_cs(int32_t p)
             print_esc_cstr("endcsname");
         }
     } else if (p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT) {
-        print_esc(prim[p - PRIM_EQTB_BASE].s1 - 1);
+        print_esc(prim(p - PRIM_EQTB_BASE).s1 - 1);
     } else {
         print_esc(hash(p).s1);
     }

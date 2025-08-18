@@ -3820,32 +3820,32 @@ int32_t prim_lookup(str_number s)
     }
 
     while (true) {
-        if (prim[p].s1 > 65536L) {
-            if (length(prim[p].s1) - 1 == l) {
-                    if (str_eq_str(prim[p].s1 - 1, s))
+        if (prim(p).s1 > 65536L) {
+            if (length(prim(p).s1) - 1 == l) {
+                    if (str_eq_str(prim(p).s1 - 1, s))
                         goto found;
             }
-        } else if (prim[p].s1 == 1 + s)
+        } else if (prim(p).s1 == 1 + s)
             goto found;
 
-        if (prim[p].s0 == 0) {
+        if (prim(p).s0 == 0) {
             if (no_new_control_sequence)
                 p = UNDEFINED_PRIMITIVE;
             else { /*272:*/
-                if (prim[p].s1 > 0) {
+                if (prim(p).s1 > 0) {
                     do {
                         if (prim_used == PRIM_BASE)
                             overflow("primitive size", PRIM_SIZE);
                         prim_used--;
-                    } while (!(prim[prim_used].s1 == 0));
-                    prim[p].s0 = prim_used;
+                    } while (!(prim(prim_used).s1 == 0));
+                    prim_ptr(p)->s0 = prim_used;
                     p = prim_used;
                 }
-                prim[p].s1 = s + 1;
+                prim_ptr(p)->s1 = s + 1;
             }
             goto found;
         }
-        p = prim[p].s0;
+        p = prim(p).s0;
     }
 
 found:

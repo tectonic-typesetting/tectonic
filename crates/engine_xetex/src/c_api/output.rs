@@ -666,24 +666,3 @@ pub extern "C" fn print_int(n: i32) {
 pub extern "C" fn print_file_line() {
     Globals::with(|globals| rs_print_file_line(globals))
 }
-
-// #[no_mangle]
-// pub unsafe extern "C" fn error_here_with_diagnostic(
-//     message: *const libc::c_char,
-// ) -> *mut Diagnostic {
-//     let message = unsafe { CStr::from_ptr(message) };
-//     let mut diag = Diagnostic::error();
-//     FILE_CTX.with_borrow_mut(|files| {
-//         rs_diagnostic_print_file_line(files, &mut diag);
-//     });
-//     diag.append(message.to_string_lossy());
-//
-//     OUTPUT_CTX.with_borrow(|out| if out.file_line_error_style_p {
-//         print_file_line()
-//     } else {
-//         print_nl_str("! ")
-//     });
-//     rs_print_cstr(message);
-//     capture_to_diagnostic(&mut diag);
-//     Box::into_raw(Box::new(diag))
-// }
