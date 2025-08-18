@@ -1,6 +1,6 @@
 use crate::c_api::engine::{
     rs_gettexstring, CatCode, IntPar, Selector, ACTIVE_BASE, EQTB_SIZE, FROZEN_NULL_FONT, NULL_CS,
-    PRIM_EQTB_BASE, SINGLE_BASE, UNDEFINED_CONTROL_SEQUENCE,
+    PRIM_EQTB_BASE, SCRIPT_SIZE, SINGLE_BASE, TEXT_SIZE, UNDEFINED_CONTROL_SEQUENCE,
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::hash::HASH_BASE;
@@ -785,4 +785,20 @@ pub fn rs_print_file_name(globals: &mut Globals<'_, '_>, n: i32, a: i32, e: i32)
 #[no_mangle]
 pub extern "C" fn print_file_name(n: i32, a: i32, e: i32) {
     Globals::with(|globals| rs_print_file_name(globals, n, a, e))
+}
+
+pub fn rs_print_size(globals: &mut Globals<'_, '_>, s: i32) {
+    let s = s as usize;
+    if s == TEXT_SIZE {
+        rs_print_esc_bytes(globals, b"textfont");
+    } else if s == SCRIPT_SIZE {
+        rs_print_esc_bytes(globals, b"scriptfont");
+    } else {
+        rs_print_esc_bytes(globals, b"scriptscriptfont");
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_size(s: i32) {
+    Globals::with(|globals| rs_print_size(globals, s))
 }

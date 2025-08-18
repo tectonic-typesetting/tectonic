@@ -10,18 +10,6 @@
 #include "xetex_bindings.h"
 
 void
-print_size(int32_t s)
-{
-    if (s == TEXT_SIZE)
-        print_esc_cstr("textfont");
-    else if (s == SCRIPT_SIZE)
-        print_esc_cstr("scriptfont");
-    else
-        print_esc_cstr("scriptscriptfont");
-}
-
-
-void
 print_write_whatsit(const char* s, int32_t p)
 {
 
