@@ -18,6 +18,8 @@
  */
 #define FORMAT_SERIAL 33
 
+#define PRIM_SIZE 2100
+
 #define INT_BASE 7826729
 
 #define INT_PARS 83
@@ -115,6 +117,12 @@ MemoryWord *eqtb_ptr(uintptr_t idx);
 void resize_eqtb(uintptr_t len);
 
 void clear_eqtb(void);
+
+B32x2 prim(uintptr_t idx);
+
+void set_prim(uintptr_t idx, B32x2 val);
+
+B32x2 *prim_ptr(uintptr_t idx);
 
 char *gettexstring(StrNumber s);
 

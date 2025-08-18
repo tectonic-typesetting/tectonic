@@ -96,7 +96,6 @@ int32_t eqtb_top;
 int32_t hash_high;
 bool no_new_control_sequence;
 int32_t cs_count;
-b32x2 prim[PRIM_SIZE + 1];
 int32_t prim_used;
 memory_word *save_stack;
 int32_t save_ptr;
@@ -2269,7 +2268,7 @@ store_fmt_file(void)
     dump_int(write_loc);
 
     for (p = 0; p <= PRIM_SIZE; p++)
-        dump_b32(prim[p]);
+        dump_ptr(prim_ptr(p), 1);
 
     /* control sequences */
 
@@ -2677,7 +2676,7 @@ load_fmt_file(void)
      */
 
     for (p = 0; p <= PRIM_SIZE; p++)
-        undump_b32(prim[p]);
+        undump_ptr(prim_ptr(p), 1);
 
     undump_int(x);
     if (x < HASH_BASE || x > FROZEN_CONTROL_SEQUENCE)
@@ -3097,11 +3096,11 @@ initialize_more_variables(void)
         XEQ_LEVEL(k) = LEVEL_ONE;
 
     no_new_control_sequence = true;
-    prim[0].s0 = 0;
-    prim[0].s1 = 0;
+    prim_ptr(0)->s0 = 0;
+    prim_ptr(0)->s1 = 0;
 
     for (k = 1; k <= PRIM_SIZE; k++)
-        prim[k] = prim[0];
+        set_prim(k, prim(0));
 
     save_ptr = 0;
     cur_level = LEVEL_ONE;
