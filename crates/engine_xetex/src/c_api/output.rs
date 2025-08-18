@@ -733,3 +733,56 @@ pub extern "C" fn print_cs(p: i32) {
 pub extern "C" fn sprint_cs(p: i32) {
     Globals::with(|globals| rs_sprint_cs(globals, p))
 }
+
+pub fn rs_print_file_name(globals: &mut Globals<'_, '_>, n: i32, a: i32, e: i32) {
+    let mut quote = None;
+
+    for s in [a, n, e] {
+        if s == 0 || quote.is_some() {
+            continue;
+        }
+        let str = globals.strings.str(s - 0x10000);
+        quote = str
+            .iter()
+            .find(|&&c| c == ' ' as u16 || c == '"' as u16 || c == '\'' as u16)
+            .copied();
+    }
+
+    if quote == Some(' ' as u16) {
+        quote = Some('"' as u16);
+    } else if let Some(q) = quote {
+        quote = Some(73 - q);
+    }
+
+    if let Some(q) = quote {
+        rs_print_char(globals, q as i32);
+    }
+
+    for s in [a, n, e] {
+        if s == 0 {
+            continue;
+        }
+        // TODO: Fix up borrowing so we can use `strings.str`
+        let str = globals.strings.str_range(s - 0x10000);
+        for idx in str {
+            let c = globals.strings.char_at(idx);
+            if let Some(qc) = quote {
+                if c == qc {
+                    rs_print(globals, qc as i32);
+                    rs_print(globals, (73 - qc) as i32);
+                    quote = Some(73 - qc);
+                }
+            }
+            rs_print(globals, c as i32);
+        }
+    }
+
+    if let Some(q) = quote {
+        rs_print_char(globals, q as i32);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_file_name(n: i32, a: i32, e: i32) {
+    Globals::with(|globals| rs_print_file_name(globals, n, a, e))
+}
