@@ -1,5 +1,6 @@
 use crate::ty::StrNumber;
 use std::cell::RefCell;
+use std::ops::Range;
 use std::ptr;
 
 thread_local! {
@@ -28,6 +29,15 @@ impl StringPool {
     pub fn str(&self, str: StrNumber) -> &[u16] {
         let str = str as usize;
         &self.str_pool[self.str_start[str] as usize..self.str_start[str + 1] as usize]
+    }
+
+    pub fn char_at(&self, idx: usize) -> u16 {
+        self.str_pool[idx]
+    }
+
+    pub fn str_range(&self, str: StrNumber) -> Range<usize> {
+        let str = str as usize;
+        self.str_start[str] as usize..self.str_start[str + 1] as usize
     }
 }
 

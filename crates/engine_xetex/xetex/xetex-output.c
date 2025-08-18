@@ -9,7 +9,7 @@
 #include "tectonic_bridge_core.h"
 #include "xetex_bindings.h"
 
-
+/*
 void
 sprint_cs(int32_t p)
 {
@@ -28,7 +28,7 @@ sprint_cs(int32_t p)
         print_esc(hash(p).s1);
     }
 }
-
+*/
 
 void
 print_file_name(int32_t n, int32_t a, int32_t e)

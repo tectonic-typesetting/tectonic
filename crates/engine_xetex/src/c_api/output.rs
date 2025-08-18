@@ -706,7 +706,30 @@ pub fn rs_print_cs(globals: &mut Globals<'_, '_>, p: i32) {
     }
 }
 
+pub fn rs_sprint_cs(globals: &mut Globals<'_, '_>, p: i32) {
+    let p = p as usize;
+    if p < HASH_BASE {
+        if p < SINGLE_BASE {
+            rs_print_char(globals, (p - 1) as i32);
+        } else if p < NULL_CS {
+            rs_print_esc(globals, (p - SINGLE_BASE) as i32);
+        } else {
+            rs_print_esc_bytes(globals, b"csname");
+            rs_print_esc_bytes(globals, b"endcsname");
+        }
+    } else if p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT {
+        rs_print_esc(globals, globals.engine.prim[p - PRIM_EQTB_BASE].s1 - 1);
+    } else {
+        rs_print_esc(globals, globals.hash.hash(p).s1);
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn print_cs(p: i32) {
     Globals::with(|globals| rs_print_cs(globals, p))
+}
+
+#[no_mangle]
+pub extern "C" fn sprint_cs(p: i32) {
+    Globals::with(|globals| rs_sprint_cs(globals, p))
 }

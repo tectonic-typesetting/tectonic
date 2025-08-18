@@ -28,8 +28,6 @@
 
 #define EQTB_SIZE 8941458
 
-#define EQTB_TOP 9541458
-
 #define ACTIVE_BASE 1
 
 #define SINGLE_BASE 1114113
@@ -259,6 +257,10 @@ void print_int(int32_t n);
 void print_file_line(void);
 
 void print_cs(int32_t p);
+
+void sprint_cs(int32_t p);
+
+void print_file_name(int32_t n, int32_t a, int32_t e);
 
 void resize_str_pool(uintptr_t size);
 
