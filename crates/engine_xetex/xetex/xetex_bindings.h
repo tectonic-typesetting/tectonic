@@ -26,6 +26,12 @@
 
 #define FROZEN_NULL_FONT 2245338
 
+#define TEXT_SIZE 0
+
+#define SCRIPT_SIZE 256
+
+#define SCRIPT_SCRIPT_SIZE 512
+
 #define EQTB_SIZE 8941458
 
 #define ACTIVE_BASE 1
@@ -137,6 +143,16 @@ MemoryWord *eqtb_ptr(uintptr_t idx);
 void resize_eqtb(uintptr_t len);
 
 void clear_eqtb(void);
+
+MemoryWord mem(uintptr_t idx);
+
+void set_mem(uintptr_t idx, MemoryWord val);
+
+MemoryWord *mem_ptr(uintptr_t idx);
+
+void resize_mem(uintptr_t len);
+
+void clear_mem(void);
 
 B32x2 prim(uintptr_t idx);
 
@@ -261,6 +277,8 @@ void print_cs(int32_t p);
 void sprint_cs(int32_t p);
 
 void print_file_name(int32_t n, int32_t a, int32_t e);
+
+void print_size(int32_t s);
 
 void resize_str_pool(uintptr_t size);
 

@@ -30,6 +30,7 @@ pub struct EngineCtx {
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
+    pub(crate) mem: Vec<MemoryWord>,
 }
 
 impl EngineCtx {
@@ -44,6 +45,7 @@ impl EngineCtx {
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
+            mem: Vec::new(),
         }
     }
 
@@ -193,6 +195,38 @@ pub extern "C" fn resize_eqtb(len: usize) {
 #[no_mangle]
 pub extern "C" fn clear_eqtb() {
     ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb.clear())
+}
+
+#[no_mangle]
+pub extern "C" fn mem(idx: usize) -> MemoryWord {
+    ENGINE_CTX.with_borrow(|engine| engine.mem[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_mem(idx: usize, val: MemoryWord) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.mem[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn mem_ptr(idx: usize) -> *mut MemoryWord {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.mem[idx]))
+}
+
+#[no_mangle]
+pub extern "C" fn resize_mem(len: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| {
+        engine.mem.resize(
+            len,
+            MemoryWord {
+                ptr: ptr::null_mut(),
+            },
+        )
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn clear_mem() {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.mem.clear())
 }
 
 #[no_mangle]

@@ -623,20 +623,20 @@ load_picture(bool is_pdf)
         new_whatsit(PIC_NODE,
                     PIC_NODE_SIZE + (strlen(pic_path) + sizeof(memory_word) - 1) / sizeof(memory_word));
         if (is_pdf) {
-            mem[cur_list.tail].b16.s0 = PDF_NODE;
+            mem_ptr(cur_list.tail)->b16.s0 = PDF_NODE;
         }
         PIC_NODE_path_len(cur_list.tail) = strlen(pic_path);
-        mem[cur_list.tail + 4].b16.s0 = page;
-        mem[cur_list.tail + 8].b16.s1 = pdf_box_type;
-        mem[cur_list.tail + 1].b32.s1 = D2Fix(xmax - xmin);
-        mem[cur_list.tail + 3].b32.s1 = D2Fix(ymax - ymin);
-        mem[cur_list.tail + 2].b32.s1 = 0;
-        mem[cur_list.tail + 5].b32.s0 = D2Fix(t.a);
-        mem[cur_list.tail + 5].b32.s1 = D2Fix(t.b);
-        mem[cur_list.tail + 6].b32.s0 = D2Fix(t.c);
-        mem[cur_list.tail + 6].b32.s1 = D2Fix(t.d);
-        mem[cur_list.tail + 7].b32.s0 = D2Fix(t.x);
-        mem[cur_list.tail + 7].b32.s1 = D2Fix(t.y);
+        mem_ptr(cur_list.tail + 4)->b16.s0 = page;
+        mem_ptr(cur_list.tail + 8)->b16.s1 = pdf_box_type;
+        mem_ptr(cur_list.tail + 1)->b32.s1 = D2Fix(xmax - xmin);
+        mem_ptr(cur_list.tail + 3)->b32.s1 = D2Fix(ymax - ymin);
+        mem_ptr(cur_list.tail + 2)->b32.s1 = 0;
+        mem_ptr(cur_list.tail + 5)->b32.s0 = D2Fix(t.a);
+        mem_ptr(cur_list.tail + 5)->b32.s1 = D2Fix(t.b);
+        mem_ptr(cur_list.tail + 6)->b32.s0 = D2Fix(t.c);
+        mem_ptr(cur_list.tail + 6)->b32.s1 = D2Fix(t.d);
+        mem_ptr(cur_list.tail + 7)->b32.s0 = D2Fix(t.x);
+        mem_ptr(cur_list.tail + 7)->b32.s1 = D2Fix(t.y);
         memcpy(PIC_NODE_path(cur_list.tail), pic_path, strlen(pic_path));
         free(pic_path);
     } else {

@@ -206,104 +206,104 @@ typedef MemoryWord memory_word;
  * this conversion besides painstakingly annotating things.
  */
 
-#define LLIST_link(p) mem[p].b32.s1
-#define LLIST_info(p) mem[p].b32.s0
+#define LLIST_link(p) mem_ptr(p)->b32.s1
+#define LLIST_info(p) mem_ptr(p)->b32.s0
 
-#define NODE_type(p) mem[p].b16.s1 /* half of LLIST_info(p) */
-#define NODE_subtype(p) mem[p].b16.s0 /* the other half of LLIST_info(p) */
+#define NODE_type(p) mem_ptr(p)->b16.s1 /* half of LLIST_info(p) */
+#define NODE_subtype(p) mem_ptr(p)->b16.s0 /* the other half of LLIST_info(p) */
 
-#define BOX_lr_mode(p) mem[p].b16.s0 /* subtype; records L/R direction mode */
-#define BOX_width(p) mem[(p) + 1].b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
-#define BOX_depth(p) mem[(p) + 2].b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
-#define BOX_height(p) mem[(p) + 3].b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
-#define BOX_shift_amount(p) mem[(p) + 4].b32.s1 /* a scaled */
-#define BOX_list_ptr(p) mem[(p) + 5].b32.s1 /* aka `link` of p+5 */
-#define BOX_glue_sign(p) mem[(p) + 5].b16.s1 /* aka `type` of p+5 */
-#define BOX_glue_order(p) mem[(p) + 5].b16.s0 /* aka `subtype` of p+5 */
-#define BOX_glue_set(p) mem[(p) + 6].gr /* the glue ratio */
+#define BOX_lr_mode(p) mem_ptr(p)->b16.s0 /* subtype; records L/R direction mode */
+#define BOX_width(p) mem_ptr((p) + 1)->b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
+#define BOX_depth(p) mem_ptr((p) + 2)->b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
+#define BOX_height(p) mem_ptr((p) + 3)->b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
+#define BOX_shift_amount(p) mem_ptr((p) + 4)->b32.s1 /* a scaled */
+#define BOX_list_ptr(p) mem_ptr((p) + 5)->b32.s1 /* aka `link` of p+5 */
+#define BOX_glue_sign(p) mem_ptr((p) + 5)->b16.s1 /* aka `type` of p+5 */
+#define BOX_glue_order(p) mem_ptr((p) + 5)->b16.s0 /* aka `subtype` of p+5 */
+#define BOX_glue_set(p) mem_ptr((p) + 6)->gr /* the glue ratio */
 
-#define ACTIVE_NODE_fitness(p) mem[p].b16.s0 /* aka "subtype" of a node */
-#define ACTIVE_NODE_break_node(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
-#define ACTIVE_NODE_line_number(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
-#define ACTIVE_NODE_total_demerits(p) mem[(p) + 2].b32.s1 /* was originally the `mem[x+2].int` field */
-#define ACTIVE_NODE_shortfall(p) mem[(p) + 3].b32.s1 /* a scaled; "active_short" in the WEB */
-#define ACTIVE_NODE_glue(p) mem[(p) + 4].b32.s1 /* a scaled */
+#define ACTIVE_NODE_fitness(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
+#define ACTIVE_NODE_break_node(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
+#define ACTIVE_NODE_line_number(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
+#define ACTIVE_NODE_total_demerits(p) mem_ptr((p) + 2)->b32.s1 /* was originally the `mem(x+2).int` field */
+#define ACTIVE_NODE_shortfall(p) mem_ptr((p) + 3)->b32.s1 /* a scaled; "active_short" in the WEB */
+#define ACTIVE_NODE_glue(p) mem_ptr((p) + 4)->b32.s1 /* a scaled */
 
-#define CHAR_NODE_font(p) mem[p].b16.s1 /* aka "type" of a node */
-#define CHAR_NODE_character(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define CHAR_NODE_font(p) mem_ptr(p)->b16.s1 /* aka "type" of a node */
+#define CHAR_NODE_character(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
 
-#define DELTA_NODE_dwidth(p) mem[(p) + 1].b32.s1 /* the "natural width" difference */
-#define DELTA_NODE_dstretch0(p) mem[(p) + 2].b32.s1 /* the stretch difference in points */
-#define DELTA_NODE_dstretch1(p) mem[(p) + 3].b32.s1 /* the stretch difference in fil */
-#define DELTA_NODE_dstretch2(p) mem[(p) + 4].b32.s1 /* the stretch difference in fill */
-#define DELTA_NODE_dstretch3(p) mem[(p) + 5].b32.s1 /* the stretch difference in fill */
-#define DELTA_NODE_dshrink(p) mem[(p) + 6].b32.s1 /* the shrink difference */
+#define DELTA_NODE_dwidth(p) mem_ptr((p) + 1)->b32.s1 /* the "natural width" difference */
+#define DELTA_NODE_dstretch0(p) mem_ptr((p) + 2)->b32.s1 /* the stretch difference in points */
+#define DELTA_NODE_dstretch1(p) mem_ptr((p) + 3)->b32.s1 /* the stretch difference in fil */
+#define DELTA_NODE_dstretch2(p) mem_ptr((p) + 4)->b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dstretch3(p) mem_ptr((p) + 5)->b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dshrink(p) mem_ptr((p) + 6)->b32.s1 /* the shrink difference */
 
-#define DISCRETIONARY_NODE_replace_count(p) mem[p].b16.s0 /* aka "subtype" of a node */
-#define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
-#define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+#define DISCRETIONARY_NODE_replace_count(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
+#define DISCRETIONARY_NODE_pre_break(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
+#define DISCRETIONARY_NODE_post_break(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
 
-#define EDGE_NODE_edge_dist(p) mem[(p) + 2].b32.s1 /* "new left_edge position relative to cur_h" */
+#define EDGE_NODE_edge_dist(p) mem_ptr((p) + 2)->b32.s1 /* "new left_edge position relative to cur_h" */
 
-#define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
-#define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+#define GLUE_NODE_glue_ptr(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
+#define GLUE_NODE_leader_ptr(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
 
-#define INSERTION_NODE_float_cost(p) mem[(p) + 1].b32.s1 /* "the floating_penalty to be used" */
-#define INSERTION_NODE_split_top_ptr(p) mem[(p) + 4].b32.s1 /* a glue pointer */
-#define INSERTION_NODE_ins_ptr(p) mem[(p) + 4].b32.s0 /* a pointer to a vlist */
+#define INSERTION_NODE_float_cost(p) mem_ptr((p) + 1)->b32.s1 /* "the floating_penalty to be used" */
+#define INSERTION_NODE_split_top_ptr(p) mem_ptr((p) + 4)->b32.s1 /* a glue pointer */
+#define INSERTION_NODE_ins_ptr(p) mem_ptr((p) + 4)->b32.s0 /* a pointer to a vlist */
 
-#define LANGUAGE_NODE_what_lang(p) mem[(p) + 1].b32.s1 /* language number, 0..255 */
-#define LANGUAGE_NODE_what_lhm(p) mem[(p) + 1].b16.s1 /* "minimum left fragment, range 1..63" */
-#define LANGUAGE_NODE_what_rhm(p) mem[(p) + 1].b16.s0 /* "minimum right fragment, range 1..63" */
+#define LANGUAGE_NODE_what_lang(p) mem_ptr((p) + 1)->b32.s1 /* language number, 0..255 */
+#define LANGUAGE_NODE_what_lhm(p) mem_ptr((p) + 1)->b16.s1 /* "minimum left fragment, range 1..63" */
+#define LANGUAGE_NODE_what_rhm(p) mem_ptr((p) + 1)->b16.s0 /* "minimum right fragment, range 1..63" */
 
-#define LIGATURE_NODE_lig_font(p) mem[(p) + 1].b16.s1 /* WEB: font(lig_char(p)) */
-#define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
-#define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
+#define LIGATURE_NODE_lig_font(p) mem_ptr((p) + 1)->b16.s1 /* WEB: font(lig_char(p)) */
+#define LIGATURE_NODE_lig_char(p) mem_ptr((p) + 1)->b16.s0 /* WEB: character(lig_char(p)) */
+#define LIGATURE_NODE_lig_ptr(p) mem_ptr((p) + 1)->b32.s1 /* WEB: link(lig_char(p)) */
 
-#define MARK_NODE_ptr(p) mem[(p) + 1].b32.s1 /* "head of the token list for the mark" */
-#define MARK_NODE_class(p) mem[(p) + 1].b32.s0 /* "the mark class" */
+#define MARK_NODE_ptr(p) mem_ptr((p) + 1)->b32.s1 /* "head of the token list for the mark" */
+#define MARK_NODE_class(p) mem_ptr((p) + 1)->b32.s0 /* "the mark class" */
 
 /* To check: do these really only apply to MATH_NODEs? */
 #define MATH_NODE_lr_dir(p) (NODE_subtype(p) / R_CODE)
 #define MATH_NODE_end_lr_type(p) (L_CODE * (NODE_subtype(p) / L_CODE) + END_M_CODE)
 
-#define NATIVE_NODE_size(p) mem[(p) + 4].b16.s3
-#define NATIVE_NODE_font(p) mem[(p) + 4].b16.s2
-#define NATIVE_NODE_length(p) mem[(p) + 4].b16.s1 /* number of UTF16 items in the text */
-#define NATIVE_NODE_glyph(p) mem[(p) + 4].b16.s1 /* ... or the glyph number, if subtype==GLYPH_NODE */
-#define NATIVE_NODE_glyph_count(p) mem[(p) + 4].b16.s0
-#define NATIVE_NODE_glyph_info_ptr(p) mem[(p) + 5].ptr
-#define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
+#define NATIVE_NODE_size(p) mem_ptr((p) + 4)->b16.s3
+#define NATIVE_NODE_font(p) mem_ptr((p) + 4)->b16.s2
+#define NATIVE_NODE_length(p) mem_ptr((p) + 4)->b16.s1 /* number of UTF16 items in the text */
+#define NATIVE_NODE_glyph(p) mem_ptr((p) + 4)->b16.s1 /* ... or the glyph number, if subtype==GLYPH_NODE */
+#define NATIVE_NODE_glyph_count(p) mem_ptr((p) + 4)->b16.s0
+#define NATIVE_NODE_glyph_info_ptr(p) mem_ptr((p) + 5)->ptr
+#define NATIVE_NODE_text(p) ((unsigned short *) mem_ptr((p) + NATIVE_NODE_SIZE))
 
-#define PAGE_INS_NODE_broken_ptr(p) mem[(p) + 1].b32.s1 /* "an insertion for this class will break here if anywhere" */
-#define PAGE_INS_NODE_broken_ins(p) mem[(p) + 1].b32.s0 /* "this insertion might break at broken_ptr" */
-#define PAGE_INS_NODE_last_ins_ptr(p) mem[(p) + 2].b32.s1 /* "the most recent insertion for this subtype" */
-#define PAGE_INS_NODE_best_ins_ptr(p) mem[(p) + 2].b32.s0 /* "the optimum most recent insertion" */
+#define PAGE_INS_NODE_broken_ptr(p) mem_ptr((p) + 1)->b32.s1 /* "an insertion for this class will break here if anywhere" */
+#define PAGE_INS_NODE_broken_ins(p) mem_ptr((p) + 1)->b32.s0 /* "this insertion might break at broken_ptr" */
+#define PAGE_INS_NODE_last_ins_ptr(p) mem_ptr((p) + 2)->b32.s1 /* "the most recent insertion for this subtype" */
+#define PAGE_INS_NODE_best_ins_ptr(p) mem_ptr((p) + 2)->b32.s0 /* "the optimum most recent insertion" */
 
-#define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define PASSIVE_NODE_prev_break(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
 #define PASSIVE_NODE_next_break(p) PASSIVE_NODE_prev_break(p) /* siggggghhhhh */
-#define PASSIVE_NODE_cur_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
-#define PASSIVE_NODE_serial(p) mem[p].b32.s0 /* aka "info" */
+#define PASSIVE_NODE_cur_break(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
+#define PASSIVE_NODE_serial(p) mem_ptr(p)->b32.s0 /* aka "info" */
 
-#define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
+#define PENALTY_NODE_penalty(p) mem_ptr((p) + 1)->b32.s1 /* was originally the `mem(x+1).int` field */
 
-#define PIC_NODE_path_len(p) mem[(p) + 4].b16.s1 /* number of bytes in the path item */
-#define PIC_NODE_path(p) ((unsigned char *) &mem[(p) + PIC_NODE_SIZE])
+#define PIC_NODE_path_len(p) mem_ptr((p) + 4)->b16.s1 /* number of bytes in the path item */
+#define PIC_NODE_path(p) ((unsigned char *) mem_ptr((p) + PIC_NODE_SIZE))
 #define PIC_NODE_total_size(p) (PIC_NODE_SIZE + (PIC_NODE_path_len(p) + sizeof(memory_word) - 1) / sizeof(memory_word))
 
-#define WRITE_NODE_tokens(p) mem[(p) + 1].b32.s1 /* "reference count of token list to write" */
+#define WRITE_NODE_tokens(p) mem_ptr((p) + 1)->b32.s1 /* "reference count of token list to write" */
 
 /* Synctex hacks various nodes to add an extra word at the end to store its
  * information, hence the need to know the node size to get the synctex
  * info. */
-#define SYNCTEX_tag(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s0
-#define SYNCTEX_line(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s1
+#define SYNCTEX_tag(p, nodesize) mem_ptr((p) + nodesize - SYNCTEX_FIELD_SIZE)->b32.s0
+#define SYNCTEX_line(p, nodesize) mem_ptr((p) + nodesize - SYNCTEX_FIELD_SIZE)->b32.s1
 
-#define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
-#define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
-#define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */
-#define GLUE_SPEC_stretch(p) mem[(p) + 2].b32.s1 /* a scaled */
-#define GLUE_SPEC_shrink(p) mem[(p) + 3].b32.s1 /* a scaled */
+#define GLUE_SPEC_ref_count(p) mem_ptr(p)->b32.s1 /* aka "link" of a link-list node */
+#define GLUE_SPEC_stretch_order(p) mem_ptr(p)->b16.s1 /* aka "type" of a node */
+#define GLUE_SPEC_shrink_order(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
+#define GLUE_SPEC_stretch(p) mem_ptr((p) + 2)->b32.s1 /* a scaled */
+#define GLUE_SPEC_shrink(p) mem_ptr((p) + 3)->b32.s1 /* a scaled */
 
 #define FONT_CHARACTER_INFO(f, c) font_info[char_base[f] + (c)].b16
 #define FONT_CHARINFO_WIDTH(f, info) font_info[width_base[f] + (info).s3].b32.s1
@@ -312,19 +312,19 @@ typedef MemoryWord memory_word;
 #define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base[f] + (info).s1 / 4].b32.s1
 #define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
 
-#define TOKEN_LIST_ref_count(p) mem[p].b32.s0
+#define TOKEN_LIST_ref_count(p) mem_ptr(p)->b32.s0
 
 /* e-TeX sparse arrays for large-numebered registers, etc. */
-#define ETEX_SA_ref(p) mem[(p) + 1].b32.s0
-#define ETEX_SA_ptr(p) mem[(p) + 1].b32.s1
+#define ETEX_SA_ref(p) mem_ptr((p) + 1)->b32.s0
+#define ETEX_SA_ptr(p) mem_ptr((p) + 1)->b32.s1
 #define ETEX_SA_num(p) ETEX_SA_ptr(p)
 
 /* e-TeX extended marks stuff ... not sure where to put these */
-#define ETEX_MARK_sa_top_mark(p) mem[(p) + 1].b32.s0 /* \topmarks<n> */
-#define ETEX_MARK_sa_first_mark(p) mem[(p) + 1].b32.s1 /* \firstmarks<n> */
-#define ETEX_MARK_sa_bot_mark(p) mem[(p) + 2].b32.s0 /* \botmarks<n> */
-#define ETEX_MARK_sa_split_first_mark(p) mem[(p) + 2].b32.s1 /* \splitfirstmarks<n> */
-#define ETEX_MARK_sa_split_bot_mark(p) mem[(p) + 3].b32.s0 /* \splitbotmarks<n> */
+#define ETEX_MARK_sa_top_mark(p) mem_ptr((p) + 1)->b32.s0 /* \topmarks<n> */
+#define ETEX_MARK_sa_first_mark(p) mem_ptr((p) + 1)->b32.s1 /* \firstmarks<n> */
+#define ETEX_MARK_sa_bot_mark(p) mem_ptr((p) + 2)->b32.s0 /* \botmarks<n> */
+#define ETEX_MARK_sa_split_first_mark(p) mem_ptr((p) + 2)->b32.s1 /* \splitfirstmarks<n> */
+#define ETEX_MARK_sa_split_bot_mark(p) mem_ptr((p) + 3)->b32.s0 /* \splitbotmarks<n> */
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
@@ -440,7 +440,6 @@ extern scaled_t random_seed;
 extern int32_t two_to_the[31];
 extern int32_t spec_log[29];
 extern int32_t temp_ptr;
-extern memory_word *mem;
 extern int32_t lo_mem_max;
 extern int32_t hi_mem_min;
 extern int32_t var_used, dyn_used;
@@ -1152,14 +1151,14 @@ void tt_insert_special(const char *ascii_text);
 /* additional declarations we want to slip in for xetex */
 
 /* p is native_word node; g is XeTeX_use_glyph_metrics flag */
-#define set_native_metrics(p,g)               measure_native_node(&(mem[p]), g)
-#define set_native_glyph_metrics(p,g)         measure_native_glyph(&(mem[p]), g)
-#define set_justified_native_glyphs(p)        store_justified_native_glyphs(&(mem[p]))
-#define get_native_italic_correction(p)       real_get_native_italic_correction(&(mem[p]))
-#define get_native_glyph_italic_correction(p) real_get_native_glyph_italic_correction(&(mem[p]))
-#define get_native_glyph(p,i)                 real_get_native_glyph(&(mem[p]), i)
-#define make_xdv_glyph_array_data(p)          makeXDVGlyphArrayData(&(mem[p]))
-#define get_native_word_cp(p,s)               real_get_native_word_cp(&(mem[p]), s)
+#define set_native_metrics(p,g)               measure_native_node((mem_ptr(p)), g)
+#define set_native_glyph_metrics(p,g)         measure_native_glyph((mem_ptr(p)), g)
+#define set_justified_native_glyphs(p)        store_justified_native_glyphs((mem_ptr(p)))
+#define get_native_italic_correction(p)       real_get_native_italic_correction((mem_ptr(p)))
+#define get_native_glyph_italic_correction(p) real_get_native_glyph_italic_correction((mem_ptr(p)))
+#define get_native_glyph(p,i)                 real_get_native_glyph((mem_ptr(p)), i)
+#define make_xdv_glyph_array_data(p)          makeXDVGlyphArrayData((mem_ptr(p)))
+#define get_native_word_cp(p,s)               real_get_native_word_cp((mem_ptr(p)), s)
 
 /* easier to do the bit-twiddling here than in Pascal */
 /* read fields from a 32-bit math code */
