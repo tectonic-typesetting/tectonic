@@ -383,7 +383,7 @@ hlist_out(void)
                                     && !is_char_node(q)
                                     && NODE_type(q) == WHATSIT_NODE
                                     && (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT)
-                                    && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)
+                                    && (mem(q + 4).b16.s2 == mem(r + 4).b16.s2)
                                 ) {
                                     p = q;
                                     k += 1 + NATIVE_NODE_length(q);
@@ -1003,7 +1003,7 @@ hlist_out(void)
 
             case LIGATURE_NODE:
                 /* 675: "Make node p look like a char_node and goto reswitch" */
-                mem[LIG_TRICK] = mem[p + 1]; /* = lig_char(p) */
+                set_mem(LIG_TRICK, mem(p + 1)); /* = lig_char(p) */
                 LLIST_link(LIG_TRICK) = LLIST_link(p);
                 p = LIG_TRICK;
                 xtx_ligature_present = true;
@@ -1361,7 +1361,7 @@ vlist_out(void)
                             lq = rule_ht / leader_ht;
                             lr = rule_ht % leader_ht;
 
-                            if (mem[p].b16.s0 == C_LEADERS)
+                            if (mem(p).b16.s0 == C_LEADERS)
                                 cur_v = cur_v + (lr / 2);
                             else {
                                 lx = lr / (lq + 1);
@@ -1584,8 +1584,8 @@ reverse(int32_t this_box, int32_t t, scaled_t *cur_g, double *cur_glue)
 
                     rule_wd += *cur_g;
 
-                    if ((g_sign == STRETCHING && mem[g].b16.s1 == g_order)
-                         || (g_sign == SHRINKING && mem[g].b16.s0 == g_order)) {
+                    if ((g_sign == STRETCHING && mem(g).b16.s1 == g_order)
+                         || (g_sign == SHRINKING && mem(g).b16.s0 == g_order)) {
                         if (GLUE_SPEC_ref_count(g) == TEX_NULL)
                             free_node(g, GLUE_SPEC_SIZE);
                         else
@@ -1610,7 +1610,7 @@ reverse(int32_t this_box, int32_t t, scaled_t *cur_g, double *cur_glue)
                     flush_node_list(LIGATURE_NODE_lig_ptr(p));
                     temp_ptr = p;
                     p = get_avail();
-                    mem[p] = mem[temp_ptr + 1]; /* = mem[lig_char(temp_ptr)] */
+                    set_mem(p, mem(temp_ptr + 1)); /* = mem(lig_char(temp_ptr)) */
                     LLIST_link(p) = q;
                     free_node(temp_ptr, SMALL_NODE_SIZE);
                     goto reswitch;
@@ -1725,15 +1725,15 @@ out_what(int32_t p)
     small_number j;
     unsigned char old_setting;
 
-    switch (mem[p].b16.s0) {
+    switch (mem(p).b16.s0) {
     case OPEN_NODE:
     case WRITE_NODE:
     case CLOSE_NODE:
         if (doing_leaders)
             break;
 
-        j = mem[p + 1].b32.s0;
-        if (mem[p].b16.s0 == WRITE_NODE) {
+        j = mem(p + 1).b32.s0;
+        if (mem(p).b16.s0 == WRITE_NODE) {
             write_out(p);
             break;
         }
@@ -1741,7 +1741,7 @@ out_what(int32_t p)
         if (write_open[j])
             ttstub_output_close(write_file(j));
 
-        if (mem[p].b16.s0 == CLOSE_NODE) {
+        if (mem(p).b16.s0 == CLOSE_NODE) {
             write_open[j] = false;
             break;
         }
@@ -1751,9 +1751,9 @@ out_what(int32_t p)
         if (j >= 16)
             break;
 
-        cur_name = mem[p + 1].b32.s1;
-        cur_area = mem[p + 2].b32.s0;
-        cur_ext = mem[p + 2].b32.s1;
+        cur_name = mem(p + 1).b32.s1;
+        cur_area = mem(p + 2).b32.s0;
+        cur_ext = mem(p + 2).b32.s1;
         if (length(cur_ext) == 0)
             cur_ext = maketexstring(".tex");
 
@@ -1883,35 +1883,35 @@ movement(scaled_t w, eight_bits o)
     int32_t k;
 
     q = get_node(MOVEMENT_NODE_SIZE);
-    mem[q + 1].b32.s1 = w;
-    mem[q + 2].b32.s1 = dvi_offset + dvi_ptr;
+    mem_ptr(q + 1)->b32.s1 = w;
+    mem_ptr(q + 2)->b32.s1 = dvi_offset + dvi_ptr;
 
     if (o == DOWN1) {
-        mem[q].b32.s1 = down_ptr;
+        mem_ptr(q)->b32.s1 = down_ptr;
         down_ptr = q;
     } else {
-        mem[q].b32.s1 = right_ptr;
+        mem_ptr(q)->b32.s1 = right_ptr;
         right_ptr = q;
     }
 
-    p = mem[q].b32.s1;
+    p = mem(q).b32.s1;
     mstate = MOV_NONE_SEEN;
 
     while (p != TEX_NULL) {
-        if (mem[p + 1].b32.s1 == w) { /*632:*/
-            switch (mstate + mem[p].b32.s0) {
+        if (mem(p + 1).b32.s1 == w) { /*632:*/
+            switch (mstate + mem(p).b32.s0) {
             case (MOV_NONE_SEEN + MOV_YZ_OK):
             case (MOV_NONE_SEEN + MOV_Y_OK):
             case (MOV_Z_SEEN + MOV_YZ_OK):
             case (MOV_Z_SEEN + MOV_Y_OK):
-                if (mem[p + 2].b32.s1 < dvi_gone) {
+                if (mem(p + 2).b32.s1 < dvi_gone) {
                     goto not_found;
                 } else { /*633:*/
-                    k = mem[p + 2].b32.s1 - dvi_offset;
+                    k = mem(p + 2).b32.s1 - dvi_offset;
                     if (k < 0)
                         k = k + DVI_BUF_SIZE;
                     dvi_buf[k] = dvi_buf[k] + 5;
-                    mem[p].b32.s0 = MOV_Y_HERE;
+                    mem_ptr(p)->b32.s0 = MOV_Y_HERE;
                     goto found;
                 }
                 break;
@@ -1919,14 +1919,14 @@ movement(scaled_t w, eight_bits o)
             case (MOV_NONE_SEEN + MOV_Z_OK):
             case (MOV_Y_SEEN + MOV_YZ_OK):
             case (MOV_Y_SEEN + MOV_Z_OK):
-                if (mem[p + 2].b32.s1 < dvi_gone) {
+                if (mem(p + 2).b32.s1 < dvi_gone) {
                     goto not_found;
                 } else { /*634:*/
-                    k = mem[p + 2].b32.s1 - dvi_offset;
+                    k = mem(p + 2).b32.s1 - dvi_offset;
                     if (k < 0)
                         k = k + DVI_BUF_SIZE;
                     dvi_buf[k] = dvi_buf[k] + 10;
-                    mem[p].b32.s0 = MOV_Z_HERE;
+                    mem_ptr(p)->b32.s0 = MOV_Z_HERE;
                     goto found;
                 }
                 break;
@@ -1942,7 +1942,7 @@ movement(scaled_t w, eight_bits o)
                 break;
             }
         } else {
-            switch (mstate + mem[p].b32.s0) {
+            switch (mstate + mem(p).b32.s0) {
             case (MOV_NONE_SEEN + MOV_Y_HERE):
                 mstate = MOV_Y_SEEN;
                 break;
@@ -1962,7 +1962,7 @@ movement(scaled_t w, eight_bits o)
     }
 
 not_found:
-    mem[q].b32.s0 = MOV_YZ_OK;
+    mem_ptr(q)->b32.s0 = MOV_YZ_OK;
 
     if (abs(w) >= 0x800000) {
         dvi_out(o + 3);
@@ -2004,35 +2004,35 @@ lab1:
     return;
 
 found: /*629:*/
-    mem[q].b32.s0 = mem[p].b32.s0;
+    mem_ptr(q)->b32.s0 = mem(p).b32.s0;
 
-    if (mem[q].b32.s0 == MOV_Y_HERE) {
+    if (mem(q).b32.s0 == MOV_Y_HERE) {
         dvi_out(o + 4);
 
-        while (mem[q].b32.s1 != p) {
+        while (mem(q).b32.s1 != p) {
             q = LLIST_link(q);
 
-            switch (mem[q].b32.s0) {
+            switch (mem(q).b32.s0) {
             case MOV_YZ_OK:
-                mem[q].b32.s0 = MOV_Z_OK;
+                mem_ptr(q)->b32.s0 = MOV_Z_OK;
                 break;
             case MOV_Y_OK:
-                mem[q].b32.s0 = MOV_D_FIXED;
+                mem_ptr(q)->b32.s0 = MOV_D_FIXED;
                 break;
             }
         }
     } else {
         dvi_out(o + 9);
 
-        while (mem[q].b32.s1 != p) {
+        while (mem(q).b32.s1 != p) {
             q = LLIST_link(q);
 
-            switch (mem[q].b32.s0) {
+            switch (mem(q).b32.s0) {
             case MOV_YZ_OK:
-                mem[q].b32.s0 = MOV_Y_OK;
+                mem_ptr(q)->b32.s0 = MOV_Y_OK;
                 break;
             case MOV_Z_OK:
-                mem[q].b32.s0 = MOV_D_FIXED;
+                mem_ptr(q)->b32.s0 = MOV_D_FIXED;
                 break;
             }
         }
@@ -2046,19 +2046,19 @@ prune_movements(int32_t l)
     int32_t p;
 
     while (down_ptr != TEX_NULL) {
-        if (mem[down_ptr + 2].b32.s1 < l)
+        if (mem(down_ptr + 2).b32.s1 < l)
             break;
 
         p = down_ptr;
-        down_ptr = mem[p].b32.s1;
+        down_ptr = mem(p).b32.s1;
         free_node(p, MOVEMENT_NODE_SIZE);
     }
 
     while (right_ptr != TEX_NULL) {
-        if (mem[right_ptr + 2].b32.s1 < l)
+        if (mem(right_ptr + 2).b32.s1 < l)
             return;
         p = right_ptr;
-        right_ptr = mem[p].b32.s1;
+        right_ptr = mem(p).b32.s1;
         free_node(p, MOVEMENT_NODE_SIZE);
     }
 }
@@ -2081,7 +2081,7 @@ special_out(int32_t p)
     set_doing_special(true);
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
-    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size() - pool_ptr());
+    show_token_list(mem(mem(p + 1).b32.s1).b32.s1, TEX_NULL, pool_size() - pool_ptr());
     set_selector(old_setting);
 
     if (pool_ptr() + 1 > pool_size())
@@ -2120,14 +2120,14 @@ write_out(int32_t p)
     int32_t d;
 
     q = get_avail();
-    mem[q].b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
+    mem_ptr(q)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
     r = get_avail();
-    mem[q].b32.s1 = r;
-    mem[r].b32.s0 = CS_TOKEN_FLAG + END_WRITE;
+    mem_ptr(q)->b32.s1 = r;
+    mem_ptr(r)->b32.s0 = CS_TOKEN_FLAG + END_WRITE;
     begin_token_list(q, INSERTED);
-    begin_token_list(mem[p + 1].b32.s1, WRITE_TEXT);
+    begin_token_list(mem(p + 1).b32.s1, WRITE_TEXT);
     q = get_avail();
-    mem[q].b32.s0 = (LEFT_BRACE_TOKEN + '{' );
+    mem_ptr(q)->b32.s0 = (LEFT_BRACE_TOKEN + '{' );
     begin_token_list(q, INSERTED);
 
     old_mode = cur_list.mode;
@@ -2152,7 +2152,7 @@ write_out(int32_t p)
     cur_list.mode = old_mode;
     end_token_list();
     old_setting = selector();
-    j = mem[p + 1].b32.s0;
+    j = mem(p + 1).b32.s0;
 
     if (j == 18) {
         set_selector(SELECTOR_NEW_STRING);
@@ -2226,23 +2226,23 @@ pic_out(int32_t p)
     set_selector(SELECTOR_NEW_STRING);
     print_cstr("pdf:image ");
     print_cstr("matrix ");
-    print_scaled(mem[p + 5].b32.s0);
+    print_scaled(mem(p + 5).b32.s0);
     print(' ');
-    print_scaled(mem[p + 5].b32.s1);
+    print_scaled(mem(p + 5).b32.s1);
     print(' ');
-    print_scaled(mem[p + 6].b32.s0);
+    print_scaled(mem(p + 6).b32.s0);
     print(' ');
-    print_scaled(mem[p + 6].b32.s1);
+    print_scaled(mem(p + 6).b32.s1);
     print(' ');
-    print_scaled(mem[p + 7].b32.s0);
+    print_scaled(mem(p + 7).b32.s0);
     print(' ');
-    print_scaled(mem[p + 7].b32.s1);
+    print_scaled(mem(p + 7).b32.s1);
     print(' ');
     print_cstr("page ");
-    print_int(mem[p + 4].b16.s0);
+    print_int(mem(p + 4).b16.s0);
     print(' ');
 
-    switch (mem[p + 8].b16.s1) {
+    switch (mem(p + 8).b16.s1) {
     case 1:
         print_cstr("pagebox cropbox ");
         break;

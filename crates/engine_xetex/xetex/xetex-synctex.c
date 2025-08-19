@@ -22,8 +22,8 @@
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
 
-#define SYNCTEX_TAG_MODEL(NODE,TYPE) mem[NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE].b32.s0
-#define SYNCTEX_LINE_MODEL(NODE,TYPE) mem[NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE].b32.s1
+#define SYNCTEX_TAG_MODEL(NODE,TYPE) mem_ptr(NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE)->b32.s0
+#define SYNCTEX_LINE_MODEL(NODE,TYPE) mem_ptr(NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE)->b32.s1
 
 #define GLUE_NODE_SIZE MEDIUM_NODE_SIZE
 #define KERN_NODE_SIZE MEDIUM_NODE_SIZE
@@ -43,11 +43,11 @@
 #define glue_node 10
 #define kern_node 11
 
-#define SYNCTEX_TYPE(NODE) mem[NODE].b16.s1
-#define SYNCTEX_SUBTYPE(NODE) mem[NODE].b16.s0
-#define SYNCTEX_WIDTH(NODE) mem[NODE + width_offset].b32.s1
-#define SYNCTEX_DEPTH(NODE) mem[NODE + depth_offset].b32.s1
-#define SYNCTEX_HEIGHT(NODE) mem[NODE + height_offset].b32.s1
+#define SYNCTEX_TYPE(NODE) mem_ptr(NODE)->b16.s1
+#define SYNCTEX_SUBTYPE(NODE) mem_ptr(NODE)->b16.s0
+#define SYNCTEX_WIDTH(NODE) mem_ptr(NODE + width_offset)->b32.s1
+#define SYNCTEX_DEPTH(NODE) mem_ptr(NODE + depth_offset)->b32.s1
+#define SYNCTEX_HEIGHT(NODE) mem_ptr(NODE + height_offset)->b32.s1
 
 /*  For non-GCC compilation.  */
 #if !defined(__GNUC__) || (__GNUC__ < 2)

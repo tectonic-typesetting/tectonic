@@ -70,7 +70,6 @@ scaled_t random_seed;
 int32_t two_to_the[31];
 int32_t spec_log[29];
 int32_t temp_ptr;
-memory_word *mem;
 int32_t lo_mem_max;
 int32_t hi_mem_min;
 int32_t var_used, dyn_used;
@@ -541,8 +540,8 @@ sort_avail(void)
     int32_t old_rover;
 
     p = get_node(0x40000000);
-    p = mem[rover + 1].b32.s1;
-    mem[rover + 1].b32.s1 = MAX_HALFWORD;
+    p = mem(rover + 1).b32.s1;
+    mem_ptr(rover + 1)->b32.s1 = MAX_HALFWORD;
     old_rover = rover;
 
     /*136: */
@@ -550,29 +549,29 @@ sort_avail(void)
     while (p != old_rover) {
         if (p < rover) {
             q = p;
-            p = mem[q + 1].b32.s1;
-            mem[q + 1].b32.s1 = rover;
+            p = mem(q + 1).b32.s1;
+            mem_ptr(q + 1)->b32.s1 = rover;
             rover = q;
         } else {
             q = rover;
-            while (mem[q + 1].b32.s1 < p)
-                q = mem[q + 1].b32.s1;
-            r = mem[p + 1].b32.s1;
-            mem[p + 1].b32.s1 = mem[q + 1].b32.s1;
-            mem[q + 1].b32.s1 = p;
+            while (mem(q + 1).b32.s1 < p)
+                q = mem(q + 1).b32.s1;
+            r = mem(p + 1).b32.s1;
+            mem_ptr(p + 1)->b32.s1 = mem(q + 1).b32.s1;
+            mem_ptr(q + 1)->b32.s1 = p;
             p = r;
         }
     }
 
     p = rover;
 
-    while (mem[p + 1].b32.s1 != MAX_HALFWORD) {
-        mem[mem[p + 1].b32.s1 + 1].b32.s0 = p;
-        p = mem[p + 1].b32.s1;
+    while (mem(p + 1).b32.s1 != MAX_HALFWORD) {
+        mem_ptr(mem(p + 1).b32.s1 + 1)->b32.s0 = p;
+        p = mem(p + 1).b32.s1;
     }
 
-    mem[p + 1].b32.s1 = rover;
-    mem[rover + 1].b32.s0 = p;
+    mem_ptr(p + 1)->b32.s1 = rover;
+    mem_ptr(rover + 1)->b32.s0 = p;
 }
 
 /*:271*//*276: */
@@ -986,7 +985,7 @@ new_patterns(void)
         help_line[0] = "All patterns must be given before typesetting begins.";
         error();
 
-        mem[GARBAGE].b32.s1 = scan_toks(false, false);
+        mem_ptr(GARBAGE)->b32.s1 = scan_toks(false, false);
         flush_list(def_ref);
     }
 }
@@ -1171,8 +1170,8 @@ not_found1: /*970:*/
             if (cur_chr == '-' ) { /*973:*/
                 if (n < max_hyphenatable_length()) {
                     q = get_avail();
-                    mem[q].b32.s1 = p;
-                    mem[q].b32.s0 = n;
+                    mem_ptr(q)->b32.s1 = p;
+                    mem_ptr(q)->b32.s0 = n;
                     p = q;
                 }
             } else {
@@ -1386,9 +1385,9 @@ prefixed_command(void)
 
         if (j != 0) {
             q = get_avail();
-            mem[q].b32.s0 = j;
-            mem[q].b32.s1 = mem[def_ref].b32.s1;
-            mem[def_ref].b32.s1 = q;
+            mem_ptr(q)->b32.s0 = j;
+            mem_ptr(q)->b32.s1 = mem(def_ref).b32.s1;
+            mem_ptr(def_ref)->b32.s1 = q;
         }
 
         if (a >= 4)
@@ -1422,10 +1421,10 @@ prefixed_command(void)
         }
 
         if (cur_cmd >= CALL) {
-            mem[cur_chr].b32.s0++;
+            mem_ptr(cur_chr)->b32.s0++;
         } else if (cur_cmd == REGISTER || cur_cmd == TOKS_REGISTER) {
             if (cur_chr < 0 || cur_chr > 19) /* 19 = lo_mem_stat_max, I think */
-                mem[cur_chr + 1].b32.s0++;
+                mem_ptr(cur_chr + 1)->b32.s0++;
         }
 
         if (a >= 4)
@@ -1502,7 +1501,7 @@ prefixed_command(void)
                         j = TOK_VAL;
 
                     find_sa_element(j, cur_val, true);
-                    mem[cur_ptr + 1].b32.s0++;
+                    mem_ptr(cur_ptr + 1)->b32.s0++;
 
                     if (j == TOK_VAL)
                         j = TOKS_REGISTER;
@@ -1621,10 +1620,10 @@ prefixed_command(void)
                             if (cur_ptr == TEX_NULL)
                                 q = TEX_NULL;
                             else
-                                q = mem[cur_ptr + 1].b32.s1;
+                                q = mem(cur_ptr + 1).b32.s1;
                         }
                     } else {
-                        q = mem[cur_chr + 1].b32.s1;
+                        q = mem(cur_chr + 1).b32.s1;
                     }
                 } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                     scan_char_class_not_ignored();
@@ -1634,7 +1633,7 @@ prefixed_command(void)
                     if (cur_ptr == TEX_NULL)
                         q = TEX_NULL;
                     else
-                        q = mem[cur_ptr + 1].b32.s1;
+                        q = mem(cur_ptr + 1).b32.s1;
                 } else {
                     q = eqtb_ptr(cur_chr)->b32.s1;
                 }
@@ -1651,7 +1650,7 @@ prefixed_command(void)
                         eq_define(p, UNDEFINED_CS, TEX_NULL);
                     }
                 } else {
-                    mem[q].b32.s0++;
+                    mem_ptr(q)->b32.s0++;
                     if (e) {
                         if (a >= 4)
                             gsa_def(p, q);
@@ -1672,7 +1671,7 @@ prefixed_command(void)
         cur_cs = q;
         q = scan_toks(false, false);
 
-        if (mem[def_ref].b32.s1 == TEX_NULL) {
+        if (mem(def_ref).b32.s1 == TEX_NULL) {
             if (e) {
                 if (a >= 4)
                     gsa_def(p, TEX_NULL);
@@ -1684,17 +1683,17 @@ prefixed_command(void)
                 eq_define(p, UNDEFINED_CS, TEX_NULL);
             }
 
-            mem[def_ref].b32.s1 = avail;
+            mem_ptr(def_ref)->b32.s1 = avail;
             avail = def_ref;
         } else {
             if (p == LOCAL_BASE + LOCAL__output_routine && !e) {
-                mem[q].b32.s1 = get_avail();
+                mem_ptr(q)->b32.s1 = get_avail();
                 q = LLIST_link(q);
-                mem[q].b32.s0 = (RIGHT_BRACE_TOKEN + 125);
+                mem_ptr(q)->b32.s0 = (RIGHT_BRACE_TOKEN + 125);
                 q = get_avail();
-                mem[q].b32.s0 = (LEFT_BRACE_TOKEN + 123);
-                mem[q].b32.s1 = mem[def_ref].b32.s1;
-                mem[def_ref].b32.s1 = q;
+                mem_ptr(q)->b32.s0 = (LEFT_BRACE_TOKEN + 123);
+                mem_ptr(q)->b32.s1 = mem(def_ref).b32.s1;
+                mem_ptr(def_ref)->b32.s1 = q;
             }
 
             if (e) {
@@ -1945,26 +1944,26 @@ prefixed_command(void)
         } else if (q > LOCAL_BASE + LOCAL__par_shape) {
             n = (cur_val / 2) + 1;
             p = get_node(2 * n + 1);
-            mem[p].b32.s0 = n;
+            mem_ptr(p)->b32.s0 = n;
             n = cur_val;
-            mem[p + 1].b32.s1 = n;
+            mem_ptr(p + 1)->b32.s1 = n;
 
             for (j = p + 2; j <= p + n + 1; j++) {
                 scan_int();
-                mem[j].b32.s1 = cur_val;
+                mem_ptr(j)->b32.s1 = cur_val;
             }
 
             if (!odd(n))
-                mem[p + n + 2].b32.s1 = 0;
+                mem_ptr(p + n + 2)->b32.s1 = 0;
         } else {
             p = get_node(2 * n + 1);
-            mem[p].b32.s0 = n;
+            mem_ptr(p)->b32.s0 = n;
 
             for (j = 1; j <= n; j++) {
                 scan_dimen(false, false, false);
-                mem[p + 2 * j - 1].b32.s1 = cur_val;
+                mem_ptr(p + 2 * j - 1)->b32.s1 = cur_val;
                 scan_dimen(false, false, false);
-                mem[p + 2 * j].b32.s1 = cur_val;
+                mem_ptr(p + 2 * j)->b32.s1 = cur_val;
             }
         }
 
@@ -2161,21 +2160,21 @@ store_fmt_file(void)
     q = rover;
     x = 0;
     do {
-        dump_things(mem[p], q + 2 - p);
+        dump_ptr(mem_ptr(p), q + 2 - p);
         x = x + q + 2 - p;
         var_used = var_used + q - p;
-        p = q + mem[q].b32.s0;
-        q = mem[q + 1].b32.s1;
+        p = q + mem(q).b32.s0;
+        q = mem(q + 1).b32.s1;
     } while (q != rover);
 
     var_used = var_used + lo_mem_max - p;
     dyn_used = mem_end + 1 - hi_mem_min;
-    dump_things(mem[p], lo_mem_max + 1 - p);
+    dump_ptr(mem_ptr(p), lo_mem_max + 1 - p);
 
     x = x + lo_mem_max + 1 - p;
     dump_int(hi_mem_min);
     dump_int(avail);
-    dump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min);
+    dump_ptr(mem_ptr(hi_mem_min), mem_end + 1 - hi_mem_min);
 
     x = x + mem_end + 1 - hi_mem_min;
     p = avail;
@@ -2462,8 +2461,7 @@ load_fmt_file(void)
         clear_str_start();
         free(yhash);
         clear_eqtb();
-        free(mem);
-        mem = NULL;
+        clear_mem();
     }
 
     /* start reading the header */
@@ -2518,7 +2516,7 @@ load_fmt_file(void)
     cur_list.head = CONTRIB_HEAD;
     cur_list.tail = CONTRIB_HEAD;
     page_tail = PAGE_HEAD;
-    mem = xmalloc_array(memory_word, MEM_TOP + 1);
+    resize_mem(MEM_TOP + 1);
 
     undump_int(x);
     if (x != EQTB_SIZE)
@@ -2592,14 +2590,14 @@ load_fmt_file(void)
     q = rover;
 
     do {
-        undump_things(mem[p], q + 2 - p);
-        p = q + mem[q].b32.s0;
-        if (p > lo_mem_max || (q >= mem[q + 1].b32.s1 && mem[q + 1].b32.s1 != rover))
+        undump_ptr(mem_ptr(p), q + 2 - p);
+        p = q + mem(q).b32.s0;
+        if (p > lo_mem_max || (q >= mem(q + 1).b32.s1 && mem(q + 1).b32.s1 != rover))
             goto bad_fmt;
-        q = mem[q + 1].b32.s1;
+        q = mem(q + 1).b32.s1;
     } while (q != rover);
 
-    undump_things(mem[p], lo_mem_max + 1 - p);
+    undump_ptr(mem_ptr(p), lo_mem_max + 1 - p);
 
     undump_int(x);
     if (x < lo_mem_max + 1 || x > PRE_ADJUST_HEAD)
@@ -2615,7 +2613,7 @@ load_fmt_file(void)
 
     mem_end = MEM_TOP;
 
-    undump_things(mem[hi_mem_min], mem_end + 1 - hi_mem_min);
+    undump_ptr(mem_ptr(hi_mem_min), mem_end + 1 - hi_mem_min);
     undump_int(var_used);
     undump_int(dyn_used);
 
@@ -2957,8 +2955,8 @@ final_cleanup(void)
             print_int(if_line);
         }
         print_cstr(" was incomplete)");
-        if_line = mem[cond_ptr + 1].b32.s1;
-        cur_if = mem[cond_ptr].b16.s0;
+        if_line = mem(cond_ptr + 1).b32.s1;
+        cur_if = mem(cond_ptr).b16.s0;
         temp_ptr = cond_ptr;
         cond_ptr = LLIST_link(cond_ptr);
         free_node(temp_ptr, IF_NODE_SIZE);
@@ -3200,47 +3198,47 @@ initialize_more_initex_variables(void)
     int32_t i, k;
 
     for (k = 1; k <= 19; k++)
-        mem[k].b32.s1 = 0;
+        mem_ptr(k)->b32.s1 = 0;
 
     for (k = 0; k <= 19; k += 4) {
-        mem[k].b32.s1 = TEX_NULL + 1;
-        mem[k].b16.s1 = NORMAL;
-        mem[k].b16.s0 = NORMAL;
+        mem_ptr(k)->b32.s1 = TEX_NULL + 1;
+        mem_ptr(k)->b16.s1 = NORMAL;
+        mem_ptr(k)->b16.s0 = NORMAL;
     }
 
-    mem[6].b32.s1 = 65536L;
-    mem[4].b16.s1 = FIL;
-    mem[10].b32.s1 = 65536L;
-    mem[8].b16.s1 = FILL;
-    mem[14].b32.s1 = 65536L;
-    mem[12].b16.s1 = FIL;
-    mem[15].b32.s1 = 65536L;
-    mem[12].b16.s0 = FIL;
-    mem[18].b32.s1 = -65536L;
-    mem[16].b16.s1 = FIL;
+    mem_ptr(6)->b32.s1 = 65536L;
+    mem_ptr(4)->b16.s1 = FIL;
+    mem_ptr(10)->b32.s1 = 65536L;
+    mem_ptr(8)->b16.s1 = FILL;
+    mem_ptr(14)->b32.s1 = 65536L;
+    mem_ptr(12)->b16.s1 = FIL;
+    mem_ptr(15)->b32.s1 = 65536L;
+    mem_ptr(12)->b16.s0 = FIL;
+    mem_ptr(18)->b32.s1 = -65536L;
+    mem_ptr(16)->b16.s1 = FIL;
     rover = 20;
-    mem[rover].b32.s1 = MAX_HALFWORD;
-    mem[rover].b32.s0 = 1000;
-    mem[rover + 1].b32.s0 = rover;
-    mem[rover + 1].b32.s1 = rover;
+    mem_ptr(rover)->b32.s1 = MAX_HALFWORD;
+    mem_ptr(rover)->b32.s0 = 1000;
+    mem_ptr(rover + 1)->b32.s0 = rover;
+    mem_ptr(rover + 1)->b32.s1 = rover;
     lo_mem_max = rover + 1000;
-    mem[lo_mem_max].b32.s1 = TEX_NULL;
-    mem[lo_mem_max].b32.s0 = TEX_NULL;
+    mem_ptr(lo_mem_max)->b32.s1 = TEX_NULL;
+    mem_ptr(lo_mem_max)->b32.s0 = TEX_NULL;
 
     for (k = PRE_ADJUST_HEAD; k <= MEM_TOP; k++)
-        mem[k] = mem[lo_mem_max];
+        set_mem(k, mem(lo_mem_max));
 
-    mem[OMIT_TEMPLATE].b32.s0 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
-    mem[END_SPAN].b32.s1 = UINT16_MAX + 1;
-    mem[END_SPAN].b32.s0 = TEX_NULL;
-    mem[ACTIVE_LIST].b16.s1 = HYPHENATED;
-    mem[ACTIVE_LIST+1].b32.s0 = MAX_HALFWORD;
-    mem[ACTIVE_LIST].b16.s0 = 0;
-    mem[PAGE_INS_HEAD].b16.s0 = 255;
-    mem[PAGE_INS_HEAD].b16.s1 = SPLIT_UP;
-    mem[PAGE_INS_HEAD].b32.s1 = PAGE_INS_HEAD;
+    mem_ptr(OMIT_TEMPLATE)->b32.s0 = CS_TOKEN_FLAG + FROZEN_END_TEMPLATE;
+    mem_ptr(END_SPAN)->b32.s1 = UINT16_MAX + 1;
+    mem_ptr(END_SPAN)->b32.s0 = TEX_NULL;
+    mem_ptr(ACTIVE_LIST)->b16.s1 = HYPHENATED;
+    mem_ptr(ACTIVE_LIST+1)->b32.s0 = MAX_HALFWORD;
+    mem_ptr(ACTIVE_LIST)->b16.s0 = 0;
+    mem_ptr(PAGE_INS_HEAD)->b16.s0 = 255;
+    mem_ptr(PAGE_INS_HEAD)->b16.s1 = SPLIT_UP;
+    mem_ptr(PAGE_INS_HEAD)->b32.s1 = PAGE_INS_HEAD;
     NODE_type(PAGE_HEAD) = GLUE_NODE;
-    mem[PAGE_HEAD].b16.s0 = NORMAL;
+    mem_ptr(PAGE_HEAD)->b16.s0 = NORMAL;
     avail = TEX_NULL;
     mem_end = MEM_TOP;
     hi_mem_min = PRE_ADJUST_HEAD;
@@ -3260,7 +3258,7 @@ initialize_more_initex_variables(void)
     for (k = GLUE_BASE + 1; k <= LOCAL_BASE - 1; k++)
         set_eqtb(k, eqtb(GLUE_BASE));
 
-    mem[0].b32.s1 += 531;
+    mem_ptr(0)->b32.s1 += 531;
     LOCAL(par_shape) = TEX_NULL;
     eqtb_ptr(LOCAL_BASE + LOCAL__par_shape)->b16.s1 = SHAPE_REF;
     eqtb_ptr(LOCAL_BASE + LOCAL__par_shape)->b16.s0 = LEVEL_ONE;
@@ -3503,7 +3501,7 @@ tt_cleanup(void) {
     // Free arrays allocated in load_fmt_file
     free(yhash);
     clear_eqtb();
-    free(mem);
+    clear_mem();
     clear_str_start();
     clear_str_pool();
     free(font_info);
@@ -3606,7 +3604,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     /* First bit of initex handling: more allocations. */
 
     if (in_initex_mode) {
-        mem = xmalloc_array(memory_word, MEM_TOP + 1);
+        resize_mem(MEM_TOP + 1);
         set_eqtb_top(EQTB_SIZE + hash_extra());
 
         if (hash_extra() == 0)
