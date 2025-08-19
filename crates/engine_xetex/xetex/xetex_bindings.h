@@ -32,6 +32,8 @@
 
 #define SCRIPT_SCRIPT_SIZE 512
 
+#define NATIVE_NODE_SIZE 6
+
 #define EQTB_SIZE 8941458
 
 #define ACTIVE_BASE 1
@@ -279,6 +281,10 @@ void sprint_cs(int32_t p);
 void print_file_name(int32_t n, int32_t a, int32_t e);
 
 void print_size(int32_t s);
+
+void print_write_whatsit(const char *s, int32_t p);
+
+void print_native_word(int32_t p);
 
 void resize_str_pool(uintptr_t size);
 
