@@ -31,6 +31,8 @@
  *
  */
 
+use std::{fmt, ptr};
+
 #[cfg(target_endian = "big")]
 mod data {
     #[derive(Copy, Clone)]
@@ -78,6 +80,40 @@ pub union MemoryWord {
     pub(crate) b16: B16x4,
     pub(crate) gr: f64,
     pub(crate) ptr: *mut (),
+}
+
+impl MemoryWord {
+    pub fn i32_0(&self) -> i32 {
+        unsafe { self.b32.s0 }
+    }
+
+    pub fn i32_1(&self) -> i32 {
+        unsafe { self.b32.s1 }
+    }
+
+    pub fn u16_0(&self) -> u16 {
+        unsafe { self.b16.s0 }
+    }
+
+    pub fn u16_1(&self) -> u16 {
+        unsafe { self.b16.s1 }
+    }
+
+    pub fn u16_2(&self) -> u16 {
+        unsafe { self.b16.s2 }
+    }
+
+    pub fn u16_3(&self) -> u16 {
+        unsafe { self.b16.s3 }
+    }
+
+    pub fn f64(&self) -> f64 {
+        unsafe { self.gr }
+    }
+
+    pub fn ptr(&self) -> *mut () {
+        unsafe { self.ptr }
+    }
 }
 
 /* ## THE ORIGINAL SITUATION (archived for posterity)
@@ -171,6 +207,96 @@ pub union MemoryWord {
  * - `two_halves` => `b32x2`
  *
  */
+
+/* Types of nodes that can occur in general lists. */
+pub const WHATSIT_NODE: u16 = 8;
+
+/* Subtypes for whatsit nodes. */
+pub const NATIVE_WORD_NODE: u16 = 40;
+
+pub trait Node {
+    fn ty() -> u16;
+    fn subty() -> u16;
+
+    unsafe fn from_ptr(ptr: *const MemoryWord) -> *const Self;
+    unsafe fn from_ptr_mut(ptr: *mut MemoryWord) -> *mut Self;
+}
+
+#[repr(C)]
+pub struct NodeBase(B16x4);
+
+impl NodeBase {
+    pub(super) fn from_ptr(ptr: *const MemoryWord) -> *const NodeBase {
+        ptr.cast()
+    }
+
+    pub fn ty(&self) -> u16 {
+        self.0.s1
+    }
+
+    pub fn subty(&self) -> u16 {
+        self.0.s0
+    }
+}
+
+impl fmt::Debug for NodeBase {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("NodeBase")
+            .field("ty", &self.ty())
+            .field("subty", &self.subty())
+            .finish()
+    }
+}
+
+#[repr(C)]
+pub struct NativeWordNode {
+    // p
+    node: NodeBase,
+    // p + 1..p + 3
+    _priv: [MemoryWord; 3],
+    // p + 4 - most data is here
+    data: B16x4,
+    // p + 5 - glyph_info pointer
+    glyph_info: *mut (),
+    // p+6.. - text in this node
+    text: [u16],
+}
+
+impl Node for NativeWordNode {
+    fn ty() -> u16 {
+        WHATSIT_NODE
+    }
+
+    fn subty() -> u16 {
+        NATIVE_WORD_NODE
+    }
+
+    unsafe fn from_ptr(ptr: *const MemoryWord) -> *const Self {
+        let this = ptr::slice_from_raw_parts(ptr, 0) as *const Self;
+        let len = (*this).len();
+        ptr::slice_from_raw_parts(ptr, len) as *const Self
+    }
+
+    unsafe fn from_ptr_mut(ptr: *mut MemoryWord) -> *mut Self {
+        let this = ptr::slice_from_raw_parts_mut(ptr, 0) as *mut Self;
+        let len = (*this).len();
+        ptr::slice_from_raw_parts_mut(ptr, len) as *mut Self
+    }
+}
+
+impl NativeWordNode {
+    pub fn base(&self) -> &NodeBase {
+        &self.node
+    }
+
+    pub fn len(&self) -> usize {
+        self.data.s1 as usize
+    }
+
+    pub fn text(&self) -> &[u16] {
+        &self.text
+    }
+}
 
 pub const EQTB_SIZE: usize = 0x886f92;
 

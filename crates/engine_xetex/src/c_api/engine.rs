@@ -33,6 +33,11 @@ pub struct EngineCtx {
     pub(crate) mem: Vec<MemoryWord>,
 }
 
+struct NodeError {
+    ty: u16,
+    subty: u16,
+}
+
 impl EngineCtx {
     fn new() -> EngineCtx {
         EngineCtx {
@@ -46,6 +51,36 @@ impl EngineCtx {
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
             mem: Vec::new(),
+        }
+    }
+
+    pub fn try_node<T: ?Sized + Node>(&self, idx: usize) -> Result<&T, NodeError> {
+        let ptr = self.mem.as_ptr().wrapping_add(idx);
+        let base = unsafe { &*NodeBase::from_ptr(ptr) };
+
+        if T::ty() != base.ty() || T::subty() != base.subty() {
+            return Err(NodeError {
+                ty: base.ty(),
+                subty: base.subty(),
+            });
+        }
+
+        let ptr = unsafe { T::from_ptr(ptr) };
+        Ok(unsafe { &*ptr })
+    }
+
+    pub fn node<T: ?Sized + Node>(&self, idx: usize) -> &T {
+        match self.try_node::<T>(idx) {
+            Ok(node) => node,
+            Err(e) => {
+                panic!(
+                    "Invalid node type. expected {}:{}, found {}:{}",
+                    e.ty,
+                    e.subty,
+                    T::ty(),
+                    T::subty(),
+                );
+            }
         }
     }
 

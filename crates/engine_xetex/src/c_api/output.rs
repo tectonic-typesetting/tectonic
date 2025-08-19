@@ -1,6 +1,7 @@
 use crate::c_api::engine::{
-    rs_gettexstring, CatCode, IntPar, Selector, ACTIVE_BASE, EQTB_SIZE, FROZEN_NULL_FONT, NULL_CS,
-    PRIM_EQTB_BASE, SCRIPT_SIZE, SINGLE_BASE, TEXT_SIZE, UNDEFINED_CONTROL_SEQUENCE,
+    rs_gettexstring, CatCode, IntPar, NativeWordNode, Selector, ACTIVE_BASE, EQTB_SIZE,
+    FROZEN_NULL_FONT, NULL_CS, PRIM_EQTB_BASE, SCRIPT_SIZE, SINGLE_BASE, TEXT_SIZE,
+    UNDEFINED_CONTROL_SEQUENCE,
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::hash::HASH_BASE;
@@ -801,4 +802,60 @@ pub fn rs_print_size(globals: &mut Globals<'_, '_>, s: i32) {
 #[no_mangle]
 pub extern "C" fn print_size(s: i32) {
     Globals::with(|globals| rs_print_size(globals, s))
+}
+
+pub fn rs_print_write_whatsit(globals: &mut Globals<'_, '_>, s: &[u8], p: i32) {
+    rs_print_esc_bytes(globals, s);
+    let p = p as usize;
+
+    let val = globals.engine.mem[p + 1].i32_0();
+    if val < 16 {
+        rs_print_int(globals, val)
+    } else if val == 16 {
+        rs_print_char(globals, '*' as i32);
+    } else {
+        rs_print_char(globals, '-' as i32);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_write_whatsit(s: *const libc::c_char, p: i32) {
+    let s = unsafe { CStr::from_ptr(s) }.to_bytes();
+    Globals::with(|globals| rs_print_write_whatsit(globals, s, p))
+}
+
+pub fn rs_print_native_word(globals: &mut Globals<'_, '_>, p: i32) {
+    let p = p as usize;
+    let size = globals.engine.node::<NativeWordNode>(p).len();
+    let mut skip = false;
+    for i in 0..size {
+        if skip {
+            skip = false;
+            continue;
+        }
+
+        let node = globals.engine.node::<NativeWordNode>(p);
+        let c = node.text()[i];
+        if c >= 0xD800 && c < 0xDC00 {
+            if i < size - 1 {
+                let cc = node.text()[i + 1];
+                if cc >= 0xDC00 && cc < 0xE000 {
+                    let c = 0x10000 + (c as i32 - 0xD800) * 1024 + (cc as i32 - 0xDC00);
+                    rs_print_char(globals, c);
+                    skip = true;
+                } else {
+                    rs_print(globals, '.' as i32);
+                }
+            } else {
+                rs_print(globals, '.' as i32);
+            }
+        } else {
+            rs_print_char(globals, c as i32);
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_native_word(p: i32) {
+    Globals::with(|globals| rs_print_native_word(globals, p))
 }
