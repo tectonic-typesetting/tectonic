@@ -30,7 +30,6 @@ int32_t max_buf_stack;
 bool in_initex_mode;
 int32_t half_error_line;
 int32_t max_print_line;
-int32_t max_strings;
 int32_t strings_free;
 int32_t string_vacancies;
 int32_t pool_free;
@@ -2549,10 +2548,10 @@ load_fmt_file(void)
         _tt_abort ("must increase sup_strings");
     set_str_ptr(x);
 
-    if (max_strings < str_ptr() + strings_free)
-        max_strings = str_ptr() + strings_free;
+    if (max_strings() < str_ptr() + strings_free)
+        set_max_strings(str_ptr() + strings_free);
 
-    resize_str_start(max_strings);
+    resize_str_start(max_strings());
     uint32_t* ptr = str_start_ptr(0);
     undump_checked_ptr(0, pool_ptr(), ptr, str_ptr() - TOO_BIG_CHAR + 1);
     resize_str_pool(pool_size());
@@ -3567,7 +3566,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_pool_size(6250000L);
     string_vacancies = 90000L;
     pool_free = 47500L;
-    max_strings = 565536L;
+    set_max_strings(565536L);
     strings_free = 100;
     font_mem_size = 8000000L;
     font_max = 9000;
@@ -3620,7 +3619,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
             set_hash(hash_used(), hash(HASH_BASE));
 
 		resize_eqtb(eqtb_top() + 1);
-        resize_str_start(max_strings);
+        resize_str_start(max_strings());
         resize_str_pool(pool_size());
         font_info = xmalloc_array(memory_word, font_mem_size);
     }
@@ -3648,7 +3647,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         bad = 15;
     if (font_max > FONT_BASE + 9000)
         bad = 16;
-    if (save_size > MAX_HALFWORD || max_strings > MAX_HALFWORD)
+    if (save_size > MAX_HALFWORD || max_strings() > MAX_HALFWORD)
         bad = 17;
     if (buf_size > MAX_HALFWORD)
         bad = 18;

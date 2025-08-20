@@ -3,6 +3,9 @@ use std::cell::RefCell;
 use std::ops::Range;
 use std::ptr;
 
+pub const TOO_BIG_CHAR: usize = 65536;
+pub const EMPTY_STRING: StrNumber = 65536 + 1;
+
 thread_local! {
     pub static STRING_POOL: RefCell<StringPool> = const { RefCell::new(StringPool::new()) };
 }
@@ -13,6 +16,7 @@ pub struct StringPool {
     pub(crate) pool_ptr: usize,
     pub(crate) str_ptr: usize,
     pub(crate) pool_size: usize,
+    pub(crate) max_strings: usize,
 }
 
 impl StringPool {
@@ -23,6 +27,7 @@ impl StringPool {
             pool_ptr: 0,
             str_ptr: 0,
             pool_size: 0,
+            max_strings: 565536,
         }
     }
 
@@ -119,4 +124,29 @@ pub extern "C" fn pool_size() -> usize {
 #[no_mangle]
 pub extern "C" fn set_pool_size(val: usize) {
     STRING_POOL.with_borrow_mut(|strings| strings.pool_size = val)
+}
+
+#[no_mangle]
+pub extern "C" fn max_strings() -> usize {
+    STRING_POOL.with_borrow(|strings| strings.max_strings)
+}
+
+#[no_mangle]
+pub extern "C" fn set_max_strings(val: usize) {
+    STRING_POOL.with_borrow_mut(|strings| strings.max_strings = val)
+}
+
+pub fn rs_make_string(pool: &mut StringPool) -> StrNumber {
+    if pool.str_ptr == pool.max_strings {
+        todo!("overflow(\"number of strings\", max_strings() - init_str_ptr);");
+    }
+
+    pool.str_ptr += 1;
+    pool.str_start[pool.str_ptr - TOO_BIG_CHAR] = pool.pool_ptr as u32;
+    (pool.str_ptr - 1) as StrNumber
+}
+
+#[no_mangle]
+pub extern "C" fn make_string() -> StrNumber {
+    STRING_POOL.with_borrow_mut(rs_make_string)
 }

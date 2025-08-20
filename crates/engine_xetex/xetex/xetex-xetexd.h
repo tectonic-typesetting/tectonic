@@ -400,7 +400,6 @@ extern int32_t max_buf_stack;
 extern bool in_initex_mode;
 extern int32_t half_error_line;
 extern int32_t max_print_line;
-extern int32_t max_strings;
 extern int32_t strings_free;
 extern int32_t string_vacancies;
 extern int32_t pool_free;

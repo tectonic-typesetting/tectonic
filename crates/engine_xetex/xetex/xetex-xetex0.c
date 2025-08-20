@@ -10652,8 +10652,8 @@ end_name(void)
     str_number temp_str;
     pool_pointer j;
 
-    if (str_ptr() + 3 > max_strings)
-        overflow("number of strings", max_strings - init_str_ptr);
+    if (str_ptr() + 3 > max_strings())
+        overflow("number of strings", max_strings() - init_str_ptr);
 
     /* area_delimiter is the length from the start of the filename to the
      * directory seperator "/", which we use to construct the stringpool
@@ -10746,7 +10746,7 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if (pool_ptr() + name_length > pool_size() || str_ptr() == max_strings || cur_length() > 0)
+    if (pool_ptr() + name_length > pool_size() || str_ptr() == max_strings() || cur_length() > 0)
         return '?';
 
     make_utf16_name();
