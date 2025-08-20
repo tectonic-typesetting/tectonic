@@ -292,6 +292,14 @@ void print_native_word(int32_t p);
 
 void print_sa_num(int32_t q);
 
+void print_two(int32_t n);
+
+void print_hex(int32_t n);
+
+void print_scaled(Scaled s);
+
+void print_ucs_code(uint32_t n);
+
 void resize_str_pool(uintptr_t size);
 
 void clear_str_pool(void);

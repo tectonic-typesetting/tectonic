@@ -5,7 +5,7 @@ use crate::c_api::engine::{
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::hash::HASH_BASE;
-use crate::ty::StrNumber;
+use crate::ty::{Scaled, StrNumber};
 use std::cell::RefCell;
 use std::ffi::CStr;
 use std::io::Write;
@@ -886,4 +886,96 @@ pub fn rs_print_sa_num(globals: &mut Globals<'_, '_>, q: i32) {
 #[no_mangle]
 pub extern "C" fn print_sa_num(q: i32) {
     Globals::with(|globals| rs_print_sa_num(globals, q))
+}
+
+pub fn rs_print_two(globals: &mut Globals<'_, '_>, n: i32) {
+    let n = (n.abs() % 100) as u8;
+    rs_print_char(globals, (b'0' + n / 10) as i32);
+    rs_print_char(globals, (b'0' + n % 10) as i32);
+}
+
+pub fn rs_print_hex(globals: &mut Globals<'_, '_>, mut n: i32) {
+    let mut k = 0;
+
+    rs_print_char(globals, '"' as i32);
+    loop {
+        globals.out.digits[k] = (n % 16) as u8;
+        n /= 16;
+        k += 1;
+        if n == 0 {
+            break;
+        }
+    }
+
+    rs_print_the_digs(globals, k);
+}
+
+pub fn rs_print_scaled(globals: &mut Globals<'_, '_>, mut s: Scaled) {
+    let mut delta;
+
+    if s < 0 {
+        rs_print_char(globals, '-' as i32);
+        s = -s;
+    }
+
+    rs_print_int(globals, s / 0x10000);
+    rs_print_char(globals, '.' as i32);
+    s = 10 * (s % 0x10000) + 5;
+    delta = 10;
+    loop {
+        if delta > 0x10000 {
+            s += 0x8000 - 50000;
+        }
+        rs_print_char(globals, '0' as i32 + (s / 0x10000));
+        s = 10 * (s % 0x10000);
+        delta *= 10;
+
+        if s <= delta {
+            break;
+        }
+    }
+}
+
+pub fn rs_print_ucs_code(globals: &mut Globals<'_, '_>, c: char) {
+    rs_print_bytes(globals, b"U+");
+
+    let mut k = 0;
+    let mut n = c as u32;
+    while n > 0 {
+        globals.out.digits[k] = (n % 16) as u8;
+        n /= 16;
+        k += 1;
+    }
+
+    while k < 4 {
+        globals.out.digits[k] = 0;
+        k += 1;
+    }
+
+    rs_print_the_digs(globals, k);
+}
+
+#[no_mangle]
+pub extern "C" fn print_two(n: i32) {
+    Globals::with(|globals| rs_print_two(globals, n))
+}
+
+#[no_mangle]
+pub extern "C" fn print_hex(n: i32) {
+    Globals::with(|globals| rs_print_hex(globals, n))
+}
+
+#[no_mangle]
+pub extern "C" fn print_scaled(s: Scaled) {
+    Globals::with(|globals| rs_print_scaled(globals, s))
+}
+
+#[no_mangle]
+pub extern "C" fn print_ucs_code(n: u32) {
+    Globals::with(|globals| {
+        rs_print_ucs_code(
+            globals,
+            char::from_u32(n).unwrap_or(char::REPLACEMENT_CHARACTER),
+        )
+    })
 }
