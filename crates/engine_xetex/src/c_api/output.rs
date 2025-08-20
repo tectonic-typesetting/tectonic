@@ -979,3 +979,16 @@ pub extern "C" fn print_ucs_code(n: u32) {
         )
     })
 }
+
+pub fn rs_print_current_string(globals: &mut Globals<'_, '_>) {
+    let start = globals.strings.str_start[globals.strings.str_ptr - 0x10000] as usize;
+    let end = globals.strings.pool_ptr;
+    for j in start..end {
+        rs_print_char(globals, globals.strings.str_pool[j] as i32);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_current_string() {
+    Globals::with(rs_print_current_string)
+}

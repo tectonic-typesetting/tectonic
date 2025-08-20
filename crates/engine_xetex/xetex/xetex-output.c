@@ -44,15 +44,3 @@ print_roman_int(int32_t n)
         }
     }
 }
-
-
-void
-print_current_string(void)
-{
-    pool_pointer j = str_start(str_ptr() - 0x10000);
-
-    while (j < pool_ptr()) {
-        print_char(str_pool(j));
-        j++;
-    }
-}
