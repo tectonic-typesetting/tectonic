@@ -9,25 +9,6 @@
 #include "tectonic_bridge_core.h"
 #include "xetex_bindings.h"
 
-
-void
-print_sa_num(int32_t q)
-{
-    int32_t n;
-
-    if (mem(q).b16.s1 < DIMEN_VAL_LIMIT)
-        n = mem(q + 1).b32.s1;
-    else {
-        n = mem(q).b16.s1 % 64;
-        q = LLIST_link(q);
-        n = n + 64 * mem(q).b16.s1;
-        q = LLIST_link(q);
-        n = n + 64 * 64 * (mem(q).b16.s1 + 64 * mem(mem(q).b32.s1).b16.s1);
-    }
-
-    print_int(n);
-}
-
 void
 print_two(int32_t n)
 {
