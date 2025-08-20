@@ -62,6 +62,8 @@
 
 #define BIGGEST_USV 1114111
 
+#define TOO_BIG_CHAR 65536
+
 #if defined(WORDS_BIGENDIAN)
 typedef struct {
   int32_t s1;
@@ -378,6 +380,12 @@ void set_str_ptr(uintptr_t val);
 uintptr_t pool_size(void);
 
 void set_pool_size(uintptr_t val);
+
+uintptr_t max_strings(void);
+
+void set_max_strings(uintptr_t val);
+
+StrNumber make_string(void);
 
 bool arith_error(void);
 

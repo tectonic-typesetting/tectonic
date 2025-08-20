@@ -56,18 +56,6 @@ length(str_number s)
 }
 
 
-str_number
-make_string(void)
-{
-    if (str_ptr() == max_strings)
-        overflow("number of strings", max_strings - init_str_ptr);
-
-    set_str_ptr(str_ptr()+1);
-    set_str_start(str_ptr() - TOO_BIG_CHAR, pool_ptr());
-    return str_ptr() - 1;
-}
-
-
 void
 append_str(str_number s)
 {
