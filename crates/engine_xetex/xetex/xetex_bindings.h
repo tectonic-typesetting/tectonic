@@ -244,12 +244,55 @@ uint8_t dig(uintptr_t idx);
 
 void set_dig(uintptr_t idx, uint8_t val);
 
+/**
+ * A lower-level API to begin or end the capture of messages into the diagnostic
+ * buffer. You can start capture by obtaining a diagnostic_t and passing it to
+ * this function -- however, the other functions in this API generally do this
+ * for you. Complete capture by passing NULL. Either way, if a capture is in
+ * progress when this function is called, it will be completed and reported.
+ */
 void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
 
 void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
 
+/**
+ * Duplicate messages printed to log/terminal into a warning diagnostic buffer,
+ * until a call capture_to_diagnostic(0). A standard usage of this is
+ * ```c
+ * ttbc_diagnostic_t *warning = diagnostic_begin_capture_warning_here();
+ *
+ * // ... XeTeX prints some errors using print_* functions ...
+ *
+ * capture_to_diagnostic(NULL);
+ * ```
+ *
+ * The current file and line number information are prefixed to the captured
+ * output.
+ *
+ * NOTE: the only reason there isn't also an _error_ version of this function is
+ * that we haven't yet wired up anything that uses it.
+ */
 ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
 
+/**
+ * A replacement for xetex print_file_line+print_nl_ctr blocks. e.g. Replace
+ *
+ * ```c
+ * if (file_line_error_style_p)
+ *     print_file_line();
+ * else
+ *     print_nl_cstr("! ");
+ * print_cstr("Cannot use ");
+ * ```
+ * with
+ * ```c
+ * ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Cannot use ");
+ * ```
+ *
+ * This function calls `capture_to_diagnostic(errmsg)` to begin diagnostic
+ * capture. You must call `capture_to_diagnostic(NULL)` to mark the capture as
+ * complete.
+ */
 ttbc_diagnostic_t *error_here_with_diagnostic(const char *msg);
 
 void warn_char(int c);
@@ -299,6 +342,10 @@ void print_hex(int32_t n);
 void print_scaled(Scaled s);
 
 void print_ucs_code(uint32_t n);
+
+void print_current_string(void);
+
+void print_roman_int(int32_t n);
 
 void resize_str_pool(uintptr_t size);
 

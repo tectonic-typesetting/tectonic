@@ -151,6 +151,11 @@ fn rs_capture_to_diagnostic(globals: &mut Globals<'_, '_>, diagnostic: Option<Bo
     globals.out.current_diagnostic = diagnostic;
 }
 
+/// A lower-level API to begin or end the capture of messages into the diagnostic
+/// buffer. You can start capture by obtaining a diagnostic_t and passing it to
+/// this function -- however, the other functions in this API generally do this
+/// for you. Complete capture by passing NULL. Either way, if a capture is in
+/// progress when this function is called, it will be completed and reported.
 #[no_mangle]
 pub unsafe extern "C" fn capture_to_diagnostic(diagnostic: Option<NonNull<Diagnostic>>) {
     Globals::with(|globals| {
@@ -182,6 +187,21 @@ pub unsafe extern "C" fn diagnostic_print_file_line(diagnostic: *mut Diagnostic)
     Globals::with(|globals| rs_diagnostic_print_file_line(globals, &mut *diagnostic))
 }
 
+/// Duplicate messages printed to log/terminal into a warning diagnostic buffer,
+/// until a call capture_to_diagnostic(0). A standard usage of this is
+/// ```c
+/// ttbc_diagnostic_t *warning = diagnostic_begin_capture_warning_here();
+///
+/// // ... XeTeX prints some errors using print_* functions ...
+///
+/// capture_to_diagnostic(NULL);
+/// ```
+///
+/// The current file and line number information are prefixed to the captured
+/// output.
+///
+/// NOTE: the only reason there isn't also an _error_ version of this function is
+/// that we haven't yet wired up anything that uses it.
 #[no_mangle]
 pub extern "C" fn diagnostic_begin_capture_warning_here() -> *mut Diagnostic {
     let mut warning = Diagnostic::warning();
@@ -208,6 +228,23 @@ pub fn rs_error_here_with_diagnostic(globals: &mut Globals<'_, '_>, message: &[u
     rs_capture_to_diagnostic(globals, Some(Box::new(diag)));
 }
 
+/// A replacement for xetex print_file_line+print_nl_ctr blocks. e.g. Replace
+///
+/// ```c
+/// if (file_line_error_style_p)
+///     print_file_line();
+/// else
+///     print_nl_cstr("! ");
+/// print_cstr("Cannot use ");
+/// ```
+/// with
+/// ```c
+/// ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Cannot use ");
+/// ```
+///
+/// This function calls `capture_to_diagnostic(errmsg)` to begin diagnostic
+/// capture. You must call `capture_to_diagnostic(NULL)` to mark the capture as
+/// complete.
 #[no_mangle]
 pub extern "C" fn error_here_with_diagnostic(msg: *const libc::c_char) -> *mut Diagnostic {
     let str = unsafe { CStr::from_ptr(msg) };
@@ -991,4 +1028,42 @@ pub fn rs_print_current_string(globals: &mut Globals<'_, '_>) {
 #[no_mangle]
 pub extern "C" fn print_current_string() {
     Globals::with(rs_print_current_string)
+}
+
+pub fn rs_print_roman_int(globals: &mut Globals<'_, '_>, mut n: i32) {
+    const ROMAN_DATA: &[u8] = b"m2d5c2l5x2v5i";
+
+    let mut j = 0;
+    let mut v = 1000;
+
+    loop {
+        while n >= v {
+            rs_print_char(globals, ROMAN_DATA[j] as i32);
+            n -= v;
+        }
+
+        if n <= 0 {
+            return;
+        }
+
+        let mut k = j + 2;
+        let mut u = v / (ROMAN_DATA[k - 1] - b'0') as i32;
+        if ROMAN_DATA[k - 1] == b'2' {
+            k += 2;
+            u /= (ROMAN_DATA[k - 1] - b'0') as i32;
+        }
+
+        if n + u >= v {
+            rs_print_char(globals, ROMAN_DATA[k] as i32);
+            n += u;
+        } else {
+            j += 2;
+            v /= (ROMAN_DATA[j - 1] - b'0') as i32;
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn print_roman_int(n: i32) {
+    Globals::with(|globals| rs_print_roman_int(globals, n))
 }
