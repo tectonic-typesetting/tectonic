@@ -1088,7 +1088,6 @@ void print_hex(int32_t n);
 void print_roman_int(int32_t n);
 void print_current_string(void);
 void print_scaled(scaled_t s);
-void print_ucs_code(UnicodeScalar n);
 
 /* xetex-pagebuilder */
 
