@@ -215,15 +215,17 @@ pub const WHATSIT_NODE: u16 = 8;
 pub const NATIVE_WORD_NODE: u16 = 40;
 
 pub trait Node {
+    /// Type of this node. `None` indicates types which are valid for all nodes.
     fn ty() -> u16;
-    fn subty() -> u16;
+    /// Subtype of this node. `None` indicates types which are valid for all subtypes.
+    fn subty() -> Option<u16>;
 
     unsafe fn from_ptr(ptr: *const MemoryWord) -> *const Self;
     unsafe fn from_ptr_mut(ptr: *mut MemoryWord) -> *mut Self;
 }
 
 #[repr(C)]
-pub struct NodeBase(B16x4);
+pub struct NodeBase(MemoryWord);
 
 impl NodeBase {
     pub(super) fn from_ptr(ptr: *const MemoryWord) -> *const NodeBase {
@@ -231,11 +233,15 @@ impl NodeBase {
     }
 
     pub fn ty(&self) -> u16 {
-        self.0.s1
+        unsafe { self.0.b16.s1 }
     }
 
     pub fn subty(&self) -> u16 {
-        self.0.s0
+        unsafe { self.0.b16.s0 }
+    }
+
+    pub fn next(&self) -> usize {
+        unsafe { self.0.b32.s1 as usize }
     }
 }
 
@@ -267,8 +273,8 @@ impl Node for NativeWordNode {
         WHATSIT_NODE
     }
 
-    fn subty() -> u16 {
-        NATIVE_WORD_NODE
+    fn subty() -> Option<u16> {
+        Some(NATIVE_WORD_NODE)
     }
 
     unsafe fn from_ptr(ptr: *const MemoryWord) -> *const Self {

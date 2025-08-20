@@ -1,16 +1,17 @@
+use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ptr;
 
 mod memory;
 
-use crate::c_api::globals::Globals;
 pub use memory::*;
 
 pub const NULL_CS: usize = 0x220001;
 pub const PRIM_SIZE: usize = 2100;
 pub const UNDEFINED_CONTROL_SEQUENCE: usize = 0x226603;
 pub const FROZEN_NULL_FONT: usize = 0x2242da;
+pub const DIMEN_VAL_LIMIT: usize = 128;
 
 pub const TEXT_SIZE: usize = 0;
 pub const SCRIPT_SIZE: usize = 256;
@@ -30,6 +31,7 @@ pub struct EngineCtx {
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
+    /// An arena of TeX nodes
     pub(crate) mem: Vec<MemoryWord>,
 }
 
@@ -54,11 +56,15 @@ impl EngineCtx {
         }
     }
 
+    pub fn raw_mem(&self, idx: usize) -> MemoryWord {
+        self.mem[idx]
+    }
+
     pub fn try_node<T: ?Sized + Node>(&self, idx: usize) -> Result<&T, NodeError> {
         let ptr = self.mem.as_ptr().wrapping_add(idx);
         let base = unsafe { &*NodeBase::from_ptr(ptr) };
 
-        if T::ty() != base.ty() || T::subty() != base.subty() {
+        if T::ty() != base.ty() || T::subty().is_some_and(|subty| subty != base.subty()) {
             return Err(NodeError {
                 ty: base.ty(),
                 subty: base.subty(),
@@ -69,16 +75,22 @@ impl EngineCtx {
         Ok(unsafe { &*ptr })
     }
 
+    pub fn base_node(&self, idx: usize) -> &NodeBase {
+        let ptr = self.mem.as_ptr().wrapping_add(idx);
+        let ptr = NodeBase::from_ptr(ptr);
+        unsafe { &*ptr }
+    }
+
     pub fn node<T: ?Sized + Node>(&self, idx: usize) -> &T {
         match self.try_node::<T>(idx) {
             Ok(node) => node,
             Err(e) => {
                 panic!(
-                    "Invalid node type. expected {}:{}, found {}:{}",
-                    e.ty,
-                    e.subty,
+                    "Invalid node type. expected {}:{:?}, found {}:{}",
                     T::ty(),
                     T::subty(),
+                    e.ty,
+                    e.subty,
                 );
             }
         }

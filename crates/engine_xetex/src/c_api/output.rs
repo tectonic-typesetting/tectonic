@@ -1,6 +1,6 @@
 use crate::c_api::engine::{
-    rs_gettexstring, CatCode, IntPar, NativeWordNode, Selector, ACTIVE_BASE, EQTB_SIZE,
-    FROZEN_NULL_FONT, NULL_CS, PRIM_EQTB_BASE, SCRIPT_SIZE, SINGLE_BASE, TEXT_SIZE,
+    rs_gettexstring, CatCode, IntPar, NativeWordNode, Selector, ACTIVE_BASE, DIMEN_VAL_LIMIT,
+    EQTB_SIZE, FROZEN_NULL_FONT, NULL_CS, PRIM_EQTB_BASE, SCRIPT_SIZE, SINGLE_BASE, TEXT_SIZE,
     UNDEFINED_CONTROL_SEQUENCE,
 };
 use crate::c_api::globals::Globals;
@@ -858,4 +858,32 @@ pub fn rs_print_native_word(globals: &mut Globals<'_, '_>, p: i32) {
 #[no_mangle]
 pub extern "C" fn print_native_word(p: i32) {
     Globals::with(|globals| rs_print_native_word(globals, p))
+}
+
+pub fn rs_print_sa_num(globals: &mut Globals<'_, '_>, q: i32) {
+    let q = q as usize;
+    // TODO: Convert to symbolic access
+    let word = globals.engine.raw_mem(q);
+    let n = if (word.u16_1() as usize) < DIMEN_VAL_LIMIT {
+        globals.engine.raw_mem(q + 1).i32_1()
+    } else {
+        let next = globals.engine.base_node(q).next();
+        let next2 = globals.engine.base_node(next).next();
+        let next3 = globals.engine.base_node(next2).next();
+
+        let word2 = globals.engine.raw_mem(next);
+        let word3 = globals.engine.raw_mem(next2);
+        let word4 = globals.engine.raw_mem(next3);
+
+        word.u16_1() as i32 % 64
+            + (64 * word2.u16_1() as i32)
+            + (64 * 64 * (word3.u16_1() as i32 + 64 * word4.u16_1() as i32))
+    };
+
+    rs_print_int(globals, n);
+}
+
+#[no_mangle]
+pub extern "C" fn print_sa_num(q: i32) {
+    Globals::with(|globals| rs_print_sa_num(globals, q))
 }

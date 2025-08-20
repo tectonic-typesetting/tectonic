@@ -26,13 +26,17 @@
 
 #define FROZEN_NULL_FONT 2245338
 
+#define DIMEN_VAL_LIMIT 128
+
 #define TEXT_SIZE 0
 
 #define SCRIPT_SIZE 256
 
 #define SCRIPT_SCRIPT_SIZE 512
 
-#define NATIVE_NODE_SIZE 6
+#define WHATSIT_NODE 8
+
+#define NATIVE_WORD_NODE 40
 
 #define EQTB_SIZE 8941458
 
@@ -285,6 +289,8 @@ void print_size(int32_t s);
 void print_write_whatsit(const char *s, int32_t p);
 
 void print_native_word(int32_t p);
+
+void print_sa_num(int32_t q);
 
 void resize_str_pool(uintptr_t size);
 
