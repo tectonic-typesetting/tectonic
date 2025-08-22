@@ -1,8 +1,9 @@
 use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::ptr;
+use std::string::FromUtf16Error;
 
 mod memory;
 
@@ -30,6 +31,7 @@ pub struct EngineCtx {
     pub(crate) trick_count: i32,
     pub(crate) trick_buf: [u16; 256],
     pub(crate) eqtb_top: i32,
+    pub(crate) name_of_file: Option<CString>,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -51,6 +53,7 @@ impl EngineCtx {
             trick_count: 0,
             trick_buf: [0; 256],
             eqtb_top: 0,
+            name_of_file: None,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -215,6 +218,38 @@ pub extern "C" fn set_eqtb_top(val: i32) {
 }
 
 #[no_mangle]
+pub extern "C" fn name_length() -> usize {
+    ENGINE_CTX.with_borrow(|engine| {
+        engine
+            .name_of_file
+            .as_ref()
+            .map(|s| s.count_bytes())
+            .unwrap_or(0)
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn name_of_file() -> *const libc::c_char {
+    ENGINE_CTX.with_borrow(|engine| {
+        engine
+            .name_of_file
+            .as_ref()
+            .map(|s| s.as_ptr())
+            .unwrap_or(ptr::null())
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn set_name_of_file(val: *const libc::c_char) {
+    let s = if val.is_null() {
+        None
+    } else {
+        Some(unsafe { CStr::from_ptr(val) })
+    };
+    ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file = s.map(CStr::to_owned))
+}
+
+#[no_mangle]
 pub extern "C" fn eqtb(idx: usize) -> MemoryWord {
     ENGINE_CTX.with_borrow(|engine| engine.eqtb[idx])
 }
@@ -324,6 +359,21 @@ pub fn rs_gettexstring(globals: &mut Globals<'_, '_>, s: StrNumber) -> String {
     String::from_utf16_lossy(str)
 }
 
+pub fn rs_pack_file_name(globals: &mut Globals<'_, '_>, n: StrNumber, a: StrNumber, e: StrNumber) {
+    let n = globals.strings.tex_str(n);
+    let a = globals.strings.tex_str(a);
+    let e = globals.strings.tex_str(e);
+    let mut buffer = String::with_capacity(n.len() + a.len() + e.len());
+
+    let iter = a.iter().chain(n).chain(e).copied();
+    for c in char::decode_utf16(iter) {
+        let c = c.unwrap_or(char::REPLACEMENT_CHARACTER);
+        buffer.push(c);
+    }
+
+    globals.engine.name_of_file = Some(CString::new(buffer).unwrap());
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
     if str.is_null() {
@@ -340,4 +390,9 @@ pub unsafe extern "C" fn gettexstring(s: StrNumber) -> *mut libc::c_char {
     unsafe { ptr::copy_nonoverlapping(str.as_ptr().cast(), out, str.len()) };
     unsafe { out.add(str.len()).write(0) };
     out
+}
+
+#[no_mangle]
+pub extern "C" fn pack_file_name(n: StrNumber, a: StrNumber, e: StrNumber) {
+    Globals::with(|globals| rs_pack_file_name(globals, n, a, e))
 }

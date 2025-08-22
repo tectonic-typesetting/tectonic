@@ -19,9 +19,7 @@
 /* All the following variables are declared in xetex-xetexd.h */
 bool shell_escape_enabled = false;
 int32_t bad;
-char *name_of_file;
 UTF16_code *name_of_file16;
-int32_t name_length;
 int32_t name_length16;
 UnicodeScalar *buffer;
 int32_t first;
@@ -422,7 +420,7 @@ do_dump (char *p, size_t item_size, size_t nitems, rust_output_handle_t out_file
     ssize_t r = ttstub_output_write (out_file, p, item_size * nitems);
     if (r < 0 || (size_t) r != item_size * nitems)
         _tt_abort ("could not write %"PRIuZ" %"PRIuZ"-byte item(s) to %s",
-                   nitems, item_size, name_of_file);
+                   nitems, item_size, name_of_file());
 
     /* Have to restore the old contents of memory, since some of it might
        get used again.  */
@@ -438,7 +436,7 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
     ssize_t r = ttstub_input_read (in_file, p, item_size * nitems);
     if (r < 0 || (size_t) r != item_size * nitems)
         _tt_abort("could not undump %"PRIuZ" %"PRIuZ"-byte item(s) from %s",
-                  nitems, item_size, name_of_file);
+                  nitems, item_size, name_of_file());
 
     swap_items (p, nitems, item_size);
 }
@@ -2106,9 +2104,9 @@ store_fmt_file(void)
     format_ident = make_string();
     pack_job_name(".fmt");
 
-    fmt_out = ttstub_output_open (name_of_file, 0);
+    fmt_out = ttstub_output_open (name_of_file(), 0);
     if (fmt_out == INVALID_HANDLE)
-        _tt_abort ("cannot open format output file \"%s\"", name_of_file);
+        _tt_abort ("cannot open format output file \"%s\"", name_of_file());
 
     print_nl_cstr("Beginning to dump on file ");
     print(make_name_string());
@@ -2425,11 +2423,8 @@ store_fmt_file(void)
 static void
 pack_buffered_name(small_number n, int32_t a, int32_t b)
 {
-    free(name_of_file);
-    name_of_file = xmalloc_array(UTF8_code, format_default_length + 1);
-
-    strcpy(name_of_file, TEX_format_default);
-    name_length = strlen(name_of_file);
+    set_name_of_file(TEX_format_default);
+//    name_length = strlen(name_of_file());
 }
 
 
@@ -2448,9 +2443,9 @@ load_fmt_file(void)
 
     pack_buffered_name(format_default_length - 4, 1, 0);
 
-    fmt_in = ttstub_input_open(name_of_file, TTBC_FILE_FORMAT_FORMAT, 0);
+    fmt_in = ttstub_input_open(name_of_file(), TTBC_FILE_FORMAT_FORMAT, 0);
     if (fmt_in == INVALID_HANDLE)
-        _tt_abort("cannot open the format file \"%s\"", name_of_file);
+        _tt_abort("cannot open the format file \"%s\"", name_of_file());
 
     cur_input.loc = j;
 
@@ -2472,7 +2467,7 @@ load_fmt_file(void)
     undump_int(x);
     if (x != FORMAT_SERIAL)
         _tt_abort("format file \"%s\" is of the wrong version: expected %d, found %d",
-                  name_of_file, FORMAT_SERIAL, x);
+                  name_of_file(), FORMAT_SERIAL, x);
 
     /* hash table parameters */
 

@@ -79,11 +79,11 @@ count_pdf_file_pages (void)
     rust_input_handle_t handle;
     pdf_file *pf;
 
-    handle = ttstub_input_open (name_of_file, TTBC_FILE_FORMAT_PICT, 0);
+    handle = ttstub_input_open (name_of_file(), TTBC_FILE_FORMAT_PICT, 0);
     if (handle == INVALID_HANDLE)
         return 0;
 
-    if ((pf = pdf_open(name_of_file, handle)) == NULL) {
+    if ((pf = pdf_open(name_of_file(), handle)) == NULL) {
         /* TODO: issue warning */
         ttstub_input_close(handle);
         return 0;
@@ -226,7 +226,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     int err = -1;
     rust_input_handle_t handle;
 
-    handle = ttstub_input_open (name_of_file, TTBC_FILE_FORMAT_PICT, 0);
+    handle = ttstub_input_open (name_of_file(), TTBC_FILE_FORMAT_PICT, 0);
     bounds->x = bounds->y = bounds->wd = bounds->ht = 0.0;
 
     if (handle == INVALID_HANDLE)
@@ -234,7 +234,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
 
     if (pdfBoxType != 0) {
         /* if cmd was \XeTeXpdffile, use xpdflib to read it */
-        err = pdf_get_rect (name_of_file, handle, page, pdfBoxType, bounds);
+        err = pdf_get_rect (name_of_file(), handle, page, pdfBoxType, bounds);
     } else {
         /* Tectonic customization: if we use single-precision math, we can
          * sometimes get numerical results that vary depending on whether we're
@@ -246,7 +246,7 @@ find_pic_file (char **path, real_rect *bounds, int pdfBoxType, int page)
     }
 
     if (err == 0)
-        *path = xstrdup(name_of_file);
+        *path = xstrdup(name_of_file());
 
     ttstub_input_close (handle);
 

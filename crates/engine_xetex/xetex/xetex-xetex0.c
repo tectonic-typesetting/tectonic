@@ -10710,35 +10710,6 @@ end_name(void)
 }
 
 
-void
-pack_file_name(str_number n, str_number a, str_number e)
-{
-    // Note that we populate the buffer in an order different than how the
-    // arguments are passed to this function!
-    char* work_buffer = xmalloc_array(UTF8_code, (length(a) + length(n) + length(e)) * 3 + 1);
-    work_buffer[0] = '\0';
-
-    char* a_utf8 = gettexstring(a);
-    strcat(work_buffer, a_utf8);
-    free(a_utf8);
-
-    char* n_utf8 = gettexstring(n);
-    strcat(work_buffer, n_utf8);
-    free(n_utf8);
-
-    char* e_utf8 = gettexstring(e);
-    strcat(work_buffer, e_utf8);
-    free(e_utf8);
-
-    name_length = strlen(work_buffer);
-
-    free(name_of_file);
-    name_of_file = xmalloc_array(char, name_length + 1);
-    strcpy(name_of_file, work_buffer);
-    free(work_buffer);
-}
-
-
 str_number
 make_name_string(void)
 {
@@ -10746,7 +10717,7 @@ make_name_string(void)
     pool_pointer save_area_delimiter, save_ext_delimiter;
     bool save_name_in_progress, save_stop_at_space;
 
-    if (pool_ptr() + name_length > pool_size() || str_ptr() == max_strings() || cur_length() > 0)
+    if (pool_ptr() + name_length() > pool_size() || str_ptr() == max_strings() || cur_length() > 0)
         return '?';
 
     make_utf16_name();
@@ -10880,9 +10851,9 @@ open_log_file(void)
 
     pack_job_name(".log");
 
-    set_log_file(ttstub_output_open(name_of_file, 0));
+    set_log_file(ttstub_output_open(name_of_file(), 0));
     if (log_file() == INVALID_HANDLE)
-        _tt_abort ("cannot open log file output \"%s\"", name_of_file);
+        _tt_abort ("cannot open log file output \"%s\"", name_of_file());
 
     texmf_log_name = make_name_string();
     set_selector(SELECTOR_LOG_ONLY);
@@ -10980,7 +10951,7 @@ start_input(const char *primary_input_name)
 
     if (!u_open_in(&input_file[cur_input.index], format, "rb",
                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
-        _tt_abort ("failed to open input file \"%s\"", name_of_file);
+        _tt_abort ("failed to open input file \"%s\"", name_of_file());
 
     /* Now re-encode `name_of_file` into the UTF-16 variable `name_of_file16`,
      * and use that to recompute `cur_{name,area,ext}`. */
@@ -11285,8 +11256,8 @@ void font_feature_warning(const void *featureNameP, int32_t featLen, const void 
     print_cstr("feature `");
     print_utf8_str(featureNameP, featLen);
     print_cstr("' in font `");
-    for (int32_t i = 0; name_of_file[i] != 0; i++)
-        print_raw_char(name_of_file[i], true);
+    for (int32_t i = 0; name_of_file()[i] != 0; i++)
+        print_raw_char(name_of_file()[i], true);
     print_cstr("'.");
     capture_to_diagnostic(NULL);
     end_diagnostic(false);
@@ -11303,8 +11274,8 @@ void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int3
     print_utf8_str(mappingNameP, mappingNameLen);
     print_cstr("' for font `");
 
-    for (int32_t i = 0; name_of_file[i] != 0; i++)
-        print_raw_char(name_of_file[i], true);
+    for (int32_t i = 0; name_of_file()[i] != 0; i++)
+        print_raw_char(name_of_file()[i], true);
 
     switch (warningType) {
     case 1:
@@ -11330,8 +11301,8 @@ void graphite_warning(void)
     diagnostic_begin_capture_warning_here();
     print_nl_cstr("Font `");
 
-    for (int32_t i = 0; name_of_file[i] != 0; i++)
-        print_raw_char(name_of_file[i], true);
+    for (int32_t i = 0; name_of_file()[i] != 0; i++)
+        print_raw_char(name_of_file()[i], true);
 
     print_cstr("' does not support Graphite. Trying OpenType layout instead.");
     capture_to_diagnostic(NULL);
@@ -11350,7 +11321,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     internal_font_number f;
     str_number full_name;
 
-    font_engine = find_native_font(name_of_file, s);
+    font_engine = find_native_font(name_of_file(), s);
     if (!font_engine)
         return FONT_BASE;
 
@@ -11361,11 +11332,11 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     else
         actual_size = get_loaded_font_design_size();
 
-    if (pool_ptr() + name_length > pool_size())
+    if (pool_ptr() + name_length() > pool_size())
         overflow("pool size", pool_size() - init_pool_ptr);
 
-    for (k = 0; k < name_length; k++) {
-        set_str_pool(pool_ptr(), name_of_file[k]);
+    for (k = 0; k < name_length(); k++) {
+        set_str_pool(pool_ptr(), name_of_file()[k]);
         set_pool_ptr(pool_ptr()+1);
     }
 
@@ -11592,7 +11563,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         begin_diagnostic();
         diagnostic_begin_capture_warning_here();
         print_nl_cstr("Requested font \"");
-        print_c_string(name_of_file);
+        print_c_string(name_of_file());
         print('"');
         if (s < 0) {
             print_cstr(" scaled ");
@@ -12019,7 +11990,7 @@ done:
             if (g == FONT_BASE)
                 print_c_string("font not found, using \"nullfont\"");
             else
-                print_c_string(name_of_file);
+                print_c_string(name_of_file());
 
             capture_to_diagnostic(NULL);
             end_diagnostic(false);
