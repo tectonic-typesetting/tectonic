@@ -347,7 +347,7 @@ load_picture(bool is_pdf)
     int32_t pdf_box_type;
     int32_t result;
     scan_file_name();
-    pack_file_name(cur_name, cur_area, cur_ext);
+    pack_file_name(cur_name(), cur_area(), cur_ext());
     pdf_box_type = 0;
     page = 0;
     if (is_pdf) {
@@ -642,7 +642,7 @@ load_picture(bool is_pdf)
     } else {
 
         error_here_with_diagnostic("Unable to load picture or PDF file '");
-        print_file_name(cur_name, cur_area, cur_ext);
+        print_file_name(cur_name(), cur_area(), cur_ext());
         print('\'');
         capture_to_diagnostic(NULL);
         if (result == -43) {

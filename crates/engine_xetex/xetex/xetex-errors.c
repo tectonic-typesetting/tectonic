@@ -21,7 +21,7 @@ pre_error_message (void)
     else
         set_selector(SELECTOR_TERM_ONLY);
 
-    if (job_name == 0)
+    if (job_name() == 0)
         open_log_file();
 
     if (interaction == BATCH_MODE)

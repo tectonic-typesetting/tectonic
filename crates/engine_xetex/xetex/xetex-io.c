@@ -535,7 +535,7 @@ open_or_close_in(void)
     if (c != 0) {
         scan_optional_equals();
         scan_file_name();
-        pack_file_name(cur_name, cur_area, cur_ext);
+        pack_file_name(cur_name(), cur_area(), cur_ext());
 
         if (u_open_in(&read_file[n], TTBC_FILE_FORMAT_TEX, "rb", INTPAR(xetex_default_input_mode),
                       INTPAR(xetex_default_input_encoding))) {

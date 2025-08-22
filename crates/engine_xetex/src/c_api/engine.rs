@@ -3,7 +3,6 @@ use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::ptr;
-use std::string::FromUtf16Error;
 
 mod memory;
 
@@ -32,6 +31,10 @@ pub struct EngineCtx {
     pub(crate) trick_buf: [u16; 256],
     pub(crate) eqtb_top: i32,
     pub(crate) name_of_file: Option<CString>,
+    pub(crate) cur_name: StrNumber,
+    pub(crate) cur_area: StrNumber,
+    pub(crate) cur_ext: StrNumber,
+    pub(crate) job_name: StrNumber,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -54,6 +57,10 @@ impl EngineCtx {
             trick_buf: [0; 256],
             eqtb_top: 0,
             name_of_file: None,
+            cur_area: 0,
+            cur_ext: 0,
+            cur_name: 0,
+            job_name: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -247,6 +254,46 @@ pub extern "C" fn set_name_of_file(val: *const libc::c_char) {
         Some(unsafe { CStr::from_ptr(val) })
     };
     ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file = s.map(CStr::to_owned))
+}
+
+#[no_mangle]
+pub extern "C" fn cur_name() -> StrNumber {
+    ENGINE_CTX.with_borrow(|engine| engine.cur_name)
+}
+
+#[no_mangle]
+pub extern "C" fn set_cur_name(val: StrNumber) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_name = val)
+}
+
+#[no_mangle]
+pub extern "C" fn cur_area() -> StrNumber {
+    ENGINE_CTX.with_borrow(|engine| engine.cur_area)
+}
+
+#[no_mangle]
+pub extern "C" fn set_cur_area(val: StrNumber) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_area = val)
+}
+
+#[no_mangle]
+pub extern "C" fn cur_ext() -> StrNumber {
+    ENGINE_CTX.with_borrow(|engine| engine.cur_ext)
+}
+
+#[no_mangle]
+pub extern "C" fn set_cur_ext(val: StrNumber) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_ext = val)
+}
+
+#[no_mangle]
+pub extern "C" fn job_name() -> StrNumber {
+    ENGINE_CTX.with_borrow(|engine| engine.job_name)
+}
+
+#[no_mangle]
+pub extern "C" fn set_job_name(val: StrNumber) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.job_name = val)
 }
 
 #[no_mangle]

@@ -234,7 +234,7 @@ synctex_dot_open(void)
     if (synctex_ctxt.file)
         return synctex_ctxt.file;
 
-    tmp = gettexstring(job_name);
+    tmp = gettexstring(job_name());
     len = strlen(tmp);
 
     if (len <= 0)
