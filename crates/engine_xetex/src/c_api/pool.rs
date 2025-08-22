@@ -36,6 +36,14 @@ impl StringPool {
         &self.str_pool[self.str_start[str] as usize..self.str_start[str + 1] as usize]
     }
 
+    pub fn tex_str(&self, str: StrNumber) -> &[u16] {
+        if str < 0x10000 {
+            &[]
+        } else {
+            self.str(str - 0x10000)
+        }
+    }
+
     pub fn char_at(&self, idx: usize) -> u16 {
         self.str_pool[idx]
     }

@@ -389,9 +389,7 @@ void remember_source_info(str_number, int);
 /* All the following variables are defined in xetexini.c */
 extern bool shell_escape_enabled;
 extern int32_t bad;
-extern char *name_of_file;
 extern UTF16_code *name_of_file16;
-extern int32_t name_length;
 extern int32_t name_length16;
 extern UnicodeScalar *buffer;
 extern int32_t first;

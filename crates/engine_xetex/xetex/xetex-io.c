@@ -26,7 +26,7 @@ tt_xetex_open_input (int filefmt)
 
     if (filefmt == TTBC_FILE_FORMAT_TECTONIC_PRIMARY) {
         handle = ttstub_input_open_primary ();
-    } else if (name_of_file[0] == '|') {
+    } else if (name_of_file()[0] == '|') {
         // Tectonic TODO: issue #859. In mainline XeTeX, a pipe symbol indicates
         // piped input from an external command via `popen()`. Now that we have
         // shell-escape support we could also support this, but we don't have a
@@ -37,7 +37,7 @@ tt_xetex_open_input (int filefmt)
         capture_to_diagnostic(NULL);
         return INVALID_HANDLE;
     } else {
-        handle = ttstub_input_open (name_of_file, (ttbc_file_format) filefmt, 0);
+        handle = ttstub_input_open (name_of_file(), (ttbc_file_format) filefmt, 0);
     }
 
     if (handle == INVALID_HANDLE)
@@ -47,9 +47,9 @@ tt_xetex_open_input (int filefmt)
         abspath_of_input_file[0] = '\0';
     }
 
-    name_length = strlen(name_of_file);
+//    name_length = strlen(name_of_file());
     free(name_of_input_file);
-    name_of_input_file = xstrdup(name_of_file);
+    name_of_input_file = xstrdup(name_of_file());
     return handle;
 }
 
@@ -481,18 +481,18 @@ get_uni_c(UFILE* f)
 void
 make_utf16_name(void)
 {
-    unsigned char* s = (unsigned char *) name_of_file;
+    unsigned char* s = (unsigned char *) name_of_file();
     uint32_t rval;
     uint16_t* t;
     static int name16len = 0;
-    if (name16len <= name_length) {
+    if (name16len <= name_length()) {
         free(name_of_file16);
-        name16len = name_length + 10;
+        name16len = name_length() + 10;
         name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
     }
     t = name_of_file16;
 
-    while (s < (unsigned char *) name_of_file + name_length) {
+    while (s < (unsigned char *) name_of_file() + name_length()) {
         uint16_t extraBytes;
         rval = *(s++);
         extraBytes = bytesFromUTF8[rval];

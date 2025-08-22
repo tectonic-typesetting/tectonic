@@ -144,6 +144,12 @@ int32_t eqtb_top(void);
 
 void set_eqtb_top(int32_t val);
 
+uintptr_t name_length(void);
+
+const char *name_of_file(void);
+
+void set_name_of_file(const char *val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -173,6 +179,8 @@ B32x2 *prim_ptr(uintptr_t idx);
 StrNumber maketexstring(const char *str);
 
 char *gettexstring(StrNumber s);
+
+void pack_file_name(StrNumber n, StrNumber a, StrNumber e);
 
 void resize_hash(uintptr_t len);
 
