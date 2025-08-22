@@ -269,56 +269,6 @@ void getfiledump(int32_t s, int offset, int length)
   free(buffer);
 }
 
-
-static void
-checkpool_pointer (pool_pointer pool_ptr, size_t len)
-{
-    if (pool_ptr + len >= pool_size())
-        _tt_abort ("string pool overflow [%i bytes]", (int) pool_size());
-}
-
-
-int
-maketexstring(const char *s)
-{
-  size_t len;
-  UInt32 rval;
-  const unsigned char *cp = (const unsigned char *)s;
-
-  if (s == NULL || *s == 0)
-    return EMPTY_STRING;
-
-  len = strlen(s);
-  checkpool_pointer (pool_ptr(), len); /* in the XeTeX case, this may be more than enough */
-
-  while ((rval = *(cp++)) != 0) {
-    UInt16 extraBytes = bytesFromUTF8[rval];
-    switch (extraBytes) { /* note: code falls through cases! */
-      case 5: rval <<= 6; if (*cp) rval += *(cp++);
-      case 4: rval <<= 6; if (*cp) rval += *(cp++);
-      case 3: rval <<= 6; if (*cp) rval += *(cp++);
-      case 2: rval <<= 6; if (*cp) rval += *(cp++);
-      case 1: rval <<= 6; if (*cp) rval += *(cp++);
-      case 0: ;
-    };
-    rval -= offsetsFromUTF8[extraBytes];
-    if (rval > 0xffff) {
-      rval -= 0x10000;
-      set_str_pool(pool_ptr(), 0xd800 + rval / 0x0400);
-      set_pool_ptr(pool_ptr()+1);
-      set_str_pool(pool_ptr(), 0xdc00 + rval % 0x0400);
-      set_pool_ptr(pool_ptr()+1);
-    }
-    else {
-      set_str_pool(pool_ptr(), rval);
-      set_pool_ptr(pool_ptr()+1);
-    }
-  }
-
-  return make_string();
-}
-
-
 static int
 compare_paths (const char *p1, const char *p2)
 {
