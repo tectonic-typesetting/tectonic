@@ -90,7 +90,7 @@ ship_out(int32_t p)
 
     synctex_sheet(INTPAR(mag));
 
-    if (job_name == 0)
+    if (job_name() == 0)
         open_log_file();
 
     if (INTPAR(tracing_output) > 0) {
@@ -180,7 +180,7 @@ ship_out(int32_t p)
     /* ... resuming 637 ... open up the DVI file if needed */
 
     if (output_file_name == 0) {
-        if (job_name == 0)
+        if (job_name() == 0)
             open_log_file();
         pack_job_name(output_file_extension);
         dvi_file = ttstub_output_open(name_of_file(), 0);
@@ -1751,13 +1751,13 @@ out_what(int32_t p)
         if (j >= 16)
             break;
 
-        cur_name = mem(p + 1).b32.s1;
-        cur_area = mem(p + 2).b32.s0;
-        cur_ext = mem(p + 2).b32.s1;
-        if (length(cur_ext) == 0)
-            cur_ext = maketexstring(".tex");
+        set_cur_name(mem(p + 1).b32.s1);
+        set_cur_area(mem(p + 2).b32.s0);
+        set_cur_ext(mem(p + 2).b32.s1);
+        if (length(cur_ext()) == 0)
+            set_cur_ext(maketexstring(".tex"));
 
-        pack_file_name(cur_name, cur_area, cur_ext);
+        pack_file_name(cur_name(), cur_area(), cur_ext());
 
         set_write_file(j, ttstub_output_open(name_of_file(), 0));
         if (write_file(j) == INVALID_HANDLE)
@@ -1774,7 +1774,7 @@ out_what(int32_t p)
             print_nl_cstr("\\openout");
             print_int(j);
             print_cstr(" = `");
-            print_file_name(cur_name, cur_area, cur_ext);
+            print_file_name(cur_name(), cur_area(), cur_ext());
             print_cstr("'.");
             print_nl_cstr("");
             print_ln();

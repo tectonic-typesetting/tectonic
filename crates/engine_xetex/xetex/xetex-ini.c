@@ -138,16 +138,12 @@ unsigned char if_limit;
 small_number cur_if;
 int32_t if_line;
 int32_t skip_line;
-str_number cur_name;
-str_number cur_area;
-str_number cur_ext;
 pool_pointer area_delimiter;
 pool_pointer ext_delimiter;
 UTF16_code file_name_quote_char;
 int32_t format_default_length;
 char *TEX_format_default;
 bool name_in_progress;
-str_number job_name;
 bool log_opened;
 const char* output_file_extension;
 str_number texmf_log_name;
@@ -2084,7 +2080,7 @@ store_fmt_file(void)
 
     set_selector(SELECTOR_NEW_STRING);
     print_cstr(" (preloaded format=");
-    print(job_name);
+    print(job_name());
     print_char(' ');
     print_int(INTPAR(year));
     print_char('.');
@@ -2917,7 +2913,7 @@ final_cleanup(void)
     if (c != 1)
         INTPAR(new_line_char) = -1;
 
-    if (job_name == 0)
+    if (job_name() == 0)
         open_log_file();
 
     while (input_ptr > 0)
@@ -3682,7 +3678,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_tally(0);
     set_term_offset(0);
     set_file_offset(0);
-    job_name = 0;
+    set_job_name(0);
     name_in_progress = false;
     log_opened = false;
 

@@ -64,6 +64,8 @@
 
 #define TOO_BIG_CHAR 65536
 
+typedef int32_t StrNumber;
+
 #if defined(WORDS_BIGENDIAN)
 typedef struct {
   int32_t s1;
@@ -102,8 +104,6 @@ typedef union {
   double gr;
   void *ptr;
 } MemoryWord;
-
-typedef int32_t StrNumber;
 
 typedef int32_t Scaled;
 
@@ -149,6 +149,22 @@ uintptr_t name_length(void);
 const char *name_of_file(void);
 
 void set_name_of_file(const char *val);
+
+StrNumber cur_name(void);
+
+void set_cur_name(StrNumber val);
+
+StrNumber cur_area(void);
+
+void set_cur_area(StrNumber val);
+
+StrNumber cur_ext(void);
+
+void set_cur_ext(StrNumber val);
+
+StrNumber job_name(void);
+
+void set_job_name(StrNumber val);
 
 MemoryWord eqtb(uintptr_t idx);
 

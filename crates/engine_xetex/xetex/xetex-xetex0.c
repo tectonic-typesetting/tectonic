@@ -9663,7 +9663,7 @@ conv_toks(void)
         break;
 
     case JOB_NAME_CODE:
-        if (job_name == 0)
+        if (job_name() == 0)
             open_log_file();
         break;
 
@@ -9836,7 +9836,7 @@ conv_toks(void)
         break;
 
     case JOB_NAME_CODE:
-        print_file_name(job_name, 0, 0);
+        print_file_name(job_name(), 0, 0);
         break;
     }
 
@@ -10661,15 +10661,15 @@ end_name(void)
      * the area, reuse it. */
 
     if (area_delimiter == 0) {
-        cur_area = EMPTY_STRING;
+        set_cur_area(EMPTY_STRING);
     } else {
-        cur_area = str_ptr();
+        set_cur_area(str_ptr());
         set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + area_delimiter);
         set_str_ptr(str_ptr()+1);
-        temp_str = search_string(cur_area);
+        temp_str = search_string(cur_area());
 
         if (temp_str > 0) {
-            cur_area = temp_str;
+            set_cur_area(temp_str);
             set_str_ptr(str_ptr()-1);
 
             for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
@@ -10684,19 +10684,19 @@ end_name(void)
      * strings `cur_ext` and `cur_name`. */
 
     if (ext_delimiter == 0) {
-        cur_ext = EMPTY_STRING;
-        cur_name = slow_make_string();
+        set_cur_ext(EMPTY_STRING);
+        set_cur_name(slow_make_string());
     } else {
-        cur_name = str_ptr();
+        set_cur_name(str_ptr());
         set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + ext_delimiter - area_delimiter - 1);
         set_str_ptr(str_ptr()+1);
 
-        cur_ext = make_string();
+        set_cur_ext(make_string());
         set_str_ptr(str_ptr()-1);
-        temp_str = search_string(cur_name);
+        temp_str = search_string(cur_name());
 
         if (temp_str > 0) {
-            cur_name = temp_str;
+            set_cur_name(temp_str);
             set_str_ptr(str_ptr()-1);
 
             for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
@@ -10705,7 +10705,7 @@ end_name(void)
             set_pool_ptr(pool_ptr() - ext_delimiter + area_delimiter + 1);
         }
 
-        cur_ext = slow_make_string();
+        set_cur_ext(slow_make_string());
     }
 }
 
@@ -10831,10 +10831,10 @@ scan_file_name(void)
 
 void pack_job_name(const char* s)
 {
-    cur_area = EMPTY_STRING;
-    cur_ext = maketexstring(s);
-    cur_name = job_name;
-    pack_file_name(cur_name, cur_area, cur_ext);
+    set_cur_area(EMPTY_STRING);
+    set_cur_ext(maketexstring(s));
+    set_cur_name(job_name());
+    pack_file_name(cur_name(), cur_area(), cur_ext());
 }
 
 
@@ -10846,8 +10846,8 @@ open_log_file(void)
     int32_t l;
 
     old_setting = selector();
-    if (job_name == 0)
-        job_name = maketexstring("texput");
+    if (job_name() == 0)
+        set_job_name(maketexstring("texput"));
 
     pack_job_name(".log");
 
@@ -10942,7 +10942,7 @@ start_input(const char *primary_input_name)
         scan_file_name();
     }
 
-    pack_file_name(cur_name, cur_area, cur_ext);
+    pack_file_name(cur_name(), cur_area(), cur_ext());
 
     /* Open up the new file to be read. The name of the file to be read comes
      * from `name_of_file`. */
@@ -10989,8 +10989,8 @@ start_input(const char *primary_input_name)
 
     /* Finally we start really doing stuff with the newly-opened file. */
 
-    if (job_name == 0) {
-        job_name = cur_name;
+    if (job_name() == 0) {
+        set_job_name(cur_name());
         open_log_file();
     }
 
@@ -11020,8 +11020,8 @@ start_input(const char *primary_input_name)
             print_char('~');
         }
         print_cstr("INPUT ");
-        print(cur_name);
-        print(cur_ext);
+        print(cur_name());
+        print(cur_ext());
         print_ln();
         capture_to_diagnostic(NULL);
         end_diagnostic(false);
@@ -11364,7 +11364,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         print_char('=');
         if (file_name_quote_char != 0)
             print_char(file_name_quote_char);
-        print_file_name(nom, aire, cur_ext);
+        print_file_name(nom, aire, cur_ext());
         if (file_name_quote_char != 0)
             print_char(file_name_quote_char);
         if (s >= 0) {
@@ -11557,7 +11557,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     g = FONT_BASE;
 
     file_opened = false;
-    pack_file_name(nom, aire, cur_ext);
+    pack_file_name(nom, aire, cur_ext());
 
     if (INTPAR(xetex_tracing_fonts) > 0) {
         begin_diagnostic();
@@ -11947,7 +11947,7 @@ bad_tfm:
         print_char('=');
         if (file_name_quote_char != 0)
             print_char(file_name_quote_char);
-        print_file_name(nom, aire, cur_ext);
+        print_file_name(nom, aire, cur_ext());
         if (file_name_quote_char != 0)
             print_char(file_name_quote_char);
         if (s >= 0) {
@@ -16003,7 +16003,7 @@ void new_font(small_number a)
     str_number t;
     unsigned char /*max_selector */ old_setting;
 
-    if (job_name == 0)
+    if (job_name() == 0)
         open_log_file();
 
     get_r_token();
@@ -16077,12 +16077,12 @@ void new_font(small_number a)
         if (f <= for_end)
             do {
                 if (
-                        str_eq_str(font_name[f], cur_name) &&
+                        str_eq_str(font_name[f], cur_name()) &&
                         (
                             (
-                                (length(cur_area) == 0) &&
+                                (length(cur_area()) == 0) &&
                                 ((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))
-                            ) || str_eq_str(font_area[f], cur_area)
+                            ) || str_eq_str(font_area[f], cur_area())
                         )
                     ) {
                     if (s > 0) {
@@ -16091,9 +16091,9 @@ void new_font(small_number a)
                     } else if (font_size[f] == xn_over_d(font_dsize[f], -(int32_t) s, 1000))
                         goto common_ending;
                 }
-                append_str(cur_area);
-                append_str(cur_name);
-                append_str(cur_ext);
+                append_str(cur_area());
+                append_str(cur_name());
+                append_str(cur_ext());
                 if (str_eq_str(font_name[f], make_string())) {
                     {
                         set_str_ptr(str_ptr()-1);
@@ -16114,7 +16114,7 @@ void new_font(small_number a)
             }
             while (f++ < for_end);
     }
-    f = read_font_info(u, cur_name, cur_area, s);
+    f = read_font_info(u, cur_name(), cur_area(), s);
 
 common_ending:
     if ((a >= 4))
@@ -16394,7 +16394,7 @@ void new_write_whatsit(small_number w)
 void scan_and_pack_name(void)
 {
     scan_file_name();
-    pack_file_name(cur_name, cur_area, cur_ext);
+    pack_file_name(cur_name(), cur_area(), cur_ext());
 }
 
 void do_extension(void)
@@ -16408,9 +16408,9 @@ void do_extension(void)
             new_write_whatsit(OPEN_NODE_SIZE);
             scan_optional_equals();
             scan_file_name();
-            mem_ptr(cur_list.tail + 1)->b32.s1 = cur_name;
-            mem_ptr(cur_list.tail + 2)->b32.s0 = cur_area;
-            mem_ptr(cur_list.tail + 2)->b32.s1 = cur_ext;
+            mem_ptr(cur_list.tail + 1)->b32.s1 = cur_name();
+            mem_ptr(cur_list.tail + 2)->b32.s0 = cur_area();
+            mem_ptr(cur_list.tail + 2)->b32.s1 = cur_ext();
         }
         break;
 
@@ -16569,10 +16569,10 @@ void do_extension(void)
     case XETEX_LINEBREAK_LOCALE_EXTENSION_CODE:
         {
             scan_file_name();
-            if (length(cur_name) == 0)
+            if (length(cur_name()) == 0)
                 INTPAR(xetex_linebreak_locale) = 0;
             else
-                INTPAR(xetex_linebreak_locale) = cur_name;
+                INTPAR(xetex_linebreak_locale) = cur_name();
         }
         break;
 
