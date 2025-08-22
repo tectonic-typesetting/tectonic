@@ -10829,15 +10829,6 @@ scan_file_name(void)
 }
 
 
-void pack_job_name(const char* s)
-{
-    set_cur_area(EMPTY_STRING);
-    set_cur_ext(maketexstring(s));
-    set_cur_name(job_name());
-    pack_file_name(cur_name(), cur_area(), cur_ext());
-}
-
-
 void
 open_log_file(void)
 {

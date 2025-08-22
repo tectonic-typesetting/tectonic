@@ -421,6 +421,18 @@ pub fn rs_pack_file_name(globals: &mut Globals<'_, '_>, n: StrNumber, a: StrNumb
     globals.engine.name_of_file = Some(CString::new(buffer).unwrap());
 }
 
+pub fn rs_pack_job_name(globals: &mut Globals<'_, '_>, s: &str) {
+    globals.engine.cur_area = EMPTY_STRING;
+    globals.engine.cur_ext = rs_maketexstring(globals, s);
+    globals.engine.cur_name = globals.engine.job_name;
+    rs_pack_file_name(
+        globals,
+        globals.engine.cur_name,
+        globals.engine.cur_area,
+        globals.engine.cur_ext,
+    );
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
     if str.is_null() {
@@ -442,4 +454,10 @@ pub unsafe extern "C" fn gettexstring(s: StrNumber) -> *mut libc::c_char {
 #[no_mangle]
 pub extern "C" fn pack_file_name(n: StrNumber, a: StrNumber, e: StrNumber) {
     Globals::with(|globals| rs_pack_file_name(globals, n, a, e))
+}
+
+#[no_mangle]
+pub extern "C" fn pack_job_name(s: *const libc::c_char) {
+    let s = unsafe { CStr::from_ptr(s) }.to_str().unwrap();
+    Globals::with(|globals| rs_pack_job_name(globals, s))
 }
