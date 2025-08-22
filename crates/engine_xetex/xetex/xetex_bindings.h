@@ -107,6 +107,8 @@ typedef int32_t StrNumber;
 
 typedef int32_t Scaled;
 
+#define EMPTY_STRING (65536 + 1)
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -167,6 +169,8 @@ B32x2 prim(uintptr_t idx);
 void set_prim(uintptr_t idx, B32x2 val);
 
 B32x2 *prim_ptr(uintptr_t idx);
+
+StrNumber maketexstring(const char *str);
 
 char *gettexstring(StrNumber s);
 

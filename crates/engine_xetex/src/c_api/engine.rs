@@ -1,10 +1,12 @@
 use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
+use std::ffi::CStr;
 use std::ptr;
 
 mod memory;
 
+use crate::c_api::pool::{rs_make_string, StringPool, EMPTY_STRING};
 pub use memory::*;
 
 pub const NULL_CS: usize = 0x220001;
@@ -291,6 +293,27 @@ pub extern "C" fn prim_ptr(idx: usize) -> *mut B32x2 {
     ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.prim[idx]))
 }
 
+fn checkpool_pointer(pool: &mut StringPool, pool_ptr: usize, len: usize) {
+    if pool_ptr + len >= pool.pool_size {
+        panic!("string pool overflow [{} bytes]", pool.pool_size);
+    }
+}
+
+pub fn rs_maketexstring(globals: &mut Globals<'_, '_>, str: &str) -> StrNumber {
+    if str.len() == 0 {
+        return EMPTY_STRING;
+    }
+
+    checkpool_pointer(globals.strings, globals.strings.pool_ptr, str.len());
+
+    for b in str.encode_utf16() {
+        globals.strings.str_pool[globals.strings.pool_ptr] = b;
+        globals.strings.pool_ptr += 1;
+    }
+
+    rs_make_string(globals.strings)
+}
+
 pub fn rs_gettexstring(globals: &mut Globals<'_, '_>, s: StrNumber) -> String {
     if s < 0x10000 {
         return String::new();
@@ -299,6 +322,15 @@ pub fn rs_gettexstring(globals: &mut Globals<'_, '_>, s: StrNumber) -> String {
     let str = globals.strings.str(s - 0x10000);
 
     String::from_utf16_lossy(str)
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
+    if str.is_null() {
+        return EMPTY_STRING;
+    }
+    let str = unsafe { CStr::from_ptr(str) }.to_string_lossy();
+    Globals::with(|globals| rs_maketexstring(globals, &str))
 }
 
 #[no_mangle]
