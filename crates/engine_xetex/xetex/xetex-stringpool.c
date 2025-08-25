@@ -88,21 +88,3 @@ str_eq_buf(str_number s, int32_t k)
 
     return true;
 }
-
-str_number
-slow_make_string(void)
-{
-    str_number s;
-    str_number t;
-
-    t = make_string();
-    s = search_string(t);
-
-    if (s > 0) {
-        set_str_ptr(str_ptr()-1);
-        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
-        return s;
-    }
-
-    return t;
-}

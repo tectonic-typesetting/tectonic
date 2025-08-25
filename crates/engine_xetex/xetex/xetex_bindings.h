@@ -449,6 +449,8 @@ void set_max_strings(uintptr_t val);
 
 StrNumber make_string(void);
 
+StrNumber slow_make_string(void);
+
 uintptr_t length(StrNumber s);
 
 bool str_eq_str(StrNumber s1, StrNumber s2);
