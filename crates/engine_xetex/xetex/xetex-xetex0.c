@@ -10607,25 +10607,25 @@ begin_name(void)
 {
     set_area_delimiter(0);
     set_ext_delimiter(0);
-    quoted_filename = false;
-    file_name_quote_char = 0;
+    set_quoted_filename(false);
+    set_file_name_quote_char(0);
 }
 
 
 bool
 more_name(UTF16_code c)
 {
-    if (stop_at_space() && file_name_quote_char == 0 && c == ' ' )
+    if (stop_at_space() && file_name_quote_char() == 0 && c == ' ' )
         return false;
 
-    if (stop_at_space() && file_name_quote_char != 0 && c == file_name_quote_char) {
-        file_name_quote_char = 0;
+    if (stop_at_space() && file_name_quote_char() != 0 && c == file_name_quote_char()) {
+        set_file_name_quote_char(0);
         return true;
     }
 
-    if (stop_at_space() && file_name_quote_char == 0 && (c == '"'  || c == '\'' )) {
-        file_name_quote_char = c;
-        quoted_filename = true;
+    if (stop_at_space() && file_name_quote_char() == 0 && (c == '"'  || c == '\'' )) {
+        set_file_name_quote_char(c);
+        set_quoted_filename(true);
         return true;
     }
 
@@ -11353,11 +11353,11 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         error_here_with_diagnostic("Font ");
         sprint_cs(u);
         print_char('=');
-        if (file_name_quote_char != 0)
-            print_char(file_name_quote_char);
+        if (file_name_quote_char() != 0)
+            print_char(file_name_quote_char());
         print_file_name(nom, aire, cur_ext());
-        if (file_name_quote_char != 0)
-            print_char(file_name_quote_char);
+        if (file_name_quote_char() != 0)
+            print_char(file_name_quote_char());
         if (s >= 0) {
             print_cstr(" at ");
             print_scaled(s);
@@ -11568,7 +11568,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         end_diagnostic(false);
     }
 
-    if (quoted_filename) {
+    if (quoted_filename()) {
         g = load_native_font(u, nom, aire, s);
         if (g != FONT_BASE)
             goto done;
@@ -11583,7 +11583,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
 
     tfm_file = tt_xetex_open_input (TTBC_FILE_FORMAT_TFM);
     if (tfm_file == INVALID_HANDLE) {
-        if (!quoted_filename) {
+        if (!quoted_filename()) {
             g = load_native_font(u, nom, aire, s);
             if (g != FONT_BASE)
                 goto done;
@@ -11936,11 +11936,11 @@ bad_tfm:
         error_here_with_diagnostic("Font ");
         sprint_cs(u);
         print_char('=');
-        if (file_name_quote_char != 0)
-            print_char(file_name_quote_char);
+        if (file_name_quote_char() != 0)
+            print_char(file_name_quote_char());
         print_file_name(nom, aire, cur_ext());
-        if (file_name_quote_char != 0)
-            print_char(file_name_quote_char);
+        if (file_name_quote_char() != 0)
+            print_char(file_name_quote_char());
         if (s >= 0) {
             print_cstr(" at ");
             print_scaled(s);

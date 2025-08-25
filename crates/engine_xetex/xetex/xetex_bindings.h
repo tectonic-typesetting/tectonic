@@ -188,6 +188,14 @@ bool stop_at_space(void);
 
 void set_stop_at_space(bool val);
 
+uint16_t file_name_quote_char(void);
+
+void set_file_name_quote_char(uint16_t val);
+
+bool quoted_filename(void);
+
+void set_quoted_filename(bool val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
