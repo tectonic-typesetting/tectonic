@@ -449,6 +449,12 @@ void set_max_strings(uintptr_t val);
 
 StrNumber make_string(void);
 
+uintptr_t length(StrNumber s);
+
+bool str_eq_str(StrNumber s1, StrNumber s2);
+
+StrNumber search_string(StrNumber search);
+
 bool arith_error(void);
 
 void set_arith_error(bool val);

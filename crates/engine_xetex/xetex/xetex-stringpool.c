@@ -40,22 +40,6 @@ load_pool_strings(int32_t spare_size)
     return g;
 }
 
-
-int32_t
-length(str_number s)
-{
-    if (s >= 65536L)
-        return str_start(s + 1 - 65536L) - str_start(s - 65536L);
-    if (s >= 32 && s < 127)
-        return 1;
-    if (s <= 127)
-        return 3;
-    if (s < 256)
-        return 4;
-    return 8;
-}
-
-
 void
 append_str(str_number s)
 {
@@ -104,78 +88,6 @@ str_eq_buf(str_number s, int32_t k)
 
     return true;
 }
-
-
-bool
-str_eq_str(str_number s, str_number t)
-{
-    pool_pointer j, k;
-
-    if (length(s) != length(t))
-        return false;
-
-    if (length(s) == 1) {
-        if (s < 65536L) {
-            if (t < 65536L) {
-                if (s != t)
-                    return false;
-            } else {
-                if (s != str_pool(str_start(t - 65536L)))
-                    return false;
-            }
-        } else {
-            if (t < 65536L) {
-                if (str_pool(str_start(s - 65536L)) != t)
-                    return false;
-            } else {
-                if (str_pool(str_start(s - 65536L)) != str_pool(str_start(t - 65536L)))
-                    return false;
-            }
-        }
-    } else {
-        j = str_start(s - 65536L);
-        k = str_start(t - 65536L);
-
-        while (j < str_start(s + 1 - 65536L)) {
-            if (str_pool(j) != str_pool(k))
-                return false;
-
-            j++;
-            k++;
-        }
-    }
-
-    return true;
-}
-
-
-str_number
-search_string(str_number search)
-{
-    str_number s;
-    int32_t len;
-
-    len = length(search);
-
-    if (len == 0) {
-        return EMPTY_STRING;
-    } else {
-        s = search - 1;
-
-        while (s > 65535L) {
-            if (length(s) == len) {
-                if (str_eq_str(s, search)) {
-                    return s;
-                }
-            }
-
-            s--;
-        }
-    }
-
-    return 0;
-}
-
 
 str_number
 slow_make_string(void)
