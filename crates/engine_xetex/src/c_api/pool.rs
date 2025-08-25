@@ -154,9 +154,27 @@ pub fn rs_make_string(pool: &mut StringPool) -> StrNumber {
     (pool.str_ptr - 1) as StrNumber
 }
 
+pub fn rs_slow_make_string(pool: &mut StringPool) -> StrNumber {
+    let t = rs_make_string(pool);
+    let s = rs_search_string(pool, t);
+
+    if s > 0 {
+        pool.str_ptr -= 1;
+        pool.pool_ptr = pool.str_start[pool.str_ptr - TOO_BIG_CHAR] as usize;
+        s
+    } else {
+        t
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn make_string() -> StrNumber {
     STRING_POOL.with_borrow_mut(rs_make_string)
+}
+
+#[no_mangle]
+pub extern "C" fn slow_make_string() -> StrNumber {
+    STRING_POOL.with_borrow_mut(|pool| rs_slow_make_string(pool))
 }
 
 pub fn rs_str_length(pool: &StringPool, s: StrNumber) -> usize {
