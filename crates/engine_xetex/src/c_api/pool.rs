@@ -158,3 +158,72 @@ pub fn rs_make_string(pool: &mut StringPool) -> StrNumber {
 pub extern "C" fn make_string() -> StrNumber {
     STRING_POOL.with_borrow_mut(rs_make_string)
 }
+
+pub fn rs_str_length(pool: &StringPool, s: StrNumber) -> usize {
+    if s >= 0x10000 {
+        pool.str(s - 0x10000).len()
+    } else if (32..127).contains(&s) {
+        1
+    } else if s <= 127 {
+        3
+    } else if s < 256 {
+        4
+    } else {
+        8
+    }
+}
+
+pub fn rs_str_eq_str(pool: &StringPool, s1: StrNumber, s2: StrNumber) -> bool {
+    let s1_len = rs_str_length(pool, s1);
+    let s2_len = rs_str_length(pool, s2);
+    if s1_len != s2_len {
+        return false;
+    }
+
+    if s1_len == 1 {
+        let c1 = if s1 < 0x10000 {
+            s1 as u16
+        } else {
+            pool.str_pool[pool.str_start[(s1 - 0x10000) as usize] as usize]
+        };
+        let c2 = if s2 < 0x10000 {
+            s2 as u16
+        } else {
+            pool.str_pool[pool.str_start[(s2 - 0x10000) as usize] as usize]
+        };
+        c1 == c2
+    } else {
+        pool.str(s1 - 0x10000) == pool.str(s2 - 0x10000)
+    }
+}
+
+pub fn rs_search_string(pool: &StringPool, search: StrNumber) -> StrNumber {
+    let len = rs_str_length(pool, search);
+    if len == 0 {
+        EMPTY_STRING
+    } else {
+        let mut s = search - 1;
+        while s > 0x10000 {
+            if rs_str_eq_str(pool, s, search) {
+                return s;
+            }
+            s -= 1;
+        }
+        0
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn length(s: StrNumber) -> usize {
+    STRING_POOL.with_borrow(|pool| rs_str_length(pool, s))
+}
+
+#[no_mangle]
+pub extern "C" fn str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
+    STRING_POOL.with_borrow(|pool| rs_str_eq_str(pool, s1, s2))
+}
+
+#[no_mangle]
+pub extern "C" fn search_string(search: StrNumber) -> StrNumber {
+    STRING_POOL.with_borrow(|pool| rs_search_string(pool, search))
+}
