@@ -1,0 +1,398 @@
+use crate::c_api::globals::Globals;
+use crate::ty::StrNumber;
+use std::cell::RefCell;
+use std::ffi::{CStr, CString};
+use std::ptr;
+use std::string::FromUtf16Error;
+
+mod memory;
+
+use crate::c_api::pool::{rs_make_string, StringPool, EMPTY_STRING};
+pub use memory::*;
+
+pub const NULL_CS: usize = 0x220001;
+pub const PRIM_SIZE: usize = 2100;
+pub const UNDEFINED_CONTROL_SEQUENCE: usize = 0x226603;
+pub const FROZEN_NULL_FONT: usize = 0x2242da;
+pub const DIMEN_VAL_LIMIT: usize = 128;
+
+pub const TEXT_SIZE: usize = 0;
+pub const SCRIPT_SIZE: usize = 256;
+pub const SCRIPT_SCRIPT_SIZE: usize = 512;
+
+thread_local! {
+    pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
+}
+
+pub struct EngineCtx {
+    pub(crate) selector: Selector,
+    pub(crate) tally: i32,
+    pub(crate) error_line: i32,
+    pub(crate) trick_count: i32,
+    pub(crate) trick_buf: [u16; 256],
+    pub(crate) eqtb_top: i32,
+    pub(crate) name_of_file: Option<CString>,
+
+    pub(crate) eqtb: Vec<MemoryWord>,
+    pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
+    /// An arena of TeX nodes
+    pub(crate) mem: Vec<MemoryWord>,
+}
+
+struct NodeError {
+    ty: u16,
+    subty: u16,
+}
+
+impl EngineCtx {
+    fn new() -> EngineCtx {
+        EngineCtx {
+            selector: Selector::File(0),
+            tally: 0,
+            error_line: 0,
+            trick_count: 0,
+            trick_buf: [0; 256],
+            eqtb_top: 0,
+            name_of_file: None,
+
+            eqtb: Vec::new(),
+            prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
+            mem: Vec::new(),
+        }
+    }
+
+    pub fn raw_mem(&self, idx: usize) -> MemoryWord {
+        self.mem[idx]
+    }
+
+    pub fn try_node<T: ?Sized + Node>(&self, idx: usize) -> Result<&T, NodeError> {
+        let ptr = self.mem.as_ptr().wrapping_add(idx);
+        let base = unsafe { &*NodeBase::from_ptr(ptr) };
+
+        if T::ty() != base.ty() || T::subty().is_some_and(|subty| subty != base.subty()) {
+            return Err(NodeError {
+                ty: base.ty(),
+                subty: base.subty(),
+            });
+        }
+
+        let ptr = unsafe { T::from_ptr(ptr) };
+        Ok(unsafe { &*ptr })
+    }
+
+    pub fn base_node(&self, idx: usize) -> &NodeBase {
+        let ptr = self.mem.as_ptr().wrapping_add(idx);
+        let ptr = NodeBase::from_ptr(ptr);
+        unsafe { &*ptr }
+    }
+
+    pub fn node<T: ?Sized + Node>(&self, idx: usize) -> &T {
+        match self.try_node::<T>(idx) {
+            Ok(node) => node,
+            Err(e) => {
+                panic!(
+                    "Invalid node type. expected {}:{:?}, found {}:{}",
+                    T::ty(),
+                    T::subty(),
+                    e.ty,
+                    e.subty,
+                );
+            }
+        }
+    }
+
+    pub fn int_par(&self, par: IntPar) -> i32 {
+        unsafe { self.eqtb[INT_BASE + par as usize].b32.s1 }
+    }
+
+    pub fn set_int_par(&mut self, par: IntPar, val: i32) {
+        self.eqtb[INT_BASE + par as usize].b32.s1 = val
+    }
+
+    pub fn cat_code(&self, p: usize) -> Result<CatCode, i32> {
+        let val = unsafe { self.eqtb[CAT_CODE_BASE + p].b32.s1 };
+        CatCode::try_from(val)
+    }
+}
+
+#[derive(Copy, Clone, PartialEq)]
+pub enum Selector {
+    File(u8),
+    NoPrint,
+    TermOnly,
+    LogOnly,
+    TermAndLog,
+    Pseudo,
+    NewString,
+}
+
+impl From<Selector> for u32 {
+    fn from(value: Selector) -> Self {
+        match value {
+            Selector::File(val) => val as u32,
+            Selector::NoPrint => 16,
+            Selector::TermOnly => 17,
+            Selector::LogOnly => 18,
+            Selector::TermAndLog => 19,
+            Selector::Pseudo => 20,
+            Selector::NewString => 21,
+        }
+    }
+}
+
+impl TryFrom<u32> for Selector {
+    type Error = ();
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        match value {
+            val @ 0..16 => Ok(Selector::File(val as u8)),
+            16 => Ok(Selector::NoPrint),
+            17 => Ok(Selector::TermOnly),
+            18 => Ok(Selector::LogOnly),
+            19 => Ok(Selector::TermAndLog),
+            20 => Ok(Selector::Pseudo),
+            21 => Ok(Selector::NewString),
+            _ => Err(()),
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn selector() -> u32 {
+    ENGINE_CTX.with_borrow(|engine| engine.selector.into())
+}
+
+#[no_mangle]
+pub extern "C" fn set_selector(val: u32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.selector = Selector::try_from(val).unwrap());
+}
+
+#[no_mangle]
+pub extern "C" fn tally() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.tally)
+}
+
+#[no_mangle]
+pub extern "C" fn set_tally(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.tally = val)
+}
+
+#[no_mangle]
+pub extern "C" fn error_line() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.error_line)
+}
+
+#[no_mangle]
+pub extern "C" fn set_error_line(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.error_line = val)
+}
+
+#[no_mangle]
+pub extern "C" fn trick_count() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.trick_count)
+}
+
+#[no_mangle]
+pub extern "C" fn set_trick_count(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.trick_count = val)
+}
+
+#[no_mangle]
+pub extern "C" fn trick_buf(idx: usize) -> u16 {
+    ENGINE_CTX.with_borrow(|engine| engine.trick_buf[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_trick_buf(idx: usize, val: u16) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.trick_buf[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn eqtb_top() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.eqtb_top)
+}
+
+#[no_mangle]
+pub extern "C" fn set_eqtb_top(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb_top = val)
+}
+
+#[no_mangle]
+pub extern "C" fn name_length() -> usize {
+    ENGINE_CTX.with_borrow(|engine| {
+        engine
+            .name_of_file
+            .as_ref()
+            .map(|s| s.count_bytes())
+            .unwrap_or(0)
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn name_of_file() -> *const libc::c_char {
+    ENGINE_CTX.with_borrow(|engine| {
+        engine
+            .name_of_file
+            .as_ref()
+            .map(|s| s.as_ptr())
+            .unwrap_or(ptr::null())
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn set_name_of_file(val: *const libc::c_char) {
+    let s = if val.is_null() {
+        None
+    } else {
+        Some(unsafe { CStr::from_ptr(val) })
+    };
+    ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file = s.map(CStr::to_owned))
+}
+
+#[no_mangle]
+pub extern "C" fn eqtb(idx: usize) -> MemoryWord {
+    ENGINE_CTX.with_borrow(|engine| engine.eqtb[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_eqtb(idx: usize, val: MemoryWord) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn eqtb_ptr(idx: usize) -> *mut MemoryWord {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.eqtb[idx]))
+}
+
+#[no_mangle]
+pub extern "C" fn resize_eqtb(len: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| {
+        engine.eqtb.resize(
+            len,
+            MemoryWord {
+                ptr: ptr::null_mut(),
+            },
+        )
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn clear_eqtb() {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb.clear())
+}
+
+#[no_mangle]
+pub extern "C" fn mem(idx: usize) -> MemoryWord {
+    ENGINE_CTX.with_borrow(|engine| engine.mem[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_mem(idx: usize, val: MemoryWord) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.mem[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn mem_ptr(idx: usize) -> *mut MemoryWord {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.mem[idx]))
+}
+
+#[no_mangle]
+pub extern "C" fn resize_mem(len: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| {
+        engine.mem.resize(
+            len,
+            MemoryWord {
+                ptr: ptr::null_mut(),
+            },
+        )
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn clear_mem() {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.mem.clear())
+}
+
+#[no_mangle]
+pub extern "C" fn prim(idx: usize) -> B32x2 {
+    ENGINE_CTX.with_borrow(|engine| engine.prim[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_prim(idx: usize, val: B32x2) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.prim[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn prim_ptr(idx: usize) -> *mut B32x2 {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.prim[idx]))
+}
+
+fn checkpool_pointer(pool: &mut StringPool, pool_ptr: usize, len: usize) {
+    if pool_ptr + len >= pool.pool_size {
+        panic!("string pool overflow [{} bytes]", pool.pool_size);
+    }
+}
+
+pub fn rs_maketexstring(globals: &mut Globals<'_, '_>, str: &str) -> StrNumber {
+    if str.len() == 0 {
+        return EMPTY_STRING;
+    }
+
+    checkpool_pointer(globals.strings, globals.strings.pool_ptr, str.len());
+
+    for b in str.encode_utf16() {
+        globals.strings.str_pool[globals.strings.pool_ptr] = b;
+        globals.strings.pool_ptr += 1;
+    }
+
+    rs_make_string(globals.strings)
+}
+
+pub fn rs_gettexstring(globals: &mut Globals<'_, '_>, s: StrNumber) -> String {
+    if s < 0x10000 {
+        return String::new();
+    }
+
+    let str = globals.strings.str(s - 0x10000);
+
+    String::from_utf16_lossy(str)
+}
+
+pub fn rs_pack_file_name(globals: &mut Globals<'_, '_>, n: StrNumber, a: StrNumber, e: StrNumber) {
+    let n = globals.strings.tex_str(n);
+    let a = globals.strings.tex_str(a);
+    let e = globals.strings.tex_str(e);
+    let mut buffer = String::with_capacity(n.len() + a.len() + e.len());
+
+    let iter = a.iter().chain(n).chain(e).copied();
+    for c in char::decode_utf16(iter) {
+        let c = c.unwrap_or(char::REPLACEMENT_CHARACTER);
+        buffer.push(c);
+    }
+
+    globals.engine.name_of_file = Some(CString::new(buffer).unwrap());
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
+    if str.is_null() {
+        return EMPTY_STRING;
+    }
+    let str = unsafe { CStr::from_ptr(str) }.to_string_lossy();
+    Globals::with(|globals| rs_maketexstring(globals, &str))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn gettexstring(s: StrNumber) -> *mut libc::c_char {
+    let str = Globals::with(|globals| rs_gettexstring(globals, s));
+    let out = unsafe { libc::malloc(str.len() + 1) }.cast::<libc::c_char>();
+    unsafe { ptr::copy_nonoverlapping(str.as_ptr().cast(), out, str.len()) };
+    unsafe { out.add(str.len()).write(0) };
+    out
+}
+
+#[no_mangle]
+pub extern "C" fn pack_file_name(n: StrNumber, a: StrNumber, e: StrNumber) {
+    Globals::with(|globals| rs_pack_file_name(globals, n, a, e))
+}
