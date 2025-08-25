@@ -19,8 +19,6 @@
 /* All the following variables are declared in xetex-xetexd.h */
 bool shell_escape_enabled = false;
 int32_t bad;
-UTF16_code *name_of_file16;
-int32_t name_length16;
 UnicodeScalar *buffer;
 int32_t first;
 int32_t last;

@@ -150,6 +150,12 @@ const char *name_of_file(void);
 
 void set_name_of_file(const char *val);
 
+uintptr_t name_length16(void);
+
+const uint16_t *name_of_file16(void);
+
+void set_name_of_file16(const uint16_t *val, uintptr_t len);
+
 StrNumber cur_name(void);
 
 void set_cur_name(StrNumber val);

@@ -483,14 +483,10 @@ make_utf16_name(void)
 {
     unsigned char* s = (unsigned char *) name_of_file();
     uint32_t rval;
-    uint16_t* t;
-    static int name16len = 0;
-    if (name16len <= name_length()) {
-        free(name_of_file16);
-        name16len = name_length() + 10;
-        name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
-    }
-    t = name_of_file16;
+
+    int name16len = name_length() + 10;
+    uint16_t* buffer = xcalloc(name16len, sizeof(uint16_t));
+    uint16_t* t = buffer;
 
     while (s < (unsigned char *) name_of_file() + name_length()) {
         uint16_t extraBytes;
@@ -513,7 +509,8 @@ make_utf16_name(void)
             *(t++) = rval;
         }
     }
-    name_length16 = t - name_of_file16;
+    set_name_of_file16(buffer, t - buffer);
+    free(buffer);
 }
 
 
@@ -544,7 +541,7 @@ open_or_close_in(void)
             begin_name();
             stop_at_space = false;
             k = 0;
-            while ((k < name_length16) && (more_name(name_of_file16[k])))
+            while ((k < name_length16()) && (more_name(name_of_file16()[k])))
                 k++;
             stop_at_space = true;
             end_name();

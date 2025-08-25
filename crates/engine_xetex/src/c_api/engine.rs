@@ -2,7 +2,7 @@ use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
-use std::ptr;
+use std::{ptr, slice};
 
 mod memory;
 
@@ -31,6 +31,7 @@ pub struct EngineCtx {
     pub(crate) trick_buf: [u16; 256],
     pub(crate) eqtb_top: i32,
     pub(crate) name_of_file: Option<CString>,
+    pub(crate) name_of_file_utf16: Option<Vec<u16>>,
     pub(crate) cur_name: StrNumber,
     pub(crate) cur_area: StrNumber,
     pub(crate) cur_ext: StrNumber,
@@ -57,6 +58,7 @@ impl EngineCtx {
             trick_buf: [0; 256],
             eqtb_top: 0,
             name_of_file: None,
+            name_of_file_utf16: None,
             cur_area: 0,
             cur_ext: 0,
             cur_name: 0,
@@ -254,6 +256,38 @@ pub extern "C" fn set_name_of_file(val: *const libc::c_char) {
         Some(unsafe { CStr::from_ptr(val) })
     };
     ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file = s.map(CStr::to_owned))
+}
+
+#[no_mangle]
+pub extern "C" fn name_length16() -> usize {
+    ENGINE_CTX.with_borrow(|engine| {
+        engine
+            .name_of_file_utf16
+            .as_ref()
+            .map(|s| s.len())
+            .unwrap_or(0)
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn name_of_file16() -> *const u16 {
+    ENGINE_CTX.with_borrow(|engine| {
+        engine
+            .name_of_file_utf16
+            .as_ref()
+            .map(|s| s.as_ptr())
+            .unwrap_or(ptr::null())
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn set_name_of_file16(val: *const u16, len: usize) {
+    let s = if val.is_null() {
+        None
+    } else {
+        Some(unsafe { slice::from_raw_parts(val, len) })
+    };
+    ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file_utf16 = s.map(<[u16]>::to_owned))
 }
 
 #[no_mangle]

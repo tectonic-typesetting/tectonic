@@ -10722,8 +10722,8 @@ make_name_string(void)
 
     make_utf16_name();
 
-    for (k = 0; k < name_length16; k++) {
-        set_str_pool(pool_ptr(), name_of_file16[k]);
+    for (k = 0; k < name_length16(); k++) {
+        set_str_pool(pool_ptr(), name_of_file16()[k]);
         set_pool_ptr(pool_ptr()+1);
     }
 
@@ -10739,7 +10739,7 @@ make_name_string(void)
     stop_at_space = false;
     k = 0;
 
-    while (k < name_length16 && more_name(name_of_file16[k]))
+    while (k < name_length16() && more_name(name_of_file16()[k]))
         k++;
 
     stop_at_space = save_stop_at_space;
@@ -10952,7 +10952,7 @@ start_input(const char *primary_input_name)
     begin_name();
     stop_at_space = false;
     int k = 0;
-    while (k < name_length16 && more_name(name_of_file16[k]))
+    while (k < name_length16() && more_name(name_of_file16()[k]))
         k++;
     stop_at_space = true;
     end_name();
