@@ -32,6 +32,7 @@ pub struct EngineCtx {
     pub(crate) eqtb_top: i32,
     pub(crate) name_of_file: Option<CString>,
     pub(crate) name_of_file_utf16: Option<Vec<u16>>,
+    pub(crate) file_name_quote_char: u16,
     pub(crate) cur_name: StrNumber,
     pub(crate) cur_area: StrNumber,
     pub(crate) cur_ext: StrNumber,
@@ -40,6 +41,7 @@ pub struct EngineCtx {
     pub(crate) ext_delimiter: usize,
     pub(crate) name_in_progress: bool,
     pub(crate) stop_at_space: bool,
+    pub(crate) quoted_filename: bool,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -63,6 +65,7 @@ impl EngineCtx {
             eqtb_top: 0,
             name_of_file: None,
             name_of_file_utf16: None,
+            file_name_quote_char: 0,
             cur_area: 0,
             cur_ext: 0,
             cur_name: 0,
@@ -71,6 +74,7 @@ impl EngineCtx {
             ext_delimiter: 0,
             name_in_progress: false,
             stop_at_space: false,
+            quoted_filename: false,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -376,6 +380,26 @@ pub extern "C" fn stop_at_space() -> bool {
 #[no_mangle]
 pub extern "C" fn set_stop_at_space(val: bool) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.stop_at_space = val)
+}
+
+#[no_mangle]
+pub extern "C" fn file_name_quote_char() -> u16 {
+    ENGINE_CTX.with_borrow(|engine| engine.file_name_quote_char)
+}
+
+#[no_mangle]
+pub extern "C" fn set_file_name_quote_char(val: u16) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.file_name_quote_char = val)
+}
+
+#[no_mangle]
+pub extern "C" fn quoted_filename() -> bool {
+    ENGINE_CTX.with_borrow(|engine| engine.quoted_filename)
+}
+
+#[no_mangle]
+pub extern "C" fn set_quoted_filename(val: bool) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.quoted_filename = val)
 }
 
 #[no_mangle]
