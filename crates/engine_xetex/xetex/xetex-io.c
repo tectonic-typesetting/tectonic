@@ -479,42 +479,6 @@ get_uni_c(UFILE* f)
 
 
 void
-make_utf16_name(void)
-{
-    unsigned char* s = (unsigned char *) name_of_file();
-    uint32_t rval;
-
-    int name16len = name_length() + 10;
-    uint16_t* buffer = xcalloc(name16len, sizeof(uint16_t));
-    uint16_t* t = buffer;
-
-    while (s < (unsigned char *) name_of_file() + name_length()) {
-        uint16_t extraBytes;
-        rval = *(s++);
-        extraBytes = bytesFromUTF8[rval];
-        switch (extraBytes) {   /* note: code falls through cases! */
-            case 5: rval <<= 6; if (*s) rval += *(s++);
-            case 4: rval <<= 6; if (*s) rval += *(s++);
-            case 3: rval <<= 6; if (*s) rval += *(s++);
-            case 2: rval <<= 6; if (*s) rval += *(s++);
-            case 1: rval <<= 6; if (*s) rval += *(s++);
-            case 0: ;
-        };
-        rval -= offsetsFromUTF8[extraBytes];
-        if (rval > 0xffff) {
-            rval -= 0x10000;
-            *(t++) = 0xd800 + rval / 0x0400;
-            *(t++) = 0xdc00 + rval % 0x0400;
-        } else {
-            *(t++) = rval;
-        }
-    }
-    set_name_of_file16(buffer, t - buffer);
-    free(buffer);
-}
-
-
-void
 open_or_close_in(void)
 {
     unsigned char c, n;

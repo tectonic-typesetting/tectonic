@@ -467,6 +467,14 @@ pub fn rs_pack_job_name(globals: &mut Globals<'_, '_>, s: &str) {
     );
 }
 
+pub fn rs_make_utf16_name(engine: &mut EngineCtx) {
+    engine.name_of_file_utf16 = engine
+        .name_of_file
+        .as_ref()
+        .and_then(|name| name.to_str().ok())
+        .map(|s| s.encode_utf16().collect());
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
     if str.is_null() {
@@ -494,4 +502,9 @@ pub extern "C" fn pack_file_name(n: StrNumber, a: StrNumber, e: StrNumber) {
 pub extern "C" fn pack_job_name(s: *const libc::c_char) {
     let s = unsafe { CStr::from_ptr(s) }.to_str().unwrap();
     Globals::with(|globals| rs_pack_job_name(globals, s))
+}
+
+#[no_mangle]
+pub extern "C" fn make_utf16_name() {
+    ENGINE_CTX.with_borrow_mut(|engine| rs_make_utf16_name(engine))
 }

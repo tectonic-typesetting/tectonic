@@ -206,6 +206,8 @@ void pack_file_name(StrNumber n, StrNumber a, StrNumber e);
 
 void pack_job_name(const char *s);
 
+void make_utf16_name(void);
+
 void resize_hash(uintptr_t len);
 
 B32x2 hash(uintptr_t idx);
