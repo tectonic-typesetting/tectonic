@@ -36,6 +36,10 @@ pub struct EngineCtx {
     pub(crate) cur_area: StrNumber,
     pub(crate) cur_ext: StrNumber,
     pub(crate) job_name: StrNumber,
+    pub(crate) area_delimiter: usize,
+    pub(crate) ext_delimiter: usize,
+    pub(crate) name_in_progress: bool,
+    pub(crate) stop_at_space: bool,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -63,6 +67,10 @@ impl EngineCtx {
             cur_ext: 0,
             cur_name: 0,
             job_name: 0,
+            area_delimiter: 0,
+            ext_delimiter: 0,
+            name_in_progress: false,
+            stop_at_space: false,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -328,6 +336,46 @@ pub extern "C" fn job_name() -> StrNumber {
 #[no_mangle]
 pub extern "C" fn set_job_name(val: StrNumber) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.job_name = val)
+}
+
+#[no_mangle]
+pub extern "C" fn area_delimiter() -> usize {
+    ENGINE_CTX.with_borrow(|engine| engine.area_delimiter)
+}
+
+#[no_mangle]
+pub extern "C" fn set_area_delimiter(val: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.area_delimiter = val)
+}
+
+#[no_mangle]
+pub extern "C" fn ext_delimiter() -> usize {
+    ENGINE_CTX.with_borrow(|engine| engine.ext_delimiter)
+}
+
+#[no_mangle]
+pub extern "C" fn set_ext_delimiter(val: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.ext_delimiter = val)
+}
+
+#[no_mangle]
+pub extern "C" fn name_in_progress() -> bool {
+    ENGINE_CTX.with_borrow(|engine| engine.name_in_progress)
+}
+
+#[no_mangle]
+pub extern "C" fn set_name_in_progress(val: bool) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.name_in_progress = val)
+}
+
+#[no_mangle]
+pub extern "C" fn stop_at_space() -> bool {
+    ENGINE_CTX.with_borrow(|engine| engine.stop_at_space)
+}
+
+#[no_mangle]
+pub extern "C" fn set_stop_at_space(val: bool) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.stop_at_space = val)
 }
 
 #[no_mangle]

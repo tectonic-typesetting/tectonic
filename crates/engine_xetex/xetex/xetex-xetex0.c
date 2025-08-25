@@ -6399,7 +6399,7 @@ reswitch:
                 force_eof = true; /*1537:*/
             else if (cur_chr == 2) /* \scantokens */
                 pseudo_start();
-            else if (name_in_progress)
+            else if (name_in_progress())
                 insert_relax();
             else /* \input */
                 start_input(NULL);
@@ -10605,8 +10605,8 @@ common_ending:
 void
 begin_name(void)
 {
-    area_delimiter = 0;
-    ext_delimiter = 0;
+    set_area_delimiter(0);
+    set_ext_delimiter(0);
     quoted_filename = false;
     file_name_quote_char = 0;
 }
@@ -10615,15 +10615,15 @@ begin_name(void)
 bool
 more_name(UTF16_code c)
 {
-    if (stop_at_space && file_name_quote_char == 0 && c == ' ' )
+    if (stop_at_space() && file_name_quote_char == 0 && c == ' ' )
         return false;
 
-    if (stop_at_space && file_name_quote_char != 0 && c == file_name_quote_char) {
+    if (stop_at_space() && file_name_quote_char != 0 && c == file_name_quote_char) {
         file_name_quote_char = 0;
         return true;
     }
 
-    if (stop_at_space && file_name_quote_char == 0 && (c == '"'  || c == '\'' )) {
+    if (stop_at_space() && file_name_quote_char == 0 && (c == '"'  || c == '\'' )) {
         file_name_quote_char = c;
         quoted_filename = true;
         return true;
@@ -10636,10 +10636,10 @@ more_name(UTF16_code c)
     set_pool_ptr(pool_ptr()+1);
 
     if (IS_DIR_SEP(c)) {
-        area_delimiter = cur_length();
-        ext_delimiter = 0;
+        set_area_delimiter(cur_length());
+        set_ext_delimiter(0);
     } else if (c == '.' ) {
-        ext_delimiter = cur_length();
+        set_ext_delimiter(cur_length());
     }
 
     return true;
@@ -10660,11 +10660,11 @@ end_name(void)
      * string `cur_area`. If there was already a string in the stringpool for
      * the area, reuse it. */
 
-    if (area_delimiter == 0) {
+    if (area_delimiter() == 0) {
         set_cur_area(EMPTY_STRING);
     } else {
         set_cur_area(str_ptr());
-        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + area_delimiter);
+        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + area_delimiter());
         set_str_ptr(str_ptr()+1);
         temp_str = search_string(cur_area());
 
@@ -10673,9 +10673,9 @@ end_name(void)
             set_str_ptr(str_ptr()-1);
 
             for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
-                set_str_pool(j - area_delimiter, str_pool(j));
+                set_str_pool(j - area_delimiter(), str_pool(j));
 
-            set_pool_ptr(pool_ptr() - area_delimiter);
+            set_pool_ptr(pool_ptr() - area_delimiter());
         }
     }
 
@@ -10683,12 +10683,12 @@ end_name(void)
      * extension '.' delimiter, which we use to construct the stringpool
      * strings `cur_ext` and `cur_name`. */
 
-    if (ext_delimiter == 0) {
+    if (ext_delimiter() == 0) {
         set_cur_ext(EMPTY_STRING);
         set_cur_name(slow_make_string());
     } else {
         set_cur_name(str_ptr());
-        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + ext_delimiter - area_delimiter - 1);
+        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + ext_delimiter() - area_delimiter() - 1);
         set_str_ptr(str_ptr()+1);
 
         set_cur_ext(make_string());
@@ -10700,9 +10700,9 @@ end_name(void)
             set_str_ptr(str_ptr()-1);
 
             for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
-                set_str_pool(j - ext_delimiter + area_delimiter + 1, str_pool(j));
+                set_str_pool(j - ext_delimiter() + area_delimiter() + 1, str_pool(j));
 
-            set_pool_ptr(pool_ptr() - ext_delimiter + area_delimiter + 1);
+            set_pool_ptr(pool_ptr() - ext_delimiter() + area_delimiter() + 1);
         }
 
         set_cur_ext(slow_make_string());
@@ -10730,23 +10730,23 @@ make_name_string(void)
 
     str_number Result = make_string();
 
-    save_area_delimiter = area_delimiter;
-    save_ext_delimiter = ext_delimiter;
-    save_name_in_progress = name_in_progress;
-    save_stop_at_space = stop_at_space;
-    name_in_progress = true;
+    save_area_delimiter = area_delimiter();
+    save_ext_delimiter = ext_delimiter();
+    save_name_in_progress = name_in_progress();
+    save_stop_at_space = stop_at_space();
+    set_name_in_progress(true);
     begin_name();
-    stop_at_space = false;
+    set_stop_at_space(false);
     k = 0;
 
     while (k < name_length16() && more_name(name_of_file16()[k]))
         k++;
 
-    stop_at_space = save_stop_at_space;
+    set_stop_at_space(save_stop_at_space);
     end_name();
-    name_in_progress = save_name_in_progress;
-    area_delimiter = save_area_delimiter;
-    ext_delimiter = save_ext_delimiter;
+    set_name_in_progress(save_name_in_progress);
+    set_area_delimiter(save_area_delimiter);
+    set_ext_delimiter(save_ext_delimiter);
 
     return Result;
 }
@@ -10776,14 +10776,14 @@ scan_file_name_braced(void)
     def_ref = save_def_ref;
     cur_cs = save_cur_cs;
     scanner_status = save_scanner_status;
-    save_stop_at_space = stop_at_space;
+    save_stop_at_space = stop_at_space();
 
     begin_name();
 
     for (i = str_start(s - TOO_BIG_CHAR); i < str_start(s + 1 - TOO_BIG_CHAR); i++)
         more_name(str_pool(i));
 
-    stop_at_space = save_stop_at_space;
+    set_stop_at_space(save_stop_at_space);
 }
 
 
@@ -10803,7 +10803,7 @@ scan_file_name(void)
     if (cur_cmd == LEFT_BRACE) {
         scan_file_name_braced();
     } else {
-        name_in_progress = true;
+        set_name_in_progress(true);
         begin_name();
 
         do {
@@ -10824,7 +10824,7 @@ scan_file_name(void)
     }
 
     end_name();
-    name_in_progress = false;
+    set_name_in_progress(false);
     warning_index = save_warning_index;
 }
 
@@ -10883,9 +10883,9 @@ start_input(const char *primary_input_name)
 
         format = TTBC_FILE_FORMAT_TECTONIC_PRIMARY;
 
-        name_in_progress = true;
+        set_name_in_progress(true);
         begin_name();
-        stop_at_space = false;
+        set_stop_at_space(false);
 
         const unsigned char *cp = (const unsigned char *) primary_input_name;
 
@@ -10916,16 +10916,16 @@ start_input(const char *primary_input_name)
             }
 
             if (IS_DIR_SEP(rval)) {
-                area_delimiter = cur_length();
-                ext_delimiter = 0;
+                set_area_delimiter(cur_length());
+                set_ext_delimiter(0);
             } else if (rval == '.' ) {
-                ext_delimiter = cur_length();
+                set_ext_delimiter(cur_length());
             }
         }
 
-        stop_at_space = true;
+        set_stop_at_space(true);
         end_name();
-        name_in_progress = false;
+        set_name_in_progress(false);
     } else {
         /* Scan in the file name from the current token stream. The file name to
          * input is saved as the stringpool strings `cur_{name,area,ext}` and the
@@ -10948,15 +10948,15 @@ start_input(const char *primary_input_name)
      * and use that to recompute `cur_{name,area,ext}`. */
 
     make_utf16_name();
-    name_in_progress = true;
+    set_name_in_progress(true);
     begin_name();
-    stop_at_space = false;
+    set_stop_at_space(false);
     int k = 0;
     while (k < name_length16() && more_name(name_of_file16()[k]))
         k++;
-    stop_at_space = true;
+    set_stop_at_space(true);
     end_name();
-    name_in_progress = false;
+    set_name_in_progress(false);
 
     /* Now generate a stringpool string corresponding to the full path of the
      * input file. This calls make_utf16_name() again and reruns through the
@@ -16026,7 +16026,7 @@ void new_font(small_number a)
         eq_define(u, SET_FONT, FONT_BASE);
     scan_optional_equals();
     scan_file_name();
-    name_in_progress = true;
+    set_name_in_progress(true);
     if (scan_keyword("at")) {      /*1294: */
         scan_dimen(false, false, false);
         s = cur_val;
@@ -16060,7 +16060,7 @@ void new_font(small_number a)
         }
     } else
         s = -1000;
-    name_in_progress = false /*:1293 */ ;
+    set_name_in_progress(false);
     {
         register int32_t for_end;
         f = (FONT_BASE + 1);

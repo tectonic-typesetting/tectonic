@@ -172,6 +172,22 @@ StrNumber job_name(void);
 
 void set_job_name(StrNumber val);
 
+uintptr_t area_delimiter(void);
+
+void set_area_delimiter(uintptr_t val);
+
+uintptr_t ext_delimiter(void);
+
+void set_ext_delimiter(uintptr_t val);
+
+bool name_in_progress(void);
+
+void set_name_in_progress(bool val);
+
+bool stop_at_space(void);
+
+void set_stop_at_space(bool val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);

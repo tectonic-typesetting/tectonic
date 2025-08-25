@@ -501,15 +501,15 @@ open_or_close_in(void)
         if (u_open_in(&read_file[n], TTBC_FILE_FORMAT_TEX, "rb", INTPAR(xetex_default_input_mode),
                       INTPAR(xetex_default_input_encoding))) {
             make_utf16_name();
-            name_in_progress = true;
+            set_name_in_progress(true);
             begin_name();
-            stop_at_space = false;
+            set_stop_at_space(false);
             k = 0;
             while ((k < name_length16()) && (more_name(name_of_file16()[k])))
                 k++;
-            stop_at_space = true;
+            set_stop_at_space(true);
             end_name();
-            name_in_progress = false;
+            set_name_in_progress(false);
             read_open[n] = JUST_OPEN;
         }
     }

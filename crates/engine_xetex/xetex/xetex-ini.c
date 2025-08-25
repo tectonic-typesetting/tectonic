@@ -136,12 +136,9 @@ unsigned char if_limit;
 small_number cur_if;
 int32_t if_line;
 int32_t skip_line;
-pool_pointer area_delimiter;
-pool_pointer ext_delimiter;
 UTF16_code file_name_quote_char;
 int32_t format_default_length;
 char *TEX_format_default;
-bool name_in_progress;
 bool log_opened;
 const char* output_file_extension;
 str_number texmf_log_name;
@@ -298,7 +295,6 @@ trie_pointer hyph_start;
 trie_pointer hyph_index;
 int32_t disc_ptr[4];
 pool_pointer edit_name_start;
-bool stop_at_space;
 int32_t native_font_type_flag;
 bool xtx_ligature_present;
 scaled_t delta;
@@ -3177,7 +3173,7 @@ initialize_more_variables(void)
     disc_ptr[LAST_BOX_CODE] = TEX_NULL;
     disc_ptr[VSPLIT_CODE] = TEX_NULL;
     edit_name_start = 0;
-    stop_at_space = true;
+    set_stop_at_space(true);
 }
 
 static void
@@ -3677,7 +3673,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_term_offset(0);
     set_file_offset(0);
     set_job_name(0);
-    name_in_progress = false;
+    set_name_in_progress(false);
     log_opened = false;
 
     if (semantic_pagination_enabled)
