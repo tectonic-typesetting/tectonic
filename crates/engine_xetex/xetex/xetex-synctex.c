@@ -337,10 +337,10 @@ void synctex_start_input(void)
          *  use the 16 other bits to store the column number */
         synctex_ctxt.synctex_tag_counter = 0;
         /* was this, but this looks like a bug */
-        /* cur_input.synctex_tag = 0; */
+        /* cur_input_ptr()->synctex_tag = 0; */
         return;
     }
-    cur_input.synctex_tag = (int) synctex_ctxt.synctex_tag_counter;     /*  -> *TeX.web  */
+    cur_input_ptr()->synctex_tag = (int) synctex_ctxt.synctex_tag_counter;     /*  -> *TeX.web  */
     if (synctex_ctxt.synctex_tag_counter == 1) {
         /*  this is the first file TeX ever opens, in general \jobname.tex we
          *  do not know yet if synchronization will ever be enabled so we have
@@ -357,7 +357,7 @@ void synctex_start_input(void)
         || (INVALID_HANDLE != synctex_dot_open())) {
         char *tmp = get_current_name();
         /* Always record the input, even if INTPAR(synctex) is 0 */
-        synctex_record_input(cur_input.synctex_tag, tmp);
+        synctex_record_input(cur_input().synctex_tag, tmp);
         free(tmp);
     }
     return;

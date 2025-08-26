@@ -7,6 +7,7 @@ use std::{ptr, slice};
 mod memory;
 
 use crate::c_api::is_dir_sep;
+use crate::c_api::output::{rs_print, rs_print_ln, rs_print_nl_bytes};
 use crate::c_api::pool::{
     rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
 };
@@ -48,6 +49,8 @@ pub struct EngineCtx {
     pub(crate) texmf_log_name: StrNumber,
     pub(crate) log_opened: bool,
     pub(crate) input_stack: Vec<InputState>,
+    pub(crate) input_ptr: usize,
+    pub(crate) cur_input: InputState,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -103,6 +106,8 @@ impl EngineCtx {
             texmf_log_name: 0,
             log_opened: false,
             input_stack: Vec::new(),
+            input_ptr: 0,
+            cur_input: InputState::default(),
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -469,6 +474,31 @@ pub extern "C" fn set_input_stack(idx: usize, state: InputState) {
 #[no_mangle]
 pub extern "C" fn clear_input_stack() {
     ENGINE_CTX.with_borrow_mut(|engine| engine.input_stack.clear())
+}
+
+#[no_mangle]
+pub extern "C" fn input_ptr() -> usize {
+    ENGINE_CTX.with_borrow(|engine| engine.input_ptr)
+}
+
+#[no_mangle]
+pub extern "C" fn set_input_ptr(val: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.input_ptr = val)
+}
+
+#[no_mangle]
+pub extern "C" fn cur_input() -> InputState {
+    ENGINE_CTX.with_borrow(|engine| engine.cur_input.clone())
+}
+
+#[no_mangle]
+pub extern "C" fn cur_input_ptr() -> *mut InputState {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.cur_input))
+}
+
+#[no_mangle]
+pub extern "C" fn set_cur_input(val: InputState) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_input = val)
 }
 
 #[no_mangle]

@@ -240,6 +240,16 @@ void set_input_stack(uintptr_t idx, input_state_t state);
 
 void clear_input_stack(void);
 
+uintptr_t input_ptr(void);
+
+void set_input_ptr(uintptr_t val);
+
+input_state_t cur_input(void);
+
+input_state_t *cur_input_ptr(void);
+
+void set_cur_input(input_state_t val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);

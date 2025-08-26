@@ -276,7 +276,7 @@ restart:
 found:
     mem_ptr(r)->b32.s1 = TEX_NULL;
     if (s >= MEDIUM_NODE_SIZE) {
-        mem_ptr(r + s - 1)->b32.s0 = cur_input.synctex_tag;
+        mem_ptr(r + s - 1)->b32.s0 = cur_input().synctex_tag;
         mem_ptr(r + s - 1)->b32.s1 = line();
     }
     return r;
@@ -3946,8 +3946,8 @@ bool pseudo_input(void)
         mem_ptr(pseudo_files)->b32.s0 = mem(p).b32.s1;
         sz = mem(p).b32.s0;
         if (4 * sz - 3 >= buf_size - last) {    /*35: */
-            cur_input.loc = first;
-            cur_input.limit = last - 1;
+            cur_input_ptr()->loc = first;
+            cur_input_ptr()->limit = last - 1;
             overflow("buffer size", buf_size);
         }
         last = first;
@@ -3998,8 +3998,8 @@ void group_warning(void)
     int32_t i;
     bool w;
 
-    base_ptr = input_ptr;
-    set_input_stack(base_ptr, cur_input);
+    base_ptr = input_ptr();
+    set_input_stack(base_ptr, cur_input());
     i = in_open();
     w = false;
     while ((grp_stack[i] == cur_boundary) && (i > 0)) {
@@ -4035,8 +4035,8 @@ void if_warning(void)
     int32_t i;
     bool w;
 
-    base_ptr = input_ptr;
-    set_input_stack(base_ptr, cur_input);
+    base_ptr = input_ptr();
+    set_input_stack(base_ptr, cur_input());
     i = in_open();
     w = false;
     while (if_stack[i] == cond_ptr) {
@@ -4484,9 +4484,9 @@ void unsave(void)
                 if (a) {
                     p = get_avail();
                     mem_ptr(p)->b32.s0 = cur_tok;
-                    mem_ptr(p)->b32.s1 = cur_input.loc;
-                    cur_input.loc = p;
-                    cur_input.start = p;
+                    mem_ptr(p)->b32.s1 = cur_input().loc;
+                    cur_input_ptr()->loc = p;
+                    cur_input_ptr()->start = p;
                     if (cur_tok < RIGHT_BRACE_LIMIT) {
 
                         if (cur_tok < LEFT_BRACE_LIMIT)
@@ -4661,28 +4661,28 @@ void show_context(void)
     int32_t p;
     int32_t q;
 
-    base_ptr = input_ptr;
-    set_input_stack(base_ptr, cur_input);
+    base_ptr = input_ptr();
+    set_input_stack(base_ptr, cur_input());
     nn = -1;
     bottom_line = false;
 
     while (true) {
 
-        cur_input = input_stack(base_ptr);
-        if ((cur_input.state != TOKEN_LIST)) {
+        set_cur_input(input_stack(base_ptr));
+        if ((cur_input().state != TOKEN_LIST)) {
 
-            if ((cur_input.name > 19) || (base_ptr == 0))
+            if ((cur_input().name > 19) || (base_ptr == 0))
                 bottom_line = true;
         }
-        if ((base_ptr == input_ptr) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
-            if ((base_ptr == input_ptr) || (cur_input.state != TOKEN_LIST)
-                || (cur_input.index != BACKED_UP) || (cur_input.loc != TEX_NULL)) {
+        if ((base_ptr == input_ptr()) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
+            if ((base_ptr == input_ptr()) || (cur_input().state != TOKEN_LIST)
+                || (cur_input().index != BACKED_UP) || (cur_input().loc != TEX_NULL)) {
                 set_tally(0);
                 old_setting = selector();
-                if (cur_input.state != TOKEN_LIST) {
-                    if (cur_input.name <= 17) {
+                if (cur_input().state != TOKEN_LIST) {
+                    if (cur_input().name <= 17) {
 
-                        if (cur_input.name == 0) {
+                        if (cur_input().name == 0) {
 
                             if (base_ptr == 0)
                                 print_nl_cstr("<*>");
@@ -4691,19 +4691,19 @@ void show_context(void)
                         } else {
 
                             print_nl_cstr("<read ");
-                            if (cur_input.name == 17)
+                            if (cur_input().name == 17)
                                 print_char('*');
                             else
-                                print_int(cur_input.name - 1);
+                                print_int(cur_input().name - 1);
                             print_char('>');
                         }
                     } else {
 
                         print_nl_cstr("l.");
-                        if (cur_input.index == in_open())
+                        if (cur_input().index == in_open())
                             print_int(line());
                         else
-                            print_int(line_stack(cur_input.index + 1));
+                            print_int(line_stack(cur_input().index + 1));
                     }
                     print_char(' ');
                     {
@@ -4712,17 +4712,17 @@ void show_context(void)
                         set_selector(SELECTOR_PSEUDO);
                         set_trick_count(1000000L);
                     }
-                    if (buffer(cur_input.limit) == INTPAR(end_line_char))
-                        j = cur_input.limit;
+                    if (buffer(cur_input().limit) == INTPAR(end_line_char))
+                        j = cur_input().limit;
                     else
-                        j = cur_input.limit + 1;
+                        j = cur_input().limit + 1;
                     if (j > 0) {
                         register int32_t for_end;
-                        i = cur_input.start;
+                        i = cur_input().start;
                         for_end = j - 1;
                         if (i <= for_end)
                             do {
-                                if (i == cur_input.loc) {
+                                if (i == cur_input().loc) {
                                     first_count = tally();
                                     set_trick_count(tally() + 1 + error_line() - half_error_line);
                                     if (trick_count() < error_line())
@@ -4734,7 +4734,7 @@ void show_context(void)
                     }
                 } else {
 
-                    switch (cur_input.index) {
+                    switch (cur_input().index) {
                     case PARAMETER:
                         print_nl_cstr("<argument> ");
                         break;
@@ -4744,7 +4744,7 @@ void show_context(void)
                         break;
                     case BACKED_UP:
                     case BACKED_UP_CHAR:
-                        if (cur_input.loc == TEX_NULL)
+                        if (cur_input().loc == TEX_NULL)
                             print_nl_cstr("<recently read> ");
                         else
                             print_nl_cstr("<to be read again> ");
@@ -4754,7 +4754,7 @@ void show_context(void)
                         break;
                     case MACRO:
                         print_ln();
-                        print_cs(cur_input.name);
+                        print_cs(cur_input().name);
                         break;
                     case OUTPUT_TEXT:
                         print_nl_cstr("<output> ");
@@ -4805,10 +4805,10 @@ void show_context(void)
                         set_selector(SELECTOR_PSEUDO);
                         set_trick_count(1000000L);
                     }
-                    if (cur_input.index < MACRO)
-                        show_token_list(cur_input.start, cur_input.loc, 100000L);
+                    if (cur_input().index < MACRO)
+                        show_token_list(cur_input().start, cur_input().loc, 100000L);
                     else
-                        show_token_list(mem(cur_input.start).b32.s1, cur_input.loc, 100000L);
+                        show_token_list(mem(cur_input().start).b32.s1, cur_input().loc, 100000L);
                 }
                 set_selector(old_setting);
                 if (trick_count() == 1000000L) {
@@ -4875,7 +4875,7 @@ void show_context(void)
         base_ptr--;
     }
 done:
-    cur_input = input_stack(input_ptr);
+    set_cur_input(input_stack(input_ptr()));
 }
 
 
@@ -4883,26 +4883,26 @@ void
 begin_token_list(int32_t p, uint16_t t)
 {
 
-    if (input_ptr > max_in_stack) {
-        max_in_stack = input_ptr;
-        if (input_ptr == stack_size)
+    if (input_ptr() > max_in_stack) {
+        max_in_stack = input_ptr();
+        if (input_ptr() == stack_size)
             overflow("input stack size", stack_size);
     }
 
-    set_input_stack(input_ptr, cur_input);
-    input_ptr++;
+    set_input_stack(input_ptr(), cur_input());
+    set_input_ptr(input_ptr()+1);
 
-    cur_input.state = TOKEN_LIST;
-    cur_input.start = p;
-    cur_input.index = t;
+    cur_input_ptr()->state = TOKEN_LIST;
+    cur_input_ptr()->start = p;
+    cur_input_ptr()->index = t;
 
     if (t >= MACRO) {
         mem_ptr(p)->b32.s0++;
 
         if (t == MACRO) {
-            cur_input.limit = param_ptr;
+            cur_input_ptr()->limit = param_ptr;
         } else {
-            cur_input.loc = mem(p).b32.s1;
+            cur_input_ptr()->loc = mem(p).b32.s1;
 
             if (INTPAR(tracing_macros) > 1) {
                 begin_diagnostic();
@@ -4926,27 +4926,27 @@ begin_token_list(int32_t p, uint16_t t)
             }
         }
     } else {
-        cur_input.loc = p;
+        cur_input_ptr()->loc = p;
     }
 }
 
 
 void end_token_list(void)
 {
-    if (cur_input.index >= BACKED_UP) {
-        if (cur_input.index <= INSERTED)
-            flush_list(cur_input.start);
+    if (cur_input().index >= BACKED_UP) {
+        if (cur_input().index <= INSERTED)
+            flush_list(cur_input().start);
         else {
 
-            delete_token_ref(cur_input.start);
-            if (cur_input.index == MACRO)
-                while (param_ptr > cur_input.limit) {
+            delete_token_ref(cur_input().start);
+            if (cur_input().index == MACRO)
+                while (param_ptr > cur_input().limit) {
 
                     param_ptr--;
                     flush_list(param_stack[param_ptr]);
                 }
         }
-    } else if (cur_input.index == U_TEMPLATE) {
+    } else if (cur_input().index == U_TEMPLATE) {
 
         if (align_state > 500000L)
             align_state = 0;
@@ -4954,16 +4954,16 @@ void end_token_list(void)
             fatal_error("(interwoven alignment preambles are not allowed)");
     }
     {
-        input_ptr--;
-        cur_input = input_stack(input_ptr);
+        set_input_ptr(input_ptr()-1);
+        set_cur_input(input_stack(input_ptr()));
     }
 }
 
 void back_input(void)
 {
     int32_t p;
-    while ((cur_input.state == TOKEN_LIST) && (cur_input.loc == TEX_NULL)
-           && (cur_input.index != V_TEMPLATE))
+    while ((cur_input().state == TOKEN_LIST) && (cur_input().loc == TEX_NULL)
+           && (cur_input().index != V_TEMPLATE))
         end_token_list();
     p = get_avail();
     mem_ptr(p)->b32.s0 = cur_tok;
@@ -4975,18 +4975,18 @@ void back_input(void)
             align_state++;
     }
     {
-        if (input_ptr > max_in_stack) {
-            max_in_stack = input_ptr;
-            if (input_ptr == stack_size)
+        if (input_ptr() > max_in_stack) {
+            max_in_stack = input_ptr();
+            if (input_ptr() == stack_size)
                 overflow("input stack size", stack_size);
         }
-        set_input_stack(input_ptr, cur_input);
-        input_ptr++;
+        set_input_stack(input_ptr(), cur_input());
+        set_input_ptr(input_ptr()+1);
     }
-    cur_input.state = TOKEN_LIST;
-    cur_input.start = p;
-    cur_input.index = BACKED_UP;
-    cur_input.loc = p;
+    cur_input_ptr()->state = TOKEN_LIST;
+    cur_input_ptr()->start = p;
+    cur_input_ptr()->index = BACKED_UP;
+    cur_input_ptr()->loc = p;
 }
 
 void
@@ -5000,7 +5000,7 @@ void
 ins_error(void)
 {
     back_input();
-    cur_input.index = INSERTED;
+    cur_input_ptr()->index = INSERTED;
     error();
 }
 
@@ -5012,42 +5012,42 @@ void begin_file_reading(void)
         overflow("buffer size", buf_size);
     set_in_open(in_open()+1);
     {
-        if (input_ptr > max_in_stack) {
-            max_in_stack = input_ptr;
-            if (input_ptr == stack_size)
+        if (input_ptr() > max_in_stack) {
+            max_in_stack = input_ptr();
+            if (input_ptr() == stack_size)
                 overflow("input stack size", stack_size);
         }
-        set_input_stack(input_ptr, cur_input);
-        input_ptr++;
+        set_input_stack(input_ptr(), cur_input());
+        set_input_ptr(input_ptr()+1);
     }
-    cur_input.index = in_open();
-    source_filename_stack[cur_input.index] = 0;
-    set_full_source_filename_stack(cur_input.index, 0);
-    eof_seen[cur_input.index] = false;
-    grp_stack[cur_input.index] = cur_boundary;
-    if_stack[cur_input.index] = cond_ptr;
-    set_line_stack(cur_input.index, line());
-    cur_input.start = first;
-    cur_input.state = MID_LINE;
-    cur_input.name = 0;
-    cur_input.synctex_tag = 0;
+    cur_input_ptr()->index = in_open();
+    source_filename_stack[cur_input().index] = 0;
+    set_full_source_filename_stack(cur_input().index, 0);
+    eof_seen[cur_input().index] = false;
+    grp_stack[cur_input().index] = cur_boundary;
+    if_stack[cur_input().index] = cond_ptr;
+    set_line_stack(cur_input().index, line());
+    cur_input_ptr()->start = first;
+    cur_input_ptr()->state = MID_LINE;
+    cur_input_ptr()->name = 0;
+    cur_input_ptr()->synctex_tag = 0;
 }
 
 void
 end_file_reading(void)
 {
-    first = cur_input.start;
-    set_line(line_stack(cur_input.index));
+    first = cur_input().start;
+    set_line(line_stack(cur_input().index));
 
-    if (cur_input.name == 18 || cur_input.name == 19) {
+    if (cur_input().name == 18 || cur_input().name == 19) {
         pseudo_close();
-    } else if (cur_input.name > 17) {
-        u_close(input_file[cur_input.index]);
-        input_file[cur_input.index] = NULL;
+    } else if (cur_input().name > 17) {
+        u_close(input_file[cur_input().index]);
+        input_file[cur_input().index] = NULL;
     }
 
-    input_ptr--;
-    cur_input = input_stack(input_ptr);
+    set_input_ptr(input_ptr()-1);
+    set_cur_input(input_stack(input_ptr()));
     set_in_open(in_open() - 1);
 }
 
@@ -5062,7 +5062,7 @@ check_outer_validity(void)
         deletions_allowed = false;
 
         if (cur_cs != 0) {
-            if (cur_input.state == TOKEN_LIST || cur_input.name < 1 || cur_input.name > 17) {
+            if (cur_input().state == TOKEN_LIST || cur_input().name < 1 || cur_input().name > 17) {
                 p = get_avail();
                 mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + cur_cs;
                 begin_token_list(p, BACKED_UP);
@@ -5167,23 +5167,23 @@ get_next(void)
 restart:
     cur_cs = 0;
 
-    if (cur_input.state != TOKEN_LIST) { /*355:*/
+    if (cur_input().state != TOKEN_LIST) { /*355:*/
     texswitch:
-        if (cur_input.loc <= cur_input.limit) {
-            cur_chr = buffer(cur_input.loc);
-            cur_input.loc++;
+        if (cur_input().loc <= cur_input().limit) {
+            cur_chr = buffer(cur_input().loc);
+            cur_input_ptr()->loc++;
 
-            if (cur_chr >= 0xD800 && cur_chr < 0xDC00 && cur_input.loc <= cur_input.limit &&
-                buffer(cur_input.loc) >= 0xDC00 && buffer(cur_input.loc) < 0xE000) {
-                lower = buffer(cur_input.loc) - 0xDC00;
-                cur_input.loc++;
+            if (cur_chr >= 0xD800 && cur_chr < 0xDC00 && cur_input().loc <= cur_input().limit &&
+                buffer(cur_input().loc) >= 0xDC00 && buffer(cur_input().loc) < 0xE000) {
+                lower = buffer(cur_input().loc) - 0xDC00;
+                cur_input_ptr()->loc++;
                 cur_chr = 65536L + (cur_chr - 0xD800) * 1024 + lower;
             }
 
         reswitch:
             cur_cmd = CAT_CODE(cur_chr);
 
-            switch (cur_input.state + cur_cmd) { /*357:*/
+            switch (cur_input().state + cur_cmd) { /*357:*/
             ANY_STATE_PLUS(IGNORE):
             case SKIP_BLANKS + SPACER:
             case NEW_LINE + SPACER:
@@ -5191,30 +5191,30 @@ restart:
                 break;
 
             ANY_STATE_PLUS(ESCAPE):
-                if (cur_input.loc > cur_input.limit) {
+                if (cur_input().loc > cur_input().limit) {
                     cur_cs = NULL_CS;
                 } else {
                 start_cs:
-                    k = cur_input.loc;
+                    k = cur_input().loc;
                     cur_chr = buffer(k);
                     cat = CAT_CODE(cur_chr);
                     k++;
 
                     if (cat == LETTER)
-                        cur_input.state = SKIP_BLANKS;
+                        cur_input_ptr()->state = SKIP_BLANKS;
                     else if (cat == SPACER)
-                        cur_input.state = SKIP_BLANKS;
+                        cur_input_ptr()->state = SKIP_BLANKS;
                     else
-                        cur_input.state = MID_LINE;
+                        cur_input_ptr()->state = MID_LINE;
 
-                    if (cat == LETTER && k <= cur_input.limit) { /*368:*/
+                    if (cat == LETTER && k <= cur_input().limit) { /*368:*/
                         do {
                             cur_chr = buffer(k);
                             cat = CAT_CODE(cur_chr);
                             k++;
-                        } while (cat == LETTER && k <= cur_input.limit);
+                        } while (cat == LETTER && k <= cur_input().limit);
 
-                        if (cat == SUP_MARK && buffer(k) == cur_chr && k < cur_input.limit) {
+                        if (cat == SUP_MARK && buffer(k) == cur_chr && k < cur_input().limit) {
                             /* Special characters: either ^^X, or up to six
                              * ^'s followed by one hex character for each
                              * ^. */
@@ -5225,7 +5225,7 @@ restart:
 
                             sup_count = 2;
 
-                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
+                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input().limit &&
                                    buffer(k + sup_count - 1) == cur_chr)
                                 sup_count++;
 
@@ -5247,8 +5247,8 @@ restart:
                                         else
                                             set_buffer(k - 1, c - 64);
                                         d = 2;
-                                        cur_input.limit = cur_input.limit - d;
-                                        while (k <= cur_input.limit) {
+                                        cur_input_ptr()->limit = cur_input().limit - d;
+                                        while (k <= cur_input().limit) {
                                             set_buffer(k, buffer(k + d));
                                             k++;
                                         }
@@ -5275,9 +5275,9 @@ restart:
                                 } else {
                                     set_buffer(k - 1, cur_chr);
                                     d = 2 * sup_count - 1;
-                                    cur_input.limit = cur_input.limit - d;
+                                    cur_input_ptr()->limit = cur_input().limit - d;
 
-                                    while (k <= cur_input.limit) {
+                                    while (k <= cur_input().limit) {
                                         set_buffer(k, buffer(k + d));
                                         k++;
                                     }
@@ -5289,18 +5289,18 @@ restart:
                         if (cat != LETTER)
                             k--;
 
-                        if (k > cur_input.loc + 1) {
-                            cur_cs = id_lookup(cur_input.loc, k - cur_input.loc);
-                            cur_input.loc = k;
+                        if (k > cur_input().loc + 1) {
+                            cur_cs = id_lookup(cur_input().loc, k - cur_input().loc);
+                            cur_input_ptr()->loc = k;
                             goto found;
                         }
                     } else { /*367:*/
-                        if (cat == SUP_MARK && buffer(k) == cur_chr && k < cur_input.limit) {
+                        if (cat == SUP_MARK && buffer(k) == cur_chr && k < cur_input().limit) {
                             int32_t sup_count_save;
 
                             sup_count = 2;
 
-                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input.limit &&
+                            while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input().limit &&
                                    buffer(k + sup_count - 1) == cur_chr)
                                 sup_count++;
 
@@ -5315,8 +5315,8 @@ restart:
                                         else
                                             set_buffer(k - 1, c - 64);
                                         d = 2;
-                                        cur_input.limit = cur_input.limit - d;
-                                        while (k <= cur_input.limit) {
+                                        cur_input_ptr()->limit = cur_input().limit - d;
+                                        while (k <= cur_input().limit) {
                                             set_buffer(k, buffer(k + d));
                                             k++;
                                         }
@@ -5343,8 +5343,8 @@ restart:
                                 } else {
                                     set_buffer(k - 1, cur_chr);
                                     d = 2 * sup_count - 1;
-                                    cur_input.limit = cur_input.limit - d;
-                                    while (k <= cur_input.limit) {
+                                    cur_input_ptr()->limit = cur_input().limit - d;
+                                    while (k <= cur_input().limit) {
                                         set_buffer(k, buffer(k + d));
                                         k++;
                                     }
@@ -5354,14 +5354,14 @@ restart:
                         }
                     }
 
-                    if (buffer(cur_input.loc) > 65535L) {
-                        cur_cs = id_lookup(cur_input.loc, 1);
-                        cur_input.loc++;
+                    if (buffer(cur_input().loc) > 65535L) {
+                        cur_cs = id_lookup(cur_input().loc, 1);
+                        cur_input_ptr()->loc++;
                         goto found;
                     }
 
-                    cur_cs = SINGLE_BASE + buffer(cur_input.loc);
-                    cur_input.loc++;
+                    cur_cs = SINGLE_BASE + buffer(cur_input().loc);
+                    cur_input_ptr()->loc++;
                 }
 
             found:
@@ -5375,25 +5375,25 @@ restart:
                 cur_cs = cur_chr + 1;
                 cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
                 cur_chr = eqtb_ptr(cur_cs)->b32.s1;
-                cur_input.state = MID_LINE;
+                cur_input_ptr()->state = MID_LINE;
                 if (cur_cmd >= OUTER_CALL)
                     check_outer_validity();
                 break;
 
             ANY_STATE_PLUS(SUP_MARK):
-                if (cur_chr == buffer(cur_input.loc)) {
-                    if (cur_input.loc < cur_input.limit) {
+                if (cur_chr == buffer(cur_input().loc)) {
+                    if (cur_input().loc < cur_input().limit) {
                         sup_count = 2;
 
-                        while (sup_count < 6 && cur_input.loc + 2 * sup_count - 2 <= cur_input.limit &&
-                               cur_chr == buffer(cur_input.loc + sup_count - 1))
+                        while (sup_count < 6 && cur_input().loc + 2 * sup_count - 2 <= cur_input().limit &&
+                               cur_chr == buffer(cur_input().loc + sup_count - 1))
                             sup_count++;
 
                         for (d = 1; d <= sup_count; d++) {
-                            if (!IS_LC_HEX(buffer(cur_input.loc + sup_count - 2 + d))) {
-                                c = buffer(cur_input.loc + 1);
+                            if (!IS_LC_HEX(buffer(cur_input().loc + sup_count - 2 + d))) {
+                                c = buffer(cur_input().loc + 1);
                                 if (c < 128) {
-                                    cur_input.loc = cur_input.loc + 2;
+                                    cur_input_ptr()->loc = cur_input().loc + 2;
                                     if (c < 64)
                                         cur_chr = c + 64;
                                     else
@@ -5407,7 +5407,7 @@ restart:
                         cur_chr = 0;
 
                         for (d = 1; d <= sup_count; d++) {
-                            c = buffer(cur_input.loc + sup_count - 2 + d);
+                            c = buffer(cur_input().loc + sup_count - 2 + d);
                             if (c <= '9' )
                                 cur_chr = 16 * cur_chr + c - '0';
                             else
@@ -5415,17 +5415,17 @@ restart:
                         }
 
                         if (cur_chr > BIGGEST_USV) {
-                            cur_chr = buffer(cur_input.loc);
+                            cur_chr = buffer(cur_input().loc);
                             goto not_exp;
                         }
 
-                        cur_input.loc = cur_input.loc + 2 * sup_count - 1;
+                        cur_input_ptr()->loc = cur_input().loc + 2 * sup_count - 1;
                         goto reswitch;
                     }
                 }
 
             not_exp:
-                cur_input.state = MID_LINE;
+                cur_input_ptr()->state = MID_LINE;
                 break;
 
             ANY_STATE_PLUS(INVALID_CHAR):
@@ -5442,24 +5442,24 @@ restart:
                 break;
 
             case MID_LINE + SPACER:
-                cur_input.state = SKIP_BLANKS;
+                cur_input_ptr()->state = SKIP_BLANKS;
                 cur_chr = ' ' ;
                 break;
 
             case MID_LINE + CAR_RET:
-                cur_input.loc = cur_input.limit + 1;
+                cur_input_ptr()->loc = cur_input().limit + 1;
                 cur_cmd = SPACER;
                 cur_chr = ' ' ;
                 break;
 
             ANY_STATE_PLUS(COMMENT):
             case SKIP_BLANKS + CAR_RET:
-                cur_input.loc = cur_input.limit + 1;
+                cur_input_ptr()->loc = cur_input().limit + 1;
                 goto texswitch;
                 break;
 
             case NEW_LINE + CAR_RET:
-                cur_input.loc = cur_input.limit + 1;
+                cur_input_ptr()->loc = cur_input().limit + 1;
                 cur_cs = par_loc;
                 cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
                 cur_chr = eqtb_ptr(cur_cs)->b32.s1;
@@ -5473,7 +5473,7 @@ restart:
 
             case SKIP_BLANKS + LEFT_BRACE:
             case NEW_LINE + LEFT_BRACE:
-                cur_input.state = MID_LINE;
+                cur_input_ptr()->state = MID_LINE;
                 align_state++;
                 break;
 
@@ -5483,43 +5483,43 @@ restart:
 
             case SKIP_BLANKS + RIGHT_BRACE:
             case NEW_LINE + RIGHT_BRACE:
-                cur_input.state = MID_LINE;
+                cur_input_ptr()->state = MID_LINE;
                 align_state--;
                 break;
 
             ADD_DELIMS_TO(SKIP_BLANKS):
             ADD_DELIMS_TO(NEW_LINE):
-                cur_input.state = MID_LINE;
+                cur_input_ptr()->state = MID_LINE;
                 break;
 
             default:
                 break;
             }
         } else {
-            cur_input.state = NEW_LINE;
+            cur_input_ptr()->state = NEW_LINE;
 
-            if (cur_input.name > 17) { /*374:*/
+            if (cur_input().name > 17) { /*374:*/
                 set_line(line()+1);
-                first = cur_input.start;
+                first = cur_input().start;
 
                 if (!force_eof) {
-                    if (cur_input.name <= 19) {
+                    if (cur_input().name <= 19) {
                         if (pseudo_input()) {
-                            cur_input.limit = last;
-                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen[cur_input.index]) {
-                            cur_input.limit = first - 1;
-                            eof_seen[cur_input.index] = true;
+                            cur_input_ptr()->limit = last;
+                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen[cur_input().index]) {
+                            cur_input_ptr()->limit = first - 1;
+                            eof_seen[cur_input().index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
                         } else {
                             force_eof = true;
                         }
                     } else {
-                        if (input_line(input_file[cur_input.index])) {
-                            cur_input.limit = last;
-                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen[cur_input.index]) {
-                            cur_input.limit = first - 1;
-                            eof_seen[cur_input.index] = true;
+                        if (input_line(input_file[cur_input().index])) {
+                            cur_input_ptr()->limit = last;
+                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen[cur_input().index]) {
+                            cur_input_ptr()->limit = first - 1;
+                            eof_seen[cur_input().index] = true;
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
                         } else {
@@ -5534,7 +5534,7 @@ restart:
                             file_warning();
                     }
 
-                    if (cur_input.name >= 19) {
+                    if (cur_input().name >= 19) {
                         print_char(')');
                         open_parens--;
                         ttstub_output_flush(rust_stdout());
@@ -5547,20 +5547,20 @@ restart:
                 }
 
                 if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
-                    cur_input.limit--;
+                    cur_input_ptr()->limit--;
                 else
-                    set_buffer(cur_input.limit, INTPAR(end_line_char));
+                    set_buffer(cur_input().limit, INTPAR(end_line_char));
 
-                first = cur_input.limit + 1;
-                cur_input.loc = cur_input.start;
+                first = cur_input().limit + 1;
+                cur_input_ptr()->loc = cur_input().start;
             } else {
-                if (cur_input.name != 0) {
+                if (cur_input().name != 0) {
                     cur_cmd = 0;
                     cur_chr = 0;
                     return;
                 }
 
-                if (input_ptr > 0) {
+                if (input_ptr() > 0) {
                     end_file_reading();
                     goto restart;
                 }
@@ -5583,9 +5583,9 @@ restart:
             }
             goto texswitch;
         }
-    } else if (cur_input.loc != TEX_NULL) { /* if we're inputting from a non-null token list: */
-        t = mem(cur_input.loc).b32.s0;
-        cur_input.loc = LLIST_link(cur_input.loc);
+    } else if (cur_input().loc != TEX_NULL) { /* if we're inputting from a non-null token list: */
+        t = mem(cur_input().loc).b32.s0;
+        cur_input_ptr()->loc = LLIST_link(cur_input().loc);
 
         if (t >= CS_TOKEN_FLAG) {
             cur_cs = t - CS_TOKEN_FLAG;
@@ -5594,8 +5594,8 @@ restart:
 
             if (cur_cmd >= OUTER_CALL) {
                 if (cur_cmd == DONT_EXPAND) { /*370:*/
-                    cur_cs = mem(cur_input.loc).b32.s0 - CS_TOKEN_FLAG;
-                    cur_input.loc = TEX_NULL;
+                    cur_cs = mem(cur_input().loc).b32.s0 - CS_TOKEN_FLAG;
+                    cur_input_ptr()->loc = TEX_NULL;
                     cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
                     cur_chr = eqtb_ptr(cur_cs)->b32.s1;
                     if (cur_cmd > MAX_COMMAND) {
@@ -5618,7 +5618,7 @@ restart:
                 align_state--;
                 break;
             case OUT_PARAM:
-                begin_token_list(param_stack[cur_input.limit + cur_chr - 1], PARAMETER);
+                begin_token_list(param_stack[cur_input().limit + cur_chr - 1], PARAMETER);
                 goto restart;
                 break;
             default:
@@ -5688,8 +5688,8 @@ macro_call(void)
         diagnostic_begin_capture_warning_here();
 
         if (INTPAR(tracing_stack_levels) > 0) {
-            if (input_ptr < INTPAR(tracing_stack_levels)) {
-                v = input_ptr;
+            if (input_ptr() < INTPAR(tracing_stack_levels)) {
+                v = input_ptr();
                 print_ln();
                 print_char('~');
 
@@ -5950,7 +5950,7 @@ macro_call(void)
                 n++;
 
                 if (INTPAR(tracing_macros) > 0) {
-                    if (INTPAR(tracing_stack_levels) == 0 || input_ptr < INTPAR(tracing_stack_levels)) {
+                    if (INTPAR(tracing_stack_levels) == 0 || input_ptr() < INTPAR(tracing_stack_levels)) {
                         begin_diagnostic();
                         diagnostic_begin_capture_warning_here();
                         print_nl(match_chr);
@@ -5965,12 +5965,12 @@ macro_call(void)
         } while (mem(r).b32.s0 != END_MATCH_TOKEN);
     }
 
-    while (cur_input.state == TOKEN_LIST && cur_input.loc == TEX_NULL && cur_input.index != V_TEMPLATE)
+    while (cur_input().state == TOKEN_LIST && cur_input().loc == TEX_NULL && cur_input().index != V_TEMPLATE)
         end_token_list();
 
     begin_token_list(ref_count, MACRO);
-    cur_input.name = warning_index;
-    cur_input.loc = mem(r).b32.s1;
+    cur_input_ptr()->name = warning_index;
+    cur_input_ptr()->loc = mem(r).b32.s1;
 
     if (n > 0) {
         if (param_ptr + n > max_param_stack) {
@@ -5998,7 +5998,7 @@ insert_relax(void)
     back_input();
     cur_tok = CS_TOKEN_FLAG + FROZEN_RELAX;
     back_input();
-    cur_input.index = INSERTED;
+    cur_input_ptr()->index = INSERTED;
 }
 
 
@@ -6252,9 +6252,9 @@ reswitch:
                 if (t >= CS_TOKEN_FLAG) {
                     p = get_avail();
                     mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_DONT_EXPAND;
-                    mem_ptr(p)->b32.s1 = cur_input.loc;
-                    cur_input.start = p;
-                    cur_input.loc = p;
+                    mem_ptr(p)->b32.s1 = cur_input().loc;
+                    cur_input_ptr()->start = p;
+                    cur_input_ptr()->loc = p;
                 }
             } else { /*387: \primitive implementation */
                 save_scanner_status = scanner_status;
@@ -6279,9 +6279,9 @@ reswitch:
                         back_input();
                         p = get_avail();
                         mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_PRIMITIVE;
-                        mem_ptr(p)->b32.s1 = cur_input.loc;
-                        cur_input.loc = p;
-                        cur_input.start = p;
+                        mem_ptr(p)->b32.s1 = cur_input().loc;
+                        cur_input_ptr()->loc = p;
+                        cur_input_ptr()->start = p;
                     }
                 }
             }
@@ -9116,21 +9116,21 @@ void pseudo_start(void)
     }
     begin_file_reading();
     set_line(0);
-    cur_input.limit = cur_input.start;
-    cur_input.loc = cur_input.limit + 1;
+    cur_input_ptr()->limit = cur_input().start;
+    cur_input_ptr()->loc = cur_input().limit + 1;
     if (INTPAR(tracing_scan_tokens) > 0) {
         if (term_offset() > max_print_line - 3)
             print_ln();
         else if ((term_offset() > 0) || (file_offset() > 0))
             print_char(' ');
-        cur_input.name = 19;
+        cur_input_ptr()->name = 19;
         print_cstr("( ");
         open_parens++;
         ttstub_output_flush(rust_stdout());
     } else {
 
-        cur_input.name = 18;
-        cur_input.synctex_tag = 0;
+        cur_input_ptr()->name = 18;
+        cur_input_ptr()->synctex_tag = 0;
     }
 }
 
@@ -10059,7 +10059,7 @@ read_toks(int32_t n, int32_t r, int32_t j)
 
     do { /*502:*/
         begin_file_reading();
-        cur_input.name = m + 1;
+        cur_input_ptr()->name = m + 1;
 
         if (read_open[m] == CLOSED) { /*503:*/
             _tt_abort ("terminal input forbidden");
@@ -10082,27 +10082,27 @@ read_toks(int32_t n, int32_t r, int32_t j)
                     help_ptr = 1;
                     help_line[0] = "This \\read has unbalanced braces.";
                     align_state = 1000000L;
-                    cur_input.limit = 0;
+                    cur_input_ptr()->limit = 0;
                     error();
                 }
             }
         }
 
-        cur_input.limit = last;
+        cur_input_ptr()->limit = last;
 
         if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
-            cur_input.limit--;
+            cur_input_ptr()->limit--;
         else
-            set_buffer(cur_input.limit, INTPAR(end_line_char));
+            set_buffer(cur_input().limit, INTPAR(end_line_char));
 
-        first = cur_input.limit + 1;
-        cur_input.loc = cur_input.start;
-        cur_input.state = NEW_LINE;
+        first = cur_input().limit + 1;
+        cur_input_ptr()->loc = cur_input().start;
+        cur_input_ptr()->state = NEW_LINE;
 
         if (j == 1) {
-            while (cur_input.loc <= cur_input.limit) {
-                cur_chr = buffer(cur_input.loc);
-                cur_input.loc++;
+            while (cur_input().loc <= cur_input().limit) {
+                cur_chr = buffer(cur_input().loc);
+                cur_input_ptr()->loc++;
                 if (cur_chr == ' ' )
                     cur_tok = SPACE_TOKEN;
                 else
@@ -10699,7 +10699,7 @@ open_log_file(void)
     set_selector(SELECTOR_LOG_ONLY);
     set_log_opened(true);
 
-    set_input_stack(input_ptr, cur_input);
+    set_input_stack(input_ptr(), cur_input());
 
     /* Here we catch the log file up with anything that has already been
      * printed. The eqtb reference is end_line_char. */
@@ -10789,7 +10789,7 @@ start_input(const char *primary_input_name)
 
     begin_file_reading();
 
-    if (!u_open_in(&input_file[cur_input.index], format, "rb",
+    if (!u_open_in(&input_file[cur_input().index], format, "rb",
                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
         _tt_abort ("failed to open input file \"%s\"", name_of_file());
 
@@ -10812,16 +10812,16 @@ start_input(const char *primary_input_name)
      * {begin,more,end}_name() trifecta to re-re-compute
      * `cur_{name,area,ext}`. */
 
-    cur_input.name = make_name_string();
-    source_filename_stack[in_open()] = cur_input.name;
+    cur_input_ptr()->name = make_name_string();
+    source_filename_stack[in_open()] = cur_input().name;
 
     /* *This* variant is a TeX string made out of `name_of_input_file`. */
 
     set_full_source_filename_stack(in_open(), maketexstring(name_of_input_file));
-    if (cur_input.name == str_ptr() - 1) {
-        temp_str = search_string(cur_input.name);
+    if (cur_input().name == str_ptr() - 1) {
+        temp_str = search_string(cur_input().name);
         if (temp_str > 0) {
-            cur_input.name = temp_str;
+            cur_input_ptr()->name = temp_str;
             set_str_ptr(str_ptr()-1);
             set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
@@ -10850,7 +10850,7 @@ start_input(const char *primary_input_name)
         diagnostic_begin_capture_warning_here();
         print_ln();
         print_char('~');
-        v = input_ptr - 1;
+        v = input_ptr() - 1;
         if (v < INTPAR(tracing_stack_levels)) {
             while (v > 0) {
                 print_char('.');
@@ -10867,21 +10867,21 @@ start_input(const char *primary_input_name)
         end_diagnostic(false);
     }
 
-    cur_input.state = NEW_LINE;
+    cur_input_ptr()->state = NEW_LINE;
 
     synctex_start_input();
 
     set_line(1);
-    input_line(input_file[cur_input.index]);
-    cur_input.limit = last;
+    input_line(input_file[cur_input().index]);
+    cur_input_ptr()->limit = last;
 
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > 255)
-        cur_input.limit--;
+        cur_input_ptr()->limit--;
     else
-        set_buffer(cur_input.limit, INTPAR(end_line_char));
+        set_buffer(cur_input().limit, INTPAR(end_line_char));
 
-    first = cur_input.limit + 1;
-    cur_input.loc = cur_input.start;
+    first = cur_input().limit + 1;
+    cur_input_ptr()->loc = cur_input().start;
 }
 
 
@@ -11348,7 +11348,7 @@ void bad_utf8_warning(void)
     begin_diagnostic();
     diagnostic_begin_capture_warning_here();
     print_nl_cstr("Invalid UTF-8 byte or sequence");
-    if (cur_input.name == 0)
+    if (cur_input().name == 0)
         print_cstr(" in terminal input");
     else {
 
@@ -14663,7 +14663,7 @@ void head_for_vmode(void)
         back_input();
         cur_tok = par_token;
         back_input();
-        cur_input.index = INSERTED;
+        cur_input_ptr()->index = INSERTED;
     }
 }
 
@@ -15225,8 +15225,8 @@ void omit_error(void)
 
 void do_endv(void)
 {
-    base_ptr = input_ptr;
-    set_input_stack(base_ptr, cur_input);
+    base_ptr = input_ptr();
+    set_input_stack(base_ptr, cur_input());
     while ((input_stack(base_ptr).index != V_TEMPLATE) && (input_stack(base_ptr).loc == TEX_NULL)
            && (input_stack(base_ptr).state == TOKEN_LIST))
         base_ptr--;
@@ -16600,7 +16600,7 @@ handle_right_brace(void)
         break;
 
     case OUTPUT_GROUP: /*1062:*/
-        if (cur_input.loc != TEX_NULL || (cur_input.index != OUTPUT_TEXT && cur_input.index != BACKED_UP)) {
+        if (cur_input().loc != TEX_NULL || (cur_input().index != OUTPUT_TEXT && cur_input().index != BACKED_UP)) {
             error_here_with_diagnostic("Unbalanced output routine");
             capture_to_diagnostic(NULL);
             help_ptr = 2;
@@ -16610,7 +16610,7 @@ handle_right_brace(void)
 
             do {
                 get_token();
-            } while (cur_input.loc != TEX_NULL);
+            } while (cur_input().loc != TEX_NULL);
         }
 
         end_token_list();
@@ -17352,7 +17352,7 @@ collect_native:
 
         if (INTPAR(xetex_inter_char_tokens) > 0 && space_class != CHAR_CLASS_LIMIT) {
             if (prev_class == CHAR_CLASS_LIMIT - 1) {
-                if (cur_input.state != TOKEN_LIST || cur_input.index != BACKED_UP_CHAR) {
+                if (cur_input().state != TOKEN_LIST || cur_input().index != BACKED_UP_CHAR) {
                     find_sa_element(INTER_CHAR_VAL,
                                     ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class,
                                     false);
@@ -17361,7 +17361,7 @@ collect_native:
                             cur_cmd = OTHER_CHAR;
                         cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                         back_input();
-                        cur_input.index = BACKED_UP_CHAR;
+                        cur_input_ptr()->index = BACKED_UP_CHAR;
                         begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
                         goto big_switch;
                     }
@@ -17373,7 +17373,7 @@ collect_native:
                         cur_cmd = OTHER_CHAR;
                     cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                     back_input();
-                    cur_input.index = BACKED_UP_CHAR;
+                    cur_input_ptr()->index = BACKED_UP_CHAR;
                     begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
                     prev_class = ((CHAR_CLASS_LIMIT - 1));
                     goto collected;
@@ -17768,7 +17768,7 @@ collected:
 
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
-            if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
+            if ((cur_input().state != TOKEN_LIST) || (cur_input().index != BACKED_UP_CHAR)) {
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
                 if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
@@ -17776,7 +17776,7 @@ collected:
                         cur_cmd = OTHER_CHAR;
                     cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                     back_input();
-                    cur_input.index = BACKED_UP_CHAR;
+                    cur_input_ptr()->index = BACKED_UP_CHAR;
                     begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
                     goto big_switch;
                 }
@@ -17788,7 +17788,7 @@ collected:
                     cur_cmd = OTHER_CHAR;
                 cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                 back_input();
-                cur_input.index = BACKED_UP_CHAR;
+                cur_input_ptr()->index = BACKED_UP_CHAR;
                 begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
                 prev_class = ((CHAR_CLASS_LIMIT - 1));
                 goto big_switch;
@@ -17953,7 +17953,7 @@ main_loop_lookahead_1:
 
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
-            if ((cur_input.state != TOKEN_LIST) || (cur_input.index != BACKED_UP_CHAR)) {
+            if ((cur_input().state != TOKEN_LIST) || (cur_input().index != BACKED_UP_CHAR)) {
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
                 if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
@@ -17961,7 +17961,7 @@ main_loop_lookahead_1:
                         cur_cmd = OTHER_CHAR;
                     cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                     back_input();
-                    cur_input.index = BACKED_UP_CHAR;
+                    cur_input_ptr()->index = BACKED_UP_CHAR;
                     begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
                     goto big_switch;
                 }
@@ -17973,7 +17973,7 @@ main_loop_lookahead_1:
                     cur_cmd = OTHER_CHAR;
                 cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
                 back_input();
-                cur_input.index = BACKED_UP_CHAR;
+                cur_input_ptr()->index = BACKED_UP_CHAR;
                 begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
                 prev_class = ((CHAR_CLASS_LIMIT - 1));
                 goto big_switch;
