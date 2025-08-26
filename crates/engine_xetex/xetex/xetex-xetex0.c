@@ -7306,7 +7306,7 @@ restart:
         if (m == 0)
             cur_val = dead_cycles;
         else if (m == 2)
-            cur_val = interaction;
+            cur_val = interaction();
         else
             cur_val = insert_penalties;
         cur_val_level = INT_VAL;
@@ -15928,8 +15928,8 @@ common_ending:
 void new_interaction(void)
 {
     print_ln();
-    interaction = cur_chr;
-    if (interaction == BATCH_MODE)
+    set_interaction(cur_chr);
+    if (interaction() == BATCH_MODE)
         set_selector(SELECTOR_NO_PRINT);
     else
         set_selector(SELECTOR_TERM_ONLY);
@@ -15974,7 +15974,7 @@ void issue_message(void)
             help_line[0] = "(That was another \\errmessage.)";
         } else {
 
-            if (interaction < ERROR_STOP_MODE)
+            if (interaction() < ERROR_STOP_MODE)
                 long_help_seen = true;
             {
                 help_ptr = 4;
@@ -16151,7 +16151,7 @@ void show_whatever(void)
 
 common_ending:
     capture_to_diagnostic(NULL); // calling with null twice is fine
-    if (interaction < ERROR_STOP_MODE) {
+    if (interaction() < ERROR_STOP_MODE) {
         help_ptr = 0;
         error_count--;
     } else if (INTPAR(tracing_online) > 0) {

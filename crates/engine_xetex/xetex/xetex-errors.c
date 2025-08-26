@@ -11,34 +11,14 @@
 
 /* WEBby error-handling code: */
 
-static void
-pre_error_message (void)
-{
-    /* FKA normalize_selector(): */
-
-    if (log_opened())
-        set_selector(SELECTOR_TERM_AND_LOG);
-    else
-        set_selector(SELECTOR_TERM_ONLY);
-
-    if (job_name() == 0)
-        open_log_file();
-
-    if (interaction == BATCH_MODE)
-        set_selector(selector()-1);
-
-    error_here_with_diagnostic("");
-}
-
-
 /*82: */
 static void
 post_error_message(int need_to_print_it)
 {
     capture_to_diagnostic(NULL);
 
-    if (interaction == ERROR_STOP_MODE)
-        interaction = SCROLL_MODE;
+    if (interaction() == ERROR_STOP_MODE)
+        set_interaction(SCROLL_MODE);
 
     if (need_to_print_it && log_opened())
         error();
@@ -76,7 +56,7 @@ error(void)
         _tt_abort("halted after 100 potentially-recoverable errors");
     }
 
-    if (interaction > BATCH_MODE)
+    if (interaction() > BATCH_MODE)
         set_selector(selector()-1);
 
     if (use_err_help) {
@@ -90,7 +70,7 @@ error(void)
     }
 
     print_ln();
-    if (interaction > BATCH_MODE)
+    if (interaction() > BATCH_MODE)
         set_selector(selector()+1);
     print_ln();
 }
