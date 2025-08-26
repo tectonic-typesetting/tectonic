@@ -900,3 +900,52 @@ pub extern "C" fn more_name(c: u16) -> bool {
 pub extern "C" fn make_name_string() -> StrNumber {
     Globals::with(|globals| rs_make_name_string(globals))
 }
+
+pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) {
+    let old = globals.engine.selector;
+
+    if globals.engine.job_name == 0 {
+        globals.engine.job_name = rs_maketexstring(globals, "texput");
+    }
+
+    rs_pack_job_name(globals, ".log");
+
+    let file_name = globals
+        .engine
+        .name_of_file
+        .as_ref()
+        .unwrap()
+        .to_string_lossy();
+    match globals.state.output_open(&file_name, false) {
+        Some(file) => globals.out.log_file = Some(file),
+        None => panic!("cannot open log file output \"{}\"", file_name),
+    }
+
+    globals.engine.texmf_log_name = rs_make_name_string(globals);
+    globals.engine.selector = Selector::LogOnly;
+    globals.engine.log_opened = true;
+
+    globals.engine.input_stack[globals.engine.input_ptr] = globals.engine.cur_input.clone();
+
+    rs_print_nl_bytes(globals, b"**");
+    let mut l = globals.engine.input_stack[0].limit as usize;
+    if globals.engine.buffer[l] as i32 == globals.engine.int_par(IntPar::EndLineChar) {
+        l -= 1;
+    }
+
+    for k in 1..=l {
+        rs_print(globals, globals.engine.buffer[k] as i32)
+    }
+
+    rs_print_ln(globals);
+    globals.engine.selector = match old {
+        Selector::NoPrint => Selector::LogOnly,
+        Selector::TermOnly => Selector::TermAndLog,
+        _ => panic!(),
+    };
+}
+
+#[no_mangle]
+pub extern "C" fn open_log_file() {
+    Globals::with(|globals| rs_open_log_file(globals))
+}
