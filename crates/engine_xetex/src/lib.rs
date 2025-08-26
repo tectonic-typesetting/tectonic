@@ -244,6 +244,11 @@ pub mod c_api {
     mod pool;
     mod scaled_math;
 
+    /// Copy of `IS_DIR_SEP` from bridge_core
+    fn is_dir_sep(c: char) -> bool {
+        c == '/'
+    }
+
     #[allow(improper_ctypes)] // for CoreBridgeState
     extern "C" {
         pub fn tt_xetex_set_int_variable(
