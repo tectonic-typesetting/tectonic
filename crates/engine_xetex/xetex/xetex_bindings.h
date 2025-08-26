@@ -232,6 +232,10 @@ void pack_job_name(const char *s);
 
 void make_utf16_name(void);
 
+void begin_name(void);
+
+void end_name(void);
+
 void resize_hash(uintptr_t len);
 
 B32x2 hash(uintptr_t idx);
