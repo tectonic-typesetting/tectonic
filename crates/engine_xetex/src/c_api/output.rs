@@ -27,7 +27,7 @@ pub struct OutputCtx {
     term_offset: i32,
     file_offset: i32,
     rust_stdout: Option<OutputId>,
-    log_file: Option<OutputId>,
+    pub(crate) log_file: Option<OutputId>,
     write_file: Vec<Option<OutputId>>,
     doing_special: bool,
     digits: [u8; 23],

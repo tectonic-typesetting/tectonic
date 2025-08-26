@@ -99,9 +99,7 @@ eight_bits cur_cmd;
 int32_t cur_chr;
 int32_t cur_cs;
 int32_t cur_tok;
-int32_t input_ptr;
 int32_t max_in_stack;
-input_state_t cur_input;
 int32_t open_parens;
 UFILE **input_file;
 str_number *source_filename_stack;
@@ -2420,7 +2418,7 @@ load_fmt_file(void)
     int32_t x;
     rust_input_handle_t fmt_in;
 
-    j = cur_input.loc;
+    j = cur_input().loc;
 
     /* This is where a first line starting with "&" used to
      * trigger code that would change the format file. */
@@ -2431,7 +2429,7 @@ load_fmt_file(void)
     if (fmt_in == INVALID_HANDLE)
         _tt_abort("cannot open the format file \"%s\"", name_of_file());
 
-    cur_input.loc = j;
+    cur_input_ptr()->loc = j;
 
     if (in_initex_mode) {
         free(font_info);
@@ -2904,8 +2902,8 @@ final_cleanup(void)
     if (job_name() == 0)
         open_log_file();
 
-    while (input_ptr > 0)
-        if (cur_input.state == TOKEN_LIST)
+    while (input_ptr() > 0)
+        if (cur_input().state == TOKEN_LIST)
             end_token_list();
         else
             end_file_reading();
@@ -3004,8 +3002,8 @@ init_io(void)
 
     set_buffer(first, 0);
     last = first;
-    cur_input.loc = first;
-    cur_input.limit = last;
+    cur_input_ptr()->loc = first;
+    cur_input_ptr()->limit = last;
     first = last + 1;
 }
 
@@ -3675,7 +3673,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     else
         output_file_extension = ".xdv";
 
-    input_ptr = 0;
+    set_input_ptr(0);
     max_in_stack = 0;
     source_filename_stack[0] = 0;
     set_full_source_filename_stack(0, 0);
@@ -3695,11 +3693,11 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     scanner_status = NORMAL;
     warning_index = TEX_NULL;
     first = 1;
-    cur_input.state = NEW_LINE;
-    cur_input.start = 1;
-    cur_input.index = 0;
+    cur_input_ptr()->state = NEW_LINE;
+    cur_input_ptr()->start = 1;
+    cur_input_ptr()->index = 0;
     set_line(0);
-    cur_input.name = 0;
+    cur_input_ptr()->name = 0;
     force_eof = false;
     align_state = 1000000L;
 
@@ -3719,9 +3717,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     }
 
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
-        cur_input.limit--;
+        cur_input_ptr()->limit--;
     else
-        set_buffer(cur_input.limit, INTPAR(end_line_char));
+        set_buffer(cur_input().limit, INTPAR(end_line_char));
 
     if (in_initex_mode) {
         /* TeX initializes with the real date and time, but for format file
