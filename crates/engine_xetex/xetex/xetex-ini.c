@@ -51,7 +51,6 @@ UTF16_code *native_text;
 int32_t native_text_size;
 int32_t native_len;
 int32_t save_native_len;
-unsigned char interaction;
 bool deletions_allowed;
 bool set_box_allowed;
 tt_history_t history;
@@ -2053,8 +2052,8 @@ store_fmt_file(void)
         help_ptr = 1;
         help_line[0] = "`{...\\dump}' is a no-no.";
 
-        if (interaction == ERROR_STOP_MODE)
-            interaction = SCROLL_MODE;
+        if (interaction() == ERROR_STOP_MODE)
+            set_interaction(SCROLL_MODE);
         if (log_opened())
             error();
 
@@ -2075,7 +2074,7 @@ store_fmt_file(void)
     print_int(INTPAR(day));
     print_char(')');
 
-    if (interaction == BATCH_MODE)
+    if (interaction() == BATCH_MODE)
         set_selector(SELECTOR_LOG_ONLY);
     else
         set_selector(SELECTOR_TERM_AND_LOG);
@@ -2939,7 +2938,7 @@ final_cleanup(void)
     }
 
     if (history != HISTORY_SPOTLESS) {
-        if ((history == HISTORY_WARNING_ISSUED || (interaction < ERROR_STOP_MODE))) {
+        if ((history == HISTORY_WARNING_ISSUED || (interaction() < ERROR_STOP_MODE))) {
 
             if (selector() == SELECTOR_TERM_AND_LOG) {
                 set_selector(SELECTOR_TERM_ONLY);
@@ -3018,7 +3017,7 @@ initialize_more_variables(void)
     native_text_size = 128;
     native_text = xmalloc(native_text_size * sizeof(UTF16_code));
 
-    interaction = ERROR_STOP_MODE;
+    set_interaction(ERROR_STOP_MODE);
 
     deletions_allowed = true;
     set_box_allowed = true;
@@ -3815,7 +3814,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     random_seed = (microseconds * 1000) + (epochseconds % 1000000L);
     init_randoms(random_seed);
 
-    if (interaction == BATCH_MODE)
+    if (interaction() == BATCH_MODE)
         set_selector(SELECTOR_NO_PRINT);
     else
         set_selector(SELECTOR_TERM_ONLY); /*:79*/
