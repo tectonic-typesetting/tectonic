@@ -8,6 +8,7 @@ include_guard = "TECTONIC_ENGINE_XETEX_BINDGEN_H"
 "Diagnostic" = "ttbc_diagnostic_t"
 "FileFormat" = "ttbc_file_format"
 "OutputId" = "rust_output_handle_t"
+"InputState" = "input_state_t"
 
 [export]
 exclude = ["Option_OutputId", "Option_InputId"]

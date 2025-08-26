@@ -19,7 +19,6 @@
 /* All the following variables are declared in xetex-xetexd.h */
 bool shell_escape_enabled = false;
 int32_t bad;
-UnicodeScalar *buffer;
 int32_t first;
 int32_t last;
 int32_t max_buf_stack;
@@ -100,7 +99,6 @@ eight_bits cur_cmd;
 int32_t cur_chr;
 int32_t cur_cs;
 int32_t cur_tok;
-input_state_t *input_stack;
 int32_t input_ptr;
 int32_t max_in_stack;
 input_state_t cur_input;
@@ -137,9 +135,7 @@ int32_t if_line;
 int32_t skip_line;
 int32_t format_default_length;
 char *TEX_format_default;
-bool log_opened;
 const char* output_file_extension;
-str_number texmf_log_name;
 memory_word *font_info;
 font_index fmem_ptr;
 internal_font_number font_ptr;
@@ -573,7 +569,7 @@ primitive(const char* ident, uint16_t c, int32_t o)
             overflow("buffer size", buf_size);
 
         for (int i = 0; i < len; i++)
-            buffer[first + i] = ident[i];
+            set_buffer(first + i, ident[i]);
 
         cur_val = id_lookup(first, len);
         set_str_ptr(str_ptr()-1);
@@ -2061,7 +2057,7 @@ store_fmt_file(void)
 
         if (interaction == ERROR_STOP_MODE)
             interaction = SCROLL_MODE;
-        if (log_opened)
+        if (log_opened())
             error();
 
         history = HISTORY_FATAL_ERROR;
@@ -3006,7 +3002,7 @@ init_io(void)
     stdin_ufile.conversionData = 0;
     input_file[0] = &stdin_ufile;
 
-    buffer[first] = 0;
+    set_buffer(first, 0);
     last = first;
     cur_input.loc = first;
     cur_input.limit = last;
@@ -3461,10 +3457,10 @@ tt_cleanup(void) {
     }
 
     // Free the big allocated arrays
-    free(buffer);
+    clear_buffer();
     free(nest);
     free(save_stack);
-    free(input_stack);
+    clear_input_stack();
     free(input_file);
     clear_line_stack();
     free(eof_seen);
@@ -3569,10 +3565,10 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     /* Allocate many of our big arrays. */
 
-    buffer = xmalloc_array(UnicodeScalar, buf_size);
+    resize_buffer(buf_size+1);
     nest = xmalloc_array(list_state_record, nest_size);
     save_stack = xmalloc_array(memory_word, save_size);
-    input_stack = xmalloc_array(input_state_t, stack_size);
+    resize_input_stack(stack_size+1);
     input_file = xmalloc_array(UFILE *, max_in_open);
     eof_seen = xmalloc_array(bool, max_in_open);
     grp_stack = xmalloc_array(save_pointer, max_in_open);
@@ -3672,7 +3668,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_file_offset(0);
     set_job_name(0);
     set_name_in_progress(false);
-    log_opened = false;
+    set_log_opened(false);
 
     if (semantic_pagination_enabled)
         output_file_extension = ".spx";
@@ -3693,7 +3689,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     used_tectonic_coda_tokens = false;
     gave_char_warning_help = false;
 
-    memset(buffer, 0, buf_size * sizeof(buffer[0]));
+    memset(buffer_ptr(), 0, buf_size * sizeof(buffer(0)));
     first = 0;
 
     scanner_status = NORMAL;
@@ -3725,7 +3721,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
         cur_input.limit--;
     else
-        buffer[cur_input.limit] = INTPAR(end_line_char);
+        set_buffer(cur_input.limit, INTPAR(end_line_char));
 
     if (in_initex_mode) {
         /* TeX initializes with the real date and time, but for format file

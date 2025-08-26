@@ -66,6 +66,34 @@
 
 typedef int32_t StrNumber;
 
+typedef struct {
+  /**
+   * tokenizer state: mid_line, skip_blanks, new_line
+   */
+  uint16_t state;
+  /**
+   * index of this level of input in input_file array
+   */
+  uint16_t index;
+  /**
+   * position of beginning of current line in `buffer`
+   */
+  int32_t start;
+  /**
+   * position of next character to read in `buffer`
+   */
+  int32_t loc;
+  /**
+   * position of end of line in `buffer`
+   */
+  int32_t limit;
+  /**
+   * name of current file or magic value for terminal, etc.
+   */
+  StrNumber name;
+  int32_t synctex_tag;
+} input_state_t;
+
 #if defined(WORDS_BIGENDIAN)
 typedef struct {
   int32_t s1;
@@ -196,6 +224,22 @@ bool quoted_filename(void);
 
 void set_quoted_filename(bool val);
 
+StrNumber texmf_log_name(void);
+
+void set_texmf_log_name(StrNumber val);
+
+bool log_opened(void);
+
+void set_log_opened(bool val);
+
+void resize_input_stack(uintptr_t len);
+
+input_state_t input_stack(uintptr_t idx);
+
+void set_input_stack(uintptr_t idx, input_state_t state);
+
+void clear_input_stack(void);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -222,6 +266,16 @@ void set_prim(uintptr_t idx, B32x2 val);
 
 B32x2 *prim_ptr(uintptr_t idx);
 
+void resize_buffer(uintptr_t len);
+
+uint32_t *buffer_ptr(void);
+
+uint32_t buffer(uintptr_t idx);
+
+void set_buffer(uintptr_t idx, uint32_t val);
+
+void clear_buffer(void);
+
 StrNumber maketexstring(const char *str);
 
 char *gettexstring(StrNumber s);
@@ -235,6 +289,10 @@ void make_utf16_name(void);
 void begin_name(void);
 
 void end_name(void);
+
+bool more_name(uint16_t c);
+
+StrNumber make_name_string(void);
 
 void resize_hash(uintptr_t len);
 
