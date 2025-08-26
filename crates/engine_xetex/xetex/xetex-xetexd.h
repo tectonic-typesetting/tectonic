@@ -346,16 +346,6 @@ typedef struct {
     memory_word aux; /* prev_depth or space_factor/clang or incompleat_noad */
 } list_state_record;
 
-typedef struct {
-    uint16_t state; /* tokenizer state: mid_line, skip_blanks, new_line */
-    uint16_t index; /* index of this level of input in input_file array */
-    int32_t start; /* position of beginning of current line in `buffer` */
-    int32_t loc; /* position of next character to read in `buffer` */
-    int32_t limit; /* position of end of line in `buffer` */
-    int32_t name; /* string number: name of current file or magic value for terminal, etc. */
-    int32_t synctex_tag;
-} input_state_t;
-
 typedef enum {
     HISTORY_SPOTLESS = 0,
     HISTORY_WARNING_ISSUED = 1,
@@ -389,7 +379,6 @@ void remember_source_info(str_number, int);
 /* All the following variables are defined in xetexini.c */
 extern bool shell_escape_enabled;
 extern int32_t bad;
-extern UnicodeScalar *buffer;
 extern int32_t first;
 extern int32_t last;
 extern int32_t max_buf_stack;
@@ -470,7 +459,6 @@ extern eight_bits cur_cmd;
 extern int32_t cur_chr;
 extern int32_t cur_cs;
 extern int32_t cur_tok;
-extern input_state_t *input_stack;
 extern int32_t input_ptr;
 extern int32_t max_in_stack;
 extern input_state_t cur_input;
@@ -507,9 +495,7 @@ extern int32_t if_line;
 extern int32_t skip_line;
 extern int32_t format_default_length;
 extern char *TEX_format_default;
-extern bool log_opened;
 extern const char* output_file_extension;
-extern str_number texmf_log_name;
 extern memory_word *font_info;
 extern font_index fmem_ptr;
 extern internal_font_number font_ptr;

@@ -70,15 +70,15 @@ str_eq_buf(str_number s, int32_t k)
     j = str_start(s - 65536L);
 
     while (j < str_start(s + 1 - 65536L)) {
-        if (buffer[k] >= 65536L) {
-            if (str_pool(j) != 55296L + (buffer[k] - 65536L) / 1024) {
+        if (buffer(k) >= 65536L) {
+            if (str_pool(j) != 55296L + (buffer(k) - 65536L) / 1024) {
                 return false;
-            } else if (str_pool(j + 1) != 56320L + (buffer[k] - 65536L) % 1024) {
+            } else if (str_pool(j + 1) != 56320L + (buffer(k) - 65536L) % 1024) {
                 return false;
             } else {
                 j++;
             }
-        } else if (str_pool(j) != buffer[k]) {
+        } else if (str_pool(j) != buffer(k)) {
             return false;
         }
 

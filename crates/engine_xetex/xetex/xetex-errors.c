@@ -16,7 +16,7 @@ pre_error_message (void)
 {
     /* FKA normalize_selector(): */
 
-    if (log_opened)
+    if (log_opened())
         set_selector(SELECTOR_TERM_AND_LOG);
     else
         set_selector(SELECTOR_TERM_ONLY);
@@ -40,7 +40,7 @@ post_error_message(int need_to_print_it)
     if (interaction == ERROR_STOP_MODE)
         interaction = SCROLL_MODE;
 
-    if (need_to_print_it && log_opened)
+    if (need_to_print_it && log_opened())
         error();
 
     history = HISTORY_FATAL_ERROR;

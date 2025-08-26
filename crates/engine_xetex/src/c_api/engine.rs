@@ -45,11 +45,33 @@ pub struct EngineCtx {
     pub(crate) name_in_progress: bool,
     pub(crate) stop_at_space: bool,
     pub(crate) quoted_filename: bool,
+    pub(crate) texmf_log_name: StrNumber,
+    pub(crate) log_opened: bool,
+    pub(crate) input_stack: Vec<InputState>,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
     /// An arena of TeX nodes
     pub(crate) mem: Vec<MemoryWord>,
+    pub(crate) buffer: Vec<char>,
+}
+
+#[derive(Clone, Default, PartialEq)]
+#[repr(C)]
+pub struct InputState {
+    /// tokenizer state: mid_line, skip_blanks, new_line
+    state: u16,
+    /// index of this level of input in input_file array
+    index: u16,
+    /// position of beginning of current line in `buffer`
+    start: i32,
+    /// position of next character to read in `buffer`
+    loc: i32,
+    /// position of end of line in `buffer`
+    limit: i32,
+    /// name of current file or magic value for terminal, etc.
+    name: StrNumber,
+    synctex_tag: i32,
 }
 
 struct NodeError {
@@ -78,10 +100,14 @@ impl EngineCtx {
             name_in_progress: false,
             stop_at_space: false,
             quoted_filename: false,
+            texmf_log_name: 0,
+            log_opened: false,
+            input_stack: Vec::new(),
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
             mem: Vec::new(),
+            buffer: Vec::new(),
         }
     }
 
@@ -406,6 +432,46 @@ pub extern "C" fn set_quoted_filename(val: bool) {
 }
 
 #[no_mangle]
+pub extern "C" fn texmf_log_name() -> StrNumber {
+    ENGINE_CTX.with_borrow(|engine| engine.texmf_log_name)
+}
+
+#[no_mangle]
+pub extern "C" fn set_texmf_log_name(val: StrNumber) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.texmf_log_name = val)
+}
+
+#[no_mangle]
+pub extern "C" fn log_opened() -> bool {
+    ENGINE_CTX.with_borrow(|engine| engine.log_opened)
+}
+
+#[no_mangle]
+pub extern "C" fn set_log_opened(val: bool) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.log_opened = val)
+}
+
+#[no_mangle]
+pub extern "C" fn resize_input_stack(len: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.input_stack.resize(len, InputState::default()))
+}
+
+#[no_mangle]
+pub extern "C" fn input_stack(idx: usize) -> InputState {
+    ENGINE_CTX.with_borrow(|engine| engine.input_stack[idx].clone())
+}
+
+#[no_mangle]
+pub extern "C" fn set_input_stack(idx: usize, state: InputState) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.input_stack[idx] = state)
+}
+
+#[no_mangle]
+pub extern "C" fn clear_input_stack() {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.input_stack.clear())
+}
+
+#[no_mangle]
 pub extern "C" fn eqtb(idx: usize) -> MemoryWord {
     ENGINE_CTX.with_borrow(|engine| engine.eqtb[idx])
 }
@@ -482,6 +548,33 @@ pub extern "C" fn set_prim(idx: usize, val: B32x2) {
 #[no_mangle]
 pub extern "C" fn prim_ptr(idx: usize) -> *mut B32x2 {
     ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.prim[idx]))
+}
+
+#[no_mangle]
+pub extern "C" fn resize_buffer(len: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.buffer.resize(len, '\0'))
+}
+
+#[no_mangle]
+pub extern "C" fn buffer_ptr() -> *mut char {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.buffer.as_mut_ptr())
+}
+
+#[no_mangle]
+pub extern "C" fn buffer(idx: usize) -> char {
+    ENGINE_CTX.with_borrow(|engine| engine.buffer[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_buffer(idx: usize, val: u32) {
+    ENGINE_CTX.with_borrow_mut(|engine| {
+        engine.buffer[idx] = char::from_u32(val).unwrap_or(char::REPLACEMENT_CHARACTER)
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn clear_buffer() {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.buffer.clear())
 }
 
 fn checkpool_pointer(pool: &mut StringPool, pool_ptr: usize, len: usize) {
