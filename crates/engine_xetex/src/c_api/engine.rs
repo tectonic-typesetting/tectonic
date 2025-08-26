@@ -51,12 +51,35 @@ pub struct EngineCtx {
     pub(crate) input_stack: Vec<InputState>,
     pub(crate) input_ptr: usize,
     pub(crate) cur_input: InputState,
+    pub(crate) interaction: InteractionMode,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
     /// An arena of TeX nodes
     pub(crate) mem: Vec<MemoryWord>,
     pub(crate) buffer: Vec<char>,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum InteractionMode {
+    Batch = 0,
+    Nonstop,
+    Scroll,
+    ErrorStop,
+}
+
+impl TryFrom<u8> for InteractionMode {
+    type Error = u8;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => InteractionMode::Batch,
+            1 => InteractionMode::Nonstop,
+            2 => InteractionMode::Scroll,
+            3 => InteractionMode::ErrorStop,
+            _ => return Err(value),
+        })
+    }
 }
 
 #[derive(Clone, Default, PartialEq)]
@@ -108,6 +131,7 @@ impl EngineCtx {
             input_stack: Vec::new(),
             input_ptr: 0,
             cur_input: InputState::default(),
+            interaction: InteractionMode::Batch,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -499,6 +523,17 @@ pub extern "C" fn cur_input_ptr() -> *mut InputState {
 #[no_mangle]
 pub extern "C" fn set_cur_input(val: InputState) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.cur_input = val)
+}
+
+#[no_mangle]
+pub extern "C" fn interaction() -> u8 {
+    ENGINE_CTX.with_borrow(|engine| engine.interaction as u8)
+}
+
+#[no_mangle]
+pub extern "C" fn set_interaction(val: u8) {
+    ENGINE_CTX
+        .with_borrow_mut(|engine| engine.interaction = InteractionMode::try_from(val).unwrap())
 }
 
 #[no_mangle]

@@ -411,7 +411,6 @@ extern UTF16_code *native_text;
 extern int32_t native_text_size;
 extern int32_t native_len;
 extern int32_t save_native_len;
-extern unsigned char interaction;
 extern bool deletions_allowed;
 extern bool set_box_allowed;
 extern tt_history_t history;

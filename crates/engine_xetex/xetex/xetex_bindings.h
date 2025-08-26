@@ -250,6 +250,10 @@ input_state_t *cur_input_ptr(void);
 
 void set_cur_input(input_state_t val);
 
+uint8_t interaction(void);
+
+void set_interaction(uint8_t val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -303,6 +307,10 @@ void end_name(void);
 bool more_name(uint16_t c);
 
 StrNumber make_name_string(void);
+
+void open_log_file(void);
+
+void pre_error_message(void);
 
 void resize_hash(uintptr_t len);
 
