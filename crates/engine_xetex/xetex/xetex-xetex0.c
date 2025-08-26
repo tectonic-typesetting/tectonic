@@ -10601,17 +10601,6 @@ common_ending:
     }
 }
 
-
-void
-begin_name(void)
-{
-    set_area_delimiter(0);
-    set_ext_delimiter(0);
-    set_quoted_filename(false);
-    set_file_name_quote_char(0);
-}
-
-
 bool
 more_name(UTF16_code c)
 {
@@ -10644,71 +10633,6 @@ more_name(UTF16_code c)
 
     return true;
 }
-
-
-void
-end_name(void)
-{
-    str_number temp_str;
-    pool_pointer j;
-
-    if (str_ptr() + 3 > max_strings())
-        overflow("number of strings", max_strings() - init_str_ptr);
-
-    /* area_delimiter is the length from the start of the filename to the
-     * directory seperator "/", which we use to construct the stringpool
-     * string `cur_area`. If there was already a string in the stringpool for
-     * the area, reuse it. */
-
-    if (area_delimiter() == 0) {
-        set_cur_area(EMPTY_STRING);
-    } else {
-        set_cur_area(str_ptr());
-        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + area_delimiter());
-        set_str_ptr(str_ptr()+1);
-        temp_str = search_string(cur_area());
-
-        if (temp_str > 0) {
-            set_cur_area(temp_str);
-            set_str_ptr(str_ptr()-1);
-
-            for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
-                set_str_pool(j - area_delimiter(), str_pool(j));
-
-            set_pool_ptr(pool_ptr() - area_delimiter());
-        }
-    }
-
-    /* ext_delimiter is the length from the start of the filename to the
-     * extension '.' delimiter, which we use to construct the stringpool
-     * strings `cur_ext` and `cur_name`. */
-
-    if (ext_delimiter() == 0) {
-        set_cur_ext(EMPTY_STRING);
-        set_cur_name(slow_make_string());
-    } else {
-        set_cur_name(str_ptr());
-        set_str_start((str_ptr() + 1) - 65536L, str_start(str_ptr() - TOO_BIG_CHAR) + ext_delimiter() - area_delimiter() - 1);
-        set_str_ptr(str_ptr()+1);
-
-        set_cur_ext(make_string());
-        set_str_ptr(str_ptr()-1);
-        temp_str = search_string(cur_name());
-
-        if (temp_str > 0) {
-            set_cur_name(temp_str);
-            set_str_ptr(str_ptr()-1);
-
-            for (j = str_start((str_ptr() + 1) - 65536L); j <= pool_ptr() - 1; j++)
-                set_str_pool(j - ext_delimiter() + area_delimiter() + 1, str_pool(j));
-
-            set_pool_ptr(pool_ptr() - ext_delimiter() + area_delimiter() + 1);
-        }
-
-        set_cur_ext(slow_make_string());
-    }
-}
-
 
 str_number
 make_name_string(void)

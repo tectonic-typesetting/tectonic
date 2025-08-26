@@ -6,7 +6,9 @@ use std::{ptr, slice};
 
 mod memory;
 
-use crate::c_api::pool::{rs_make_string, StringPool, EMPTY_STRING};
+use crate::c_api::pool::{
+    rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
+};
 pub use memory::*;
 
 pub const NULL_CS: usize = 0x220001;
@@ -547,6 +549,90 @@ pub fn rs_make_utf16_name(engine: &mut EngineCtx) {
         .map(|s| s.encode_utf16().collect());
 }
 
+pub fn rs_begin_name(globals: &mut Globals<'_, '_>) {
+    globals.engine.area_delimiter = 0;
+    globals.engine.ext_delimiter = 0;
+    globals.engine.quoted_filename = false;
+    globals.engine.file_name_quote_char = 0;
+}
+
+pub fn rs_end_name(globals: &mut Globals<'_, '_>) {
+    if globals.strings.str_ptr + 3 > globals.strings.max_strings {
+        todo!("overflow(\"number of strings\", max_strings() - init_str_ptr)");
+    }
+
+    /* area_delimiter is the length from the start of the filename to the
+     * directory seperator "/", which we use to construct the stringpool
+     * string `cur_area`. If there was already a string in the stringpool for
+     * the area, reuse it. */
+
+    if globals.engine.area_delimiter == 0 {
+        globals.engine.cur_area = EMPTY_STRING;
+    } else {
+        globals.engine.cur_area = globals.strings.str_ptr as StrNumber;
+        globals.strings.str_start[globals.strings.str_ptr + 1 - 0x10000] =
+            globals.strings.str_start[globals.strings.str_ptr - TOO_BIG_CHAR]
+                + globals.engine.area_delimiter as u32;
+        globals.strings.str_ptr += 1;
+
+        let temp_str = rs_search_string(globals.strings, globals.engine.cur_area);
+
+        if temp_str > 0 {
+            globals.engine.cur_area = temp_str;
+            globals.strings.str_ptr -= 1;
+
+            for j in (globals.strings.str_start[globals.strings.str_ptr + 1 - 0x10000] as usize)
+                ..globals.strings.pool_ptr
+            {
+                globals.strings.str_pool[j - globals.engine.area_delimiter] =
+                    globals.strings.str_pool[j];
+            }
+
+            globals.strings.pool_ptr -= globals.engine.area_delimiter;
+        }
+    }
+
+    /* ext_delimiter is the length from the start of the filename to the
+     * extension '.' delimiter, which we use to construct the stringpool
+     * strings `cur_ext` and `cur_name`. */
+
+    if globals.engine.ext_delimiter == 0 {
+        globals.engine.cur_ext = EMPTY_STRING;
+        globals.engine.cur_name = rs_slow_make_string(globals.strings);
+    } else {
+        globals.engine.cur_name = globals.strings.str_ptr as StrNumber;
+        globals.strings.str_start[globals.strings.str_ptr + 1 - 0x10000] =
+            globals.strings.str_start[globals.strings.str_ptr - TOO_BIG_CHAR]
+                + globals.engine.ext_delimiter as u32
+                - globals.engine.area_delimiter as u32
+                - 1;
+        globals.strings.str_ptr += 1;
+
+        globals.engine.cur_ext = rs_make_string(globals.strings);
+        globals.strings.str_ptr -= 1;
+
+        let temp_str = rs_search_string(globals.strings, globals.engine.cur_name);
+
+        if temp_str > 0 {
+            globals.engine.cur_name = temp_str;
+            globals.strings.str_ptr -= 1;
+
+            for j in (globals.strings.str_start[globals.strings.str_ptr + 1 - 0x10000] as usize)
+                ..globals.strings.pool_ptr
+            {
+                globals.strings.str_pool
+                    [j - globals.engine.ext_delimiter + globals.engine.area_delimiter + 1] =
+                    globals.strings.str_pool[j];
+            }
+
+            globals.strings.pool_ptr -=
+                globals.engine.ext_delimiter - globals.engine.area_delimiter - 1;
+        }
+    }
+
+    globals.engine.cur_ext = rs_slow_make_string(globals.strings);
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
     if str.is_null() {
@@ -579,4 +665,14 @@ pub extern "C" fn pack_job_name(s: *const libc::c_char) {
 #[no_mangle]
 pub extern "C" fn make_utf16_name() {
     ENGINE_CTX.with_borrow_mut(|engine| rs_make_utf16_name(engine))
+}
+
+#[no_mangle]
+pub extern "C" fn begin_name() {
+    Globals::with(|globals| rs_begin_name(globals))
+}
+
+#[no_mangle]
+pub extern "C" fn end_name() {
+    Globals::with(|globals| rs_end_name(globals))
 }
