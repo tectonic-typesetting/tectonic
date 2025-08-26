@@ -22,8 +22,8 @@
 /* in XeTeX, "halfword" fields are at least 32 bits, so we'll use those for
  * tag and line so that the sync field size is only one memory_word. */
 
-#define SYNCTEX_TAG_MODEL(NODE,TYPE) mem[NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE].b32.s0
-#define SYNCTEX_LINE_MODEL(NODE,TYPE) mem[NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE].b32.s1
+#define SYNCTEX_TAG_MODEL(NODE,TYPE) mem_ptr(NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE)->b32.s0
+#define SYNCTEX_LINE_MODEL(NODE,TYPE) mem_ptr(NODE + TYPE##_NODE_SIZE - SYNCTEX_FIELD_SIZE)->b32.s1
 
 #define GLUE_NODE_SIZE MEDIUM_NODE_SIZE
 #define KERN_NODE_SIZE MEDIUM_NODE_SIZE
@@ -43,11 +43,11 @@
 #define glue_node 10
 #define kern_node 11
 
-#define SYNCTEX_TYPE(NODE) mem[NODE].b16.s1
-#define SYNCTEX_SUBTYPE(NODE) mem[NODE].b16.s0
-#define SYNCTEX_WIDTH(NODE) mem[NODE + width_offset].b32.s1
-#define SYNCTEX_DEPTH(NODE) mem[NODE + depth_offset].b32.s1
-#define SYNCTEX_HEIGHT(NODE) mem[NODE + height_offset].b32.s1
+#define SYNCTEX_TYPE(NODE) mem_ptr(NODE)->b16.s1
+#define SYNCTEX_SUBTYPE(NODE) mem_ptr(NODE)->b16.s0
+#define SYNCTEX_WIDTH(NODE) mem_ptr(NODE + width_offset)->b32.s1
+#define SYNCTEX_DEPTH(NODE) mem_ptr(NODE + depth_offset)->b32.s1
+#define SYNCTEX_HEIGHT(NODE) mem_ptr(NODE + height_offset)->b32.s1
 
 /*  For non-GCC compilation.  */
 #if !defined(__GNUC__) || (__GNUC__ < 2)
@@ -234,7 +234,7 @@ synctex_dot_open(void)
     if (synctex_ctxt.file)
         return synctex_ctxt.file;
 
-    tmp = gettexstring(job_name);
+    tmp = gettexstring(job_name());
     len = strlen(tmp);
 
     if (len <= 0)
@@ -337,10 +337,10 @@ void synctex_start_input(void)
          *  use the 16 other bits to store the column number */
         synctex_ctxt.synctex_tag_counter = 0;
         /* was this, but this looks like a bug */
-        /* cur_input.synctex_tag = 0; */
+        /* cur_input_ptr()->synctex_tag = 0; */
         return;
     }
-    cur_input.synctex_tag = (int) synctex_ctxt.synctex_tag_counter;     /*  -> *TeX.web  */
+    cur_input_ptr()->synctex_tag = (int) synctex_ctxt.synctex_tag_counter;     /*  -> *TeX.web  */
     if (synctex_ctxt.synctex_tag_counter == 1) {
         /*  this is the first file TeX ever opens, in general \jobname.tex we
          *  do not know yet if synchronization will ever be enabled so we have
@@ -357,7 +357,7 @@ void synctex_start_input(void)
         || (INVALID_HANDLE != synctex_dot_open())) {
         char *tmp = get_current_name();
         /* Always record the input, even if INTPAR(synctex) is 0 */
-        synctex_record_input(cur_input.synctex_tag, tmp);
+        synctex_record_input(cur_input().synctex_tag, tmp);
         free(tmp);
     }
     return;
