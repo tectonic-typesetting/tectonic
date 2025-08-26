@@ -6,6 +6,7 @@ use std::{ptr, slice};
 
 mod memory;
 
+use crate::c_api::is_dir_sep;
 use crate::c_api::pool::{
     rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
 };
@@ -633,6 +634,96 @@ pub fn rs_end_name(globals: &mut Globals<'_, '_>) {
     globals.engine.cur_ext = rs_slow_make_string(globals.strings);
 }
 
+pub fn rs_more_name(globals: &mut Globals<'_, '_>, c: u16) -> bool {
+    if globals.engine.stop_at_space && globals.engine.file_name_quote_char == 0 && c == ' ' as u16 {
+        return false;
+    }
+
+    if globals.engine.stop_at_space
+        && globals.engine.file_name_quote_char != 0
+        && c == globals.engine.file_name_quote_char
+    {
+        globals.engine.file_name_quote_char = 0;
+        return true;
+    }
+
+    if globals.engine.stop_at_space
+        && globals.engine.file_name_quote_char == 0
+        && (c == '"' as u16 || c == '\'' as u16)
+    {
+        globals.engine.file_name_quote_char = c;
+        globals.engine.quoted_filename = true;
+        return true;
+    }
+
+    if globals.strings.pool_ptr + 1 > globals.strings.pool_size {
+        todo!("overflow(\"pool size\", pool_size() - init_pool_ptr)");
+    }
+
+    globals.strings.str_pool[globals.strings.pool_ptr as usize] = c;
+    globals.strings.pool_ptr += 1;
+
+    if is_dir_sep(char::from_u32(c as u32).unwrap_or(char::REPLACEMENT_CHARACTER)) {
+        globals.engine.area_delimiter = globals.strings.cur_length();
+        globals.engine.ext_delimiter = 0;
+    } else if c == '.' as u16 {
+        globals.engine.ext_delimiter = globals.strings.cur_length();
+    }
+
+    true
+}
+
+pub fn rs_make_name_string(globals: &mut Globals<'_, '_>) -> StrNumber {
+    if globals.strings.pool_ptr
+        + globals
+            .engine
+            .name_of_file
+            .as_ref()
+            .map(|n| n.count_bytes())
+            .unwrap_or(0)
+        > globals.strings.pool_size
+        || globals.strings.str_ptr == globals.strings.max_strings
+    {
+        return '?' as StrNumber;
+    }
+
+    rs_make_utf16_name(globals.engine);
+
+    // TODO: Don't allocate and set name_of_file, just use encode_utf16
+    if let Some(s) = globals.engine.name_of_file_utf16.as_deref() {
+        for &c in s {
+            globals.strings.str_pool[globals.strings.pool_ptr] = c;
+            globals.strings.pool_ptr += 1;
+        }
+    }
+
+    let res = rs_make_string(globals.strings);
+
+    let save = (
+        globals.engine.area_delimiter,
+        globals.engine.ext_delimiter,
+        globals.engine.name_in_progress,
+        globals.engine.stop_at_space,
+    );
+    globals.engine.name_in_progress = true;
+    rs_begin_name(globals);
+    globals.engine.stop_at_space = false;
+
+    let name = globals.engine.name_of_file_utf16.take();
+    // Needed for side-effects
+    name.as_deref()
+        .and_then(|s| s.iter().find(|&c| !rs_more_name(globals, *c)));
+    globals.engine.name_of_file_utf16 = name;
+
+    globals.engine.stop_at_space = save.3;
+    rs_end_name(globals);
+    globals.engine.name_in_progress = save.2;
+    globals.engine.ext_delimiter = save.1;
+    globals.engine.area_delimiter = save.0;
+
+    res
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
     if str.is_null() {
@@ -675,4 +766,14 @@ pub extern "C" fn begin_name() {
 #[no_mangle]
 pub extern "C" fn end_name() {
     Globals::with(|globals| rs_end_name(globals))
+}
+
+#[no_mangle]
+pub extern "C" fn more_name(c: u16) -> bool {
+    Globals::with(|globals| rs_more_name(globals, c))
+}
+
+#[no_mangle]
+pub extern "C" fn make_name_string() -> StrNumber {
+    Globals::with(|globals| rs_make_name_string(globals))
 }

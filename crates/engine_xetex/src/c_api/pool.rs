@@ -52,6 +52,11 @@ impl StringPool {
         let str = str as usize;
         self.str_start[str] as usize..self.str_start[str + 1] as usize
     }
+
+    /// The length of the current string in the pool
+    pub fn cur_length(&self) -> usize {
+        self.pool_ptr - self.str_start[self.str_ptr - TOO_BIG_CHAR] as usize
+    }
 }
 
 #[no_mangle]
