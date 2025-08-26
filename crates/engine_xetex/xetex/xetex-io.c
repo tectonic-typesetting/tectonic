@@ -209,11 +209,11 @@ apply_normalization(uint32_t* buf, int len, int norm)
     }
 
     status = TECkit_ConvertBuffer(*normPtr, (Byte*)buf, len * sizeof(UInt32), &inUsed,
-                (Byte*)&buffer[first], sizeof(*buffer) * (buf_size - first), &outUsed, 1);
+                (Byte*)&buffer_ptr()[first], sizeof(buffer(0)) * (buf_size - first), &outUsed, 1);
     TECkit_ResetConverter(*normPtr);
     if (status != kStatus_NoError)
         buffer_overflow();
-    last = first + outUsed / sizeof(*buffer);
+    last = first + outUsed / sizeof(buffer(0));
 }
 
 
@@ -279,13 +279,13 @@ input_line(UFILE* f)
 
             default: // none
                 outLen = ucnv_toAlgorithmic(UCNV_UTF32_NativeEndian, cnv,
-                                            (char*)&buffer[first], sizeof(*buffer) * (buf_size - first),
+                                            (char*)&buffer_ptr()[first], sizeof(buffer(0)) * (buf_size - first),
                                             byteBuffer, bytesRead, &errorCode);
                 if (errorCode != 0) {
                     conversion_error((int)errorCode);
                     return false;
                 }
-                outLen /= sizeof(*buffer);
+                outLen /= sizeof(buffer(0));
                 last = first + outLen;
                 break;
         }
@@ -322,10 +322,10 @@ input_line(UFILE* f)
 
             default: // none
                 if (last < buf_size && i != EOF && i != '\n' && i != '\r')
-                    buffer[last++] = i;
+                    set_buffer(last++, i);
                 if (i != EOF && i != '\n' && i != '\r')
                     while (last < buf_size && (i = get_uni_c(f)) != EOF && i != '\n' && i != '\r')
-                        buffer[last++] = i;
+                        set_buffer(last++, i);
 
                 if (i == EOF && errno != EINTR && last == first)
                     return false;
@@ -341,13 +341,13 @@ input_line(UFILE* f)
     if (i == '\r')
         f->skipNextLF = 1;
 
-    buffer[last] = ' ';
+    set_buffer(last, ' ');
     if (last >= max_buf_stack)
         max_buf_stack = last;
 
     /* Trim trailing space or EOL characters.  */
 #define IS_SPC_OR_EOL(c) ((c) == ' ' || (c) == '\r' || (c) == '\n')
-    while (last > first && IS_SPC_OR_EOL(buffer[last - 1]))
+    while (last > first && IS_SPC_OR_EOL(buffer(last - 1)))
         --last;
 
     return true;

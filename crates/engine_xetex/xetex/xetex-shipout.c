@@ -1765,7 +1765,7 @@ out_what(int32_t p)
 
         write_open[j] = true;
 
-        if (log_opened) {
+        if (log_opened()) {
             old_setting = selector();
             if (INTPAR(tracing_online) <= 0)
                 set_selector(SELECTOR_LOG_ONLY);
@@ -2174,7 +2174,7 @@ write_out(int32_t p)
         else
             set_selector(SELECTOR_TERM_AND_LOG);
 
-        if (!log_opened)
+        if (!log_opened())
             set_selector(SELECTOR_TERM_ONLY);
 
         // Tectonic: don't emit warnings for shell-escape invocations when
