@@ -10677,46 +10677,6 @@ scan_file_name(void)
     warning_index = save_warning_index;
 }
 
-
-void
-open_log_file(void)
-{
-    unsigned char old_setting;
-    int32_t k;
-    int32_t l;
-
-    old_setting = selector();
-    if (job_name() == 0)
-        set_job_name(maketexstring("texput"));
-
-    pack_job_name(".log");
-
-    set_log_file(ttstub_output_open(name_of_file(), 0));
-    if (log_file() == INVALID_HANDLE)
-        _tt_abort ("cannot open log file output \"%s\"", name_of_file());
-
-    set_texmf_log_name(make_name_string());
-    set_selector(SELECTOR_LOG_ONLY);
-    set_log_opened(true);
-
-    set_input_stack(input_ptr(), cur_input());
-
-    /* Here we catch the log file up with anything that has already been
-     * printed. The eqtb reference is end_line_char. */
-
-    print_nl_cstr("**");
-    l = input_stack(0).limit;
-    if (buffer(l) == INTPAR(end_line_char))
-        l--;
-
-    for (k = 1; k <= l; k++)
-        print(buffer(k));
-
-    print_ln();
-    set_selector(old_setting + 2);
-}
-
-
 void
 start_input(const char *primary_input_name)
 {
