@@ -38,7 +38,7 @@ Documentation fixes:
 
 - Update the Arch Linux package URL ([#1119], [@felixonmars])
 - Document `shell_escape_cwd` in `Tectonic.toml` ([#1116], [@eljamm])
-- Fix a type in the Unicode section ([#1111], [@goyalyashpal])
+- Fix a typo in the Unicode section ([#1111], [@goyalyashpal])
 - Various other corrections ([#1065], [#1068], [@ColeFrench])
 
 [@CraftSpider]: https://github.com/CraftSpider
