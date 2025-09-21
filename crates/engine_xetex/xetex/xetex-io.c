@@ -26,7 +26,7 @@ tt_xetex_open_input (int filefmt)
 
     if (filefmt == TTBC_FILE_FORMAT_TECTONIC_PRIMARY) {
         handle = ttstub_input_open_primary ();
-    } else if (name_of_file[0] == '|') {
+    } else if (name_of_file()[0] == '|') {
         // Tectonic TODO: issue #859. In mainline XeTeX, a pipe symbol indicates
         // piped input from an external command via `popen()`. Now that we have
         // shell-escape support we could also support this, but we don't have a
@@ -37,7 +37,7 @@ tt_xetex_open_input (int filefmt)
         capture_to_diagnostic(NULL);
         return INVALID_HANDLE;
     } else {
-        handle = ttstub_input_open (name_of_file, (ttbc_file_format) filefmt, 0);
+        handle = ttstub_input_open (name_of_file(), (ttbc_file_format) filefmt, 0);
     }
 
     if (handle == INVALID_HANDLE)
@@ -47,9 +47,9 @@ tt_xetex_open_input (int filefmt)
         abspath_of_input_file[0] = '\0';
     }
 
-    name_length = strlen(name_of_file);
+//    name_length = strlen(name_of_file());
     free(name_of_input_file);
-    name_of_input_file = xstrdup(name_of_file);
+    name_of_input_file = xstrdup(name_of_file());
     return handle;
 }
 
@@ -209,11 +209,11 @@ apply_normalization(uint32_t* buf, int len, int norm)
     }
 
     status = TECkit_ConvertBuffer(*normPtr, (Byte*)buf, len * sizeof(UInt32), &inUsed,
-                (Byte*)&buffer[first], sizeof(*buffer) * (buf_size - first), &outUsed, 1);
+                (Byte*)&buffer_ptr()[first], sizeof(buffer(0)) * (buf_size - first), &outUsed, 1);
     TECkit_ResetConverter(*normPtr);
     if (status != kStatus_NoError)
         buffer_overflow();
-    last = first + outUsed / sizeof(*buffer);
+    last = first + outUsed / sizeof(buffer(0));
 }
 
 
@@ -279,13 +279,13 @@ input_line(UFILE* f)
 
             default: // none
                 outLen = ucnv_toAlgorithmic(UCNV_UTF32_NativeEndian, cnv,
-                                            (char*)&buffer[first], sizeof(*buffer) * (buf_size - first),
+                                            (char*)&buffer_ptr()[first], sizeof(buffer(0)) * (buf_size - first),
                                             byteBuffer, bytesRead, &errorCode);
                 if (errorCode != 0) {
                     conversion_error((int)errorCode);
                     return false;
                 }
-                outLen /= sizeof(*buffer);
+                outLen /= sizeof(buffer(0));
                 last = first + outLen;
                 break;
         }
@@ -322,10 +322,10 @@ input_line(UFILE* f)
 
             default: // none
                 if (last < buf_size && i != EOF && i != '\n' && i != '\r')
-                    buffer[last++] = i;
+                    set_buffer(last++, i);
                 if (i != EOF && i != '\n' && i != '\r')
                     while (last < buf_size && (i = get_uni_c(f)) != EOF && i != '\n' && i != '\r')
-                        buffer[last++] = i;
+                        set_buffer(last++, i);
 
                 if (i == EOF && errno != EINTR && last == first)
                     return false;
@@ -341,13 +341,13 @@ input_line(UFILE* f)
     if (i == '\r')
         f->skipNextLF = 1;
 
-    buffer[last] = ' ';
+    set_buffer(last, ' ');
     if (last >= max_buf_stack)
         max_buf_stack = last;
 
     /* Trim trailing space or EOL characters.  */
 #define IS_SPC_OR_EOL(c) ((c) == ' ' || (c) == '\r' || (c) == '\n')
-    while (last > first && IS_SPC_OR_EOL(buffer[last - 1]))
+    while (last > first && IS_SPC_OR_EOL(buffer(last - 1)))
         --last;
 
     return true;
@@ -479,45 +479,6 @@ get_uni_c(UFILE* f)
 
 
 void
-make_utf16_name(void)
-{
-    unsigned char* s = (unsigned char *) name_of_file;
-    uint32_t rval;
-    uint16_t* t;
-    static int name16len = 0;
-    if (name16len <= name_length) {
-        free(name_of_file16);
-        name16len = name_length + 10;
-        name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
-    }
-    t = name_of_file16;
-
-    while (s < (unsigned char *) name_of_file + name_length) {
-        uint16_t extraBytes;
-        rval = *(s++);
-        extraBytes = bytesFromUTF8[rval];
-        switch (extraBytes) {   /* note: code falls through cases! */
-            case 5: rval <<= 6; if (*s) rval += *(s++);
-            case 4: rval <<= 6; if (*s) rval += *(s++);
-            case 3: rval <<= 6; if (*s) rval += *(s++);
-            case 2: rval <<= 6; if (*s) rval += *(s++);
-            case 1: rval <<= 6; if (*s) rval += *(s++);
-            case 0: ;
-        };
-        rval -= offsetsFromUTF8[extraBytes];
-        if (rval > 0xffff) {
-            rval -= 0x10000;
-            *(t++) = 0xd800 + rval / 0x0400;
-            *(t++) = 0xdc00 + rval % 0x0400;
-        } else {
-            *(t++) = rval;
-        }
-    }
-    name_length16 = t - name_of_file16;
-}
-
-
-void
 open_or_close_in(void)
 {
     unsigned char c, n;
@@ -535,20 +496,20 @@ open_or_close_in(void)
     if (c != 0) {
         scan_optional_equals();
         scan_file_name();
-        pack_file_name(cur_name, cur_area, cur_ext);
+        pack_file_name(cur_name(), cur_area(), cur_ext());
 
         if (u_open_in(&read_file[n], TTBC_FILE_FORMAT_TEX, "rb", INTPAR(xetex_default_input_mode),
                       INTPAR(xetex_default_input_encoding))) {
             make_utf16_name();
-            name_in_progress = true;
+            set_name_in_progress(true);
             begin_name();
-            stop_at_space = false;
+            set_stop_at_space(false);
             k = 0;
-            while ((k < name_length16) && (more_name(name_of_file16[k])))
+            while ((k < name_length16()) && (more_name(name_of_file16()[k])))
                 k++;
-            stop_at_space = true;
+            set_stop_at_space(true);
             end_name();
-            name_in_progress = false;
+            set_name_in_progress(false);
             read_open[n] = JUST_OPEN;
         }
     }

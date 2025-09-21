@@ -5,30 +5,11 @@
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
+#include "xetex_bindings.h"
 
 #include <stdarg.h>
 
 /* WEBby error-handling code: */
-
-static void
-pre_error_message (void)
-{
-    /* FKA normalize_selector(): */
-
-    if (log_opened)
-        selector = SELECTOR_TERM_AND_LOG;
-    else
-        selector = SELECTOR_TERM_ONLY;
-
-    if (job_name == 0)
-        open_log_file();
-
-    if (interaction == BATCH_MODE)
-        selector--;
-
-    error_here_with_diagnostic("");
-}
-
 
 /*82: */
 static void
@@ -36,16 +17,16 @@ post_error_message(int need_to_print_it)
 {
     capture_to_diagnostic(NULL);
 
-    if (interaction == ERROR_STOP_MODE)
-        interaction = SCROLL_MODE;
+    if (interaction() == ERROR_STOP_MODE)
+        set_interaction(SCROLL_MODE);
 
-    if (need_to_print_it && log_opened)
+    if (need_to_print_it && log_opened())
         error();
 
     history = HISTORY_FATAL_ERROR;
     close_files_and_terminate();
     tt_cleanup();
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
 }
 
 
@@ -75,8 +56,8 @@ error(void)
         _tt_abort("halted after 100 potentially-recoverable errors");
     }
 
-    if (interaction > BATCH_MODE)
-        selector--;
+    if (interaction() > BATCH_MODE)
+        set_selector(selector()-1);
 
     if (use_err_help) {
         print_ln();
@@ -89,8 +70,8 @@ error(void)
     }
 
     print_ln();
-    if (interaction > BATCH_MODE)
-        selector++;
+    if (interaction() > BATCH_MODE)
+        set_selector(selector()+1);
     print_ln();
 }
 
@@ -105,7 +86,7 @@ fatal_error(const char* s)
 
     close_files_and_terminate();
     tt_cleanup();
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
     _tt_abort("%s", s);
 }
 
