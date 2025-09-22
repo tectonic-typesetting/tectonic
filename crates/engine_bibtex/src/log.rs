@@ -588,29 +588,22 @@ pub(crate) fn nonexistent_cross_reference_error(
     Ok(())
 }
 
-pub(crate) fn output_bbl_line(ctx: &mut Bibtex<'_, '_>, buffers: &mut GlobalBuffer) {
-    if buffers.init(BufTy::Out) != 0 {
-        let mut init = buffers.init(BufTy::Out);
-        while init > 0 {
-            if LexClass::of(buffers.at(BufTy::Out, init - 1)) == LexClass::Whitespace {
-                init -= 1;
-            } else {
-                break;
-            }
-        }
-        buffers.set_init(BufTy::Out, init);
-        if init == 0 {
+pub(crate) fn output_bbl_line(ctx: &mut Bibtex<'_, '_>, line: &[u8]) {
+    if !line.is_empty() {
+        let pos = line
+            .iter()
+            .rposition(|b| LexClass::of(*b) != LexClass::Whitespace)
+            .unwrap_or(0);
+        if pos == 0 {
             return;
         }
-        let slice = &buffers.buffer(BufTy::Out)[..init];
         ctx.engine
             .get_output(ctx.bbl_file.unwrap())
-            .write_all(slice)
+            .write_all(&line[..pos + 1])
             .unwrap();
     }
     writeln!(ctx.engine.get_output(ctx.bbl_file.unwrap())).unwrap();
     ctx.bbl_line_num += 1;
-    buffers.set_init(BufTy::Out, 0);
 }
 
 pub(crate) fn skip_token_print(
