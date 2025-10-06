@@ -1,15 +1,13 @@
 // Copyright 2018 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! A decoder for the XDV and SPX file formats used by Tectonic and XeTeX.
 //!
-//! Both of these file formats are derived from the venerable “device
-//! independent” (DVI) format used by TeX. The XDV format (name presumably
-//! meaning something like “XeTeX DVI” or “extended DVI”) adds a few codes
+//! Both of these file formats are derived from the venerable "device
+//! independent" (DVI) format used by TeX. The XDV format (name presumably
+//! meaning something like "XeTeX DVI" or "extended DVI") adds a few codes
 //! needed to express native fonts in the output. The SPX format
-//! (“semantically-paginated XDV”) is essentially the same as XDV, but
+//! ("semantically-paginated XDV") is essentially the same as XDV, but
 //! expresses output that is not paginated for print — this is what Tectonic
 //! uses to produce its HTML output.
 
@@ -19,7 +17,6 @@ use std::{
     fmt::{Debug, Display, Error as FmtError, Formatter},
     io::{Error as IoError, Read, Seek, SeekFrom},
     marker::PhantomData,
-    mem,
 };
 
 /// Errors that can occur when parsing XDV/SPX files.
@@ -217,7 +214,7 @@ pub enum FileType {
     /// Traditional XDV.
     Xdv,
 
-    /// Tectonic’s SPX (“semanticallly-paginated XDV”).
+    /// Tectonic’s SPX ("semanticallly-paginated XDV").
     Spx,
 }
 
@@ -281,7 +278,7 @@ impl<T: XdvEvents> XdvParser<T> {
 
     /// Parse an entire XDV/SPX stream.
     ///
-    /// Returns the input “events” variable and the number of bytes that were
+    /// Returns the input "events" variable and the number of bytes that were
     /// processed.
     ///
     /// Because the `io::Read` trait is used, the event result type must
@@ -302,7 +299,7 @@ impl<T: XdvEvents> XdvParser<T> {
     /// seekable, and starts by processing the expected "postamble" structure of
     /// the file which provides summary information about the stream contents.
     ///
-    /// Returns the input “events” variable.
+    /// Returns the input "events" variable.
     ///
     /// Because traits from `std::io` are used, the event result type must
     /// implement `From<std::io::Error>` as well as `From<XdvError>`.
@@ -403,11 +400,8 @@ impl<T: XdvEvents> XdvParser<T> {
                 // already-read bytes so that the parser gets a nice
                 // contiguous set of bytes to look at. The copy may involve
                 // overlapping memory regions (imagine we read 4096 bytes but
-                // only consume 1) so we have to get unsafe.
-                let ptr = buf.as_mut_ptr();
-                unsafe {
-                    std::ptr::copy(ptr.add(n_consumed), ptr, n_saved_bytes);
-                }
+                // only consume 1).
+                buf.copy_within(n_consumed..n_in_buffer, 0);
             }
 
             if n_in_buffer != 0 && n_consumed == 0 {
@@ -1229,7 +1223,8 @@ impl<'a, T: XdvEvents> Cursor<'a, T> {
             return Err(InternalError::NeedMoreData);
         }
 
-        let rv = unsafe { mem::transmute(self.buf[0]) };
+        // TODO: Once we're willing to bump MSRV to 1.87, switch to `cast_signed`
+        let rv = self.buf[0] as i8;
         self.buf = &self.buf[1..];
         self.offset += 1;
         Ok(rv)
@@ -1418,4 +1413,54 @@ enum NativeFontFlags {
     Extend = 0x1000,
     Slant = 0x2000,
     Embolden = 0x4000,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::ffi::OsStr;
+    use std::fs;
+    use std::path::{Path, PathBuf};
+
+    fn tex_outputs() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../tests/tex-outputs")
+            .canonicalize()
+            .unwrap()
+    }
+
+    // Run the parser on all XDV files in tex-outputs, to ensure it successfully handles
+    // all the outputs we expect to produce.
+    #[test]
+    fn test_output_xdvs() {
+        struct TestEvents;
+
+        impl XdvEvents for TestEvents {
+            type Error = XdvError;
+
+            fn handle_header(
+                &mut self,
+                filetype: FileType,
+                comment: &[u8],
+            ) -> Result<(), Self::Error> {
+                assert_eq!(filetype, FileType::Xdv);
+                assert_eq!(comment, b"tectonic");
+                Ok(())
+            }
+        }
+
+        let xdvs = fs::read_dir(tex_outputs()).unwrap().filter_map(|f| {
+            f.ok()
+                .filter(|dir| dir.path().extension() == Some(OsStr::new("xdv")))
+        });
+
+        for xdv in xdvs {
+            let file = fs::read(xdv.path()).unwrap();
+
+            let mut parser = XdvParser::new(TestEvents);
+            let (consumed, keep_going) = parser.parse(&file).unwrap();
+            assert!(keep_going);
+            assert_eq!(consumed, file.len());
+        }
+    }
 }

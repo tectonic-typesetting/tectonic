@@ -1,9 +1,11 @@
 # Copyright 2018-2019 the Tectonic Project
 # Licensed under the MIT License.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_xdv"
-version = "0.2.2"
+version = "0.2.2+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A decoder for the XDV and SPX file formats used by XeTeX and Tectonic.
@@ -13,10 +15,10 @@ documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 byteorder = "^1.4"
 
 [dev-dependencies]
-clap = "^2.33"
+clap = { version = "4.5.1", features = ["cargo"] }

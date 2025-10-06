@@ -1,0 +1,64 @@
+name: 'pkgconfig-deps'
+description: 'Install Tectonic pkg-config dependencies'
+inputs:
+  install-all-deps:
+    description: "Whether to install harfbuzz and other possibly-vendored dependencies"
+    required: false
+    default: 'false'
+runs:
+  using: "composite"
+  steps:
+    - name: "Install pkg-config dependencies (Ubuntu)"
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        # libfuse2 here is to support the AppImage build associated with
+        # the "primary" Linux artifact.
+        pkgs="
+          libgraphite2-dev
+          libfontconfig1-dev
+          libfuse2
+          libicu-dev
+          libssl-dev
+          openssl
+          zlib1g-dev"
+        if [[ "${{ inputs.install-all-deps }}" == "true" ]] ; then
+          pkgs="$pkgs libharfbuzz-dev"
+        fi
+
+        sudo apt-get update
+        sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkgs
+    - name: "Install pkg-config dependencies (macOS)"
+      if: ${{ runner.os == 'macOS' }}
+      shell: bash
+      run: |
+        pkgs="
+          freetype
+          graphite2
+          icu4c
+          libpng
+          openssl"
+        if [[ $INSTALL_ALL_DEPS == True ]] ; then
+          pkgs="$pkgs harfbuzz"
+        fi
+
+        brew install $pkgs
+        cellar=$(brew --cellar)
+        icupcdir="$(echo $cellar/icu4c*/*/lib/pkgconfig)"
+        echo "PKG_CONFIG_PATH=$icupcdir" >> "$GITHUB_ENV"
+    - name: "Set MSYS64 paths (Windows)"
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: Add-Content -Value "PATH=C:\msys64\usr\bin;C:\msys64\mingw64\bin;$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
+    - name: "Install pkg-config dependencies (Windows)"
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash
+      run: |
+        pacman -S --noconfirm \
+          mingw-w64-x86_64-toolchain \
+          mingw-w64-x86_64-pkgconf \
+          mingw-w64-x86_64-fontconfig \
+          mingw-w64-x86_64-freetype \
+          mingw-w64-x86_64-icu
+        # Format file locking issue workaround:
+        echo "RUST_TEST_THREADS=1" >> "$GITHUB_ENV"

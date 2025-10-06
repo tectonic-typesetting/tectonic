@@ -1,8 +1,6 @@
 // Copyright 2018-2020 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Code for locally caching compiled format files.
 
 use std::{
@@ -55,7 +53,7 @@ impl FormatCache {
         let mut p = self.formats_base.clone();
         p.push(format!(
             "{}-{}-{}.fmt",
-            self.bundle_digest.to_string(),
+            self.bundle_digest,
             stem,
             crate::FORMAT_SERIAL
         ));

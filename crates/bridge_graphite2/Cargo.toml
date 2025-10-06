@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_bridge_graphite2"
-version = "0.2.2"
+version = "0.2.2+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose the graphite2 library to Rust/Cargo.
@@ -15,11 +17,14 @@ documentation = "https://docs.rs/tectonic_bridge_graphite2"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 links = "graphite2"
 
+[dependencies]
+libc = "0.2"
+
 [build-dependencies]
-tectonic_dep_support = { path = "../dep_support", version =">=0.1.0,<1"}
+tectonic_dep_support = { path = "../dep_support", version = ">=0.1.0,<1" }
 
 [package.metadata.internal_dep_versions]
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"

@@ -1,6 +1,9 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! XeTeX engine build script. Builds and links our locally modified copy of the XeTeX typesetting
+//! engine.
+
 use std::{env, path::PathBuf};
 use tectonic_cfg_support::*;
 
@@ -15,7 +18,10 @@ fn main() {
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
     let graphite2_include_path = env::var("DEP_GRAPHITE2_INCLUDE_PATH").unwrap();
     let graphite2_static = !env::var("DEP_GRAPHITE2_DEFINE_STATIC").unwrap().is_empty();
+    let freetype_include_path = env::var("DEP_FREETYPE2_INCLUDE_PATH").unwrap();
     let harfbuzz_include_path = env::var("DEP_HARFBUZZ_INCLUDE_PATH").unwrap();
+    let fontconfig_include_path = env::var("DEP_FONTCONFIG_INCLUDE_PATH");
+    let icu_include_path = env::var("DEP_ICUUC_INCLUDE_PATH").unwrap();
 
     // If we want to profile, the default assumption is that we must force the
     // compiler to include frame pointers. We whitelist platforms that are
@@ -25,6 +31,7 @@ fn main() {
     let profile_target_requires_frame_pointer: bool =
         target_cfg!(not(all(target_os = "linux", target_arch = "x86_64")));
 
+    #[allow(unexpected_cfgs)]
     const PROFILE_BUILD_ENABLED: bool = cfg!(feature = "profile");
 
     let profile_config = |cfg: &mut cc::Build| {
@@ -72,9 +79,26 @@ fn main() {
         cxx_cfg.include(item);
     }
 
+    for item in freetype_include_path.split(';') {
+        c_cfg.include(item);
+        cxx_cfg.include(item);
+    }
+
     for item in graphite2_include_path.split(';') {
         c_cfg.include(item);
         cxx_cfg.include(item);
+    }
+
+    for item in icu_include_path.split(';') {
+        c_cfg.include(item);
+        cxx_cfg.include(item);
+    }
+
+    if let Ok(fc_includes) = fontconfig_include_path {
+        for item in fc_includes.split(';') {
+            c_cfg.include(item);
+            cxx_cfg.include(item);
+        }
     }
 
     if graphite2_static {

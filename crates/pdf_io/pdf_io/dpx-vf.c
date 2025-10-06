@@ -246,7 +246,7 @@ process_vf_file (rust_input_handle_t vf_handle, int thisfont)
 int vf_locate_font (const char *tex_name, spt_t ptsize)
 {
     int thisfont = -1, i;
-    rust_input_handle_t vf_handle = NULL;
+    rust_input_handle_t vf_handle = INVALID_HANDLE;
 
     /* Has this name and ptsize already been loaded as a VF? */
     for (i = 0; i < num_vf_fonts; i++) {
@@ -259,10 +259,10 @@ int vf_locate_font (const char *tex_name, spt_t ptsize)
 
     vf_handle = ttstub_input_open (tex_name, TTBC_FILE_FORMAT_VF, 0);
 
-    if (vf_handle == NULL)
+    if (vf_handle == INVALID_HANDLE)
         vf_handle = ttstub_input_open (tex_name, TTBC_FILE_FORMAT_OVF, 0);
 
-    if (vf_handle == NULL)
+    if (vf_handle == INVALID_HANDLE)
         return -1;
 
     if (dpx_conf.verbose_level > 0)

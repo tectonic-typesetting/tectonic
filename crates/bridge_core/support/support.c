@@ -113,6 +113,13 @@ _ttbc_get_error_message(void)
 }
 
 
+ttbc_state_t *
+_ttbc_get_core_state(void)
+{
+	return tectonic_global_bridge_core;
+}
+
+
 jmp_buf *
 ttbc_global_engine_enter(ttbc_state_t *api)
 {
@@ -285,6 +292,11 @@ ttstub_input_read(rust_input_handle_t handle, char *data, size_t len)
     return ttbc_input_read(tectonic_global_bridge_core, handle, (uint8_t *) data, len);
 }
 
+ssize_t
+ttstub_input_read_partial(rust_input_handle_t handle, char *data, size_t len)
+{
+    return ttbc_input_read_partial(tectonic_global_bridge_core, handle, (uint8_t *) data, len);
+}
 
 int
 ttstub_input_getc(rust_input_handle_t handle)

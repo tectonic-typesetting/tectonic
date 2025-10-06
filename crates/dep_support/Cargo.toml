@@ -1,9 +1,11 @@
 # Copyright 2020 the Tectonic Project
 # Licensed under the MIT License.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_dep_support"
-version = "0.1.1"
+version = "0.1.1+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Support for finding third-party libraries using either pkg-config or vcpkg.
@@ -13,7 +15,7 @@ documentation = "https://docs.rs/tectonic_dep_support"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 pkg-config = "^0.3"

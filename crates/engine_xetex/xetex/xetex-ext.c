@@ -113,12 +113,14 @@ linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength)
 }
 
 int
-linebreak_next(void)
+linebreak_next(int f)
 {
     if (brkIter != NULL)
         return ubrk_next((UBreakIterator*)brkIter);
-    else
-        return findNextGraphiteBreak();
+    else {
+    	XeTeXLayoutEngine engine = (XeTeXLayoutEngine) font_layout_engine[f];
+        return findNextGraphiteBreak(engine);
+	}
 }
 
 int
@@ -469,7 +471,7 @@ readFeatureNumber(const char* s, const char* e, hb_tag_t* f, int* v)
 }
 
 static void*
-loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1)
+loadOTfont(RawPlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1)
 {
     XeTeXLayoutEngine engine = NULL;
     hb_tag_t script = HB_TAG_NONE;
@@ -508,11 +510,11 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
     }
 
     if (reqEngine == 'G') {
-        char* tmpShapers[] = {shapers[0]};
+    	static const char* graphiteShaper[] = {"graphite2", NULL};
         /* create a default engine so we can query the font for Graphite features;
          * because of font caching, it's cheap to discard this and create the real one later */
-        engine = createLayoutEngine(fontRef, font, script, language,
-                features, nFeatures, tmpShapers, rgbValue, extend, slant, embolden);
+        engine = createLayoutEngineBorrowed(font, script, NULL,
+                features, nFeatures, graphiteShaper, rgbValue, extend, slant, embolden);
 
         if (engine == NULL)
             return NULL;
@@ -640,6 +642,10 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
         shapers[nShapers] = NULL;
     }
 
+	if (engine) {
+		deleteLayoutEngine(engine);
+	}
+
     if (embolden != 0.0)
         embolden = embolden * Fix2D(scaled_size) / 100.0;
 
@@ -652,14 +658,21 @@ loadOTfont(PlatformFontRef fontRef, XeTeXFont font, Fixed scaled_size, char* cp1
     if ((loaded_font_flags & FONT_FLAGS_VERTICAL) != 0)
         setFontLayoutDir(font, 1);
 
-    engine = createLayoutEngine(fontRef, font, script, language,
-                    features, nFeatures, shapers, rgbValue, extend, slant, embolden);
+    engine = createLayoutEngine(font, script, language,
+                    features, nFeatures, (const char**) shapers, rgbValue, extend, slant, embolden);
 
-    if (!engine) {
-        // only free these if creation failed, otherwise the engine now owns them
+    // The layout engine clones all these - this is temporary to avoid using
+    // different alloc/dealloc
+    if (features) {
         free(features);
+    }
+    if (shapers) {
         free(shapers);
-    } else {
+    }
+    if (language) {
+        free(language);
+    }
+    if (engine) {
         native_font_type_flag = OTGR_FONT_FLAG;
     }
 
@@ -721,7 +734,7 @@ find_native_font(char* uname, int32_t scaled_size)
     char* name = (char*)uname;
     char* varString = NULL;
     char* featString = NULL;
-    PlatformFontRef fontRef;
+    RawPlatformFontRef fontRef;
     XeTeXFont font = NULL;
     int index = 0;
 
@@ -761,7 +774,7 @@ find_native_font(char* uname, int32_t scaled_size)
         }
         font = createFontFromFile(nameString + 1, index, scaled_size);
         if (font != NULL) {
-            loaded_font_design_size = D2Fix(getDesignSize(font));
+            set_loaded_font_design_size(D2Fix(getDesignSize(font)));
 
             /* This is duplicated in XeTeXFontMgr::findFont! */
             setReqEngine(0);
@@ -834,7 +847,7 @@ find_native_font(char* uname, int32_t scaled_size)
                         deleteFont(font);
                 } else {
                     if (getReqEngine() == 'O' || getReqEngine() == 'G' ||
-                            getFontTablePtr(font, kGSUB) != NULL || getFontTablePtr(font, kGPOS) != NULL)
+                            hasFontTable(font, kGSUB) || hasFontTable(font, kGPOS))
                         rval = loadOTfont(fontRef, font, scaled_size, featString);
 
                     /* loadOTfont failed or the above check was false */
@@ -1155,7 +1168,7 @@ make_font_def(int32_t f)
     uint8_t filenameLen;
     int fontDefLength;
     char* cp;
-    /* PlatformFontRef fontRef = 0; */
+    /* RawPlatformFontRef fontRef = 0; */
     float extend = 1.0;
     float slant = 0.0;
     float embolden = 0.0;
@@ -1199,7 +1212,7 @@ make_font_def(int32_t f)
         XeTeXLayoutEngine engine;
 
         engine = (XeTeXLayoutEngine)font_layout_engine[f];
-        /* fontRef = */ getFontRef(engine);
+        /* fontRef = getFontRef(engine); */
         filename = getFontFilename(engine, &index);
         assert(filename);
 
@@ -1293,7 +1306,7 @@ make_font_def(int32_t f)
         cp += 4;
     }
 
-    free((char*) filename);
+    freeFontFilename((char*) filename);
 
     return fontDefLength;
 }
@@ -2112,7 +2125,7 @@ aat_print_font_name(int what, CFDictionaryRef attributes, int param1, int param2
 void
 print_glyph_name(int32_t font, int32_t gid)
 {
-    const char* s;
+    const char* s = NULL;
     int len = 0;
 #ifdef XETEX_MAC
     if (font_area[font] == AAT_FONT_FLAG) {
@@ -2127,6 +2140,8 @@ print_glyph_name(int32_t font, int32_t gid)
     }
     while (len-- > 0)
         print_char(*s++);
+    if (s)
+    	freeGlyphName(s);
 }
 
 int32_t real_get_native_word_cp(void* pNode, int side)

@@ -3,3 +3,12 @@ Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: odd_strings.aux
 The style file: ../plain.bst
 Database file #1: odd_strings.bib
+Warning--to sort, need author or key in Article01
+Warning--to sort, need author or key in Article02
+Warning--empty author in Article01
+Warning--empty journal in Article01
+Warning--empty year in Article01
+Warning--empty author in Article02
+Warning--empty journal in Article02
+Warning--empty year in Article02
+(There were 8 warnings)

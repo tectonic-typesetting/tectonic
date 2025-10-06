@@ -1061,7 +1061,7 @@ otf_create_ToUnicode_stream (const char *font_name,
     pdf_obj    *cmap_ref = NULL; /* returned value */
     CMap       *cmap_add;
     char       *cmap_name;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
     sfnt       *sfont;
     ULONG       offset = 0;
     tt_cmap    *ttcmap;
@@ -1292,7 +1292,7 @@ otf_load_Unicode_CMap (const char *map_name, uint32_t ttc_index, /* 0 for non-TT
     sfnt  *sfont = NULL;
     ULONG  offset = 0;
     uint16_t num_glyphs = 0;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
     tt_cmap       *ttcmap;
     CIDSysInfo     csi = {NULL, NULL, 0};
     uint16_t *GIDToCIDMap = NULL;
@@ -1340,12 +1340,12 @@ otf_load_Unicode_CMap (const char *map_name, uint32_t ttc_index, /* 0 for non-TT
     }
 
     handle = dpx_open_truetype_file(map_name);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         handle = dpx_open_opentype_file(map_name);
 
-    if (handle == NULL) {
+    if (handle == INVALID_HANDLE) {
         handle = dpx_open_dfont_file(map_name);
-        if (handle == NULL) {
+        if (handle == INVALID_HANDLE) {
             free(cmap_name);
             return -1;
         }
@@ -1602,7 +1602,7 @@ otf_try_load_GID_to_CID_map (const char *map_name, uint32_t ttc_index, int wmode
   sfnt       *sfont       = NULL;
   ULONG       offset      = 0;
   char       *cmap_name   = NULL;
-  rust_input_handle_t handle = NULL;
+  rust_input_handle_t handle = INVALID_HANDLE;
   size_t len;
 
   if (!map_name)
@@ -1623,11 +1623,11 @@ otf_try_load_GID_to_CID_map (const char *map_name, uint32_t ttc_index, int wmode
   }
 
   handle = dpx_open_truetype_file(map_name);
-  if (handle == NULL)
+  if (handle == INVALID_HANDLE)
       handle = dpx_open_opentype_file(map_name);
-  if (handle == NULL) {
+  if (handle == INVALID_HANDLE) {
       handle = dpx_open_dfont_file(map_name);
-      if (handle == NULL) {
+      if (handle == INVALID_HANDLE) {
           free(cmap_name);
           return -1;
       }

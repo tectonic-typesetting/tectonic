@@ -7,11 +7,11 @@
 // former was [deprecated in Rust 1.33](https://github.com/rust-lang/rust/pull/53533). The fix for
 // `error-chain` is in <https://github.com/rust-lang-nursery/error-chain/pull/255> and will
 // hopefully show up in a future version.
-#![allow(deprecated)]
+#![allow(missing_docs)]
 
 use error_chain::error_chain;
 use std::{
-    convert, ffi,
+    ffi,
     fmt::{self, Debug, Display},
     io,
     io::Write,
@@ -105,6 +105,7 @@ error_chain! {
 
 /// `chain_err` compatibility between our old and new error types
 pub trait ChainErrCompatExt<T> {
+    /// Chain this error with another
     fn chain_err<F, K>(self, chainer: F) -> Result<T>
     where
         F: FnOnce() -> K,
@@ -133,7 +134,7 @@ macro_rules! errmsg {
     };
 }
 
-/// “Chained try” — like `try!`, but with the ability to add context to the error message.
+/// "Chained try" — like `try!`, but with the ability to add context to the error message.
 #[macro_export]
 macro_rules! ctry {
     ($op:expr ; $( $chain_fmt_args:expr ),*) => {{
@@ -143,9 +144,9 @@ macro_rules! ctry {
     }}
 }
 
-impl convert::From<Error> for io::Error {
+impl From<Error> for io::Error {
     fn from(err: Error) -> io::Error {
-        io::Error::new(io::ErrorKind::Other, format!("{err}"))
+        io::Error::other(err.to_string())
     }
 }
 
@@ -184,7 +185,6 @@ impl Error {
 /// equivalent, and false otherwise. This can happen if the value are known to
 /// be different, but also if we can't tell. It doesn't cover all cases, but
 /// it does cover the ones that come up in our test suite.
-
 pub trait DefinitelySame {
     fn definitely_same(&self, other: &Self) -> bool;
 }
@@ -200,6 +200,23 @@ pub trait DefinitelySame {
 //        self == other
 //    }
 //}
+
+impl DefinitelySame for Error {
+    fn definitely_same(&self, other: &Self) -> bool {
+        if !self.0.definitely_same(&other.0) {
+            return false;
+        }
+        self.1.definitely_same(&other.1)
+    }
+}
+
+impl DefinitelySame for error_chain::State {
+    fn definitely_same(&self, other: &Self) -> bool {
+        // We ignore backtraces
+        // We have to remove the Send bounds, which current Rust makes a bit annoying
+        self.next_error.definitely_same(&other.next_error)
+    }
+}
 
 impl DefinitelySame for ErrorKind {
     fn definitely_same(&self, other: &Self) -> bool {
@@ -230,6 +247,23 @@ impl DefinitelySame for NewError {
     /// Hack alert! We only compare stringifications.
     fn definitely_same(&self, other: &Self) -> bool {
         self.to_string() == other.to_string()
+    }
+}
+
+impl DefinitelySame for Box<dyn std::error::Error + Send> {
+    /// Hack alert! We only compare stringifications.
+    fn definitely_same(&self, other: &Self) -> bool {
+        self.to_string() == other.to_string()
+    }
+}
+
+impl<T: DefinitelySame> DefinitelySame for Option<T> {
+    fn definitely_same(&self, other: &Self) -> bool {
+        match (self, other) {
+            (None, None) => true,
+            (Some(a), Some(b)) => a.definitely_same(b),
+            _ => false,
+        }
     }
 }
 
@@ -290,9 +324,6 @@ impl<T: std::error::Error + 'static> SyncError<T> {
 }
 
 impl<T: std::error::Error + 'static> std::error::Error for SyncError<T> {
-    #[cfg(backtrace)]
-    fn backtrace(&self) -> Option<&Backtrace> {}
-
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.proxy.as_ref().map(|e| e as _)
     }
@@ -355,9 +386,6 @@ impl<T: std::error::Error> CauseProxy<T> {
 }
 
 impl<T: std::error::Error + 'static> std::error::Error for CauseProxy<T> {
-    #[cfg(backtrace)]
-    fn backtrace(&self) -> Option<&Backtrace> {}
-
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.next.as_ref().map(|e| e as _)
     }
@@ -378,5 +406,56 @@ where
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.with_instance(|i| std::fmt::Debug::fmt(&i, f))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use error_chain::{ChainedError, State};
+    use std::error::Error as StdError;
+
+    #[test]
+    fn test_def_same_option() {
+        let a = Some(Box::from(NewError::msg("A")));
+        let b = Some(Box::from(NewError::msg("A")));
+
+        assert!(a.definitely_same(&b));
+        assert!(b.definitely_same(&a));
+
+        let b = Some(Box::from(NewError::msg("B")));
+        assert!(!a.definitely_same(&b));
+
+        let b = None;
+        let c = None;
+        assert!(!a.definitely_same(&b));
+        assert!(b.definitely_same(&c));
+    }
+
+    #[test]
+    fn test_def_same_err() {
+        let a = Error::new(ErrorKind::Msg(String::from("A")), State::default());
+        let b = Error::new(ErrorKind::Msg(String::from("A")), State::default());
+
+        // Different backtraces but should be same
+        assert!(a.definitely_same(&b));
+
+        let b = Error::new(ErrorKind::BadLength(0, 0), State::default());
+        assert!(!a.definitely_same(&b));
+
+        let a = Error::new(ErrorKind::NewStyle(NewError::msg("A")), State::default());
+        assert!(!a.definitely_same(&b));
+
+        let b = Error::new(ErrorKind::NewStyle(NewError::msg("A")), State::default());
+        assert!(a.definitely_same(&b));
+    }
+
+    #[test]
+    fn test_def_same_box_err() {
+        let a: Box<dyn StdError + Send> = Box::from(NewError::msg("A"));
+        let b: Box<dyn StdError + Send> = Box::from(NewError::msg("B"));
+
+        assert!(a.definitely_same(&a));
+        assert!(!a.definitely_same(&b));
     }
 }

@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_bridge_flate"
-version = "0.1.7"
+version = "0.1.7+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing flate compression to the Tectonic C code.
@@ -15,7 +17,7 @@ documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 links = "tectonic_bridge_flate"
 
 [dependencies]

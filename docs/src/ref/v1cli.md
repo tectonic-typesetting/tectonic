@@ -1,13 +1,13 @@
-# “V1” (Default) Command Line Interface
+# "V1" (Default) Command Line Interface
 
 Tectonic is distributed as a single executable, `tectonic`, that is meant to be
 invoked from the command line. We’re starting to refer to this program’s
-command-line interface as the “V1” interface, because a new [“V2”
+command-line interface as the "V1" interface, because a new ["V2"
 interface](./v2cli.md) is currently under development.
 
-The V1 interface is “[rustc]-like”, offering a single primary workflow with lots
+The V1 interface is "[rustc]-like", offering a single primary workflow with lots
 of options controlling its behavior. In comparison, the V2 interface is
-“[cargo]-like”, with a variety of subcommands anchored around a [Tectonic.toml]
+"[cargo]-like", with a variety of subcommands anchored around a [Tectonic.toml]
 file defining a document to build.
 
 [cargo]: https://doc.rust-lang.org/cargo/
@@ -45,10 +45,10 @@ The following are the available flags.
 
 | Short | Full                           | Explanation                                                                                            |
 |:------|:-------------------------------|:-------------------------------------------------------------------------------------------------------|
-| `-b`  | `--bundle <file_path>`         | Use this directory or Zip-format bundle file to find resource files instead of the default             |
+| `-b`  | `--bundle <path or url>`         | Use this bundle instead of the default             |
 | `-c`  | `--chatter <level>`            | How much chatter to print when running [default: `default`]  [possible values: `default`, `minimal`]   |
 |       | `--color <when>`               | Enable/disable colorful log output [default: `auto`]  [possible values: `always`, `auto`, `never`]     |
-| `-f`  | `--format <path>`              | The name of the “format” file used to initialize the TeX engine [default: `latex`]                     |
+| `-f`  | `--format <path>`              | The name of the "format" file used to initialize the TeX engine [default: `latex`]                     |
 | `-h`  | `--help`                       | Prints help information                                                                                |
 |       | `--hide <hide_path>...`        | Tell the engine that no file at `<hide_path>` exists, if it tries to read it                           |
 | `-k`  | `--keep-intermediates`         | Keep the intermediate files generated during processing                                                |
@@ -63,5 +63,4 @@ The following are the available flags.
 |       | `--synctex`                    | Generate SyncTeX data                                                                                  |
 |       | `--untrusted`                  | Input is untrusted — disable all known-insecure features                                               |
 | `-V`  | `--version`                    | Prints version information                                                                             |
-| `-w`  | `--web-bundle <url>`           | Use this URL to find resource files instead of the default                                             |
 | `-Z`  | `-Z <option>...`               | Unstable options. Pass `-Zhelp` to show a list                                                         |

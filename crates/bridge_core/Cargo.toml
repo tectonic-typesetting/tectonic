@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_bridge_core"
-version = "0.4.1"
+version = "0.4.1+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing core backend APIs to the Tectonic C/C++ code.
@@ -15,7 +17,7 @@ documentation = "https://docs.rs/tectonic_bridge_core"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 links = "tectonic_bridge_core"
 
 [dependencies]
@@ -23,9 +25,9 @@ flate2 = { version = "^1.0", default-features = false, features = ["zlib"] }
 lazy_static = "^1.4"
 libc = "^0.2"
 md-5 = "^0.10"
-tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
-tectonic_io_base = { path = "../io_base", version =">=0.3.0,<1"}
-tectonic_status_base = { path = "../status_base", version =">=0.1.0,<1"}
+tectonic_errors = { path = "../errors", version = ">=0.2.0,<1" }
+tectonic_io_base = { path = "../io_base", version = ">=0.3.0,<1" }
+tectonic_status_base = { path = "../status_base", version = ">=0.1.0,<1" }
 
 [build-dependencies]
 cc = "^1.0.66"

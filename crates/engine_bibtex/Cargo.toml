@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_engine_bibtex"
-version = "0.2.2"
+version = "0.2.2+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The `bibtex` program as a reusable crate.
@@ -15,15 +17,20 @@ documentation = "https://docs.rs/tectonic_engine_bibtex"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 libc = "^0.2"
-tectonic_io_base = { path = "../io_base", version =">=0.4.2,<1"}
-tectonic_bridge_core = { path = "../bridge_core", version =">=0.1.0,<1"}
-tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
+indexmap = "2.0"
+tectonic_io_base = { path = "../io_base", version = ">=0.4.2,<1" }
+tectonic_bridge_core = { path = "../bridge_core", version = ">=0.1.0,<1" }
+tectonic_errors = { path = "../errors", version = ">=0.2.0,<1" }
+
+[dev-dependencies]
+tectonic_status_base = { path = "../status_base", version = ">=0.2.1,<1" }
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2021-01-17:fohCh1sh"
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"
 tectonic_io_base = "0d9169ef44b2652d6d70308a83022bfd60358e71"
+tectonic_status_base = "0d9169ef44b2652d6d70308a83022bfd60358e71"

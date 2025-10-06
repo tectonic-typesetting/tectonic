@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_bridge_freetype2"
-version = "0.2.0"
+version = "0.2.0+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose the FreeType2 library C APIs to Rust/Cargo.
@@ -15,11 +17,18 @@ documentation = "https://docs.rs/tectonic_bridge_freetype2"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 links = "freetype2"
 
+[dependencies]
+libc = "0.2"
+tectonic_bridge_png = { path = "../bridge_png", version = ">=0.0.0+20251006,<1" }
+tectonic_bridge_flate = { path = "../bridge_flate", version = ">=0.1.7+20251006,<1" }
+
 [build-dependencies]
-tectonic_dep_support = { path = "../dep_support", version =">=0.1.0,<1"}
+tectonic_dep_support = { path = "../dep_support", version = ">=0.1.0,<1" }
 
 [package.metadata.internal_dep_versions]
 tectonic_dep_support = "5faf4205bdd3d31101b749fc32857dd746f9e5bc"
+tectonic_bridge_png = "42a1f6a8027b2ef01436be16c6e1bc27918f293f"
+tectonic_bridge_flate = "42a1f6a8027b2ef01436be16c6e1bc27918f293f"

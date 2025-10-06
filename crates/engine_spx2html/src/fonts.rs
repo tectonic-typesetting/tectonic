@@ -197,13 +197,13 @@ impl FontEnsemble {
         // Update the info records for the relevant fonts to capture the
         // established relationship.
 
-        self.font_files[regular].family_name = name.clone();
+        self.font_files[regular].family_name.clone_from(&name);
         self.font_files[regular].family_relation = FamilyRelativeFontId::Regular;
-        self.font_files[bold].family_name = name.clone();
+        self.font_files[bold].family_name.clone_from(&name);
         self.font_files[bold].family_relation = FamilyRelativeFontId::Bold;
-        self.font_files[italic].family_name = name.clone();
+        self.font_files[italic].family_name.clone_from(&name);
         self.font_files[italic].family_relation = FamilyRelativeFontId::Italic;
-        self.font_files[bold_italic].family_name = name.clone();
+        self.font_files[bold_italic].family_name.clone_from(&name);
         self.font_files[bold_italic].family_relation = FamilyRelativeFontId::BoldItalic;
 
         self.font_families.insert(
@@ -300,6 +300,7 @@ impl FontEnsemble {
     ///
     /// If we're unable to figure out a way to render the desired glyph, a
     /// warning is logged to the status backend.
+    #[allow(clippy::type_complexity)]
     pub fn process_glyphs_as_text<'a>(
         &'a mut self,
         font_num: TexFontNum,
@@ -576,7 +577,7 @@ struct GlyphTextProcessingIterator<'a> {
     next: usize,
 }
 
-impl<'a> Iterator for GlyphTextProcessingIterator<'a> {
+impl Iterator for GlyphTextProcessingIterator<'_> {
     type Item = (usize, Option<(char, String)>, FixedPoint);
 
     fn next(&mut self) -> Option<Self::Item> {

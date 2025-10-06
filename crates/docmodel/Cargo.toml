@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_docmodel"
-version = "0.2.2"
+version = "0.2.2+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The Tectonic document model and its serialization into `Tectonic.toml`.
@@ -15,12 +17,12 @@ documentation = "https://docs.rs/tectonic_docmodel"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 serde = { version = "^1.0", features = ["derive"] }
-tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
-toml = { version = "^0.7" }
+tectonic_errors = { path = "../errors", version = ">=0.2.0,<1" }
+toml = { version = "^0.8" }
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "5c9ba661edf5ef669f24f9904f99cca369d999e7"

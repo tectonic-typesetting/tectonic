@@ -1,65 +1,8 @@
-# tectonic_pdf_io 0.4.1 (2023-05-18)
+# See elsewhere for changelog
 
-- Tidy up recent Clippy warnings.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_pdf_io 0.4.0 (2022-10-27)
-
-- Make it possible to semi-properly handle the `dvipdfmx:config` special (#904,
-  #953, @vlasakm). This should fix some aspects of PDF generation, including
-  named anchors created by `hyperref`.
-- Fix loading of image stream references (#935, #953, @vlasakm). This should
-  help with the `attachfile` package although we are not sure if it is a
-  complete fix.
-
-
-# tectonic_pdf_io 0.3.0 (2022-10-03)
-
-- Update for TeXLive 2022.0 (#936, @pkgw)! Mostly very minor changes, with the
-  most significant ones involving "base encodings" in the PDF encoding support.
-- Fix some size_t/printf warnings on ARM
-
-
-# tectonic_pdf_io 0.2.0 (2022-04-26)
-
-Update xdvipdfmx for TeXLive 2021 (#882, @pkgw). A brief summary of changes based
-on the TeXLive 2021 release notes:
-
-- Not applicable to Tectonic: GhostScript safety improvements
-- If an image ﬁle is not found, exit with bad status.
-- Extended special syntax for color support.
-- Specials for manipulating ExtGState.
-- Compatibility specials `pdfcolorstack` and `pdffontattr`.
-- Experimental support for dviluatex’s extended `fnt_def`.
-- Support new feature of virtual font to fallback Japanese font deﬁnition.
-
-There are other internal changes; see [the low-level ChangeLog][xdvcl]. See also
-the `tectonic_xdvipdfmx` crate, which actually contains only a few pieces of
-this update.
-
-[xdvcl]: https://github.com/TeX-Live/texlive-source/blob/404d2e476949c1e225e6b94ff92e3a113ab6b413/texk/dvipdfm-x/ChangeLog#L107-L557
-
-Additionally, some new memory leaks have been plugged (@pkgw).
-
-
-# tectonic_pdf_io 0.1.2 (2021-10-11)
-
-- Fix an incorrect warning issued when reading EXIF data (#822, @korrat)
-
-
-# tectonic_pdf_io 0.1.1 (2021-07-03)
-
-- Fix the build on Rust 1.46, needed for the conda-forge macOS build (which is
-  stuck on this version of Rust for the time being)
-- Fixes for complaints from Clippy 1.53.0
-
-
-# tectonic_pdf_io 0.1.0 (2021-06-03)
-
-This crate contains the vast majority of the C/C++ code from `xdvipdfmx`. It
-provides I/O services to both the `tectonic_engine_xdvipdfmx` and
-`tectonic_engine_xetex` crates through its C/C++ APIs. It does not provide a
-Rust API.
-
-This crate deals with general graphics I/O, not just PDF files, but the majority
-of its code is PDF-centric.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/pdf_io/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

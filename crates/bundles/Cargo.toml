@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_bundles"
-version = "0.3.1"
+version = "0.3.1+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Tectonic "bundle" (support file collection) implementations.
@@ -15,16 +17,16 @@ documentation = "https://docs.rs/tectonic_bundles"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
-fs2 = "^0.4"
-tectonic_errors = { path = "../errors", version =">=0.2.0,<1"}
-tectonic_geturl = { path = "../geturl", version =">=0.3.0,<1", default-features = false }
-tectonic_io_base = { path = "../io_base", version =">=0.3.0,<1"}
-tectonic_status_base = { path = "../status_base", version =">=0.1.0,<1"}
-zip = { version = "^0.6", default-features = false, features = ["deflate"] }
+tectonic_errors = { path = "../errors", version = ">=0.2.0,<1" }
+tectonic_geturl = { path = "../geturl", version = ">=0.3.0,<1", default-features = false }
+tectonic_io_base = { path = "../io_base", version = ">=0.3.0,<1" }
+tectonic_status_base = { path = "../status_base", version = ">=0.1.0,<1" }
+zip = { version = "4", default-features = false, features = ["deflate"] }
+url = "^2.0"
 
 [features]
 default = ["geturl-reqwest"]

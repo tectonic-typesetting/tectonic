@@ -1,0 +1,79 @@
+comment:
+  layout: "condensed_header, condensed_files, diff, components, condensed_footer"
+component_management:
+  individual_components:
+    - component_id: tectonic
+      paths:
+        - "src/**"
+    - component_id: bridge_core
+      paths:
+        - "crates/bridge_core/**"
+    - component_id: bridge_flate
+      paths:
+        - "crates/bridge_flate/**"
+    - component_id: bridge_fontconfig
+      paths:
+        - "crates/bridge_fontconfig/**"
+    - component_id: bridge_freetype2
+      paths:
+        - "crates/bridge_freetype2/**"
+    - component_id: bridge_graphite2
+      paths:
+        - "crates/bridge_graphite2/**"
+    - component_id: bridge_harfbuzz
+      paths:
+        - "crates/bridge_harfbuzz/**"
+    - component_id: bridge_icu
+      paths:
+        - "crates/bridge_icu/**"
+    - component_id: bridge_png
+      paths:
+        - "crates/bridge_png/**"
+    - component_id: bundles
+      paths:
+        - "crates/bundles/**"
+    - component_id: cfg_support
+      paths:
+        - "crates/cfg_support/**"
+    - component_id: dep_support
+      paths:
+        - "crates/dep_support/**"
+    - component_id: docmodel
+      paths:
+        - "crates/docmodel/**"
+    - component_id: engine_bibtex
+      paths:
+        - "crates/engine_bibtex/**"
+    - component_id: engine_spx2html
+      paths:
+        - "crates/engine_spx2html/**"
+    - component_id: engine_xdvipdfmx
+      paths:
+        - "crates/engine_xdvipdfmx/**"
+    - component_id: engine_xetex
+      paths:
+        - "crates/engine_xetex/**"
+    - component_id: errors
+      paths:
+        - "crates/errors/**"
+    - component_id: geturl
+      paths:
+        - "crates/geturl/**"
+    - component_id: io_base
+      paths:
+        - "crates/io_base/**"
+    - component_id: pdf_io
+      paths:
+        - "crates/pdf_io/**"
+    - component_id: status_base
+      paths:
+        - "crates/status_base/**"
+    - component_id: xdv
+      paths:
+        - "crates/xdv/**"
+    - component_id: xetex_format
+      paths:
+        - "crates/xetex_format/**"
+    - component_id: xetex_layout
+      paths:
+        - "crates/xetex_layout/**"

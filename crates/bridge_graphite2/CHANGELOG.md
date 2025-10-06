@@ -1,26 +1,8 @@
-# tectonic_bridge_graphite2 0.2.2 (2023-05-18)
+# See elsewhere for changelog
 
-- Tidy up recent Clippy warnings.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-
-# tectonic_bridge_graphite2 0.2.1 (2021-10-11)
-
-- Fix the build script for Rust >=1.55 (#820, @pkgw)
-
-
-# tectonic_bridge_graphite2 0.2.0 (2021-06-03)
-
-- Fix up handling of how C/C++ header file paths are exported to dependent
-  crates. This is a breaking change: we've moved from a single include directory
-  to a list of them.
-- Some improvements to the documentation
-
-# tectonic_bridge_graphite2 0.1.1 (2021-01-16)
-
-- Export information about the `GRAPHITE2_STATIC` C preprocessor define that is
-  sometimes needed.
-
-# tectonic_bridge_graphite2 0.1.0 (2021-01-04)
-
-A new crate to encapsulate the location and use of the `graphite2` library used
-by Tectonic.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_graphite2/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

@@ -1,9 +1,11 @@
 # Copyright 2020 the Tectonic Project
 # Licensed under the MIT License.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_status_base"
-version = "0.2.1"
+version = "0.2.1+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Basic types for reporting status messages to a user.
@@ -13,10 +15,10 @@ documentation = "https://docs.rs/tectonic_status_base"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
-tectonic_errors = { path = "../errors", version =">=0.1.0,<1"}
+tectonic_errors = { path = "../errors", version = ">=0.1.0,<1" }
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"

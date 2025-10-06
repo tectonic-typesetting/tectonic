@@ -3,9 +3,11 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_xetex_format"
-version = "0.3.2"
+version = "0.3.2+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Tectonic/XeTeX engine data structures and their expression in TeX "format" files.
@@ -15,15 +17,15 @@ documentation = "https://docs.rs/tectonic_xetex_format"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 byteorder = "^1"
-nom = "^7"
-tectonic_errors = { path = "../errors", version =">=0.1.0,<1"}
+nom = "8"
+tectonic_errors = { path = "../errors", version = ">=0.1.0,<1" }
 
 [dev-dependencies]
-structopt = "^0.3"
+clap = { version = "4.5", features = ["derive"] }
 
 [package.metadata.internal_dep_versions]
 tectonic_errors = "e04798bcd9b1c1d68cc0a318a710bb30230a0300"

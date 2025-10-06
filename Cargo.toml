@@ -2,13 +2,15 @@
 # Copyright 2016-2023 the Tectonic Project
 # Licensed under the MIT License.
 
+lints.workspace = true
+
 [package]
 name = "tectonic"
-version = "0.15.0"
+version = "0.15.0+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
-extension to the classic “Web2C” implementation of TeX and uses the TeXLive distribution
+extension to the classic "Web2C" implementation of TeX and uses the TeXLive distribution
 of support files.
 """
 homepage = "https://tectonic-typesetting.github.io/"
@@ -17,14 +19,14 @@ repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "CARGO_README.md"
 keywords = ["tex", "latex", "typesetting", "font"]
 categories = [
-  "command-line-interface",
-  "parser-implementations",
-  "rendering",
-  "science",
-  "text-processing",
+    "command-line-interface",
+    "parser-implementations",
+    "rendering",
+    "science",
+    "text-processing",
 ]
 license = "MIT"
-edition = "2018"
+edition = "2021"
 exclude = ["/dist/", "/reference_sources/"]
 
 [badges]
@@ -33,70 +35,85 @@ codecov = { repository = "tectonic-typesetting/tectonic", service = "github" }
 
 [workspace]
 members = [
-  "crates/bridge_flate",
-  "crates/bridge_freetype2",
-  "crates/bridge_graphite2",
-  "crates/bridge_harfbuzz",
-  "crates/bridge_icu",
-  "crates/bundles",
-  "crates/cfg_support",
-  "crates/dep_support",
-  "crates/docmodel",
-  "crates/engine_bibtex",
-  "crates/engine_spx2html",
-  "crates/engine_xdvipdfmx",
-  "crates/engine_xetex",
-  "crates/errors",
-  "crates/geturl",
-  "crates/io_base",
-  "crates/pdf_io",
-  "crates/status_base",
-  "crates/xdv",
-  "crates/xetex_format",
-  "crates/xetex_layout",
+    "crates/bridge_flate",
+    "crates/bridge_fontconfig",
+    "crates/bridge_freetype2",
+    "crates/bridge_graphite2",
+    "crates/bridge_harfbuzz",
+    "crates/bridge_icu",
+    "crates/bridge_png",
+    "crates/bundles",
+    "crates/cfg_support",
+    "crates/dep_support",
+    "crates/docmodel",
+    "crates/engine_bibtex",
+    "crates/engine_spx2html",
+    "crates/engine_xdvipdfmx",
+    "crates/engine_xetex",
+    "crates/errors",
+    "crates/geturl",
+    "crates/io_base",
+    "crates/mac_core",
+    "crates/pdf_io",
+    "crates/status_base",
+    "crates/xdv",
+    "crates/xetex_format",
+    "crates/xetex_layout",
 ]
+
+[workspace.lints.rust]
+# FIXME(CraftSpider): Switch from error-chain to a newer package, as it's a deprecated project
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(has_error_description_deprecated)'] }
+missing_docs = "deny"
+
+[workspace.lints.clippy]
+undocumented_unsafe_blocks = "deny"
 
 [lib]
 name = "tectonic"
 crate-type = ["rlib"]
 
 [dependencies]
-atty = "0.2"
-byte-unit = "^4.0"
+byte-unit = "^5.0"
 cfg-if = "1.0"
 error-chain = "^0.12"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
-fs2 = "^0.4"
 lazy_static = "^1.4"
-libc = "^0.2"
-md-5 = "^0.10"
-open = "^4.0"
-quick-xml = "^0.28"
+open = "^5.0"
+quick-xml = "0.37"
 serde = { version = "^1.0", features = ["derive"], optional = true }
 sha2 = "^0.10"
-structopt = "0.3"
-tectonic_bridge_core = { path = "crates/bridge_core", version =">=0.4.0,<1"}
-tectonic_bundles = { path = "crates/bundles", version =">=0.3.0,<1", default-features = false }
-tectonic_docmodel = { path = "crates/docmodel", version =">=0.2.0,<1", optional = true }
-tectonic_engine_bibtex = { path = "crates/engine_bibtex", version =">=0.1.0,<1"}
-tectonic_engine_spx2html = { path = "crates/engine_spx2html", version =">=0.3.0,<1"}
-tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version =">=0.3.0,<1"}
-tectonic_engine_xetex = { path = "crates/engine_xetex", version =">=0.4.0,<1"}
-tectonic_errors = { path = "crates/errors", version =">=0.1.0,<1"}
-tectonic_geturl = { path = "crates/geturl", version =">=0.3.0,<1", default-features = false }
-tectonic_io_base = { path = "crates/io_base", version =">=0.3.0,<1"}
-tectonic_status_base = { path = "crates/status_base", version =">=0.1.0,<1"}
-tectonic_xdv = { path = "crates/xdv", version =">=0.1.9,<1"}
-tectonic_xetex_layout = { path = "crates/xetex_layout", version =">=0.1.0,<1"}
+clap = { version = "4.5.1", features = ["derive"] }
+tectonic_bridge_core = { path = "crates/bridge_core", version = ">=0.4.0,<1" }
+tectonic_bundles = { path = "crates/bundles", version = ">=0.3.0,<1", default-features = false }
+tectonic_docmodel = { path = "crates/docmodel", version = ">=0.2.0,<1", optional = true }
+tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = ">=0.1.0,<1" }
+tectonic_engine_spx2html = { path = "crates/engine_spx2html", version = ">=0.3.0,<1" }
+tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version = ">=0.3.0,<1" }
+tectonic_engine_xetex = { path = "crates/engine_xetex", version = ">=0.4.0,<1" }
+tectonic_errors = { path = "crates/errors", version = ">=0.1.0,<1" }
+tectonic_geturl = { path = "crates/geturl", version = ">=0.3.0,<1", default-features = false }
+tectonic_io_base = { path = "crates/io_base", version = ">=0.3.0,<1" }
+tectonic_status_base = { path = "crates/status_base", version = ">=0.1.0,<1" }
+tectonic_xdv = { path = "crates/xdv", version = ">=0.1.9,<1" }
+tectonic_xetex_layout = { path = "crates/xetex_layout", version = ">=0.1.0,<1" }
 tempfile = "^3.1"
 termcolor = "^1.1"
 tokio = "^1.0"
-toml = { version = "^0.7", optional = true }
-url = "^2.0"
-watchexec = "^2.3.0"
-watchexec-filterer-globset = "1.2"
-watchexec-signals = "1.0"
-zip = { version = "^0.6", default-features = false, features = ["deflate"] }
+toml = { version = "^0.8", optional = true }
+watchexec = "8.0"
+watchexec-filterer-globset = "8.0"
+watchexec-signals = "5.0"
+watchexec-supervisor = "5.0"
+which = "8.0"
+zip = { version = "4.0", default-features = false, features = ["deflate"] }
+clap_complete = "4.5.1"
+walkdir = "2"
+regex = "1.10.2"
+anyhow = "1.0.80"
+tar = "0.4.40"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 [features]
 default = ["geturl-reqwest", "serialization"]
@@ -115,8 +132,8 @@ geturl-curl = ["tectonic_bundles/geturl-curl", "tectonic_geturl/curl"]
 geturl-reqwest = ["tectonic_bundles/geturl-reqwest", "tectonic_geturl/reqwest"]
 
 native-tls-vendored = [
-  "tectonic_bundles/native-tls-vendored",
-  "tectonic_geturl/native-tls-vendored",
+    "tectonic_bundles/native-tls-vendored",
+    "tectonic_geturl/native-tls-vendored",
 ]
 
 # developer feature to compile with the necessary flags for profiling tectonic.
@@ -124,37 +141,35 @@ profile = []
 
 [dev-dependencies]
 filetime = "^0.2"
-futures = "0.3"
-headers = "0.3"
-hyper = { version = "0.14", features = ["server"] }
 tempfile = "^3.1"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "4a600e9fea71bd7872080cbb716797e04d30e6d3"
+rev = "a62ce77d56ee07513b4b67de1ec2daeaebfae51a"
 overlay-triplets-path = "dist/vcpkg-triplets"
 
 # If other targets start using custom triplets like x86_64-pc-windows-msvc,
 # add them to crates/dep_support/src/lib.rs:new_from_vcpkg() to give users
 # guidance if they might need to set $VCPKGRS_TRIPLET.
 [package.metadata.vcpkg.target]
-x86_64-apple-darwin = { install = ["freetype", "harfbuzz[graphite2]", "icu"] }
+x86_64-apple-darwin = { triplet = "x64-osx", install = ["fontconfig", "freetype", "harfbuzz[graphite2]", "icu"] }
 aarch64-apple-darwin = { triplet = "arm64-osx", install = [
-  "freetype",
-  "harfbuzz[graphite2]",
-  "icu",
+    "fontconfig",
+    "freetype",
+    "harfbuzz[graphite2]",
+    "icu",
 ] }
 x86_64-unknown-linux-gnu = { install = [
-  "fontconfig",
-  "freetype",
-  "harfbuzz[graphite2]",
-  "icu",
+    "fontconfig",
+    "freetype",
+    "harfbuzz[graphite2]",
+    "icu",
 ] }
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
-  "fontconfig",
-  "freetype",
-  "harfbuzz[graphite2]",
-  "icu",
+    "fontconfig",
+    "freetype",
+    "harfbuzz[graphite2]",
+    "icu",
 ] }
 
 [package.metadata.internal_dep_versions]

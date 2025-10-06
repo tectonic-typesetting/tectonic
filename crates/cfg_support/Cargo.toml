@@ -1,9 +1,11 @@
 # Copyright 2019-2020 the Tectonic Project
 # Licensed under the MIT License.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_cfg_support"
-version = "0.1.4"
+version = "0.1.4+20251006"
 authors = [
     "Matt Rice <ratmice@gmail.com>",
     "Peter Williams <peter@newton.cx>"
@@ -19,7 +21,7 @@ documentation = "https://docs.rs/tectonic"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 lazy_static = "^1.4"

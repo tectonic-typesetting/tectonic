@@ -1,8 +1,6 @@
 // Copyright 2018-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Convert Tectonic’s SPX format to HTML.
 //!
 //! SPX is essentially the same thing as XDV, but we identify it differently to
@@ -154,7 +152,7 @@ impl Spx2HtmlEngine {
                 let mut output = hooks.io().output_open_name(asp).must_exist()?;
                 serde_json::to_writer_pretty(&mut output, &ser)?;
                 let (name, digest) = output.into_name_digest();
-                hooks.event_output_closed(name, digest, status);
+                hooks.event_output_closed(name, digest);
             } else if !self.do_not_emit_assets {
                 assets.emit(fonts, &mut common)?;
             }
@@ -241,7 +239,7 @@ impl<'a> EngineState<'a> {
     }
 }
 
-impl<'a> XdvEvents for EngineState<'a> {
+impl XdvEvents for EngineState<'_> {
     type Error = Error;
 
     fn handle_header(&mut self, filetype: FileType, _comment: &[u8]) -> Result<()> {

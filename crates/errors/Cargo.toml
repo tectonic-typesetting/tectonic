@@ -1,9 +1,11 @@
 # Copyright 2020 the Tectonic Project
 # Licensed under the MIT License.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_errors"
-version = "0.2.1"
+version = "0.2.1+20251006"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A boxed error type for Tectonic, with supporting utilities.
@@ -13,7 +15,7 @@ documentation = "https://docs.rs/tectonic_errors"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 anyhow = "^1"

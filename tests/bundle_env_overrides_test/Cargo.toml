@@ -1,0 +1,13 @@
+[package]
+name = "bundle_env_overrides_test"
+description = "Mini project for testing compile time bundle URL overrides"
+version = "0.0.0-dev.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+tectonic_bundles = { path = "../../crates/bundles" }
+
+# decouple this from the the top-level workspace
+[workspace]
+members = ["."]
