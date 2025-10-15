@@ -85,7 +85,7 @@ command:
 Now rebuild your document:
 
 ```sh
-$ tectonic -X build
+tectonic -X build
 ```
 
 You’ll probably see Tectonic download some files: namely, the new font files
@@ -118,7 +118,7 @@ copy-paste in the following [verse][bateau] with accented characters:
 Rebuild your document and see your new text in the output:
 
 ```sh
-$ tectonic -X build
+tectonic -X build
 ```
 
 *Whatever*, you might say. *I know how to get these accented characters with TeX
