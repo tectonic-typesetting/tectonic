@@ -29,9 +29,6 @@ static void prune_movements(int32_t l);
 static void special_out(int32_t p);
 static void write_out(int32_t p);
 static void pic_out(int32_t p);
-static void dvi_four(int32_t x);
-static void dvi_two(UTF16_code s);
-static void dvi_pop(int32_t l);
 static void dvi_font_def(internal_font_number f);
 
 
@@ -163,7 +160,7 @@ ship_out(int32_t p)
 
     /* First page? Emit preamble items. */
 
-    if (total_pages == 0) {
+    if (total_pages() == 0) {
         dvi_out(PRE);
 
         if (semantic_pagination_enabled)
@@ -233,7 +230,7 @@ ship_out(int32_t p)
         hlist_out();
 
     dvi_out(EOP);
-    total_pages++;
+    set_total_pages(total_pages()+1);
     set_cur_s(-1);
 
 done:
@@ -2265,13 +2262,13 @@ finalize_dvi_file(void)
             dvi_out(POP);
         } else {
             dvi_out(EOP);
-            total_pages++;
+            set_total_pages(total_pages()+1);
         }
 
         set_cur_s(cur_s()-1);
     }
 
-    if (total_pages == 0) {
+    if (total_pages() == 0) {
         print_nl_cstr("No pages of output.");
         return;
     }
@@ -2291,8 +2288,8 @@ finalize_dvi_file(void)
     dvi_four(max_h);
     dvi_out(max_push / 256);
     dvi_out(max_push % 256);
-    dvi_out((total_pages / 256) % 256);
-    dvi_out(total_pages % 256);
+    dvi_out((total_pages() / 256) % 256);
+    dvi_out(total_pages() % 256);
 
     while (font_ptr > FONT_BASE) {
         if (font_used[font_ptr])
@@ -2332,8 +2329,8 @@ finalize_dvi_file(void)
         print_nl_cstr("Output written on ");
         print(output_file_name);
         print_cstr(" (");
-        print_int(total_pages);
-        if (total_pages != 1)
+        print_int(total_pages());
+        if (total_pages() != 1)
             print_cstr(" pages");
         else
             print_cstr(" page");
@@ -2350,44 +2347,5 @@ finalize_dvi_file(void)
         print(output_file_name);
         print_cstr(" may not be valid.");
         /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
-    }
-}
-
-
-static void
-dvi_four(int32_t x)
-{
-    if (x >= 0) {
-        dvi_out(x / 0x1000000);
-    } else {
-        x = x + 0x40000000;
-        x = x + 0x40000000;
-        dvi_out((x / 0x1000000) + 128);
-    }
-
-    x = x % 0x1000000;
-    dvi_out(x / 0x10000);
-
-    x = x % 0x10000;
-    dvi_out(x / 0x100);
-    dvi_out(x % 0x100);
-}
-
-
-static void
-dvi_two(UTF16_code s)
-{
-    dvi_out(s / 0x100);
-    dvi_out(s % 0x100);
-}
-
-
-static void
-dvi_pop(int32_t l)
-{
-    if (l == dvi_offset() + dvi_ptr() && dvi_ptr() > 0) {
-        set_dvi_ptr(dvi_ptr()-1);
-    } else {
-        dvi_out(POP);
     }
 }

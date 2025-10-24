@@ -169,7 +169,6 @@ int32_t *kern_base;
 int32_t *exten_base;
 int32_t *param_base;
 b16x4 null_character;
-int32_t total_pages;
 scaled_t max_v;
 scaled_t max_h;
 int32_t max_push;
@@ -3102,7 +3101,7 @@ initialize_more_variables(void)
     null_character.s2 = 0;
     null_character.s1 = 0;
     null_character.s0 = 0;
-    total_pages = 0;
+    set_total_pages(0);
     max_v = 0;
     max_h = 0;
     max_push = 0;

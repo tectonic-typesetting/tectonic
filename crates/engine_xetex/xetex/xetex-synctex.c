@@ -400,7 +400,7 @@ void synctex_sheet(int32_t mag)
         }
         return;
     }
-    if (total_pages == 0) {
+    if (total_pages() == 0) {
         /*  Now it is time to properly set up the scale factor. */
         if (mag > 0) {
             synctex_ctxt.magnification = mag;
@@ -411,7 +411,7 @@ void synctex_sheet(int32_t mag)
          *  or it was activated with the \synctex macro and the first page is already shipped out.
          *  Second possibility: tries to open the .synctex, useful if synchronization was enabled
          *  from the source file and not from the CLI. */
-        synctex_record_sheet(total_pages + 1);
+        synctex_record_sheet(total_pages() + 1);
     }
     return;
 }
@@ -424,7 +424,7 @@ void synctex_teehs(void)
     if (synctex_ctxt.flags.off || !synctex_ctxt.file) {
         return;
     }
-    synctex_record_teehs(total_pages);/* not total_pages+1*/
+    synctex_record_teehs(total_pages());/* not total_pages+1*/
     return;
 }
 

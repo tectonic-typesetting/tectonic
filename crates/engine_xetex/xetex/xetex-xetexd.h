@@ -529,7 +529,6 @@ extern int32_t *kern_base;
 extern int32_t *exten_base;
 extern int32_t *param_base;
 extern b16x4 null_character;
-extern int32_t total_pages;
 extern scaled_t max_v;
 extern scaled_t max_h;
 extern int32_t max_push;
