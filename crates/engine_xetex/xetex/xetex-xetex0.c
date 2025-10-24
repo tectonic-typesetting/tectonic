@@ -69,7 +69,7 @@ show_token_list(int32_t p, int32_t q, int32_t l)
                 set_trick_count(error_line());
         }
 
-        if (p < hi_mem_min || p > mem_end) {
+        if (p < hi_mem_min() || p > mem_end()) {
             print_esc_cstr("CLOBBERED.");
             return;
         }
@@ -174,13 +174,13 @@ int32_t get_avail(void)
     p = avail;
     if (p != TEX_NULL)
         avail = LLIST_link(avail);
-    else if (mem_end < MEM_TOP) {
-        mem_end++;
-        p = mem_end;
+    else if (mem_end() < MEM_TOP) {
+        set_mem_end(mem_end()+1);
+        p = mem_end();
     } else {
 
-        hi_mem_min--;
-        p = hi_mem_min;
+        set_hi_mem_min(hi_mem_min()-1);
+        p = hi_mem_min();
         if (is_char_node(lo_mem_max)) {
             runaway();
             overflow("main memory size", MEM_TOP + 1);
@@ -247,13 +247,13 @@ restart:
     if (s == 0x40000000) {
         return MAX_HALFWORD;
     }
-    if (lo_mem_max + 2 < hi_mem_min) {
+    if (lo_mem_max + 2 < hi_mem_min()) {
 
         if (lo_mem_max + 2 <= MAX_HALFWORD) {  /*130: */
-            if (hi_mem_min - lo_mem_max >= 1998)
+            if (hi_mem_min() - lo_mem_max >= 1998)
                 t = lo_mem_max + 1000;
             else
-                t = lo_mem_max + 1 + (hi_mem_min - lo_mem_max) / 2;
+                t = lo_mem_max + 1 + (hi_mem_min() - lo_mem_max) / 2;
             p = mem(rover + 1).b32.s0;
             q = lo_mem_max;
             mem_ptr(p + 1)->b32.s1 = q;
@@ -489,7 +489,7 @@ short_display(int32_t p)
 
     while (p > 0) {
         if (is_char_node(p)) {
-            if (p <= mem_end) {
+            if (p <= mem_end()) {
                 if (mem(p).b16.s1 != font_in_short_display) {
                     if (mem(p).b16.s1 > font_max)
                         print_char('*');
@@ -566,7 +566,7 @@ short_display(int32_t p)
 
 void print_font_and_char(int32_t p)
 {
-    if (p > mem_end)
+    if (p > mem_end())
         print_esc_cstr("CLOBBERED.");
     else {
 
@@ -582,7 +582,7 @@ void print_font_and_char(int32_t p)
 void print_mark(int32_t p)
 {
     print_char('{');
-    if ((p < hi_mem_min) || (p > mem_end))
+    if ((p < hi_mem_min()) || (p > mem_end()))
         print_esc_cstr("CLOBBERED.");
     else
         show_token_list(mem(p).b32.s1, TEX_NULL, max_print_line - 10);
@@ -804,7 +804,7 @@ show_node_list(int32_t p)
         print_ln();
         print_current_string();
 
-        if (p > mem_end) {
+        if (p > mem_end()) {
             print_cstr("Bad link, display aborted.");
             return;
         }
@@ -7919,7 +7919,7 @@ restart:
             cur_val = 0;
             tx = cur_list.tail;
 
-            if (tx < hi_mem_min) {
+            if (tx < hi_mem_min()) {
                 if (NODE_type(tx) == MATH_NODE && mem(tx).b16.s0 == END_M_CODE) {
                     r = cur_list.head;
                     do {
@@ -7938,7 +7938,7 @@ restart:
                 cur_val_level = cur_chr;
             }
 
-            if (tx < hi_mem_min && cur_list.mode != 0)
+            if (tx < hi_mem_min() && cur_list.mode != 0)
                 switch (cur_chr) {
                 case INT_VAL:
                     if (NODE_type(tx) == PENALTY_NODE)
@@ -9730,7 +9730,7 @@ conv_toks(void)
     case LEFT_MARGIN_KERN_CODE:
         p = mem(p + 5).b32.s1;
         while (p != TEX_NULL &&
-               ((p < hi_mem_min
+               ((p < hi_mem_min()
                  && (NODE_type(p) == INS_NODE ||
                      NODE_type(p) == MARK_NODE ||
                      NODE_type(p) == ADJUST_NODE ||
@@ -9751,10 +9751,10 @@ conv_toks(void)
                       mem(p + 2).b32.s1 == 0 &&
                       mem(p + 5).b32.s1 == TEX_NULL)
                      )) ||
-                (p < hi_mem_min && NODE_type(p) == GLUE_NODE && mem(p).b16.s0 == (GLUE_PAR__left_skip + 1))))
+                (p < hi_mem_min() && NODE_type(p) == GLUE_NODE && mem(p).b16.s0 == (GLUE_PAR__left_skip + 1))))
             p = LLIST_link(p);
 
-        if (p != TEX_NULL && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem(p).b16.s0 == 0)
+        if (p != TEX_NULL && p < hi_mem_min() && NODE_type(p) == MARGIN_KERN_NODE && mem(p).b16.s0 == 0)
             print_scaled(mem(p + 1).b32.s1);
         else
             print('0');
@@ -9765,7 +9765,7 @@ conv_toks(void)
         q = mem(p + 5).b32.s1;
         p = prev_rightmost(q, TEX_NULL);
         while (p != TEX_NULL &&
-               ((p < hi_mem_min &&
+               ((p < hi_mem_min() &&
                  (NODE_type(p) == INS_NODE ||
                   NODE_type(p) == MARK_NODE ||
                   NODE_type(p) == ADJUST_NODE ||
@@ -9786,10 +9786,10 @@ conv_toks(void)
                    mem(p + 2).b32.s1 == 0 &&
                    mem(p + 5).b32.s1 == TEX_NULL)
                   )) ||
-                (p < hi_mem_min && NODE_type(p) == GLUE_NODE && mem(p).b16.s0 == (GLUE_PAR__right_skip + 1))))
+                (p < hi_mem_min() && NODE_type(p) == GLUE_NODE && mem(p).b16.s0 == (GLUE_PAR__right_skip + 1))))
             p = prev_rightmost(q, p);
 
-        if (p != TEX_NULL && p < hi_mem_min && NODE_type(p) == MARGIN_KERN_NODE && mem(p).b16.s0 == 1)
+        if (p != TEX_NULL && p < hi_mem_min() && NODE_type(p) == MARGIN_KERN_NODE && mem(p).b16.s0 == 1)
             print_scaled(mem(p + 1).b32.s1);
         else
             print('0');
@@ -14347,7 +14347,7 @@ begin_box(int32_t box_context)
         } else {
             tx = cur_list.tail;
 
-            if (tx < hi_mem_min) {
+            if (tx < hi_mem_min()) {
                 if (NODE_type(tx) == MATH_NODE && mem(tx).b16.s0 == END_M_CODE) {
                     r = cur_list.head;
                     do {
@@ -14358,7 +14358,7 @@ begin_box(int32_t box_context)
                 }
             }
 
-            if (tx < hi_mem_min) {
+            if (tx < hi_mem_min()) {
                 if (NODE_type(tx) == HLIST_NODE || NODE_type(tx) == VLIST_NODE) { /*1116:*/
                     q = cur_list.head;
                     p = TEX_NULL;
@@ -14368,7 +14368,7 @@ begin_box(int32_t box_context)
                         p = q;
                         fm = false;
 
-                        if (q < hi_mem_min) {
+                        if (q < hi_mem_min()) {
                             if (NODE_type(q) == DISC_NODE) {
                                 for (m = 1; m <= mem(q).b16.s0; m++)
                                     p = LLIST_link(p);

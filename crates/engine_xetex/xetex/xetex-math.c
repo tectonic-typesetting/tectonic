@@ -2476,7 +2476,7 @@ make_scripts(int32_t q, scaled_t delta)
             script_ptr = LLIST_info(script_head);
             script_head = TEX_NULL;
 
-            while (script_ptr >= 0 && script_ptr <= mem_end) { /* is_valid_pointer() */
+            while (script_ptr >= 0 && script_ptr <= mem_end()) { /* is_valid_pointer() */
                 switch (NODE_type(script_ptr)) {
                 case KERN_NODE:
                 case GLUE_NODE:
@@ -2499,7 +2499,7 @@ make_scripts(int32_t q, scaled_t delta)
                     script_ptr = TEX_NULL;
                 }
 
-                if (script_ptr >= 0 && script_ptr <= mem_end) {
+                if (script_ptr >= 0 && script_ptr <= mem_end()) {
                     if (NODE_type(script_ptr) == CHOICE_NODE) {
                         switch (this_math_style / 2) {
                         case 0:
@@ -2522,7 +2522,7 @@ make_scripts(int32_t q, scaled_t delta)
             }
         }
 
-        if (script_head >= 0 && script_head <= mem_end && mem(script_head).b32.s1 == MATH_CHAR) {
+        if (script_head >= 0 && script_head <= mem_end() && mem(script_head).b32.s1 == MATH_CHAR) {
             save_f = cur_f;
             saved_math_style = cur_style;
             cur_style = this_math_style;
@@ -2595,7 +2595,7 @@ make_scripts(int32_t q, scaled_t delta)
             script_ptr = LLIST_info(script_head);
             script_head = TEX_NULL;
 
-            while (script_ptr >= 0 && script_ptr <= mem_end) { /* is_valid_pointer() */
+            while (script_ptr >= 0 && script_ptr <= mem_end()) { /* is_valid_pointer() */
                 switch (NODE_type(script_ptr)) {
                 case KERN_NODE:
                 case GLUE_NODE:
@@ -2618,7 +2618,7 @@ make_scripts(int32_t q, scaled_t delta)
                     script_ptr = TEX_NULL;
                 }
 
-                if (script_ptr >= 0 && script_ptr <= mem_end) {
+                if (script_ptr >= 0 && script_ptr <= mem_end()) {
                     if (NODE_type(script_ptr) == CHOICE_NODE) {
                         switch (this_math_style / 2) {
                         case 0:
@@ -2641,7 +2641,7 @@ make_scripts(int32_t q, scaled_t delta)
             }
         }
 
-        if (script_head >= 0 && script_head <= mem_end && mem(script_head).b32.s1 == MATH_CHAR) {
+        if (script_head >= 0 && script_head <= mem_end() && mem(script_head).b32.s1 == MATH_CHAR) {
             save_f = cur_f;
             saved_math_style = cur_style;
             cur_style = this_math_style;
@@ -2724,7 +2724,7 @@ make_scripts(int32_t q, scaled_t delta)
                 script_ptr = LLIST_info(script_head);
                 script_head = TEX_NULL;
 
-                while (script_ptr >= 0 && script_ptr <= mem_end) { /* is_valid_pointer() */
+                while (script_ptr >= 0 && script_ptr <= mem_end()) { /* is_valid_pointer() */
                     switch (NODE_type(script_ptr)) {
                     case KERN_NODE:
                     case GLUE_NODE:
@@ -2747,7 +2747,7 @@ make_scripts(int32_t q, scaled_t delta)
                         script_ptr = TEX_NULL;
                     }
 
-                    if (script_ptr >= 0 && script_ptr <= mem_end) {
+                    if (script_ptr >= 0 && script_ptr <= mem_end()) {
                         if (NODE_type(script_ptr) == CHOICE_NODE) {
                             switch (this_math_style / 2) {
                             case 0:
@@ -2770,7 +2770,7 @@ make_scripts(int32_t q, scaled_t delta)
                 }
             }
 
-            if (script_head >= 0 && script_head <= mem_end && mem(script_head).b32.s1 == MATH_CHAR) {
+            if (script_head >= 0 && script_head <= mem_end() && mem(script_head).b32.s1 == MATH_CHAR) {
                 save_f = cur_f;
                 saved_math_style = cur_style;
                 cur_style = this_math_style;

@@ -394,6 +394,14 @@ int32_t half_error_line(void);
 
 void set_half_error_line(int32_t val);
 
+int32_t hi_mem_min(void);
+
+void set_hi_mem_min(int32_t val);
+
+int32_t mem_end(void);
+
+void set_mem_end(int32_t val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
