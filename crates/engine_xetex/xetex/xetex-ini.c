@@ -23,7 +23,6 @@ int32_t first;
 int32_t last;
 int32_t max_buf_stack;
 bool in_initex_mode;
-int32_t half_error_line;
 int32_t max_print_line;
 int32_t strings_free;
 int32_t string_vacancies;
@@ -46,7 +45,6 @@ bool insert_src_special_every_math;
 bool insert_src_special_every_vbox;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-int32_t first_count;
 UTF16_code *native_text;
 int32_t native_text_size;
 int32_t native_len;
@@ -3551,7 +3549,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     save_size = 80000L;
     stack_size = 5000;
     set_error_line(79);
-    half_error_line = 50;
+    set_half_error_line(50);
     max_print_line = 79;
     set_hash_extra(600000L);
     expand_depth = 10000;
@@ -3601,7 +3599,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_history(HISTORY_FATAL_ERROR);
     bad = 0;
 
-    if (half_error_line < 30 || half_error_line > error_line() - 15)
+    if (half_error_line() < 30 || half_error_line() > error_line() - 15)
         bad = 1;
     if (max_print_line < 60)
         bad = 2;
