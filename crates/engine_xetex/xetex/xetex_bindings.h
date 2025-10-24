@@ -18,6 +18,12 @@
  */
 #define FORMAT_SERIAL 33
 
+#define DVI_BUF_SIZE 16384
+
+#define HALF_BUF (DVI_BUF_SIZE / 2)
+
+#define FNT_NUM_0 171
+
 #define NULL_CS 2228225
 
 #define PRIM_SIZE 2100
@@ -33,6 +39,8 @@
 #define SCRIPT_SIZE 256
 
 #define SCRIPT_SCRIPT_SIZE 512
+
+#define TEX_INFINITY 2147483647
 
 #define WHATSIT_NODE 8
 
@@ -194,6 +202,8 @@ void clear_dvi_buf(void);
 void write_to_dvi(int32_t a, int32_t b);
 
 void deinitialize_shipout_variables(void);
+
+void dvi_out(uint8_t c);
 
 uint32_t selector(void);
 

@@ -23,6 +23,9 @@ pub const TEXT_SIZE: usize = 0;
 pub const SCRIPT_SIZE: usize = 256;
 pub const SCRIPT_SCRIPT_SIZE: usize = 512;
 
+/* "the largest positive value that TeX knows" */
+pub const TEX_INFINITY: i32 = 0x7FFFFFFF;
+
 thread_local! {
     pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
 }
