@@ -413,7 +413,6 @@ extern int32_t native_len;
 extern int32_t save_native_len;
 extern bool deletions_allowed;
 extern bool set_box_allowed;
-extern tt_history_t history;
 extern signed char error_count;
 extern const char* help_line[6];
 extern unsigned char help_ptr;

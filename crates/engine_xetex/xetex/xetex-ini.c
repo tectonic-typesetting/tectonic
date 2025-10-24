@@ -53,7 +53,6 @@ int32_t native_len;
 int32_t save_native_len;
 bool deletions_allowed;
 bool set_box_allowed;
-tt_history_t history;
 signed char error_count;
 const char* help_line[6];
 unsigned char help_ptr;
@@ -2057,7 +2056,7 @@ store_fmt_file(void)
         if (log_opened())
             error();
 
-        history = HISTORY_FATAL_ERROR;
+        set_history(HISTORY_FATAL_ERROR);
         close_files_and_terminate();
         ttstub_output_flush(rust_stdout());
         _tt_abort("\\dump inside a group");
@@ -2937,8 +2936,8 @@ final_cleanup(void)
         free_node(temp_ptr, IF_NODE_SIZE);
     }
 
-    if (history != HISTORY_SPOTLESS) {
-        if ((history == HISTORY_WARNING_ISSUED || (interaction() < ERROR_STOP_MODE))) {
+    if (history() != HISTORY_SPOTLESS) {
+        if ((history() == HISTORY_WARNING_ISSUED || (interaction() < ERROR_STOP_MODE))) {
 
             if (selector() == SELECTOR_TERM_AND_LOG) {
                 set_selector(SELECTOR_TERM_ONLY);
@@ -3602,7 +3601,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     /* Sanity-check various invariants. */
 
-    history = HISTORY_FATAL_ERROR;
+    set_history(HISTORY_FATAL_ERROR);
     bad = 0;
 
     if (half_error_line < 30 || half_error_line > error_line() - 15)
@@ -3712,7 +3711,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     if (!in_initex_mode) {
         if (!load_fmt_file())
-            return history;
+            return history();
     }
 
     if (INTPAR(end_line_char) < 0 || INTPAR(end_line_char) > BIGGEST_CHAR)
@@ -3825,12 +3824,12 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     pdf_files_init();
     synctex_init_command();
     start_input(input_file_name);
-    history = HISTORY_SPOTLESS;
+    set_history(HISTORY_SPOTLESS);
     main_control();
     final_cleanup();
     close_files_and_terminate();
 
     tt_cleanup();
 
-    return history;
+    return history();
 }

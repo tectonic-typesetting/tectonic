@@ -2110,8 +2110,8 @@ void begin_diagnostic(void)
 
     if (INTPAR(tracing_online) <= 0 && selector() == SELECTOR_TERM_AND_LOG) {
         set_selector(selector()-1);
-        if (history == HISTORY_SPOTLESS)
-            history = HISTORY_WARNING_ISSUED;
+        if (history() == HISTORY_SPOTLESS)
+            set_history(HISTORY_WARNING_ISSUED);
     }
 }
 
@@ -4023,8 +4023,8 @@ void group_warning(void)
 
         if (INTPAR(tracing_nesting) > 1)
             show_context();
-        if (history == HISTORY_SPOTLESS)
-            history = HISTORY_WARNING_ISSUED;
+        if (history() == HISTORY_SPOTLESS)
+            set_history(HISTORY_WARNING_ISSUED);
 
         capture_to_diagnostic(NULL);
     }
@@ -4066,8 +4066,8 @@ void if_warning(void)
             show_context();
 
         capture_to_diagnostic(NULL);
-        if (history == HISTORY_SPOTLESS)
-            history = HISTORY_WARNING_ISSUED;
+        if (history() == HISTORY_SPOTLESS)
+            set_history(HISTORY_WARNING_ISSUED);
     }
 }
 
@@ -4131,8 +4131,8 @@ void file_warning(void)
         show_context();
         capture_to_diagnostic(NULL);
     }
-    if (history == HISTORY_SPOTLESS)
-        history = HISTORY_WARNING_ISSUED;
+    if (history() == HISTORY_SPOTLESS)
+        set_history(HISTORY_WARNING_ISSUED);
 }
 
 void delete_sa_ref(int32_t q)

@@ -23,7 +23,7 @@ post_error_message(int need_to_print_it)
     if (need_to_print_it && log_opened())
         error();
 
-    history = HISTORY_FATAL_ERROR;
+    set_history(HISTORY_FATAL_ERROR);
     close_files_and_terminate();
     tt_cleanup();
     ttstub_output_flush(rust_stdout());
@@ -33,13 +33,13 @@ post_error_message(int need_to_print_it)
 void
 error(void)
 {
-    if (history < HISTORY_ERROR_ISSUED)
-        history = HISTORY_ERROR_ISSUED;
+    if (history() < HISTORY_ERROR_ISSUED)
+        set_history(HISTORY_ERROR_ISSUED);
 
     print_char('.');
     show_context();
     if (halt_on_error_p) {
-        history = HISTORY_FATAL_ERROR;
+        set_history(HISTORY_FATAL_ERROR);
         post_error_message(0);
         _tt_abort("halted on potentially-recoverable error as specified");
     }
@@ -51,7 +51,7 @@ error(void)
     error_count++;
     if (error_count == 100) {
         print_nl_cstr("(That makes 100 errors; please try again.)");
-        history = HISTORY_FATAL_ERROR;
+        set_history(HISTORY_FATAL_ERROR);
         post_error_message(0);
         _tt_abort("halted after 100 potentially-recoverable errors");
     }
@@ -115,7 +115,7 @@ confusion(const char* s)
 {
     pre_error_message();
 
-    if (history < HISTORY_ERROR_ISSUED) {
+    if (history() < HISTORY_ERROR_ISSUED) {
         print_cstr("This can't happen (");
         print_cstr(s);
         print_char(')');
