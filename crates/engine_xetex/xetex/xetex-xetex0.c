@@ -3998,16 +3998,16 @@ void group_warning(void)
     int32_t i;
     bool w;
 
-    base_ptr = input_ptr();
-    set_input_stack(base_ptr, cur_input());
+    set_base_ptr(input_ptr());
+    set_input_stack(base_ptr(), cur_input());
     i = in_open();
     w = false;
     while ((grp_stack[i] == cur_boundary) && (i > 0)) {
 
         if (INTPAR(tracing_nesting) > 0) {
-            while ((input_stack(base_ptr).state == TOKEN_LIST) || (input_stack(base_ptr).index > i))
-                base_ptr--;
-            if (input_stack(base_ptr).name > 17)
+            while ((input_stack(base_ptr()).state == TOKEN_LIST) || (input_stack(base_ptr()).index > i))
+                set_base_ptr(base_ptr()-1);
+            if (input_stack(base_ptr()).name > 17)
                 w = true;
         }
         grp_stack[i] = save_stack[save_ptr].b32.s1;
@@ -4035,16 +4035,16 @@ void if_warning(void)
     int32_t i;
     bool w;
 
-    base_ptr = input_ptr();
-    set_input_stack(base_ptr, cur_input());
+    set_base_ptr(input_ptr());
+    set_input_stack(base_ptr(), cur_input());
     i = in_open();
     w = false;
     while (if_stack[i] == cond_ptr) {
 
         if (INTPAR(tracing_nesting) > 0) {
-            while ((input_stack(base_ptr).state == TOKEN_LIST) || (input_stack(base_ptr).index > i))
-                base_ptr--;
-            if (input_stack(base_ptr).name > 17)
+            while ((input_stack(base_ptr()).state == TOKEN_LIST) || (input_stack(base_ptr()).index > i))
+                set_base_ptr(base_ptr()-1);
+            if (input_stack(base_ptr()).name > 17)
                 w = true;
         }
         if_stack[i] = mem(cond_ptr).b32.s1;
@@ -4661,21 +4661,21 @@ void show_context(void)
     int32_t p;
     int32_t q;
 
-    base_ptr = input_ptr();
-    set_input_stack(base_ptr, cur_input());
+    set_base_ptr(input_ptr());
+    set_input_stack(base_ptr(), cur_input());
     nn = -1;
     bottom_line = false;
 
     while (true) {
 
-        set_cur_input(input_stack(base_ptr));
+        set_cur_input(input_stack(base_ptr()));
         if ((cur_input().state != TOKEN_LIST)) {
 
-            if ((cur_input().name > 19) || (base_ptr == 0))
+            if ((cur_input().name > 19) || (base_ptr() == 0))
                 bottom_line = true;
         }
-        if ((base_ptr == input_ptr()) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
-            if ((base_ptr == input_ptr()) || (cur_input().state != TOKEN_LIST)
+        if ((base_ptr() == input_ptr()) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
+            if ((base_ptr() == input_ptr()) || (cur_input().state != TOKEN_LIST)
                 || (cur_input().index != BACKED_UP) || (cur_input().loc != TEX_NULL)) {
                 set_tally(0);
                 old_setting = selector();
@@ -4684,7 +4684,7 @@ void show_context(void)
 
                         if (cur_input().name == 0) {
 
-                            if (base_ptr == 0)
+                            if (base_ptr() == 0)
                                 print_nl_cstr("<*>");
                             else
                                 print_nl_cstr("<insert> ");
@@ -4872,7 +4872,7 @@ void show_context(void)
         }
         if (bottom_line)
             goto done;
-        base_ptr--;
+        set_base_ptr(base_ptr()-1);
     }
 done:
     set_cur_input(input_stack(input_ptr()));
@@ -15185,13 +15185,13 @@ void omit_error(void)
 
 void do_endv(void)
 {
-    base_ptr = input_ptr();
-    set_input_stack(base_ptr, cur_input());
-    while ((input_stack(base_ptr).index != V_TEMPLATE) && (input_stack(base_ptr).loc == TEX_NULL)
-           && (input_stack(base_ptr).state == TOKEN_LIST))
-        base_ptr--;
-    if ((input_stack(base_ptr).index != V_TEMPLATE) || (input_stack(base_ptr).loc != TEX_NULL)
-        || (input_stack(base_ptr).state != TOKEN_LIST))
+    set_base_ptr(input_ptr());
+    set_input_stack(base_ptr(), cur_input());
+    while ((input_stack(base_ptr()).index != V_TEMPLATE) && (input_stack(base_ptr()).loc == TEX_NULL)
+           && (input_stack(base_ptr()).state == TOKEN_LIST))
+        set_base_ptr(base_ptr()-1);
+    if ((input_stack(base_ptr()).index != V_TEMPLATE) || (input_stack(base_ptr()).loc != TEX_NULL)
+        || (input_stack(base_ptr()).state != TOKEN_LIST))
         fatal_error("(interwoven alignment preambles are not allowed)");
     if (cur_group == ALIGN_GROUP) {
         end_graf();
