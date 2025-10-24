@@ -64,6 +64,13 @@
 
 #define TOO_BIG_CHAR 65536
 
+typedef enum {
+  History_Spotless = 0,
+  History_WarningIssued = 1,
+  History_ErrorIssued = 2,
+  History_FatalError = 3,
+} History;
+
 typedef int32_t StrNumber;
 
 typedef struct {
@@ -253,6 +260,10 @@ void set_cur_input(input_state_t val);
 uint8_t interaction(void);
 
 void set_interaction(uint8_t val);
+
+History history(void);
+
+void set_history(uint8_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 

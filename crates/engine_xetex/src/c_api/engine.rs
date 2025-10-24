@@ -52,6 +52,7 @@ pub struct EngineCtx {
     pub(crate) input_ptr: usize,
     pub(crate) cur_input: InputState,
     pub(crate) interaction: InteractionMode,
+    pub(crate) history: History,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -105,6 +106,29 @@ struct NodeError {
     subty: u16,
 }
 
+#[derive(Copy, Clone, PartialEq, Eq)]
+#[repr(C)]
+pub enum History {
+    Spotless = 0,
+    WarningIssued = 1,
+    ErrorIssued = 2,
+    FatalError = 3,
+}
+
+impl TryFrom<u8> for History {
+    type Error = u8;
+
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        Ok(match value {
+            0 => History::Spotless,
+            1 => History::WarningIssued,
+            2 => History::ErrorIssued,
+            3 => History::FatalError,
+            _ => return Err(value),
+        })
+    }
+}
+
 impl EngineCtx {
     fn new() -> EngineCtx {
         EngineCtx {
@@ -132,6 +156,7 @@ impl EngineCtx {
             input_ptr: 0,
             cur_input: InputState::default(),
             interaction: InteractionMode::Batch,
+            history: History::Spotless,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -534,6 +559,16 @@ pub extern "C" fn interaction() -> u8 {
 pub extern "C" fn set_interaction(val: u8) {
     ENGINE_CTX
         .with_borrow_mut(|engine| engine.interaction = InteractionMode::try_from(val).unwrap())
+}
+
+#[no_mangle]
+pub extern "C" fn history() -> History {
+    ENGINE_CTX.with_borrow(|engine| engine.history)
+}
+
+#[no_mangle]
+pub extern "C" fn set_history(val: u8) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.history = History::try_from(val).unwrap())
 }
 
 #[no_mangle]
