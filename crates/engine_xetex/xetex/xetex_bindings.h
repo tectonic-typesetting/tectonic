@@ -331,6 +331,10 @@ int32_t last_bop(void);
 
 void set_last_bop(int32_t val);
 
+int32_t base_ptr(void);
+
+void set_base_ptr(int32_t val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);

@@ -468,7 +468,6 @@ extern int32_t *param_stack;
 extern int32_t param_ptr;
 extern int32_t max_param_stack;
 extern int32_t align_state;
-extern int32_t base_ptr;
 extern int32_t par_loc;
 extern int32_t par_token;
 extern bool force_eof;
