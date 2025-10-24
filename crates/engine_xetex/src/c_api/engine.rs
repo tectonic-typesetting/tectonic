@@ -7,7 +7,10 @@ use std::{ptr, slice};
 mod memory;
 
 use crate::c_api::is_dir_sep;
-use crate::c_api::output::{rs_print, rs_print_ln, rs_print_nl_bytes};
+use crate::c_api::output::{
+    rs_print, rs_print_bytes, rs_print_char, rs_print_cs, rs_print_int, rs_print_ln, rs_print_nl,
+    rs_print_nl_bytes, rs_print_raw_char,
+};
 use crate::c_api::pool::{
     rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
 };
@@ -23,10 +26,38 @@ pub const TEXT_SIZE: usize = 0;
 pub const SCRIPT_SIZE: usize = 256;
 pub const SCRIPT_SCRIPT_SIZE: usize = 512;
 
-/* "the largest positive value that TeX knows" */
+pub const MIN_HALFWORD: i32 = -0x0FFFFFFF;
+pub const MAX_HALFWORD: i32 = 0x3FFFFFFF;
+
+pub const TEX_NULL: i32 = MIN_HALFWORD;
+/// The largest positive value that TeX knows
 pub const TEX_INFINITY: i32 = 0x7FFFFFFF;
 
+/* begin_token_list() types */
+pub const PARAMETER: u16 = 0;
+pub const U_TEMPLATE: u16 = 1;
+pub const V_TEMPLATE: u16 = 2;
+pub const BACKED_UP: u16 = 3;
+pub const BACKED_UP_CHAR: u16 = 4;
+pub const INSERTED: u16 = 5;
+pub const MACRO: u16 = 6;
+pub const OUTPUT_TEXT: u16 = 7;
+pub const EVERY_PAR_TEXT: u16 = 8;
+pub const EVERY_MATH_TEXT: u16 = 9;
+pub const EVERY_DISPLAY_TEXT: u16 = 10;
+pub const EVERY_HBOX_TEXT: u16 = 11;
+pub const EVERY_VBOX_TEXT: u16 = 12;
+pub const EVERY_JOB_TEXT: u16 = 13;
+pub const EVERY_CR_TEXT: u16 = 14;
+pub const MARK_TEXT: u16 = 15;
+pub const EVERY_EOF_TEXT: u16 = 16;
+pub const INTER_CHAR_TEXT: u16 = 17;
+pub const WRITE_TEXT: u16 = 18;
+pub const TECTONIC_CODA_TEXT: u16 = 19;
+
 pub const POP: u8 = 142;
+
+pub const TOKEN_LIST: u16 = 0;
 
 thread_local! {
     pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
@@ -60,7 +91,9 @@ pub struct EngineCtx {
     pub(crate) history: History,
     pub(crate) total_pages: i32,
     pub(crate) last_bop: i32,
-    pub(crate) base_ptr: i32,
+    pub(crate) base_ptr: usize,
+    pub(crate) first_count: i32,
+    pub(crate) half_error_line: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -168,6 +201,8 @@ impl EngineCtx {
             total_pages: 0,
             last_bop: 0,
             base_ptr: 0,
+            first_count: 0,
+            half_error_line: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -603,13 +638,33 @@ pub extern "C" fn set_last_bop(val: i32) {
 }
 
 #[no_mangle]
-pub extern "C" fn base_ptr() -> i32 {
+pub extern "C" fn base_ptr() -> usize {
     ENGINE_CTX.with_borrow(|engine| engine.base_ptr)
 }
 
 #[no_mangle]
-pub extern "C" fn set_base_ptr(val: i32) {
+pub extern "C" fn set_base_ptr(val: usize) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.base_ptr = val)
+}
+
+#[no_mangle]
+pub extern "C" fn first_count() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.first_count)
+}
+
+#[no_mangle]
+pub extern "C" fn set_first_count(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.first_count = val)
+}
+
+#[no_mangle]
+pub extern "C" fn half_error_line() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.half_error_line)
+}
+
+#[no_mangle]
+pub extern "C" fn set_half_error_line(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.half_error_line = val)
 }
 
 #[no_mangle]
@@ -1060,3 +1115,240 @@ pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) {
 pub extern "C" fn open_log_file() {
     Globals::with(|globals| rs_open_log_file(globals))
 }
+
+// pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
+//     globals.engine.base_ptr = globals.engine.input_ptr;
+//     globals.engine.input_stack[globals.engine.base_ptr] = globals.engine.cur_input.clone();
+//     let mut nn = -1;
+//     let mut bottom_line = false;
+//     loop {
+//         globals.engine.cur_input = globals.engine.input_stack[globals.engine.base_ptr].clone();
+//         if globals.engine.cur_input.state != TOKEN_LIST {
+//             if globals.engine.cur_input.name > 19 || globals.engine.base_ptr == 0 {
+//                 bottom_line = true;
+//             }
+//         }
+//
+//         if globals.engine.base_ptr == globals.engine.input_ptr
+//             || bottom_line
+//             || nn < globals.engine.int_par(IntPar::ErrorContextLines)
+//         {
+//             let l;
+//             if globals.engine.base_ptr == globals.engine.input_ptr
+//                 || globals.engine.cur_input.state != TOKEN_LIST
+//                 || globals.engine.cur_input.index != BACKED_UP
+//                 || globals.engine.cur_input.loc != TEX_NULL
+//             {
+//                 globals.engine.tally = 0;
+//                 let old_setting = globals.engine.selector;
+//                 if globals.engine.cur_input.state != TOKEN_LIST {
+//                     if globals.engine.cur_input.name <= 17 {
+//                         if globals.engine.cur_input.name == 0 {
+//                             if globals.engine.base_ptr == 0 {
+//                                 rs_print_nl_bytes(globals, b"<*>")
+//                             } else {
+//                                 rs_print_nl_bytes(globals, b"<insert> ")
+//                             }
+//                         } else {
+//                             rs_print_nl_bytes(globals, b"<read ");
+//                             if globals.engine.cur_input.name == 17 {
+//                                 rs_print_char(globals, '*' as i32);
+//                             } else {
+//                                 rs_print_int(globals, globals.engine.cur_input.name - 1);
+//                             }
+//                             rs_print_char(globals, '>' as i32);
+//                         }
+//                     } else {
+//                         rs_print_nl_bytes(globals, b"l.");
+//                         if globals.engine.cur_input.index as i32 == globals.files.in_open {
+//                             rs_print_int(globals, globals.files.line);
+//                         } else {
+//                             rs_print_int(globals, globals.files.line_stack[(globals.engine.cur_input.index + 1) as usize]);
+//                         }
+//                     }
+//                     rs_print_char(globals, b' ' as i32);
+//
+//                     l = globals.engine.tally;
+//                     globals.engine.tally = 0;
+//                     globals.engine.selector = Selector::Pseudo;
+//                     globals.engine.trick_count = 1000000;
+//
+//                     let j;
+//                     if globals.engine.buffer[globals.engine.cur_input.limit as usize] as i32
+//                         == globals.engine.int_par(IntPar::EndLineChar)
+//                     {
+//                         j = globals.engine.cur_input.limit;
+//                     } else {
+//                         j = globals.engine.cur_input.limit + 1;
+//                     }
+//                     if j > 0 {
+//                         let mut i = globals.engine.cur_input.start;
+//                         let for_end = j - 1;
+//                         if i <= for_end {
+//                             loop {
+//                                 if i == globals.engine.cur_input.loc {
+//                                     globals.engine.first_count = globals.engine.tally;
+//                                     globals.engine.trick_count =
+//                                         globals.engine.tally + 1 + globals.engine.error_line
+//                                             - globals.engine.half_error_line;
+//                                     if globals.engine.trick_count < globals.engine.error_line {
+//                                         globals.engine.trick_count = globals.engine.error_line;
+//                                     }
+//                                 }
+//                                 rs_print_char(globals, globals.engine.buffer[i as usize] as i32);
+//                                 if i >= for_end {
+//                                     break;
+//                                 }
+//                                 i += 1;
+//                             }
+//                         }
+//                     }
+//                 } else {
+//                     match globals.engine.cur_input.index {
+//                         PARAMETER => rs_print_nl_bytes(globals, b"<argument> "),
+//                         U_TEMPLATE | V_TEMPLATE => rs_print_nl_bytes(globals, b"<template> "),
+//                         BACKED_UP | BACKED_UP_CHAR => {
+//                             if globals.engine.cur_input.loc == TEX_NULL {
+//                                 rs_print_nl_bytes(globals, b"<recently read> ")
+//                             } else {
+//                                 rs_print_nl_bytes(globals, b"<to be read again> ")
+//                             }
+//                         }
+//                         INSERTED => rs_print_nl_bytes(globals, b"<inserted text> "),
+//                         MACRO => {
+//                             rs_print_ln(globals);
+//                             rs_print_cs(globals, globals.engine.cur_input.name);
+//                         }
+//                         OUTPUT_TEXT => rs_print_nl_bytes(globals, b"<output> "),
+//                         EVERY_PAR_TEXT => rs_print_nl_bytes(globals, b"<everypar> "),
+//                         EVERY_MATH_TEXT => rs_print_nl_bytes(globals, b"<everymath> "),
+//                         EVERY_DISPLAY_TEXT => rs_print_nl_bytes(globals, b"<everydisplay> "),
+//                         EVERY_HBOX_TEXT => rs_print_nl_bytes(globals, b"<everyhbox> "),
+//                         EVERY_VBOX_TEXT => rs_print_nl_bytes(globals, b"<everyvbox> "),
+//                         EVERY_JOB_TEXT => rs_print_nl_bytes(globals, b"<everyjob> "),
+//                         EVERY_CR_TEXT => rs_print_nl_bytes(globals, b"<everycr> "),
+//                         MARK_TEXT => rs_print_nl_bytes(globals, b"<mark> "),
+//                         EVERY_EOF_TEXT => rs_print_nl_bytes(globals, b"<everyeof> "),
+//                         INTER_CHAR_TEXT => rs_print_nl_bytes(globals, b"<XeTeXinterchartoks> "),
+//                         WRITE_TEXT => rs_print_nl_bytes(globals, b"<write> "),
+//                         TECTONIC_CODA_TEXT => rs_print_nl_bytes(globals, b"<TectonicCodaTokens> "),
+//                         _ => rs_print_nl(globals, '?' as i32),
+//                     }
+//
+//                     l = globals.engine.tally;
+//                     globals.engine.tally = 0;
+//                     globals.engine.selector = Selector::Pseudo;
+//                     globals.engine.trick_count = 1000000;
+//
+//                     if globals.engine.cur_input.index < MACRO {
+//                         // TODO
+//                         // show_token_list(cur_input().start, cur_input().loc, 100000L);
+//                     } else {
+//                         // show_token_list(mem(cur_input().start).b32.s1, cur_input().loc, 100000L);
+//                     }
+//                 }
+//                 globals.engine.selector = old_setting;
+//                 if globals.engine.trick_count == 1000000 {
+//                     globals.engine.first_count = globals.engine.tally;
+//                     globals.engine.trick_count = globals.engine.tally
+//                         + 1
+//                         + globals.engine.error_line
+//                         + globals.engine.half_error_line;
+//                     if globals.engine.trick_count < globals.engine.error_line {
+//                         globals.engine.trick_count = globals.engine.error_line;
+//                     }
+//                 }
+//
+//                 let m;
+//                 if globals.engine.tally < globals.engine.trick_count {
+//                     m = globals.engine.tally - globals.engine.first_count;
+//                 } else {
+//                     m = globals.engine.trick_count - globals.engine.first_count;
+//                 }
+//
+//                 let n;
+//                 let p;
+//                 if l + globals.engine.first_count <= globals.engine.half_error_line {
+//                     p = 0;
+//                     n = l + globals.engine.first_count;
+//                 } else {
+//                     rs_print_bytes(globals, b"...");
+//                     p = l + globals.engine.first_count - globals.engine.half_error_line + 3;
+//                     n = globals.engine.half_error_line;
+//                 }
+//
+//                 let mut q = p;
+//                 let for_end = globals.engine.first_count - 1;
+//                 if q <= for_end {
+//                     loop {
+//                         rs_print_char(
+//                             globals,
+//                             globals.engine.trick_buf[(q % globals.engine.error_line) as usize]
+//                                 as i32,
+//                         );
+//                         if q >= for_end {
+//                             break;
+//                         }
+//                         q += 1;
+//                     }
+//                 }
+//
+//                 rs_print_ln(globals);
+//
+//                 let mut q = 1;
+//                 let for_end = n;
+//                 if q <= for_end {
+//                     loop {
+//                         rs_print_raw_char(globals, b' ' as u16, true);
+//                         if q >= for_end {
+//                             break;
+//                         }
+//                         q += 1;
+//                     }
+//                 }
+//
+//                 if m + n <= globals.engine.error_line {
+//                     p = globals.engine.first_count + m;
+//                 } else {
+//                     p = globals.engine.first_count + (globals.engine.error_line - n - 3);
+//                 }
+//
+//                 let mut q = globals.engine.first_count;
+//                 let for_end = p - 1;
+//                 if q <= for_end {
+//                     loop {
+//                         rs_print_char(
+//                             globals,
+//                             globals.engine.trick_buf[(q % globals.engine.error_line) as usize]
+//                                 as i32,
+//                         );
+//                         if q >= for_end {
+//                             break;
+//                         }
+//                         q += 1;
+//                     }
+//                 }
+//
+//                 if m + n > globals.engine.error_line {
+//                     rs_print_bytes(globals, b"...");
+//                 }
+//                 nn += 1;
+//             }
+//         } else if nn == globals.engine.int_par(IntPar::ErrorContextLines) {
+//             rs_print_nl_bytes(globals, b"...");
+//             nn += 1;
+//         }
+//
+//         if bottom_line {
+//             break;
+//         }
+//
+//         globals.engine.base_ptr -= 1;
+//     }
+//     globals.engine.cur_input = globals.engine.input_stack[globals.engine.input_ptr].clone();
+// }
+//
+// #[no_mangle]
+// pub extern "C" fn show_context() {
+//     Globals::with(|globals| rs_show_context(globals))
+// }

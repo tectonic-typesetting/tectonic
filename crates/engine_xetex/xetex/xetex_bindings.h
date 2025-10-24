@@ -40,9 +40,60 @@
 
 #define SCRIPT_SCRIPT_SIZE 512
 
+#define MIN_HALFWORD -268435455
+
+#define MAX_HALFWORD 1073741823
+
+#define TEX_NULL MIN_HALFWORD
+
+/**
+ * The largest positive value that TeX knows
+ */
 #define TEX_INFINITY 2147483647
 
+#define PARAMETER 0
+
+#define U_TEMPLATE 1
+
+#define V_TEMPLATE 2
+
+#define BACKED_UP 3
+
+#define BACKED_UP_CHAR 4
+
+#define INSERTED 5
+
+#define MACRO 6
+
+#define OUTPUT_TEXT 7
+
+#define EVERY_PAR_TEXT 8
+
+#define EVERY_MATH_TEXT 9
+
+#define EVERY_DISPLAY_TEXT 10
+
+#define EVERY_HBOX_TEXT 11
+
+#define EVERY_VBOX_TEXT 12
+
+#define EVERY_JOB_TEXT 13
+
+#define EVERY_CR_TEXT 14
+
+#define MARK_TEXT 15
+
+#define EVERY_EOF_TEXT 16
+
+#define INTER_CHAR_TEXT 17
+
+#define WRITE_TEXT 18
+
+#define TECTONIC_CODA_TEXT 19
+
 #define POP 142
+
+#define TOKEN_LIST 0
 
 #define WHATSIT_NODE 8
 
@@ -331,9 +382,17 @@ int32_t last_bop(void);
 
 void set_last_bop(int32_t val);
 
-int32_t base_ptr(void);
+uintptr_t base_ptr(void);
 
-void set_base_ptr(int32_t val);
+void set_base_ptr(uintptr_t val);
+
+int32_t first_count(void);
+
+void set_first_count(int32_t val);
+
+int32_t half_error_line(void);
+
+void set_half_error_line(int32_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 
