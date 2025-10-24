@@ -1,8 +1,14 @@
+use crate::c_api::engine::TEX_INFINITY;
+use crate::c_api::fatal_error;
 use crate::c_api::globals::Globals;
 use std::cell::RefCell;
 use std::io::Write;
 use std::ptr;
 use tectonic_bridge_core::OutputId;
+
+pub const DVI_BUF_SIZE: i32 = 16384;
+pub const HALF_BUF: i32 = DVI_BUF_SIZE / 2;
+pub const FNT_NUM_0: usize = 171; /* DVI code */
 
 thread_local! {
     pub static DVI_CTX: RefCell<DviCtx> = const { RefCell::new(DviCtx::new()) }
@@ -132,4 +138,36 @@ pub extern "C" fn write_to_dvi(a: i32, b: i32) {
 #[no_mangle]
 pub extern "C" fn deinitialize_shipout_variables() {
     clear_dvi_buf();
+}
+
+pub fn dvi_swap(globals: &mut Globals<'_, '_>) {
+    if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
+        globals.dvi.cur_s = -2;
+        // TODO: This may violate Globals::with uniqueness if we're already in a fatal_error
+        unsafe { fatal_error(c"dvi length exceeds 0x7FFFFFFF".as_ptr()) };
+    }
+
+    if globals.dvi.limit == DVI_BUF_SIZE {
+        rs_write_to_dvi(globals, 0, (HALF_BUF - 1) as usize);
+        globals.dvi.limit = HALF_BUF;
+        globals.dvi.offset += DVI_BUF_SIZE;
+        globals.dvi.ptr = 0;
+    } else {
+        rs_write_to_dvi(globals, HALF_BUF as usize, (DVI_BUF_SIZE - 1) as usize);
+        globals.dvi.limit = DVI_BUF_SIZE;
+    }
+    globals.dvi.gone += HALF_BUF;
+}
+
+pub fn rs_dvi_out(globals: &mut Globals<'_, '_>, c: u8) {
+    globals.dvi.buf[globals.dvi.ptr as usize] = c;
+    globals.dvi.ptr += 1;
+    if globals.dvi.ptr == globals.dvi.limit {
+        dvi_swap(globals);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn dvi_out(c: u8) {
+    Globals::with(|globals| rs_dvi_out(globals, c))
 }

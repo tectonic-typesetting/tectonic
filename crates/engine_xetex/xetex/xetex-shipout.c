@@ -29,7 +29,6 @@ static void prune_movements(int32_t l);
 static void special_out(int32_t p);
 static void write_out(int32_t p);
 static void pic_out(int32_t p);
-static void dvi_swap(void);
 static void dvi_four(int32_t x);
 static void dvi_two(UTF16_code s);
 static void dvi_pop(int32_t l);
@@ -49,17 +48,6 @@ initialize_shipout_variables(void)
     right_ptr = TEX_NULL;
     set_cur_s(-1);
 }
-
-
-static inline void
-dvi_out(eight_bits c)
-{
-    set_dvi_buf(dvi_ptr(), c);
-    set_dvi_ptr(dvi_ptr()+1);
-    if (dvi_ptr() == dvi_limit())
-        dvi_swap();
-}
-
 
 /*660: output the box `p` */
 void
@@ -2363,27 +2351,6 @@ finalize_dvi_file(void)
         print_cstr(" may not be valid.");
         /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
     }
-}
-
-static void
-dvi_swap(void)
-{
-    if (dvi_ptr() > (TEX_INFINITY - dvi_offset())) {
-        set_cur_s(-2);
-        fatal_error("dvi length exceeds 0x7FFFFFFF");
-    }
-
-    if (dvi_limit() == DVI_BUF_SIZE) {
-        write_to_dvi(0, HALF_BUF - 1);
-        set_dvi_limit(HALF_BUF);
-        set_dvi_offset(dvi_offset() + DVI_BUF_SIZE);
-        set_dvi_ptr(0);
-    } else {
-        write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
-        set_dvi_limit(DVI_BUF_SIZE);
-    }
-
-    set_dvi_gone(dvi_gone() + HALF_BUF);
 }
 
 
