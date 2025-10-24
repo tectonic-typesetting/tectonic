@@ -264,6 +264,8 @@ pub mod c_api {
             input_file_name: *const libc::c_char,
             build_date: u64,
         ) -> libc::c_int;
+
+        pub fn fatal_error(s: *const libc::c_char);
     }
 }
 

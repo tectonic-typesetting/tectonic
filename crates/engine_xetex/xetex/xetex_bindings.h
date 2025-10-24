@@ -155,6 +155,8 @@ extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *input_file_name,
                                 uint64_t build_date);
 
+extern void fatal_error(const char *s);
+
 rust_output_handle_t dvi_file(void);
 
 void set_dvi_file(rust_output_handle_t file);
@@ -175,6 +177,10 @@ int32_t dvi_gone(void);
 
 void set_dvi_gone(int32_t val);
 
+int32_t cur_s(void);
+
+void set_cur_s(int32_t val);
+
 uint8_t dvi_buf(uintptr_t idx);
 
 void set_dvi_buf(uintptr_t idx, uint8_t val);
@@ -186,6 +192,8 @@ void resize_dvi_buf(uintptr_t len);
 void clear_dvi_buf(void);
 
 void write_to_dvi(int32_t a, int32_t b);
+
+void deinitialize_shipout_variables(void);
 
 uint32_t selector(void);
 

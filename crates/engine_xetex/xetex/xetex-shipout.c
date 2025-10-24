@@ -19,8 +19,6 @@ static int32_t lq, lr;
 static int32_t down_ptr, right_ptr;
 static scaled_t dvi_h, dvi_v;
 static internal_font_number dvi_f;
-static int32_t cur_s;
-
 
 static void hlist_out(void);
 static void vlist_out(void);
@@ -49,14 +47,7 @@ initialize_shipout_variables(void)
     set_dvi_gone(0);
     down_ptr = TEX_NULL;
     right_ptr = TEX_NULL;
-    cur_s = -1;
-}
-
-
-void
-deinitialize_shipout_variables(void)
-{
-    clear_dvi_buf();
+    set_cur_s(-1);
 }
 
 
@@ -255,7 +246,7 @@ ship_out(int32_t p)
 
     dvi_out(EOP);
     total_pages++;
-    cur_s = -1;
+    set_cur_s(-1);
 
 done:
     /*1518: "Check for LR anomalies at the end of ship_out" */
@@ -533,12 +524,12 @@ hlist_out(void)
     /* ... resuming 639 ... */
 
     p = BOX_list_ptr(this_box);
-    cur_s++;
-    if (cur_s > 0)
+    set_cur_s(cur_s()+1);
+    if (cur_s() > 0)
         dvi_out(PUSH);
 
-    if (cur_s > max_push)
-        max_push = cur_s;
+    if (cur_s() > max_push)
+        max_push = cur_s();
 
     save_loc = dvi_offset() + dvi_ptr();
     base_line = cur_v;
@@ -1083,9 +1074,9 @@ hlist_out(void)
     /* ... finishing 639 */
 
     prune_movements(save_loc);
-    if (cur_s > 0)
+    if (cur_s() > 0)
         dvi_pop(save_loc);
-    cur_s--;
+    set_cur_s(cur_s()-1);
 }
 
 
@@ -1122,12 +1113,12 @@ vlist_out(void)
     p = BOX_list_ptr(this_box);
     upwards = (NODE_subtype(this_box) == 1);
 
-    cur_s++;
-    if (cur_s > 0)
+    set_cur_s(cur_s()+1);
+    if (cur_s() > 0)
         dvi_out(PUSH);
 
-    if (cur_s > max_push)
-        max_push = cur_s;
+    if (cur_s() > max_push)
+        max_push = cur_s();
 
     save_loc = dvi_offset() + dvi_ptr();
     left_edge = cur_h;
@@ -1472,9 +1463,9 @@ vlist_out(void)
     synctex_tsilv(this_box);
     prune_movements(save_loc);
 
-    if (cur_s > 0)
+    if (cur_s() > 0)
         dvi_pop(save_loc);
-    cur_s--;
+    set_cur_s(cur_s()-1);
 }
 
 
@@ -2281,15 +2272,15 @@ finalize_dvi_file(void)
 {
     unsigned char k;
 
-    while (cur_s > -1) {
-        if (cur_s > 0) {
+    while (cur_s() > -1) {
+        if (cur_s() > 0) {
             dvi_out(POP);
         } else {
             dvi_out(EOP);
             total_pages++;
         }
 
-        cur_s--;
+        set_cur_s(cur_s()-1);
     }
 
     if (total_pages == 0) {
@@ -2297,7 +2288,7 @@ finalize_dvi_file(void)
         return;
     }
 
-    if (cur_s == -2)
+    if (cur_s() == -2)
         /* This happens when the DVI gets too big; a message has already been printed */
         return;
 
@@ -2340,7 +2331,7 @@ finalize_dvi_file(void)
         write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
 
     if (dvi_ptr() > TEX_INFINITY - dvi_offset()) {
-        cur_s = -2;
+        set_cur_s(-2);
         fatal_error("dvi length exceeds 0x7FFFFFFF");
     }
 
@@ -2378,7 +2369,7 @@ static void
 dvi_swap(void)
 {
     if (dvi_ptr() > (TEX_INFINITY - dvi_offset())) {
-        cur_s = -2;
+        set_cur_s(-2);
         fatal_error("dvi length exceeds 0x7FFFFFFF");
     }
 
