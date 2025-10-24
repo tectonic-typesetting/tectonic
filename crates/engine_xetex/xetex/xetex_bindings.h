@@ -185,6 +185,8 @@ void resize_dvi_buf(uintptr_t len);
 
 void clear_dvi_buf(void);
 
+void write_to_dvi(int32_t a, int32_t b);
+
 uint32_t selector(void);
 
 void set_selector(uint32_t val);
