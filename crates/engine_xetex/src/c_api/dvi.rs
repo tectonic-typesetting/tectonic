@@ -1,4 +1,4 @@
-use crate::c_api::engine::TEX_INFINITY;
+use crate::c_api::engine::{POP, TEX_INFINITY};
 use crate::c_api::fatal_error;
 use crate::c_api::globals::Globals;
 use std::cell::RefCell;
@@ -170,4 +170,50 @@ pub fn rs_dvi_out(globals: &mut Globals<'_, '_>, c: u8) {
 #[no_mangle]
 pub extern "C" fn dvi_out(c: u8) {
     Globals::with(|globals| rs_dvi_out(globals, c))
+}
+
+pub fn rs_dvi_four(globals: &mut Globals<'_, '_>, mut x: i32) {
+    // TODO: Honestly, this could just use `x.to_*_bytes()`
+    if x >= 0 {
+        rs_dvi_out(globals, (x / 0x1000000) as u8);
+    } else {
+        x = x + 0x40000000;
+        x = x + 0x40000000;
+        rs_dvi_out(globals, ((x / 0x1000000) + 128) as u8);
+    }
+
+    x = x % 0x1000000;
+    rs_dvi_out(globals, (x / 0x10000) as u8);
+
+    x = x % 0x10000;
+    rs_dvi_out(globals, (x / 0x100) as u8);
+    rs_dvi_out(globals, (x % 0x100) as u8);
+}
+
+#[no_mangle]
+pub extern "C" fn dvi_four(x: i32) {
+    Globals::with(|globals| rs_dvi_four(globals, x))
+}
+
+pub fn rs_dvi_two(globals: &mut Globals<'_, '_>, mut s: u16) {
+    rs_dvi_out(globals, (s / 0x100) as u8);
+    rs_dvi_out(globals, (s % 0x100) as u8);
+}
+
+#[no_mangle]
+pub extern "C" fn dvi_two(s: u16) {
+    Globals::with(|globals| rs_dvi_two(globals, s))
+}
+
+pub fn rs_dvi_pop(globals: &mut Globals<'_, '_>, l: i32) {
+    if l == globals.dvi.offset + globals.dvi.ptr && globals.dvi.ptr > 0 {
+        globals.dvi.ptr -= 1;
+    } else {
+        rs_dvi_out(globals, POP);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn dvi_pop(l: i32) {
+    Globals::with(|globals| rs_dvi_pop(globals, l))
 }

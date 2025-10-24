@@ -42,6 +42,8 @@
 
 #define TEX_INFINITY 2147483647
 
+#define POP 142
+
 #define WHATSIT_NODE 8
 
 #define NATIVE_WORD_NODE 40
@@ -205,6 +207,12 @@ void deinitialize_shipout_variables(void);
 
 void dvi_out(uint8_t c);
 
+void dvi_four(int32_t x);
+
+void dvi_two(uint16_t s);
+
+void dvi_pop(int32_t l);
+
 uint32_t selector(void);
 
 void set_selector(uint32_t val);
@@ -314,6 +322,10 @@ void set_interaction(uint8_t val);
 History history(void);
 
 void set_history(uint8_t val);
+
+int32_t total_pages(void);
+
+void set_total_pages(int32_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 

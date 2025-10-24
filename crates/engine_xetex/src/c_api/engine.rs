@@ -26,6 +26,8 @@ pub const SCRIPT_SCRIPT_SIZE: usize = 512;
 /* "the largest positive value that TeX knows" */
 pub const TEX_INFINITY: i32 = 0x7FFFFFFF;
 
+pub const POP: u8 = 142;
+
 thread_local! {
     pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
 }
@@ -56,6 +58,7 @@ pub struct EngineCtx {
     pub(crate) cur_input: InputState,
     pub(crate) interaction: InteractionMode,
     pub(crate) history: History,
+    pub(crate) total_pages: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -160,6 +163,7 @@ impl EngineCtx {
             cur_input: InputState::default(),
             interaction: InteractionMode::Batch,
             history: History::Spotless,
+            total_pages: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -572,6 +576,16 @@ pub extern "C" fn history() -> History {
 #[no_mangle]
 pub extern "C" fn set_history(val: u8) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.history = History::try_from(val).unwrap())
+}
+
+#[no_mangle]
+pub extern "C" fn total_pages() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.total_pages)
+}
+
+#[no_mangle]
+pub extern "C" fn set_total_pages(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.total_pages = val)
 }
 
 #[no_mangle]
