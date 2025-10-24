@@ -59,6 +59,7 @@ pub struct EngineCtx {
     pub(crate) interaction: InteractionMode,
     pub(crate) history: History,
     pub(crate) total_pages: i32,
+    pub(crate) last_bop: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -164,6 +165,7 @@ impl EngineCtx {
             interaction: InteractionMode::Batch,
             history: History::Spotless,
             total_pages: 0,
+            last_bop: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -586,6 +588,16 @@ pub extern "C" fn total_pages() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_total_pages(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.total_pages = val)
+}
+
+#[no_mangle]
+pub extern "C" fn last_bop() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.last_bop)
+}
+
+#[no_mangle]
+pub extern "C" fn set_last_bop(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.last_bop = val)
 }
 
 #[no_mangle]

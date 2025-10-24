@@ -532,7 +532,6 @@ extern b16x4 null_character;
 extern scaled_t max_v;
 extern scaled_t max_h;
 extern int32_t max_push;
-extern int32_t last_bop;
 extern int32_t dead_cycles;
 extern bool doing_leaders;
 extern scaled_t rule_ht, rule_dp, rule_wd;

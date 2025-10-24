@@ -172,7 +172,6 @@ b16x4 null_character;
 scaled_t max_v;
 scaled_t max_h;
 int32_t max_push;
-int32_t last_bop;
 int32_t dead_cycles;
 bool doing_leaders;
 scaled_t rule_ht, rule_dp, rule_wd;
@@ -3105,7 +3104,7 @@ initialize_more_variables(void)
     max_v = 0;
     max_h = 0;
     max_push = 0;
-    last_bop = -1;
+    set_last_bop(-1);
     doing_leaders = false;
     dead_cycles = 0;
     adjust_tail = TEX_NULL;
