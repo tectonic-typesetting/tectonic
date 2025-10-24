@@ -155,6 +155,24 @@ extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *input_file_name,
                                 uint64_t build_date);
 
+rust_output_handle_t dvi_file(void);
+
+void set_dvi_file(rust_output_handle_t file);
+
+int32_t dvi_limit(void);
+
+void set_dvi_limit(int32_t val);
+
+uint8_t dvi_buf(uintptr_t idx);
+
+void set_dvi_buf(uintptr_t idx, uint8_t val);
+
+uint8_t *dvi_buf_ptr(uintptr_t idx);
+
+void resize_dvi_buf(uintptr_t len);
+
+void clear_dvi_buf(void);
+
 uint32_t selector(void);
 
 void set_selector(uint32_t val);

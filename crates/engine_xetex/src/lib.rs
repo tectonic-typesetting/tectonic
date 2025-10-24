@@ -236,6 +236,7 @@ pub mod c_api {
 
     use tectonic_bridge_core::CoreBridgeState;
 
+    mod dvi;
     mod engine;
     mod errors;
     mod globals;
