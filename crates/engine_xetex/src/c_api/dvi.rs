@@ -14,6 +14,7 @@ pub struct DviCtx {
     ptr: i32,
     offset: i32,
     gone: i32,
+    cur_s: i32,
     buf: Vec<u8>,
 }
 
@@ -25,6 +26,7 @@ impl DviCtx {
             ptr: 0,
             offset: 0,
             gone: 0,
+            cur_s: 0,
             buf: Vec::new(),
         }
     }
@@ -81,6 +83,16 @@ pub extern "C" fn set_dvi_gone(val: i32) {
 }
 
 #[no_mangle]
+pub extern "C" fn cur_s() -> i32 {
+    DVI_CTX.with_borrow(|dvi| dvi.cur_s)
+}
+
+#[no_mangle]
+pub extern "C" fn set_cur_s(val: i32) {
+    DVI_CTX.with_borrow_mut(|dvi| dvi.cur_s = val)
+}
+
+#[no_mangle]
 pub extern "C" fn dvi_buf(idx: usize) -> u8 {
     DVI_CTX.with_borrow(|engine| engine.buf[idx])
 }
@@ -115,4 +127,9 @@ pub fn rs_write_to_dvi(globals: &mut Globals<'_, '_>, a: usize, b: usize) {
 #[no_mangle]
 pub extern "C" fn write_to_dvi(a: i32, b: i32) {
     Globals::with(|globals| rs_write_to_dvi(globals, a as usize, b as usize))
+}
+
+#[no_mangle]
+pub extern "C" fn deinitialize_shipout_variables() {
+    clear_dvi_buf();
 }
