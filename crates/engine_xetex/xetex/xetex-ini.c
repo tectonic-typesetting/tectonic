@@ -108,7 +108,6 @@ int32_t *param_stack;
 int32_t param_ptr;
 int32_t max_param_stack;
 int32_t align_state;
-int32_t base_ptr;
 int32_t par_loc;
 int32_t par_token;
 bool force_eof;
