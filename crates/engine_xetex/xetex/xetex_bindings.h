@@ -40,6 +40,274 @@
 
 #define SCRIPT_SCRIPT_SIZE 512
 
+#define LEFT_BRACE 1
+
+#define RIGHT_BRACE 2
+
+#define MATH_SHIFT 3
+
+#define TAB_MARK 4
+
+#define CAR_RET 5
+
+#define OUT_PARAM 5
+
+#define MAC_PARAM 6
+
+#define SUP_MARK 7
+
+#define SUB_MARK 8
+
+#define ENDV 9
+
+#define IGNORE 9
+
+#define SPACER 10
+
+#define LETTER 11
+
+#define OTHER_CHAR 12
+
+#define PAR_END 13
+
+#define ACTIVE_CHAR 13
+
+#define MATCH 13
+
+#define STOP 14
+
+#define COMMENT 14
+
+#define END_MATCH 14
+
+#define DELIM_NUM 15
+
+#define INVALID_CHAR 15
+
+#define CHAR_NUM 16
+
+#define MAX_CHAR_CODE 15
+
+#define MATH_CHAR_NUM 17
+
+#define MARK 18
+
+#define XRAY 19
+
+#define MAKE_BOX 20
+
+#define HMOVE 21
+
+#define VMOVE 22
+
+#define UN_HBOX 23
+
+#define UN_VBOX 24
+
+#define REMOVE_ITEM 25
+
+#define HSKIP 26
+
+#define VSKIP 27
+
+#define MSKIP 28
+
+#define KERN 29
+
+#define MKERN 30
+
+#define LEADER_SHIP 31
+
+#define HALIGN 32
+
+#define VALIGN 33
+
+#define NO_ALIGN 34
+
+#define VRULE 35
+
+#define HRULE 36
+
+#define INSERT 37
+
+#define VADJUST 38
+
+#define IGNORE_SPACES 39
+
+#define AFTER_ASSIGNMENT 40
+
+#define AFTER_GROUP 41
+
+#define BREAK_PENALTY 42
+
+#define START_PAR 43
+
+#define ITAL_CORR 44
+
+#define ACCENT 45
+
+#define MATH_ACCENT 46
+
+#define DISCRETIONARY 47
+
+#define EQ_NO 48
+
+#define LEFT_RIGHT 49
+
+#define MATH_COMP 50
+
+#define LIMIT_SWITCH 51
+
+#define ABOVE 52
+
+#define MATH_STYLE 53
+
+#define MATH_CHOICE 54
+
+#define NON_SCRIPT 55
+
+#define VCENTER 56
+
+#define CASE_SHIFT 57
+
+#define MESSAGE 58
+
+#define EXTENSION 59
+
+#define IN_STREAM 60
+
+#define BEGIN_GROUP 61
+
+#define END_GROUP 62
+
+#define OMIT 63
+
+#define EX_SPACE 64
+
+#define NO_BOUNDARY 65
+
+#define RADICAL 66
+
+#define END_CS_NAME 67
+
+#define CHAR_GIVEN 68
+
+#define MIN_INTERNAL 68
+
+#define MATH_GIVEN 69
+
+#define XETEX_MATH_GIVEN 70
+
+#define LAST_ITEM 71
+
+#define TOKS_REGISTER 72
+
+#define MAX_NON_PREFIXED_COMMAND 71
+
+#define ASSIGN_TOKS 73
+
+#define ASSIGN_INT 74
+
+#define ASSIGN_DIMEN 75
+
+#define ASSIGN_GLUE 76
+
+#define ASSIGN_MU_GLUE 77
+
+#define ASSIGN_FONT_DIMEN 78
+
+#define ASSIGN_FONT_INT 79
+
+#define SET_AUX 80
+
+#define SET_PREV_GRAF 81
+
+#define SET_PAGE_DIMEN 82
+
+#define SET_PAGE_INT 83
+
+#define SET_BOX_DIMEN 84
+
+#define SET_SHAPE 85
+
+#define DEF_CODE 86
+
+#define XETEX_DEF_CODE 87
+
+#define DEF_FAMILY 88
+
+#define SET_FONT 89
+
+#define DEF_FONT 90
+
+#define REGISTER 91
+
+#define ADVANCE 92
+
+#define MAX_INTERNAL 91
+
+#define MULTIPLY 93
+
+#define DIVIDE 94
+
+#define PREFIX 95
+
+#define LET 96
+
+#define SHORTHAND_DEF 97
+
+#define READ_TO_CS 98
+
+#define DEF 99
+
+#define SET_BOX 100
+
+#define HYPH_DATA 101
+
+#define SET_INTERACTION 102
+
+#define UNDEFINED_CS 103
+
+#define MAX_COMMAND 102
+
+#define EXPAND_AFTER 104
+
+#define NO_EXPAND 105
+
+#define INPUT 106
+
+#define IF_TEST 107
+
+#define FI_OR_ELSE 108
+
+#define CS_NAME 109
+
+#define CONVERT 110
+
+#define THE 111
+
+#define TOP_BOT_MARK 112
+
+#define CALL 113
+
+#define LONG_CALL 114
+
+#define OUTER_CALL 115
+
+#define LONG_OUTER_CALL 116
+
+#define END_TEMPLATE 117
+
+#define DONT_EXPAND 118
+
+#define GLUE_REF 119
+
+#define SHAPE_REF 120
+
+#define BOX_REF 121
+
+#define DATA 122
+
 #define MIN_HALFWORD -268435455
 
 #define MAX_HALFWORD 1073741823
@@ -94,6 +362,10 @@
 #define POP 142
 
 #define TOKEN_LIST 0
+
+#define MAX_CHAR_VAL 2097152
+
+#define CS_TOKEN_FLAG 33554431
 
 #define WHATSIT_NODE 8
 
@@ -457,6 +729,8 @@ bool more_name(uint16_t c);
 StrNumber make_name_string(void);
 
 void open_log_file(void);
+
+void show_token_list(int32_t p, int32_t q, int32_t l);
 
 void pre_error_message(void);
 
