@@ -26,6 +26,141 @@ pub const TEXT_SIZE: usize = 0;
 pub const SCRIPT_SIZE: usize = 256;
 pub const SCRIPT_SCRIPT_SIZE: usize = 512;
 
+pub const LEFT_BRACE: i32 = 1;
+pub const RIGHT_BRACE: i32 = 2;
+pub const MATH_SHIFT: i32 = 3;
+pub const TAB_MARK: i32 = 4;
+pub const CAR_RET: i32 = 5;
+pub const OUT_PARAM: i32 = 5;
+pub const MAC_PARAM: i32 = 6;
+pub const SUP_MARK: i32 = 7;
+pub const SUB_MARK: i32 = 8;
+pub const ENDV: i32 = 9;
+pub const IGNORE: i32 = 9;
+pub const SPACER: i32 = 10;
+pub const LETTER: i32 = 11;
+pub const OTHER_CHAR: i32 = 12;
+pub const PAR_END: i32 = 13;
+pub const ACTIVE_CHAR: i32 = 13;
+pub const MATCH: i32 = 13;
+pub const STOP: i32 = 14;
+pub const COMMENT: i32 = 14;
+pub const END_MATCH: i32 = 14;
+pub const DELIM_NUM: i32 = 15;
+pub const INVALID_CHAR: i32 = 15;
+pub const CHAR_NUM: i32 = 16;
+pub const MAX_CHAR_CODE: i32 = 15;
+pub const MATH_CHAR_NUM: i32 = 17;
+pub const MARK: i32 = 18;
+pub const XRAY: i32 = 19;
+pub const MAKE_BOX: i32 = 20;
+pub const HMOVE: i32 = 21;
+pub const VMOVE: i32 = 22;
+pub const UN_HBOX: i32 = 23;
+pub const UN_VBOX: i32 = 24;
+pub const REMOVE_ITEM: i32 = 25;
+pub const HSKIP: i32 = 26;
+pub const VSKIP: i32 = 27;
+pub const MSKIP: i32 = 28;
+pub const KERN: i32 = 29;
+pub const MKERN: i32 = 30;
+pub const LEADER_SHIP: i32 = 31;
+pub const HALIGN: i32 = 32;
+pub const VALIGN: i32 = 33;
+pub const NO_ALIGN: i32 = 34;
+pub const VRULE: i32 = 35;
+pub const HRULE: i32 = 36;
+pub const INSERT: i32 = 37;
+pub const VADJUST: i32 = 38;
+pub const IGNORE_SPACES: i32 = 39;
+pub const AFTER_ASSIGNMENT: i32 = 40;
+pub const AFTER_GROUP: i32 = 41;
+pub const BREAK_PENALTY: i32 = 42;
+pub const START_PAR: i32 = 43;
+pub const ITAL_CORR: i32 = 44;
+pub const ACCENT: i32 = 45;
+pub const MATH_ACCENT: i32 = 46;
+pub const DISCRETIONARY: i32 = 47;
+pub const EQ_NO: i32 = 48;
+pub const LEFT_RIGHT: i32 = 49;
+pub const MATH_COMP: i32 = 50;
+pub const LIMIT_SWITCH: i32 = 51;
+pub const ABOVE: i32 = 52;
+pub const MATH_STYLE: i32 = 53;
+pub const MATH_CHOICE: i32 = 54;
+pub const NON_SCRIPT: i32 = 55;
+pub const VCENTER: i32 = 56;
+pub const CASE_SHIFT: i32 = 57;
+pub const MESSAGE: i32 = 58;
+pub const EXTENSION: i32 = 59;
+pub const IN_STREAM: i32 = 60;
+pub const BEGIN_GROUP: i32 = 61;
+pub const END_GROUP: i32 = 62;
+pub const OMIT: i32 = 63;
+pub const EX_SPACE: i32 = 64;
+pub const NO_BOUNDARY: i32 = 65;
+pub const RADICAL: i32 = 66;
+pub const END_CS_NAME: i32 = 67;
+pub const CHAR_GIVEN: i32 = 68;
+pub const MIN_INTERNAL: i32 = 68;
+pub const MATH_GIVEN: i32 = 69;
+pub const XETEX_MATH_GIVEN: i32 = 70;
+pub const LAST_ITEM: i32 = 71;
+pub const TOKS_REGISTER: i32 = 72;
+pub const MAX_NON_PREFIXED_COMMAND: i32 = 71;
+pub const ASSIGN_TOKS: i32 = 73;
+pub const ASSIGN_INT: i32 = 74;
+pub const ASSIGN_DIMEN: i32 = 75;
+pub const ASSIGN_GLUE: i32 = 76;
+pub const ASSIGN_MU_GLUE: i32 = 77;
+pub const ASSIGN_FONT_DIMEN: i32 = 78;
+pub const ASSIGN_FONT_INT: i32 = 79;
+pub const SET_AUX: i32 = 80;
+pub const SET_PREV_GRAF: i32 = 81;
+pub const SET_PAGE_DIMEN: i32 = 82;
+pub const SET_PAGE_INT: i32 = 83;
+pub const SET_BOX_DIMEN: i32 = 84;
+pub const SET_SHAPE: i32 = 85;
+pub const DEF_CODE: i32 = 86;
+pub const XETEX_DEF_CODE: i32 = 87;
+pub const DEF_FAMILY: i32 = 88;
+pub const SET_FONT: i32 = 89;
+pub const DEF_FONT: i32 = 90;
+pub const REGISTER: i32 = 91;
+pub const ADVANCE: i32 = 92;
+pub const MAX_INTERNAL: i32 = 91;
+pub const MULTIPLY: i32 = 93;
+pub const DIVIDE: i32 = 94;
+pub const PREFIX: i32 = 95;
+pub const LET: i32 = 96;
+pub const SHORTHAND_DEF: i32 = 97;
+pub const READ_TO_CS: i32 = 98;
+pub const DEF: i32 = 99;
+pub const SET_BOX: i32 = 100;
+pub const HYPH_DATA: i32 = 101;
+pub const SET_INTERACTION: i32 = 102;
+pub const UNDEFINED_CS: i32 = 103;
+pub const MAX_COMMAND: i32 = 102;
+pub const EXPAND_AFTER: i32 = 104;
+pub const NO_EXPAND: i32 = 105;
+pub const INPUT: i32 = 106;
+pub const IF_TEST: i32 = 107;
+pub const FI_OR_ELSE: i32 = 108;
+pub const CS_NAME: i32 = 109;
+pub const CONVERT: i32 = 110;
+pub const THE: i32 = 111;
+pub const TOP_BOT_MARK: i32 = 112;
+pub const CALL: i32 = 113;
+pub const LONG_CALL: i32 = 114;
+pub const OUTER_CALL: i32 = 115;
+pub const LONG_OUTER_CALL: i32 = 116;
+pub const END_TEMPLATE: i32 = 117;
+pub const DONT_EXPAND: i32 = 118;
+pub const GLUE_REF: i32 = 119;
+pub const SHAPE_REF: i32 = 120;
+pub const BOX_REF: i32 = 121;
+pub const DATA: i32 = 122;
+
 pub const MIN_HALFWORD: i32 = -0x0FFFFFFF;
 pub const MAX_HALFWORD: i32 = 0x3FFFFFFF;
 
@@ -58,6 +193,9 @@ pub const TECTONIC_CODA_TEXT: u16 = 19;
 pub const POP: u8 = 142;
 
 pub const TOKEN_LIST: u16 = 0;
+
+pub const MAX_CHAR_VAL: i32 = 0x200000;
+pub const CS_TOKEN_FLAG: i32 = 0x1FFFFFF;
 
 thread_local! {
     pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
@@ -1138,6 +1276,91 @@ pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) {
 #[no_mangle]
 pub extern "C" fn open_log_file() {
     Globals::with(|globals| rs_open_log_file(globals))
+}
+
+pub fn rs_show_token_list(globals: &mut Globals<'_, '_>, mut p: usize, q: usize, l: i32) {
+    let mut match_chr = '#' as i32;
+    let mut n = b'0';
+    globals.engine.tally = 0;
+
+    while p as i32 != TEX_NULL && globals.engine.tally < l {
+        if p == q {
+            globals.engine.first_count = globals.engine.tally;
+            globals.engine.trick_count = globals.engine.tally + 1 + globals.engine.error_line
+                - globals.engine.half_error_line;
+            if globals.engine.trick_count < globals.engine.error_line {
+                globals.engine.trick_count = globals.engine.error_line;
+            }
+        }
+        if (p as i32) < globals.engine.hi_mem_min || (p as i32) > globals.engine.mem_end {
+            rs_print_esc_bytes(globals, b"CLOBBERED.");
+            return;
+        }
+
+        // TODO: Use semantic accessors maybe?
+        if unsafe { globals.engine.mem[p].b32.s0 } >= CS_TOKEN_FLAG {
+            rs_print_cs(
+                globals,
+                unsafe { globals.engine.mem[p].b32.s0 } - CS_TOKEN_FLAG,
+            );
+        } else {
+            let temp = unsafe { globals.engine.mem[p].b32.s0 };
+            let m = temp / MAX_CHAR_VAL;
+            let c = temp % MAX_CHAR_VAL;
+
+            if temp < 0 {
+                rs_print_esc_bytes(globals, b"BAD.");
+            } else {
+                match m {
+                    LEFT_BRACE | RIGHT_BRACE | MATH_SHIFT | TAB_MARK | SUP_MARK | SUB_MARK
+                    | SPACER | LETTER | OTHER_CHAR => {
+                        rs_print_char(globals, c);
+                    }
+                    MAC_PARAM => {
+                        rs_print_char(globals, c);
+                        rs_print_char(globals, c);
+                    }
+                    OUT_PARAM => {
+                        rs_print_char(globals, match_chr);
+                        if c <= 9 {
+                            rs_print_char(globals, c + 48);
+                        } else {
+                            rs_print_char(globals, '!' as i32);
+                            return;
+                        }
+                    }
+                    MATCH => {
+                        match_chr = c;
+                        rs_print_char(globals, c);
+                        n += 1;
+                        rs_print_char(globals, n as i32);
+                        if n > b'9' {
+                            return;
+                        }
+                    }
+                    END_MATCH => {
+                        if c == 0 {
+                            rs_print_bytes(globals, b"->");
+                        }
+                    }
+                    _ => {
+                        rs_print_esc_bytes(globals, b"BAD.");
+                    }
+                }
+            }
+        }
+
+        p = globals.engine.base_node(p).next();
+    }
+
+    if p as i32 != TEX_NULL {
+        rs_print_esc_bytes(globals, b"ETC.");
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn show_token_list(p: i32, q: i32, l: i32) {
+    Globals::with(|globals| rs_show_token_list(globals, p as usize, q as usize, l))
 }
 
 // pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
