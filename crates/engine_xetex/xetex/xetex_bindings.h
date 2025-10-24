@@ -327,6 +327,10 @@ int32_t total_pages(void);
 
 void set_total_pages(int32_t val);
 
+int32_t last_bop(void);
+
+void set_last_bop(int32_t val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);

@@ -189,8 +189,8 @@ ship_out(int32_t p)
     for (k = 0; k < 10; k++)
         dvi_four(COUNT_REG(k));
 
-    dvi_four(last_bop);
-    last_bop = page_loc;
+    dvi_four(last_bop());
+    set_last_bop(page_loc);
 
     /* Generate a PDF pagesize special unilaterally */
 
@@ -2278,8 +2278,8 @@ finalize_dvi_file(void)
         return;
 
     dvi_out(POST);
-    dvi_four(last_bop);
-    last_bop = dvi_offset() + dvi_ptr() - 5;
+    dvi_four(last_bop());
+    set_last_bop(dvi_offset() + dvi_ptr() - 5);
     dvi_four(25400000L); /* magic values: conversion ratio for sp */
     dvi_four(473628672L); /* magic values: conversion ratio for sp */
     prepare_mag();
@@ -2298,7 +2298,7 @@ finalize_dvi_file(void)
     }
 
     dvi_out(POST_POST);
-    dvi_four(last_bop);
+    dvi_four(last_bop());
 
     if (semantic_pagination_enabled)
         dvi_out(SPX_ID_BYTE);
