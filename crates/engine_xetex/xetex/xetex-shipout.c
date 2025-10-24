@@ -13,15 +13,9 @@
 #define HALF_BUF 8192
 #define FNT_NUM_0 171 /* DVI code */
 
-static rust_output_handle_t dvi_file;
 static str_number output_file_name;
-static eight_bits *dvi_buf = NULL;
-static int32_t dvi_limit;
 static int32_t g;
 static int32_t lq, lr;
-static int32_t dvi_ptr;
-static int32_t dvi_offset;
-static int32_t dvi_gone;
 static int32_t down_ptr, right_ptr;
 static scaled_t dvi_h, dvi_v;
 static internal_font_number dvi_f;
@@ -49,11 +43,11 @@ void
 initialize_shipout_variables(void)
 {
     output_file_name = 0;
-    dvi_buf = xmalloc_array(eight_bits, DVI_BUF_SIZE);
-    dvi_limit = DVI_BUF_SIZE;
-    dvi_ptr = 0;
-    dvi_offset = 0;
-    dvi_gone = 0;
+    resize_dvi_buf(DVI_BUF_SIZE);
+    set_dvi_limit(DVI_BUF_SIZE);
+    set_dvi_ptr(0);
+    set_dvi_offset(0);
+    set_dvi_gone(0);
     down_ptr = TEX_NULL;
     right_ptr = TEX_NULL;
     cur_s = -1;
@@ -63,16 +57,16 @@ initialize_shipout_variables(void)
 void
 deinitialize_shipout_variables(void)
 {
-    free(dvi_buf);
-    dvi_buf = NULL;
+    clear_dvi_buf();
 }
 
 
 static inline void
 dvi_out(eight_bits c)
 {
-    dvi_buf[dvi_ptr++] = c;
-    if (dvi_ptr == dvi_limit)
+    set_dvi_buf(dvi_ptr(), c);
+    set_dvi_ptr(dvi_ptr()+1);
+    if (dvi_ptr() == dvi_limit())
         dvi_swap();
 }
 
@@ -183,8 +177,8 @@ ship_out(int32_t p)
         if (job_name() == 0)
             open_log_file();
         pack_job_name(output_file_extension);
-        dvi_file = ttstub_output_open(name_of_file(), 0);
-        if (dvi_file == INVALID_HANDLE)
+        set_dvi_file(ttstub_output_open(name_of_file(), 0));
+        if (dvi_file() == INVALID_HANDLE)
             _tt_abort("cannot open output file \"%s\"", name_of_file());
         output_file_name = make_name_string();
     }
@@ -213,7 +207,7 @@ ship_out(int32_t p)
 
     /* ... resuming 662 ... Emit per-page preamble. */
 
-    page_loc = dvi_offset + dvi_ptr;
+    page_loc = dvi_offset() + dvi_ptr();
 
     dvi_out(BOP);
 
@@ -547,7 +541,7 @@ hlist_out(void)
     if (cur_s > max_push)
         max_push = cur_s;
 
-    save_loc = dvi_offset + dvi_ptr;
+    save_loc = dvi_offset() + dvi_ptr();
     base_line = cur_v;
     prev_p = this_box + 5; /* this is list_offset, the offset of the box list pointer */
 
@@ -1136,7 +1130,7 @@ vlist_out(void)
     if (cur_s > max_push)
         max_push = cur_s;
 
-    save_loc = dvi_offset + dvi_ptr;
+    save_loc = dvi_offset() + dvi_ptr();
     left_edge = cur_h;
     synctex_vlist(this_box);
 
@@ -1884,7 +1878,7 @@ movement(scaled_t w, eight_bits o)
 
     q = get_node(MOVEMENT_NODE_SIZE);
     mem_ptr(q + 1)->b32.s1 = w;
-    mem_ptr(q + 2)->b32.s1 = dvi_offset + dvi_ptr;
+    mem_ptr(q + 2)->b32.s1 = dvi_offset() + dvi_ptr();
 
     if (o == DOWN1) {
         mem_ptr(q)->b32.s1 = down_ptr;
@@ -1904,13 +1898,13 @@ movement(scaled_t w, eight_bits o)
             case (MOV_NONE_SEEN + MOV_Y_OK):
             case (MOV_Z_SEEN + MOV_YZ_OK):
             case (MOV_Z_SEEN + MOV_Y_OK):
-                if (mem(p + 2).b32.s1 < dvi_gone) {
+                if (mem(p + 2).b32.s1 < dvi_gone()) {
                     goto not_found;
                 } else { /*633:*/
-                    k = mem(p + 2).b32.s1 - dvi_offset;
+                    k = mem(p + 2).b32.s1 - dvi_offset();
                     if (k < 0)
                         k = k + DVI_BUF_SIZE;
-                    dvi_buf[k] = dvi_buf[k] + 5;
+                    set_dvi_buf(k, dvi_buf(k) + 5);
                     mem_ptr(p)->b32.s0 = MOV_Y_HERE;
                     goto found;
                 }
@@ -1919,13 +1913,13 @@ movement(scaled_t w, eight_bits o)
             case (MOV_NONE_SEEN + MOV_Z_OK):
             case (MOV_Y_SEEN + MOV_YZ_OK):
             case (MOV_Y_SEEN + MOV_Z_OK):
-                if (mem(p + 2).b32.s1 < dvi_gone) {
+                if (mem(p + 2).b32.s1 < dvi_gone()) {
                     goto not_found;
                 } else { /*634:*/
-                    k = mem(p + 2).b32.s1 - dvi_offset;
+                    k = mem(p + 2).b32.s1 - dvi_offset();
                     if (k < 0)
                         k = k + DVI_BUF_SIZE;
-                    dvi_buf[k] = dvi_buf[k] + 10;
+                    set_dvi_buf(k, dvi_buf(k) + 10);
                     mem_ptr(p)->b32.s0 = MOV_Z_HERE;
                     goto found;
                 }
@@ -2310,7 +2304,7 @@ finalize_dvi_file(void)
 
     dvi_out(POST);
     dvi_four(last_bop);
-    last_bop = dvi_offset + dvi_ptr - 5;
+    last_bop = dvi_offset() + dvi_ptr() - 5;
     dvi_four(25400000L); /* magic values: conversion ratio for sp */
     dvi_four(473628672L); /* magic values: conversion ratio for sp */
     prepare_mag();
@@ -2336,25 +2330,25 @@ finalize_dvi_file(void)
     else
         dvi_out(XDV_ID_BYTE);
 
-    k = 4 + (DVI_BUF_SIZE - dvi_ptr) % 4;
+    k = 4 + (DVI_BUF_SIZE - dvi_ptr()) % 4;
 
     while (k > 0) {
         dvi_out(223);
         k--;
     }
 
-    if (dvi_limit == HALF_BUF)
+    if (dvi_limit() == HALF_BUF)
         write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
 
-    if (dvi_ptr > TEX_INFINITY - dvi_offset) {
+    if (dvi_ptr() > TEX_INFINITY - dvi_offset()) {
         cur_s = -2;
         fatal_error("dvi length exceeds 0x7FFFFFFF");
     }
 
-    if (dvi_ptr > 0)
-        write_to_dvi(0, dvi_ptr - 1);
+    if (dvi_ptr() > 0)
+        write_to_dvi(0, dvi_ptr() - 1);
 
-    k = ttstub_output_close(dvi_file);
+    k = ttstub_output_close(dvi_file());
 
     if (k == 0) {
         print_nl_cstr("Output written on ");
@@ -2366,7 +2360,7 @@ finalize_dvi_file(void)
         else
             print_cstr(" page");
         print_cstr(", ");
-        print_int(dvi_offset + dvi_ptr);
+        print_int(dvi_offset() + dvi_ptr());
         print_cstr(" bytes).");
     } else {
         print_nl_cstr("Error ");
@@ -2387,7 +2381,7 @@ write_to_dvi(int32_t a, int32_t b)
 {
     int32_t n = b - a + 1;
 
-    if (ttstub_output_write (dvi_file, (char *) &dvi_buf[a], n) != n)
+    if (ttstub_output_write (dvi_file(), (char *) dvi_buf_ptr(a), n) != n)
         _tt_abort ("failed to write data to XDV file");
 }
 
@@ -2395,22 +2389,22 @@ write_to_dvi(int32_t a, int32_t b)
 static void
 dvi_swap(void)
 {
-    if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
+    if (dvi_ptr() > (TEX_INFINITY - dvi_offset())) {
         cur_s = -2;
         fatal_error("dvi length exceeds 0x7FFFFFFF");
     }
 
-    if (dvi_limit == DVI_BUF_SIZE) {
+    if (dvi_limit() == DVI_BUF_SIZE) {
         write_to_dvi(0, HALF_BUF - 1);
-        dvi_limit = HALF_BUF;
-        dvi_offset = dvi_offset + DVI_BUF_SIZE;
-        dvi_ptr = 0;
+        set_dvi_limit(HALF_BUF);
+        set_dvi_offset(dvi_offset() + DVI_BUF_SIZE);
+        set_dvi_ptr(0);
     } else {
         write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
-        dvi_limit = DVI_BUF_SIZE;
+        set_dvi_limit(DVI_BUF_SIZE);
     }
 
-    dvi_gone = dvi_gone + HALF_BUF;
+    set_dvi_gone(dvi_gone() + HALF_BUF);
 }
 
 
@@ -2445,8 +2439,9 @@ dvi_two(UTF16_code s)
 static void
 dvi_pop(int32_t l)
 {
-    if (l == dvi_offset + dvi_ptr && dvi_ptr > 0)
-        dvi_ptr--;
-    else
+    if (l == dvi_offset() + dvi_ptr() && dvi_ptr() > 0) {
+        set_dvi_ptr(dvi_ptr()-1);
+    } else {
         dvi_out(POP);
+    }
 }
