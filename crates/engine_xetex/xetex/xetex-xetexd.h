@@ -420,10 +420,8 @@ extern int32_t two_to_the[31];
 extern int32_t spec_log[29];
 extern int32_t temp_ptr;
 extern int32_t lo_mem_max;
-extern int32_t hi_mem_min;
 extern int32_t var_used, dyn_used;
 extern int32_t avail;
-extern int32_t mem_end;
 extern int32_t rover;
 extern int32_t last_leftmost_char;
 extern int32_t last_rightmost_char;
@@ -1013,7 +1011,7 @@ void finalize_dvi_file(void);
 
 static inline bool
 is_char_node(const int32_t p) {
-    return p >= hi_mem_min;
+    return p >= hi_mem_min();
 }
 
 static inline bool

@@ -8,8 +8,8 @@ mod memory;
 
 use crate::c_api::is_dir_sep;
 use crate::c_api::output::{
-    rs_print, rs_print_bytes, rs_print_char, rs_print_cs, rs_print_int, rs_print_ln, rs_print_nl,
-    rs_print_nl_bytes, rs_print_raw_char,
+    rs_print, rs_print_bytes, rs_print_char, rs_print_cs, rs_print_esc_bytes, rs_print_int,
+    rs_print_ln, rs_print_nl, rs_print_nl_bytes, rs_print_raw_char,
 };
 use crate::c_api::pool::{
     rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
@@ -94,6 +94,8 @@ pub struct EngineCtx {
     pub(crate) base_ptr: usize,
     pub(crate) first_count: i32,
     pub(crate) half_error_line: i32,
+    pub(crate) hi_mem_min: i32,
+    pub(crate) mem_end: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -203,6 +205,8 @@ impl EngineCtx {
             base_ptr: 0,
             first_count: 0,
             half_error_line: 0,
+            hi_mem_min: 0,
+            mem_end: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -665,6 +669,26 @@ pub extern "C" fn half_error_line() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_half_error_line(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.half_error_line = val)
+}
+
+#[no_mangle]
+pub extern "C" fn hi_mem_min() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.hi_mem_min)
+}
+
+#[no_mangle]
+pub extern "C" fn set_hi_mem_min(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.hi_mem_min = val)
+}
+
+#[no_mangle]
+pub extern "C" fn mem_end() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.mem_end)
+}
+
+#[no_mangle]
+pub extern "C" fn set_mem_end(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.mem_end = val)
 }
 
 #[no_mangle]

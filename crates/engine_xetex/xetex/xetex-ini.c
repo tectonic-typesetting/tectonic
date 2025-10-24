@@ -60,10 +60,8 @@ int32_t two_to_the[31];
 int32_t spec_log[29];
 int32_t temp_ptr;
 int32_t lo_mem_max;
-int32_t hi_mem_min;
 int32_t var_used, dyn_used;
 int32_t avail;
-int32_t mem_end;
 int32_t rover;
 int32_t last_leftmost_char;
 int32_t last_rightmost_char;
@@ -2140,15 +2138,15 @@ store_fmt_file(void)
     } while (q != rover);
 
     var_used = var_used + lo_mem_max - p;
-    dyn_used = mem_end + 1 - hi_mem_min;
+    dyn_used = mem_end() + 1 - hi_mem_min();
     dump_ptr(mem_ptr(p), lo_mem_max + 1 - p);
 
     x = x + lo_mem_max + 1 - p;
-    dump_int(hi_mem_min);
+    dump_int(hi_mem_min());
     dump_int(avail);
-    dump_ptr(mem_ptr(hi_mem_min), mem_end + 1 - hi_mem_min);
+    dump_ptr(mem_ptr(hi_mem_min()), mem_end() + 1 - hi_mem_min());
 
-    x = x + mem_end + 1 - hi_mem_min;
+    x = x + mem_end() + 1 - hi_mem_min();
     p = avail;
     while (p != TEX_NULL) {
         dyn_used--;
@@ -2572,7 +2570,7 @@ load_fmt_file(void)
     if (x < lo_mem_max + 1 || x > PRE_ADJUST_HEAD)
         goto bad_fmt;
     else
-        hi_mem_min = x;
+        set_hi_mem_min(x);
 
     undump_int(x);
     if (x < MIN_HALFWORD || x > MEM_TOP)
@@ -2580,9 +2578,9 @@ load_fmt_file(void)
     else
         avail = x;
 
-    mem_end = MEM_TOP;
+    set_mem_end(MEM_TOP);
 
-    undump_ptr(mem_ptr(hi_mem_min), mem_end + 1 - hi_mem_min);
+    undump_ptr(mem_ptr(hi_mem_min()), mem_end() + 1 - hi_mem_min());
     undump_int(var_used);
     undump_int(dyn_used);
 
@@ -3209,8 +3207,8 @@ initialize_more_initex_variables(void)
     NODE_type(PAGE_HEAD) = GLUE_NODE;
     mem_ptr(PAGE_HEAD)->b16.s0 = NORMAL;
     avail = TEX_NULL;
-    mem_end = MEM_TOP;
-    hi_mem_min = PRE_ADJUST_HEAD;
+    set_mem_end(MEM_TOP);
+    set_hi_mem_min(PRE_ADJUST_HEAD);
     var_used = 20;
     dyn_used = HI_MEM_STAT_USAGE;
     eqtb_ptr(UNDEFINED_CONTROL_SEQUENCE)->b16.s1 = UNDEFINED_CS;

@@ -431,7 +431,7 @@ line_break(bool d)
                         if (l_hyf + r_hyf > max_hyphenatable_length())
                             goto done1;
 
-                        if (ha != TEX_NULL && ha < hi_mem_min && NODE_type(ha) == WHATSIT_NODE &&
+                        if (ha != TEX_NULL && ha < hi_mem_min() && NODE_type(ha) == WHATSIT_NODE &&
                             (NODE_subtype(ha) == NATIVE_WORD_NODE || NODE_subtype(ha) == NATIVE_WORD_NODE_AT))
                         {
                             /*926: check that nodes after native_word permit hyphenation; if not, goto done1 */
@@ -1033,7 +1033,7 @@ post_line_break(bool d)
             }
 
             while (q != mem(cur_p + 1).b32.s1) {
-                if (q < hi_mem_min && NODE_type(q) == MATH_NODE) { /*1495:*/
+                if (q < hi_mem_min() && NODE_type(q) == MATH_NODE) { /*1495:*/
                     if (odd(mem(q).b16.s0)) {
                         if (LR_ptr != TEX_NULL && mem(LR_ptr).b32.s0 == (L_CODE * (mem(q).b16.s0 / L_CODE) + 3)) {
                             temp_ptr = LR_ptr;
