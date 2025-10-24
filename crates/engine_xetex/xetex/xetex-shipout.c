@@ -31,7 +31,6 @@ static void prune_movements(int32_t l);
 static void special_out(int32_t p);
 static void write_out(int32_t p);
 static void pic_out(int32_t p);
-static void write_to_dvi(int32_t a, int32_t b);
 static void dvi_swap(void);
 static void dvi_four(int32_t x);
 static void dvi_two(UTF16_code s);
@@ -2374,17 +2373,6 @@ finalize_dvi_file(void)
         /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
     }
 }
-
-
-static void
-write_to_dvi(int32_t a, int32_t b)
-{
-    int32_t n = b - a + 1;
-
-    if (ttstub_output_write (dvi_file(), (char *) dvi_buf_ptr(a), n) != n)
-        _tt_abort ("failed to write data to XDV file");
-}
-
 
 static void
 dvi_swap(void)

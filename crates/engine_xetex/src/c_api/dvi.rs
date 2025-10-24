@@ -1,4 +1,6 @@
+use crate::c_api::globals::Globals;
 use std::cell::RefCell;
+use std::io::Write;
 use std::ptr;
 use tectonic_bridge_core::OutputId;
 
@@ -101,4 +103,16 @@ pub extern "C" fn resize_dvi_buf(len: usize) {
 #[no_mangle]
 pub extern "C" fn clear_dvi_buf() {
     DVI_CTX.with_borrow_mut(|engine| engine.buf.clear())
+}
+
+#[no_mangle]
+pub fn rs_write_to_dvi(globals: &mut Globals<'_, '_>, a: usize, b: usize) {
+    let out = globals.state.get_output(globals.dvi.file.unwrap());
+    out.write_all(&globals.dvi.buf[a..=b])
+        .expect("failed to write data to XDV file");
+}
+
+#[no_mangle]
+pub extern "C" fn write_to_dvi(a: i32, b: i32) {
+    Globals::with(|globals| rs_write_to_dvi(globals, a as usize, b as usize))
 }
