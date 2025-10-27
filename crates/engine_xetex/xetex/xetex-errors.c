@@ -38,7 +38,7 @@ error(void)
 
     print_char('.');
     show_context();
-    if (halt_on_error_p) {
+    if (halt_on_error_p()) {
         set_history(HISTORY_FATAL_ERROR);
         post_error_message(0);
         _tt_abort("halted on potentially-recoverable error as specified");
@@ -48,8 +48,8 @@ error(void)
      * error_stop_mode" that would let the use interactively try to solve the
      * error. */
 
-    error_count++;
-    if (error_count == 100) {
+    set_error_count(error_count()+1);
+    if (error_count() == 100) {
         print_nl_cstr("(That makes 100 errors; please try again.)");
         set_history(HISTORY_FATAL_ERROR);
         post_error_message(0);
@@ -59,7 +59,7 @@ error(void)
     if (interaction() > BATCH_MODE)
         set_selector(selector()-1);
 
-    if (use_err_help) {
+    if (use_err_help()) {
         print_ln();
         give_err_help();
     } else {
