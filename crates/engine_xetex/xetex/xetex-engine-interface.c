@@ -25,7 +25,7 @@ int
 tt_xetex_set_int_variable (const char *var_name, int value)
 {
     if (streq_ptr(var_name, "halt_on_error_p"))
-        halt_on_error_p = value;
+        set_halt_on_error_p(value);
     else if (streq_ptr(var_name, "in_initex_mode"))
         in_initex_mode = (value != 0);
     else if (streq_ptr(var_name, "synctex_enabled"))

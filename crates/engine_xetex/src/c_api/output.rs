@@ -26,7 +26,7 @@ pub struct OutputCtx {
     file_line_error_style_p: i32,
     term_offset: i32,
     file_offset: i32,
-    rust_stdout: Option<OutputId>,
+    pub(crate) rust_stdout: Option<OutputId>,
     pub(crate) log_file: Option<OutputId>,
     write_file: Vec<Option<OutputId>>,
     doing_special: bool,
@@ -144,7 +144,10 @@ pub extern "C" fn set_dig(idx: usize, val: u8) {
     OUTPUT_CTX.with_borrow_mut(|out| out.digits[idx] = val)
 }
 
-fn rs_capture_to_diagnostic(globals: &mut Globals<'_, '_>, diagnostic: Option<Box<Diagnostic>>) {
+pub fn rs_capture_to_diagnostic(
+    globals: &mut Globals<'_, '_>,
+    diagnostic: Option<Box<Diagnostic>>,
+) {
     if let Some(diag) = globals.out.current_diagnostic.take() {
         globals.state.finish_diagnostic(*diag);
     }

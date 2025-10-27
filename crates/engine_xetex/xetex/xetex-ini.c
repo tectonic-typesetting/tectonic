@@ -38,7 +38,6 @@ int32_t param_size;
 int32_t nest_size;
 int32_t save_size;
 int32_t expand_depth;
-int halt_on_error_p;
 bool insert_src_special_auto;
 bool insert_src_special_every_par;
 bool insert_src_special_every_math;
@@ -51,10 +50,8 @@ int32_t native_len;
 int32_t save_native_len;
 bool deletions_allowed;
 bool set_box_allowed;
-signed char error_count;
 const char* help_line[6];
 unsigned char help_ptr;
-bool use_err_help;
 scaled_t random_seed;
 int32_t two_to_the[31];
 int32_t spec_log[29];
@@ -3013,9 +3010,9 @@ initialize_more_variables(void)
 
     deletions_allowed = true;
     set_box_allowed = true;
-    error_count = 0;
+    set_error_count(0);
     help_ptr = 0;
-    use_err_help = false;
+    set_use_err_help(false);
 
     two_to_the[0] = 1;
     for (k = 1; k <= 30; k++)

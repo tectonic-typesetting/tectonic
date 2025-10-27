@@ -234,6 +234,9 @@ pub struct EngineCtx {
     pub(crate) half_error_line: i32,
     pub(crate) hi_mem_min: i32,
     pub(crate) mem_end: i32,
+    pub(crate) halt_on_error_p: i32,
+    pub(crate) error_count: i8,
+    pub(crate) use_err_help: bool,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -287,7 +290,7 @@ struct NodeError {
     subty: u16,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd)]
 #[repr(C)]
 pub enum History {
     Spotless = 0,
@@ -345,6 +348,9 @@ impl EngineCtx {
             half_error_line: 0,
             hi_mem_min: 0,
             mem_end: 0,
+            halt_on_error_p: 0,
+            error_count: 0,
+            use_err_help: false,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -827,6 +833,36 @@ pub extern "C" fn mem_end() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_mem_end(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.mem_end = val)
+}
+
+#[no_mangle]
+pub extern "C" fn halt_on_error_p() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.halt_on_error_p)
+}
+
+#[no_mangle]
+pub extern "C" fn set_halt_on_error_p(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.halt_on_error_p = val)
+}
+
+#[no_mangle]
+pub extern "C" fn error_count() -> i8 {
+    ENGINE_CTX.with_borrow(|engine| engine.error_count)
+}
+
+#[no_mangle]
+pub extern "C" fn set_error_count(val: i8) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.error_count = val)
+}
+
+#[no_mangle]
+pub extern "C" fn use_err_help() -> bool {
+    ENGINE_CTX.with_borrow(|engine| engine.use_err_help)
+}
+
+#[no_mangle]
+pub extern "C" fn set_use_err_help(val: bool) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.use_err_help = val)
 }
 
 #[no_mangle]
@@ -1363,239 +1399,257 @@ pub extern "C" fn show_token_list(p: i32, q: i32, l: i32) {
     Globals::with(|globals| rs_show_token_list(globals, p as usize, q as usize, l))
 }
 
-// pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
-//     globals.engine.base_ptr = globals.engine.input_ptr;
-//     globals.engine.input_stack[globals.engine.base_ptr] = globals.engine.cur_input.clone();
-//     let mut nn = -1;
-//     let mut bottom_line = false;
-//     loop {
-//         globals.engine.cur_input = globals.engine.input_stack[globals.engine.base_ptr].clone();
-//         if globals.engine.cur_input.state != TOKEN_LIST {
-//             if globals.engine.cur_input.name > 19 || globals.engine.base_ptr == 0 {
-//                 bottom_line = true;
-//             }
-//         }
-//
-//         if globals.engine.base_ptr == globals.engine.input_ptr
-//             || bottom_line
-//             || nn < globals.engine.int_par(IntPar::ErrorContextLines)
-//         {
-//             let l;
-//             if globals.engine.base_ptr == globals.engine.input_ptr
-//                 || globals.engine.cur_input.state != TOKEN_LIST
-//                 || globals.engine.cur_input.index != BACKED_UP
-//                 || globals.engine.cur_input.loc != TEX_NULL
-//             {
-//                 globals.engine.tally = 0;
-//                 let old_setting = globals.engine.selector;
-//                 if globals.engine.cur_input.state != TOKEN_LIST {
-//                     if globals.engine.cur_input.name <= 17 {
-//                         if globals.engine.cur_input.name == 0 {
-//                             if globals.engine.base_ptr == 0 {
-//                                 rs_print_nl_bytes(globals, b"<*>")
-//                             } else {
-//                                 rs_print_nl_bytes(globals, b"<insert> ")
-//                             }
-//                         } else {
-//                             rs_print_nl_bytes(globals, b"<read ");
-//                             if globals.engine.cur_input.name == 17 {
-//                                 rs_print_char(globals, '*' as i32);
-//                             } else {
-//                                 rs_print_int(globals, globals.engine.cur_input.name - 1);
-//                             }
-//                             rs_print_char(globals, '>' as i32);
-//                         }
-//                     } else {
-//                         rs_print_nl_bytes(globals, b"l.");
-//                         if globals.engine.cur_input.index as i32 == globals.files.in_open {
-//                             rs_print_int(globals, globals.files.line);
-//                         } else {
-//                             rs_print_int(globals, globals.files.line_stack[(globals.engine.cur_input.index + 1) as usize]);
-//                         }
-//                     }
-//                     rs_print_char(globals, b' ' as i32);
-//
-//                     l = globals.engine.tally;
-//                     globals.engine.tally = 0;
-//                     globals.engine.selector = Selector::Pseudo;
-//                     globals.engine.trick_count = 1000000;
-//
-//                     let j;
-//                     if globals.engine.buffer[globals.engine.cur_input.limit as usize] as i32
-//                         == globals.engine.int_par(IntPar::EndLineChar)
-//                     {
-//                         j = globals.engine.cur_input.limit;
-//                     } else {
-//                         j = globals.engine.cur_input.limit + 1;
-//                     }
-//                     if j > 0 {
-//                         let mut i = globals.engine.cur_input.start;
-//                         let for_end = j - 1;
-//                         if i <= for_end {
-//                             loop {
-//                                 if i == globals.engine.cur_input.loc {
-//                                     globals.engine.first_count = globals.engine.tally;
-//                                     globals.engine.trick_count =
-//                                         globals.engine.tally + 1 + globals.engine.error_line
-//                                             - globals.engine.half_error_line;
-//                                     if globals.engine.trick_count < globals.engine.error_line {
-//                                         globals.engine.trick_count = globals.engine.error_line;
-//                                     }
-//                                 }
-//                                 rs_print_char(globals, globals.engine.buffer[i as usize] as i32);
-//                                 if i >= for_end {
-//                                     break;
-//                                 }
-//                                 i += 1;
-//                             }
-//                         }
-//                     }
-//                 } else {
-//                     match globals.engine.cur_input.index {
-//                         PARAMETER => rs_print_nl_bytes(globals, b"<argument> "),
-//                         U_TEMPLATE | V_TEMPLATE => rs_print_nl_bytes(globals, b"<template> "),
-//                         BACKED_UP | BACKED_UP_CHAR => {
-//                             if globals.engine.cur_input.loc == TEX_NULL {
-//                                 rs_print_nl_bytes(globals, b"<recently read> ")
-//                             } else {
-//                                 rs_print_nl_bytes(globals, b"<to be read again> ")
-//                             }
-//                         }
-//                         INSERTED => rs_print_nl_bytes(globals, b"<inserted text> "),
-//                         MACRO => {
-//                             rs_print_ln(globals);
-//                             rs_print_cs(globals, globals.engine.cur_input.name);
-//                         }
-//                         OUTPUT_TEXT => rs_print_nl_bytes(globals, b"<output> "),
-//                         EVERY_PAR_TEXT => rs_print_nl_bytes(globals, b"<everypar> "),
-//                         EVERY_MATH_TEXT => rs_print_nl_bytes(globals, b"<everymath> "),
-//                         EVERY_DISPLAY_TEXT => rs_print_nl_bytes(globals, b"<everydisplay> "),
-//                         EVERY_HBOX_TEXT => rs_print_nl_bytes(globals, b"<everyhbox> "),
-//                         EVERY_VBOX_TEXT => rs_print_nl_bytes(globals, b"<everyvbox> "),
-//                         EVERY_JOB_TEXT => rs_print_nl_bytes(globals, b"<everyjob> "),
-//                         EVERY_CR_TEXT => rs_print_nl_bytes(globals, b"<everycr> "),
-//                         MARK_TEXT => rs_print_nl_bytes(globals, b"<mark> "),
-//                         EVERY_EOF_TEXT => rs_print_nl_bytes(globals, b"<everyeof> "),
-//                         INTER_CHAR_TEXT => rs_print_nl_bytes(globals, b"<XeTeXinterchartoks> "),
-//                         WRITE_TEXT => rs_print_nl_bytes(globals, b"<write> "),
-//                         TECTONIC_CODA_TEXT => rs_print_nl_bytes(globals, b"<TectonicCodaTokens> "),
-//                         _ => rs_print_nl(globals, '?' as i32),
-//                     }
-//
-//                     l = globals.engine.tally;
-//                     globals.engine.tally = 0;
-//                     globals.engine.selector = Selector::Pseudo;
-//                     globals.engine.trick_count = 1000000;
-//
-//                     if globals.engine.cur_input.index < MACRO {
-//                         // TODO
-//                         // show_token_list(cur_input().start, cur_input().loc, 100000L);
-//                     } else {
-//                         // show_token_list(mem(cur_input().start).b32.s1, cur_input().loc, 100000L);
-//                     }
-//                 }
-//                 globals.engine.selector = old_setting;
-//                 if globals.engine.trick_count == 1000000 {
-//                     globals.engine.first_count = globals.engine.tally;
-//                     globals.engine.trick_count = globals.engine.tally
-//                         + 1
-//                         + globals.engine.error_line
-//                         + globals.engine.half_error_line;
-//                     if globals.engine.trick_count < globals.engine.error_line {
-//                         globals.engine.trick_count = globals.engine.error_line;
-//                     }
-//                 }
-//
-//                 let m;
-//                 if globals.engine.tally < globals.engine.trick_count {
-//                     m = globals.engine.tally - globals.engine.first_count;
-//                 } else {
-//                     m = globals.engine.trick_count - globals.engine.first_count;
-//                 }
-//
-//                 let n;
-//                 let p;
-//                 if l + globals.engine.first_count <= globals.engine.half_error_line {
-//                     p = 0;
-//                     n = l + globals.engine.first_count;
-//                 } else {
-//                     rs_print_bytes(globals, b"...");
-//                     p = l + globals.engine.first_count - globals.engine.half_error_line + 3;
-//                     n = globals.engine.half_error_line;
-//                 }
-//
-//                 let mut q = p;
-//                 let for_end = globals.engine.first_count - 1;
-//                 if q <= for_end {
-//                     loop {
-//                         rs_print_char(
-//                             globals,
-//                             globals.engine.trick_buf[(q % globals.engine.error_line) as usize]
-//                                 as i32,
-//                         );
-//                         if q >= for_end {
-//                             break;
-//                         }
-//                         q += 1;
-//                     }
-//                 }
-//
-//                 rs_print_ln(globals);
-//
-//                 let mut q = 1;
-//                 let for_end = n;
-//                 if q <= for_end {
-//                     loop {
-//                         rs_print_raw_char(globals, b' ' as u16, true);
-//                         if q >= for_end {
-//                             break;
-//                         }
-//                         q += 1;
-//                     }
-//                 }
-//
-//                 if m + n <= globals.engine.error_line {
-//                     p = globals.engine.first_count + m;
-//                 } else {
-//                     p = globals.engine.first_count + (globals.engine.error_line - n - 3);
-//                 }
-//
-//                 let mut q = globals.engine.first_count;
-//                 let for_end = p - 1;
-//                 if q <= for_end {
-//                     loop {
-//                         rs_print_char(
-//                             globals,
-//                             globals.engine.trick_buf[(q % globals.engine.error_line) as usize]
-//                                 as i32,
-//                         );
-//                         if q >= for_end {
-//                             break;
-//                         }
-//                         q += 1;
-//                     }
-//                 }
-//
-//                 if m + n > globals.engine.error_line {
-//                     rs_print_bytes(globals, b"...");
-//                 }
-//                 nn += 1;
-//             }
-//         } else if nn == globals.engine.int_par(IntPar::ErrorContextLines) {
-//             rs_print_nl_bytes(globals, b"...");
-//             nn += 1;
-//         }
-//
-//         if bottom_line {
-//             break;
-//         }
-//
-//         globals.engine.base_ptr -= 1;
-//     }
-//     globals.engine.cur_input = globals.engine.input_stack[globals.engine.input_ptr].clone();
-// }
-//
-// #[no_mangle]
-// pub extern "C" fn show_context() {
-//     Globals::with(|globals| rs_show_context(globals))
-// }
+pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
+    globals.engine.base_ptr = globals.engine.input_ptr;
+    globals.engine.input_stack[globals.engine.base_ptr] = globals.engine.cur_input.clone();
+    let mut nn = -1;
+    let mut bottom_line = false;
+    loop {
+        globals.engine.cur_input = globals.engine.input_stack[globals.engine.base_ptr].clone();
+        if globals.engine.cur_input.state != TOKEN_LIST {
+            if globals.engine.cur_input.name > 19 || globals.engine.base_ptr == 0 {
+                bottom_line = true;
+            }
+        }
+
+        if globals.engine.base_ptr == globals.engine.input_ptr
+            || bottom_line
+            || nn < globals.engine.int_par(IntPar::ErrorContextLines)
+        {
+            let l;
+            if globals.engine.base_ptr == globals.engine.input_ptr
+                || globals.engine.cur_input.state != TOKEN_LIST
+                || globals.engine.cur_input.index != BACKED_UP
+                || globals.engine.cur_input.loc != TEX_NULL
+            {
+                globals.engine.tally = 0;
+                let old_setting = globals.engine.selector;
+                if globals.engine.cur_input.state != TOKEN_LIST {
+                    if globals.engine.cur_input.name <= 17 {
+                        if globals.engine.cur_input.name == 0 {
+                            if globals.engine.base_ptr == 0 {
+                                rs_print_nl_bytes(globals, b"<*>")
+                            } else {
+                                rs_print_nl_bytes(globals, b"<insert> ")
+                            }
+                        } else {
+                            rs_print_nl_bytes(globals, b"<read ");
+                            if globals.engine.cur_input.name == 17 {
+                                rs_print_char(globals, '*' as i32);
+                            } else {
+                                rs_print_int(globals, globals.engine.cur_input.name - 1);
+                            }
+                            rs_print_char(globals, '>' as i32);
+                        }
+                    } else {
+                        rs_print_nl_bytes(globals, b"l.");
+                        if globals.engine.cur_input.index as i32 == globals.files.in_open {
+                            rs_print_int(globals, globals.files.line);
+                        } else {
+                            rs_print_int(
+                                globals,
+                                globals.files.line_stack
+                                    [(globals.engine.cur_input.index + 1) as usize],
+                            );
+                        }
+                    }
+                    rs_print_char(globals, b' ' as i32);
+
+                    l = globals.engine.tally;
+                    globals.engine.tally = 0;
+                    globals.engine.selector = Selector::Pseudo;
+                    globals.engine.trick_count = 1000000;
+
+                    let j;
+                    if globals.engine.buffer[globals.engine.cur_input.limit as usize] as i32
+                        == globals.engine.int_par(IntPar::EndLineChar)
+                    {
+                        j = globals.engine.cur_input.limit;
+                    } else {
+                        j = globals.engine.cur_input.limit + 1;
+                    }
+                    if j > 0 {
+                        let mut i = globals.engine.cur_input.start;
+                        let for_end = j - 1;
+                        if i <= for_end {
+                            loop {
+                                if i == globals.engine.cur_input.loc {
+                                    globals.engine.first_count = globals.engine.tally;
+                                    globals.engine.trick_count =
+                                        globals.engine.tally + 1 + globals.engine.error_line
+                                            - globals.engine.half_error_line;
+                                    if globals.engine.trick_count < globals.engine.error_line {
+                                        globals.engine.trick_count = globals.engine.error_line;
+                                    }
+                                }
+                                rs_print_char(globals, globals.engine.buffer[i as usize] as i32);
+                                if i >= for_end {
+                                    break;
+                                }
+                                i += 1;
+                            }
+                        }
+                    }
+                } else {
+                    match globals.engine.cur_input.index {
+                        PARAMETER => rs_print_nl_bytes(globals, b"<argument> "),
+                        U_TEMPLATE | V_TEMPLATE => rs_print_nl_bytes(globals, b"<template> "),
+                        BACKED_UP | BACKED_UP_CHAR => {
+                            if globals.engine.cur_input.loc == TEX_NULL {
+                                rs_print_nl_bytes(globals, b"<recently read> ")
+                            } else {
+                                rs_print_nl_bytes(globals, b"<to be read again> ")
+                            }
+                        }
+                        INSERTED => rs_print_nl_bytes(globals, b"<inserted text> "),
+                        MACRO => {
+                            rs_print_ln(globals);
+                            rs_print_cs(globals, globals.engine.cur_input.name);
+                        }
+                        OUTPUT_TEXT => rs_print_nl_bytes(globals, b"<output> "),
+                        EVERY_PAR_TEXT => rs_print_nl_bytes(globals, b"<everypar> "),
+                        EVERY_MATH_TEXT => rs_print_nl_bytes(globals, b"<everymath> "),
+                        EVERY_DISPLAY_TEXT => rs_print_nl_bytes(globals, b"<everydisplay> "),
+                        EVERY_HBOX_TEXT => rs_print_nl_bytes(globals, b"<everyhbox> "),
+                        EVERY_VBOX_TEXT => rs_print_nl_bytes(globals, b"<everyvbox> "),
+                        EVERY_JOB_TEXT => rs_print_nl_bytes(globals, b"<everyjob> "),
+                        EVERY_CR_TEXT => rs_print_nl_bytes(globals, b"<everycr> "),
+                        MARK_TEXT => rs_print_nl_bytes(globals, b"<mark> "),
+                        EVERY_EOF_TEXT => rs_print_nl_bytes(globals, b"<everyeof> "),
+                        INTER_CHAR_TEXT => rs_print_nl_bytes(globals, b"<XeTeXinterchartoks> "),
+                        WRITE_TEXT => rs_print_nl_bytes(globals, b"<write> "),
+                        TECTONIC_CODA_TEXT => rs_print_nl_bytes(globals, b"<TectonicCodaTokens> "),
+                        _ => rs_print_nl(globals, '?' as i32),
+                    }
+
+                    l = globals.engine.tally;
+                    globals.engine.tally = 0;
+                    globals.engine.selector = Selector::Pseudo;
+                    globals.engine.trick_count = 1000000;
+
+                    if globals.engine.cur_input.index < MACRO {
+                        rs_show_token_list(
+                            globals,
+                            globals.engine.cur_input.start as usize,
+                            globals.engine.cur_input.loc as usize,
+                            100000,
+                        );
+                    } else {
+                        rs_show_token_list(
+                            globals,
+                            unsafe {
+                                globals.engine.mem[globals.engine.cur_input.start as usize]
+                                    .b32
+                                    .s1
+                            } as usize,
+                            globals.engine.cur_input.loc as usize,
+                            100000,
+                        );
+                    }
+                }
+                globals.engine.selector = old_setting;
+                if globals.engine.trick_count == 1000000 {
+                    globals.engine.first_count = globals.engine.tally;
+                    globals.engine.trick_count = globals.engine.tally
+                        + 1
+                        + globals.engine.error_line
+                        + globals.engine.half_error_line;
+                    if globals.engine.trick_count < globals.engine.error_line {
+                        globals.engine.trick_count = globals.engine.error_line;
+                    }
+                }
+
+                let m;
+                if globals.engine.tally < globals.engine.trick_count {
+                    m = globals.engine.tally - globals.engine.first_count;
+                } else {
+                    m = globals.engine.trick_count - globals.engine.first_count;
+                }
+
+                let n;
+                let p;
+                if l + globals.engine.first_count <= globals.engine.half_error_line {
+                    p = 0;
+                    n = l + globals.engine.first_count;
+                } else {
+                    rs_print_bytes(globals, b"...");
+                    p = l + globals.engine.first_count - globals.engine.half_error_line + 3;
+                    n = globals.engine.half_error_line;
+                }
+
+                let mut q = p;
+                let for_end = globals.engine.first_count - 1;
+                if q <= for_end {
+                    loop {
+                        rs_print_char(
+                            globals,
+                            globals.engine.trick_buf[(q % globals.engine.error_line) as usize]
+                                as i32,
+                        );
+                        if q >= for_end {
+                            break;
+                        }
+                        q += 1;
+                    }
+                }
+
+                rs_print_ln(globals);
+
+                let mut q = 1;
+                let for_end = n;
+                if q <= for_end {
+                    loop {
+                        rs_print_raw_char(globals, b' ' as u16, true);
+                        if q >= for_end {
+                            break;
+                        }
+                        q += 1;
+                    }
+                }
+
+                let p;
+                if m + n <= globals.engine.error_line {
+                    p = globals.engine.first_count + m;
+                } else {
+                    p = globals.engine.first_count + (globals.engine.error_line - n - 3);
+                }
+
+                let mut q = globals.engine.first_count;
+                let for_end = p - 1;
+                if q <= for_end {
+                    loop {
+                        rs_print_char(
+                            globals,
+                            globals.engine.trick_buf[(q % globals.engine.error_line) as usize]
+                                as i32,
+                        );
+                        if q >= for_end {
+                            break;
+                        }
+                        q += 1;
+                    }
+                }
+
+                if m + n > globals.engine.error_line {
+                    rs_print_bytes(globals, b"...");
+                }
+                nn += 1;
+            }
+        } else if nn == globals.engine.int_par(IntPar::ErrorContextLines) {
+            rs_print_nl_bytes(globals, b"...");
+            nn += 1;
+        }
+
+        if bottom_line {
+            break;
+        }
+
+        globals.engine.base_ptr -= 1;
+    }
+    globals.engine.cur_input = globals.engine.input_stack[globals.engine.input_ptr].clone();
+}
+
+#[no_mangle]
+pub extern "C" fn show_context() {
+    Globals::with(|globals| rs_show_context(globals))
+}

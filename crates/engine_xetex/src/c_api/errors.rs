@@ -1,6 +1,8 @@
-use crate::c_api::engine::{rs_open_log_file, InteractionMode, Selector};
+use crate::c_api::engine::{rs_open_log_file, rs_show_context, History, InteractionMode, Selector};
 use crate::c_api::globals::Globals;
-use crate::c_api::output::rs_error_here_with_diagnostic;
+use crate::c_api::output::{
+    rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print_char, rs_print_nl_bytes,
+};
 
 pub fn rs_pre_error_message(globals: &mut Globals<'_, '_>) {
     if globals.engine.log_opened {
