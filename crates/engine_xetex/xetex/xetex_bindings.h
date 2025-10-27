@@ -746,6 +746,8 @@ void show_token_list(int32_t p, int32_t q, int32_t l);
 
 void show_context(void);
 
+void token_show(int32_t p);
+
 void pre_error_message(void);
 
 void resize_hash(uintptr_t len);

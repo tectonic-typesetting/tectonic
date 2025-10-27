@@ -4481,13 +4481,6 @@ void prepare_mag(void)
     mag_set = INTPAR(mag);
 }
 
-void token_show(int32_t p)
-{
-
-    if (p != TEX_NULL)
-        show_token_list(mem(p).b32.s1, TEX_NULL, 10000000L);
-}
-
 void print_meaning(void)
 {
     print_cmd_chr(cur_cmd, cur_chr);

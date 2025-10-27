@@ -1653,3 +1653,19 @@ pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
 pub extern "C" fn show_context() {
     Globals::with(|globals| rs_show_context(globals))
 }
+
+pub fn rs_token_show(globals: &mut Globals<'_, '_>, p: usize) {
+    if p as i32 != TEX_NULL {
+        rs_show_token_list(
+            globals,
+            unsafe { globals.engine.mem[p].b32.s1 } as usize,
+            TEX_NULL as usize,
+            10000000,
+        );
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn token_show(p: i32) {
+    Globals::with(|globals| rs_token_show(globals, p as usize))
+}
