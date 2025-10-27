@@ -3,8 +3,8 @@ use crate::c_api::engine::{
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
-    rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print_char, rs_print_ln,
-    rs_print_nl_bytes,
+    rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print_bytes, rs_print_char,
+    rs_print_ln, rs_print_nl_bytes,
 };
 use std::ffi::CStr;
 
@@ -139,6 +139,28 @@ extern "C" fn post_error_message(need_to_print_it: i32) {
             .rust_stdout
             .map(|stdout| globals.state.output_flush(stdout))
     });
+}
+
+#[no_mangle]
+pub extern "C-unwind" fn fatal_error(s: *const libc::c_char) {
+    let s = unsafe { CStr::from_ptr(s) }.to_bytes();
+    Globals::with(|globals| {
+        rs_pre_error_message(globals);
+        rs_print_bytes(globals, b"Emergency stop");
+        rs_print_nl_bytes(globals, s);
+        rs_capture_to_diagnostic(globals, None);
+    });
+
+    unsafe { close_files_and_terminate() };
+    unsafe { tt_cleanup() };
+
+    Globals::with(|globals| {
+        globals
+            .out
+            .rust_stdout
+            .map(|stdout| globals.state.output_flush(stdout))
+    });
+    panic!("{}", String::from_utf8_lossy(s));
 }
 
 // TODO: Use the Rust versions directly once they're ported. These just rely indirectly on this
