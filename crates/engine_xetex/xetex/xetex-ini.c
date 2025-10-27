@@ -83,7 +83,6 @@ int32_t max_save_stack;
 uint16_t cur_level;
 group_code cur_group;
 int32_t cur_boundary;
-int32_t mag_set;
 eight_bits cur_cmd;
 int32_t cur_chr;
 int32_t cur_cs;
@@ -3066,7 +3065,7 @@ initialize_more_variables(void)
     cur_group = BOTTOM_LEVEL;
     cur_boundary = 0;
     max_save_stack = 0;
-    mag_set = 0;
+    set_mag_set(0);
     expand_depth_count = 0;
     is_in_csname = false;
     cur_mark[TOP_MARK_CODE] = TEX_NULL;

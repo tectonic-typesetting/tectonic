@@ -190,7 +190,9 @@ pub const INTER_CHAR_TEXT: u16 = 17;
 pub const WRITE_TEXT: u16 = 18;
 pub const TECTONIC_CODA_TEXT: u16 = 19;
 
+pub const EOP: u8 = 140;
 pub const POP: u8 = 142;
+pub const POST: u8 = 248;
 
 pub const TOKEN_LIST: u16 = 0;
 
@@ -239,6 +241,7 @@ pub struct EngineCtx {
     pub(crate) use_err_help: bool,
     pub(crate) help_ptr: usize,
     pub(crate) help_line: [*const libc::c_char; 6],
+    pub(crate) mag_set: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -355,6 +358,7 @@ impl EngineCtx {
             use_err_help: false,
             help_ptr: 0,
             help_line: [ptr::null(); 6],
+            mag_set: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -895,6 +899,16 @@ pub extern "C" fn help_line(idx: usize) -> *const libc::c_char {
 #[no_mangle]
 pub extern "C" fn set_help_line(idx: usize, ptr: *const libc::c_char) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.help_line[idx] = ptr)
+}
+
+#[no_mangle]
+pub extern "C" fn mag_set() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.mag_set)
+}
+
+#[no_mangle]
+pub extern "C" fn set_mag_set(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.mag_set = val)
 }
 
 #[no_mangle]
