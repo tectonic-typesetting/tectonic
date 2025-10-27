@@ -2384,12 +2384,12 @@ finite_shrink(int32_t p)
         error_here_with_diagnostic("Infinite glue shrinkage found in a paragraph");
         capture_to_diagnostic(NULL);
         {
-            help_ptr = 5;
-            help_line[4] = "The paragraph just ended includes some glue that has";
-            help_line[3] = "infinite shrinkability, e.g., `\\hskip 0pt minus 1fil'.";
-            help_line[2] = "Such glue doesn't belong there---it allows a paragraph";
-            help_line[1] = "of any length to fit on one line. But it's safe to proceed,";
-            help_line[0] = "since the offensive shrinkability has been made finite.";
+            set_help_ptr(5);
+            set_help_line(4, "The paragraph just ended includes some glue that has");
+            set_help_line(3, "infinite shrinkability, e.g., `\\hskip 0pt minus 1fil'.");
+            set_help_line(2, "Such glue doesn't belong there---it allows a paragraph");
+            set_help_line(1, "of any length to fit on one line. But it's safe to proceed,");
+            set_help_line(0, "since the offensive shrinkability has been made finite.");
         }
         error();
     }

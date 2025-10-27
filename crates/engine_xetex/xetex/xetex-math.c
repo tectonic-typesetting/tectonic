@@ -378,8 +378,8 @@ void math_limit_switch(void)
     error_here_with_diagnostic("Limit controls must follow a math operator");
     capture_to_diagnostic(NULL);
     {
-        help_ptr = 1;
-        help_line[0] = "I'm ignoring this misplaced \\limits or \\nolimits command.";
+        set_help_ptr(1);
+        set_help_line(0, "I'm ignoring this misplaced \\limits or \\nolimits command.");
     }
     error();
 }
@@ -434,13 +434,13 @@ scan_delimiter(int32_t p, bool r)
         else
             print_nl_cstr("! ");
         print_cstr("Missing delimiter (. inserted)");
-        help_ptr = 6;
-        help_line[5] = "I was expecting to see something like `(' or `\\{' or";
-        help_line[4] = "`\\}' here. If you typed, e.g., `{' instead of `\\{', you";
-        help_line[3] = "should probably delete the `{' by typing `1' now, so that";
-        help_line[2] = "braces don't get unbalanced. Otherwise just proceed.";
-        help_line[1] = "Acceptable delimiters are characters whose \\delcode is";
-        help_line[0] = "nonnegative, or you can use `\\delimiter <delimiter code>'.";
+        set_help_ptr(6);
+        set_help_line(5, "I was expecting to see something like `(' or `\\{' or");
+        set_help_line(4, "`\\}' here. If you typed, e.g., `{' instead of `\\{', you");
+        set_help_line(3, "should probably delete the `{' by typing `1' now, so that");
+        set_help_line(2, "braces don't get unbalanced. Otherwise just proceed.");
+        set_help_line(1, "Acceptable delimiters are characters whose \\delcode is");
+        set_help_line(0, "nonnegative, or you can use `\\delimiter <delimiter code>'.");
         back_error();
         cur_val = 0;
     }
@@ -484,9 +484,9 @@ void math_ac(void)
         print_cstr(" for accents in math mode");
         capture_to_diagnostic(NULL);
         {
-            help_ptr = 2;
-            help_line[1] = "I'm changing \\accent to \\mathaccent here; wish me luck.";
-            help_line[0] = "(Accents are not the same in formulas as they are in text.)";
+            set_help_ptr(2);
+            set_help_line(1, "I'm changing \\accent to \\mathaccent here; wish me luck.");
+            set_help_line(0, "(Accents are not the same in formulas as they are in text.)");
         }
         error();
     }
@@ -622,16 +622,16 @@ void sub_sup(void)
                 error_here_with_diagnostic("Double superscript");
                 capture_to_diagnostic(NULL);
                 {
-                    help_ptr = 1;
-                    help_line[0] = "I treat `x^1^2' essentially like `x^1{}^2'.";
+                    set_help_ptr(1);
+                    set_help_line(0, "I treat `x^1^2' essentially like `x^1{}^2'.");
                 }
             } else {
 
                 error_here_with_diagnostic("Double subscript");
                 capture_to_diagnostic(NULL);
                 {
-                    help_ptr = 1;
-                    help_line[0] = "I treat `x_1_2' essentially like `x_1{}_2'.";
+                    set_help_ptr(1);
+                    set_help_line(0, "I treat `x_1_2' essentially like `x_1{}_2'.");
                 }
             }
             error();
@@ -662,10 +662,10 @@ math_fraction(void)
         else
             print_nl_cstr("! ");
         print_cstr("Ambiguous; you need another { and }");
-        help_ptr = 3;
-        help_line[2] = "I'm ignoring this fraction specification, since I don't";
-        help_line[1] = "know whether a construction like `x \\over y \\over z'";
-        help_line[0] = "means `{x \\over y} \\over z' or `x \\over {y \\over z}'.";
+        set_help_ptr(3);
+        set_help_line(2, "I'm ignoring this fraction specification, since I don't");
+        set_help_line(1, "know whether a construction like `x \\over y \\over z'");
+        set_help_line(0, "means `{x \\over y} \\over z' or `x \\over {y \\over z}'.");
         error();
     } else {
         cur_list.aux.b32.s1 = get_node(FRACTION_NOAD_SIZE);
@@ -714,15 +714,15 @@ void math_left_right(void)
             if (t == 1) {
                 print_esc_cstr("middle");
                 {
-                    help_ptr = 1;
-                    help_line[0] = "I'm ignoring a \\middle that had no matching \\left.";
+                    set_help_ptr(1);
+                    set_help_line(0, "I'm ignoring a \\middle that had no matching \\left.");
                 }
             } else {
 
                 print_esc_cstr("right");
                 {
-                    help_ptr = 1;
-                    help_line[0] = "I'm ignoring a \\right that had no matching \\left.";
+                    set_help_ptr(1);
+                    set_help_line(0, "I'm ignoring a \\right that had no matching \\left.");
                 }
             }
             capture_to_diagnostic(NULL);
@@ -915,10 +915,10 @@ void after_math(void)
         error_here_with_diagnostic("Math formula deleted: Insufficient symbol fonts");
         capture_to_diagnostic(NULL);
         {
-            help_ptr = 3;
-            help_line[2] = "Sorry, but I can't typeset math unless \\textfont 2";
-            help_line[1] = "and \\scriptfont 2 and \\scriptscriptfont 2 have all";
-            help_line[0] = "the \\fontdimen values needed in math symbol fonts.";
+            set_help_ptr(3);
+            set_help_line(2, "Sorry, but I can't typeset math unless \\textfont 2");
+            set_help_line(1, "and \\scriptfont 2 and \\scriptscriptfont 2 have all");
+            set_help_line(0, "the \\fontdimen values needed in math symbol fonts.");
         }
         error();
         flush_math();
@@ -939,10 +939,10 @@ void after_math(void)
         error_here_with_diagnostic("Math formula deleted: Insufficient extension fonts");
         capture_to_diagnostic(NULL);
         {
-            help_ptr = 3;
-            help_line[2] = "Sorry, but I can't typeset math unless \\textfont 3";
-            help_line[1] = "and \\scriptfont 3 and \\scriptscriptfont 3 have all";
-            help_line[0] = "the \\fontdimen values needed in math extension fonts.";
+            set_help_ptr(3);
+            set_help_line(2, "Sorry, but I can't typeset math unless \\textfont 3");
+            set_help_line(1, "and \\scriptfont 3 and \\scriptscriptfont 3 have all");
+            set_help_line(0, "the \\fontdimen values needed in math extension fonts.");
         }
         error();
         flush_math();
@@ -958,9 +958,9 @@ void after_math(void)
                 error_here_with_diagnostic("Display math should end with $$");
                 capture_to_diagnostic(NULL);
                 {
-                    help_ptr = 2;
-                    help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
-                    help_line[0] = "So I shall assume that you typed `$$' both times.";
+                    set_help_ptr(2);
+                    set_help_line(1, "The `$' that I just saw supposedly matches a previous `$$'.");
+                    set_help_line(0, "So I shall assume that you typed `$$' both times.");
                 }
                 back_error();
             }
@@ -993,10 +993,10 @@ void after_math(void)
             error_here_with_diagnostic("Math formula deleted: Insufficient symbol fonts");
             capture_to_diagnostic(NULL);
             {
-                help_ptr = 3;
-                help_line[2] = "Sorry, but I can't typeset math unless \\textfont 2";
-                help_line[1] = "and \\scriptfont 2 and \\scriptscriptfont 2 have all";
-                help_line[0] = "the \\fontdimen values needed in math symbol fonts.";
+                set_help_ptr(3);
+                set_help_line(2, "Sorry, but I can't typeset math unless \\textfont 2");
+                set_help_line(1, "and \\scriptfont 2 and \\scriptscriptfont 2 have all");
+                set_help_line(0, "the \\fontdimen values needed in math symbol fonts.");
             }
             error();
             flush_math();
@@ -1018,10 +1018,10 @@ void after_math(void)
             error_here_with_diagnostic("Math formula deleted: Insufficient extension fonts");
             capture_to_diagnostic(NULL);
             {
-                help_ptr = 3;
-                help_line[2] = "Sorry, but I can't typeset math unless \\textfont 3";
-                help_line[1] = "and \\scriptfont 3 and \\scriptscriptfont 3 have all";
-                help_line[0] = "the \\fontdimen values needed in math extension fonts.";
+                set_help_ptr(3);
+                set_help_line(2, "Sorry, but I can't typeset math unless \\textfont 3");
+                set_help_line(1, "and \\scriptfont 3 and \\scriptscriptfont 3 have all");
+                set_help_line(0, "the \\fontdimen values needed in math extension fonts.");
             }
             error();
             flush_math();
@@ -1062,9 +1062,9 @@ void after_math(void)
                 error_here_with_diagnostic("Display math should end with $$");
                 capture_to_diagnostic(NULL);
                 {
-                    help_ptr = 2;
-                    help_line[1] = "The `$' that I just saw supposedly matches a previous `$$'.";
-                    help_line[0] = "So I shall assume that you typed `$$' both times.";
+                    set_help_ptr(2);
+                    set_help_line(1, "The `$' that I just saw supposedly matches a previous `$$'.");
+                    set_help_line(0, "So I shall assume that you typed `$$' both times.");
                 }
                 back_error();
             }
@@ -1718,11 +1718,11 @@ fetch(int32_t a)
         print_char(')');
         capture_to_diagnostic(NULL);
         {
-            help_ptr = 4;
-            help_line[3] = "Somewhere in the math formula just ended, you used the";
-            help_line[2] = "stated character from an undefined font family. For example,";
-            help_line[1] = "plain TeX doesn't allow \\it or \\sl in subscripts. Proceed,";
-            help_line[0] = "and I'll try to forget that I needed that character.";
+            set_help_ptr(4);
+            set_help_line(3, "Somewhere in the math formula just ended, you used the");
+            set_help_line(2, "stated character from an undefined font family. For example,");
+            set_help_line(1, "plain TeX doesn't allow \\it or \\sl in subscripts. Proceed,");
+            set_help_line(0, "and I'll try to forget that I needed that character.");
         }
         error();
         cur_i = null_character;
