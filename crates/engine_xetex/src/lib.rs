@@ -20,6 +20,8 @@
 // TODO: the internal interface we're using here is pretty janky. The bibtex
 // engine has a nicer approach that we should probably start using.
 
+use std::any::Any;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
@@ -208,23 +210,33 @@ impl TexEngine {
                     self.semantic_pagination_enabled.into(),
                 );
 
-                tt_engine_xetex_main(
-                    state,
-                    cformat.as_ptr(),
-                    cinput.as_ptr(),
-                    self.build_date
-                        .duration_since(SystemTime::UNIX_EPOCH)
-                        .expect("invalid build date")
-                        .as_secs(),
-                )
+                catch_unwind(AssertUnwindSafe(|| {
+                    tt_engine_xetex_main(
+                        state,
+                        cformat.as_ptr(),
+                        cinput.as_ptr(),
+                        self.build_date
+                            .duration_since(SystemTime::UNIX_EPOCH)
+                            .expect("invalid build date")
+                            .as_secs(),
+                    )
+                }))
             };
 
+            fn downcast_str(e: Box<dyn Any>) -> String {
+                e.downcast::<&'static str>()
+                    .map(|s| s.to_string())
+                    .or_else(|e| e.downcast::<String>().map(|s| *s))
+                    .unwrap()
+            }
+
             match r {
-                0 => Ok(TexOutcome::Spotless),
-                1 => Ok(TexOutcome::Warnings),
-                2 => Ok(TexOutcome::Errors),
-                3 => Err(EngineAbortedError::new_abort_indicator().into()),
-                x => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
+                Ok(0) => Ok(TexOutcome::Spotless),
+                Ok(1) => Ok(TexOutcome::Warnings),
+                Ok(2) => Ok(TexOutcome::Errors),
+                Ok(3) => Err(EngineAbortedError::new_abort_indicator().into()),
+                Err(e) => Err(anyhow!("{}", downcast_str(e))),
+                Ok(x) => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
             }
         })
     }
@@ -252,7 +264,7 @@ pub mod c_api {
     }
 
     #[allow(improper_ctypes)] // for CoreBridgeState
-    extern "C" {
+    extern "C-unwind" {
         pub fn tt_xetex_set_int_variable(
             var_name: *const libc::c_char,
             value: libc::c_int,
