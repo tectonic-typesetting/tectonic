@@ -248,6 +248,7 @@ pub struct EngineCtx {
     /// An arena of TeX nodes
     pub(crate) mem: Vec<MemoryWord>,
     pub(crate) buffer: Vec<char>,
+    pub(crate) xeq_level_array: Vec<u16>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -364,6 +365,7 @@ impl EngineCtx {
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
             mem: Vec::new(),
             buffer: Vec::new(),
+            xeq_level_array: vec![0; EQTB_SIZE - INT_BASE + 1],
         }
     }
 
@@ -426,6 +428,10 @@ impl EngineCtx {
     pub fn cat_code(&self, p: usize) -> Result<CatCode, i32> {
         let val = unsafe { self.eqtb[CAT_CODE_BASE + p].b32.s1 };
         CatCode::try_from(val)
+    }
+
+    pub fn set_xeq_level(&mut self, idx: usize, val: u16) {
+        self.xeq_level_array[idx - INT_BASE] = val;
     }
 }
 
@@ -1015,6 +1021,11 @@ pub extern "C" fn set_buffer(idx: usize, val: u32) {
 #[no_mangle]
 pub extern "C" fn clear_buffer() {
     ENGINE_CTX.with_borrow_mut(|engine| engine.buffer.clear())
+}
+
+#[no_mangle]
+pub extern "C" fn xeq_level_array_ptr(idx: usize) -> *mut u16 {
+    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.xeq_level_array[idx]))
 }
 
 fn checkpool_pointer(pool: &mut StringPool, pool_ptr: usize, len: usize) {

@@ -291,8 +291,6 @@ int32_t last_node_type;
 int32_t insert_penalties;
 bool output_active;
 
-uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
-
 #define NEG_TRIE_OP_SIZE -35111L
 #define MAX_TRIE_OP 65535L
 

@@ -655,8 +655,7 @@ extern bool gave_char_warning_help;
  * with negative indices. The underlying arrays used to be named "zzzaa" and
  * "zzzbb". */
 
-extern uint16_t _xeq_level_array[EQTB_SIZE - INT_BASE + 1];
-#define XEQ_LEVEL(i) _xeq_level_array[(i) - INT_BASE]
+#define XEQ_LEVEL(i) (*xeq_level_array_ptr((i) - INT_BASE))
 
 /* the former xetexcoerce.h: */
 
