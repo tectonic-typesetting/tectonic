@@ -12,21 +12,6 @@
 /* WEBby error-handling code: */
 
 void
-fatal_error(const char* s)
-{
-    pre_error_message();
-    print_cstr("Emergency stop");
-    print_nl_cstr(s);
-    capture_to_diagnostic(NULL); // started in pre_error_message
-
-    close_files_and_terminate();
-    tt_cleanup();
-    ttstub_output_flush(rust_stdout());
-    _tt_abort("%s", s);
-}
-
-
-void
 overflow(const char* s, int32_t n)
 {
     pre_error_message();
