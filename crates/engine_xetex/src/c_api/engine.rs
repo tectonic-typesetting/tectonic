@@ -237,6 +237,8 @@ pub struct EngineCtx {
     pub(crate) halt_on_error_p: i32,
     pub(crate) error_count: i8,
     pub(crate) use_err_help: bool,
+    pub(crate) help_ptr: usize,
+    pub(crate) help_line: [*const libc::c_char; 6],
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -351,6 +353,8 @@ impl EngineCtx {
             halt_on_error_p: 0,
             error_count: 0,
             use_err_help: false,
+            help_ptr: 0,
+            help_line: [ptr::null(); 6],
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -397,6 +401,14 @@ impl EngineCtx {
                 );
             }
         }
+    }
+
+    pub fn local(&self, local: Local) -> i32 {
+        unsafe { self.eqtb[LOCAL_BASE + local as usize].b32.s1 }
+    }
+
+    pub fn set_local(&mut self, local: Local, val: i32) {
+        self.eqtb[LOCAL_BASE + local as usize].b32.s1 = val
     }
 
     pub fn int_par(&self, par: IntPar) -> i32 {
@@ -863,6 +875,26 @@ pub extern "C" fn use_err_help() -> bool {
 #[no_mangle]
 pub extern "C" fn set_use_err_help(val: bool) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.use_err_help = val)
+}
+
+#[no_mangle]
+pub extern "C" fn help_ptr() -> usize {
+    ENGINE_CTX.with_borrow(|engine| engine.help_ptr)
+}
+
+#[no_mangle]
+pub extern "C" fn set_help_ptr(val: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.help_ptr = val)
+}
+
+#[no_mangle]
+pub extern "C" fn help_line(idx: usize) -> *const libc::c_char {
+    ENGINE_CTX.with_borrow(|engine| engine.help_line[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_help_line(idx: usize, ptr: *const libc::c_char) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.help_line[idx] = ptr)
 }
 
 #[no_mangle]

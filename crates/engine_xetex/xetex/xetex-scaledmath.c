@@ -18,9 +18,9 @@ m_log(int32_t x)
         print_scaled(x);
         print_cstr(" has been replaced by 0");
         capture_to_diagnostic(NULL);
-        help_ptr = 2;
-        help_line[1] = "Since I don't take logs of non-positive numbers,";
-        help_line[0] = "I'm zeroing this one. Proceed, with fingers crossed.";
+        set_help_ptr(2);
+        set_help_line(1, "Since I don't take logs of non-positive numbers,");
+        set_help_line(0, "I'm zeroing this one. Proceed, with fingers crossed.");
         error();
         return 0;
     } else {

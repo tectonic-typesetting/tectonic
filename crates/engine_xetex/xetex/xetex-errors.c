@@ -11,71 +11,6 @@
 
 /* WEBby error-handling code: */
 
-/*82: */
-static void
-post_error_message(int need_to_print_it)
-{
-    capture_to_diagnostic(NULL);
-
-    if (interaction() == ERROR_STOP_MODE)
-        set_interaction(SCROLL_MODE);
-
-    if (need_to_print_it && log_opened())
-        error();
-
-    set_history(HISTORY_FATAL_ERROR);
-    close_files_and_terminate();
-    tt_cleanup();
-    ttstub_output_flush(rust_stdout());
-}
-
-
-void
-error(void)
-{
-    if (history() < HISTORY_ERROR_ISSUED)
-        set_history(HISTORY_ERROR_ISSUED);
-
-    print_char('.');
-    show_context();
-    if (halt_on_error_p()) {
-        set_history(HISTORY_FATAL_ERROR);
-        post_error_message(0);
-        _tt_abort("halted on potentially-recoverable error as specified");
-    }
-
-    /* This used to be where there was a bunch of code if "interaction ==
-     * error_stop_mode" that would let the use interactively try to solve the
-     * error. */
-
-    set_error_count(error_count()+1);
-    if (error_count() == 100) {
-        print_nl_cstr("(That makes 100 errors; please try again.)");
-        set_history(HISTORY_FATAL_ERROR);
-        post_error_message(0);
-        _tt_abort("halted after 100 potentially-recoverable errors");
-    }
-
-    if (interaction() > BATCH_MODE)
-        set_selector(selector()-1);
-
-    if (use_err_help()) {
-        print_ln();
-        give_err_help();
-    } else {
-        while (help_ptr > 0) {
-            help_ptr--;
-            print_nl_cstr(help_line[help_ptr]);
-        }
-    }
-
-    print_ln();
-    if (interaction() > BATCH_MODE)
-        set_selector(selector()+1);
-    print_ln();
-}
-
-
 void
 fatal_error(const char* s)
 {
@@ -102,9 +37,9 @@ overflow(const char* s, int32_t n)
     print_int(n);
     print_char(']');
 
-    help_ptr = 2;
-    help_line[1] = "If you really absolutely need more capacity,";
-    help_line[0] = "you can ask a wizard to enlarge me.";
+    set_help_ptr(2);
+    set_help_line(1, "If you really absolutely need more capacity,");
+    set_help_line(0, "you can ask a wizard to enlarge me.");
     post_error_message(1);
     _tt_abort("halted on overflow()");
 }
@@ -120,14 +55,14 @@ confusion(const char* s)
         print_cstr(s);
         print_char(')');
 
-        help_ptr = 1;
-        help_line[0] = "I'm broken. Please show this to someone who can fix can fix";
+        set_help_ptr(1);
+        set_help_line(0, "I'm broken. Please show this to someone who can fix can fix");
     } else {
         print_cstr("I can't go on meeting you like this");
 
-        help_ptr = 2;
-        help_line[1] = "One of your faux pas seems to have wounded me deeply...";
-        help_line[0] = "in fact, I'm barely conscious. Please fix it and try again.";
+        set_help_ptr(2);
+        set_help_line(1, "One of your faux pas seems to have wounded me deeply...");
+        set_help_line(0, "in fact, I'm barely conscious. Please fix it and try again.");
     }
 
     post_error_message(1);

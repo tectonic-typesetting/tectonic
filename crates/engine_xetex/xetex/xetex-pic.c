@@ -435,9 +435,9 @@ load_picture(bool is_pdf)
                 print_cstr("pt) will be ignored");
                 capture_to_diagnostic(NULL);
                 {
-                    help_ptr = 2;
-                    help_line[1] = "I can't scale images to zero or negative sizes,";
-                    help_line[0] = "so I'm ignoring this.";
+                    set_help_ptr(2);
+                    set_help_line(1, "I can't scale images to zero or negative sizes,");
+                    set_help_line(0, "so I'm ignoring this.");
                 }
                 error();
             } else
@@ -451,9 +451,9 @@ load_picture(bool is_pdf)
                 print_cstr("pt) will be ignored");
                 capture_to_diagnostic(NULL);
                 {
-                    help_ptr = 2;
-                    help_line[1] = "I can't scale images to zero or negative sizes,";
-                    help_line[0] = "so I'm ignoring this.";
+                    set_help_ptr(2);
+                    set_help_line(1, "I can't scale images to zero or negative sizes,");
+                    set_help_line(0, "so I'm ignoring this.");
                 }
                 error();
             } else
@@ -647,16 +647,16 @@ load_picture(bool is_pdf)
         capture_to_diagnostic(NULL);
         if (result == -43) {
             {
-                help_ptr = 2;
-                help_line[1] = "The requested image couldn't be read because";
-                help_line[0] = "the file was not found.";
+                set_help_ptr(2);
+                set_help_line(1, "The requested image couldn't be read because");
+                set_help_line(0, "the file was not found.");
             }
         } else {
 
             {
-                help_ptr = 2;
-                help_line[1] = "The requested image couldn't be read because";
-                help_line[0] = "it was not a recognized image format.";
+                set_help_ptr(2);
+                set_help_line(1, "The requested image couldn't be read because");
+                set_help_line(0, "it was not a recognized image format.");
             }
         }
         error();

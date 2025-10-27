@@ -379,6 +379,8 @@
 
 #define PRIM_EQTB_BASE 2243238
 
+#define LOCAL_BASE 2254871
+
 #define CAT_CODE_BASE 2256169
 
 #define INT_BASE 7826729
@@ -686,6 +688,14 @@ bool use_err_help(void);
 
 void set_use_err_help(bool val);
 
+uintptr_t help_ptr(void);
+
+void set_help_ptr(uintptr_t val);
+
+const char *help_line(uintptr_t idx);
+
+void set_help_line(uintptr_t idx, const char *ptr);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -749,6 +759,14 @@ void show_context(void);
 void token_show(int32_t p);
 
 void pre_error_message(void);
+
+void error(void);
+
+void post_error_message(int32_t need_to_print_it);
+
+extern void close_files_and_terminate(void);
+
+extern void tt_cleanup(void);
 
 void resize_hash(uintptr_t len);
 

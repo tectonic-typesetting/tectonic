@@ -50,8 +50,6 @@ int32_t native_len;
 int32_t save_native_len;
 bool deletions_allowed;
 bool set_box_allowed;
-const char* help_line[6];
-unsigned char help_ptr;
 scaled_t random_seed;
 int32_t two_to_the[31];
 int32_t spec_log[29];
@@ -779,8 +777,8 @@ new_patterns(void)
                         if (cur_chr == 0) {
                             error_here_with_diagnostic("Nonletter");
                             capture_to_diagnostic(NULL);
-                            help_ptr = 1;
-                            help_line[0] = "(See Appendix H.)";
+                            set_help_ptr(1);
+                            set_help_line(0, "(See Appendix H.)");
                             error();
                         }
                     }
@@ -856,8 +854,8 @@ new_patterns(void)
                     if (trie_o[q] != MIN_TRIE_OP) {
                         error_here_with_diagnostic("Duplicate pattern");
                         capture_to_diagnostic(NULL);
-                        help_ptr = 1;
-                        help_line[0] = "(See Appendix H.)";
+                        set_help_ptr(1);
+                        set_help_line(0, "(See Appendix H.)");
                         error();
                     }
 
@@ -876,8 +874,8 @@ new_patterns(void)
                 error_here_with_diagnostic("Bad ");
                 print_esc_cstr("patterns");
                 capture_to_diagnostic(NULL);
-                help_ptr = 1;
-                help_line[0] = "(See Appendix H.)";
+                set_help_ptr(1);
+                set_help_line(0, "(See Appendix H.)");
                 error();
                 break;
             }
@@ -948,8 +946,8 @@ new_patterns(void)
         error_here_with_diagnostic("Too late for ");
         print_esc_cstr("patterns");
         capture_to_diagnostic(NULL);
-        help_ptr = 1;
-        help_line[0] = "All patterns must be given before typesetting begins.";
+        set_help_ptr(1);
+        set_help_line(0, "All patterns must be given before typesetting begins.");
         error();
 
         mem_ptr(GARBAGE)->b32.s1 = scan_toks(false, false);
@@ -1152,9 +1150,9 @@ not_found1: /*970:*/
                 if (hc[0] == 0) {
                     error_here_with_diagnostic("Not a letter");
                     capture_to_diagnostic(NULL);
-                    help_ptr = 2;
-                    help_line[1] = "Letters in \\hyphenation words must have \\lccode>0.";
-                    help_line[0] = "Proceed; I'll ignore the character I just read.";
+                    set_help_ptr(2);
+                    set_help_line(1, "Letters in \\hyphenation words must have \\lccode>0.");
+                    set_help_line(0, "Proceed; I'll ignore the character I just read.");
                     error();
                 } else if (n < max_hyphenatable_length()) {
                     n++;
@@ -1253,9 +1251,9 @@ not_found1: /*970:*/
             print_esc_cstr("hyphenation");
             print_cstr(" will be flushed");
             capture_to_diagnostic(NULL);
-            help_ptr = 2;
-            help_line[1] = "Hyphenation exceptions must contain only letters";
-            help_line[0] = "and hyphens. But continue; I'll forgive and forget.";
+            set_help_ptr(2);
+            set_help_line(1, "Hyphenation exceptions must contain only letters");
+            set_help_line(0, "and hyphens. But continue; I'll forgive and forget.");
             error();
             break;
         }
@@ -1289,8 +1287,8 @@ prefixed_command(void)
             print_cmd_chr(cur_cmd, cur_chr);
             print_char('\'');
             capture_to_diagnostic(NULL);
-            help_ptr = 1;
-            help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\global or \\protected.";
+            set_help_ptr(1);
+            set_help_line(0, "I'll pretend you didn't say \\long or \\outer or \\global or \\protected.");
             back_error();
             return;
         }
@@ -1318,8 +1316,8 @@ prefixed_command(void)
         print_cmd_chr(cur_cmd, cur_chr);
         print_char('\'');
         capture_to_diagnostic(NULL);
-        help_ptr = 1;
-        help_line[0] = "I'll pretend you didn't say \\long or \\outer or \\protected here.";
+        set_help_ptr(1);
+        set_help_line(0, "I'll pretend you didn't say \\long or \\outer or \\protected here.");
         error();
     }
 
@@ -1405,8 +1403,8 @@ prefixed_command(void)
             /* Tectonic customization! */
             error_here_with_diagnostic("vestigial MLTeX shorthand encountered??");
             capture_to_diagnostic(NULL);
-            help_ptr = 1;
-            help_line[0] = "This should never happen in Tectonic, where MLTeX has been excised.";
+            set_help_ptr(1);
+            set_help_line(0, "This should never happen in Tectonic, where MLTeX has been excised.");
             error();
         } else {
             n = cur_chr;
@@ -1525,9 +1523,9 @@ prefixed_command(void)
         if (!scan_keyword("to")) {
             error_here_with_diagnostic("Missing `to' inserted");
             capture_to_diagnostic(NULL);
-            help_ptr = 2;
-            help_line[1] = "You should have said `\\read<number> to \\cs'.";
-            help_line[0] = "I'm going to look for the \\cs now.";
+            set_help_ptr(2);
+            set_help_line(1, "You should have said `\\read<number> to \\cs'.");
+            set_help_line(0, "I'm going to look for the \\cs now.");
             error();
         }
 
@@ -1804,8 +1802,8 @@ prefixed_command(void)
                 print_cstr("), should be at most ");
             print_int(n);
             capture_to_diagnostic(NULL);
-            help_ptr = 1;
-            help_line[0] = "I'm going to use 0 instead of that illegal code value.";
+            set_help_ptr(1);
+            set_help_line(0, "I'm going to use 0 instead of that illegal code value.");
             error();
             cur_val = 0;
         }
@@ -1873,9 +1871,9 @@ prefixed_command(void)
             error_here_with_diagnostic("Improper ");
             print_esc_cstr("setbox");
             capture_to_diagnostic(NULL);
-            help_ptr = 2;
-            help_line[1] = "Sorry, \\setbox is not allowed after \\halign in a display,";
-            help_line[0] = "or between \\accent and an accented character.";
+            set_help_ptr(2);
+            set_help_line(1, "Sorry, \\setbox is not allowed after \\halign in a display,");
+            set_help_line(0, "or between \\accent and an accented character.");
             error();
         }
         break;
@@ -1949,7 +1947,7 @@ prefixed_command(void)
 
             error_here_with_diagnostic("Patterns can be loaded only by INITEX");
             capture_to_diagnostic(NULL);
-            help_ptr = 0;
+            set_help_ptr(0);
             error();
 
             do {
@@ -2038,8 +2036,8 @@ store_fmt_file(void)
     if (save_ptr != 0) {
         error_here_with_diagnostic("You can't dump inside a group");
         capture_to_diagnostic(NULL);
-        help_ptr = 1;
-        help_line[0] = "`{...\\dump}' is a no-no.";
+        set_help_ptr(1);
+        set_help_line(0, "`{...\\dump}' is a no-no.");
 
         if (interaction() == ERROR_STOP_MODE)
             set_interaction(SCROLL_MODE);
@@ -2298,10 +2296,10 @@ store_fmt_file(void)
             error_here_with_diagnostic("Can't \\dump a format with native fonts or font-mappings");
             capture_to_diagnostic(NULL);
 
-            help_ptr = 3;
-            help_line[2] = "You really, really don't want to do this.";
-            help_line[1] = "It won't work, and only confuses me.";
-            help_line[0] = "(Load them at runtime, not as part of the format file.)";
+            set_help_ptr(3);
+            set_help_line(2, "You really, really don't want to do this.");
+            set_help_line(1, "It won't work, and only confuses me.");
+            set_help_line(0, "(Load them at runtime, not as part of the format file.)");
             error();
         } else {
             print_file_name(font_name[k], font_area[k], EMPTY_STRING);
@@ -3011,7 +3009,7 @@ initialize_more_variables(void)
     deletions_allowed = true;
     set_box_allowed = true;
     set_error_count(0);
-    help_ptr = 0;
+    set_help_ptr(0);
     set_use_err_help(false);
 
     two_to_the[0] = 1;

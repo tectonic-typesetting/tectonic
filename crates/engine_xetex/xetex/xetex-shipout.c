@@ -104,9 +104,9 @@ ship_out(int32_t p)
     {
         error_here_with_diagnostic("Huge page cannot be shipped out");
         capture_to_diagnostic(NULL);
-        help_ptr = 2;
-        help_line[1] = "The page just created is more than 18 feet tall or";
-        help_line[0] = "more than 18 feet wide, so I suspect something went wrong.";
+        set_help_ptr(2);
+        set_help_line(1, "The page just created is more than 18 feet tall or");
+        set_help_line(0, "more than 18 feet wide, so I suspect something went wrong.");
         error();
 
         if (INTPAR(tracing_output) <= 0) {
@@ -2108,9 +2108,9 @@ write_out(int32_t p)
     if (cur_tok != CS_TOKEN_FLAG + END_WRITE) { /*1412:*/
         error_here_with_diagnostic("Unbalanced write command");
         capture_to_diagnostic(NULL);
-        help_ptr = 2;
-        help_line[1] = "On this page there's a \\write with fewer real {'s than }'s.";
-        help_line[0] = "I can't handle that very well; good luck.";
+        set_help_ptr(2);
+        set_help_line(1, "On this page there's a \\write with fewer real {'s than }'s.");
+        set_help_line(0, "I can't handle that very well; good luck.");
         error();
 
         do {

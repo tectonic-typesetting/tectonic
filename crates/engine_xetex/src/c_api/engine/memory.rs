@@ -309,6 +309,7 @@ pub const EQTB_SIZE: usize = 0x886f92;
 pub const ACTIVE_BASE: usize = 0x1;
 pub const SINGLE_BASE: usize = 0x110001;
 pub const PRIM_EQTB_BASE: usize = 0x223aa6;
+pub const LOCAL_BASE: usize = 0x226817;
 pub const CAT_CODE_BASE: usize = 0x226d29;
 pub const INT_BASE: usize = 0x776d29;
 pub const INT_PARS: usize = 83;
@@ -430,4 +431,20 @@ pub enum IntPar {
     XetexHyphenatableLength,
     Synctex,
     PdfOutput,
+}
+
+pub enum Local {
+    ParShape = 0,
+    OutputRoutine,
+    EveryPar,
+    EveryMath,
+    EveryDisplay,
+    EveryHbox,
+    EveryVbox,
+    EveryJob,
+    EveryCr,
+    ErrHelp,
+    EveryEof,
+    XetexInterCharToks,
+    TectonicCodaTokens,
 }
