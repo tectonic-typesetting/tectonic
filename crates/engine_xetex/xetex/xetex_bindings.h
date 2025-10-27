@@ -740,6 +740,8 @@ void set_buffer(uintptr_t idx, uint32_t val);
 
 void clear_buffer(void);
 
+uint16_t *xeq_level_array_ptr(uintptr_t idx);
+
 StrNumber maketexstring(const char *str);
 
 char *gettexstring(StrNumber s);
@@ -765,6 +767,8 @@ void show_token_list(int32_t p, int32_t q, int32_t l);
 void show_context(void);
 
 void token_show(int32_t p);
+
+void geq_word_define(int32_t p, int32_t w);
 
 void pre_error_message(void);
 
