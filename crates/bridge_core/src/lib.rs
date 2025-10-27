@@ -580,7 +580,8 @@ impl<'a> CoreBridgeState<'a> {
         }
     }
 
-    fn output_flush(&mut self, handle: OutputId) -> bool {
+    /// Flush any pending data for the provided output
+    pub fn output_flush(&mut self, handle: OutputId) -> bool {
         let rhandle: &mut OutputHandle = self.get_output(handle);
         let result = rhandle.flush();
 

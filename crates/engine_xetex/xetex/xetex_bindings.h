@@ -674,6 +674,18 @@ int32_t mem_end(void);
 
 void set_mem_end(int32_t val);
 
+int32_t halt_on_error_p(void);
+
+void set_halt_on_error_p(int32_t val);
+
+int8_t error_count(void);
+
+void set_error_count(int8_t val);
+
+bool use_err_help(void);
+
+void set_use_err_help(bool val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -731,6 +743,8 @@ StrNumber make_name_string(void);
 void open_log_file(void);
 
 void show_token_list(int32_t p, int32_t q, int32_t l);
+
+void show_context(void);
 
 void pre_error_message(void);
 

@@ -4559,237 +4559,6 @@ void show_cur_cmd_chr(void)
     end_diagnostic(false);
 }
 
-void show_context(void)
-{
-    unsigned char /*max_selector */ old_setting;
-    int32_t nn;
-    bool bottom_line;
-    int32_t i;
-    int32_t j;
-    int32_t l;
-    int32_t m;
-    int32_t n;
-    int32_t p;
-    int32_t q;
-
-    set_base_ptr(input_ptr());
-    set_input_stack(base_ptr(), cur_input());
-    nn = -1;
-    bottom_line = false;
-
-    while (true) {
-
-        set_cur_input(input_stack(base_ptr()));
-        if ((cur_input().state != TOKEN_LIST)) {
-
-            if ((cur_input().name > 19) || (base_ptr() == 0))
-                bottom_line = true;
-        }
-        if ((base_ptr() == input_ptr()) || bottom_line || (nn < INTPAR(error_context_lines))) {   /*324: */
-            if ((base_ptr() == input_ptr()) || (cur_input().state != TOKEN_LIST)
-                || (cur_input().index != BACKED_UP) || (cur_input().loc != TEX_NULL)) {
-                set_tally(0);
-                old_setting = selector();
-                if (cur_input().state != TOKEN_LIST) {
-                    if (cur_input().name <= 17) {
-
-                        if (cur_input().name == 0) {
-
-                            if (base_ptr() == 0)
-                                print_nl_cstr("<*>");
-                            else
-                                print_nl_cstr("<insert> ");
-                        } else {
-
-                            print_nl_cstr("<read ");
-                            if (cur_input().name == 17)
-                                print_char('*');
-                            else
-                                print_int(cur_input().name - 1);
-                            print_char('>');
-                        }
-                    } else {
-
-                        print_nl_cstr("l.");
-                        if (cur_input().index == in_open())
-                            print_int(line());
-                        else
-                            print_int(line_stack(cur_input().index + 1));
-                    }
-                    print_char(' ');
-                    {
-                        l = tally();
-                        set_tally(0);
-                        set_selector(SELECTOR_PSEUDO);
-                        set_trick_count(1000000L);
-                    }
-                    if (buffer(cur_input().limit) == INTPAR(end_line_char))
-                        j = cur_input().limit;
-                    else
-                        j = cur_input().limit + 1;
-                    if (j > 0) {
-                        register int32_t for_end;
-                        i = cur_input().start;
-                        for_end = j - 1;
-                        if (i <= for_end)
-                            do {
-                                if (i == cur_input().loc) {
-                                    set_first_count(tally());
-                                    set_trick_count(tally() + 1 + error_line() - half_error_line());
-                                    if (trick_count() < error_line())
-                                        set_trick_count(error_line());
-                                }
-                                print_char(buffer(i));
-                            }
-                            while (i++ < for_end);
-                    }
-                } else {
-
-                    switch (cur_input().index) {
-                    case PARAMETER:
-                        print_nl_cstr("<argument> ");
-                        break;
-                    case U_TEMPLATE:
-                    case V_TEMPLATE:
-                        print_nl_cstr("<template> ");
-                        break;
-                    case BACKED_UP:
-                    case BACKED_UP_CHAR:
-                        if (cur_input().loc == TEX_NULL)
-                            print_nl_cstr("<recently read> ");
-                        else
-                            print_nl_cstr("<to be read again> ");
-                        break;
-                    case INSERTED:
-                        print_nl_cstr("<inserted text> ");
-                        break;
-                    case MACRO:
-                        print_ln();
-                        print_cs(cur_input().name);
-                        break;
-                    case OUTPUT_TEXT:
-                        print_nl_cstr("<output> ");
-                        break;
-                    case EVERY_PAR_TEXT:
-                        print_nl_cstr("<everypar> ");
-                        break;
-                    case EVERY_MATH_TEXT:
-                        print_nl_cstr("<everymath> ");
-                        break;
-                    case EVERY_DISPLAY_TEXT:
-                        print_nl_cstr("<everydisplay> ");
-                        break;
-                    case EVERY_HBOX_TEXT:
-                        print_nl_cstr("<everyhbox> ");
-                        break;
-                    case EVERY_VBOX_TEXT:
-                        print_nl_cstr("<everyvbox> ");
-                        break;
-                    case EVERY_JOB_TEXT:
-                        print_nl_cstr("<everyjob> ");
-                        break;
-                    case EVERY_CR_TEXT:
-                        print_nl_cstr("<everycr> ");
-                        break;
-                    case MARK_TEXT:
-                        print_nl_cstr("<mark> ");
-                        break;
-                    case EVERY_EOF_TEXT:
-                        print_nl_cstr("<everyeof> ");
-                        break;
-                    case INTER_CHAR_TEXT:
-                        print_nl_cstr("<XeTeXinterchartoks> ");
-                        break;
-                    case WRITE_TEXT:
-                        print_nl_cstr("<write> ");
-                        break;
-                    case TECTONIC_CODA_TEXT:
-                        print_nl_cstr("<TectonicCodaTokens> ");
-                        break;
-                    default:
-                        print_nl('?' );
-                        break;
-                    }
-                    {
-                        l = tally();
-                        set_tally(0);
-                        set_selector(SELECTOR_PSEUDO);
-                        set_trick_count(1000000L);
-                    }
-                    if (cur_input().index < MACRO)
-                        show_token_list(cur_input().start, cur_input().loc, 100000L);
-                    else
-                        show_token_list(mem(cur_input().start).b32.s1, cur_input().loc, 100000L);
-                }
-                set_selector(old_setting);
-                if (trick_count() == 1000000L) {
-                    set_first_count(tally());
-                    set_trick_count(tally() + 1 + error_line() - half_error_line());
-                    if (trick_count() < error_line())
-                        set_trick_count(error_line());
-                }
-                if (tally() < trick_count())
-                    m = tally() - first_count();
-                else
-                    m = trick_count() - first_count();
-                if (l + first_count() <= half_error_line()) {
-                    p = 0;
-                    n = l + first_count();
-                } else {
-
-                    print_cstr("...");
-                    p = l + first_count() - half_error_line() + 3;
-                    n = half_error_line();
-                }
-                {
-                    register int32_t for_end;
-                    q = p;
-                    for_end = first_count() - 1;
-                    if (q <= for_end)
-                        do
-                            print_char(trick_buf(q % error_line()));
-                        while (q++ < for_end);
-                }
-                print_ln();
-                {
-                    register int32_t for_end;
-                    q = 1;
-                    for_end = n;
-                    if (q <= for_end)
-                        do
-                            print_raw_char(' ', true);
-                        while (q++ < for_end);
-                }
-                if (m + n <= error_line())
-                    p = first_count() + m;
-                else
-                    p = first_count() + (error_line() - n - 3);
-                {
-                    register int32_t for_end;
-                    q = first_count();
-                    for_end = p - 1;
-                    if (q <= for_end)
-                        do
-                            print_char(trick_buf(q % error_line()));
-                        while (q++ < for_end);
-                }
-                if (m + n > error_line())
-                    print_cstr("...");
-                nn++;
-            }
-        } else if (nn == INTPAR(error_context_lines)) {
-            print_nl_cstr("...");
-            nn++;
-        }
-        if (bottom_line)
-            goto done;
-        set_base_ptr(base_ptr()-1);
-    }
-done:
-    set_cur_input(input_stack(input_ptr()));
-}
-
-
 void
 begin_token_list(int32_t p, uint16_t t)
 {
@@ -14553,7 +14322,7 @@ end_graf(void)
         }
 
         normal_paragraph();
-        error_count = 0;
+        set_error_count(0);
     }
 }
 
@@ -15879,7 +15648,7 @@ void issue_message(void)
         capture_to_diagnostic(NULL);
 
         if (LOCAL(err_help) != TEX_NULL)
-            use_err_help = true;
+            set_use_err_help(true);
         else if (long_help_seen) {
             help_ptr = 1;
             help_line[0] = "(That was another \\errmessage.)";
@@ -15896,7 +15665,7 @@ void issue_message(void)
             }
         }
         error();
-        use_err_help = false;
+        set_use_err_help(false);
     }
     {
         set_str_ptr(str_ptr()-1);
@@ -16064,7 +15833,7 @@ common_ending:
     capture_to_diagnostic(NULL); // calling with null twice is fine
     if (interaction() < ERROR_STOP_MODE) {
         help_ptr = 0;
-        error_count--;
+        set_error_count(error_count()-1);
     } else if (INTPAR(tracing_online) > 0) {
         {
             help_ptr = 3;
