@@ -764,6 +764,8 @@ void error(void);
 
 void post_error_message(int32_t need_to_print_it);
 
+void fatal_error(const char *s);
+
 extern void close_files_and_terminate(void);
 
 extern void tt_cleanup(void);
