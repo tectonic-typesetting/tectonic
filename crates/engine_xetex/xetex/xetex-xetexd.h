@@ -443,7 +443,6 @@ extern int32_t max_save_stack;
 extern uint16_t cur_level;
 extern group_code cur_group;
 extern int32_t cur_boundary;
-extern int32_t mag_set;
 extern eight_bits cur_cmd;
 extern int32_t cur_chr;
 extern int32_t cur_cs;

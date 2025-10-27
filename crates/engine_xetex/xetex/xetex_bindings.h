@@ -359,7 +359,11 @@
 
 #define TECTONIC_CODA_TEXT 19
 
+#define EOP 140
+
 #define POP 142
+
+#define POST 248
 
 #define TOKEN_LIST 0
 
@@ -695,6 +699,10 @@ void set_help_ptr(uintptr_t val);
 const char *help_line(uintptr_t idx);
 
 void set_help_line(uintptr_t idx, const char *ptr);
+
+int32_t mag_set(void);
+
+void set_mag_set(int32_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 
