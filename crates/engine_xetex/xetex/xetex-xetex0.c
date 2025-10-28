@@ -12,16 +12,6 @@
 
 #define IS_LC_HEX(c) (((c) >= '0' && (c) <= '9' ) || ((c) >= 'a' && (c) <= 'f' ))
 
-static void
-int_error(int32_t n)
-{
-    print_cstr(" (");
-    print_int(n);
-    print_char(')');
-    error();
-}
-
-
 int32_t
 badness(scaled_t t, scaled_t s)
 {
@@ -4351,13 +4341,6 @@ void geq_define(int32_t p, uint16_t t, int32_t e)
     eqtb_ptr(p)->b32.s1 = e;
 }
 
-void geq_word_define(int32_t p, int32_t w)
-{
-
-    eqtb_ptr(p)->b32.s1 = w;
-    XEQ_LEVEL(p) = LEVEL_ONE;
-}
-
 void save_for_after(int32_t t)
 {
     if (cur_level > LEVEL_ONE) {
@@ -4444,41 +4427,6 @@ void unsave(void)
         save_ptr--;
     } else
         confusion("curlevel");
-}
-
-void prepare_mag(void)
-{
-
-    if (mag_set() > 0 && INTPAR(mag) != mag_set()) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Incompatible magnification (");
-        print_int(INTPAR(mag));
-        print_cstr(");");
-        print_nl_cstr(" the previous value will be retained");
-
-        ttstub_diag_printf(errmsg, " (%d)", mag_set());
-        capture_to_diagnostic(NULL);
-
-        {
-            set_help_ptr(2);
-            set_help_line(1, "I can handle only one magnification ratio per job. So I've");
-            set_help_line(0, "reverted to the magnification you used earlier on this run.");
-        }
-        int_error(mag_set());
-        geq_word_define(INT_BASE + INT_PAR__mag, mag_set());
-    }
-    if ((INTPAR(mag) <= 0) || (INTPAR(mag) > 32768L)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
-        ttstub_diag_printf(errmsg, " (%d)", INTPAR(mag));
-        capture_to_diagnostic(NULL);
-
-        {
-            set_help_ptr(1);
-            set_help_line(0, "The magnification ratio must be between 1 and 32768.");
-        }
-        int_error(INTPAR(mag));
-        geq_word_define(INT_BASE + INT_PAR__mag, 1000);
-    }
-    set_mag_set(INTPAR(mag));
 }
 
 void print_meaning(void)

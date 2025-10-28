@@ -24,6 +24,10 @@
 
 #define FNT_NUM_0 171
 
+#define LEVEL_ZERO 0
+
+#define LEVEL_ONE 1
+
 #define NULL_CS 2228225
 
 #define PRIM_SIZE 2100
@@ -770,6 +774,8 @@ void token_show(int32_t p);
 
 void geq_word_define(int32_t p, int32_t w);
 
+void prepare_mag(void);
+
 void pre_error_message(void);
 
 void error(void);
@@ -777,6 +783,8 @@ void error(void);
 void post_error_message(int32_t need_to_print_it);
 
 void fatal_error(const char *s);
+
+void int_error(int32_t n);
 
 extern void close_files_and_terminate(void);
 
