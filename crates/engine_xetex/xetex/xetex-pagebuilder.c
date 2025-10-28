@@ -14,6 +14,7 @@
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
+#include "xetex_bindings.h"
 
 
 static int32_t best_page_break;
@@ -366,7 +367,7 @@ fire_up(int32_t c)
             push_nest();
             cur_list.mode = -VMODE;
             cur_list.aux.b32.s1 = IGNORE_DEPTH; /* this is `prev_depth` */
-            cur_list.mode_line = -line;
+            cur_list.mode_line = -line();
             begin_token_list(LOCAL(output_routine), OUTPUT_TEXT);
             new_save_level(OUTPUT_GROUP);
             normal_paragraph();

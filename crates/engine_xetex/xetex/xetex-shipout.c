@@ -5,6 +5,7 @@
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
 #include "xetex-synctex.h"
+#include "xetex_bindings.h"
 #include "tectonic_bridge_core.h"
 
 
@@ -12,15 +13,9 @@
 #define HALF_BUF 8192
 #define FNT_NUM_0 171 /* DVI code */
 
-static rust_output_handle_t dvi_file;
 static str_number output_file_name;
-static eight_bits *dvi_buf = NULL;
-static int32_t dvi_limit;
 static int32_t g;
 static int32_t lq, lr;
-static int32_t dvi_ptr;
-static int32_t dvi_offset;
-static int32_t dvi_gone;
 static int32_t down_ptr, right_ptr;
 static scaled_t dvi_h, dvi_v;
 static internal_font_number dvi_f;
@@ -48,11 +43,11 @@ void
 initialize_shipout_variables(void)
 {
     output_file_name = 0;
-    dvi_buf = xmalloc_array(eight_bits, DVI_BUF_SIZE);
-    dvi_limit = DVI_BUF_SIZE;
-    dvi_ptr = 0;
-    dvi_offset = 0;
-    dvi_gone = 0;
+    resize_dvi_buf(DVI_BUF_SIZE);
+    set_dvi_limit(DVI_BUF_SIZE);
+    set_dvi_ptr(0);
+    set_dvi_offset(0);
+    set_dvi_gone(0);
     down_ptr = TEX_NULL;
     right_ptr = TEX_NULL;
     cur_s = -1;
@@ -62,16 +57,16 @@ initialize_shipout_variables(void)
 void
 deinitialize_shipout_variables(void)
 {
-    free(dvi_buf);
-    dvi_buf = NULL;
+    clear_dvi_buf();
 }
 
 
 static inline void
 dvi_out(eight_bits c)
 {
-    dvi_buf[dvi_ptr++] = c;
-    if (dvi_ptr == dvi_limit)
+    set_dvi_buf(dvi_ptr(), c);
+    set_dvi_ptr(dvi_ptr()+1);
+    if (dvi_ptr() == dvi_limit())
         dvi_swap();
 }
 
@@ -89,7 +84,7 @@ ship_out(int32_t p)
 
     synctex_sheet(INTPAR(mag));
 
-    if (job_name == 0)
+    if (job_name() == 0)
         open_log_file();
 
     if (INTPAR(tracing_output) > 0) {
@@ -98,9 +93,9 @@ ship_out(int32_t p)
         print_cstr("Completed box being shipped out");
     }
 
-    if (term_offset > max_print_line - 9)
+    if (term_offset() > max_print_line - 9)
         print_ln();
-    else if (term_offset > 0 || file_offset > 0)
+    else if (term_offset() > 0 || file_offset() > 0)
         print_char(' ' );
 
     print_char('[' );
@@ -114,7 +109,7 @@ ship_out(int32_t p)
             print_char('.' );
     }
 
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
 
     if (INTPAR(tracing_output) > 0) {
         print_char(']' );
@@ -179,12 +174,12 @@ ship_out(int32_t p)
     /* ... resuming 637 ... open up the DVI file if needed */
 
     if (output_file_name == 0) {
-        if (job_name == 0)
+        if (job_name() == 0)
             open_log_file();
         pack_job_name(output_file_extension);
-        dvi_file = ttstub_output_open(name_of_file, 0);
-        if (dvi_file == INVALID_HANDLE)
-            _tt_abort("cannot open output file \"%s\"", name_of_file);
+        set_dvi_file(ttstub_output_open(name_of_file(), 0));
+        if (dvi_file() == INVALID_HANDLE)
+            _tt_abort("cannot open output file \"%s\"", name_of_file());
         output_file_name = make_name_string();
     }
 
@@ -212,7 +207,7 @@ ship_out(int32_t p)
 
     /* ... resuming 662 ... Emit per-page preamble. */
 
-    page_loc = dvi_offset + dvi_ptr;
+    page_loc = dvi_offset() + dvi_ptr();
 
     dvi_out(BOP);
 
@@ -224,8 +219,8 @@ ship_out(int32_t p)
 
     /* Generate a PDF pagesize special unilaterally */
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr("pdf:pagesize ");
     if (DIMENPAR(pdf_page_width) <= 0 || DIMENPAR(pdf_page_height) <= 0) {
         print_cstr("default");
@@ -240,15 +235,15 @@ ship_out(int32_t p)
         print_scaled(DIMENPAR(pdf_page_height));
         print_cstr("pt");
     }
-    selector = old_setting;
+    set_selector(old_setting);
 
     dvi_out(XXX1);
     dvi_out(cur_length());
 
-    for (s = str_start[str_ptr - TOO_BIG_CHAR]; s < pool_ptr; s++)
-        dvi_out(str_pool[s]);
+    for (s = str_start(str_ptr() - TOO_BIG_CHAR); s < pool_ptr(); s++)
+        dvi_out(str_pool(s));
 
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
     /* Done with the synthesized special. The meat: emit this page box. */
 
@@ -285,7 +280,7 @@ done:
         print_char(']');
 
     dead_cycles = 0;
-    ttstub_output_flush(rust_stdout);
+    ttstub_output_flush(rust_stdout());
     flush_node_list(p);
     synctex_teehs();
 }
@@ -382,7 +377,7 @@ hlist_out(void)
                                     && !is_char_node(q)
                                     && NODE_type(q) == WHATSIT_NODE
                                     && (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT)
-                                    && (mem[q + 4].b16.s2 == mem[r + 4].b16.s2)
+                                    && (mem(q + 4).b16.s2 == mem(r + 4).b16.s2)
                                 ) {
                                     p = q;
                                     k += 1 + NATIVE_NODE_length(q);
@@ -442,8 +437,8 @@ hlist_out(void)
                      * and p to the last." */
 
                     if (p != r) {
-                        if (pool_ptr + k > pool_size)
-                            overflow("pool size", pool_size - init_pool_ptr);
+                        if (pool_ptr() + k > pool_size())
+                            overflow("pool size", pool_size() - init_pool_ptr);
 
                         k = 0;
                         q = r;
@@ -452,15 +447,15 @@ hlist_out(void)
                             if (NODE_type(q) == WHATSIT_NODE) {
                                 if (NODE_subtype(q) == NATIVE_WORD_NODE || NODE_subtype(q) == NATIVE_WORD_NODE_AT) {
                                     for (j = 0; j < NATIVE_NODE_length(q); j++) {
-                                        str_pool[pool_ptr] = NATIVE_NODE_text(q)[j];
-                                        pool_ptr++;
+                                        set_str_pool(pool_ptr(), NATIVE_NODE_text(q)[j]);
+                                        set_pool_ptr(pool_ptr()+1);
                                     }
 
                                     k += BOX_width(q);
                                 }
                             } else if (NODE_type(q) == GLUE_NODE) {
-                                str_pool[pool_ptr] = ' ';
-                                pool_ptr++;
+                                set_str_pool(pool_ptr(), ' ');
+                                set_pool_ptr(pool_ptr()+1);
                                 g = GLUE_NODE_glue_ptr(q);
                                 k += BOX_width(g);
 
@@ -487,7 +482,7 @@ hlist_out(void)
                         NODE_subtype(q) = NODE_subtype(r);
 
                         for (j = 0; j < cur_length(); j++)
-                            NATIVE_NODE_text(q)[j] = str_pool[str_start[str_ptr - TOO_BIG_CHAR] + j];
+                            NATIVE_NODE_text(q)[j] = str_pool(str_start(str_ptr() - TOO_BIG_CHAR) + j);
 
                         /* "Link q into the list in place of r...p" */
 
@@ -524,7 +519,7 @@ hlist_out(void)
                         }
 
                         flush_node_list(r);
-                        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+                        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                         p = q;
                     }
                 }
@@ -546,7 +541,7 @@ hlist_out(void)
     if (cur_s > max_push)
         max_push = cur_s;
 
-    save_loc = dvi_offset + dvi_ptr;
+    save_loc = dvi_offset() + dvi_ptr();
     base_line = cur_v;
     prev_p = this_box + 5; /* this is list_offset, the offset of the box list pointer */
 
@@ -1002,7 +997,7 @@ hlist_out(void)
 
             case LIGATURE_NODE:
                 /* 675: "Make node p look like a char_node and goto reswitch" */
-                mem[LIG_TRICK] = mem[p + 1]; /* = lig_char(p) */
+                set_mem(LIG_TRICK, mem(p + 1)); /* = lig_char(p) */
                 LLIST_link(LIG_TRICK) = LLIST_link(p);
                 p = LIG_TRICK;
                 xtx_ligature_present = true;
@@ -1135,7 +1130,7 @@ vlist_out(void)
     if (cur_s > max_push)
         max_push = cur_s;
 
-    save_loc = dvi_offset + dvi_ptr;
+    save_loc = dvi_offset() + dvi_ptr();
     left_edge = cur_h;
     synctex_vlist(this_box);
 
@@ -1360,7 +1355,7 @@ vlist_out(void)
                             lq = rule_ht / leader_ht;
                             lr = rule_ht % leader_ht;
 
-                            if (mem[p].b16.s0 == C_LEADERS)
+                            if (mem(p).b16.s0 == C_LEADERS)
                                 cur_v = cur_v + (lr / 2);
                             else {
                                 lx = lr / (lq + 1);
@@ -1583,8 +1578,8 @@ reverse(int32_t this_box, int32_t t, scaled_t *cur_g, double *cur_glue)
 
                     rule_wd += *cur_g;
 
-                    if ((g_sign == STRETCHING && mem[g].b16.s1 == g_order)
-                         || (g_sign == SHRINKING && mem[g].b16.s0 == g_order)) {
+                    if ((g_sign == STRETCHING && mem(g).b16.s1 == g_order)
+                         || (g_sign == SHRINKING && mem(g).b16.s0 == g_order)) {
                         if (GLUE_SPEC_ref_count(g) == TEX_NULL)
                             free_node(g, GLUE_SPEC_SIZE);
                         else
@@ -1609,7 +1604,7 @@ reverse(int32_t this_box, int32_t t, scaled_t *cur_g, double *cur_glue)
                     flush_node_list(LIGATURE_NODE_lig_ptr(p));
                     temp_ptr = p;
                     p = get_avail();
-                    mem[p] = mem[temp_ptr + 1]; /* = mem[lig_char(temp_ptr)] */
+                    set_mem(p, mem(temp_ptr + 1)); /* = mem(lig_char(temp_ptr)) */
                     LLIST_link(p) = q;
                     free_node(temp_ptr, SMALL_NODE_SIZE);
                     goto reswitch;
@@ -1724,23 +1719,23 @@ out_what(int32_t p)
     small_number j;
     unsigned char old_setting;
 
-    switch (mem[p].b16.s0) {
+    switch (mem(p).b16.s0) {
     case OPEN_NODE:
     case WRITE_NODE:
     case CLOSE_NODE:
         if (doing_leaders)
             break;
 
-        j = mem[p + 1].b32.s0;
-        if (mem[p].b16.s0 == WRITE_NODE) {
+        j = mem(p + 1).b32.s0;
+        if (mem(p).b16.s0 == WRITE_NODE) {
             write_out(p);
             break;
         }
 
         if (write_open[j])
-            ttstub_output_close(write_file[j]);
+            ttstub_output_close(write_file(j));
 
-        if (mem[p].b16.s0 == CLOSE_NODE) {
+        if (mem(p).b16.s0 == CLOSE_NODE) {
             write_open[j] = false;
             break;
         }
@@ -1750,34 +1745,34 @@ out_what(int32_t p)
         if (j >= 16)
             break;
 
-        cur_name = mem[p + 1].b32.s1;
-        cur_area = mem[p + 2].b32.s0;
-        cur_ext = mem[p + 2].b32.s1;
-        if (length(cur_ext) == 0)
-            cur_ext = maketexstring(".tex");
+        set_cur_name(mem(p + 1).b32.s1);
+        set_cur_area(mem(p + 2).b32.s0);
+        set_cur_ext(mem(p + 2).b32.s1);
+        if (length(cur_ext()) == 0)
+            set_cur_ext(maketexstring(".tex"));
 
-        pack_file_name(cur_name, cur_area, cur_ext);
+        pack_file_name(cur_name(), cur_area(), cur_ext());
 
-        write_file[j] = ttstub_output_open(name_of_file, 0);
-        if (write_file[j] == INVALID_HANDLE)
-            _tt_abort("cannot open output file \"%s\"", name_of_file);
+        set_write_file(j, ttstub_output_open(name_of_file(), 0));
+        if (write_file(j) == INVALID_HANDLE)
+            _tt_abort("cannot open output file \"%s\"", name_of_file());
 
         write_open[j] = true;
 
-        if (log_opened) {
-            old_setting = selector;
+        if (log_opened()) {
+            old_setting = selector();
             if (INTPAR(tracing_online) <= 0)
-                selector = SELECTOR_LOG_ONLY;
+                set_selector(SELECTOR_LOG_ONLY);
             else
-                selector = SELECTOR_TERM_AND_LOG;
+                set_selector(SELECTOR_TERM_AND_LOG);
             print_nl_cstr("\\openout");
             print_int(j);
             print_cstr(" = `");
-            print_file_name(cur_name, cur_area, cur_ext);
+            print_file_name(cur_name(), cur_area(), cur_ext());
             print_cstr("'.");
             print_nl_cstr("");
             print_ln();
-            selector = old_setting;
+            set_selector(old_setting);
         }
         break;
 
@@ -1835,12 +1830,12 @@ dvi_font_def(internal_font_number f)
         dvi_four(font_dsize[f]);
         dvi_out(length(font_area[f]));
         l = 0;
-        k = str_start[(font_name[f]) - 65536L];
+        k = str_start((font_name[f]) - 65536L);
 
-        while ((l == 0) && (k < str_start[(font_name[f] + 1) - 65536L])) {
+        while ((l == 0) && (k < str_start((font_name[f] + 1) - 65536L))) {
 
-            if (str_pool[k] == ':' )
-                l = k - str_start[(font_name[f]) - 65536L];
+            if (str_pool(k) == ':' )
+                l = k - str_start((font_name[f]) - 65536L);
             k++;
         }
 
@@ -1851,22 +1846,22 @@ dvi_font_def(internal_font_number f)
 
         {
             register int32_t for_end;
-            k = str_start[(font_area[f]) - 65536L];
-            for_end = str_start[(font_area[f] + 1) - 65536L] - 1;
+            k = str_start((font_area[f]) - 65536L);
+            for_end = str_start((font_area[f] + 1) - 65536L) - 1;
             if (k <= for_end)
                 do {
-                    dvi_out(str_pool[k]);
+                    dvi_out(str_pool(k));
                 }
                 while (k++ < for_end);
         }
 
         {
             register int32_t for_end;
-            k = str_start[(font_name[f]) - 65536L];
-            for_end = str_start[(font_name[f]) - 65536L] + l - 1;
+            k = str_start((font_name[f]) - 65536L);
+            for_end = str_start((font_name[f]) - 65536L) + l - 1;
             if (k <= for_end)
                 do {
-                    dvi_out(str_pool[k]);
+                    dvi_out(str_pool(k));
                 }
                 while (k++ < for_end);
         }
@@ -1882,35 +1877,35 @@ movement(scaled_t w, eight_bits o)
     int32_t k;
 
     q = get_node(MOVEMENT_NODE_SIZE);
-    mem[q + 1].b32.s1 = w;
-    mem[q + 2].b32.s1 = dvi_offset + dvi_ptr;
+    mem_ptr(q + 1)->b32.s1 = w;
+    mem_ptr(q + 2)->b32.s1 = dvi_offset() + dvi_ptr();
 
     if (o == DOWN1) {
-        mem[q].b32.s1 = down_ptr;
+        mem_ptr(q)->b32.s1 = down_ptr;
         down_ptr = q;
     } else {
-        mem[q].b32.s1 = right_ptr;
+        mem_ptr(q)->b32.s1 = right_ptr;
         right_ptr = q;
     }
 
-    p = mem[q].b32.s1;
+    p = mem(q).b32.s1;
     mstate = MOV_NONE_SEEN;
 
     while (p != TEX_NULL) {
-        if (mem[p + 1].b32.s1 == w) { /*632:*/
-            switch (mstate + mem[p].b32.s0) {
+        if (mem(p + 1).b32.s1 == w) { /*632:*/
+            switch (mstate + mem(p).b32.s0) {
             case (MOV_NONE_SEEN + MOV_YZ_OK):
             case (MOV_NONE_SEEN + MOV_Y_OK):
             case (MOV_Z_SEEN + MOV_YZ_OK):
             case (MOV_Z_SEEN + MOV_Y_OK):
-                if (mem[p + 2].b32.s1 < dvi_gone) {
+                if (mem(p + 2).b32.s1 < dvi_gone()) {
                     goto not_found;
                 } else { /*633:*/
-                    k = mem[p + 2].b32.s1 - dvi_offset;
+                    k = mem(p + 2).b32.s1 - dvi_offset();
                     if (k < 0)
                         k = k + DVI_BUF_SIZE;
-                    dvi_buf[k] = dvi_buf[k] + 5;
-                    mem[p].b32.s0 = MOV_Y_HERE;
+                    set_dvi_buf(k, dvi_buf(k) + 5);
+                    mem_ptr(p)->b32.s0 = MOV_Y_HERE;
                     goto found;
                 }
                 break;
@@ -1918,14 +1913,14 @@ movement(scaled_t w, eight_bits o)
             case (MOV_NONE_SEEN + MOV_Z_OK):
             case (MOV_Y_SEEN + MOV_YZ_OK):
             case (MOV_Y_SEEN + MOV_Z_OK):
-                if (mem[p + 2].b32.s1 < dvi_gone) {
+                if (mem(p + 2).b32.s1 < dvi_gone()) {
                     goto not_found;
                 } else { /*634:*/
-                    k = mem[p + 2].b32.s1 - dvi_offset;
+                    k = mem(p + 2).b32.s1 - dvi_offset();
                     if (k < 0)
                         k = k + DVI_BUF_SIZE;
-                    dvi_buf[k] = dvi_buf[k] + 10;
-                    mem[p].b32.s0 = MOV_Z_HERE;
+                    set_dvi_buf(k, dvi_buf(k) + 10);
+                    mem_ptr(p)->b32.s0 = MOV_Z_HERE;
                     goto found;
                 }
                 break;
@@ -1941,7 +1936,7 @@ movement(scaled_t w, eight_bits o)
                 break;
             }
         } else {
-            switch (mstate + mem[p].b32.s0) {
+            switch (mstate + mem(p).b32.s0) {
             case (MOV_NONE_SEEN + MOV_Y_HERE):
                 mstate = MOV_Y_SEEN;
                 break;
@@ -1961,7 +1956,7 @@ movement(scaled_t w, eight_bits o)
     }
 
 not_found:
-    mem[q].b32.s0 = MOV_YZ_OK;
+    mem_ptr(q)->b32.s0 = MOV_YZ_OK;
 
     if (abs(w) >= 0x800000) {
         dvi_out(o + 3);
@@ -2003,35 +1998,35 @@ lab1:
     return;
 
 found: /*629:*/
-    mem[q].b32.s0 = mem[p].b32.s0;
+    mem_ptr(q)->b32.s0 = mem(p).b32.s0;
 
-    if (mem[q].b32.s0 == MOV_Y_HERE) {
+    if (mem(q).b32.s0 == MOV_Y_HERE) {
         dvi_out(o + 4);
 
-        while (mem[q].b32.s1 != p) {
+        while (mem(q).b32.s1 != p) {
             q = LLIST_link(q);
 
-            switch (mem[q].b32.s0) {
+            switch (mem(q).b32.s0) {
             case MOV_YZ_OK:
-                mem[q].b32.s0 = MOV_Z_OK;
+                mem_ptr(q)->b32.s0 = MOV_Z_OK;
                 break;
             case MOV_Y_OK:
-                mem[q].b32.s0 = MOV_D_FIXED;
+                mem_ptr(q)->b32.s0 = MOV_D_FIXED;
                 break;
             }
         }
     } else {
         dvi_out(o + 9);
 
-        while (mem[q].b32.s1 != p) {
+        while (mem(q).b32.s1 != p) {
             q = LLIST_link(q);
 
-            switch (mem[q].b32.s0) {
+            switch (mem(q).b32.s0) {
             case MOV_YZ_OK:
-                mem[q].b32.s0 = MOV_Y_OK;
+                mem_ptr(q)->b32.s0 = MOV_Y_OK;
                 break;
             case MOV_Z_OK:
-                mem[q].b32.s0 = MOV_D_FIXED;
+                mem_ptr(q)->b32.s0 = MOV_D_FIXED;
                 break;
             }
         }
@@ -2045,19 +2040,19 @@ prune_movements(int32_t l)
     int32_t p;
 
     while (down_ptr != TEX_NULL) {
-        if (mem[down_ptr + 2].b32.s1 < l)
+        if (mem(down_ptr + 2).b32.s1 < l)
             break;
 
         p = down_ptr;
-        down_ptr = mem[p].b32.s1;
+        down_ptr = mem(p).b32.s1;
         free_node(p, MOVEMENT_NODE_SIZE);
     }
 
     while (right_ptr != TEX_NULL) {
-        if (mem[right_ptr + 2].b32.s1 < l)
+        if (mem(right_ptr + 2).b32.s1 < l)
             return;
         p = right_ptr;
-        right_ptr = mem[p].b32.s1;
+        right_ptr = mem(p).b32.s1;
         free_node(p, MOVEMENT_NODE_SIZE);
     }
 }
@@ -2077,14 +2072,14 @@ special_out(int32_t p)
         movement(cur_v - dvi_v, DOWN1);
         dvi_v = cur_v;
     }
-    doing_special = true;
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING ;
-    show_token_list(mem[mem[p + 1].b32.s1].b32.s1, TEX_NULL, pool_size - pool_ptr);
-    selector = old_setting;
+    set_doing_special(true);
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
+    show_token_list(mem(mem(p + 1).b32.s1).b32.s1, TEX_NULL, pool_size() - pool_ptr());
+    set_selector(old_setting);
 
-    if (pool_ptr + 1 > pool_size)
-        overflow("pool size", pool_size - init_pool_ptr);
+    if (pool_ptr() + 1 > pool_size())
+        overflow("pool size", pool_size() - init_pool_ptr);
 
     if (cur_length() < 256) {
         dvi_out(XXX1);
@@ -2096,16 +2091,16 @@ special_out(int32_t p)
 
     {
         register int32_t for_end;
-        k = str_start[str_ptr - TOO_BIG_CHAR];
-        for_end = pool_ptr - 1;
+        k = str_start(str_ptr() - TOO_BIG_CHAR);
+        for_end = pool_ptr() - 1;
         if (k <= for_end)
             do {
-                dvi_out(str_pool[k]);
+                dvi_out(str_pool(k));
             }
             while (k++ < for_end);
     }
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
-    doing_special = false;
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
+    set_doing_special(false);
 }
 
 
@@ -2119,14 +2114,14 @@ write_out(int32_t p)
     int32_t d;
 
     q = get_avail();
-    mem[q].b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
+    mem_ptr(q)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
     r = get_avail();
-    mem[q].b32.s1 = r;
-    mem[r].b32.s0 = CS_TOKEN_FLAG + END_WRITE;
+    mem_ptr(q)->b32.s1 = r;
+    mem_ptr(r)->b32.s0 = CS_TOKEN_FLAG + END_WRITE;
     begin_token_list(q, INSERTED);
-    begin_token_list(mem[p + 1].b32.s1, WRITE_TEXT);
+    begin_token_list(mem(p + 1).b32.s1, WRITE_TEXT);
     q = get_avail();
-    mem[q].b32.s0 = (LEFT_BRACE_TOKEN + '{' );
+    mem_ptr(q)->b32.s0 = (LEFT_BRACE_TOKEN + '{' );
     begin_token_list(q, INSERTED);
 
     old_mode = cur_list.mode;
@@ -2150,16 +2145,16 @@ write_out(int32_t p)
 
     cur_list.mode = old_mode;
     end_token_list();
-    old_setting = selector;
-    j = mem[p + 1].b32.s0;
+    old_setting = selector();
+    j = mem(p + 1).b32.s0;
 
     if (j == 18) {
-        selector = SELECTOR_NEW_STRING;
+        set_selector(SELECTOR_NEW_STRING);
     } else if (write_open[j]) {
-        selector = j;
+        set_selector(j);
     } else {
-        if (j == 17 && selector == SELECTOR_TERM_AND_LOG)
-            selector = SELECTOR_LOG_ONLY;
+        if (j == 17 && selector() == SELECTOR_TERM_AND_LOG)
+            set_selector(SELECTOR_LOG_ONLY);
         print_nl_cstr("");
     }
 
@@ -2169,12 +2164,12 @@ write_out(int32_t p)
 
     if (j == 18) {
         if (INTPAR(tracing_online) <= 0)
-            selector = SELECTOR_LOG_ONLY;
+            set_selector(SELECTOR_LOG_ONLY);
         else
-            selector = SELECTOR_TERM_AND_LOG;
+            set_selector(SELECTOR_TERM_AND_LOG);
 
-        if (!log_opened)
-            selector = SELECTOR_TERM_ONLY;
+        if (!log_opened())
+            set_selector(SELECTOR_TERM_ONLY);
 
         // Tectonic: don't emit warnings for shell-escape invocations when
         // enabled; we can provide a better UX inside the driver code.
@@ -2184,7 +2179,7 @@ write_out(int32_t p)
 
             print_nl_cstr("runsystem(");
             for (d = 0; d <= (cur_length()) - 1; d++)
-                print(str_pool[str_start[str_ptr - TOO_BIG_CHAR] + d]);
+                print(str_pool(str_start(str_ptr() - TOO_BIG_CHAR) + d));
 
             print_cstr(")...");
             print_cstr("disabled");
@@ -2193,14 +2188,14 @@ write_out(int32_t p)
             print_nl_cstr("");
             print_ln();
         } else {
-            ttstub_shell_escape(&str_pool[str_start[str_ptr - TOO_BIG_CHAR]], cur_length());
+            ttstub_shell_escape(str_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)), cur_length());
         }
 
         // Clear shell escape command
-        pool_ptr = str_start[str_ptr - TOO_BIG_CHAR];
+        set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 
-    selector = old_setting;
+    set_selector(old_setting);
 }
 
 
@@ -2221,27 +2216,27 @@ pic_out(int32_t p)
         dvi_v = cur_v;
     }
 
-    old_setting = selector;
-    selector = SELECTOR_NEW_STRING;
+    old_setting = selector();
+    set_selector(SELECTOR_NEW_STRING);
     print_cstr("pdf:image ");
     print_cstr("matrix ");
-    print_scaled(mem[p + 5].b32.s0);
+    print_scaled(mem(p + 5).b32.s0);
     print(' ');
-    print_scaled(mem[p + 5].b32.s1);
+    print_scaled(mem(p + 5).b32.s1);
     print(' ');
-    print_scaled(mem[p + 6].b32.s0);
+    print_scaled(mem(p + 6).b32.s0);
     print(' ');
-    print_scaled(mem[p + 6].b32.s1);
+    print_scaled(mem(p + 6).b32.s1);
     print(' ');
-    print_scaled(mem[p + 7].b32.s0);
+    print_scaled(mem(p + 7).b32.s0);
     print(' ');
-    print_scaled(mem[p + 7].b32.s1);
+    print_scaled(mem(p + 7).b32.s1);
     print(' ');
     print_cstr("page ");
-    print_int(mem[p + 4].b16.s0);
+    print_int(mem(p + 4).b16.s0);
     print(' ');
 
-    switch (mem[p + 8].b16.s1) {
+    switch (mem(p + 8).b16.s1) {
     case 1:
         print_cstr("pagebox cropbox ");
         break;
@@ -2266,7 +2261,7 @@ pic_out(int32_t p)
         print_raw_char(PIC_NODE_path(p)[i], true);
     print(')');
 
-    selector = old_setting;
+    set_selector(old_setting);
     if (cur_length() < 256) {
         dvi_out(XXX1);
         dvi_out(cur_length());
@@ -2275,10 +2270,10 @@ pic_out(int32_t p)
         dvi_four(cur_length());
     }
 
-    for (k = str_start[str_ptr - TOO_BIG_CHAR]; k < pool_ptr; k++)
-        dvi_out(str_pool[k]);
+    for (k = str_start(str_ptr() - TOO_BIG_CHAR); k < pool_ptr(); k++)
+        dvi_out(str_pool(k));
 
-    pool_ptr = str_start[str_ptr - TOO_BIG_CHAR]; /* discard the string we just made */
+    set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)); /* discard the string we just made */
 }
 
 
@@ -2309,7 +2304,7 @@ finalize_dvi_file(void)
 
     dvi_out(POST);
     dvi_four(last_bop);
-    last_bop = dvi_offset + dvi_ptr - 5;
+    last_bop = dvi_offset() + dvi_ptr() - 5;
     dvi_four(25400000L); /* magic values: conversion ratio for sp */
     dvi_four(473628672L); /* magic values: conversion ratio for sp */
     prepare_mag();
@@ -2335,25 +2330,25 @@ finalize_dvi_file(void)
     else
         dvi_out(XDV_ID_BYTE);
 
-    k = 4 + (DVI_BUF_SIZE - dvi_ptr) % 4;
+    k = 4 + (DVI_BUF_SIZE - dvi_ptr()) % 4;
 
     while (k > 0) {
         dvi_out(223);
         k--;
     }
 
-    if (dvi_limit == HALF_BUF)
+    if (dvi_limit() == HALF_BUF)
         write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
 
-    if (dvi_ptr > TEX_INFINITY - dvi_offset) {
+    if (dvi_ptr() > TEX_INFINITY - dvi_offset()) {
         cur_s = -2;
         fatal_error("dvi length exceeds 0x7FFFFFFF");
     }
 
-    if (dvi_ptr > 0)
-        write_to_dvi(0, dvi_ptr - 1);
+    if (dvi_ptr() > 0)
+        write_to_dvi(0, dvi_ptr() - 1);
 
-    k = ttstub_output_close(dvi_file);
+    k = ttstub_output_close(dvi_file());
 
     if (k == 0) {
         print_nl_cstr("Output written on ");
@@ -2365,7 +2360,7 @@ finalize_dvi_file(void)
         else
             print_cstr(" page");
         print_cstr(", ");
-        print_int(dvi_offset + dvi_ptr);
+        print_int(dvi_offset() + dvi_ptr());
         print_cstr(" bytes).");
     } else {
         print_nl_cstr("Error ");
@@ -2386,7 +2381,7 @@ write_to_dvi(int32_t a, int32_t b)
 {
     int32_t n = b - a + 1;
 
-    if (ttstub_output_write (dvi_file, (char *) &dvi_buf[a], n) != n)
+    if (ttstub_output_write (dvi_file(), (char *) dvi_buf_ptr(a), n) != n)
         _tt_abort ("failed to write data to XDV file");
 }
 
@@ -2394,22 +2389,22 @@ write_to_dvi(int32_t a, int32_t b)
 static void
 dvi_swap(void)
 {
-    if (dvi_ptr > (TEX_INFINITY - dvi_offset)) {
+    if (dvi_ptr() > (TEX_INFINITY - dvi_offset())) {
         cur_s = -2;
         fatal_error("dvi length exceeds 0x7FFFFFFF");
     }
 
-    if (dvi_limit == DVI_BUF_SIZE) {
+    if (dvi_limit() == DVI_BUF_SIZE) {
         write_to_dvi(0, HALF_BUF - 1);
-        dvi_limit = HALF_BUF;
-        dvi_offset = dvi_offset + DVI_BUF_SIZE;
-        dvi_ptr = 0;
+        set_dvi_limit(HALF_BUF);
+        set_dvi_offset(dvi_offset() + DVI_BUF_SIZE);
+        set_dvi_ptr(0);
     } else {
         write_to_dvi(HALF_BUF, DVI_BUF_SIZE - 1);
-        dvi_limit = DVI_BUF_SIZE;
+        set_dvi_limit(DVI_BUF_SIZE);
     }
 
-    dvi_gone = dvi_gone + HALF_BUF;
+    set_dvi_gone(dvi_gone() + HALF_BUF);
 }
 
 
@@ -2444,8 +2439,9 @@ dvi_two(UTF16_code s)
 static void
 dvi_pop(int32_t l)
 {
-    if (l == dvi_offset + dvi_ptr && dvi_ptr > 0)
-        dvi_ptr--;
-    else
+    if (l == dvi_offset() + dvi_ptr() && dvi_ptr() > 0) {
+        set_dvi_ptr(dvi_ptr()-1);
+    } else {
         dvi_out(POP);
+    }
 }

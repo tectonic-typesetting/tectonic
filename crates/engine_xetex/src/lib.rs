@@ -1,6 +1,8 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(clippy::undocumented_unsafe_blocks)]
+
 //! The [XeTeX] program as a reusable crate.
 //!
 //! [XeTeX]: http://www.xetex.org/
@@ -21,6 +23,8 @@
 use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
+
+mod ty;
 
 /// A serial number describing the detailed binary layout of the TeX "format
 /// files" used by this crate. This number will occasionally increment,
@@ -231,6 +235,21 @@ pub mod c_api {
     // If you change the interfaces here, rerun cbindgen as described in the README!
 
     use tectonic_bridge_core::CoreBridgeState;
+
+    mod dvi;
+    mod engine;
+    mod errors;
+    mod globals;
+    mod hash;
+    mod inputs;
+    mod output;
+    mod pool;
+    mod scaled_math;
+
+    /// Copy of `IS_DIR_SEP` from bridge_core
+    fn is_dir_sep(c: char) -> bool {
+        c == '/'
+    }
 
     #[allow(improper_ctypes)] // for CoreBridgeState
     extern "C" {

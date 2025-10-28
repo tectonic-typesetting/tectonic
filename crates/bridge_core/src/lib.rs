@@ -746,6 +746,12 @@ impl<'a> CoreBridgeState<'a> {
             true
         }
     }
+
+    /// Finish and emit a diagnostic
+    pub fn finish_diagnostic(&mut self, diag: Diagnostic) {
+        self.status
+            .report(diag.kind, format_args!("{}", diag.message), None);
+    }
 }
 
 /// A type for storing settings about potentially insecure engine features.
@@ -1250,23 +1256,45 @@ pub struct Diagnostic {
     kind: MessageKind,
 }
 
+impl Diagnostic {
+    /// Create a new diagnostic that will be reported as an error.
+    pub fn error() -> Diagnostic {
+        Diagnostic {
+            message: String::new(),
+            kind: MessageKind::Error,
+        }
+    }
+
+    /// Create a new diagnostic that will be reported as a warning.
+    pub fn warning() -> Diagnostic {
+        Diagnostic {
+            message: String::new(),
+            kind: MessageKind::Warning,
+        }
+    }
+
+    /// Append text to a diagnostic.
+    pub fn append(&mut self, msg: impl AsRef<str>) {
+        self.message.push_str(msg.as_ref());
+    }
+
+    /// Append a single character to a diagnostic
+    pub fn append_char(&mut self, c: char) {
+        self.message.push(c);
+    }
+}
+
 /// Create a new diagnostic that will be reported as a warning.
 #[no_mangle]
 pub extern "C" fn ttbc_diag_begin_warning() -> *mut Diagnostic {
-    let warning = Box::new(Diagnostic {
-        message: String::new(),
-        kind: MessageKind::Warning,
-    });
+    let warning = Box::new(Diagnostic::error());
     Box::into_raw(warning)
 }
 
 /// Create a new diagnostic that will be reported as an error.
 #[no_mangle]
 pub extern "C" fn ttbc_diag_begin_error() -> *mut Diagnostic {
-    let warning = Box::new(Diagnostic {
-        message: String::new(),
-        kind: MessageKind::Error,
-    });
+    let warning = Box::new(Diagnostic::error());
     Box::into_raw(warning)
 }
 
@@ -1278,7 +1306,7 @@ pub extern "C" fn ttbc_diag_begin_error() -> *mut Diagnostic {
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
-    diag.message.push_str(&rtext.to_string_lossy());
+    diag.append(rtext.to_string_lossy());
 }
 
 /// "Finish" a diagnostic: report it to the driver and free the diagnostic object.
@@ -1290,8 +1318,7 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 pub unsafe extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
     let rdiag = Box::from_raw(diag);
-    es.status
-        .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+    es.finish_diagnostic(*rdiag);
 }
 
 /// Run a shell command

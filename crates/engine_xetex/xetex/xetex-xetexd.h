@@ -11,6 +11,7 @@
 #include "teckit-Common.h"
 #include "xetex-ext.h"
 #include "tectonic_bridge_core.h"
+#include "xetex_bindings.h"
 
 /* xetex_format.h needs this: */
 typedef unsigned char eight_bits;
@@ -84,24 +85,28 @@ typedef unsigned char four_choices;
  *
  */
 
-#ifdef WORDS_BIGENDIAN
+//#ifdef WORDS_BIGENDIAN
+//
+//typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
+//typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
+//
+//#else
+//
+//typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
+//typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
+//
+//#endif /*WORDS_BIGENDIAN*/
 
-typedef struct b32x2_be_t { int32_t s1, s0; } b32x2;
-typedef struct b16x4_be_t { uint16_t s3, s2, s1, s0; } b16x4;
+typedef B16x4 b16x4;
+typedef B32x2 b32x2;
+typedef MemoryWord memory_word;
 
-#else
-
-typedef struct b32x2_le_t { int32_t s0, s1; } b32x2;
-typedef struct b16x4_le_t { uint16_t s0, s1, s2, s3; } b16x4;
-
-#endif /*WORDS_BIGENDIAN*/
-
-typedef union {
-    b32x2 b32;
-    b16x4 b16;
-    double gr;
-    void *ptr;
-} memory_word;
+//typedef union {
+//    b32x2 b32;
+//    b16x4 b16;
+//    double gr;
+//    void *ptr;
+//} memory_word;
 
 /* ## THE ORIGINAL SITUATION (archived for posterity)
  *
@@ -201,104 +206,104 @@ typedef union {
  * this conversion besides painstakingly annotating things.
  */
 
-#define LLIST_link(p) mem[p].b32.s1
-#define LLIST_info(p) mem[p].b32.s0
+#define LLIST_link(p) mem_ptr(p)->b32.s1
+#define LLIST_info(p) mem_ptr(p)->b32.s0
 
-#define NODE_type(p) mem[p].b16.s1 /* half of LLIST_info(p) */
-#define NODE_subtype(p) mem[p].b16.s0 /* the other half of LLIST_info(p) */
+#define NODE_type(p) mem_ptr(p)->b16.s1 /* half of LLIST_info(p) */
+#define NODE_subtype(p) mem_ptr(p)->b16.s0 /* the other half of LLIST_info(p) */
 
-#define BOX_lr_mode(p) mem[p].b16.s0 /* subtype; records L/R direction mode */
-#define BOX_width(p) mem[(p) + 1].b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
-#define BOX_depth(p) mem[(p) + 2].b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
-#define BOX_height(p) mem[(p) + 3].b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
-#define BOX_shift_amount(p) mem[(p) + 4].b32.s1 /* a scaled */
-#define BOX_list_ptr(p) mem[(p) + 5].b32.s1 /* aka `link` of p+5 */
-#define BOX_glue_sign(p) mem[(p) + 5].b16.s1 /* aka `type` of p+5 */
-#define BOX_glue_order(p) mem[(p) + 5].b16.s0 /* aka `subtype` of p+5 */
-#define BOX_glue_set(p) mem[(p) + 6].gr /* the glue ratio */
+#define BOX_lr_mode(p) mem_ptr(p)->b16.s0 /* subtype; records L/R direction mode */
+#define BOX_width(p) mem_ptr((p) + 1)->b32.s1 /* a scaled; 1 <=> WEB const `width_offset` */
+#define BOX_depth(p) mem_ptr((p) + 2)->b32.s1 /* a scaled; 2 <=> WEB const `depth_offset` */
+#define BOX_height(p) mem_ptr((p) + 3)->b32.s1 /* a scaled; 3 <=> WEB const `height_offset` */
+#define BOX_shift_amount(p) mem_ptr((p) + 4)->b32.s1 /* a scaled */
+#define BOX_list_ptr(p) mem_ptr((p) + 5)->b32.s1 /* aka `link` of p+5 */
+#define BOX_glue_sign(p) mem_ptr((p) + 5)->b16.s1 /* aka `type` of p+5 */
+#define BOX_glue_order(p) mem_ptr((p) + 5)->b16.s0 /* aka `subtype` of p+5 */
+#define BOX_glue_set(p) mem_ptr((p) + 6)->gr /* the glue ratio */
 
-#define ACTIVE_NODE_fitness(p) mem[p].b16.s0 /* aka "subtype" of a node */
-#define ACTIVE_NODE_break_node(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
-#define ACTIVE_NODE_line_number(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
-#define ACTIVE_NODE_total_demerits(p) mem[(p) + 2].b32.s1 /* was originally the `mem[x+2].int` field */
-#define ACTIVE_NODE_shortfall(p) mem[(p) + 3].b32.s1 /* a scaled; "active_short" in the WEB */
-#define ACTIVE_NODE_glue(p) mem[(p) + 4].b32.s1 /* a scaled */
+#define ACTIVE_NODE_fitness(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
+#define ACTIVE_NODE_break_node(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
+#define ACTIVE_NODE_line_number(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
+#define ACTIVE_NODE_total_demerits(p) mem_ptr((p) + 2)->b32.s1 /* was originally the `mem(x+2).int` field */
+#define ACTIVE_NODE_shortfall(p) mem_ptr((p) + 3)->b32.s1 /* a scaled; "active_short" in the WEB */
+#define ACTIVE_NODE_glue(p) mem_ptr((p) + 4)->b32.s1 /* a scaled */
 
-#define CHAR_NODE_font(p) mem[p].b16.s1 /* aka "type" of a node */
-#define CHAR_NODE_character(p) mem[p].b16.s0 /* aka "subtype" of a node */
+#define CHAR_NODE_font(p) mem_ptr(p)->b16.s1 /* aka "type" of a node */
+#define CHAR_NODE_character(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
 
-#define DELTA_NODE_dwidth(p) mem[(p) + 1].b32.s1 /* the "natural width" difference */
-#define DELTA_NODE_dstretch0(p) mem[(p) + 2].b32.s1 /* the stretch difference in points */
-#define DELTA_NODE_dstretch1(p) mem[(p) + 3].b32.s1 /* the stretch difference in fil */
-#define DELTA_NODE_dstretch2(p) mem[(p) + 4].b32.s1 /* the stretch difference in fill */
-#define DELTA_NODE_dstretch3(p) mem[(p) + 5].b32.s1 /* the stretch difference in fill */
-#define DELTA_NODE_dshrink(p) mem[(p) + 6].b32.s1 /* the shrink difference */
+#define DELTA_NODE_dwidth(p) mem_ptr((p) + 1)->b32.s1 /* the "natural width" difference */
+#define DELTA_NODE_dstretch0(p) mem_ptr((p) + 2)->b32.s1 /* the stretch difference in points */
+#define DELTA_NODE_dstretch1(p) mem_ptr((p) + 3)->b32.s1 /* the stretch difference in fil */
+#define DELTA_NODE_dstretch2(p) mem_ptr((p) + 4)->b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dstretch3(p) mem_ptr((p) + 5)->b32.s1 /* the stretch difference in fill */
+#define DELTA_NODE_dshrink(p) mem_ptr((p) + 6)->b32.s1 /* the shrink difference */
 
-#define DISCRETIONARY_NODE_replace_count(p) mem[p].b16.s0 /* aka "subtype" of a node */
-#define DISCRETIONARY_NODE_pre_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
-#define DISCRETIONARY_NODE_post_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+#define DISCRETIONARY_NODE_replace_count(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
+#define DISCRETIONARY_NODE_pre_break(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
+#define DISCRETIONARY_NODE_post_break(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
 
-#define EDGE_NODE_edge_dist(p) mem[(p) + 2].b32.s1 /* "new left_edge position relative to cur_h" */
+#define EDGE_NODE_edge_dist(p) mem_ptr((p) + 2)->b32.s1 /* "new left_edge position relative to cur_h" */
 
-#define GLUE_NODE_glue_ptr(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
-#define GLUE_NODE_leader_ptr(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
+#define GLUE_NODE_glue_ptr(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
+#define GLUE_NODE_leader_ptr(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
 
-#define INSERTION_NODE_float_cost(p) mem[(p) + 1].b32.s1 /* "the floating_penalty to be used" */
-#define INSERTION_NODE_split_top_ptr(p) mem[(p) + 4].b32.s1 /* a glue pointer */
-#define INSERTION_NODE_ins_ptr(p) mem[(p) + 4].b32.s0 /* a pointer to a vlist */
+#define INSERTION_NODE_float_cost(p) mem_ptr((p) + 1)->b32.s1 /* "the floating_penalty to be used" */
+#define INSERTION_NODE_split_top_ptr(p) mem_ptr((p) + 4)->b32.s1 /* a glue pointer */
+#define INSERTION_NODE_ins_ptr(p) mem_ptr((p) + 4)->b32.s0 /* a pointer to a vlist */
 
-#define LANGUAGE_NODE_what_lang(p) mem[(p) + 1].b32.s1 /* language number, 0..255 */
-#define LANGUAGE_NODE_what_lhm(p) mem[(p) + 1].b16.s1 /* "minimum left fragment, range 1..63" */
-#define LANGUAGE_NODE_what_rhm(p) mem[(p) + 1].b16.s0 /* "minimum right fragment, range 1..63" */
+#define LANGUAGE_NODE_what_lang(p) mem_ptr((p) + 1)->b32.s1 /* language number, 0..255 */
+#define LANGUAGE_NODE_what_lhm(p) mem_ptr((p) + 1)->b16.s1 /* "minimum left fragment, range 1..63" */
+#define LANGUAGE_NODE_what_rhm(p) mem_ptr((p) + 1)->b16.s0 /* "minimum right fragment, range 1..63" */
 
-#define LIGATURE_NODE_lig_font(p) mem[(p) + 1].b16.s1 /* WEB: font(lig_char(p)) */
-#define LIGATURE_NODE_lig_char(p) mem[(p) + 1].b16.s0 /* WEB: character(lig_char(p)) */
-#define LIGATURE_NODE_lig_ptr(p) mem[(p) + 1].b32.s1 /* WEB: link(lig_char(p)) */
+#define LIGATURE_NODE_lig_font(p) mem_ptr((p) + 1)->b16.s1 /* WEB: font(lig_char(p)) */
+#define LIGATURE_NODE_lig_char(p) mem_ptr((p) + 1)->b16.s0 /* WEB: character(lig_char(p)) */
+#define LIGATURE_NODE_lig_ptr(p) mem_ptr((p) + 1)->b32.s1 /* WEB: link(lig_char(p)) */
 
-#define MARK_NODE_ptr(p) mem[(p) + 1].b32.s1 /* "head of the token list for the mark" */
-#define MARK_NODE_class(p) mem[(p) + 1].b32.s0 /* "the mark class" */
+#define MARK_NODE_ptr(p) mem_ptr((p) + 1)->b32.s1 /* "head of the token list for the mark" */
+#define MARK_NODE_class(p) mem_ptr((p) + 1)->b32.s0 /* "the mark class" */
 
 /* To check: do these really only apply to MATH_NODEs? */
 #define MATH_NODE_lr_dir(p) (NODE_subtype(p) / R_CODE)
 #define MATH_NODE_end_lr_type(p) (L_CODE * (NODE_subtype(p) / L_CODE) + END_M_CODE)
 
-#define NATIVE_NODE_size(p) mem[(p) + 4].b16.s3
-#define NATIVE_NODE_font(p) mem[(p) + 4].b16.s2
-#define NATIVE_NODE_length(p) mem[(p) + 4].b16.s1 /* number of UTF16 items in the text */
-#define NATIVE_NODE_glyph(p) mem[(p) + 4].b16.s1 /* ... or the glyph number, if subtype==GLYPH_NODE */
-#define NATIVE_NODE_glyph_count(p) mem[(p) + 4].b16.s0
-#define NATIVE_NODE_glyph_info_ptr(p) mem[(p) + 5].ptr
-#define NATIVE_NODE_text(p) ((unsigned short *) &mem[(p) + NATIVE_NODE_SIZE])
+#define NATIVE_NODE_size(p) mem_ptr((p) + 4)->b16.s3
+#define NATIVE_NODE_font(p) mem_ptr((p) + 4)->b16.s2
+#define NATIVE_NODE_length(p) mem_ptr((p) + 4)->b16.s1 /* number of UTF16 items in the text */
+#define NATIVE_NODE_glyph(p) mem_ptr((p) + 4)->b16.s1 /* ... or the glyph number, if subtype==GLYPH_NODE */
+#define NATIVE_NODE_glyph_count(p) mem_ptr((p) + 4)->b16.s0
+#define NATIVE_NODE_glyph_info_ptr(p) mem_ptr((p) + 5)->ptr
+#define NATIVE_NODE_text(p) ((unsigned short *) mem_ptr((p) + NATIVE_NODE_SIZE))
 
-#define PAGE_INS_NODE_broken_ptr(p) mem[(p) + 1].b32.s1 /* "an insertion for this class will break here if anywhere" */
-#define PAGE_INS_NODE_broken_ins(p) mem[(p) + 1].b32.s0 /* "this insertion might break at broken_ptr" */
-#define PAGE_INS_NODE_last_ins_ptr(p) mem[(p) + 2].b32.s1 /* "the most recent insertion for this subtype" */
-#define PAGE_INS_NODE_best_ins_ptr(p) mem[(p) + 2].b32.s0 /* "the optimum most recent insertion" */
+#define PAGE_INS_NODE_broken_ptr(p) mem_ptr((p) + 1)->b32.s1 /* "an insertion for this class will break here if anywhere" */
+#define PAGE_INS_NODE_broken_ins(p) mem_ptr((p) + 1)->b32.s0 /* "this insertion might break at broken_ptr" */
+#define PAGE_INS_NODE_last_ins_ptr(p) mem_ptr((p) + 2)->b32.s1 /* "the most recent insertion for this subtype" */
+#define PAGE_INS_NODE_best_ins_ptr(p) mem_ptr((p) + 2)->b32.s0 /* "the optimum most recent insertion" */
 
-#define PASSIVE_NODE_prev_break(p) mem[(p) + 1].b32.s0 /* aka "llink" in doubly-linked list */
+#define PASSIVE_NODE_prev_break(p) mem_ptr((p) + 1)->b32.s0 /* aka "llink" in doubly-linked list */
 #define PASSIVE_NODE_next_break(p) PASSIVE_NODE_prev_break(p) /* siggggghhhhh */
-#define PASSIVE_NODE_cur_break(p) mem[(p) + 1].b32.s1 /* aka "rlink" in double-linked list */
-#define PASSIVE_NODE_serial(p) mem[p].b32.s0 /* aka "info" */
+#define PASSIVE_NODE_cur_break(p) mem_ptr((p) + 1)->b32.s1 /* aka "rlink" in double-linked list */
+#define PASSIVE_NODE_serial(p) mem_ptr(p)->b32.s0 /* aka "info" */
 
-#define PENALTY_NODE_penalty(p) mem[(p) + 1].b32.s1 /* was originally the `mem[x+1].int` field */
+#define PENALTY_NODE_penalty(p) mem_ptr((p) + 1)->b32.s1 /* was originally the `mem(x+1).int` field */
 
-#define PIC_NODE_path_len(p) mem[(p) + 4].b16.s1 /* number of bytes in the path item */
-#define PIC_NODE_path(p) ((unsigned char *) &mem[(p) + PIC_NODE_SIZE])
+#define PIC_NODE_path_len(p) mem_ptr((p) + 4)->b16.s1 /* number of bytes in the path item */
+#define PIC_NODE_path(p) ((unsigned char *) mem_ptr((p) + PIC_NODE_SIZE))
 #define PIC_NODE_total_size(p) (PIC_NODE_SIZE + (PIC_NODE_path_len(p) + sizeof(memory_word) - 1) / sizeof(memory_word))
 
-#define WRITE_NODE_tokens(p) mem[(p) + 1].b32.s1 /* "reference count of token list to write" */
+#define WRITE_NODE_tokens(p) mem_ptr((p) + 1)->b32.s1 /* "reference count of token list to write" */
 
 /* Synctex hacks various nodes to add an extra word at the end to store its
  * information, hence the need to know the node size to get the synctex
  * info. */
-#define SYNCTEX_tag(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s0
-#define SYNCTEX_line(p, nodesize) mem[(p) + nodesize - SYNCTEX_FIELD_SIZE].b32.s1
+#define SYNCTEX_tag(p, nodesize) mem_ptr((p) + nodesize - SYNCTEX_FIELD_SIZE)->b32.s0
+#define SYNCTEX_line(p, nodesize) mem_ptr((p) + nodesize - SYNCTEX_FIELD_SIZE)->b32.s1
 
-#define GLUE_SPEC_ref_count(p) mem[p].b32.s1 /* aka "link" of a link-list node */
-#define GLUE_SPEC_stretch_order(p) mem[p].b16.s1 /* aka "type" of a node */
-#define GLUE_SPEC_shrink_order(p) mem[p].b16.s0 /* aka "subtype" of a node */
-#define GLUE_SPEC_stretch(p) mem[(p) + 2].b32.s1 /* a scaled */
-#define GLUE_SPEC_shrink(p) mem[(p) + 3].b32.s1 /* a scaled */
+#define GLUE_SPEC_ref_count(p) mem_ptr(p)->b32.s1 /* aka "link" of a link-list node */
+#define GLUE_SPEC_stretch_order(p) mem_ptr(p)->b16.s1 /* aka "type" of a node */
+#define GLUE_SPEC_shrink_order(p) mem_ptr(p)->b16.s0 /* aka "subtype" of a node */
+#define GLUE_SPEC_stretch(p) mem_ptr((p) + 2)->b32.s1 /* a scaled */
+#define GLUE_SPEC_shrink(p) mem_ptr((p) + 3)->b32.s1 /* a scaled */
 
 #define FONT_CHARACTER_INFO(f, c) font_info[char_base[f] + (c)].b16
 #define FONT_CHARINFO_WIDTH(f, info) font_info[width_base[f] + (info).s3].b32.s1
@@ -307,19 +312,19 @@ typedef union {
 #define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base[f] + (info).s1 / 4].b32.s1
 #define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
 
-#define TOKEN_LIST_ref_count(p) mem[p].b32.s0
+#define TOKEN_LIST_ref_count(p) mem_ptr(p)->b32.s0
 
 /* e-TeX sparse arrays for large-numebered registers, etc. */
-#define ETEX_SA_ref(p) mem[(p) + 1].b32.s0
-#define ETEX_SA_ptr(p) mem[(p) + 1].b32.s1
+#define ETEX_SA_ref(p) mem_ptr((p) + 1)->b32.s0
+#define ETEX_SA_ptr(p) mem_ptr((p) + 1)->b32.s1
 #define ETEX_SA_num(p) ETEX_SA_ptr(p)
 
 /* e-TeX extended marks stuff ... not sure where to put these */
-#define ETEX_MARK_sa_top_mark(p) mem[(p) + 1].b32.s0 /* \topmarks<n> */
-#define ETEX_MARK_sa_first_mark(p) mem[(p) + 1].b32.s1 /* \firstmarks<n> */
-#define ETEX_MARK_sa_bot_mark(p) mem[(p) + 2].b32.s0 /* \botmarks<n> */
-#define ETEX_MARK_sa_split_first_mark(p) mem[(p) + 2].b32.s1 /* \splitfirstmarks<n> */
-#define ETEX_MARK_sa_split_bot_mark(p) mem[(p) + 3].b32.s0 /* \splitbotmarks<n> */
+#define ETEX_MARK_sa_top_mark(p) mem_ptr((p) + 1)->b32.s0 /* \topmarks<n> */
+#define ETEX_MARK_sa_first_mark(p) mem_ptr((p) + 1)->b32.s1 /* \firstmarks<n> */
+#define ETEX_MARK_sa_bot_mark(p) mem_ptr((p) + 2)->b32.s0 /* \botmarks<n> */
+#define ETEX_MARK_sa_split_first_mark(p) mem_ptr((p) + 2)->b32.s1 /* \splitfirstmarks<n> */
+#define ETEX_MARK_sa_split_bot_mark(p) mem_ptr((p) + 3)->b32.s0 /* \splitbotmarks<n> */
 
 typedef unsigned char glue_ord; /* enum: normal .. filll */
 typedef unsigned char group_code;
@@ -340,16 +345,6 @@ typedef struct {
     int32_t mode_line; /* source line number at which this level was entered */
     memory_word aux; /* prev_depth or space_factor/clang or incompleat_noad */
 } list_state_record;
-
-typedef struct {
-    uint16_t state; /* tokenizer state: mid_line, skip_blanks, new_line */
-    uint16_t index; /* index of this level of input in input_file array */
-    int32_t start; /* position of beginning of current line in `buffer` */
-    int32_t loc; /* position of next character to read in `buffer` */
-    int32_t limit; /* position of end of line in `buffer` */
-    int32_t name; /* string number: name of current file or magic value for terminal, etc. */
-    int32_t synctex_tag;
-} input_state_t;
 
 typedef enum {
     HISTORY_SPOTLESS = 0,
@@ -383,24 +378,15 @@ void remember_source_info(str_number, int);
 
 /* All the following variables are defined in xetexini.c */
 extern bool shell_escape_enabled;
-extern memory_word *eqtb;
 extern int32_t bad;
-extern char *name_of_file;
-extern UTF16_code *name_of_file16;
-extern int32_t name_length;
-extern int32_t name_length16;
-extern UnicodeScalar *buffer;
 extern int32_t first;
 extern int32_t last;
 extern int32_t max_buf_stack;
 extern bool in_initex_mode;
-extern int32_t error_line;
 extern int32_t half_error_line;
 extern int32_t max_print_line;
-extern int32_t max_strings;
 extern int32_t strings_free;
 extern int32_t string_vacancies;
-extern int32_t pool_size;
 extern int32_t pool_free;
 extern int32_t font_mem_size;
 extern int32_t font_max;
@@ -413,51 +399,28 @@ extern int32_t param_size;
 extern int32_t nest_size;
 extern int32_t save_size;
 extern int32_t expand_depth;
-extern int file_line_error_style_p;
 extern int halt_on_error_p;
-extern bool quoted_filename;
 extern bool insert_src_special_auto;
 extern bool insert_src_special_every_par;
 extern bool insert_src_special_every_math;
 extern bool insert_src_special_every_vbox;
-extern packed_UTF16_code *str_pool;
-extern pool_pointer *str_start;
-extern pool_pointer pool_ptr;
-extern str_number str_ptr;
 extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
-extern rust_output_handle_t rust_stdout;
-extern rust_output_handle_t log_file;
-extern selector_t selector;
-extern unsigned char dig[23];
-extern int32_t tally;
-extern int32_t term_offset;
-extern int32_t file_offset;
-extern UTF16_code trick_buf[256];
-extern int32_t trick_count;
 extern int32_t first_count;
-extern bool doing_special;
 extern UTF16_code *native_text;
 extern int32_t native_text_size;
 extern int32_t native_len;
 extern int32_t save_native_len;
-extern unsigned char interaction;
 extern bool deletions_allowed;
 extern bool set_box_allowed;
-extern tt_history_t history;
 extern signed char error_count;
 extern const char* help_line[6];
 extern unsigned char help_ptr;
 extern bool use_err_help;
-extern bool arith_error;
-extern scaled_t tex_remainder;
-extern int32_t randoms[55];
-extern unsigned char j_random;
 extern scaled_t random_seed;
 extern int32_t two_to_the[31];
 extern int32_t spec_log[29];
 extern int32_t temp_ptr;
-extern memory_word *mem;
 extern int32_t lo_mem_max;
 extern int32_t hi_mem_min;
 extern int32_t var_used, dyn_used;
@@ -479,15 +442,9 @@ extern int32_t max_nest_stack;
 extern list_state_record cur_list;
 extern short shown_mode;
 extern unsigned char old_setting;
-extern b32x2 *hash;
-extern int32_t hash_used;
-extern int32_t hash_extra;
-extern int32_t hash_top;
-extern int32_t eqtb_top;
 extern int32_t hash_high;
 extern bool no_new_control_sequence;
 extern int32_t cs_count;
-extern b32x2 prim[PRIM_SIZE + 1];
 extern int32_t prim_used;
 extern memory_word *save_stack;
 extern int32_t save_ptr;
@@ -500,17 +457,10 @@ extern eight_bits cur_cmd;
 extern int32_t cur_chr;
 extern int32_t cur_cs;
 extern int32_t cur_tok;
-extern input_state_t *input_stack;
-extern int32_t input_ptr;
 extern int32_t max_in_stack;
-extern input_state_t cur_input;
-extern int32_t in_open;
 extern int32_t open_parens;
 extern UFILE **input_file;
-extern int32_t line;
-extern int32_t *line_stack;
 extern str_number *source_filename_stack;
-extern str_number *full_source_filename_stack;
 extern unsigned char scanner_status;
 extern int32_t warning_index;
 extern int32_t def_ref;
@@ -539,19 +489,9 @@ extern unsigned char if_limit;
 extern small_number cur_if;
 extern int32_t if_line;
 extern int32_t skip_line;
-extern str_number cur_name;
-extern str_number cur_area;
-extern str_number cur_ext;
-extern pool_pointer area_delimiter;
-extern pool_pointer ext_delimiter;
-extern UTF16_code file_name_quote_char;
 extern int32_t format_default_length;
 extern char *TEX_format_default;
-extern bool name_in_progress;
-extern str_number job_name;
-extern bool log_opened;
 extern const char* output_file_extension;
-extern str_number texmf_log_name;
 extern memory_word *font_info;
 extern font_index fmem_ptr;
 extern internal_font_number font_ptr;
@@ -688,7 +628,6 @@ extern int32_t cur_box;
 extern int32_t after_token;
 extern bool long_help_seen;
 extern str_number format_ident;
-extern rust_output_handle_t write_file[16];
 extern bool write_open[18];
 extern int32_t write_loc;
 extern scaled_t cur_page_width;
@@ -715,7 +654,6 @@ extern trie_pointer hyph_start;
 extern trie_pointer hyph_index;
 extern int32_t disc_ptr[4];
 extern pool_pointer edit_name_start;
-extern bool stop_at_space;
 extern int32_t native_font_type_flag;
 extern bool xtx_ligature_present;
 extern scaled_t delta;
@@ -1053,73 +991,6 @@ void math_fraction(void);
 void math_left_right(void);
 void flush_math(void);
 
-/* xetex-output */
-
-// Duplicate messages printed to log/terminal into a warning diagnostic buffer,
-// until a call capture_to_diagnostic(0). A standard usage of this is
-//
-//     ttbc_diagnostic_t *warning = diagnostic_begin_capture_warning_here();
-//
-//     ... XeTeX prints some errors using print_* functions ...
-//
-//     capture_to_diagnostic(NULL);
-//
-// The current file and line number information are prefixed to the captured
-// output.
-//
-// NOTE: the only reason there isn't also an _error_ version of this function is
-// that we haven't yet wired up anything that uses it.
-ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
-
-// A lower-level API to begin or end the capture of messages into the diagnostic
-// buffer. You can start capture by obtaining a diagnostic_t and passing it to
-// this function -- however, the other functions in this API generally do this
-// for you. Complete capture by passing NULL. Either way, if a capture is in
-// progress when this function is called, it will be completed and reported.
-void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
-
-// A replacement for xetex print_file_line+print_nl_ctr blocks. e.g. Replace
-//
-//     if (file_line_error_style_p)
-//         print_file_line();
-//     else
-//         print_nl_cstr("! ");
-//     print_cstr("Cannot use ");
-//
-// with
-//
-//     ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Cannot use ");
-//
-// This function calls capture_to_diagnostic(errmsg) to begin diagnostic
-// capture. You must call capture_to_diagnostic(NULL) to mark the capture as
-// complete.
-ttbc_diagnostic_t *error_here_with_diagnostic(const char* message);
-
-void print_ln(void);
-void print_raw_char(UTF16_code s, bool incr_offset);
-void print_char(int32_t s);
-void print(int32_t s);
-void print_cstr(const char* s);
-void print_nl(str_number s);
-void print_nl_cstr(const char* s);
-void print_esc(str_number s);
-void print_esc_cstr(const char* s);
-void print_int(int32_t n);
-void print_cs(int32_t p);
-void sprint_cs(int32_t p);
-void print_file_name(int32_t n, int32_t a, int32_t e);
-void print_size(int32_t s);
-void print_write_whatsit(const char* s, int32_t p);
-void print_native_word(int32_t p);
-void print_sa_num(int32_t q);
-void print_file_line(void);
-void print_two(int32_t n);
-void print_hex(int32_t n);
-void print_roman_int(int32_t n);
-void print_current_string(void);
-void print_scaled(scaled_t s);
-void print_ucs_code(UnicodeScalar n);
-
 /* xetex-pagebuilder */
 
 void initialize_pagebuilder_variables(void);
@@ -1166,7 +1037,7 @@ print_c_string(const char *str) {
 static inline pool_pointer
 cur_length(void) {
     /*41: The length of the current string in the pool */
-    return pool_ptr - str_start[str_ptr - TOO_BIG_CHAR];
+    return pool_ptr() - str_start(str_ptr() - TOO_BIG_CHAR);
 }
 
 
@@ -1181,14 +1052,14 @@ void tt_insert_special(const char *ascii_text);
 /* additional declarations we want to slip in for xetex */
 
 /* p is native_word node; g is XeTeX_use_glyph_metrics flag */
-#define set_native_metrics(p,g)               measure_native_node(&(mem[p]), g)
-#define set_native_glyph_metrics(p,g)         measure_native_glyph(&(mem[p]), g)
-#define set_justified_native_glyphs(p)        store_justified_native_glyphs(&(mem[p]))
-#define get_native_italic_correction(p)       real_get_native_italic_correction(&(mem[p]))
-#define get_native_glyph_italic_correction(p) real_get_native_glyph_italic_correction(&(mem[p]))
-#define get_native_glyph(p,i)                 real_get_native_glyph(&(mem[p]), i)
-#define make_xdv_glyph_array_data(p)          makeXDVGlyphArrayData(&(mem[p]))
-#define get_native_word_cp(p,s)               real_get_native_word_cp(&(mem[p]), s)
+#define set_native_metrics(p,g)               measure_native_node((mem_ptr(p)), g)
+#define set_native_glyph_metrics(p,g)         measure_native_glyph((mem_ptr(p)), g)
+#define set_justified_native_glyphs(p)        store_justified_native_glyphs((mem_ptr(p)))
+#define get_native_italic_correction(p)       real_get_native_italic_correction((mem_ptr(p)))
+#define get_native_glyph_italic_correction(p) real_get_native_glyph_italic_correction((mem_ptr(p)))
+#define get_native_glyph(p,i)                 real_get_native_glyph((mem_ptr(p)), i)
+#define make_xdv_glyph_array_data(p)          makeXDVGlyphArrayData((mem_ptr(p)))
+#define get_native_word_cp(p,s)               real_get_native_word_cp((mem_ptr(p)), s)
 
 /* easier to do the bit-twiddling here than in Pascal */
 /* read fields from a 32-bit math code */
