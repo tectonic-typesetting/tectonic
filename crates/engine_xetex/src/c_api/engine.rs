@@ -1,5 +1,5 @@
 use crate::c_api::globals::Globals;
-use crate::ty::StrNumber;
+use crate::ty::{Scaled, StrNumber};
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
@@ -247,6 +247,9 @@ pub struct EngineCtx {
     pub(crate) help_ptr: usize,
     pub(crate) help_line: [*const libc::c_char; 6],
     pub(crate) mag_set: i32,
+    pub(crate) max_h: Scaled,
+    pub(crate) max_v: Scaled,
+    pub(crate) max_push: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -365,6 +368,9 @@ impl EngineCtx {
             help_ptr: 0,
             help_line: [ptr::null(); 6],
             mag_set: 0,
+            max_h: 0,
+            max_v: 0,
+            max_push: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -920,6 +926,36 @@ pub extern "C" fn mag_set() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_mag_set(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.mag_set = val)
+}
+
+#[no_mangle]
+pub extern "C" fn max_h() -> Scaled {
+    ENGINE_CTX.with_borrow(|engine| engine.max_h)
+}
+
+#[no_mangle]
+pub extern "C" fn set_max_h(val: Scaled) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.max_h = val)
+}
+
+#[no_mangle]
+pub extern "C" fn max_v() -> Scaled {
+    ENGINE_CTX.with_borrow(|engine| engine.max_v)
+}
+
+#[no_mangle]
+pub extern "C" fn set_max_v(val: Scaled) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.max_v = val)
+}
+
+#[no_mangle]
+pub extern "C" fn max_push() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.max_push)
+}
+
+#[no_mangle]
+pub extern "C" fn set_max_push(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.max_push = val)
 }
 
 #[no_mangle]

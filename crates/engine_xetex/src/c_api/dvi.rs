@@ -1,4 +1,4 @@
-use crate::c_api::engine::{POP, TEX_INFINITY};
+use crate::c_api::engine::{rs_prepare_mag, IntPar, POP, POST, TEX_INFINITY};
 use crate::c_api::fatal_error;
 use crate::c_api::globals::Globals;
 use std::cell::RefCell;

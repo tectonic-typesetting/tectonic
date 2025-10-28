@@ -444,6 +444,8 @@ typedef struct {
   int32_t synctex_tag;
 } input_state_t;
 
+typedef int32_t Scaled;
+
 #if defined(WORDS_BIGENDIAN)
 typedef struct {
   int32_t s1;
@@ -482,8 +484,6 @@ typedef union {
   double gr;
   void *ptr;
 } MemoryWord;
-
-typedef int32_t Scaled;
 
 #define EMPTY_STRING (65536 + 1)
 
@@ -707,6 +707,18 @@ void set_help_line(uintptr_t idx, const char *ptr);
 int32_t mag_set(void);
 
 void set_mag_set(int32_t val);
+
+Scaled max_h(void);
+
+void set_max_h(Scaled val);
+
+Scaled max_v(void);
+
+void set_max_v(Scaled val);
+
+int32_t max_push(void);
+
+void set_max_push(int32_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 
