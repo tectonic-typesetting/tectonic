@@ -4,7 +4,7 @@ use crate::c_api::engine::{
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
     rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print_bytes, rs_print_char,
-    rs_print_ln, rs_print_nl_bytes,
+    rs_print_int, rs_print_ln, rs_print_nl_bytes,
 };
 use std::ffi::CStr;
 
@@ -39,7 +39,7 @@ pub fn give_err_help(globals: &mut Globals<'_, '_>) {
     rs_token_show(globals, globals.engine.local(Local::ErrHelp) as usize);
 }
 
-pub fn rs_error(globals: &mut Globals<'_, '_>) -> Box<dyn Fn()> {
+pub fn rs_error(globals: &mut Globals<'_, '_>) -> Option<Box<dyn Fn()>> {
     if globals.engine.history < History::ErrorIssued {
         globals.engine.history = History::ErrorIssued;
     }
@@ -49,10 +49,10 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Box<dyn Fn()> {
     if globals.engine.halt_on_error_p != 0 {
         globals.engine.history = History::FatalError;
         // Execute this outside the globals lock for now
-        return Box::new(|| {
+        return Some(Box::new(|| {
             post_error_message(0);
             panic!("halted on potentially-recoverable error as specified");
-        });
+        }));
     }
 
     /* This used to be where there was a bunch of code if "interaction ==
@@ -63,10 +63,10 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Box<dyn Fn()> {
     if globals.engine.error_count == 100 {
         rs_print_nl_bytes(globals, b"(That makes 100 errors; please try again.)");
         globals.engine.history = History::FatalError;
-        return Box::new(|| {
+        return Some(Box::new(|| {
             post_error_message(0);
             panic!("halted after 100 potentially-recoverable errors");
-        });
+        }));
     }
 
     if globals.engine.interaction != InteractionMode::Batch {
@@ -107,13 +107,13 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Box<dyn Fn()> {
         }
     }
     rs_print_ln(globals);
-    Box::new(|| ())
+    None
 }
 
 #[no_mangle]
 extern "C-unwind" fn error() {
     let out_of_lock = Globals::with(|globals| rs_error(globals));
-    out_of_lock();
+    out_of_lock.map(|f| f());
 }
 
 #[no_mangle]
@@ -128,9 +128,9 @@ extern "C" fn post_error_message(need_to_print_it: i32) {
             return rs_error(globals);
         }
         globals.engine.history = History::FatalError;
-        Box::new(|| ())
+        None
     });
-    out_of_lock();
+    out_of_lock.map(|f| f());
     unsafe { close_files_and_terminate() };
     unsafe { tt_cleanup() };
     Globals::with(|globals| {
@@ -161,6 +161,19 @@ pub extern "C-unwind" fn fatal_error(s: *const libc::c_char) {
             .map(|stdout| globals.state.output_flush(stdout))
     });
     unsafe { _tt_abort(s.as_ptr().cast()) };
+}
+
+pub fn rs_int_error(globals: &mut Globals<'_, '_>, n: i32) -> Option<Box<dyn Fn()>> {
+    rs_print_bytes(globals, b" (");
+    rs_print_int(globals, n);
+    rs_print_char(globals, ')' as i32);
+    rs_error(globals)
+}
+
+#[no_mangle]
+pub extern "C" fn int_error(n: i32) {
+    let outside_lock = Globals::with(|globals| rs_int_error(globals, n));
+    outside_lock.map(|f| f());
 }
 
 // TODO: Use the Rust versions directly once they're ported. These just rely indirectly on this

@@ -22,7 +22,7 @@ thread_local! {
 }
 
 pub struct OutputCtx {
-    current_diagnostic: Option<Box<Diagnostic>>,
+    pub(crate) current_diagnostic: Option<Box<Diagnostic>>,
     file_line_error_style_p: i32,
     term_offset: i32,
     file_offset: i32,

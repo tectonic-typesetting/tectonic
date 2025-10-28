@@ -6,15 +6,20 @@ use std::{ptr, slice};
 
 mod memory;
 
+use crate::c_api::errors::rs_int_error;
 use crate::c_api::is_dir_sep;
 use crate::c_api::output::{
-    rs_print, rs_print_bytes, rs_print_char, rs_print_cs, rs_print_esc_bytes, rs_print_int,
-    rs_print_ln, rs_print_nl, rs_print_nl_bytes, rs_print_raw_char,
+    rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print, rs_print_bytes,
+    rs_print_char, rs_print_cs, rs_print_esc_bytes, rs_print_int, rs_print_ln, rs_print_nl,
+    rs_print_nl_bytes, rs_print_raw_char,
 };
 use crate::c_api::pool::{
     rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
 };
 pub use memory::*;
+
+pub const LEVEL_ZERO: u16 = 0;
+pub const LEVEL_ONE: u16 = 1;
 
 pub const NULL_CS: usize = 0x220001;
 pub const PRIM_SIZE: usize = 2100;
@@ -1725,4 +1730,74 @@ pub fn rs_token_show(globals: &mut Globals<'_, '_>, p: usize) {
 #[no_mangle]
 pub extern "C" fn token_show(p: i32) {
     Globals::with(|globals| rs_token_show(globals, p as usize))
+}
+
+pub fn rs_geq_word_define(globals: &mut Globals<'_, '_>, p: usize, w: i32) {
+    globals.engine.eqtb[p].b32.s1 = w;
+    globals.engine.set_xeq_level(p, LEVEL_ONE);
+}
+
+#[no_mangle]
+pub extern "C" fn geq_word_define(p: i32, w: i32) {
+    Globals::with(|globals| rs_geq_word_define(globals, p as usize, w))
+}
+
+pub fn rs_prepare_mag(globals: &mut Globals<'_, '_>) -> Option<Box<dyn Fn()>> {
+    if globals.engine.mag_set > 0 && globals.engine.int_par(IntPar::Mag) != globals.engine.mag_set {
+        rs_error_here_with_diagnostic(globals, b"Incompatible magnification (");
+        rs_print_int(globals, globals.engine.int_par(IntPar::Mag));
+        rs_print_bytes(globals, b");");
+        rs_print_nl_bytes(globals, b" the previous value will be retained");
+
+        globals
+            .out
+            .current_diagnostic
+            .as_deref_mut()
+            .unwrap()
+            .append(format!(" {}", globals.engine.mag_set));
+        rs_capture_to_diagnostic(globals, None);
+
+        globals.engine.help_ptr = 2;
+        globals.engine.help_line[1] =
+            c"I can handle only one magnification ratio per job. So I've".as_ptr();
+        globals.engine.help_line[0] =
+            c"reverted to the magnification you used earlier on this run.".as_ptr();
+
+        if let Some(f) = rs_int_error(globals, globals.engine.mag_set) {
+            return Some(f);
+        }
+        rs_geq_word_define(
+            globals,
+            INT_BASE + IntPar::Mag as usize,
+            globals.engine.mag_set,
+        );
+    }
+
+    if globals.engine.int_par(IntPar::Mag) <= 0 || globals.engine.int_par(IntPar::Mag) > 32768 {
+        rs_error_here_with_diagnostic(globals, b"Illegal magnification has been changed to 1000");
+        globals
+            .out
+            .current_diagnostic
+            .as_deref_mut()
+            .unwrap()
+            .append(format!(" {}", globals.engine.int_par(IntPar::Mag)));
+        rs_capture_to_diagnostic(globals, None);
+
+        globals.engine.help_ptr = 1;
+        globals.engine.help_line[0] =
+            c"The magnification ratio must be between 1 and 32768.".as_ptr();
+        if let Some(f) = rs_int_error(globals, globals.engine.int_par(IntPar::Mag)) {
+            return Some(f);
+        }
+        rs_geq_word_define(globals, INT_BASE + IntPar::Mag as usize, 1000);
+    }
+
+    globals.engine.mag_set = globals.engine.int_par(IntPar::Mag);
+    None
+}
+
+#[no_mangle]
+pub extern "C" fn prepare_mag() {
+    let outside_lock = Globals::with(|globals| rs_prepare_mag(globals));
+    outside_lock.map(|f| f());
 }
