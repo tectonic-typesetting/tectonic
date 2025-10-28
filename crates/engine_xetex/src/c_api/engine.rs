@@ -251,6 +251,9 @@ pub struct EngineCtx {
     pub(crate) max_v: Scaled,
     pub(crate) max_push: i32,
 
+    pub(crate) font_ptr: i32,
+    pub(crate) font_used: Vec<bool>,
+
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
     /// An arena of TeX nodes
@@ -371,6 +374,9 @@ impl EngineCtx {
             max_h: 0,
             max_v: 0,
             max_push: 0,
+
+            font_ptr: 0,
+            font_used: Vec::new(),
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -956,6 +962,36 @@ pub extern "C" fn max_push() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_max_push(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.max_push = val)
+}
+
+#[no_mangle]
+pub extern "C" fn font_ptr() -> i32 {
+    ENGINE_CTX.with_borrow(|engine| engine.font_ptr)
+}
+
+#[no_mangle]
+pub extern "C" fn set_font_ptr(val: i32) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.font_ptr = val)
+}
+
+#[no_mangle]
+pub extern "C" fn font_used(idx: usize) -> bool {
+    ENGINE_CTX.with_borrow(|engine| engine.font_used[idx])
+}
+
+#[no_mangle]
+pub extern "C" fn set_font_used(idx: usize, val: bool) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.font_used[idx] = val)
+}
+
+#[no_mangle]
+pub extern "C" fn resize_font_used(len: usize) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.font_used.resize(len + 1, false))
+}
+
+#[no_mangle]
+pub extern "C" fn clear_font_used() {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.font_used.clear())
 }
 
 #[no_mangle]

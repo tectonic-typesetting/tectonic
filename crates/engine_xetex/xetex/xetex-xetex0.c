@@ -6675,7 +6675,7 @@ void find_font_dimen(bool writing)
         }
         if (n > font_params[f]) {
 
-            if (f < font_ptr)
+            if (f < font_ptr())
                 cur_val = fmem_ptr;
             else {              /*599: */
 
@@ -10763,7 +10763,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
 
     full_name = make_string();
 
-    for (f = FONT_BASE + 1; f <= font_ptr; f++) {
+    for (f = FONT_BASE + 1; f <= font_ptr(); f++) {
         if (font_area[f] == native_font_type_flag && str_eq_str(font_name[f], full_name) && font_size[f] == actual_size) {
             release_font_engine(font_engine, native_font_type_flag);
 
@@ -10779,7 +10779,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     else
         num_font_dimens = 8;
 
-    if (font_ptr == font_max || fmem_ptr + num_font_dimens > font_mem_size) {
+    if (font_ptr() == font_max || fmem_ptr + num_font_dimens > font_mem_size) {
         error_here_with_diagnostic("Font ");
         sprint_cs(u);
         print_char('=');
@@ -10809,37 +10809,37 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         return FONT_BASE;
     }
 
-    font_ptr++;
-    font_area[font_ptr] = native_font_type_flag;
-    font_name[font_ptr] = full_name;
-    font_check[font_ptr].s3 = 0;
-    font_check[font_ptr].s2 = 0;
-    font_check[font_ptr].s1 = 0;
-    font_check[font_ptr].s0 = 0;
-    font_glue[font_ptr] = TEX_NULL;
-    font_dsize[font_ptr] = get_loaded_font_design_size();
-    font_size[font_ptr] = actual_size;
+    set_font_ptr(font_ptr()+1);
+    font_area[font_ptr()] = native_font_type_flag;
+    font_name[font_ptr()] = full_name;
+    font_check[font_ptr()].s3 = 0;
+    font_check[font_ptr()].s2 = 0;
+    font_check[font_ptr()].s1 = 0;
+    font_check[font_ptr()].s0 = 0;
+    font_glue[font_ptr()] = TEX_NULL;
+    font_dsize[font_ptr()] = get_loaded_font_design_size();
+    font_size[font_ptr()] = actual_size;
 
     if (native_font_type_flag == AAT_FONT_FLAG)
         aat_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht, &font_slant);
     else
         ot_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht, &font_slant);
 
-    height_base[font_ptr] = ascent;
-    depth_base[font_ptr] = -(int32_t) descent;
-    font_params[font_ptr] = num_font_dimens;
-    font_bc[font_ptr] = 0;
-    font_ec[font_ptr] = 65535L;
-    font_used[font_ptr] = false;
-    hyphen_char[font_ptr] = INTPAR(default_hyphen_char);
-    skew_char[font_ptr] = INTPAR(default_skew_char);
-    param_base[font_ptr] = fmem_ptr - 1;
-    font_layout_engine[font_ptr] = font_engine;
-    font_mapping[font_ptr] = 0;
-    font_letter_space[font_ptr] = loaded_font_letter_space;
+    height_base[font_ptr()] = ascent;
+    depth_base[font_ptr()] = -(int32_t) descent;
+    font_params[font_ptr()] = num_font_dimens;
+    font_bc[font_ptr()] = 0;
+    font_ec[font_ptr()] = 65535L;
+    set_font_used(font_ptr(), false);
+    hyphen_char[font_ptr()] = INTPAR(default_hyphen_char);
+    skew_char[font_ptr()] = INTPAR(default_skew_char);
+    param_base[font_ptr()] = fmem_ptr - 1;
+    font_layout_engine[font_ptr()] = font_engine;
+    font_mapping[font_ptr()] = 0;
+    font_letter_space[font_ptr()] = loaded_font_letter_space;
 
     /* "measure the width of the space character and set up font parameters" */
-    p = new_native_character(font_ptr, ' ' );
+    p = new_native_character(font_ptr(), ' ' );
     s = BOX_width(p) + loaded_font_letter_space;
     /* Free up the memory */
     if(NATIVE_NODE_glyph_info_ptr(p)) {
@@ -10852,7 +10852,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_info[fmem_ptr++].b32.s1 = s / 2; /* space_stretch */
     font_info[fmem_ptr++].b32.s1 = s / 3; /* space_shrink */
     font_info[fmem_ptr++].b32.s1 = x_ht;
-    font_info[fmem_ptr++].b32.s1 = font_size[font_ptr]; /* quad */
+    font_info[fmem_ptr++].b32.s1 = font_size[font_ptr()]; /* quad */
     font_info[fmem_ptr++].b32.s1 = s / 3; /* extra_space */
     font_info[fmem_ptr++].b32.s1 = cap_ht;
 
@@ -10860,12 +10860,12 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         font_info[fmem_ptr++].b32.s1 = num_font_dimens;
 
         for (k = 0; k <= 55; k++) /* 55 = lastMathConstant */
-            font_info[fmem_ptr++].b32.s1 = get_ot_math_constant(font_ptr, k);
+            font_info[fmem_ptr++].b32.s1 = get_ot_math_constant(font_ptr(), k);
     }
 
-    font_mapping[font_ptr] = loaded_font_mapping;
-    font_flags[font_ptr] = loaded_font_flags;
-    return font_ptr;
+    font_mapping[font_ptr()] = loaded_font_mapping;
+    font_flags[font_ptr()] = loaded_font_flags;
+    return font_ptr();
 }
 
 
@@ -11066,10 +11066,10 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (np < 7)
         lf = lf + 7 - np;
 
-    if (font_ptr == font_max || fmem_ptr + lf > font_mem_size)
+    if (font_ptr() == font_max || fmem_ptr + lf > font_mem_size)
         _tt_abort("not enough memory to load another font");
 
-    f = font_ptr + 1;
+    f = font_ptr() + 1;
     char_base[f] = fmem_ptr - bc;
     width_base[f] = char_base[f] + ec + 1;
     height_base[f] = width_base[f] + nw;
@@ -11354,7 +11354,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_glue[f] = TEX_NULL;
     param_base[f]--;
     fmem_ptr = fmem_ptr + lf;
-    font_ptr = f;
+    set_font_ptr(f);
     g = f;
     font_mapping[f] = load_tfm_font_mapping();
     goto done;
@@ -15494,7 +15494,7 @@ void new_font(small_number a)
     {
         register int32_t for_end;
         f = (FONT_BASE + 1);
-        for_end = font_ptr;
+        for_end = font_ptr();
         if (f <= for_end)
             do {
                 if (

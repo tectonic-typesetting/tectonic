@@ -583,9 +583,9 @@ hlist_out(void)
 
                 if (f != dvi_f) {
                     /*643: "Change font dvi_f to f" */
-                    if (!font_used[f]) {
+                    if (!font_used(f)) {
                         dvi_font_def(f);
-                        font_used[f] = true;
+                        set_font_used(f, true);
                     }
 
                     if (f <= 64) {
@@ -680,9 +680,9 @@ hlist_out(void)
                     f = NATIVE_NODE_font(p);
 
                     if (f != dvi_f) {
-                        if (!font_used[f]) {
+                        if (!font_used(f)) {
                             dvi_font_def(f);
-                            font_used[f] = true;
+                            set_font_used(f, true);
                         }
 
                         if (f <= 64) {
@@ -1210,9 +1210,9 @@ vlist_out(void)
 
                     if (f != dvi_f) {
                         /*643:*/
-                        if (!font_used[f]) {
+                        if (!font_used(f)) {
                             dvi_font_def(f);
-                            font_used[f] = true;
+                            set_font_used(f, true);
                         }
 
                         if (f <= 64) {
@@ -2291,10 +2291,10 @@ finalize_dvi_file(void)
     dvi_out((total_pages() / 256) % 256);
     dvi_out(total_pages() % 256);
 
-    while (font_ptr > FONT_BASE) {
-        if (font_used[font_ptr])
-            dvi_font_def(font_ptr);
-        font_ptr--;
+    while (font_ptr() > FONT_BASE) {
+        if (font_used(font_ptr()))
+            dvi_font_def(font_ptr());
+        set_font_ptr(font_ptr()-1);
     }
 
     dvi_out(POST_POST);
