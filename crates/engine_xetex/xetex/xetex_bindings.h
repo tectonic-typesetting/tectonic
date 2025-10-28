@@ -720,6 +720,18 @@ int32_t max_push(void);
 
 void set_max_push(int32_t val);
 
+int32_t font_ptr(void);
+
+void set_font_ptr(int32_t val);
+
+bool font_used(uintptr_t idx);
+
+void set_font_used(uintptr_t idx, bool val);
+
+void resize_font_used(uintptr_t len);
+
+void clear_font_used(void);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);

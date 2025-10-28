@@ -123,7 +123,6 @@ char *TEX_format_default;
 const char* output_file_extension;
 memory_word *font_info;
 font_index fmem_ptr;
-internal_font_number font_ptr;
 b16x4 *font_check;
 scaled_t *font_size;
 scaled_t *font_dsize;
@@ -133,7 +132,6 @@ str_number *font_area;
 UTF16_code *font_bc;
 UTF16_code *font_ec;
 int32_t *font_glue;
-bool *font_used;
 int32_t *hyphen_char;
 int32_t *skew_char;
 font_index *bchar_label;
@@ -2254,32 +2252,32 @@ store_fmt_file(void)
 
     dump_int(fmem_ptr);
     dump_things(font_info[0], fmem_ptr);
-    dump_int(font_ptr);
-    dump_things(font_check[FONT_BASE], font_ptr + 1);
-    dump_things(font_size[FONT_BASE], font_ptr + 1);
-    dump_things(font_dsize[FONT_BASE], font_ptr + 1);
-    dump_things(font_params[FONT_BASE], font_ptr + 1);
-    dump_things(hyphen_char[FONT_BASE], font_ptr + 1);
-    dump_things(skew_char[FONT_BASE], font_ptr + 1);
-    dump_things(font_name[FONT_BASE], font_ptr + 1);
-    dump_things(font_area[FONT_BASE], font_ptr + 1);
-    dump_things(font_bc[FONT_BASE], font_ptr + 1);
-    dump_things(font_ec[FONT_BASE], font_ptr + 1);
-    dump_things(char_base[FONT_BASE], font_ptr + 1);
-    dump_things(width_base[FONT_BASE], font_ptr + 1);
-    dump_things(height_base[FONT_BASE], font_ptr + 1);
-    dump_things(depth_base[FONT_BASE], font_ptr + 1);
-    dump_things(italic_base[FONT_BASE], font_ptr + 1);
-    dump_things(lig_kern_base[FONT_BASE], font_ptr + 1);
-    dump_things(kern_base[FONT_BASE], font_ptr + 1);
-    dump_things(exten_base[FONT_BASE], font_ptr + 1);
-    dump_things(param_base[FONT_BASE], font_ptr + 1);
-    dump_things(font_glue[FONT_BASE], font_ptr + 1);
-    dump_things(bchar_label[FONT_BASE], font_ptr + 1);
-    dump_things(font_bchar[FONT_BASE], font_ptr + 1);
-    dump_things(font_false_bchar[FONT_BASE], font_ptr + 1);
+    dump_int(font_ptr());
+    dump_things(font_check[FONT_BASE], font_ptr() + 1);
+    dump_things(font_size[FONT_BASE], font_ptr() + 1);
+    dump_things(font_dsize[FONT_BASE], font_ptr() + 1);
+    dump_things(font_params[FONT_BASE], font_ptr() + 1);
+    dump_things(hyphen_char[FONT_BASE], font_ptr() + 1);
+    dump_things(skew_char[FONT_BASE], font_ptr() + 1);
+    dump_things(font_name[FONT_BASE], font_ptr() + 1);
+    dump_things(font_area[FONT_BASE], font_ptr() + 1);
+    dump_things(font_bc[FONT_BASE], font_ptr() + 1);
+    dump_things(font_ec[FONT_BASE], font_ptr() + 1);
+    dump_things(char_base[FONT_BASE], font_ptr() + 1);
+    dump_things(width_base[FONT_BASE], font_ptr() + 1);
+    dump_things(height_base[FONT_BASE], font_ptr() + 1);
+    dump_things(depth_base[FONT_BASE], font_ptr() + 1);
+    dump_things(italic_base[FONT_BASE], font_ptr() + 1);
+    dump_things(lig_kern_base[FONT_BASE], font_ptr() + 1);
+    dump_things(kern_base[FONT_BASE], font_ptr() + 1);
+    dump_things(exten_base[FONT_BASE], font_ptr() + 1);
+    dump_things(param_base[FONT_BASE], font_ptr() + 1);
+    dump_things(font_glue[FONT_BASE], font_ptr() + 1);
+    dump_things(bchar_label[FONT_BASE], font_ptr() + 1);
+    dump_things(font_bchar[FONT_BASE], font_ptr() + 1);
+    dump_things(font_false_bchar[FONT_BASE], font_ptr() + 1);
 
-    for (k = FONT_BASE; k <= font_ptr; k++) {
+    for (k = FONT_BASE; k <= font_ptr(); k++) {
         print_nl_cstr("\\font");
         print_esc(hash(FONT_ID_BASE + k).s1);
         print_char('=');
@@ -2309,8 +2307,8 @@ store_fmt_file(void)
     print_ln();
     print_int(fmem_ptr - 7);
     print_cstr(" words of font info for ");
-    print_int(font_ptr - 0);
-    if (font_ptr != FONT_BASE + 1)
+    print_int(font_ptr() - 0);
+    if (font_ptr() != FONT_BASE + 1)
         print_cstr(" preloaded fonts");
     else
         print_cstr(" preloaded font");
@@ -2676,7 +2674,7 @@ load_fmt_file(void)
     if (x > FONT_BASE + MAX_FONT_MAX)
         _tt_abort ("must increase font_max");
 
-    font_ptr = x;
+    set_font_ptr(x);
 
     font_mapping = xcalloc_array(void *, font_max);
     font_layout_engine = xcalloc_array(void *, font_max);
@@ -2706,32 +2704,32 @@ load_fmt_file(void)
     exten_base = xmalloc_array(int32_t, font_max);
     param_base = xmalloc_array(int32_t, font_max);
 
-    for (k = FONT_BASE; k <= font_ptr; k++)
+    for (k = FONT_BASE; k <= font_ptr(); k++)
         font_mapping[k] = 0;
 
-    undump_things(font_check[FONT_BASE], font_ptr + 1);
-    undump_things(font_size[FONT_BASE], font_ptr + 1);
-    undump_things(font_dsize[FONT_BASE], font_ptr + 1);
-    undump_checked_things(MIN_HALFWORD, MAX_HALFWORD, font_params[FONT_BASE], font_ptr + 1);
-    undump_things(hyphen_char[FONT_BASE], font_ptr + 1);
-    undump_things(skew_char[FONT_BASE], font_ptr + 1);
-    undump_upper_check_things(str_ptr(), font_name[FONT_BASE], font_ptr + 1);
-    undump_upper_check_things(str_ptr(), font_area[FONT_BASE], font_ptr + 1);
-    undump_things(font_bc[FONT_BASE], font_ptr + 1);
-    undump_things(font_ec[FONT_BASE], font_ptr + 1);
-    undump_things(char_base[FONT_BASE], font_ptr + 1);
-    undump_things(width_base[FONT_BASE], font_ptr + 1);
-    undump_things(height_base[FONT_BASE], font_ptr + 1);
-    undump_things(depth_base[FONT_BASE], font_ptr + 1);
-    undump_things(italic_base[FONT_BASE], font_ptr + 1);
-    undump_things(lig_kern_base[FONT_BASE], font_ptr + 1);
-    undump_things(kern_base[FONT_BASE], font_ptr + 1);
-    undump_things(exten_base[FONT_BASE], font_ptr + 1);
-    undump_things(param_base[FONT_BASE], font_ptr + 1);
-    undump_checked_things(MIN_HALFWORD, lo_mem_max, font_glue[FONT_BASE], font_ptr + 1);
-    undump_checked_things(0, fmem_ptr - 1, bchar_label[FONT_BASE], font_ptr + 1);
-    undump_checked_things(0, TOO_BIG_CHAR, font_bchar[FONT_BASE], font_ptr + 1);
-    undump_checked_things(0, TOO_BIG_CHAR, font_false_bchar[FONT_BASE], font_ptr + 1);
+    undump_things(font_check[FONT_BASE], font_ptr() + 1);
+    undump_things(font_size[FONT_BASE], font_ptr() + 1);
+    undump_things(font_dsize[FONT_BASE], font_ptr() + 1);
+    undump_checked_things(MIN_HALFWORD, MAX_HALFWORD, font_params[FONT_BASE], font_ptr() + 1);
+    undump_things(hyphen_char[FONT_BASE], font_ptr() + 1);
+    undump_things(skew_char[FONT_BASE], font_ptr() + 1);
+    undump_upper_check_things(str_ptr(), font_name[FONT_BASE], font_ptr() + 1);
+    undump_upper_check_things(str_ptr(), font_area[FONT_BASE], font_ptr() + 1);
+    undump_things(font_bc[FONT_BASE], font_ptr() + 1);
+    undump_things(font_ec[FONT_BASE], font_ptr() + 1);
+    undump_things(char_base[FONT_BASE], font_ptr() + 1);
+    undump_things(width_base[FONT_BASE], font_ptr() + 1);
+    undump_things(height_base[FONT_BASE], font_ptr() + 1);
+    undump_things(depth_base[FONT_BASE], font_ptr() + 1);
+    undump_things(italic_base[FONT_BASE], font_ptr() + 1);
+    undump_things(lig_kern_base[FONT_BASE], font_ptr() + 1);
+    undump_things(kern_base[FONT_BASE], font_ptr() + 1);
+    undump_things(exten_base[FONT_BASE], font_ptr() + 1);
+    undump_things(param_base[FONT_BASE], font_ptr() + 1);
+    undump_checked_things(MIN_HALFWORD, lo_mem_max, font_glue[FONT_BASE], font_ptr() + 1);
+    undump_checked_things(0, fmem_ptr - 1, bchar_label[FONT_BASE], font_ptr() + 1);
+    undump_checked_things(0, TOO_BIG_CHAR, font_bchar[FONT_BASE], font_ptr() + 1);
+    undump_checked_things(0, TOO_BIG_CHAR, font_false_bchar[FONT_BASE], font_ptr() + 1);
 
     /* hyphenations */
 
@@ -3411,7 +3409,7 @@ tt_cleanup(void) {
 
     pdf_files_close();
     free(TEX_format_default);
-    free(font_used);
+    clear_font_used();
     deinitialize_shipout_variables();
 
     destroy_font_manager();
@@ -3758,7 +3756,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         kern_base = xcalloc_array(int32_t, font_max);
         exten_base = xcalloc_array(int32_t, font_max);
         param_base = xcalloc_array(int32_t, font_max);
-        font_ptr = FONT_BASE;
+        set_font_ptr(FONT_BASE);
         fmem_ptr = 7;
         font_name[FONT_BASE] = maketexstring("nullfont");
         font_area[FONT_BASE] = EMPTY_STRING;
@@ -3788,9 +3786,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
             font_info[font_k].b32.s1 = 0;
     }
 
-    font_used = xmalloc_array(bool, font_max);
+    resize_font_used(font_max);
     for (font_k = 0; font_k <= font_max; font_k++)
-        font_used[font_k] = false;
+        set_font_used(font_k, false);
 
     random_seed = (microseconds * 1000) + (epochseconds % 1000000L);
     init_randoms(random_seed);
