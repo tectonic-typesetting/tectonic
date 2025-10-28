@@ -118,11 +118,11 @@ ship_out(int32_t p)
         goto done;
     }
 
-    if (BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset) > max_v)
-        max_v = BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset);
+    if (BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset) > max_v())
+        set_max_v(BOX_height(p) + BOX_depth(p) + DIMENPAR(v_offset));
 
-    if (BOX_width(p) + DIMENPAR(h_offset) > max_h)
-        max_h = BOX_width(p) + DIMENPAR(h_offset);
+    if (BOX_width(p) + DIMENPAR(h_offset) > max_h())
+        set_max_h(BOX_width(p) + DIMENPAR(h_offset));
 
     /*637: "Initialize variables as ship_out begins." */
 
@@ -513,8 +513,8 @@ hlist_out(void)
     if (cur_s() > 0)
         dvi_out(PUSH);
 
-    if (cur_s() > max_push)
-        max_push = cur_s();
+    if (cur_s() > max_push())
+        set_max_push(cur_s());
 
     save_loc = dvi_offset() + dvi_ptr();
     base_line = cur_v;
@@ -1102,8 +1102,8 @@ vlist_out(void)
     if (cur_s() > 0)
         dvi_out(PUSH);
 
-    if (cur_s() > max_push)
-        max_push = cur_s();
+    if (cur_s() > max_push())
+        set_max_push(cur_s());
 
     save_loc = dvi_offset() + dvi_ptr();
     left_edge = cur_h;
@@ -2284,10 +2284,10 @@ finalize_dvi_file(void)
     dvi_four(473628672L); /* magic values: conversion ratio for sp */
     prepare_mag();
     dvi_four(INTPAR(mag));
-    dvi_four(max_v);
-    dvi_four(max_h);
-    dvi_out(max_push / 256);
-    dvi_out(max_push % 256);
+    dvi_four(max_v());
+    dvi_four(max_h());
+    dvi_out(max_push() / 256);
+    dvi_out(max_push() % 256);
     dvi_out((total_pages() / 256) % 256);
     dvi_out(total_pages() % 256);
 
