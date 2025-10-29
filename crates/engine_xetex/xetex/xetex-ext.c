@@ -1098,8 +1098,6 @@ cgColorToRGBA32(CGColorRef color)
 }
 #endif
 
-static int xdvBufSize = 0;
-
 int
 makeXDVGlyphArrayData(void* pNode)
 {
@@ -1112,17 +1110,16 @@ makeXDVGlyphArrayData(void* pNode)
     uint16_t glyphCount = native_glyph_count(p);
 
     int i = glyphCount * native_glyph_info_size + 8; /* to guarantee enough space in the buffer */
-    if (i > xdvBufSize) {
-        free(xdv_buffer);
-        xdvBufSize = ((i / 1024) + 1) * 1024;
-        xdv_buffer = xmalloc(xdvBufSize);
+    if (i > xdv_buf_size()) {
+        clear_xdv_buffer();
+        resize_xdv_buffer(((i / 1024) + 1) * 1024);
     }
 
     glyph_info = native_glyph_info_ptr(p);
     locations = (FixedPoint*)glyph_info;
     glyphIDs = (uint16_t*)(locations + glyphCount);
 
-    cp = (unsigned char*)xdv_buffer;
+    cp = (unsigned char*)xdv_buffer_ptr(0);
 
     width = node_width(p);
     *cp++ = (width >> 24) & 0xff;
@@ -1152,7 +1149,7 @@ makeXDVGlyphArrayData(void* pNode)
         *cp++ = g & 0xff;
     }
 
-    return ((char*)cp - xdv_buffer);
+    return ((char*)cp - (char*)xdv_buffer_ptr(0));
 }
 
 int
@@ -1215,7 +1212,7 @@ make_font_def(int32_t f)
         assert(filename);
 
         rgba = getRgbValue(engine);
-        if ((font_flags[f] & FONT_FLAGS_VERTICAL) != 0)
+        if ((font_flags(f) & FONT_FLAGS_VERTICAL) != 0)
             flags |= XDV_FLAG_VERTICAL;
 
         extend = getExtendFactor(engine);
@@ -1244,7 +1241,7 @@ make_font_def(int32_t f)
         + filenameLen
         + 4 /* face index */;
 
-    if ((font_flags[f] & FONT_FLAGS_COLORED) != 0) {
+    if ((font_flags(f) & FONT_FLAGS_COLORED) != 0) {
         fontDefLength += 4; /* 32-bit RGBA value */
         flags |= XDV_FLAG_COLORED;
     }
@@ -1262,12 +1259,11 @@ make_font_def(int32_t f)
         flags |= XDV_FLAG_EMBOLDEN;
     }
 
-    if (fontDefLength > xdvBufSize) {
-        free(xdv_buffer);
-        xdvBufSize = ((fontDefLength / 1024) + 1) * 1024;
-        xdv_buffer = xmalloc(xdvBufSize);
+    if (fontDefLength > xdv_buf_size()) {
+        clear_xdv_buffer();
+        resize_xdv_buffer(((fontDefLength / 1024) + 1) * 1024);
     }
-    cp = xdv_buffer;
+    cp = xdv_buffer_ptr(0);
 
     *(Fixed*)cp = SWAP32(size);
     cp += 4;
@@ -1283,7 +1279,7 @@ make_font_def(int32_t f)
     *(uint32_t*)cp = SWAP32(index);
     cp += 4;
 
-    if ((font_flags[f] & FONT_FLAGS_COLORED) != 0) {
+    if ((font_flags(f) & FONT_FLAGS_COLORED) != 0) {
         *(uint32_t*)cp = SWAP32(rgba);
         cp += 4;
     }

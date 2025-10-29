@@ -487,9 +487,9 @@ impl Font {
         }
     }
 
-    pub(crate) fn filename(&self, index: &mut u32) -> &CStr {
-        *index = self.index;
-        &self.filename
+    /// Get the filename and current index of this font
+    pub fn filename(&self) -> (u32, &CStr) {
+        (self.index, &self.filename)
     }
 
     // pub(crate) fn get_font_table<T: ft::Table>(&self) -> Option<&T::Table> {
@@ -516,7 +516,8 @@ impl Font {
         self.vertical = vertical;
     }
 
-    pub(crate) fn point_size(&self) -> f32 {
+    /// Get the point size of this font
+    pub fn point_size(&self) -> f32 {
         self.point_size
     }
 

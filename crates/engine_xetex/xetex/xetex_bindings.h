@@ -402,6 +402,20 @@
 
 #define OTGR_FONT_FLAG 65534
 
+#define FONT_FLAGS_COLORED 1
+
+#define FONT_FLAGS_VERTICAL 2
+
+#define XDV_FLAG_VERTICAL 256
+
+#define XDV_FLAG_COLORED 512
+
+#define XDV_FLAG_EXTEND 4096
+
+#define XDV_FLAG_SLANT 8192
+
+#define XDV_FLAG_EMBOLDEN 16384
+
 #define HASH_OFFSET 514
 
 #define HASH_BASE 2228226
@@ -857,6 +871,28 @@ StrNumber *font_area_ptr(uintptr_t idx);
 void resize_font_area(uintptr_t len);
 
 void clear_font_area(void);
+
+uint8_t font_flags(uintptr_t idx);
+
+void set_font_flags(uintptr_t idx, uint8_t val);
+
+uint8_t *font_flags_ptr(uintptr_t idx);
+
+void resize_font_flags(uintptr_t len);
+
+void clear_font_flags(void);
+
+uint8_t xdv_buffer(uintptr_t idx);
+
+void set_xdv_buffer(uintptr_t idx, uint8_t val);
+
+uint8_t *xdv_buffer_ptr(uintptr_t idx);
+
+void resize_xdv_buffer(uintptr_t len);
+
+void clear_xdv_buffer(void);
+
+uintptr_t xdv_buf_size(void);
 
 void resize_hash(uintptr_t len);
 
