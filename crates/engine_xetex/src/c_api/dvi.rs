@@ -1,6 +1,7 @@
 use crate::c_api::engine::{rs_prepare_mag, IntPar, POP, POST, TEX_INFINITY};
 use crate::c_api::fatal_error;
 use crate::c_api::globals::Globals;
+use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::io::Write;
 use std::ptr;
@@ -22,6 +23,7 @@ pub struct DviCtx {
     gone: i32,
     cur_s: i32,
     buf: Vec<u8>,
+    output_file_name: StrNumber,
 }
 
 impl DviCtx {
@@ -34,6 +36,7 @@ impl DviCtx {
             gone: 0,
             cur_s: 0,
             buf: Vec::new(),
+            output_file_name: 0,
         }
     }
 }
@@ -99,6 +102,16 @@ pub extern "C" fn set_cur_s(val: i32) {
 }
 
 #[no_mangle]
+pub extern "C" fn output_file_name() -> i32 {
+    DVI_CTX.with_borrow(|dvi| dvi.output_file_name)
+}
+
+#[no_mangle]
+pub extern "C" fn set_output_file_name(val: i32) {
+    DVI_CTX.with_borrow_mut(|dvi| dvi.output_file_name = val)
+}
+
+#[no_mangle]
 pub extern "C" fn dvi_buf(idx: usize) -> u8 {
     DVI_CTX.with_borrow(|engine| engine.buf[idx])
 }
@@ -123,7 +136,6 @@ pub extern "C" fn clear_dvi_buf() {
     DVI_CTX.with_borrow_mut(|engine| engine.buf.clear())
 }
 
-#[no_mangle]
 pub fn rs_write_to_dvi(globals: &mut Globals<'_, '_>, a: usize, b: usize) {
     let out = globals.state.get_output(globals.dvi.file.unwrap());
     out.write_all(&globals.dvi.buf[a..=b])

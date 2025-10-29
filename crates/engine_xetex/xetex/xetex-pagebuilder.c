@@ -139,7 +139,7 @@ fire_up(int32_t c)
     /* Tectonic: in semantic pagination mode, we act as if holding_inserts is
      * always active. */
 
-    process_inserts = (INTPAR(holding_inserts) <= 0) && !semantic_pagination_enabled;
+    process_inserts = (INTPAR(holding_inserts) <= 0) && !semantic_pagination_enabled();
 
     if (process_inserts) {
         /*1053: "Prepare all the boxes involved in insertions to act as

@@ -272,7 +272,6 @@ bool xtx_ligature_present;
 scaled_t delta;
 int synctex_enabled;
 bool used_tectonic_coda_tokens;
-bool semantic_pagination_enabled;
 bool gave_char_warning_help;
 
 /* These ought to live in xetex-pagebuilder.c but are shared a lot: */
@@ -3646,7 +3645,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_name_in_progress(false);
     set_log_opened(false);
 
-    if (semantic_pagination_enabled)
+    if (semantic_pagination_enabled())
         output_file_extension = ".spx";
     else
         output_file_extension = ".xdv";
@@ -3798,7 +3797,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     else
         set_selector(SELECTOR_TERM_ONLY); /*:79*/
 
-    if (semantic_pagination_enabled)
+    if (semantic_pagination_enabled())
         INTPAR(xetex_generate_actual_text) = 1;
 
     pdf_files_init();

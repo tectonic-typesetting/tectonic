@@ -250,6 +250,7 @@ pub struct EngineCtx {
     pub(crate) max_h: Scaled,
     pub(crate) max_v: Scaled,
     pub(crate) max_push: i32,
+    pub(crate) semantic_pagination_enabled: bool,
 
     pub(crate) font_ptr: i32,
     pub(crate) font_used: Vec<bool>,
@@ -374,6 +375,7 @@ impl EngineCtx {
             max_h: 0,
             max_v: 0,
             max_push: 0,
+            semantic_pagination_enabled: false,
 
             font_ptr: 0,
             font_used: Vec::new(),
@@ -962,6 +964,16 @@ pub extern "C" fn max_push() -> i32 {
 #[no_mangle]
 pub extern "C" fn set_max_push(val: i32) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.max_push = val)
+}
+
+#[no_mangle]
+pub extern "C" fn semantic_pagination_enabled() -> bool {
+    ENGINE_CTX.with_borrow(|engine| engine.semantic_pagination_enabled)
+}
+
+#[no_mangle]
+pub extern "C" fn set_semantic_pagination_enabled(val: bool) {
+    ENGINE_CTX.with_borrow_mut(|engine| engine.semantic_pagination_enabled = val)
 }
 
 #[no_mangle]

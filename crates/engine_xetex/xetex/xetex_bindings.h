@@ -524,6 +524,10 @@ int32_t cur_s(void);
 
 void set_cur_s(int32_t val);
 
+int32_t output_file_name(void);
+
+void set_output_file_name(int32_t val);
+
 uint8_t dvi_buf(uintptr_t idx);
 
 void set_dvi_buf(uintptr_t idx, uint8_t val);
@@ -719,6 +723,10 @@ void set_max_v(Scaled val);
 int32_t max_push(void);
 
 void set_max_push(int32_t val);
+
+bool semantic_pagination_enabled(void);
+
+void set_semantic_pagination_enabled(bool val);
 
 int32_t font_ptr(void);
 

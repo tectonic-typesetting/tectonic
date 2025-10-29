@@ -326,7 +326,7 @@ void init_math(void)
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_indent, s);
 
         /* Tectonic customization: flag canvas start */
-        if (semantic_pagination_enabled)
+        if (semantic_pagination_enabled())
             tt_insert_special("tdux:cs dmath");
 
         if (LOCAL(every_display) != TEX_NULL)
@@ -343,7 +343,7 @@ void init_math(void)
                 insert_src_special();
 
             /* Tectonic customization: flag canvas start */
-            if (semantic_pagination_enabled)
+            if (semantic_pagination_enabled())
                 tt_insert_special("tdux:cs math");
 
             if (LOCAL(every_math) != TEX_NULL)
@@ -1050,7 +1050,7 @@ void after_math(void)
         cur_list.aux.b32.s0 = 1000;
 
         /* Tectonic customization: flag canvas end */
-        if (semantic_pagination_enabled)
+        if (semantic_pagination_enabled())
             tt_insert_special("tdux:ce math");
 
         unsave();
@@ -1188,7 +1188,7 @@ void after_math(void)
         flush_node_list(j);
 
         /* Tectonic customization: flag canvas end */
-        if (semantic_pagination_enabled)
+        if (semantic_pagination_enabled())
             tt_insert_special("tdux:ce dmath");
 
         resume_after_display();
