@@ -133,13 +133,11 @@ font_index *bchar_label;
 nine_bits *font_bchar;
 nine_bits *font_false_bchar;
 void **font_mapping;
-char *font_flags;
 scaled_t *font_letter_space;
 void *loaded_font_mapping;
 char loaded_font_flags;
 scaled_t loaded_font_letter_space;
 UTF16_code *mapped_text;
-char *xdv_buffer;
 int32_t *char_base;
 int32_t *width_base;
 int32_t *height_base;
@@ -2688,7 +2686,7 @@ load_fmt_file(void)
 
     font_mapping = xcalloc_array(void *, font_max);
     resize_font_layout_engine(font_max+1);
-    font_flags = xmalloc_array(char, font_max);
+    resize_font_flags(font_max+1);
     font_letter_space = xmalloc_array(scaled_t, font_max);
     resize_font_check(font_max+1);
     resize_font_size(font_max+1);
@@ -3472,7 +3470,7 @@ tt_cleanup(void) {
 
     free(font_mapping);
     clear_font_layout_engine();
-    free(font_flags);
+    clear_font_flags();
     free(font_letter_space);
     clear_font_check();
     clear_font_size();
@@ -3741,7 +3739,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         hyph_start = 0;
         font_mapping = xcalloc_array(void *, font_max);
         resize_font_layout_engine(font_max+1);
-        font_flags = xcalloc_array(char, font_max);
+        resize_font_flags(font_max+1);
         font_letter_space = xcalloc_array(scaled_t, font_max);
         resize_font_check(font_max+1);
         resize_font_size(font_max+1);

@@ -247,6 +247,7 @@ pub mod c_api {
     // If you change the interfaces here, rerun cbindgen as described in the README!
 
     use tectonic_bridge_core::CoreBridgeState;
+    use tectonic_bridge_freetype2::Fixed;
 
     /// Helper for exposing variables in a thread-local context to C
     macro_rules! c_var {
@@ -331,6 +332,10 @@ pub mod c_api {
     /// Copy of `IS_DIR_SEP` from bridge_core
     fn is_dir_sep(c: char) -> bool {
         c == '/'
+    }
+
+    fn d_to_fix(d: f64) -> i32 {
+        (d * 65536.0 + 0.5) as i32
     }
 
     #[allow(improper_ctypes)] // for CoreBridgeState

@@ -719,7 +719,7 @@ hlist_out(void)
                                 len = make_xdv_glyph_array_data(p);
 
                                 for (k = 0; k < len; k++)
-                                    dvi_out(xdv_buffer[k]);
+                                    dvi_out(xdv_buffer(k));
                             }
                         } else {
                             if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
@@ -727,7 +727,7 @@ hlist_out(void)
                                 len = make_xdv_glyph_array_data(p);
 
                                 for (k = 0; k < len; k++)
-                                    dvi_out(xdv_buffer[k]);
+                                    dvi_out(xdv_buffer(k));
                             }
                         }
 
@@ -1774,7 +1774,7 @@ dvi_native_font_def(internal_font_number f)
     font_def_length = make_font_def(f);
 
     for (i = 0; i < font_def_length; i++)
-        dvi_out(xdv_buffer[i]);
+        dvi_out(xdv_buffer(i));
 }
 
 
