@@ -116,6 +116,14 @@ impl MemoryWord {
     }
 }
 
+impl Default for MemoryWord {
+    fn default() -> Self {
+        MemoryWord {
+            ptr: ptr::null_mut(),
+        }
+    }
+}
+
 /* ## THE ORIGINAL SITUATION (archived for posterity)
  *
  * In XeTeX, a "quarterword" is 16 bits. Who knows why. A "halfword" is,

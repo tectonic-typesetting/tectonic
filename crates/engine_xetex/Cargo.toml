@@ -22,6 +22,7 @@ links = "tectonic_engine_xetex"
 
 [dependencies]
 libc = "^0.2"
+paste = "1.0"
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_bridge_freetype2 = { path = "../bridge_freetype2", version = "0.0.0-dev.0" }
 tectonic_bridge_flate = { path = "../bridge_flate", version = "0.0.0-dev.0" }
@@ -41,6 +42,7 @@ external-harfbuzz = [
     "tectonic_bridge_harfbuzz/external-harfbuzz",
     "tectonic_xetex_layout/external-harfbuzz",
 ]
+cbindgen = []
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"

@@ -369,6 +369,8 @@
 
 #define POST 248
 
+#define FONT_BASE 0
+
 #define TOKEN_LIST 0
 
 #define MAX_CHAR_VAL 2097152
@@ -407,13 +409,6 @@
 
 #define TOO_BIG_CHAR 65536
 
-typedef enum {
-  History_Spotless = 0,
-  History_WarningIssued = 1,
-  History_ErrorIssued = 2,
-  History_FatalError = 3,
-} History;
-
 typedef int32_t StrNumber;
 
 typedef struct {
@@ -446,44 +441,14 @@ typedef struct {
 
 typedef int32_t Scaled;
 
-#if defined(WORDS_BIGENDIAN)
-typedef struct {
-  int32_t s1;
-  int32_t s0;
-} B32x2;
-#endif
-
-#if !defined(WORDS_BIGENDIAN)
-typedef struct {
-  int32_t s0;
-  int32_t s1;
-} B32x2;
-#endif
-
-#if defined(WORDS_BIGENDIAN)
-typedef struct {
-  uint16_t s3;
-  uint16_t s2;
-  uint16_t s1;
-  uint16_t s0;
-} B16x4;
-#endif
-
-#if !defined(WORDS_BIGENDIAN)
-typedef struct {
-  uint16_t s0;
-  uint16_t s1;
-  uint16_t s2;
-  uint16_t s3;
-} B16x4;
-#endif
-
 typedef union {
   B32x2 b32;
   B16x4 b16;
   double gr;
   void *ptr;
 } MemoryWord;
+
+typedef int32_t Scaled;
 
 #define EMPTY_STRING (65536 + 1)
 
@@ -570,6 +535,8 @@ uint16_t trick_buf(uintptr_t idx);
 
 void set_trick_buf(uintptr_t idx, uint16_t val);
 
+uint16_t *trick_buf_ptr(uintptr_t idx);
+
 int32_t eqtb_top(void);
 
 void set_eqtb_top(int32_t val);
@@ -634,11 +601,13 @@ bool log_opened(void);
 
 void set_log_opened(bool val);
 
-void resize_input_stack(uintptr_t len);
-
 input_state_t input_stack(uintptr_t idx);
 
-void set_input_stack(uintptr_t idx, input_state_t state);
+void set_input_stack(uintptr_t idx, input_state_t val);
+
+input_state_t *input_stack_ptr(uintptr_t idx);
+
+void resize_input_stack(uintptr_t len);
 
 void clear_input_stack(void);
 
@@ -656,7 +625,7 @@ uint8_t interaction(void);
 
 void set_interaction(uint8_t val);
 
-History history(void);
+uint8_t history(void);
 
 void set_history(uint8_t val);
 
@@ -706,19 +675,21 @@ void set_help_ptr(uintptr_t val);
 
 const char *help_line(uintptr_t idx);
 
-void set_help_line(uintptr_t idx, const char *ptr);
+void set_help_line(uintptr_t idx, const char *val);
+
+const char **help_line_ptr(uintptr_t idx);
 
 int32_t mag_set(void);
 
 void set_mag_set(int32_t val);
 
-Scaled max_h(void);
+int32_t max_h(void);
 
-void set_max_h(Scaled val);
+void set_max_h(int32_t val);
 
-Scaled max_v(void);
+int32_t max_v(void);
 
-void set_max_v(Scaled val);
+void set_max_v(int32_t val);
 
 int32_t max_push(void);
 
@@ -727,18 +698,6 @@ void set_max_push(int32_t val);
 bool semantic_pagination_enabled(void);
 
 void set_semantic_pagination_enabled(bool val);
-
-int32_t font_ptr(void);
-
-void set_font_ptr(int32_t val);
-
-bool font_used(uintptr_t idx);
-
-void set_font_used(uintptr_t idx, bool val);
-
-void resize_font_used(uintptr_t len);
-
-void clear_font_used(void);
 
 MemoryWord eqtb(uintptr_t idx);
 
