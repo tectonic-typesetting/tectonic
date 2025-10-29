@@ -37,6 +37,38 @@
 
 /* our typedefs */
 
+#if defined(WORDS_BIGENDIAN)
+typedef struct {
+  int32_t s1;
+  int32_t s0;
+} B32x2;
+#endif
+
+#if !defined(WORDS_BIGENDIAN)
+typedef struct {
+  int32_t s0;
+  int32_t s1;
+} B32x2;
+#endif
+
+#if defined(WORDS_BIGENDIAN)
+typedef struct {
+  uint16_t s3;
+  uint16_t s2;
+  uint16_t s1;
+  uint16_t s0;
+} B16x4;
+#endif
+
+#if !defined(WORDS_BIGENDIAN)
+typedef struct {
+  uint16_t s0;
+  uint16_t s1;
+  uint16_t s2;
+  uint16_t s3;
+} B16x4;
+#endif
+
 typedef int32_t scaled_t;
 
 typedef enum {

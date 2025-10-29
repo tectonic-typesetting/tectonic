@@ -207,7 +207,7 @@ pub extern "C" fn dvi_four(x: i32) {
     Globals::with(|globals| rs_dvi_four(globals, x))
 }
 
-pub fn rs_dvi_two(globals: &mut Globals<'_, '_>, mut s: u16) {
+pub fn rs_dvi_two(globals: &mut Globals<'_, '_>, s: u16) {
     rs_dvi_out(globals, (s / 0x100) as u8);
     rs_dvi_out(globals, (s % 0x100) as u8);
 }

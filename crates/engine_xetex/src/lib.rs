@@ -248,6 +248,75 @@ pub mod c_api {
 
     use tectonic_bridge_core::CoreBridgeState;
 
+    /// Helper for exposing variables in a thread-local context to C
+    macro_rules! c_var {
+        ($ctx:path => $name:ident: into $ty:ty) => {
+            #[no_mangle]
+            pub extern "C" fn $name() -> $ty {
+                <$ctx>::with(|ctx| ctx.$name.into())
+            }
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< set_ $name >](val: $ty) {
+                    <$ctx>::with(|ctx| ctx.$name = TryFrom::try_from(val).unwrap())
+                }
+            }
+        };
+        ($ctx:path => $name:ident: $ty:ty) => {
+            #[no_mangle]
+            pub extern "C" fn $name() -> $ty {
+                <$ctx>::with(|ctx| ctx.$name)
+            }
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< set_ $name >](val: $ty) {
+                    <$ctx>::with(|ctx| ctx.$name = val)
+                }
+            }
+        };
+    }
+
+    /// Helper for exposing vectors/arrays in a therad-local context to C
+    macro_rules! c_arr {
+        // Growable vector
+        ($ctx:path => $name:ident: $element:ty) => {
+            c_arr!($ctx => $name[_]: $element);
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< resize_ $name >](len: usize) {
+                    <$ctx>::with(|ctx| ctx.$name.resize(len, Default::default()))
+                }
+
+                #[no_mangle]
+                pub extern "C" fn [< clear_ $name >]() {
+                    <$ctx>::with(|ctx| ctx.$name.clear())
+                }
+            }
+        };
+        // Fixed-size array
+        ($ctx:path => $name:ident[_]: $element:ty) => {
+            #[no_mangle]
+            pub extern "C" fn $name(idx: usize) -> $element {
+                <$ctx>::with(|ctx| ctx.$name[idx].clone())
+            }
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< set_ $name >](idx: usize, val: $element) {
+                    <$ctx>::with(|ctx| ctx.$name[idx] = val)
+                }
+
+                #[no_mangle]
+                pub extern "C" fn [< $name _ptr >](idx: usize) -> *mut $element {
+                    <$ctx>::with(|ctx| core::ptr::from_mut(&mut ctx.$name[idx]))
+                }
+            }
+        };
+    }
+
     mod dvi;
     mod engine;
     mod errors;

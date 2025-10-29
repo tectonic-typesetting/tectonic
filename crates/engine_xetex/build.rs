@@ -10,6 +10,10 @@ use tectonic_cfg_support::*;
 fn main() {
     let target = env::var("TARGET").unwrap();
 
+    if env::var("CARGO_FEATURE_CBINDGEN").is_ok() {
+        return;
+    }
+
     // Include paths exported by our internal dependencies.
 
     let xetex_layout_include_path = env::var("DEP_TECTONIC_XETEX_LAYOUT_INCLUDE_PATH").unwrap();

@@ -199,13 +199,14 @@ pub const EOP: u8 = 140;
 pub const POP: u8 = 142;
 pub const POST: u8 = 248;
 
+pub const FONT_BASE: i32 = 0;
 pub const TOKEN_LIST: u16 = 0;
 
 pub const MAX_CHAR_VAL: i32 = 0x200000;
 pub const CS_TOKEN_FLAG: i32 = 0x1FFFFFF;
 
 thread_local! {
-    pub static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
+    static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
 }
 
 pub struct EngineCtx {
@@ -271,6 +272,12 @@ pub enum InteractionMode {
     ErrorStop,
 }
 
+impl From<InteractionMode> for u8 {
+    fn from(value: InteractionMode) -> Self {
+        value as u8
+    }
+}
+
 impl TryFrom<u8> for InteractionMode {
     type Error = u8;
 
@@ -315,6 +322,12 @@ pub enum History {
     WarningIssued = 1,
     ErrorIssued = 2,
     FatalError = 3,
+}
+
+impl From<History> for u8 {
+    fn from(value: History) -> Self {
+        value as u8
+    }
 }
 
 impl TryFrom<u8> for History {
@@ -386,6 +399,10 @@ impl EngineCtx {
             buffer: Vec::new(),
             xeq_level_array: vec![0; EQTB_SIZE - INT_BASE + 1],
         }
+    }
+
+    pub fn with<T>(f: impl FnOnce(&mut EngineCtx) -> T) -> T {
+        ENGINE_CTX.with_borrow_mut(f)
     }
 
     pub fn raw_mem(&self, idx: usize) -> MemoryWord {
@@ -496,65 +513,12 @@ impl TryFrom<u32> for Selector {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn selector() -> u32 {
-    ENGINE_CTX.with_borrow(|engine| engine.selector.into())
-}
-
-#[no_mangle]
-pub extern "C" fn set_selector(val: u32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.selector = Selector::try_from(val).unwrap());
-}
-
-#[no_mangle]
-pub extern "C" fn tally() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.tally)
-}
-
-#[no_mangle]
-pub extern "C" fn set_tally(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.tally = val)
-}
-
-#[no_mangle]
-pub extern "C" fn error_line() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.error_line)
-}
-
-#[no_mangle]
-pub extern "C" fn set_error_line(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.error_line = val)
-}
-
-#[no_mangle]
-pub extern "C" fn trick_count() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.trick_count)
-}
-
-#[no_mangle]
-pub extern "C" fn set_trick_count(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.trick_count = val)
-}
-
-#[no_mangle]
-pub extern "C" fn trick_buf(idx: usize) -> u16 {
-    ENGINE_CTX.with_borrow(|engine| engine.trick_buf[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn set_trick_buf(idx: usize, val: u16) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.trick_buf[idx] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn eqtb_top() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.eqtb_top)
-}
-
-#[no_mangle]
-pub extern "C" fn set_eqtb_top(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb_top = val)
-}
+c_var!(EngineCtx => selector: into u32);
+c_var!(EngineCtx => tally: i32);
+c_var!(EngineCtx => error_line: i32);
+c_var!(EngineCtx => trick_count: i32);
+c_arr!(EngineCtx => trick_buf[_]: u16);
+c_var!(EngineCtx => eqtb_top: i32);
 
 #[no_mangle]
 pub extern "C" fn name_length() -> usize {
@@ -620,155 +584,20 @@ pub extern "C" fn set_name_of_file16(val: *const u16, len: usize) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file_utf16 = s.map(<[u16]>::to_owned))
 }
 
-#[no_mangle]
-pub extern "C" fn cur_name() -> StrNumber {
-    ENGINE_CTX.with_borrow(|engine| engine.cur_name)
-}
-
-#[no_mangle]
-pub extern "C" fn set_cur_name(val: StrNumber) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_name = val)
-}
-
-#[no_mangle]
-pub extern "C" fn cur_area() -> StrNumber {
-    ENGINE_CTX.with_borrow(|engine| engine.cur_area)
-}
-
-#[no_mangle]
-pub extern "C" fn set_cur_area(val: StrNumber) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_area = val)
-}
-
-#[no_mangle]
-pub extern "C" fn cur_ext() -> StrNumber {
-    ENGINE_CTX.with_borrow(|engine| engine.cur_ext)
-}
-
-#[no_mangle]
-pub extern "C" fn set_cur_ext(val: StrNumber) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_ext = val)
-}
-
-#[no_mangle]
-pub extern "C" fn job_name() -> StrNumber {
-    ENGINE_CTX.with_borrow(|engine| engine.job_name)
-}
-
-#[no_mangle]
-pub extern "C" fn set_job_name(val: StrNumber) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.job_name = val)
-}
-
-#[no_mangle]
-pub extern "C" fn area_delimiter() -> usize {
-    ENGINE_CTX.with_borrow(|engine| engine.area_delimiter)
-}
-
-#[no_mangle]
-pub extern "C" fn set_area_delimiter(val: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.area_delimiter = val)
-}
-
-#[no_mangle]
-pub extern "C" fn ext_delimiter() -> usize {
-    ENGINE_CTX.with_borrow(|engine| engine.ext_delimiter)
-}
-
-#[no_mangle]
-pub extern "C" fn set_ext_delimiter(val: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.ext_delimiter = val)
-}
-
-#[no_mangle]
-pub extern "C" fn name_in_progress() -> bool {
-    ENGINE_CTX.with_borrow(|engine| engine.name_in_progress)
-}
-
-#[no_mangle]
-pub extern "C" fn set_name_in_progress(val: bool) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.name_in_progress = val)
-}
-
-#[no_mangle]
-pub extern "C" fn stop_at_space() -> bool {
-    ENGINE_CTX.with_borrow(|engine| engine.stop_at_space)
-}
-
-#[no_mangle]
-pub extern "C" fn set_stop_at_space(val: bool) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.stop_at_space = val)
-}
-
-#[no_mangle]
-pub extern "C" fn file_name_quote_char() -> u16 {
-    ENGINE_CTX.with_borrow(|engine| engine.file_name_quote_char)
-}
-
-#[no_mangle]
-pub extern "C" fn set_file_name_quote_char(val: u16) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.file_name_quote_char = val)
-}
-
-#[no_mangle]
-pub extern "C" fn quoted_filename() -> bool {
-    ENGINE_CTX.with_borrow(|engine| engine.quoted_filename)
-}
-
-#[no_mangle]
-pub extern "C" fn set_quoted_filename(val: bool) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.quoted_filename = val)
-}
-
-#[no_mangle]
-pub extern "C" fn texmf_log_name() -> StrNumber {
-    ENGINE_CTX.with_borrow(|engine| engine.texmf_log_name)
-}
-
-#[no_mangle]
-pub extern "C" fn set_texmf_log_name(val: StrNumber) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.texmf_log_name = val)
-}
-
-#[no_mangle]
-pub extern "C" fn log_opened() -> bool {
-    ENGINE_CTX.with_borrow(|engine| engine.log_opened)
-}
-
-#[no_mangle]
-pub extern "C" fn set_log_opened(val: bool) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.log_opened = val)
-}
-
-#[no_mangle]
-pub extern "C" fn resize_input_stack(len: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.input_stack.resize(len, InputState::default()))
-}
-
-#[no_mangle]
-pub extern "C" fn input_stack(idx: usize) -> InputState {
-    ENGINE_CTX.with_borrow(|engine| engine.input_stack[idx].clone())
-}
-
-#[no_mangle]
-pub extern "C" fn set_input_stack(idx: usize, state: InputState) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.input_stack[idx] = state)
-}
-
-#[no_mangle]
-pub extern "C" fn clear_input_stack() {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.input_stack.clear())
-}
-
-#[no_mangle]
-pub extern "C" fn input_ptr() -> usize {
-    ENGINE_CTX.with_borrow(|engine| engine.input_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_input_ptr(val: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.input_ptr = val)
-}
+c_var!(EngineCtx => cur_name: StrNumber);
+c_var!(EngineCtx => cur_area: StrNumber);
+c_var!(EngineCtx => cur_ext: StrNumber);
+c_var!(EngineCtx => job_name: StrNumber);
+c_var!(EngineCtx => area_delimiter: usize);
+c_var!(EngineCtx => ext_delimiter: usize);
+c_var!(EngineCtx => name_in_progress: bool);
+c_var!(EngineCtx => stop_at_space: bool);
+c_var!(EngineCtx => file_name_quote_char: u16);
+c_var!(EngineCtx => quoted_filename: bool);
+c_var!(EngineCtx => texmf_log_name: StrNumber);
+c_var!(EngineCtx => log_opened: bool);
+c_arr!(EngineCtx => input_stack: InputState);
+c_var!(EngineCtx => input_ptr: usize);
 
 #[no_mangle]
 pub extern "C" fn cur_input() -> InputState {
@@ -785,305 +614,32 @@ pub extern "C" fn set_cur_input(val: InputState) {
     ENGINE_CTX.with_borrow_mut(|engine| engine.cur_input = val)
 }
 
-#[no_mangle]
-pub extern "C" fn interaction() -> u8 {
-    ENGINE_CTX.with_borrow(|engine| engine.interaction as u8)
-}
+c_var!(EngineCtx => interaction: into u8);
+c_var!(EngineCtx => history: into u8);
+c_var!(EngineCtx => total_pages: i32);
+c_var!(EngineCtx => last_bop: i32);
+c_var!(EngineCtx => base_ptr: usize);
+c_var!(EngineCtx => first_count: i32);
+c_var!(EngineCtx => half_error_line: i32);
+c_var!(EngineCtx => hi_mem_min: i32);
+c_var!(EngineCtx => mem_end: i32);
+c_var!(EngineCtx => halt_on_error_p: i32);
+c_var!(EngineCtx => error_count: i8);
+c_var!(EngineCtx => use_err_help: bool);
+c_var!(EngineCtx => help_ptr: usize);
+c_arr!(EngineCtx => help_line[_]: *const libc::c_char);
+c_var!(EngineCtx => mag_set: i32);
+c_var!(EngineCtx => max_h: i32);
+c_var!(EngineCtx => max_v: i32);
+c_var!(EngineCtx => max_push: i32);
+c_var!(EngineCtx => semantic_pagination_enabled: bool);
 
-#[no_mangle]
-pub extern "C" fn set_interaction(val: u8) {
-    ENGINE_CTX
-        .with_borrow_mut(|engine| engine.interaction = InteractionMode::try_from(val).unwrap())
-}
+c_arr!(EngineCtx => font_used: bool);
+c_var!(EngineCtx => font_ptr: i32);
 
-#[no_mangle]
-pub extern "C" fn history() -> History {
-    ENGINE_CTX.with_borrow(|engine| engine.history)
-}
-
-#[no_mangle]
-pub extern "C" fn set_history(val: u8) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.history = History::try_from(val).unwrap())
-}
-
-#[no_mangle]
-pub extern "C" fn total_pages() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.total_pages)
-}
-
-#[no_mangle]
-pub extern "C" fn set_total_pages(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.total_pages = val)
-}
-
-#[no_mangle]
-pub extern "C" fn last_bop() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.last_bop)
-}
-
-#[no_mangle]
-pub extern "C" fn set_last_bop(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.last_bop = val)
-}
-
-#[no_mangle]
-pub extern "C" fn base_ptr() -> usize {
-    ENGINE_CTX.with_borrow(|engine| engine.base_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_base_ptr(val: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.base_ptr = val)
-}
-
-#[no_mangle]
-pub extern "C" fn first_count() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.first_count)
-}
-
-#[no_mangle]
-pub extern "C" fn set_first_count(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.first_count = val)
-}
-
-#[no_mangle]
-pub extern "C" fn half_error_line() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.half_error_line)
-}
-
-#[no_mangle]
-pub extern "C" fn set_half_error_line(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.half_error_line = val)
-}
-
-#[no_mangle]
-pub extern "C" fn hi_mem_min() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.hi_mem_min)
-}
-
-#[no_mangle]
-pub extern "C" fn set_hi_mem_min(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.hi_mem_min = val)
-}
-
-#[no_mangle]
-pub extern "C" fn mem_end() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.mem_end)
-}
-
-#[no_mangle]
-pub extern "C" fn set_mem_end(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.mem_end = val)
-}
-
-#[no_mangle]
-pub extern "C" fn halt_on_error_p() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.halt_on_error_p)
-}
-
-#[no_mangle]
-pub extern "C" fn set_halt_on_error_p(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.halt_on_error_p = val)
-}
-
-#[no_mangle]
-pub extern "C" fn error_count() -> i8 {
-    ENGINE_CTX.with_borrow(|engine| engine.error_count)
-}
-
-#[no_mangle]
-pub extern "C" fn set_error_count(val: i8) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.error_count = val)
-}
-
-#[no_mangle]
-pub extern "C" fn use_err_help() -> bool {
-    ENGINE_CTX.with_borrow(|engine| engine.use_err_help)
-}
-
-#[no_mangle]
-pub extern "C" fn set_use_err_help(val: bool) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.use_err_help = val)
-}
-
-#[no_mangle]
-pub extern "C" fn help_ptr() -> usize {
-    ENGINE_CTX.with_borrow(|engine| engine.help_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_help_ptr(val: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.help_ptr = val)
-}
-
-#[no_mangle]
-pub extern "C" fn help_line(idx: usize) -> *const libc::c_char {
-    ENGINE_CTX.with_borrow(|engine| engine.help_line[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn set_help_line(idx: usize, ptr: *const libc::c_char) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.help_line[idx] = ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn mag_set() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.mag_set)
-}
-
-#[no_mangle]
-pub extern "C" fn set_mag_set(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.mag_set = val)
-}
-
-#[no_mangle]
-pub extern "C" fn max_h() -> Scaled {
-    ENGINE_CTX.with_borrow(|engine| engine.max_h)
-}
-
-#[no_mangle]
-pub extern "C" fn set_max_h(val: Scaled) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.max_h = val)
-}
-
-#[no_mangle]
-pub extern "C" fn max_v() -> Scaled {
-    ENGINE_CTX.with_borrow(|engine| engine.max_v)
-}
-
-#[no_mangle]
-pub extern "C" fn set_max_v(val: Scaled) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.max_v = val)
-}
-
-#[no_mangle]
-pub extern "C" fn max_push() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.max_push)
-}
-
-#[no_mangle]
-pub extern "C" fn set_max_push(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.max_push = val)
-}
-
-#[no_mangle]
-pub extern "C" fn semantic_pagination_enabled() -> bool {
-    ENGINE_CTX.with_borrow(|engine| engine.semantic_pagination_enabled)
-}
-
-#[no_mangle]
-pub extern "C" fn set_semantic_pagination_enabled(val: bool) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.semantic_pagination_enabled = val)
-}
-
-#[no_mangle]
-pub extern "C" fn font_ptr() -> i32 {
-    ENGINE_CTX.with_borrow(|engine| engine.font_ptr)
-}
-
-#[no_mangle]
-pub extern "C" fn set_font_ptr(val: i32) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.font_ptr = val)
-}
-
-#[no_mangle]
-pub extern "C" fn font_used(idx: usize) -> bool {
-    ENGINE_CTX.with_borrow(|engine| engine.font_used[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn set_font_used(idx: usize, val: bool) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.font_used[idx] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn resize_font_used(len: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.font_used.resize(len + 1, false))
-}
-
-#[no_mangle]
-pub extern "C" fn clear_font_used() {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.font_used.clear())
-}
-
-#[no_mangle]
-pub extern "C" fn eqtb(idx: usize) -> MemoryWord {
-    ENGINE_CTX.with_borrow(|engine| engine.eqtb[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn set_eqtb(idx: usize, val: MemoryWord) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb[idx] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn eqtb_ptr(idx: usize) -> *mut MemoryWord {
-    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.eqtb[idx]))
-}
-
-#[no_mangle]
-pub extern "C" fn resize_eqtb(len: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| {
-        engine.eqtb.resize(
-            len,
-            MemoryWord {
-                ptr: ptr::null_mut(),
-            },
-        )
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn clear_eqtb() {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.eqtb.clear())
-}
-
-#[no_mangle]
-pub extern "C" fn mem(idx: usize) -> MemoryWord {
-    ENGINE_CTX.with_borrow(|engine| engine.mem[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn set_mem(idx: usize, val: MemoryWord) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.mem[idx] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn mem_ptr(idx: usize) -> *mut MemoryWord {
-    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.mem[idx]))
-}
-
-#[no_mangle]
-pub extern "C" fn resize_mem(len: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| {
-        engine.mem.resize(
-            len,
-            MemoryWord {
-                ptr: ptr::null_mut(),
-            },
-        )
-    })
-}
-
-#[no_mangle]
-pub extern "C" fn clear_mem() {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.mem.clear())
-}
-
-#[no_mangle]
-pub extern "C" fn prim(idx: usize) -> B32x2 {
-    ENGINE_CTX.with_borrow(|engine| engine.prim[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn set_prim(idx: usize, val: B32x2) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.prim[idx] = val)
-}
-
-#[no_mangle]
-pub extern "C" fn prim_ptr(idx: usize) -> *mut B32x2 {
-    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.prim[idx]))
-}
+c_arr!(EngineCtx => eqtb: MemoryWord);
+c_arr!(EngineCtx => mem: MemoryWord);
+c_arr!(EngineCtx => prim[_]: B32x2);
 
 #[no_mangle]
 pub extern "C" fn resize_buffer(len: usize) {
