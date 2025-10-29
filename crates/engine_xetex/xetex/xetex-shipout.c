@@ -13,7 +13,6 @@
 #define HALF_BUF 8192
 #define FNT_NUM_0 171 /* DVI code */
 
-static str_number output_file_name;
 static int32_t g;
 static int32_t lq, lr;
 static int32_t down_ptr, right_ptr;
@@ -35,7 +34,7 @@ static void dvi_font_def(internal_font_number f);
 void
 initialize_shipout_variables(void)
 {
-    output_file_name = 0;
+    set_output_file_name(0);
     resize_dvi_buf(DVI_BUF_SIZE);
     set_dvi_limit(DVI_BUF_SIZE);
     set_dvi_ptr(0);
@@ -148,14 +147,14 @@ ship_out(int32_t p)
 
     /* ... resuming 637 ... open up the DVI file if needed */
 
-    if (output_file_name == 0) {
+    if (output_file_name() == 0) {
         if (job_name() == 0)
             open_log_file();
         pack_job_name(output_file_extension);
         set_dvi_file(ttstub_output_open(name_of_file(), 0));
         if (dvi_file() == INVALID_HANDLE)
             _tt_abort("cannot open output file \"%s\"", name_of_file());
-        output_file_name = make_name_string();
+        set_output_file_name(make_name_string());
     }
 
     /* First page? Emit preamble items. */
@@ -163,7 +162,7 @@ ship_out(int32_t p)
     if (total_pages() == 0) {
         dvi_out(PRE);
 
-        if (semantic_pagination_enabled)
+        if (semantic_pagination_enabled())
             dvi_out(SPX_ID_BYTE);
         else
             dvi_out(XDV_ID_BYTE);
@@ -2300,7 +2299,7 @@ finalize_dvi_file(void)
     dvi_out(POST_POST);
     dvi_four(last_bop());
 
-    if (semantic_pagination_enabled)
+    if (semantic_pagination_enabled())
         dvi_out(SPX_ID_BYTE);
     else
         dvi_out(XDV_ID_BYTE);
@@ -2327,7 +2326,7 @@ finalize_dvi_file(void)
 
     if (k == 0) {
         print_nl_cstr("Output written on ");
-        print(output_file_name);
+        print(output_file_name());
         print_cstr(" (");
         print_int(total_pages());
         if (total_pages() != 1)
@@ -2344,7 +2343,7 @@ finalize_dvi_file(void)
         print_c_string(strerror(k));
         print_cstr(") generating output;");
         print_nl_cstr("file ");
-        print(output_file_name);
+        print(output_file_name());
         print_cstr(" may not be valid.");
         /* XeTeX adds history = OUTPUT_FAILURE = 4 here; I'm not implementing that. */
     }

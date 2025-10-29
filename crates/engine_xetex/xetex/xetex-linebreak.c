@@ -1243,7 +1243,7 @@ post_line_break(bool d)
         /* Tectonic: in semantic pagination mode, set each "line" (really the
          * whole paragraph) at its natural width. */
 
-        if (semantic_pagination_enabled) {
+        if (semantic_pagination_enabled()) {
             just_box = hpack(q, 0, ADDITIONAL);
         } else {
             just_box = hpack(q, cur_width, EXACTLY);
@@ -1418,7 +1418,7 @@ try_break(int32_t pi, small_number break_type)
 
     /* Tectonic: no-op except at the end of the paragraph. We know we're at
      * the very end of the paragraph when cur_p is TEX_NULL. */
-    if (semantic_pagination_enabled && cur_p != TEX_NULL)
+    if (semantic_pagination_enabled() && cur_p != TEX_NULL)
         return;
 
     if (abs(pi) >= INF_PENALTY) {
@@ -1737,7 +1737,7 @@ try_break(int32_t pi, small_number break_type)
          * at the very end of the paragraph. How amazing, it's a perfect fit!
          */
 
-        if (semantic_pagination_enabled) {
+        if (semantic_pagination_enabled()) {
             line_width = cur_active_width[1];
             artificial_demerits = true;
             shortfall = 0;

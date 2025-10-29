@@ -31,7 +31,7 @@ tt_xetex_set_int_variable (const char *var_name, int value)
     else if (streq_ptr(var_name, "synctex_enabled"))
         synctex_enabled = (value != 0);
     else if (streq_ptr(var_name, "semantic_pagination_enabled"))
-        semantic_pagination_enabled = (value != 0);
+        set_semantic_pagination_enabled(value != 0);
     else if (streq_ptr(var_name, "shell_escape_enabled"))
         shell_escape_enabled = (value != 0);
     else
