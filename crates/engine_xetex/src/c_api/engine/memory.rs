@@ -35,14 +35,14 @@ use std::{fmt, ptr};
 
 #[cfg(target_endian = "big")]
 mod data {
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Default)]
     #[repr(C)]
     pub struct B32x2 {
         s1: i32,
         s0: i32,
     }
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Default)]
     #[repr(C)]
     pub struct B16x4 {
         s3: u16,
@@ -54,14 +54,14 @@ mod data {
 
 #[cfg(not(target_endian = "big"))]
 mod data {
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Default)]
     #[repr(C)]
     pub struct B32x2 {
         pub(crate) s0: i32,
         pub(crate) s1: i32,
     }
 
-    #[derive(Copy, Clone)]
+    #[derive(Copy, Clone, Default)]
     #[repr(C)]
     pub struct B16x4 {
         pub(crate) s0: u16,

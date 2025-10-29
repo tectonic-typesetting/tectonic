@@ -1784,7 +1784,7 @@ dvi_font_def(internal_font_number f)
     pool_pointer k;
     int32_t l;
 
-    if (font_area[f] == AAT_FONT_FLAG || font_area[f] == OTGR_FONT_FLAG)
+    if (font_area(f) == AAT_FONT_FLAG || font_area(f) == OTGR_FONT_FLAG)
         dvi_native_font_def(f);
     else {
         if (f <= 256) {
@@ -1796,32 +1796,32 @@ dvi_font_def(internal_font_number f)
             dvi_out((f - 1) % 256);
         }
 
-        dvi_out(font_check[f].s3);
-        dvi_out(font_check[f].s2);
-        dvi_out(font_check[f].s1);
-        dvi_out(font_check[f].s0);
-        dvi_four(font_size[f]);
-        dvi_four(font_dsize[f]);
-        dvi_out(length(font_area[f]));
+        dvi_out(font_check(f).s3);
+        dvi_out(font_check(f).s2);
+        dvi_out(font_check(f).s1);
+        dvi_out(font_check(f).s0);
+        dvi_four(font_size(f));
+        dvi_four(font_dsize(f));
+        dvi_out(length(font_area(f)));
         l = 0;
-        k = str_start((font_name[f]) - 65536L);
+        k = str_start((font_name(f)) - 65536L);
 
-        while ((l == 0) && (k < str_start((font_name[f] + 1) - 65536L))) {
+        while ((l == 0) && (k < str_start((font_name(f) + 1) - 65536L))) {
 
             if (str_pool(k) == ':' )
-                l = k - str_start((font_name[f]) - 65536L);
+                l = k - str_start((font_name(f)) - 65536L);
             k++;
         }
 
         if (l == 0)
-            l = length(font_name[f]);
+            l = length(font_name(f));
 
         dvi_out(l);
 
         {
             register int32_t for_end;
-            k = str_start((font_area[f]) - 65536L);
-            for_end = str_start((font_area[f] + 1) - 65536L) - 1;
+            k = str_start((font_area(f)) - 65536L);
+            for_end = str_start((font_area(f) + 1) - 65536L) - 1;
             if (k <= for_end)
                 do {
                     dvi_out(str_pool(k));
@@ -1831,8 +1831,8 @@ dvi_font_def(internal_font_number f)
 
         {
             register int32_t for_end;
-            k = str_start((font_name[f]) - 65536L);
-            for_end = str_start((font_name[f]) - 65536L) + l - 1;
+            k = str_start((font_name(f)) - 65536L);
+            for_end = str_start((font_name(f)) - 65536L) + l - 1;
             if (k <= for_end)
                 do {
                     dvi_out(str_pool(k));

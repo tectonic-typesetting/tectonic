@@ -3368,8 +3368,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
     case SET_FONT:
         print_cstr("select font ");
 
-        font_name_str = font_name[chr_code];
-        if (font_area[chr_code] == AAT_FONT_FLAG || font_area[chr_code] == OTGR_FONT_FLAG) {
+        font_name_str = font_name(chr_code);
+        if (font_area(chr_code) == AAT_FONT_FLAG || font_area(chr_code) == OTGR_FONT_FLAG) {
             int32_t for_end = length(font_name_str) - 1;
             quote_char = '"' ;
 
@@ -3385,9 +3385,9 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
             print(font_name_str);
         }
 
-        if (font_size[chr_code] != font_dsize[chr_code]) {
+        if (font_size(chr_code) != font_dsize(chr_code)) {
             print_cstr(" at ");
-            print_scaled(font_size[chr_code]);
+            print_scaled(font_size(chr_code));
             print_cstr("pt");
         }
         break;
@@ -3547,7 +3547,7 @@ void not_aat_font_error(int32_t cmd, int32_t c, int32_t f)
     error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
-    print(font_name[f]);
+    print(font_name(f));
     print_cstr("; not an AAT font");
     capture_to_diagnostic(NULL);
 
@@ -3559,7 +3559,7 @@ void not_aat_gr_font_error(int32_t cmd, int32_t c, int32_t f)
     error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
-    print(font_name[f]);
+    print(font_name(f));
     print_cstr("; not an AAT or Graphite font");
     capture_to_diagnostic(NULL);
 
@@ -3571,7 +3571,7 @@ void not_ot_font_error(int32_t cmd, int32_t c, int32_t f)
     error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
-    print(font_name[f]);
+    print(font_name(f));
     print_cstr("; not an OpenType Layout font");
     capture_to_diagnostic(NULL);
 
@@ -3583,7 +3583,7 @@ void not_native_font_error(int32_t cmd, int32_t c, int32_t f)
     error_here_with_diagnostic("Cannot use ");
     print_cmd_chr(cmd, c);
     print_cstr(" with ");
-    print(font_name[f]);
+    print(font_name(f));
     print_cstr("; not a native platform font");
     capture_to_diagnostic(NULL);
 
@@ -7010,7 +7010,7 @@ restart:
         } else {
             n = cur_val;
 
-            if (font_area[n] == AAT_FONT_FLAG || font_area[n] == OTGR_FONT_FLAG)
+            if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG)
                 scan_glyph_number(n);
             else
                 scan_char_num();
@@ -7117,8 +7117,8 @@ restart:
             if (m >= XETEX_DIM) {
                 switch (m) { /*1435:*/
                 case XETEX_GLYPH_BOUNDS_CODE:
-                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG ||
+                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
                         if (n < 1 || n > 4) {
@@ -7146,7 +7146,7 @@ restart:
                     scan_font_ident();
                     q = cur_val;
                     scan_usv_num();
-                    if (font_area[q] == AAT_FONT_FLAG || font_area[q] == OTGR_FONT_FLAG) {
+                    if (font_area(q) == AAT_FONT_FLAG || font_area(q) == OTGR_FONT_FLAG) {
                         switch (m) {
                         case FONT_CHAR_WD_CODE:
                             cur_val = getnativecharwd(q, cur_val);
@@ -7256,9 +7256,9 @@ restart:
                 case XETEX_COUNT_GLYPHS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG)
+                    if (font_area(n) == AAT_FONT_FLAG)
                         cur_val = aat_font_get(m - XETEX_INT, font_layout_engine[n]);
-                    else if (font_area[n] == OTGR_FONT_FLAG)
+                    else if (font_area(n) == OTGR_FONT_FLAG)
                         cur_val = ot_font_get(m - XETEX_INT, font_layout_engine[n]);
                     else
                         cur_val = 0;
@@ -7267,9 +7267,9 @@ restart:
                 case XETEX_COUNT_FEATURES_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG)
+                    if (font_area(n) == AAT_FONT_FLAG)
                         cur_val = aat_font_get(m - XETEX_INT, font_layout_engine[n]);
-                    else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n]))
+                    else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n]))
                         cur_val = ot_font_get(m - XETEX_INT, font_layout_engine[n]);
                     else
                         cur_val = 0;
@@ -7290,11 +7290,11 @@ restart:
                 case XETEX_COUNT_SELECTORS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG) {
                         scan_int();
                         k = cur_val;
                         cur_val = aat_font_get_1(m - XETEX_INT, font_layout_engine[n], k);
-                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
+                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         cur_val = ot_font_get_1(m - XETEX_INT, font_layout_engine[n], k);
@@ -7308,12 +7308,12 @@ restart:
                 case XETEX_IS_DEFAULT_SELECTOR_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG) {
                         scan_int();
                         k = cur_val;
                         scan_int();
                         cur_val = aat_font_get_2(m - XETEX_INT, font_layout_engine[n], k, cur_val);
-                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
+                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_int();
@@ -7327,7 +7327,7 @@ restart:
                 case XETEX_FIND_VARIATION_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG) {
                         scan_and_pack_name();
                         cur_val = aat_font_get_named(m - XETEX_INT, font_layout_engine[n]);
                     } else {
@@ -7339,10 +7339,10 @@ restart:
                 case XETEX_FIND_FEATURE_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG) {
                         scan_and_pack_name();
                         cur_val = aat_font_get_named(m - XETEX_INT, font_layout_engine[n]);
-                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
+                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_and_pack_name();
                         cur_val = gr_font_get_named(m - XETEX_INT, font_layout_engine[n]);
                     } else {
@@ -7354,12 +7354,12 @@ restart:
                 case XETEX_FIND_SELECTOR_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG) {
                         scan_int();
                         k = cur_val;
                         scan_and_pack_name();
                         cur_val = aat_font_get_named_1(m - XETEX_INT, font_layout_engine[n], k);
-                    } else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
+                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_and_pack_name();
@@ -7373,7 +7373,7 @@ restart:
                 case XETEX_OT_COUNT_SCRIPTS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         cur_val = ot_font_get(m - XETEX_INT, font_layout_engine[n]);
                     } else {
                         cur_val = 0;
@@ -7384,7 +7384,7 @@ restart:
                 case XETEX_OT_SCRIPT_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         scan_int();
                         cur_val = ot_font_get_1(m - XETEX_INT, font_layout_engine[n], cur_val);
                     } else {
@@ -7397,7 +7397,7 @@ restart:
                 case XETEX_OT_LANGUAGE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_int();
@@ -7411,7 +7411,7 @@ restart:
                 case XETEX_OT_FEATURE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n])) {
                         scan_int();
                         k = cur_val;
                         scan_int();
@@ -7425,8 +7425,8 @@ restart:
                     break;
 
                 case XETEX_MAP_CHAR_TO_GLYPH_CODE:
-                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG ||
+                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
                         scan_int();
                         n = cur_val;
                         cur_val = map_char_to_glyph(eqtb_ptr(CUR_FONT_LOC)->b32.s1, n);
@@ -7437,8 +7437,8 @@ restart:
                     break;
 
                 case XETEX_GLYPH_INDEX_CODE:
-                    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG ||
-                        font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
+                    if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG ||
+                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
                         scan_and_pack_name();
                         cur_val = map_glyph_to_index(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                     } else {
@@ -7450,11 +7450,11 @@ restart:
                 case XETEX_FONT_TYPE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG)
+                    if (font_area(n) == AAT_FONT_FLAG)
                         cur_val = 1;
-                    else if (font_area[n] == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n]))
+                    else if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine[n]))
                         cur_val = 2;
-                    else if (font_area[n] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n]))
+                    else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[n]))
                         cur_val = 3;
                     else
                         cur_val = 0;
@@ -7464,7 +7464,7 @@ restart:
                 case XETEX_LAST_CHAR_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area[n] == AAT_FONT_FLAG || font_area[n] == OTGR_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG) {
                         cur_val = get_font_char_range(n, m == XETEX_FIRST_CHAR_CODE);
                     } else {
                         if (m == XETEX_FIRST_CHAR_CODE)
@@ -9236,7 +9236,7 @@ conv_toks(void)
     case XETEX_VARIATION_NAME_CODE:
         scan_font_ident();
         fnt = cur_val;
-        if (font_area[fnt] == AAT_FONT_FLAG) {
+        if (font_area(fnt) == AAT_FONT_FLAG) {
             scan_int();
             arg1 = cur_val;
             arg2 = 0;
@@ -9248,8 +9248,8 @@ conv_toks(void)
     case XETEX_FEATURE_NAME_CODE:
         scan_font_ident();
         fnt = cur_val;
-        if (font_area[fnt] == AAT_FONT_FLAG ||
-            (font_area[fnt] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))) {
+        if (font_area(fnt) == AAT_FONT_FLAG ||
+            (font_area(fnt) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))) {
             scan_int();
             arg1 = cur_val;
             arg2 = 0;
@@ -9261,8 +9261,8 @@ conv_toks(void)
     case XETEX_SELECTOR_NAME_CODE:
         scan_font_ident();
         fnt = cur_val;
-        if (font_area[fnt] == AAT_FONT_FLAG
-            || (font_area[fnt] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))) {
+        if (font_area(fnt) == AAT_FONT_FLAG
+            || (font_area(fnt) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))) {
             scan_int();
             arg1 = cur_val;
             scan_int();
@@ -9275,7 +9275,7 @@ conv_toks(void)
     case XETEX_GLYPH_NAME_CODE:
         scan_font_ident();
         fnt = cur_val;
-        if (font_area[fnt] == AAT_FONT_FLAG || font_area[fnt] == OTGR_FONT_FLAG) {
+        if (font_area(fnt) == AAT_FONT_FLAG || font_area(fnt) == OTGR_FONT_FLAG) {
             scan_int();
             arg1 = cur_val;
         } else {
@@ -9321,9 +9321,9 @@ conv_toks(void)
         break;
 
     case FONT_NAME_CODE:
-        font_name_str = font_name[cur_val];
+        font_name_str = font_name(cur_val);
 
-        if (font_area[cur_val] == AAT_FONT_FLAG || font_area[cur_val] == OTGR_FONT_FLAG) {
+        if (font_area(cur_val) == AAT_FONT_FLAG || font_area(cur_val) == OTGR_FONT_FLAG) {
             quote_char = '"' ;
 
             for (i = 0; i <= length(font_name_str) - 1; i++)
@@ -9337,9 +9337,9 @@ conv_toks(void)
             print(font_name_str);
         }
 
-        if (font_size[cur_val] != font_dsize[cur_val]) {
+        if (font_size(cur_val) != font_dsize(cur_val)) {
             print_cstr(" at ");
-            print_scaled(font_size[cur_val]);
+            print_scaled(font_size(cur_val));
             print_cstr("pt");
         }
         break;
@@ -9439,20 +9439,20 @@ conv_toks(void)
         break;
 
     case XETEX_VARIATION_NAME_CODE:
-        if (font_area[fnt] == AAT_FONT_FLAG)
+        if (font_area(fnt) == AAT_FONT_FLAG)
             aat_print_font_name(c, font_layout_engine[fnt], arg1, arg2);
         break;
 
     case XETEX_FEATURE_NAME_CODE:
     case XETEX_SELECTOR_NAME_CODE:
-        if (font_area[fnt] == AAT_FONT_FLAG)
+        if (font_area(fnt) == AAT_FONT_FLAG)
             aat_print_font_name(c, font_layout_engine[fnt], arg1, arg2);
-        else if (font_area[fnt] == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))
+        else if (font_area(fnt) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine[fnt]))
             gr_print_font_name(c, font_layout_engine[fnt], arg1, arg2);
         break;
 
     case XETEX_GLYPH_NAME_CODE:
-        if (font_area[fnt] == AAT_FONT_FLAG || font_area[fnt] == OTGR_FONT_FLAG)
+        if (font_area(fnt) == AAT_FONT_FLAG || font_area(fnt) == OTGR_FONT_FLAG)
             print_glyph_name(fnt, arg1);
         break;
 
@@ -10099,7 +10099,7 @@ conditional(void)
         n = cur_val;
         scan_usv_num();
 
-        if (font_area[n] == AAT_FONT_FLAG || font_area[n] == OTGR_FONT_FLAG) {
+        if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG) {
             b = (map_char_to_glyph(n, cur_val) > 0);
         } else {
             if (font_bc[n] <= cur_val && font_ec[n] >= cur_val)
@@ -10505,7 +10505,7 @@ void char_warning(internal_font_number f, int32_t c)
 
         print_cstr(" (");
 
-        if (font_area[f] == AAT_FONT_FLAG || font_area[f] == OTGR_FONT_FLAG) {
+        if (font_area(f) == AAT_FONT_FLAG || font_area(f) == OTGR_FONT_FLAG) {
             print_ucs_code(c);
         } else {
             print_hex(c);
@@ -10513,7 +10513,7 @@ void char_warning(internal_font_number f, int32_t c)
 
         print_char(')');
         print_cstr(" in font ");
-        print(font_name[f]);
+        print(font_name(f));
 
         if (INTPAR(tracing_lost_chars) < 3) {
             print_char('!');
@@ -10531,7 +10531,7 @@ void char_warning(internal_font_number f, int32_t c)
     }
 
     {
-        char *fn = gettexstring(font_name[f]);
+        char *fn = gettexstring(font_name(f));
         char *chr = NULL;
         selector_t prev_selector = selector();
         int s;
@@ -10764,7 +10764,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     full_name = make_string();
 
     for (f = FONT_BASE + 1; f <= font_ptr(); f++) {
-        if (font_area[f] == native_font_type_flag && str_eq_str(font_name[f], full_name) && font_size[f] == actual_size) {
+        if (font_area(f) == native_font_type_flag && str_eq_str(font_name(f), full_name) && font_size(f) == actual_size) {
             release_font_engine(font_engine, native_font_type_flag);
 
             set_str_ptr(str_ptr()-1);
@@ -10810,15 +10810,15 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     }
 
     set_font_ptr(font_ptr()+1);
-    font_area[font_ptr()] = native_font_type_flag;
-    font_name[font_ptr()] = full_name;
-    font_check[font_ptr()].s3 = 0;
-    font_check[font_ptr()].s2 = 0;
-    font_check[font_ptr()].s1 = 0;
-    font_check[font_ptr()].s0 = 0;
+    set_font_area(font_ptr(), native_font_type_flag);
+    set_font_name(font_ptr(), full_name);
+    font_check_ptr(font_ptr())->s3 = 0;
+    font_check_ptr(font_ptr())->s2 = 0;
+    font_check_ptr(font_ptr())->s1 = 0;
+    font_check_ptr(font_ptr())->s0 = 0;
     font_glue[font_ptr()] = TEX_NULL;
-    font_dsize[font_ptr()] = get_loaded_font_design_size();
-    font_size[font_ptr()] = actual_size;
+    set_font_dsize(font_ptr(), get_loaded_font_design_size());
+    set_font_size(font_ptr(), actual_size);
 
     if (native_font_type_flag == AAT_FONT_FLAG)
         aat_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht, &font_slant);
@@ -10852,7 +10852,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_info[fmem_ptr++].b32.s1 = s / 2; /* space_stretch */
     font_info[fmem_ptr++].b32.s1 = s / 3; /* space_shrink */
     font_info[fmem_ptr++].b32.s1 = x_ht;
-    font_info[fmem_ptr++].b32.s1 = font_size[font_ptr()]; /* quad */
+    font_info[fmem_ptr++].b32.s1 = font_size(font_ptr()); /* quad */
     font_info[fmem_ptr++].b32.s1 = s / 3; /* extra_space */
     font_info[fmem_ptr++].b32.s1 = cap_ht;
 
@@ -11089,7 +11089,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     qw.s0 = d = ttstub_input_getc (tfm_file);
     if (a == EOF || b == EOF || c == EOF || d == EOF)
         goto bad_tfm;
-    font_check[f] = qw;
+    set_font_check(f, qw);
 
     READFIFTEEN(z);
     z = z * 256 + ttstub_input_getc (tfm_file);
@@ -11105,7 +11105,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         lh--;
     }
 
-    font_dsize[f] = z;
+    set_font_dsize(f, z);
     if (s != -1000) {
         if (s >= 0)
             z = s;
@@ -11113,7 +11113,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             z = xn_over_d(z, -(int32_t) s, 1000);
     }
 
-    font_size[f] = z;
+    set_font_size(f, z);
 
     for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
         qw.s3 = a = ttstub_input_getc (tfm_file);
@@ -11347,8 +11347,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         }
     }
 
-    font_name[f] = nom;
-    font_area[f] = aire;
+    set_font_name(f, nom);
+    set_font_area(f, aire);
     font_bc[f] = bc;
     font_ec[f] = ec;
     font_glue[f] = TEX_NULL;
@@ -11425,7 +11425,7 @@ int32_t new_character(internal_font_number f, UTF16_code c)
 {
     int32_t p;
     uint16_t ec;
-    if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
+    if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
         return new_native_character(f, c);
     }
     ec = effective_char(false, f, c);
@@ -14670,7 +14670,7 @@ void make_accent(void)
     if (p != TEX_NULL) {
         x = font_info[X_HEIGHT_CODE + param_base[f]].b32.s1;
         s = font_info[SLANT_CODE + param_base[f]].b32.s1 / ((double)65536.0);
-        if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
+        if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
             a = mem(p + 1).b32.s1;
             if (a == 0)
                 get_native_char_sidebearings(f, cur_val, &lsb, &rsb);
@@ -14690,7 +14690,7 @@ void make_accent(void)
             back_input();
         if (q != TEX_NULL) { /*1160: */
             t = font_info[SLANT_CODE + param_base[f]].b32.s1 / ((double)65536.0);
-            if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
+            if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
                 w = mem(q + 1).b32.s1;
                 get_native_char_height_depth(f, cur_val, &h, &delta);
             } else {
@@ -14703,7 +14703,7 @@ void make_accent(void)
                 p = hpack(p, 0, ADDITIONAL);
                 mem_ptr(p + 4)->b32.s1 = x - h;
             }
-            if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))
+            if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))
                 && (a == 0))
                 delta = tex_round((w - lsb + rsb) / ((double)2.0) + h * t - x * s);
             else
@@ -15498,33 +15498,33 @@ void new_font(small_number a)
         if (f <= for_end)
             do {
                 if (
-                        str_eq_str(font_name[f], cur_name()) &&
+                        str_eq_str(font_name(f), cur_name()) &&
                         (
                             (
                                 (length(cur_area()) == 0) &&
-                                ((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))
-                            ) || str_eq_str(font_area[f], cur_area())
+                                ((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))
+                            ) || str_eq_str(font_area(f), cur_area())
                         )
                     ) {
                     if (s > 0) {
-                        if (s == font_size[f])
+                        if (s == font_size(f))
                             goto common_ending;
-                    } else if (font_size[f] == xn_over_d(font_dsize[f], -(int32_t) s, 1000))
+                    } else if (font_size(f) == xn_over_d(font_dsize(f), -(int32_t) s, 1000))
                         goto common_ending;
                 }
                 append_str(cur_area());
                 append_str(cur_name());
                 append_str(cur_ext());
-                if (str_eq_str(font_name[f], make_string())) {
+                if (str_eq_str(font_name(f), make_string())) {
                     {
                         set_str_ptr(str_ptr()-1);
                         set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                     }
-                    if (((font_area[f] == AAT_FONT_FLAG) || (font_area[f] == OTGR_FONT_FLAG))) {
+                    if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
                         if (s > 0) {
-                            if (s == font_size[f])
+                            if (s == font_size(f))
                                 goto common_ending;
-                        } else if (font_size[f] == xn_over_d(font_dsize[f], -(int32_t) s, 1000))
+                        } else if (font_size(f) == xn_over_d(font_dsize(f), -(int32_t) s, 1000))
                             goto common_ending;
                     }
                 } else {
@@ -15933,8 +15933,8 @@ void do_extension(void)
                 report_illegal_case();
             else {
 
-                if (((font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG)
-                     || (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG))) {
+                if (((font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG)
+                     || (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG))) {
                     new_whatsit(GLYPH_NODE, GLYPH_NODE_SIZE);
                     scan_int();
                     if ((cur_val < 0) || (cur_val > 65535L)) {
@@ -16904,7 +16904,7 @@ main_loop: /*1069: */
 
     prev_class = CHAR_CLASS_LIMIT - 1;
 
-    if (font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == AAT_FONT_FLAG || font_area[eqtb_ptr(CUR_FONT_LOC)->b32.s1] == OTGR_FONT_FLAG) {
+    if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG || font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
         if (cur_list.mode > 0) {
             if (INTPAR(language) != cur_list.aux.b32.s1)
                 fix_language();

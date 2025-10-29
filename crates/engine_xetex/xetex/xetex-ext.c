@@ -74,7 +74,7 @@ linebreak_start(int f, int32_t localeStrNum, uint16_t* text, int32_t textLength)
     UErrorCode status = U_ZERO_ERROR;
     char* locale = (char*)gettexstring(localeStrNum);
 
-    if (font_area[f] == OTGR_FONT_FLAG && streq_ptr(locale, "G")) {
+    if (font_area(f) == OTGR_FONT_FLAG && streq_ptr(locale, "G")) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine) font_layout_engine[f];
         if (initGraphiteBreaking(engine, text, textLength))
             /* user asked for Graphite line breaking and the font supports it */
@@ -1174,7 +1174,7 @@ make_font_def(int32_t f)
 #ifdef XETEX_MAC
     CFDictionaryRef attributes = NULL;
 
-    if (font_area[f] == AAT_FONT_FLAG) {
+    if (font_area(f) == AAT_FONT_FLAG) {
         CTFontRef font;
         CGColorRef color;
         CGAffineTransform t;
@@ -1206,7 +1206,7 @@ make_font_def(int32_t f)
         size = D2Fix(fSize);
     } else
 #endif
-    if (font_area[f] == OTGR_FONT_FLAG) {
+    if (font_area(f) == OTGR_FONT_FLAG) {
         XeTeXLayoutEngine engine;
 
         engine = (XeTeXLayoutEngine)font_layout_engine[f];
@@ -1367,13 +1367,13 @@ get_native_char_height_depth(int32_t font, int32_t ch, scaled_t* height, scaled_
     Fixed fuzz;
 
 #ifdef XETEX_MAC
-    if (font_area[font] == AAT_FONT_FLAG) {
+    if (font_area(font) == AAT_FONT_FLAG) {
         CFDictionaryRef attributes = (CFDictionaryRef)(font_layout_engine[font]);
         int gid = MapCharToGlyph_AAT(attributes, ch);
         GetGlyphHeightDepth_AAT(attributes, gid, &ht, &dp);
     } else
 #endif
-    if (font_area[font] == OTGR_FONT_FLAG) {
+    if (font_area(font) == OTGR_FONT_FLAG) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[font];
         int gid = mapCharToGlyph(engine, ch);
         getGlyphHeightDepth(engine, gid, &ht, &dp);
@@ -1414,13 +1414,13 @@ get_native_char_sidebearings(int32_t font, int32_t ch, scaled_t* lsb, scaled_t* 
     float l, r;
 
 #ifdef XETEX_MAC
-    if (font_area[font] == AAT_FONT_FLAG) {
+    if (font_area(font) == AAT_FONT_FLAG) {
         CFDictionaryRef attributes = (CFDictionaryRef)(font_layout_engine[font]);
         int gid = MapCharToGlyph_AAT(attributes, ch);
         GetGlyphSidebearings_AAT(attributes, gid, &l, &r);
     } else
 #endif
-    if (font_area[font] == OTGR_FONT_FLAG) {
+    if (font_area(font) == OTGR_FONT_FLAG) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[font];
         int gid = mapCharToGlyph(engine, ch);
         getGlyphSidebearings(engine, gid, &l, &r);
@@ -1439,7 +1439,7 @@ get_glyph_bounds(int32_t font, int32_t edge, int32_t gid)
     float a, b;
 
 #ifdef XETEX_MAC
-    if (font_area[font] == AAT_FONT_FLAG) {
+    if (font_area(font) == AAT_FONT_FLAG) {
         CFDictionaryRef attributes = (CFDictionaryRef)(font_layout_engine[font]);
         if (edge & 1)
             GetGlyphSidebearings_AAT(attributes, gid, &a, &b);
@@ -1447,7 +1447,7 @@ get_glyph_bounds(int32_t font, int32_t edge, int32_t gid)
             GetGlyphHeightDepth_AAT(attributes, gid, &a, &b);
     } else
 #endif
-    if (font_area[font] == OTGR_FONT_FLAG) {
+    if (font_area(font) == OTGR_FONT_FLAG) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[font];
         if (edge & 1)
             getGlyphSidebearings(engine, gid, &a, &b);
@@ -1475,13 +1475,13 @@ getnativecharwd(int32_t f, int32_t c)
 {
     scaled_t wd = 0;
 #ifdef XETEX_MAC
-    if (font_area[f] == AAT_FONT_FLAG) {
+    if (font_area(f) == AAT_FONT_FLAG) {
         CFDictionaryRef attributes = (CFDictionaryRef)(font_layout_engine[f]);
         int gid = MapCharToGlyph_AAT(attributes, c);
         wd = D2Fix(GetGlyphWidth_AAT(attributes, gid));
     } else
 #endif
-    if (font_area[f] == OTGR_FONT_FLAG) {
+    if (font_area(f) == OTGR_FONT_FLAG) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[f];
         int gid = mapCharToGlyph(engine, c);
         wd = D2Fix(getGlyphWidthFromEngine(engine, gid));
@@ -1510,7 +1510,7 @@ store_justified_native_glyphs(void* pNode)
     unsigned int f = native_font(node);
 
 #ifdef XETEX_MAC /* separate Mac-only codepath for AAT fonts */
-    if (font_area[f] == AAT_FONT_FLAG) {
+    if (font_area(f) == AAT_FONT_FLAG) {
         (void)DoAATLayout(node, 1);
         return;
     }
@@ -1565,12 +1565,12 @@ measure_native_node(void* pNode, int use_glyph_metrics)
     unsigned int f = native_font(node);
 
 #ifdef XETEX_MAC
-    if (font_area[f] == AAT_FONT_FLAG) {
+    if (font_area(f) == AAT_FONT_FLAG) {
         /* we're using this font in AAT mode, so font_layout_engine[f] is actually a CFDictionaryRef */
         DoAATLayout(node, 0);
     } else
 #endif
-    if (font_area[f] == OTGR_FONT_FLAG) {
+    if (font_area(f) == OTGR_FONT_FLAG) {
         /* using this font in OT Layout mode, so font_layout_engine[f] is actually a XeTeXLayoutEngine */
 
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)(font_layout_engine[f]);
@@ -1730,11 +1730,11 @@ measure_native_node(void* pNode, int use_glyph_metrics)
             GlyphBBox bbox;
             if (getCachedGlyphBBox(f, glyphIDs[i], &bbox) == 0) {
 #ifdef XETEX_MAC
-                if (font_area[f] == AAT_FONT_FLAG)
+                if (font_area(f) == AAT_FONT_FLAG)
                     GetGlyphBBox_AAT((CFDictionaryRef)(font_layout_engine[f]), glyphIDs[i], &bbox);
                 else
 #endif
-                if (font_area[f] == OTGR_FONT_FLAG)
+                if (font_area(f) == OTGR_FONT_FLAG)
                     getGlyphBounds((XeTeXLayoutEngine)(font_layout_engine[f]), glyphIDs[i], &bbox);
 
                 cacheGlyphBBox(f, glyphIDs[i], &bbox);
@@ -1764,11 +1764,11 @@ real_get_native_italic_correction(void* pNode)
         uint16_t* glyphIDs = (uint16_t*)(locations + n);
 
 #ifdef XETEX_MAC
-        if (font_area[f] == AAT_FONT_FLAG)
+        if (font_area(f) == AAT_FONT_FLAG)
             return D2Fix(GetGlyphItalCorr_AAT((CFDictionaryRef)(font_layout_engine[f]), glyphIDs[n-1]))
                     + font_letter_space[f];
 #endif
-        if (font_area[f] == OTGR_FONT_FLAG)
+        if (font_area(f) == OTGR_FONT_FLAG)
             return D2Fix(getGlyphItalCorr((XeTeXLayoutEngine)(font_layout_engine[f]), glyphIDs[n-1]))
                     + font_letter_space[f];
     }
@@ -1785,10 +1785,10 @@ real_get_native_glyph_italic_correction(void* pNode)
     unsigned int f = native_font(node);
 
 #ifdef XETEX_MAC
-    if (font_area[f] == AAT_FONT_FLAG)
+    if (font_area(f) == AAT_FONT_FLAG)
         return D2Fix(GetGlyphItalCorr_AAT((CFDictionaryRef)(font_layout_engine[f]), gid));
 #endif
-    if (font_area[f] == OTGR_FONT_FLAG)
+    if (font_area(f) == OTGR_FONT_FLAG)
         return D2Fix(getGlyphItalCorr((XeTeXLayoutEngine)(font_layout_engine[f]), gid));
 
     return 0;   /* can't actually happen */
@@ -1805,14 +1805,14 @@ measure_native_glyph(void* pNode, int use_glyph_metrics)
     float dp = 0.0;
 
 #ifdef XETEX_MAC
-    if (font_area[f] == AAT_FONT_FLAG) {
+    if (font_area(f) == AAT_FONT_FLAG) {
         CFDictionaryRef attributes = (CFDictionaryRef)(font_layout_engine[f]);
         node_width(node) = D2Fix(GetGlyphWidth_AAT(attributes, gid));
         if (use_glyph_metrics)
             GetGlyphHeightDepth_AAT(attributes, gid, &ht, &dp);
     } else
 #endif
-    if (font_area[f] == OTGR_FONT_FLAG) {
+    if (font_area(f) == OTGR_FONT_FLAG) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[f];
         XeTeXFont fontInst = getFont(engine);
         node_width(node) = D2Fix(getGlyphWidth(fontInst, gid));
@@ -1837,11 +1837,11 @@ map_char_to_glyph(int32_t font, int32_t ch)
     if (ch > 0x10ffff || ((ch >= 0xd800) && (ch <= 0xdfff)))
         return 0;
 #ifdef XETEX_MAC
-    if (font_area[font] == AAT_FONT_FLAG)
+    if (font_area(font) == AAT_FONT_FLAG)
         return MapCharToGlyph_AAT((CFDictionaryRef)(font_layout_engine[font]), ch);
     else
 #endif
-    if (font_area[font] == OTGR_FONT_FLAG)
+    if (font_area(font) == OTGR_FONT_FLAG)
         return mapCharToGlyph((XeTeXLayoutEngine)(font_layout_engine[font]), ch);
     else {
         _tt_abort("bad native font flag in `map_char_to_glyph`");
@@ -1853,11 +1853,11 @@ map_glyph_to_index(int32_t font)
     /* glyph name is at name_of_file */
 {
 #ifdef XETEX_MAC
-    if (font_area[font] == AAT_FONT_FLAG)
+    if (font_area(font) == AAT_FONT_FLAG)
         return MapGlyphToIndex_AAT((CFDictionaryRef)(font_layout_engine[font]), name_of_file());
     else
 #endif
-    if (font_area[font] == OTGR_FONT_FLAG)
+    if (font_area(font) == OTGR_FONT_FLAG)
         return mapGlyphToIndex((XeTeXLayoutEngine)(font_layout_engine[font]), name_of_file());
     else
         _tt_abort("bad native font flag in `map_glyph_to_index`");
@@ -1867,11 +1867,11 @@ int32_t
 get_font_char_range(int32_t font, int first)
 {
 #ifdef XETEX_MAC
-    if (font_area[font] == AAT_FONT_FLAG)
+    if (font_area(font) == AAT_FONT_FLAG)
         return GetFontCharRange_AAT((CFDictionaryRef)(font_layout_engine[font]), first);
     else
 #endif
-    if (font_area[font] == OTGR_FONT_FLAG)
+    if (font_area(font) == OTGR_FONT_FLAG)
         return getFontCharRange((XeTeXLayoutEngine)(font_layout_engine[font]), first);
     else
         _tt_abort("bad native font flag in `get_font_char_range'`");
@@ -2126,11 +2126,11 @@ print_glyph_name(int32_t font, int32_t gid)
     const char* s = NULL;
     int len = 0;
 #ifdef XETEX_MAC
-    if (font_area[font] == AAT_FONT_FLAG) {
+    if (font_area(font) == AAT_FONT_FLAG) {
         s = GetGlyphNameFromCTFont(fontFromInteger(font), gid, &len);
     } else
 #endif
-    if (font_area[font] == OTGR_FONT_FLAG) {
+    if (font_area(font) == OTGR_FONT_FLAG) {
         XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[font];
         s = getGlyphName(getFont(engine), gid, &len);
     } else {

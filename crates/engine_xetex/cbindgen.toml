@@ -2,7 +2,7 @@ language = "C"
 cpp_compat = true
 style = "type"
 include_guard = "TECTONIC_ENGINE_XETEX_BINDGEN_H"
-includes = "xetex-core.h"
+includes = ["xetex-core.h"]
 
 [parse.expand]
 crates = ["tectonic_engine_xetex"]

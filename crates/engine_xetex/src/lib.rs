@@ -320,6 +320,7 @@ pub mod c_api {
     mod dvi;
     mod engine;
     mod errors;
+    mod font;
     mod globals;
     mod hash;
     mod inputs;
