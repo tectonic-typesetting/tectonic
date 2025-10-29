@@ -132,7 +132,6 @@ int32_t *skew_char;
 font_index *bchar_label;
 nine_bits *font_bchar;
 nine_bits *font_false_bchar;
-void **font_layout_engine;
 void **font_mapping;
 char *font_flags;
 scaled_t *font_letter_space;
@@ -2688,7 +2687,7 @@ load_fmt_file(void)
     set_font_ptr(x);
 
     font_mapping = xcalloc_array(void *, font_max);
-    font_layout_engine = xcalloc_array(void *, font_max);
+    resize_font_layout_engine(font_max+1);
     font_flags = xmalloc_array(char, font_max);
     font_letter_space = xmalloc_array(scaled_t, font_max);
     resize_font_check(font_max+1);
@@ -3426,9 +3425,9 @@ tt_cleanup(void) {
     destroy_font_manager();
 
     for (int font_k = 0; font_k < font_max; font_k++) {
-        if (font_layout_engine[font_k] != NULL) {
-            release_font_engine(font_layout_engine[font_k], font_area(font_k));
-            font_layout_engine[font_k] = NULL;
+        if (font_layout_engine(font_k) != NULL) {
+            release_font_engine(font_layout_engine(font_k), font_area(font_k));
+            set_font_layout_engine(font_k, NULL);
         }
 
         if (font_mapping[font_k] != NULL) {
@@ -3472,7 +3471,7 @@ tt_cleanup(void) {
     free(font_info);
 
     free(font_mapping);
-    free(font_layout_engine);
+    clear_font_layout_engine();
     free(font_flags);
     free(font_letter_space);
     clear_font_check();
@@ -3741,7 +3740,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         trie_r[0] = 0;
         hyph_start = 0;
         font_mapping = xcalloc_array(void *, font_max);
-        font_layout_engine = xcalloc_array(void *, font_max);
+        resize_font_layout_engine(font_max+1);
         font_flags = xcalloc_array(char, font_max);
         font_letter_space = xcalloc_array(scaled_t, font_max);
         resize_font_check(font_max+1);

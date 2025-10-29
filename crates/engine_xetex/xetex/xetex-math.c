@@ -903,15 +903,15 @@ void after_math(void)
     if (((font_params[MATH_FONT(2)] < TOTAL_MATHSY_PARAMS)
          &&
          (!((font_area(MATH_FONT(2)) == OTGR_FONT_FLAG)
-            && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2)])))))
+            && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(2)))))))
         || ((font_params[MATH_FONT(2 + SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
             &&
             (!((font_area(MATH_FONT(2 + SCRIPT_SIZE)) == OTGR_FONT_FLAG)
-               && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SIZE)])))))
+               && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(2 + SCRIPT_SIZE)))))))
         || ((font_params[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
             &&
             (!((font_area(MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)) == OTGR_FONT_FLAG)
-               && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
+               && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)))))))) {
         error_here_with_diagnostic("Math formula deleted: Insufficient symbol fonts");
         capture_to_diagnostic(NULL);
         {
@@ -927,15 +927,15 @@ void after_math(void)
         if (((font_params[MATH_FONT(3 + TEXT_SIZE)] < TOTAL_MATHEX_PARAMS)
              &&
              (!((font_area(MATH_FONT(3 + TEXT_SIZE)) == OTGR_FONT_FLAG)
-                && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + TEXT_SIZE)])))))
+                && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(3 + TEXT_SIZE)))))))
             || ((font_params[MATH_FONT(3 + SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                 &&
                 (!((font_area(MATH_FONT(3 + SCRIPT_SIZE)) == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SIZE)])))))
+                   && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(3 + SCRIPT_SIZE)))))))
             || ((font_params[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                 &&
                 (!((font_area(MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)) == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
+                   && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)))))))) {
         error_here_with_diagnostic("Math formula deleted: Insufficient extension fonts");
         capture_to_diagnostic(NULL);
         {
@@ -981,15 +981,15 @@ void after_math(void)
         if (((font_params[MATH_FONT(2)] < TOTAL_MATHSY_PARAMS)
              &&
              (!((font_area(MATH_FONT(2)) == OTGR_FONT_FLAG)
-                && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2)])))))
+                && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(2)))))))
             || ((font_params[MATH_FONT(2 + SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
                 &&
                 (!((font_area(MATH_FONT(2 + SCRIPT_SIZE)) == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SIZE)])))))
+                   && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(2 + SCRIPT_SIZE)))))))
             || ((font_params[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHSY_PARAMS)
                 &&
                 (!((font_area(MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)) == OTGR_FONT_FLAG)
-                   && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)])))))) {
+                   && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(2 + SCRIPT_SCRIPT_SIZE)))))))) {
             error_here_with_diagnostic("Math formula deleted: Insufficient symbol fonts");
             capture_to_diagnostic(NULL);
             {
@@ -1005,16 +1005,16 @@ void after_math(void)
             if (((font_params[MATH_FONT(3 + TEXT_SIZE)] < TOTAL_MATHEX_PARAMS)
                  &&
                  (!((font_area(MATH_FONT(3 + TEXT_SIZE)) == OTGR_FONT_FLAG)
-                    && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + TEXT_SIZE)])))))
+                    && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(3 + TEXT_SIZE)))))))
                 || ((font_params[MATH_FONT(3 + SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                     &&
                     (!((font_area(MATH_FONT(3 + SCRIPT_SIZE)) == OTGR_FONT_FLAG)
-                       && (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SIZE)])))))
+                       && (isOpenTypeMathFont(font_layout_engine(MATH_FONT(3 + SCRIPT_SIZE)))))))
                 || ((font_params[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)] < TOTAL_MATHEX_PARAMS)
                     &&
                     (!((font_area(MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)) == OTGR_FONT_FLAG)
                        &&
-                       (isOpenTypeMathFont(font_layout_engine[MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)])))))) {
+                       (isOpenTypeMathFont(font_layout_engine(MATH_FONT(3 + SCRIPT_SCRIPT_SIZE)))))))) {
             error_here_with_diagnostic("Math formula deleted: Insufficient extension fonts");
             capture_to_diagnostic(NULL);
             {
@@ -1233,7 +1233,7 @@ math_x_height(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 5);
     else
         rval = font_info[5 + param_base[f]].b32.s1;
@@ -1248,7 +1248,7 @@ math_quad(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 6);
     else
         rval = font_info[6 + param_base[f]].b32.s1;
@@ -1262,7 +1262,7 @@ num1(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 8);
     else
         rval = font_info[8 + param_base[f]].b32.s1;
@@ -1277,7 +1277,7 @@ num2(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 9);
     else
         rval = font_info[9 + param_base[f]].b32.s1;
@@ -1292,7 +1292,7 @@ num3(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 10);
     else
         rval = font_info[10 + param_base[f]].b32.s1;
@@ -1307,7 +1307,7 @@ denom1(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 11);
     else
         rval = font_info[11 + param_base[f]].b32.s1;
@@ -1322,7 +1322,7 @@ denom2(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 12);
     else
         rval = font_info[12 + param_base[f]].b32.s1;
@@ -1337,7 +1337,7 @@ sup1(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 13);
     else
         rval = font_info[13 + param_base[f]].b32.s1;
@@ -1352,7 +1352,7 @@ sup2(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 14);
     else
         rval = font_info[14 + param_base[f]].b32.s1;
@@ -1366,7 +1366,7 @@ sup3(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 15);
     else
         rval = font_info[15 + param_base[f]].b32.s1;
@@ -1380,7 +1380,7 @@ sub1(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 16);
     else
         rval = font_info[16 + param_base[f]].b32.s1;
@@ -1394,7 +1394,7 @@ sub2(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 17);
     else
         rval = font_info[17 + param_base[f]].b32.s1;
@@ -1408,7 +1408,7 @@ sup_drop(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 18);
     else
         rval = font_info[18 + param_base[f]].b32.s1;
@@ -1422,7 +1422,7 @@ sub_drop(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 19);
     else
         rval = font_info[19 + param_base[f]].b32.s1;
@@ -1436,7 +1436,7 @@ delim1(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 20);
     else
         rval = font_info[20 + param_base[f]].b32.s1;
@@ -1450,7 +1450,7 @@ delim2(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 21);
     else
         rval = font_info[21 + param_base[f]].b32.s1;
@@ -1464,7 +1464,7 @@ axis_height(int32_t size_code)
     scaled_t rval;
 
     f = MATH_FONT(2 + size_code);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 22);
     else
         rval = font_info[22 + param_base[f]].b32.s1;
@@ -1478,7 +1478,7 @@ default_rule_thickness(void)
     scaled_t rval;
 
     f = MATH_FONT(3 + cur_size);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 8);
     else
         rval = font_info[8 + param_base[f]].b32.s1;
@@ -1492,7 +1492,7 @@ big_op_spacing1(void)
     scaled_t rval;
 
     f = MATH_FONT(3 + cur_size);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 9);
     else
         rval = font_info[9 + param_base[f]].b32.s1;
@@ -1506,7 +1506,7 @@ big_op_spacing2(void)
     scaled_t rval;
 
     f = MATH_FONT(3 + cur_size);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 10);
     else
         rval = font_info[10 + param_base[f]].b32.s1;
@@ -1520,7 +1520,7 @@ big_op_spacing3(void)
     scaled_t rval;
 
     f = MATH_FONT(3 + cur_size);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 11);
     else
         rval = font_info[11 + param_base[f]].b32.s1;
@@ -1534,7 +1534,7 @@ big_op_spacing4(void)
     scaled_t rval;
 
     f = MATH_FONT(3 + cur_size);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 12);
     else
         rval = font_info[12 + param_base[f]].b32.s1;
@@ -1548,7 +1548,7 @@ big_op_spacing5(void)
     scaled_t rval;
 
     f = MATH_FONT(3 + cur_size);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 13);
     else
         rval = font_info[13 + param_base[f]].b32.s1;
@@ -1794,12 +1794,12 @@ make_radical(int32_t q)
     scaled_t delta, clr;
 
     f = MATH_FONT((mem(q + 4).b16.s3 % 256) + cur_size);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f]))))
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rule_thickness = get_ot_math_constant(f, RADICALRULETHICKNESS);
     else
         rule_thickness = default_rule_thickness();
     x = clean_box(q + 1, 2 * (cur_style / 2) + 1);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f])))) {
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f))))) {
         if (cur_style < TEXT_STYLE)
             clr = get_ot_math_constant(f, RADICALDISPLAYSTYLEVERTICALGAP);
         else
@@ -1815,7 +1815,7 @@ make_radical(int32_t q)
         }
     }
     y = var_delimiter(q + 4, cur_size, mem(x + 3).b32.s1 + mem(x + 2).b32.s1 + clr + rule_thickness);
-    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f])))) {
+    if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f))))) {
         mem_ptr(y + 2)->b32.s1 = mem(y + 3).b32.s1 + mem(y + 2).b32.s1 - rule_thickness;
         mem_ptr(y + 3)->b32.s1 = rule_thickness;
     }
@@ -1932,7 +1932,7 @@ make_math_accent(int32_t q)
         ;
     }
     if (x != TEX_NULL) {
-        if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[f])))) {
+        if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f))))) {
 
             if (((mem(q).b16.s0 == BOTTOM_ACC) || (mem(q).b16.s0 == (BOTTOM_ACC + 1))))
                 delta = 0;
@@ -2073,7 +2073,7 @@ make_fraction(int32_t q)
     }
 
     if (mem(q + 1).b32.s1 == 0) { /*772:*/
-        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {
             if (cur_style < TEXT_STYLE)
                 clr = get_ot_math_constant(cur_f, STACKDISPLAYSTYLEGAPMIN);
             else
@@ -2092,7 +2092,7 @@ make_fraction(int32_t q)
             shift_down = shift_down + delta;
         }
     } else { /*773:*/
-        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {
             delta = half(mem(q + 1).b32.s1);
 
             if (cur_style < TEXT_STYLE)
@@ -2177,7 +2177,7 @@ make_op(int32_t q)
     ot_assembly_ptr = NULL;
     if (mem(q + 1).b32.s1 == MATH_CHAR) {
         fetch(q + 1);
-        if (!((font_area(cur_f) == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[cur_f])))) {
+        if (!((font_area(cur_f) == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine(cur_f))))) {
             if ((cur_style < TEXT_STYLE) && (((cur_i.s1) % 4) == LIST_TAG)) {
                 c = cur_i.s0;
                 i = FONT_CHARACTER_INFO(cur_f, c);
@@ -2190,7 +2190,7 @@ make_op(int32_t q)
             delta = FONT_CHARINFO_ITALCORR(cur_f, cur_i);
         }
         x = clean_box(q + 1, cur_style);
-        if (((font_area(cur_f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f])))) {
+        if (((font_area(cur_f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(cur_f))))) {
             p = mem(x + 5).b32.s1;
             if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
                   && (mem(p).b16.s0 == GLYPH_NODE)))) {
@@ -2535,7 +2535,7 @@ make_scripts(int32_t q, scaled_t delta)
             cur_mu = x_over_n(math_quad(cur_size), 18);
             fetch(script_head);
 
-            if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+            if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {
                 script_c = new_native_character(cur_f, cur_c);
                 script_g = get_native_glyph(script_c, 0);
                 script_f = cur_f;
@@ -2563,7 +2563,7 @@ make_scripts(int32_t q, scaled_t delta)
         if (shift_down < sub1(cur_size))
             shift_down = sub1(cur_size);
 
-        if (((font_area(cur_f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
+        if (((font_area(cur_f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(cur_f)))))
             clr = mem(x + 3).b32.s1 - get_ot_math_constant(cur_f, SUBSCRIPTTOPMAX);
         else
             clr = mem(x + 3).b32.s1 - (abs(math_x_height(cur_size) * 4) / 5);
@@ -2573,7 +2573,7 @@ make_scripts(int32_t q, scaled_t delta)
 
         mem_ptr(x + 4)->b32.s1 = shift_down;
 
-        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {   /*787: */
+        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {   /*787: */
             if (p != TEX_NULL && !is_char_node(p) && NODE_type(p) == WHATSIT_NODE && mem(p).b16.s0 == GLYPH_NODE) {
                 sub_kern = get_ot_math_kern(mem(p + 4).b16.s2, mem(p + 4).b16.s1, sub_f, sub_g, SUB_CMD, shift_down);
 
@@ -2654,7 +2654,7 @@ make_scripts(int32_t q, scaled_t delta)
             cur_mu = x_over_n(math_quad(cur_size), 18);
             fetch(script_head);
 
-            if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+            if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {
                 script_c = new_native_character(cur_f, cur_c);
                 script_g = get_native_glyph(script_c, 0);
                 script_f = cur_f;
@@ -2689,7 +2689,7 @@ make_scripts(int32_t q, scaled_t delta)
         if (shift_up < clr)
             shift_up = clr;
 
-        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f]))
+        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f)))
             clr = mem(x + 2).b32.s1 + get_ot_math_constant(cur_f, SUPERSCRIPTBOTTOMMIN);
         else
             clr = mem(x + 2).b32.s1 + (abs(math_x_height(cur_size)) / 4);
@@ -2697,7 +2697,7 @@ make_scripts(int32_t q, scaled_t delta)
         if (shift_up < clr)
             shift_up = clr;
 
-        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {       /*788: */
+        if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {       /*788: */
             if (mem(q + 3).b32.s1 == EMPTY) {
                 if (p != TEX_NULL && !is_char_node(p) && NODE_type(p) == WHATSIT_NODE && mem(p).b16.s0 == GLYPH_NODE) {
                     sup_kern = get_ot_math_kern(mem(p + 4).b16.s2, mem(p + 4).b16.s1, sup_f, sup_g, SUP_CMD, shift_up);
@@ -2783,7 +2783,7 @@ make_scripts(int32_t q, scaled_t delta)
                 cur_mu = x_over_n(math_quad(cur_size), 18);
                 fetch(script_head);
 
-                if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+                if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {
                     script_c = new_native_character(cur_f, cur_c);
                     script_g = get_native_glyph(script_c, 0);
                     script_f = cur_f;
@@ -2810,7 +2810,7 @@ make_scripts(int32_t q, scaled_t delta)
             if (shift_down < sub2(cur_size))
                 shift_down = sub2(cur_size);
 
-            if (((font_area(cur_f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
+            if (((font_area(cur_f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(cur_f)))))
                 clr =
                     get_ot_math_constant(cur_f,
                                          SUBSUPERSCRIPTGAPMIN) - ((shift_up - mem(x + 2).b32.s1) -
@@ -2821,7 +2821,7 @@ make_scripts(int32_t q, scaled_t delta)
             if (clr > 0) {
                 shift_down = shift_down + clr;
                 if (((font_area(cur_f) == OTGR_FONT_FLAG)
-                     && (isOpenTypeMathFont(font_layout_engine[cur_f]))))
+                     && (isOpenTypeMathFont(font_layout_engine(cur_f)))))
                     clr =
                         get_ot_math_constant(cur_f,
                                              SUPERSCRIPTBOTTOMMAXWITHSUBSCRIPT) - (shift_up - mem(x + 2).b32.s1);
@@ -2833,7 +2833,7 @@ make_scripts(int32_t q, scaled_t delta)
                 }
             }
 
-            if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine[cur_f])) {
+            if (font_area(cur_f) == OTGR_FONT_FLAG && isOpenTypeMathFont(font_layout_engine(cur_f))) {
                 if (p != TEX_NULL && !is_char_node(p) && NODE_type(p) == WHATSIT_NODE && mem(p).b16.s0 == GLYPH_NODE) {
                     sub_kern = get_ot_math_kern(mem(p + 4).b16.s2, mem(p + 4).b16.s1, sub_f, sub_g, SUB_CMD, shift_down);
 
@@ -3117,7 +3117,7 @@ mlist_to_hlist(void)
                     if ((mem(q + 1).b32.s1 == MATH_TEXT_CHAR)
                         &&
                         (!((font_area(cur_f) == OTGR_FONT_FLAG)
-                           && (isOpenTypeMathFont(font_layout_engine[cur_f]))) != 0))
+                           && (isOpenTypeMathFont(font_layout_engine(cur_f)))) != 0))
                         delta = 0;
                     if ((mem(q + 3).b32.s1 == EMPTY) && (delta != 0)) {
                         mem_ptr(p)->b32.s1 = new_kern(delta);
@@ -3398,7 +3398,7 @@ var_delimiter(int32_t d, int32_t s, scaled_t v)
                 g = MATH_FONT(z);
                 if (g != FONT_BASE) {   /*734: */
 
-                    if (((font_area(g) == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[g])))) {
+                    if (((font_area(g) == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine(g))))) {
                         x = map_char_to_glyph(g, x);
                         f = g;
                         c = x;
@@ -3455,7 +3455,7 @@ var_delimiter(int32_t d, int32_t s, scaled_t v)
     }
  found:
     if (f != FONT_BASE) {
-        if (!((font_area(f) == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine[f])))) {       /*736: */
+        if (!((font_area(f) == OTGR_FONT_FLAG) && (usingOpenType(font_layout_engine(f))))) {       /*736: */
 
             if (((q.s1) % 4) == EXT_TAG) {      /*739: */
                 b = new_null_box();
