@@ -46,8 +46,8 @@ get_ot_math_constant(int f, int n)
     hb_position_t rval = 0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
-        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
+        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine(f));
         rval = hb_ot_math_get_constant(hbFont, constant);
 
         /* scale according to font size, except the ones that are percentages */
@@ -187,8 +187,8 @@ get_ot_math_variant(int f, int g, int v, int32_t* adv, int horiz)
     *adv = -1;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
-        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
+        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine(f));
         hb_ot_math_glyph_variant_t variant[1];
         unsigned int count = 1;
         hb_ot_math_get_glyph_variants(hbFont, g, horiz ? HB_DIRECTION_RTL : HB_DIRECTION_TTB, v, &count, variant);
@@ -209,7 +209,7 @@ get_ot_assembly_ptr(int f, int g, int horiz)
     void *rval = NULL;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine[f]);
+        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine(f));
 
         unsigned int count = hb_ot_math_get_glyph_assembly(hbFont, g,
                                                            horiz ? HB_DIRECTION_RTL : HB_DIRECTION_TTB,
@@ -246,8 +246,8 @@ get_ot_math_ital_corr(int f, int g)
     hb_position_t rval = 0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
-        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
+        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine(f));
         rval = hb_ot_math_get_glyph_italics_correction(hbFont, g);
         rval = D2Fix(ttxl_font_units_to_points(font, rval));
     }
@@ -261,8 +261,8 @@ get_ot_math_accent_pos(int f, int g)
     hb_position_t rval = 0x7fffffffUL;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
-        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
+        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine(f));
         rval = hb_ot_math_get_glyph_top_accent_attachment(hbFont, g);
         rval = D2Fix(ttxl_font_units_to_points(font, rval));
     }
@@ -276,8 +276,8 @@ ot_min_connector_overlap(int f)
     hb_position_t rval = 0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
-        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
+        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine(f));
         rval = hb_ot_math_get_min_connector_overlap(hbFont, HB_DIRECTION_RTL);
         rval = D2Fix(ttxl_font_units_to_points(font, rval));
     }
@@ -291,7 +291,7 @@ getMathKernAt(int f, int g, int height, hb_ot_math_kern_t side)
     hb_position_t rval = 0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine[f]);
+        hb_font_t *hbFont = ttxl_get_hb_font((XeTeXLayoutEngine) font_layout_engine(f));
         rval = hb_ot_math_get_glyph_kerning(hbFont, g, side, height);
     }
 
@@ -304,7 +304,7 @@ glyph_height(int f, int g)
     float rval = 0.0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[f];
+        XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine(f);
         getGlyphHeightDepth(engine, g, &rval, NULL);
     }
 
@@ -317,7 +317,7 @@ glyph_depth(int f, int g)
     float rval = 0.0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine[f];
+        XeTeXLayoutEngine engine = (XeTeXLayoutEngine)font_layout_engine(f);
         getGlyphHeightDepth(engine, g, NULL, &rval);
     }
 
@@ -340,9 +340,9 @@ get_ot_math_kern(int f,  int g,    // Base font and glyph number
     // Cf. https://docs.microsoft.com/en-us/typography/opentype/spec/math#mathkerninfo-table
 
     if (font_area(f) == OTGR_FONT_FLAG && font_area(sf) == OTGR_FONT_FLAG) {
-        XeTeXFont font  = getFont((XeTeXLayoutEngine)font_layout_engine[f]);
+        XeTeXFont font  = getFont((XeTeXLayoutEngine)font_layout_engine(f));
 
-        XeTeXFont sfont = getFont((XeTeXLayoutEngine)font_layout_engine[sf]);
+        XeTeXFont sfont = getFont((XeTeXLayoutEngine)font_layout_engine(sf));
 
         // Do calculations in glyph units.
 
@@ -487,7 +487,7 @@ ot_part_start_connector(int f, const GlyphAssembly* a, int i)
     int rval = 0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
         rval = D2Fix(ttxl_font_units_to_points(font, a->parts[i].start_connector_length));
     }
 
@@ -500,7 +500,7 @@ ot_part_end_connector(int f, const GlyphAssembly* a, int i)
     int rval = 0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
         rval = D2Fix(ttxl_font_units_to_points(font, a->parts[i].end_connector_length));
     }
 
@@ -513,7 +513,7 @@ ot_part_full_advance(int f, const GlyphAssembly* a, int i)
     int rval = 0;
 
     if (font_area(f) == OTGR_FONT_FLAG) {
-        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine[f]);
+        XeTeXFont font = getFont((XeTeXLayoutEngine) font_layout_engine(f));
         rval = D2Fix(ttxl_font_units_to_points(font, a->parts[i].full_advance));
     }
 

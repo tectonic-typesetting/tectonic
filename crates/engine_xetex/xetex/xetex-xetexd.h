@@ -492,7 +492,6 @@ extern int32_t *skew_char;
 extern font_index *bchar_label;
 extern nine_bits *font_bchar;
 extern nine_bits *font_false_bchar;
-extern void **font_layout_engine;
 extern void **font_mapping;
 extern char *font_flags;
 extern scaled_t *font_letter_space;

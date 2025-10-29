@@ -398,6 +398,10 @@
 
 #define INT_PARS 83
 
+#define AAT_FONT_FLAG 65535
+
+#define OTGR_FONT_FLAG 65534
+
 #define HASH_OFFSET 514
 
 #define HASH_BASE 2228226
@@ -797,6 +801,16 @@ extern void tt_cleanup(void);
 int32_t font_ptr(void);
 
 void set_font_ptr(int32_t val);
+
+void *font_layout_engine(uintptr_t idx);
+
+void set_font_layout_engine(uintptr_t idx, void *val);
+
+void **font_layout_engine_ptr(uintptr_t idx);
+
+void resize_font_layout_engine(uintptr_t len);
+
+void clear_font_layout_engine(void);
 
 bool font_used(uintptr_t idx);
 

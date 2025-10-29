@@ -71,7 +71,7 @@ fontFromAttributes(CFDictionaryRef attributes)
 CTFontRef
 fontFromInteger(int32_t font)
 {
-    CFDictionaryRef attributes = (CFDictionaryRef) font_layout_engine[font];
+    CFDictionaryRef attributes = (CFDictionaryRef) font_layout_engine(font);
     return fontFromAttributes(attributes);
 }
 
@@ -105,7 +105,7 @@ DoAATLayout(void* p, int justify)
     txtLen = native_length(node);
     txtPtr = (UniChar*)(node + NATIVE_NODE_SIZE);
 
-    attributes = font_layout_engine[native_font(node)];
+    attributes = font_layout_engine(native_font(node));
     string = CFStringCreateWithCharactersNoCopy(NULL, txtPtr, txtLen, kCFAllocatorNull);
     attrString = CFAttributedStringCreate(NULL, string, attributes);
     CFRelease(string);

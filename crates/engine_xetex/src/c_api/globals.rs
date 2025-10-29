@@ -1,5 +1,6 @@
 use crate::c_api::dvi::{DviCtx, DVI_CTX};
 use crate::c_api::engine::EngineCtx;
+use crate::c_api::font::FontCtx;
 use crate::c_api::hash::{HashCtx, HASH_CTX};
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use crate::c_api::output::{OutputCtx, OUTPUT_CTX};
@@ -15,6 +16,7 @@ pub struct Globals<'a, 'b> {
     pub files: &'a mut FileCtx,
     pub out: &'a mut OutputCtx,
     pub dvi: &'a mut DviCtx,
+    pub fonts: &'a mut FontCtx,
 }
 
 impl Globals<'_, '_> {
@@ -26,16 +28,19 @@ impl Globals<'_, '_> {
                         FILE_CTX.with_borrow_mut(|files| {
                             OUTPUT_CTX.with_borrow_mut(|out| {
                                 DVI_CTX.with_borrow_mut(|dvi| {
-                                    let mut globals = Globals {
-                                        state,
-                                        engine,
-                                        strings,
-                                        hash,
-                                        files,
-                                        out,
-                                        dvi,
-                                    };
-                                    f(&mut globals)
+                                    FontCtx::with(|fonts| {
+                                        let mut globals = Globals {
+                                            state,
+                                            engine,
+                                            strings,
+                                            hash,
+                                            files,
+                                            out,
+                                            dvi,
+                                            fonts,
+                                        };
+                                        f(&mut globals)
+                                    })
                                 })
                             })
                         })
