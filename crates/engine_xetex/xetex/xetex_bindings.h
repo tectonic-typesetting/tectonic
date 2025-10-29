@@ -794,6 +794,70 @@ extern void close_files_and_terminate(void);
 
 extern void tt_cleanup(void);
 
+int32_t font_ptr(void);
+
+void set_font_ptr(int32_t val);
+
+bool font_used(uintptr_t idx);
+
+void set_font_used(uintptr_t idx, bool val);
+
+bool *font_used_ptr(uintptr_t idx);
+
+void resize_font_used(uintptr_t len);
+
+void clear_font_used(void);
+
+B16x4 font_check(uintptr_t idx);
+
+void set_font_check(uintptr_t idx, B16x4 val);
+
+B16x4 *font_check_ptr(uintptr_t idx);
+
+void resize_font_check(uintptr_t len);
+
+void clear_font_check(void);
+
+Scaled font_size(uintptr_t idx);
+
+void set_font_size(uintptr_t idx, Scaled val);
+
+Scaled *font_size_ptr(uintptr_t idx);
+
+void resize_font_size(uintptr_t len);
+
+void clear_font_size(void);
+
+Scaled font_dsize(uintptr_t idx);
+
+void set_font_dsize(uintptr_t idx, Scaled val);
+
+Scaled *font_dsize_ptr(uintptr_t idx);
+
+void resize_font_dsize(uintptr_t len);
+
+void clear_font_dsize(void);
+
+StrNumber font_name(uintptr_t idx);
+
+void set_font_name(uintptr_t idx, StrNumber val);
+
+StrNumber *font_name_ptr(uintptr_t idx);
+
+void resize_font_name(uintptr_t len);
+
+void clear_font_name(void);
+
+StrNumber font_area(uintptr_t idx);
+
+void set_font_area(uintptr_t idx, StrNumber val);
+
+StrNumber *font_area_ptr(uintptr_t idx);
+
+void resize_font_area(uintptr_t len);
+
+void clear_font_area(void);
+
 void resize_hash(uintptr_t len);
 
 B32x2 hash(uintptr_t idx);

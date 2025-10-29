@@ -437,6 +437,23 @@ do_undump (char *p, size_t item_size, size_t nitems, rust_input_handle_t in_file
         }                                                               \
     } while (0)
 
+/* Like undump_checked_ptr, but only check the upper value. We use
+   this when the base type is unsigned, and thus all the values will be
+   greater than zero by definition.  */
+#define undump_upper_check_ptr(high, base, len)                      \
+    do {                                                                \
+        int i;                                                     \
+        undump_ptr (base, len);                                      \
+        for (i = 0; i < (len); i++) {                                   \
+            if ((base)[i] > (high)) {                                \
+                _tt_abort ("Item %u (=%" PRIdPTR ") of .fmt array at %" PRIxPTR \
+                           " >%" PRIdPTR,                               \
+                           i, (uintptr_t) (base)[i], (uintptr_t) (base), \
+                           (uintptr_t) high);                           \
+            }                                                           \
+        }                                                               \
+    } while (0)
+
 /* Like undump_checked_things, but only check the upper value. We use
    this when the base type is unsigned, and thus all the values will be
    greater than zero by definition.  */
@@ -1968,7 +1985,7 @@ prefixed_command(void)
             else
                 skew_char[f] = cur_val;
         } else {
-            if (font_area[f] == AAT_FONT_FLAG || font_area[f] == OTGR_FONT_FLAG)
+            if (font_area(f) == AAT_FONT_FLAG || font_area(f) == OTGR_FONT_FLAG)
                 scan_glyph_number(f);
             else
                 scan_char_num();
@@ -2247,14 +2264,14 @@ store_fmt_file(void)
     dump_int(fmem_ptr);
     dump_things(font_info[0], fmem_ptr);
     dump_int(font_ptr());
-    dump_things(font_check[FONT_BASE], font_ptr() + 1);
-    dump_things(font_size[FONT_BASE], font_ptr() + 1);
-    dump_things(font_dsize[FONT_BASE], font_ptr() + 1);
+    dump_ptr(font_check_ptr(FONT_BASE), font_ptr() + 1);
+    dump_ptr(font_size_ptr(FONT_BASE), font_ptr() + 1);
+    dump_ptr(font_dsize_ptr(FONT_BASE), font_ptr() + 1);
     dump_things(font_params[FONT_BASE], font_ptr() + 1);
     dump_things(hyphen_char[FONT_BASE], font_ptr() + 1);
     dump_things(skew_char[FONT_BASE], font_ptr() + 1);
-    dump_things(font_name[FONT_BASE], font_ptr() + 1);
-    dump_things(font_area[FONT_BASE], font_ptr() + 1);
+    dump_ptr(font_name_ptr(FONT_BASE), font_ptr() + 1);
+    dump_ptr(font_area_ptr(FONT_BASE), font_ptr() + 1);
     dump_things(font_bc[FONT_BASE], font_ptr() + 1);
     dump_things(font_ec[FONT_BASE], font_ptr() + 1);
     dump_things(char_base[FONT_BASE], font_ptr() + 1);
@@ -2276,8 +2293,8 @@ store_fmt_file(void)
         print_esc(hash(FONT_ID_BASE + k).s1);
         print_char('=');
 
-        if (font_area[k] == AAT_FONT_FLAG || font_area[k] == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
-            print_file_name(font_name[k], EMPTY_STRING, EMPTY_STRING);
+        if (font_area(k) == AAT_FONT_FLAG || font_area(k) == OTGR_FONT_FLAG || font_mapping[k] != NULL) {
+            print_file_name(font_name(k), EMPTY_STRING, EMPTY_STRING);
 
             error_here_with_diagnostic("Can't \\dump a format with native fonts or font-mappings");
             capture_to_diagnostic(NULL);
@@ -2288,12 +2305,12 @@ store_fmt_file(void)
             set_help_line(0, "(Load them at runtime, not as part of the format file.)");
             error();
         } else {
-            print_file_name(font_name[k], font_area[k], EMPTY_STRING);
+            print_file_name(font_name(k), font_area(k), EMPTY_STRING);
         }
 
-        if (font_size[k] != font_dsize[k]) {
+        if (font_size(k) != font_dsize(k)) {
             print_cstr(" at ");
-            print_scaled(font_size[k]);
+            print_scaled(font_size(k));
             print_cstr("pt");
         }
     }
@@ -2674,12 +2691,12 @@ load_fmt_file(void)
     font_layout_engine = xcalloc_array(void *, font_max);
     font_flags = xmalloc_array(char, font_max);
     font_letter_space = xmalloc_array(scaled_t, font_max);
-    font_check = xmalloc_array(b16x4, font_max);
-    font_size = xmalloc_array(scaled_t, font_max);
-    font_dsize = xmalloc_array(scaled_t, font_max);
+    resize_font_check(font_max+1);
+    resize_font_size(font_max+1);
+    resize_font_dsize(font_max+1);
     font_params = xmalloc_array(font_index, font_max);
-    font_name = xmalloc_array(str_number, font_max);
-    font_area = xmalloc_array(str_number, font_max);
+    resize_font_name(font_max+1);
+    resize_font_area(font_max+1);
     font_bc = xmalloc_array(UTF16_code, font_max);
     font_ec = xmalloc_array(UTF16_code, font_max);
     font_glue = xmalloc_array(int32_t, font_max);
@@ -2701,14 +2718,14 @@ load_fmt_file(void)
     for (k = FONT_BASE; k <= font_ptr(); k++)
         font_mapping[k] = 0;
 
-    undump_things(font_check[FONT_BASE], font_ptr() + 1);
-    undump_things(font_size[FONT_BASE], font_ptr() + 1);
-    undump_things(font_dsize[FONT_BASE], font_ptr() + 1);
+    undump_ptr(font_check_ptr(FONT_BASE), font_ptr() + 1);
+    undump_ptr(font_size_ptr(FONT_BASE), font_ptr() + 1);
+    undump_ptr(font_dsize_ptr(FONT_BASE), font_ptr() + 1);
     undump_checked_things(MIN_HALFWORD, MAX_HALFWORD, font_params[FONT_BASE], font_ptr() + 1);
     undump_things(hyphen_char[FONT_BASE], font_ptr() + 1);
     undump_things(skew_char[FONT_BASE], font_ptr() + 1);
-    undump_upper_check_things(str_ptr(), font_name[FONT_BASE], font_ptr() + 1);
-    undump_upper_check_things(str_ptr(), font_area[FONT_BASE], font_ptr() + 1);
+    undump_upper_check_ptr(str_ptr(), font_name_ptr(FONT_BASE), font_ptr() + 1);
+    undump_upper_check_ptr(str_ptr(), font_area_ptr(FONT_BASE), font_ptr() + 1);
     undump_things(font_bc[FONT_BASE], font_ptr() + 1);
     undump_things(font_ec[FONT_BASE], font_ptr() + 1);
     undump_things(char_base[FONT_BASE], font_ptr() + 1);
@@ -3410,7 +3427,7 @@ tt_cleanup(void) {
 
     for (int font_k = 0; font_k < font_max; font_k++) {
         if (font_layout_engine[font_k] != NULL) {
-            release_font_engine(font_layout_engine[font_k], font_area[font_k]);
+            release_font_engine(font_layout_engine[font_k], font_area(font_k));
             font_layout_engine[font_k] = NULL;
         }
 
@@ -3458,12 +3475,12 @@ tt_cleanup(void) {
     free(font_layout_engine);
     free(font_flags);
     free(font_letter_space);
-    free(font_check);
-    free(font_size);
-    free(font_dsize);
+    clear_font_check();
+    clear_font_size();
+    clear_font_dsize();
     free(font_params);
-    free(font_name);
-    free(font_area);
+    clear_font_name();
+    clear_font_area();
     free(font_bc);
     free(font_ec);
     free(font_glue);
@@ -3727,12 +3744,12 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         font_layout_engine = xcalloc_array(void *, font_max);
         font_flags = xcalloc_array(char, font_max);
         font_letter_space = xcalloc_array(scaled_t, font_max);
-        font_check = xcalloc_array(b16x4, font_max);
-        font_size = xcalloc_array(scaled_t, font_max);
-        font_dsize = xcalloc_array(scaled_t, font_max);
+        resize_font_check(font_max+1);
+        resize_font_size(font_max+1);
+        resize_font_dsize(font_max+1);
         font_params = xcalloc_array(font_index, font_max);
-        font_name = xcalloc_array(str_number, font_max);
-        font_area = xcalloc_array(str_number, font_max);
+        resize_font_name(font_max+1);
+        resize_font_area(font_max+1);
         font_bc = xcalloc_array(UTF16_code, font_max);
         font_ec = xcalloc_array(UTF16_code, font_max);
         font_glue = xcalloc_array(int32_t, font_max);
@@ -3752,8 +3769,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         param_base = xcalloc_array(int32_t, font_max);
         set_font_ptr(FONT_BASE);
         fmem_ptr = 7;
-        font_name[FONT_BASE] = maketexstring("nullfont");
-        font_area[FONT_BASE] = EMPTY_STRING;
+        set_font_name(FONT_BASE, maketexstring("nullfont"));
+        set_font_area(FONT_BASE, EMPTY_STRING);
         hyphen_char[FONT_BASE] = '-';
         skew_char[FONT_BASE] = -1;
         bchar_label[FONT_BASE] = NON_ADDRESS;
@@ -3761,8 +3778,8 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         font_false_bchar[FONT_BASE] = TOO_BIG_CHAR;
         font_bc[FONT_BASE] = 1;
         font_ec[FONT_BASE] = 0;
-        font_size[FONT_BASE] = 0;
-        font_dsize[FONT_BASE] = 0;
+        set_font_size(FONT_BASE, 0);
+        set_font_dsize(FONT_BASE, 0);
         char_base[FONT_BASE] = 0;
         width_base[FONT_BASE] = 0;
         height_base[FONT_BASE] = 0;
@@ -3780,7 +3797,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
             font_info[font_k].b32.s1 = 0;
     }
 
-    resize_font_used(font_max);
+    resize_font_used(font_max+1);
     for (font_k = 0; font_k <= font_max; font_k++)
         set_font_used(font_k, false);
 

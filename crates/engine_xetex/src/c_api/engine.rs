@@ -253,9 +253,6 @@ pub struct EngineCtx {
     pub(crate) max_push: i32,
     pub(crate) semantic_pagination_enabled: bool,
 
-    pub(crate) font_ptr: i32,
-    pub(crate) font_used: Vec<bool>,
-
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
     /// An arena of TeX nodes
@@ -389,9 +386,6 @@ impl EngineCtx {
             max_v: 0,
             max_push: 0,
             semantic_pagination_enabled: false,
-
-            font_ptr: 0,
-            font_used: Vec::new(),
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -633,10 +627,6 @@ c_var!(EngineCtx => max_h: i32);
 c_var!(EngineCtx => max_v: i32);
 c_var!(EngineCtx => max_push: i32);
 c_var!(EngineCtx => semantic_pagination_enabled: bool);
-
-c_arr!(EngineCtx => font_used: bool);
-c_var!(EngineCtx => font_ptr: i32);
-
 c_arr!(EngineCtx => eqtb: MemoryWord);
 c_arr!(EngineCtx => mem: MemoryWord);
 c_arr!(EngineCtx => prim[_]: B32x2);
