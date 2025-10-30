@@ -17812,36 +17812,6 @@ append_normal_space:
 }
 
 
-void
-close_files_and_terminate(void)
-{
-    int32_t k;
-
-    for (k = 0; k <= 15; k++) {
-        if (write_open(k))
-            ttstub_output_close(write_file(k));
-    }
-
-    INTPAR(new_line_char) = -1;
-
-    finalize_dvi_file();
-    synctex_terminate(log_opened());
-
-    if (log_opened()) {
-        ttstub_output_putc(log_file(), '\n');
-        ttstub_output_close(log_file());
-        set_selector(selector() - 2);
-        if (selector() == SELECTOR_TERM_ONLY) {
-            print_nl_cstr("Transcript written on ");
-            print(texmf_log_name());
-            print_char('.');
-        }
-    }
-
-    print_ln();
-}
-
-
 void flush_str(str_number s)
 {
     if (s == str_ptr() - 1) {

@@ -1,5 +1,6 @@
 use crate::c_api::engine::{
-    rs_open_log_file, rs_show_context, rs_token_show, History, InteractionMode, Local, Selector,
+    close_files_and_terminate, rs_close_files_and_terminate, rs_open_log_file, rs_show_context,
+    rs_token_show, History, InteractionMode, Local, Selector,
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
@@ -128,10 +129,10 @@ extern "C" fn post_error_message(need_to_print_it: i32) {
             return rs_error(globals);
         }
         globals.engine.history = History::FatalError;
+        rs_close_files_and_terminate(globals);
         None
     });
     out_of_lock.map(|f| f());
-    unsafe { close_files_and_terminate() };
     unsafe { tt_cleanup() };
     Globals::with(|globals| {
         globals
@@ -149,11 +150,9 @@ pub extern "C-unwind" fn fatal_error(s: *const libc::c_char) {
         rs_print_bytes(globals, b"Emergency stop");
         rs_print_nl_bytes(globals, s);
         rs_capture_to_diagnostic(globals, None);
+        rs_close_files_and_terminate(globals);
     });
-
-    unsafe { close_files_and_terminate() };
     unsafe { tt_cleanup() };
-
     Globals::with(|globals| {
         globals
             .out
@@ -179,7 +178,6 @@ pub extern "C" fn int_error(n: i32) {
 // TODO: Use the Rust versions directly once they're ported. These just rely indirectly on this
 //       function, making it easier to port piecemeal.
 extern "C" {
-    fn close_files_and_terminate();
     fn tt_cleanup();
     fn _tt_abort(s: *const libc::c_char, ...) -> libc::c_int;
 }
