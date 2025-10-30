@@ -25,6 +25,10 @@
 
 #define FNT_NUM_0 171
 
+#define XDV_ID_BYTE 7
+
+#define SPX_ID_BYTE 100
+
 #define LEVEL_ZERO 0
 
 #define LEVEL_ONE 1
@@ -372,6 +376,8 @@
 
 #define POST 248
 
+#define POST_POST 249
+
 #define DEFINE_NATIVE_FONT 252
 
 #define FONT_BASE 0
@@ -539,6 +545,8 @@ void dvi_pop(int32_t l);
 void dvi_native_font_def(uintptr_t f);
 
 void dvi_font_def(uintptr_t f);
+
+void finalize_dvi_file(void);
 
 uint32_t selector(void);
 

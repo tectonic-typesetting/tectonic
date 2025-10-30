@@ -199,6 +199,7 @@ pub const EOP: u8 = 140;
 pub const POP: u8 = 142;
 pub const FNT_DEF1: u8 = 243;
 pub const POST: u8 = 248;
+pub const POST_POST: u8 = 249;
 pub const DEFINE_NATIVE_FONT: u8 = 252;
 
 pub const FONT_BASE: i32 = 0;
