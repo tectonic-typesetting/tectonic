@@ -1,6 +1,8 @@
+use crate::c_api::globals::Globals;
 use bitflags::bitflags;
 use std::cell::RefCell;
 use std::ffi::CString;
+use std::io::Write;
 use std::ptr;
 use tectonic_bridge_core::OutputId;
 
@@ -92,4 +94,99 @@ impl SynctexCtx {
 #[no_mangle]
 pub extern "C" fn synctex_ctx() -> *mut SynctexCtx {
     SYNCTEX.with_borrow_mut(|synctex| ptr::from_mut(synctex))
+}
+
+pub fn rs_synctex_record_anchor(globals: &mut Globals<'_, '_>) -> Option<()> {
+    let output = globals.state.get_output(globals.synctex.file?);
+    let to_write = format!("!{}\n", globals.synctex.total_length);
+    if output.write_all(to_write.as_bytes()).is_ok() {
+        /* XXX: should this be `+=`? */
+        globals.synctex.total_length = to_write.len() as i32;
+        globals.synctex.count += 1;
+        return Some(());
+    }
+    None
+}
+
+pub fn rs_synctex_record_count(globals: &mut Globals<'_, '_>) -> Option<()> {
+    let output = globals.state.get_output(globals.synctex.file?);
+    let to_write = format!("Count:{}\n", globals.synctex.count);
+    if output.write_all(to_write.as_bytes()).is_ok() {
+        globals.synctex.total_length += to_write.len() as i32;
+        return Some(());
+    }
+    None
+}
+
+pub fn rs_synctex_record_postamble(globals: &mut Globals<'_, '_>) -> Option<()> {
+    rs_synctex_record_anchor(globals)?;
+    let output = globals.state.get_output(globals.synctex.file?);
+    if write!(output, "Postamble:\n").is_ok() {
+        globals.synctex.total_length += "Postamble:\n".len() as i32;
+        rs_synctex_record_count(globals)?;
+        rs_synctex_record_anchor(globals)?;
+
+        let output = globals.state.get_output(globals.synctex.file?);
+        if write!(output, "Post scriptum:\n").is_ok() {
+            globals.synctex.total_length += "Post scriptum:\n".len() as i32;
+            return Some(());
+        }
+    }
+    None
+}
+
+#[no_mangle]
+pub extern "C" fn synctex_record_anchor() -> i32 {
+    Globals::with(|globals| rs_synctex_record_anchor(globals).or_else(|| rs_synctex_abort(globals)))
+        .map_or(-1, |_| 0)
+}
+
+#[no_mangle]
+pub extern "C" fn synctex_record_count() -> i32 {
+    Globals::with(|globals| rs_synctex_record_count(globals).or_else(|| rs_synctex_abort(globals)))
+        .map_or(-1, |_| 0)
+}
+
+#[no_mangle]
+pub extern "C" fn synctex_record_postamble() -> i32 {
+    Globals::with(|globals| {
+        rs_synctex_record_postamble(globals).or_else(|| rs_synctex_abort(globals))
+    })
+    .map_or(-1, |_| 0)
+}
+
+/// Free all memory used, close the file if any,
+/// It is sent locally when there is a problem with synctex output.
+/// It is sent by pdftex when a fatal error occurred in pdftex.web.
+pub fn rs_synctex_abort(globals: &mut Globals<'_, '_>) -> Option<()> {
+    if let Some(file) = globals.synctex.file.take() {
+        globals.state.output_close(file);
+    }
+    unsafe { libc::free(globals.synctex.root_name.cast_mut().cast()) };
+    globals.synctex.root_name = ptr::null();
+    globals.synctex.flags |= Flags::OFF;
+    None
+}
+
+#[no_mangle]
+pub extern "C" fn synctexabort() {
+    Globals::with(|globals| rs_synctex_abort(globals));
+}
+
+/// Free all memory used and close the file,
+///  sent by close_files_and_terminate in tex.web.
+///  synctexterminate() is called when the TeX run terminates.
+pub fn rs_synctex_terminate(globals: &mut Globals<'_, '_>, log_opened: bool) {
+    if let Some(file) = globals.synctex.file {
+        /* We keep the file even if no tex output is produced
+         * (synctex_ctx()->flags.not_void == 0). I assume that this means that there
+         * was an error and tectonic will not save anything anyway. */
+        rs_synctex_record_postamble(globals);
+    }
+    rs_synctex_abort(globals);
+}
+
+#[no_mangle]
+pub extern "C" fn synctex_terminate(log_opened: bool) {
+    Globals::with(|globals| rs_synctex_terminate(globals, log_opened))
 }

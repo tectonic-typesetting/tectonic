@@ -121,26 +121,8 @@ synctex_init_command(void)
     }
 }
 
-
-/*  Free all memory used, close the file if any,
- *  It is sent locally when there is a problem with synctex output.
- *  It is sent by pdftex when a fatal error occurred in pdftex.web. */
-static void
-synctexabort(void)
-{
-    if (synctex_ctx()->file) {
-        ttstub_output_close(synctex_ctx()->file);
-        synctex_ctx()->file = INVALID_HANDLE;
-    }
-
-    synctex_ctx()->root_name = mfree(synctex_ctx()->root_name);
-
-    synctex_ctx()->flags |= FLAGS_OFF;      /* disable synctex */
-}
-
 static inline int synctex_record_preamble(void);
 static inline int synctex_record_input(int32_t tag, char *name);
-static inline int synctex_record_postamble(void);
 static inline int synctex_record_content(void);
 static inline int synctex_record_settings(void);
 static inline int synctex_record_sheet(int32_t sheet);
@@ -318,23 +300,6 @@ void synctex_start_input(void)
  *  information about a node.  The other information is obtained through the
  *  global context variable.
  */
-
-/*  Free all memory used and close the file,
- *  sent by close_files_and_terminate in tex.web.
- *  synctexterminate() is called when the TeX run terminates.
- */
-void synctex_terminate(bool log_opened)
-{
-    if (synctex_ctx()->file != INVALID_HANDLE) {
-        /* We keep the file even if no tex output is produced
-         * (synctex_ctx()->flags.not_void == 0). I assume that this means that there
-         * was an error and tectonic will not save anything anyway. */
-        synctex_record_postamble();
-        ttstub_output_close(synctex_ctx()->file);
-        synctex_ctx()->file = INVALID_HANDLE;
-    }
-    synctexabort();
-}
 
 /*  Recording the "{..." line.  In *tex.web, use synctex_sheet(pdf_output) at
  *  the very beginning of the ship_out procedure.
@@ -728,21 +693,6 @@ synctex_record_input(int32_t tag, char *name)
 }
 
 static inline int
-synctex_record_anchor(void)
-{
-    int len = ttstub_fprintf(synctex_ctx()->file, "!%i\n", synctex_ctx()->total_length);
-
-    if (len > 0) {
-        synctex_ctx()->total_length = len; /* XXX: should this be `+=`? */
-        ++synctex_ctx()->count;
-        return 0;
-    }
-
-    synctexabort();
-    return -1;
-}
-
-static inline int
 synctex_record_content(void)
 {
     int len = ttstub_fprintf(synctex_ctx()->file, "Content:\n");
@@ -998,41 +948,6 @@ synctex_record_node_tsilh(int32_t p __attribute__ ((unused)))
     } else {
         synctexabort();
     }
-}
-
-static inline int
-synctex_record_count(void)
-{
-    int len = ttstub_fprintf(synctex_ctx()->file, "Count:%i\n", synctex_ctx()->count);
-
-    if (len > 0) {
-        synctex_ctx()->total_length += len;
-        return 0;
-    }
-
-    synctexabort();
-    return -1;
-}
-
-static inline int
-synctex_record_postamble(void)
-{
-    if (0 == synctex_record_anchor()) {
-        int len = ttstub_fprintf(synctex_ctx()->file, "Postamble:\n");
-        if (len > 0) {
-            synctex_ctx()->total_length += len;
-            if (!synctex_record_count() && !synctex_record_anchor()) {
-                len = ttstub_fprintf(synctex_ctx()->file, "Post scriptum:\n");
-                if (len > 0) {
-                    synctex_ctx()->total_length += len;
-                    return 0;
-                }
-            }
-        }
-    }
-
-    synctexabort();
-    return -1;
 }
 
 static inline void

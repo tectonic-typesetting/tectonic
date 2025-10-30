@@ -1255,6 +1255,16 @@ int32_t norm_rand(void);
 
 SynctexCtx *synctex_ctx(void);
 
+int32_t synctex_record_anchor(void);
+
+int32_t synctex_record_count(void);
+
+int32_t synctex_record_postamble(void);
+
+void synctexabort(void);
+
+void synctex_terminate(bool log_opened);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
