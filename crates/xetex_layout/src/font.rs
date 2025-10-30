@@ -362,8 +362,7 @@ impl Font {
             descriptor,
             self.point_size as f64 * 72.0 / 72.27,
         ));
-        let mut index = 0;
-        let pathname = get_file_name_from_ct_font(font_ref.as_ref().unwrap(), &mut index).unwrap();
+        let (index, pathname) = get_file_name_from_ct_font(font_ref.as_ref().unwrap()).unwrap();
         self.initialize_ft(pathname.to_str().unwrap(), index as usize)
     }
 
@@ -557,35 +556,36 @@ impl Font {
     }
 }
 
+/// Get the filename from a [`CTFont`] on MacOS
 #[cfg(target_os = "macos")]
-pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> Option<CString> {
+pub fn get_file_name_from_ct_font(ct_font: &CTFont) -> Option<(u32, CString)> {
     let url = ct_font
         .attr(FontAttribute::URL)
         // SAFETY: CFUrl has no generic parameters
         .and_then(|t| unsafe { t.downcast::<CFUrl>() }.ok())?;
 
     let pathname = url.fs_representation()?;
-    *index = 0;
+    let mut index = 0;
 
     let face = ft::Face::new(&pathname, 0);
     if let Ok(face) = face {
         if face.num_faces() > 1 {
             let num_faces = face.num_faces();
             let ps_name1 = ct_font.name(FontNameKey::PostScript);
-            *index = u32::MAX;
+            index = u32::MAX;
             for i in 0..num_faces {
                 let face = ft::Face::new(&pathname, i);
                 if let Ok(face) = face {
                     let ps_name2 = face.get_postscript_name();
                     match (&ps_name1, ps_name2) {
                         (None, None) => {
-                            *index = i as u32;
+                            index = i as u32;
                             break;
                         }
                         (Some(name1), Some(name2))
                             if name1.as_cstr().is_some_and(|name1| name1 == name2) =>
                         {
-                            *index = i as u32;
+                            index = i as u32;
                             break;
                         }
                         _ => (),
@@ -595,8 +595,8 @@ pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> O
         }
     }
 
-    if *index != u32::MAX {
-        Some(pathname)
+    if index != u32::MAX {
+        Some((index, pathname))
     } else {
         None
     }
