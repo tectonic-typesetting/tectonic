@@ -28,8 +28,8 @@ pub struct OutputCtx {
     file_offset: i32,
     pub(crate) rust_stdout: Option<OutputId>,
     pub(crate) log_file: Option<OutputId>,
-    write_open: Vec<bool>,
-    write_file: Vec<Option<OutputId>>,
+    pub(crate) write_open: Vec<bool>,
+    pub(crate) write_file: Vec<Option<OutputId>>,
     doing_special: bool,
     /// digits
     dig: [u8; 23],

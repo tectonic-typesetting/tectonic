@@ -2,10 +2,12 @@ use crate::c_api::globals::Globals;
 use crate::ty::{Scaled, StrNumber};
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
+use std::io::Write;
 use std::{ptr, slice};
 
 mod memory;
 
+use crate::c_api::dvi::rs_finalize_dvi_file;
 use crate::c_api::errors::rs_int_error;
 use crate::c_api::is_dir_sep;
 use crate::c_api::output::{
@@ -16,6 +18,7 @@ use crate::c_api::output::{
 use crate::c_api::pool::{
     rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
 };
+use crate::c_api::synctex::rs_synctex_terminate;
 pub use memory::*;
 
 pub const LEVEL_ZERO: u16 = 0;
@@ -1433,4 +1436,38 @@ pub fn rs_prepare_mag(globals: &mut Globals<'_, '_>) -> Option<Box<dyn Fn()>> {
 pub extern "C" fn prepare_mag() {
     let outside_lock = Globals::with(|globals| rs_prepare_mag(globals));
     outside_lock.map(|f| f());
+}
+
+pub fn rs_close_files_and_terminate(globals: &mut Globals<'_, '_>) {
+    for k in 0..16 {
+        if globals.out.write_open[k] {
+            globals.out.write_file[k].map(|id| globals.state.output_close(id));
+        }
+    }
+    globals.engine.set_int_par(IntPar::NewLineChar, -1);
+    rs_finalize_dvi_file(globals);
+    rs_synctex_terminate(globals, globals.engine.log_opened);
+
+    if globals.engine.log_opened {
+        let log = globals.state.get_output(globals.out.log_file.unwrap());
+        write!(log, "\n").unwrap();
+        globals.state.output_close(globals.out.log_file.unwrap());
+        globals.engine.selector = match globals.engine.selector {
+            Selector::TermAndLog => Selector::TermOnly,
+            Selector::LogOnly => Selector::NoPrint,
+            _ => panic!(),
+        };
+        if globals.engine.selector == Selector::TermOnly {
+            rs_print_nl_bytes(globals, b"Transcript written on ");
+            rs_print(globals, globals.engine.texmf_log_name);
+            rs_print_char(globals, '.' as i32);
+        }
+    }
+
+    rs_print_ln(globals);
+}
+
+#[no_mangle]
+pub extern "C" fn close_files_and_terminate() {
+    Globals::with(|globals| rs_close_files_and_terminate(globals))
 }

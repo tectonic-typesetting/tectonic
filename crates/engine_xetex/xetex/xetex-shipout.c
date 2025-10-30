@@ -1708,7 +1708,7 @@ out_what(int32_t p)
             ttstub_output_close(write_file(j));
 
         if (mem(p).b16.s0 == CLOSE_NODE) {
-            write_open(j) = false;
+            set_write_open(j, false);
             break;
         }
 
