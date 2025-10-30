@@ -1,4 +1,5 @@
 use super::{sys, CFString, CFType, CTFontDescriptor, CoreType};
+use crate::sys::CGAffineTransform;
 use std::ptr;
 use std::ptr::NonNull;
 
@@ -124,5 +125,17 @@ impl CTFont {
         };
         // SAFETY: In non-null, returned name guaranteed valid and owned.
         NonNull::new(ptr.cast_mut()).map(|ptr| unsafe { CFString::new_owned(ptr) })
+    }
+
+    /// Get the transformation matrix for this font
+    pub fn matrix(&self) -> CGAffineTransform {
+        // SAFETY: Internal pointer guaranteed valid
+        unsafe { sys::CTFontGetMatrix(self.as_type_ref()) }
+    }
+
+    /// Get the point size for this font
+    pub fn size(&self) -> f64 {
+        // SAFETY: Internal pointer guaranteed valid
+        unsafe { sys::CTFontGetSize(self.as_type_ref()) }
     }
 }

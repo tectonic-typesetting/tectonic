@@ -68,6 +68,26 @@ impl CFString {
         unsafe { CFString::new_owned(ptr) }
     }
 
+    /// Create a new string from a static value. The value must never be deallocated, and will be
+    /// used directly as the backing memory for the new string.
+    pub fn new_static<S: ?Sized + StrLike>(val: &'static S) -> CFString {
+        // SAFETY: Length, pointer, and encoding are derived from same value.
+        let ptr = unsafe {
+            sys::CFStringCreateWithBytesNoCopy(
+                ptr::null(),
+                val.as_ptr(),
+                val.len() as sys::CFIndex,
+                val.encoding(),
+                false,
+                ptr::null(),
+            )
+        };
+        let ptr = NonNull::new(ptr.cast_mut()).unwrap();
+        // SAFETY: If non-null, pointer returned by CFStringCreateWithBytes is guaranteed to be a
+        //         valid CFString.
+        unsafe { CFString::new_owned(ptr) }
+    }
+
     /// Get the length of this string
     pub fn len(&self) -> usize {
         // SAFETY: Self is guaranteed to be valid
