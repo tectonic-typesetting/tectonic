@@ -5,6 +5,7 @@ use crate::c_api::hash::{HashCtx, HASH_CTX};
 use crate::c_api::inputs::{FileCtx, FILE_CTX};
 use crate::c_api::output::{OutputCtx, OUTPUT_CTX};
 use crate::c_api::pool::{StringPool, STRING_POOL};
+use crate::c_api::synctex::SynctexCtx;
 use tectonic_bridge_core::CoreBridgeState;
 
 #[non_exhaustive]
@@ -17,6 +18,7 @@ pub struct Globals<'a, 'b> {
     pub out: &'a mut OutputCtx,
     pub dvi: &'a mut DviCtx,
     pub fonts: &'a mut FontCtx,
+    pub synctex: &'a mut SynctexCtx,
 }
 
 impl Globals<'_, '_> {
@@ -29,17 +31,20 @@ impl Globals<'_, '_> {
                             OUTPUT_CTX.with_borrow_mut(|out| {
                                 DVI_CTX.with_borrow_mut(|dvi| {
                                     FontCtx::with(|fonts| {
-                                        let mut globals = Globals {
-                                            state,
-                                            engine,
-                                            strings,
-                                            hash,
-                                            files,
-                                            out,
-                                            dvi,
-                                            fonts,
-                                        };
-                                        f(&mut globals)
+                                        SynctexCtx::with(|synctex| {
+                                            let mut globals = Globals {
+                                                state,
+                                                engine,
+                                                strings,
+                                                hash,
+                                                files,
+                                                out,
+                                                dvi,
+                                                fonts,
+                                                synctex,
+                                            };
+                                            f(&mut globals)
+                                        })
                                     })
                                 })
                             })

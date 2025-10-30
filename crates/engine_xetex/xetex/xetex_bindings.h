@@ -6,6 +6,15 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "xetex-core.h"
+typedef void(*Option_SynctexRecorder)(int32_t);
+typedef unsigned char Flags;
+
+#define FLAGS_CONTENT_READY 1
+#define FLAGS_OFF 2
+#define FLAGS_NOT_VOID 4
+#define FLAGS_WARN 8
+#define FLAGS_OUTPUT_P 16
+
 
 /**
  * A serial number describing the detailed binary layout of the TeX "format
@@ -476,6 +485,73 @@ typedef union {
 } MemoryWord;
 
 typedef int32_t Scaled;
+
+typedef struct {
+  /**
+   * the foo.synctex or foo.synctex.gz I/O identifier
+   */
+  Option_OutputId file;
+  /**
+   * in general jobname.tex
+   */
+  const char *root_name;
+  /**
+   * The number of interesting records in "foo.synctex"
+   */
+  int32_t count;
+  /**
+   * the last synchronized node, must be set before the recorder
+   */
+  int32_t node;
+  /**
+   * the recorder of the node above, the routine that knows how to record the node to the .synctex file
+   */
+  Option_SynctexRecorder recorder;
+  /**
+   * Current tag
+   */
+  int32_t tag;
+  /**
+   * Current line
+   */
+  int32_t line;
+  /**
+   * Current point h
+   */
+  int32_t curh;
+  /**
+   * Current point v
+   */
+  int32_t curv;
+  /**
+   * The magnification as given by \mag
+   */
+  int32_t magnification;
+  /**
+   * The unit, defaults to 1, use 8192 to produce shorter but less accurate info
+   */
+  int32_t unit;
+  /**
+   * The total length of the bytes written since the last check point
+   */
+  int32_t total_length;
+  /**
+   * compression trick if |synctex_options & 4| > 0
+   */
+  int32_t lastv;
+  /**
+   * PDF forms are an example of nested sheets
+   */
+  int32_t form_depth;
+  /**
+   * Global tag counter, used to be a local static in synctex_start_input
+   */
+  uint32_t synctex_tag_counter;
+  /**
+   * Synctex flags that control behavior
+   */
+  Flags flags;
+} SynctexCtx;
 
 #define EMPTY_STRING (65536 + 1)
 
@@ -1174,6 +1250,8 @@ void init_randoms(int32_t seed);
 int32_t unif_rand(int32_t x);
 
 int32_t norm_rand(void);
+
+SynctexCtx *synctex_ctx(void);
 
 #ifdef __cplusplus
 }  // extern "C"
