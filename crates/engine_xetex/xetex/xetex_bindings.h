@@ -370,6 +370,8 @@
 
 #define POST 248
 
+#define DEFINE_NATIVE_FONT 252
+
 #define FONT_BASE 0
 
 #define TOKEN_LIST 0
@@ -531,6 +533,8 @@ void dvi_four(int32_t x);
 void dvi_two(uint16_t s);
 
 void dvi_pop(int32_t l);
+
+void dvi_native_font_def(uintptr_t f);
 
 uint32_t selector(void);
 
@@ -893,8 +897,6 @@ void resize_xdv_buffer(uintptr_t len);
 void clear_xdv_buffer(void);
 
 uintptr_t xdv_buf_size(void);
-
-uintptr_t make_font_def(uintptr_t f);
 
 void resize_hash(uintptr_t len);
 

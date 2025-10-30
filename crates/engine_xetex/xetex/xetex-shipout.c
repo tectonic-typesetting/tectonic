@@ -22,7 +22,6 @@ static internal_font_number dvi_f;
 static void hlist_out(void);
 static void vlist_out(void);
 static int32_t reverse(int32_t this_box, int32_t t, scaled_t * cur_g, double * cur_glue);
-static void dvi_native_font_def(internal_font_number f);
 static void movement(scaled_t w, eight_bits o);
 static void prune_movements(int32_t l);
 static void special_out(int32_t p);
@@ -1761,20 +1760,6 @@ out_what(int32_t p)
         confusion("ext4");
         break;
     }
-}
-
-
-static void
-dvi_native_font_def(internal_font_number f)
-{
-    int32_t font_def_length, i;
-
-    dvi_out(DEFINE_NATIVE_FONT);
-    dvi_four(f - 1);
-    font_def_length = make_font_def(f);
-
-    for (i = 0; i < font_def_length; i++)
-        dvi_out(xdv_buffer(i));
 }
 
 

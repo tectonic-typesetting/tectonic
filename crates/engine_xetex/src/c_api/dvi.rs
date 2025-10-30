@@ -1,5 +1,6 @@
-use crate::c_api::engine::{rs_prepare_mag, IntPar, POP, POST, TEX_INFINITY};
+use crate::c_api::engine::{rs_prepare_mag, IntPar, DEFINE_NATIVE_FONT, POP, POST, TEX_INFINITY};
 use crate::c_api::fatal_error;
+use crate::c_api::font::make_font_def;
 use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
@@ -228,4 +229,17 @@ pub fn rs_dvi_pop(globals: &mut Globals<'_, '_>, l: i32) {
 #[no_mangle]
 pub extern "C" fn dvi_pop(l: i32) {
     Globals::with(|globals| rs_dvi_pop(globals, l))
+}
+
+pub fn rs_dvi_native_font_def(globals: &mut Globals<'_, '_>, f: usize) {
+    rs_dvi_out(globals, DEFINE_NATIVE_FONT);
+    rs_dvi_four(globals, (f - 1) as i32);
+    for byte in make_font_def(globals, f) {
+        rs_dvi_out(globals, byte);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn dvi_native_font_def(f: usize) {
+    Globals::with(|globals| rs_dvi_native_font_def(globals, f))
 }
