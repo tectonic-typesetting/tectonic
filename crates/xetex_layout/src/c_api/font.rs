@@ -220,10 +220,12 @@ pub unsafe extern "C" fn getFileNameFromCTFont(
     index: *mut u32,
 ) -> *const libc::c_char {
     use std::ptr::NonNull;
-    crate::font::get_file_name_from_ct_font(
-        &CTFont::new_borrowed(NonNull::new(ct_font.cast_mut()).unwrap()),
-        &mut *index,
-    )
-    .map(CString::into_raw)
+    crate::font::get_file_name_from_ct_font(&CTFont::new_borrowed(
+        NonNull::new(ct_font.cast_mut()).unwrap(),
+    ))
+    .map(|(idx, name)| {
+        *index = idx;
+        CString::into_raw(name)
+    })
     .unwrap_or(ptr::null_mut())
 }

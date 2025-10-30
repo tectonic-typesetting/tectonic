@@ -894,6 +894,8 @@ void clear_xdv_buffer(void);
 
 uintptr_t xdv_buf_size(void);
 
+uintptr_t make_font_def(uintptr_t f);
+
 void resize_hash(uintptr_t len);
 
 B32x2 hash(uintptr_t idx);

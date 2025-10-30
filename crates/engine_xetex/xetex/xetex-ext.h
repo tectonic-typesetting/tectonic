@@ -135,7 +135,6 @@ int32_t ot_font_get_2(int32_t what, void* engine, int32_t param1, int32_t param2
 int32_t ot_font_get_3(int32_t what, void* engine, int32_t param1, int32_t param2, int32_t param3);
 
 int makeXDVGlyphArrayData(void* p);
-int make_font_def(int32_t f);
 int apply_mapping(void* cnv, uint16_t* txtPtr, int txtLen);
 void store_justified_native_glyphs(void* node);
 void measure_native_node(void* node, int use_glyph_metrics);
