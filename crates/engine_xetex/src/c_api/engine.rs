@@ -198,6 +198,7 @@ pub const TECTONIC_CODA_TEXT: u16 = 19;
 pub const EOP: u8 = 140;
 pub const POP: u8 = 142;
 pub const POST: u8 = 248;
+pub const DEFINE_NATIVE_FONT: u8 = 252;
 
 pub const FONT_BASE: i32 = 0;
 pub const TOKEN_LIST: u16 = 0;

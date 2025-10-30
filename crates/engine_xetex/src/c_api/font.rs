@@ -97,7 +97,7 @@ fn cgcolor_to_rgba32(color: CGColor) -> u32 {
     out
 }
 
-pub fn rs_make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> usize {
+pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Vec<u8> {
     let mut flags = 0;
     let rgba;
     let index;
@@ -206,42 +206,28 @@ pub fn rs_make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> usize {
         flags |= XDV_FLAG_EMBOLDEN;
     }
 
-    globals.fonts.xdv_buffer.clear();
-    globals.fonts.xdv_buffer.extend(size.to_be_bytes());
-    globals.fonts.xdv_buffer.extend(flags.to_be_bytes());
-    globals.fonts.xdv_buffer.extend([filename_len as u8]);
-    globals.fonts.xdv_buffer.extend(filename.to_bytes());
-    globals.fonts.xdv_buffer.extend(index.to_be_bytes());
+    let mut buffer = Vec::new();
+    buffer.extend(size.to_be_bytes());
+    buffer.extend(flags.to_be_bytes());
+    buffer.extend([filename_len as u8]);
+    buffer.extend(filename.to_bytes());
+    buffer.extend(index.to_be_bytes());
 
     if flags & XDV_FLAG_COLORED != 0 {
-        globals.fonts.xdv_buffer.extend(rgba.to_be_bytes());
+        buffer.extend(rgba.to_be_bytes());
     }
 
     if flags & XDV_FLAG_EXTEND != 0 {
-        globals
-            .fonts
-            .xdv_buffer
-            .extend(d_to_fix(extend as f64).to_be_bytes());
+        buffer.extend(d_to_fix(extend as f64).to_be_bytes());
     }
 
     if flags & XDV_FLAG_SLANT != 0 {
-        globals
-            .fonts
-            .xdv_buffer
-            .extend(d_to_fix(slant as f64).to_be_bytes());
+        buffer.extend(d_to_fix(slant as f64).to_be_bytes());
     }
 
     if flags & XDV_FLAG_EMBOLDEN != 0 {
-        globals
-            .fonts
-            .xdv_buffer
-            .extend(d_to_fix(embolden as f64).to_be_bytes());
+        buffer.extend(d_to_fix(embolden as f64).to_be_bytes());
     }
 
-    font_def_length
-}
-
-#[no_mangle]
-pub extern "C" fn make_font_def(f: usize) -> usize {
-    Globals::with(|globals| rs_make_font_def(globals, f))
+    buffer
 }
