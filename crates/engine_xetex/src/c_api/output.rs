@@ -38,9 +38,11 @@ pub struct OutputCtx {
     file_offset: i32,
     pub(crate) rust_stdout: Option<OutputId>,
     pub(crate) log_file: Option<OutputId>,
+    write_open: Vec<bool>,
     write_file: Vec<Option<OutputId>>,
     doing_special: bool,
-    digits: [u8; 23],
+    /// digits
+    dig: [u8; 23],
 }
 
 impl OutputCtx {
@@ -52,22 +54,19 @@ impl OutputCtx {
             file_offset: 0,
             rust_stdout: None,
             log_file: None,
+            write_open: Vec::new(),
             write_file: Vec::new(),
             doing_special: false,
-            digits: [0; 23],
+            dig: [0; 23],
         }
+    }
+
+    pub fn with<T>(f: impl FnOnce(&mut OutputCtx) -> T) -> T {
+        OUTPUT_CTX.with_borrow_mut(f)
     }
 }
 
-#[no_mangle]
-pub extern "C" fn file_line_error_style_p() -> i32 {
-    OUTPUT_CTX.with_borrow(|out| out.file_line_error_style_p)
-}
-
-#[no_mangle]
-pub extern "C" fn set_file_line_error_style_p(val: i32) {
-    OUTPUT_CTX.with_borrow_mut(|out| out.file_line_error_style_p = val)
-}
+c_var!(OutputCtx => file_line_error_style_p: i32);
 
 #[no_mangle]
 pub extern "C" fn current_diagnostic() -> *mut Diagnostic {
@@ -79,44 +78,24 @@ pub extern "C" fn current_diagnostic() -> *mut Diagnostic {
     })
 }
 
+c_var!(OutputCtx => term_offset: i32);
+c_var!(OutputCtx => file_offset: i32);
+c_var!(OutputCtx => rust_stdout: Option<OutputId>);
+c_var!(OutputCtx => log_file: Option<OutputId>);
+
 #[no_mangle]
-pub extern "C" fn term_offset() -> i32 {
-    OUTPUT_CTX.with_borrow(|out| out.term_offset)
+pub extern "C" fn write_open(idx: usize) -> bool {
+    OUTPUT_CTX.with_borrow(|out| out.write_open[idx])
 }
 
 #[no_mangle]
-pub extern "C" fn set_term_offset(val: i32) {
-    OUTPUT_CTX.with_borrow_mut(|out| out.term_offset = val)
-}
-
-#[no_mangle]
-pub extern "C" fn file_offset() -> i32 {
-    OUTPUT_CTX.with_borrow(|out| out.file_offset)
-}
-
-#[no_mangle]
-pub extern "C" fn set_file_offset(val: i32) {
-    OUTPUT_CTX.with_borrow_mut(|out| out.file_offset = val)
-}
-
-#[no_mangle]
-pub extern "C" fn rust_stdout() -> Option<OutputId> {
-    OUTPUT_CTX.with_borrow(|out| out.rust_stdout)
-}
-
-#[no_mangle]
-pub extern "C" fn set_rust_stdout(val: Option<OutputId>) {
-    OUTPUT_CTX.with_borrow_mut(|out| out.rust_stdout = val)
-}
-
-#[no_mangle]
-pub extern "C" fn log_file() -> Option<OutputId> {
-    OUTPUT_CTX.with_borrow(|out| out.log_file)
-}
-
-#[no_mangle]
-pub extern "C" fn set_log_file(val: Option<OutputId>) {
-    OUTPUT_CTX.with_borrow_mut(|out| out.log_file = val)
+pub extern "C" fn set_write_open(idx: usize, val: bool) {
+    OUTPUT_CTX.with_borrow_mut(|out| {
+        if out.write_open.len() < idx + 1 {
+            out.write_open.resize(idx + 1, false);
+        }
+        out.write_open[idx] = val;
+    })
 }
 
 #[no_mangle]
@@ -134,25 +113,8 @@ pub extern "C" fn set_write_file(idx: usize, val: Option<OutputId>) {
     })
 }
 
-#[no_mangle]
-pub extern "C" fn doing_special() -> bool {
-    OUTPUT_CTX.with_borrow(|out| out.doing_special)
-}
-
-#[no_mangle]
-pub extern "C" fn set_doing_special(val: bool) {
-    OUTPUT_CTX.with_borrow_mut(|out| out.doing_special = val)
-}
-
-#[no_mangle]
-pub extern "C" fn dig(idx: usize) -> u8 {
-    OUTPUT_CTX.with_borrow(|out| out.digits[idx])
-}
-
-#[no_mangle]
-pub extern "C" fn set_dig(idx: usize, val: u8) {
-    OUTPUT_CTX.with_borrow_mut(|out| out.digits[idx] = val)
-}
+c_var!(OutputCtx => doing_special: bool);
+c_arr!(OutputCtx => dig[_]: u8);
 
 pub fn rs_capture_to_diagnostic(
     globals: &mut Globals<'_, '_>,
@@ -645,10 +607,10 @@ pub extern "C" fn print_esc(str: StrNumber) {
 
 pub fn rs_print_the_digs(globals: &mut Globals<'_, '_>, k: usize) {
     for k in (0..k).rev() {
-        if globals.out.digits[k] < 10 {
-            rs_print_char(globals, (b'0' + globals.out.digits[k]) as i32)
+        if globals.out.dig[k] < 10 {
+            rs_print_char(globals, (b'0' + globals.out.dig[k]) as i32)
         } else {
-            rs_print_char(globals, (55 + globals.out.digits[k]) as i32)
+            rs_print_char(globals, (55 + globals.out.dig[k]) as i32)
         }
     }
 }
@@ -666,16 +628,16 @@ pub fn rs_print_int(globals: &mut Globals<'_, '_>, mut n: i32) {
             m = (m % 10) + 1;
             k = 1;
             if m < 10 {
-                globals.out.digits[0] = m as u8;
+                globals.out.dig[0] = m as u8;
             } else {
-                globals.out.digits[0] = 0;
+                globals.out.dig[0] = 0;
                 n += 1;
             }
         }
     }
 
     loop {
-        globals.out.digits[k] = (n % 10) as u8;
+        globals.out.dig[k] = (n % 10) as u8;
         n /= 10;
         k += 1;
         if n == 0 {
@@ -949,7 +911,7 @@ pub fn rs_print_hex(globals: &mut Globals<'_, '_>, mut n: i32) {
 
     rs_print_char(globals, '"' as i32);
     loop {
-        globals.out.digits[k] = (n % 16) as u8;
+        globals.out.dig[k] = (n % 16) as u8;
         n /= 16;
         k += 1;
         if n == 0 {
@@ -992,13 +954,13 @@ pub fn rs_print_ucs_code(globals: &mut Globals<'_, '_>, c: char) {
     let mut k = 0;
     let mut n = c as u32;
     while n > 0 {
-        globals.out.digits[k] = (n % 16) as u8;
+        globals.out.dig[k] = (n % 16) as u8;
         n /= 16;
         k += 1;
     }
 
     while k < 4 {
-        globals.out.digits[k] = 0;
+        globals.out.dig[k] = 0;
         k += 1;
     }
 

@@ -876,6 +876,8 @@ void geq_word_define(int32_t p, int32_t w);
 
 void prepare_mag(void);
 
+void close_files_and_terminate(void);
+
 void pre_error_message(void);
 
 void error(void);
@@ -1052,6 +1054,10 @@ Option_OutputId log_file(void);
 
 void set_log_file(Option_OutputId val);
 
+bool write_open(uintptr_t idx);
+
+void set_write_open(uintptr_t idx, bool val);
+
 Option_OutputId write_file(uintptr_t idx);
 
 void set_write_file(uintptr_t idx, Option_OutputId val);
@@ -1063,6 +1069,8 @@ void set_doing_special(bool val);
 uint8_t dig(uintptr_t idx);
 
 void set_dig(uintptr_t idx, uint8_t val);
+
+uint8_t *dig_ptr(uintptr_t idx);
 
 /**
  * A lower-level API to begin or end the capture of messages into the diagnostic

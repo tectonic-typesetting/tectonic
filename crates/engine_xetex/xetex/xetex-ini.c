@@ -233,7 +233,6 @@ int32_t cur_box;
 int32_t after_token;
 bool long_help_seen;
 str_number format_ident;
-bool write_open[18];
 int32_t write_loc;
 scaled_t cur_page_width;
 scaled_t cur_page_height;
@@ -3137,7 +3136,7 @@ initialize_more_variables(void)
     format_ident = 0;
 
     for (k = 0; k <= 17; k++)
-        write_open[k] = false;
+        set_write_open(k, false);
 
     LR_ptr = TEX_NULL;
     LR_problems = 0;
