@@ -368,6 +368,8 @@
 
 #define POP 142
 
+#define FNT_DEF1 243
+
 #define POST 248
 
 #define DEFINE_NATIVE_FONT 252
@@ -535,6 +537,8 @@ void dvi_two(uint16_t s);
 void dvi_pop(int32_t l);
 
 void dvi_native_font_def(uintptr_t f);
+
+void dvi_font_def(uintptr_t f);
 
 uint32_t selector(void);
 
