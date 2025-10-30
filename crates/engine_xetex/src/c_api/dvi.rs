@@ -1,7 +1,10 @@
-use crate::c_api::engine::{rs_prepare_mag, IntPar, DEFINE_NATIVE_FONT, POP, POST, TEX_INFINITY};
+use crate::c_api::engine::{
+    rs_prepare_mag, IntPar, DEFINE_NATIVE_FONT, FNT_DEF1, POP, POST, TEX_INFINITY,
+};
 use crate::c_api::fatal_error;
-use crate::c_api::font::make_font_def;
+use crate::c_api::font::{make_font_def, AAT_FONT_FLAG, OTGR_FONT_FLAG};
 use crate::c_api::globals::Globals;
+use crate::c_api::pool::{length, rs_str_length};
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::io::Write;
@@ -242,4 +245,50 @@ pub fn rs_dvi_native_font_def(globals: &mut Globals<'_, '_>, f: usize) {
 #[no_mangle]
 pub extern "C" fn dvi_native_font_def(f: usize) {
     Globals::with(|globals| rs_dvi_native_font_def(globals, f))
+}
+
+pub fn rs_dvi_font_def(globals: &mut Globals<'_, '_>, f: usize) {
+    if globals.fonts.font_area[f] == AAT_FONT_FLAG || globals.fonts.font_area[f] == OTGR_FONT_FLAG {
+        rs_dvi_native_font_def(globals, f)
+    } else {
+        if f <= 256 {
+            rs_dvi_out(globals, FNT_DEF1);
+            rs_dvi_out(globals, (f - 1) as u8);
+        } else {
+            rs_dvi_out(globals, FNT_DEF1 + 1);
+            rs_dvi_out(globals, ((f - 1) / 256) as u8);
+            rs_dvi_out(globals, ((f - 1) % 256) as u8);
+        }
+
+        rs_dvi_out(globals, globals.fonts.font_check[f].s3 as u8);
+        rs_dvi_out(globals, globals.fonts.font_check[f].s2 as u8);
+        rs_dvi_out(globals, globals.fonts.font_check[f].s1 as u8);
+        rs_dvi_out(globals, globals.fonts.font_check[f].s0 as u8);
+        rs_dvi_four(globals, globals.fonts.font_size[f]);
+        rs_dvi_four(globals, globals.fonts.font_dsize[f]);
+
+        rs_dvi_out(
+            globals,
+            rs_str_length(globals.strings, globals.fonts.font_area[f] as StrNumber) as u8,
+        );
+
+        let mut k = globals.strings.tex_str(globals.fonts.font_name[f]);
+        let l = k.iter().position(|c| *c == ':' as u16).unwrap_or(k.len());
+
+        rs_dvi_out(globals, l as u8);
+
+        let a = globals.strings.tex_str(globals.fonts.font_area[f]);
+        for b in a.to_vec() {
+            rs_dvi_out(globals, b as u8);
+        }
+        let n = globals.strings.tex_str(globals.fonts.font_name[f]);
+        for b in n[..l].to_vec() {
+            rs_dvi_out(globals, b as u8);
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn dvi_font_def(f: usize) {
+    Globals::with(|globals| rs_dvi_font_def(globals, f))
 }
