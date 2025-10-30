@@ -166,9 +166,8 @@ pub extern "C" fn deinitialize_shipout_variables() {
 pub fn dvi_swap(globals: &mut Globals<'_, '_>) {
     if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
         globals.dvi.cur_s = -2;
-        // TODO: This may violate Globals::with uniqueness if we're already in a fatal_error
-
-        unsafe { fatal_error(c"dvi length exceeds 0x7FFFFFFF".as_ptr()) };
+        // TODO: fatal_error(b"dvi length exceeds 0x7FFFFFFF")
+        todo!()
     }
 
     if globals.dvi.limit == DVI_BUF_SIZE {
@@ -365,7 +364,7 @@ pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) {
 
     if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
         globals.dvi.cur_s = -2;
-        // TODO: fatal_error("dvi length exceeds 0x7FFFFFFF");
+        // TODO: fatal_error(b"dvi length exceeds 0x7FFFFFFF");
         todo!();
     }
 

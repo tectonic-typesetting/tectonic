@@ -328,6 +328,7 @@ pub mod c_api {
     mod output;
     mod pool;
     mod scaled_math;
+    mod synctex;
 
     /// Copy of `IS_DIR_SEP` from bridge_core
     fn is_dir_sep(c: char) -> bool {

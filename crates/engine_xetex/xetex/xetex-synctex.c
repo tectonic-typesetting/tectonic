@@ -80,53 +80,6 @@ typedef void (*synctex_recorder_t) (int32_t);  /* recorders know how to record a
 
 #   define SYNCTEX_BITS_PER_BYTE 8
 
-/*  Here are all the local variables gathered in one "synchronization context"  */
-static struct {
-    rust_output_handle_t file;  /*  the foo.synctex or foo.synctex.gz I/O identifier  */
-    char *root_name;            /*  in general jobname.tex  */
-    int32_t count;              /*  The number of interesting records in "foo.synctex"  */
-    /*  next concern the last sync record encountered  */
-    int32_t node;              /*  the last synchronized node, must be set
-                                 *  before the recorder */
-    synctex_recorder_t recorder;/*  the recorder of the node above, the
-                                 *  routine that knows how to record the
-                                 *  node to the .synctex file */
-    int32_t tag, line;          /*  current tag and line  */
-    int32_t curh, curv;         /*  current point  */
-    int32_t magnification;      /*  The magnification as given by \mag */
-    int32_t unit;               /*  The unit, defaults to 1, use 8192 to produce shorter but less accurate info */
-    int32_t total_length;       /*  The total length of the bytes written since the last check point  */
-    int32_t lastv; /* compression trick if |synctex_options & 4| > 0 */
-    int32_t form_depth; /* PDF forms are an example of nested sheets */
-    unsigned int synctex_tag_counter;   /* Global tag counter, used to be a local static in
-                                         * synctex_start_input */
-    struct _flags {
-        unsigned int content_ready:1;
-        unsigned int off:1;         /*  Definitely turn off synctex, corresponds to cli option -synctex=0 */
-        unsigned int not_void:1;    /*  Whether it really contains synchronization material */
-        unsigned int warn:1;        /*  One shot warning flag */
-        unsigned int output_p:1;    /*  Whether the output_directory is used */
-    } flags;
-} synctex_ctxt = {
-    INVALID_HANDLE, /* file */
-    NULL, /* root_name */
-    0, /* count */
-    0, /* node */
-    NULL, /* recorder */
-    0, /* tag */
-    0, /* line */
-    0, /* curh */
-    0, /* curv */
-    0, /* magnification */
-    0, /* unit */
-    0, /* total_length */
-    -1, /* lastv */
-    0, /* form_depth */
-    0, /* synctex_tag_counter */
-    { 0, 0, 0, 0, 0 } /* flags */
-};
-
-
 static char *
 get_current_name (void)
 {
@@ -144,26 +97,22 @@ synctex_init_command(void)
      * argument. */
 
     /* Reset state */
-    synctex_ctxt.file = INVALID_HANDLE;
-    synctex_ctxt.root_name = NULL;
-    synctex_ctxt.count = 0;
-    synctex_ctxt.node = 0;
-    synctex_ctxt.recorder = NULL;
-    synctex_ctxt.tag = 0;
-    synctex_ctxt.line = 0;
-    synctex_ctxt.curh = 0;
-    synctex_ctxt.curv = 0;
-    synctex_ctxt.magnification = 0;
-    synctex_ctxt.unit = 0;
-    synctex_ctxt.total_length = 0;
-    synctex_ctxt.lastv = -1;
-    synctex_ctxt.form_depth = 0;
-    synctex_ctxt.synctex_tag_counter = 0;
-    synctex_ctxt.flags.content_ready = 0;
-    synctex_ctxt.flags.off = 0;
-    synctex_ctxt.flags.not_void = 0;
-    synctex_ctxt.flags.warn = 0;
-    synctex_ctxt.flags.output_p = 0;
+    synctex_ctx()->file = INVALID_HANDLE;
+    synctex_ctx()->root_name = NULL;
+    synctex_ctx()->count = 0;
+    synctex_ctx()->node = 0;
+    synctex_ctx()->recorder = NULL;
+    synctex_ctx()->tag = 0;
+    synctex_ctx()->line = 0;
+    synctex_ctx()->curh = 0;
+    synctex_ctx()->curv = 0;
+    synctex_ctx()->magnification = 0;
+    synctex_ctx()->unit = 0;
+    synctex_ctx()->total_length = 0;
+    synctex_ctx()->lastv = -1;
+    synctex_ctx()->form_depth = 0;
+    synctex_ctx()->synctex_tag_counter = 0;
+    synctex_ctx()->flags = 0;
 
     if (synctex_enabled) {
         INTPAR(synctex) = 1;
@@ -179,14 +128,14 @@ synctex_init_command(void)
 static void
 synctexabort(void)
 {
-    if (synctex_ctxt.file) {
-        ttstub_output_close(synctex_ctxt.file);
-        synctex_ctxt.file = INVALID_HANDLE;
+    if (synctex_ctx()->file) {
+        ttstub_output_close(synctex_ctx()->file);
+        synctex_ctx()->file = INVALID_HANDLE;
     }
 
-    synctex_ctxt.root_name = mfree(synctex_ctxt.root_name);
+    synctex_ctx()->root_name = mfree(synctex_ctx()->root_name);
 
-    synctex_ctxt.flags.off = 1;      /* disable synctex */
+    synctex_ctx()->flags |= FLAGS_OFF;      /* disable synctex */
 }
 
 static inline int synctex_record_preamble(void);
@@ -228,11 +177,11 @@ synctex_dot_open(void)
     char *tmp = NULL, *the_name = NULL;
     size_t len;
 
-    if (synctex_ctxt.flags.off || !INTPAR(synctex))
+    if ((synctex_ctx()->flags & FLAGS_OFF) || !INTPAR(synctex))
         return INVALID_HANDLE;
 
-    if (synctex_ctxt.file)
-        return synctex_ctxt.file;
+    if (synctex_ctx()->file)
+        return synctex_ctx()->file;
 
     tmp = gettexstring(job_name());
     len = strlen(tmp);
@@ -250,26 +199,26 @@ synctex_dot_open(void)
     strcat(the_name, synctex_suffix_gz);
     tmp = mfree(tmp);
 
-    synctex_ctxt.file = ttstub_output_open(the_name, 1);
-    if (synctex_ctxt.file == INVALID_HANDLE)
+    synctex_ctx()->file = ttstub_output_open(the_name, 1);
+    if (synctex_ctx()->file == INVALID_HANDLE)
         goto fail;
 
     if (synctex_record_preamble())
         /*printf("\nSyncTeX warning: no synchronization, problem with %s\n", the_name);*/
         goto fail;
 
-    if (synctex_ctxt.magnification == 0)
-        synctex_ctxt.magnification = 1000;
-    synctex_ctxt.unit = 1;
+    if (synctex_ctx()->magnification == 0)
+        synctex_ctx()->magnification = 1000;
+    synctex_ctx()->unit = 1;
     the_name = mfree(the_name);
 
-    if (synctex_ctxt.root_name != NULL) {
-        synctex_record_input(1, synctex_ctxt.root_name);
-        synctex_ctxt.root_name = mfree(synctex_ctxt.root_name);
+    if (synctex_ctx()->root_name != NULL) {
+        synctex_record_input(1, synctex_ctx()->root_name);
+        synctex_ctx()->root_name = mfree(synctex_ctx()->root_name);
     }
 
-    synctex_ctxt.count = 0;
-    return synctex_ctxt.file;
+    synctex_ctx()->count = 0;
+    return synctex_ctx()->file;
 
 fail:
     free(tmp);
@@ -287,15 +236,15 @@ fail:
 rust_output_handle_t
 synctex_prepare_content(void)
 {
-    if (synctex_ctxt.flags.content_ready) {
-        return synctex_ctxt.file;
+    if (synctex_ctx()->flags & FLAGS_CONTENT_READY) {
+        return synctex_ctx()->file;
     }
 
     if ((INVALID_HANDLE != synctex_dot_open())
         && (0 == synctex_record_settings())
         && (0 == synctex_record_content())) {
-        synctex_ctxt.flags.content_ready = 1;
-        return synctex_ctxt.file;
+        synctex_ctx()->flags |= FLAGS_CONTENT_READY;
+        return synctex_ctx()->file;
     }
 
     synctexabort();
@@ -322,38 +271,38 @@ synctex_prepare_content(void)
  */
 void synctex_start_input(void)
 {
-    if (synctex_ctxt.flags.off) {
+    if (synctex_ctx()->flags & FLAGS_OFF) {
         return;
     }
     /*  synctex_tag_counter is a counter uniquely identifying the file actually
      *  open.  Each time tex opens a new file, synctexstartinput will increment this
      *  counter  */
-    if (~synctex_ctxt.synctex_tag_counter > 0) {
-        ++synctex_ctxt.synctex_tag_counter;
+    if (~synctex_ctx()->synctex_tag_counter > 0) {
+        ++synctex_ctx()->synctex_tag_counter;
     } else {
         /*  we have reached the limit, subsequent files will be softly ignored
          *  this makes a lot of files... even in 32 bits
          *  Maybe we will limit this to 16bits and
          *  use the 16 other bits to store the column number */
-        synctex_ctxt.synctex_tag_counter = 0;
+        synctex_ctx()->synctex_tag_counter = 0;
         /* was this, but this looks like a bug */
         /* cur_input_ptr()->synctex_tag = 0; */
         return;
     }
-    cur_input_ptr()->synctex_tag = (int) synctex_ctxt.synctex_tag_counter;     /*  -> *TeX.web  */
-    if (synctex_ctxt.synctex_tag_counter == 1) {
+    cur_input_ptr()->synctex_tag = (int) synctex_ctx()->synctex_tag_counter;     /*  -> *TeX.web  */
+    if (synctex_ctx()->synctex_tag_counter == 1) {
         /*  this is the first file TeX ever opens, in general \jobname.tex we
          *  do not know yet if synchronization will ever be enabled so we have
          *  to store the file name, because we will need it later.
          *  This is necessary because \jobname can be different */
-        synctex_ctxt.root_name = get_current_name();
-        if (!strlen(synctex_ctxt.root_name)) {
-            synctex_ctxt.root_name = xrealloc(synctex_ctxt.root_name, strlen("texput") + 1);
-            strcpy(synctex_ctxt.root_name, "texput");
+        synctex_ctx()->root_name = get_current_name();
+        if (!strlen(synctex_ctx()->root_name)) {
+            synctex_ctx()->root_name = xrealloc(synctex_ctx()->root_name, strlen("texput") + 1);
+            strcpy(synctex_ctx()->root_name, "texput");
         }
         return;
     }
-    if (synctex_ctxt.file != INVALID_HANDLE
+    if (synctex_ctx()->file != INVALID_HANDLE
         || (INVALID_HANDLE != synctex_dot_open())) {
         char *tmp = get_current_name();
         /* Always record the input, even if INTPAR(synctex) is 0 */
@@ -376,13 +325,13 @@ void synctex_start_input(void)
  */
 void synctex_terminate(bool log_opened)
 {
-    if (synctex_ctxt.file != INVALID_HANDLE) {
+    if (synctex_ctx()->file != INVALID_HANDLE) {
         /* We keep the file even if no tex output is produced
-         * (synctex_ctxt.flags.not_void == 0). I assume that this means that there
+         * (synctex_ctx()->flags.not_void == 0). I assume that this means that there
          * was an error and tectonic will not save anything anyway. */
         synctex_record_postamble();
-        ttstub_output_close(synctex_ctxt.file);
-        synctex_ctxt.file = INVALID_HANDLE;
+        ttstub_output_close(synctex_ctx()->file);
+        synctex_ctx()->file = INVALID_HANDLE;
     }
     synctexabort();
 }
@@ -393,9 +342,9 @@ void synctex_terminate(bool log_opened)
 void synctex_sheet(int32_t mag)
 {
 
-    if (synctex_ctxt.flags.off) {
-        if (INTPAR(synctex) && !synctex_ctxt.flags.warn) {
-            synctex_ctxt.flags.warn = 1;
+    if (synctex_ctx()->flags & FLAGS_OFF) {
+        if (INTPAR(synctex) && !(synctex_ctx()->flags & FLAGS_WARN)) {
+            synctex_ctx()->flags |= FLAGS_WARN;
             ttstub_issue_warning("SyncTeX was disabled -- changing the value of \\synctex has no effect");
         }
         return;
@@ -403,7 +352,7 @@ void synctex_sheet(int32_t mag)
     if (total_pages() == 0) {
         /*  Now it is time to properly set up the scale factor. */
         if (mag > 0) {
-            synctex_ctxt.magnification = mag;
+            synctex_ctx()->magnification = mag;
         }
     }
     if (INVALID_HANDLE != synctex_prepare_content()) {
@@ -421,7 +370,7 @@ void synctex_sheet(int32_t mag)
  */
 void synctex_teehs(void)
 {
-    if (synctex_ctxt.flags.off || !synctex_ctxt.file) {
+    if ((synctex_ctx()->flags & FLAGS_OFF) || !synctex_ctx()->file) {
         return;
     }
     synctex_record_teehs(total_pages());/* not total_pages+1*/
@@ -440,7 +389,7 @@ void synctex_teehs(void)
  *  a change in the context, this is the macro SYNCTEX_???_CONTEXT_DID_CHANGE. The
  *  SYNCTEX_IGNORE macro is used to detect unproperly initialized nodes.  See
  *  details in the implementation of the functions below.  */
-#   define SYNCTEX_IGNORE(NODE) synctex_ctxt.flags.off || !INTPAR(synctex) || !synctex_ctxt.file
+#   define SYNCTEX_IGNORE(NODE) (synctex_ctx()->flags & FLAGS_OFF) || !INTPAR(synctex) || !synctex_ctx()->file
 
 
 /*  This message is sent when a vlist will be shipped out, more precisely at
@@ -453,12 +402,12 @@ void synctex_vlist(int32_t this_box)
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
-    synctex_ctxt.node = this_box;   /*  0 to reset  */
-    synctex_ctxt.recorder = NULL;   /*  reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
+    synctex_ctx()->node = this_box;   /*  0 to reset  */
+    synctex_ctx()->recorder = NULL;   /*  reset  */
+    synctex_ctx()->tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctx()->line = SYNCTEX_LINE_MODEL(this_box,BOX);
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
     synctex_record_node_vlist(this_box);
 }
 
@@ -474,12 +423,12 @@ void synctex_tsilv(int32_t this_box)
         return;
     }
     /*  Ignoring any pending info to be recorded  */
-    synctex_ctxt.node = this_box; /*  0 to reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
-    synctex_ctxt.recorder = NULL;
+    synctex_ctx()->node = this_box; /*  0 to reset  */
+    synctex_ctx()->tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctx()->line = SYNCTEX_LINE_MODEL(this_box,BOX);
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
+    synctex_ctx()->recorder = NULL;
     synctex_record_node_tsilv(this_box);
 }
 
@@ -492,12 +441,12 @@ void synctex_void_vlist(int32_t p, int32_t this_box __attribute__ ((unused)))
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
-    synctex_ctxt.node = p;          /*  reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,BOX);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,BOX);
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
-    synctex_ctxt.recorder = NULL;   /*  reset  */
+    synctex_ctx()->node = p;          /*  reset  */
+    synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,BOX);
+    synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,BOX);
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
+    synctex_ctx()->recorder = NULL;   /*  reset  */
     synctex_record_node_void_vlist(p);
 }
 
@@ -512,12 +461,12 @@ void synctex_hlist(int32_t this_box)
     if (SYNCTEX_IGNORE(this_box)) {
         return;
     }
-    synctex_ctxt.node = this_box;   /*  0 to reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
-    synctex_ctxt.recorder = NULL;   /*  reset  */
+    synctex_ctx()->node = this_box;   /*  0 to reset  */
+    synctex_ctx()->tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctx()->line = SYNCTEX_LINE_MODEL(this_box,BOX);
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
+    synctex_ctx()->recorder = NULL;   /*  reset  */
     synctex_record_node_hlist(this_box);
 }
 
@@ -533,12 +482,12 @@ void synctex_tsilh(int32_t this_box)
         return;
     }
     /*  Ignoring any pending info to be recorded  */
-    synctex_ctxt.node = this_box;     /*  0 to force next node to be recorded!  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(this_box,BOX);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(this_box,BOX);
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
-    synctex_ctxt.recorder = NULL;   /*  reset  */
+    synctex_ctx()->node = this_box;     /*  0 to force next node to be recorded!  */
+    synctex_ctx()->tag = SYNCTEX_TAG_MODEL(this_box,BOX);
+    synctex_ctx()->line = SYNCTEX_LINE_MODEL(this_box,BOX);
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
+    synctex_ctx()->recorder = NULL;   /*  reset  */
     synctex_record_node_tsilh(this_box);
 }
 
@@ -552,16 +501,16 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
         return;
     }
     /*  the sync context has changed  */
-    if (synctex_ctxt.recorder != NULL) {
+    if (synctex_ctx()->recorder != NULL) {
         /*  but was not yet recorded  */
-        (*synctex_ctxt.recorder) (synctex_ctxt.node);
+        (*synctex_ctx()->recorder) (synctex_ctx()->node);
     }
-    synctex_ctxt.node = p;          /*  0 to reset  */
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,BOX);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,BOX);
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
-    synctex_ctxt.recorder = NULL;   /*  reset  */
+    synctex_ctx()->node = p;          /*  0 to reset  */
+    synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,BOX);
+    synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,BOX);
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
+    synctex_ctx()->recorder = NULL;   /*  reset  */
     synctex_record_node_void_hlist(p);
 }
 
@@ -569,9 +518,9 @@ void synctex_void_hlist(int32_t p, int32_t this_box __attribute__ ((unused)))
  *  the synchronization context remains the same, there is no need to write
  *  synchronization info: it would not help more.  The synchronization context
  *  has changed when either the line number or the file tag has changed.  */
-#   define SYNCTEX_CONTEXT_DID_CHANGE(NODE,TYPE) ((0 == synctex_ctxt.node)\
-|| (SYNCTEX_TAG_MODEL(NODE,TYPE) != synctex_ctxt.tag)\
-|| (SYNCTEX_LINE_MODEL(NODE,TYPE) != synctex_ctxt.line))
+#   define SYNCTEX_CONTEXT_DID_CHANGE(NODE,TYPE) ((0 == synctex_ctx()->node)\
+|| (SYNCTEX_TAG_MODEL(NODE,TYPE) != synctex_ctx()->tag)\
+|| (SYNCTEX_LINE_MODEL(NODE,TYPE) != synctex_ctx()->line))
 
 
 /*  glue code, this message is sent whenever an inline math node will ship out
@@ -582,23 +531,23 @@ void synctex_math(int32_t p, int32_t this_box __attribute__ ((unused)))
     if (SYNCTEX_IGNORE(p)) {
         return;
     }
-    if ((synctex_ctxt.recorder != NULL) && SYNCTEX_CONTEXT_DID_CHANGE(p,MATH)) {
+    if ((synctex_ctx()->recorder != NULL) && SYNCTEX_CONTEXT_DID_CHANGE(p,MATH)) {
         /*  the sync context did change  */
-        (*synctex_ctxt.recorder) (synctex_ctxt.node);
+        (*synctex_ctx()->recorder) (synctex_ctx()->node);
     }
-    synctex_ctxt.node = p;
-    synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,MATH);
-    synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,MATH);
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
-    synctex_ctxt.recorder = NULL;/*  no need to record once more  */
+    synctex_ctx()->node = p;
+    synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,MATH);
+    synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,MATH);
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
+    synctex_ctx()->recorder = NULL;/*  no need to record once more  */
     synctex_record_node_math(p);/*  always record synchronously  */
 }
 
 /*  this message is sent whenever an horizontal glue node or rule node ships out
  See: move_past:...    */
 #   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE,TYPE) synctex_ctxt.flags.off || !INTPAR(synctex) \
+#   define SYNCTEX_IGNORE(NODE,TYPE) (synctex_ctx()->flags & FLAGS_OFF) || !INTPAR(synctex) \
 || (0 >= SYNCTEX_TAG_MODEL(NODE,TYPE)) \
 || (0 >= SYNCTEX_LINE_MODEL(NODE,TYPE))
 void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ ((unused)))
@@ -623,24 +572,24 @@ void synctex_horizontal_rule_or_glue(int32_t p, int32_t this_box __attribute__ (
         default:
             ttstub_issue_error("unknown node type %d in SyncTeX", SYNCTEX_TYPE(p));
     }
-    synctex_ctxt.node = p;
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
-    synctex_ctxt.recorder = NULL;
+    synctex_ctx()->node = p;
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
+    synctex_ctx()->recorder = NULL;
     switch (SYNCTEX_TYPE(p)) {
         case rule_node:
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,RULE);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,RULE);
+            synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,RULE);
+            synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,RULE);
             synctex_record_node_rule(p); /*  always record synchronously: maybe some text is outside the box  */
             break;
         case glue_node:
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,GLUE);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,GLUE);
+            synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,GLUE);
+            synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,GLUE);
             synctex_record_node_glue(p); /*  always record synchronously: maybe some text is outside the box  */
             break;
         case kern_node:
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
+            synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,KERN);
+            synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,KERN);
             synctex_record_node_kern(p); /*  always record synchronously: maybe some text is outside the box  */
             break;
         default:
@@ -659,37 +608,37 @@ void synctex_kern(int32_t p, int32_t this_box)
     }
     if (SYNCTEX_CONTEXT_DID_CHANGE(p,KERN)) {
         /*  the sync context has changed  */
-        if (synctex_ctxt.recorder != NULL) {
+        if (synctex_ctx()->recorder != NULL) {
             /*  but was not yet recorded  */
-            (*synctex_ctxt.recorder) (synctex_ctxt.node);
+            (*synctex_ctx()->recorder) (synctex_ctx()->node);
         }
-        if (synctex_ctxt.node == this_box) {
+        if (synctex_ctx()->node == this_box) {
             /* first node in the list */
-            synctex_ctxt.node = p;
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
-            synctex_ctxt.recorder = &synctex_record_node_kern;
+            synctex_ctx()->node = p;
+            synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,KERN);
+            synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,KERN);
+            synctex_ctx()->recorder = &synctex_record_node_kern;
         } else {
-            synctex_ctxt.node = p;
-            synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
-            synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
-            synctex_ctxt.recorder = NULL;
+            synctex_ctx()->node = p;
+            synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,KERN);
+            synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,KERN);
+            synctex_ctx()->recorder = NULL;
             /*  always record when the context has just changed
              *  and when not the first node  */
             synctex_record_node_kern(p);
         }
     } else {
         /*  just update the geometry and type (for future improvements)  */
-        synctex_ctxt.node = p;
-        synctex_ctxt.tag = SYNCTEX_TAG_MODEL(p,KERN);
-        synctex_ctxt.line = SYNCTEX_LINE_MODEL(p,KERN);
-        synctex_ctxt.recorder = &synctex_record_node_kern;
+        synctex_ctx()->node = p;
+        synctex_ctx()->tag = SYNCTEX_TAG_MODEL(p,KERN);
+        synctex_ctx()->line = SYNCTEX_LINE_MODEL(p,KERN);
+        synctex_ctx()->recorder = &synctex_record_node_kern;
     }
 }
 
 
 #   undef SYNCTEX_IGNORE
-#   define SYNCTEX_IGNORE(NODE) (synctex_ctxt.flags.off || !INTPAR(synctex) || !synctex_ctxt.file)
+#   define SYNCTEX_IGNORE(NODE) ((synctex_ctx()->flags & FLAGS_OFF) || !INTPAR(synctex) || !synctex_ctx()->file)
 
 /*  this message should be sent to record information
  synchronously for the current location    */
@@ -701,14 +650,14 @@ synctex_current(void)
     if (SYNCTEX_IGNORE(nothing))
         return;
 
-    len = ttstub_fprintf(synctex_ctxt.file, "x%i,%i:%i,%i\n",
-                  synctex_ctxt.tag,synctex_ctxt.line,
-                  SYNCTEX_CURH / synctex_ctxt.unit,
-                  SYNCTEX_CURV / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+    len = ttstub_fprintf(synctex_ctx()->file, "x%i,%i:%i,%i\n",
+                  synctex_ctx()->tag,synctex_ctx()->line,
+                  SYNCTEX_CURH / synctex_ctx()->unit,
+                  SYNCTEX_CURV / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0)
-        synctex_ctxt.total_length += len;
+        synctex_ctx()->total_length += len;
     else
         synctexabort();
 }
@@ -716,15 +665,15 @@ synctex_current(void)
 
 #define SYNCTEX_RECORD_LEN_OR_RETURN_ERR do {   \
     if (len > 0) {\
-        synctex_ctxt.total_length += len;\
-        ++synctex_ctxt.count;\
+        synctex_ctx()->total_length += len;\
+        ++synctex_ctx()->count;\
     } else {\
         return -1;\
     } } while(false)
 #define SYNCTEX_RECORD_LEN_AND_RETURN_NOERR do {\
     if (len > 0) {\
-        synctex_ctxt.total_length += len;\
-        ++synctex_ctxt.count;\
+        synctex_ctx()->total_length += len;\
+        ++synctex_ctx()->count;\
         return 0;\
     } } while(false)
 
@@ -734,15 +683,15 @@ synctex_record_settings(void)
 {
     int len;
 
-    if (INVALID_HANDLE == synctex_ctxt.file)
+    if (INVALID_HANDLE == synctex_ctx()->file)
         return 0;
 
-    len = ttstub_fprintf(synctex_ctxt.file, "Output:pdf\nMagnification:%i\nUnit:%i\nX Offset:0\nY Offset:0\n",
-                  synctex_ctxt.magnification,
-                  synctex_ctxt.unit); /* magic pt/in conversion */
+    len = ttstub_fprintf(synctex_ctx()->file, "Output:pdf\nMagnification:%i\nUnit:%i\nX Offset:0\nY Offset:0\n",
+                  synctex_ctx()->magnification,
+                  synctex_ctx()->unit); /* magic pt/in conversion */
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
+        synctex_ctx()->total_length += len;
         return 0;
     }
 
@@ -753,10 +702,10 @@ synctex_record_settings(void)
 static inline int
 synctex_record_preamble(void)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
+    int len = ttstub_fprintf(synctex_ctx()->file, "SyncTeX Version:%i\n", SYNCTEX_VERSION);
 
     if (len > 0) {
-        synctex_ctxt.total_length = len; /* XXX: should this be `+=`? */
+        synctex_ctx()->total_length = len; /* XXX: should this be `+=`? */
         return 0;
     }
 
@@ -767,10 +716,10 @@ synctex_record_preamble(void)
 static inline int
 synctex_record_input(int32_t tag, char *name)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "Input:%i:%s\n", tag, name);
+    int len = ttstub_fprintf(synctex_ctx()->file, "Input:%i:%s\n", tag, name);
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
+        synctex_ctx()->total_length += len;
         return 0;
     }
 
@@ -781,11 +730,11 @@ synctex_record_input(int32_t tag, char *name)
 static inline int
 synctex_record_anchor(void)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "!%i\n", synctex_ctxt.total_length);
+    int len = ttstub_fprintf(synctex_ctx()->file, "!%i\n", synctex_ctx()->total_length);
 
     if (len > 0) {
-        synctex_ctxt.total_length = len; /* XXX: should this be `+=`? */
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length = len; /* XXX: should this be `+=`? */
+        ++synctex_ctx()->count;
         return 0;
     }
 
@@ -796,10 +745,10 @@ synctex_record_anchor(void)
 static inline int
 synctex_record_content(void)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "Content:\n");
+    int len = ttstub_fprintf(synctex_ctx()->file, "Content:\n");
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
+        synctex_ctx()->total_length += len;
         return 0;
     }
 
@@ -811,7 +760,7 @@ static inline int
 synctex_record_sheet(int32_t sheet)
 {
     if (0 == synctex_record_anchor()) {
-        int len = ttstub_fprintf(synctex_ctxt.file, "{%i\n", sheet);
+        int len = ttstub_fprintf(synctex_ctx()->file, "{%i\n", sheet);
         SYNCTEX_RECORD_LEN_AND_RETURN_NOERR;
     }
 
@@ -825,7 +774,7 @@ static inline int
 synctex_record_teehs(int32_t sheet)
 {
     if (0 == synctex_record_anchor()) {
-        int len = ttstub_fprintf(synctex_ctxt.file, "}%i\n", sheet);
+        int len = ttstub_fprintf(synctex_ctx()->file, "}%i\n", sheet);
         SYNCTEX_RECORD_LEN_AND_RETURN_NOERR;
     }
 
@@ -833,18 +782,18 @@ synctex_record_teehs(int32_t sheet)
     return -1;
 }
 
-#define SYNCTEX_CTXT_CURH synctex_ctxt.curh
-#define SYNCTEX_CTXT_CURV synctex_ctxt.curv
-#define SYNCTEX_SHOULD_COMPRESS_V SYNCTEX_H_COMPRESS && (synctex_ctxt.lastv == SYNCTEX_CTXT_CURV)
+#define SYNCTEX_CTXT_CURH synctex_ctx()->curh
+#define SYNCTEX_CTXT_CURV synctex_ctx()->curv
+#define SYNCTEX_SHOULD_COMPRESS_V SYNCTEX_H_COMPRESS && (synctex_ctx()->lastv == SYNCTEX_CTXT_CURV)
 
 
 void
 synctex_pdfxform(int32_t p)
 {
 
-    if (synctex_ctxt.flags.off) {
-        if (INTPAR(synctex) && !synctex_ctxt.flags.warn) {
-            synctex_ctxt.flags.warn = 1;
+    if (synctex_ctx()->flags & FLAGS_OFF) {
+        if (INTPAR(synctex) && !(synctex_ctx()->flags & FLAGS_WARN)) {
+            synctex_ctx()->flags |= FLAGS_WARN;
             ttstub_issue_warning("SyncTeX was disabled - changing the value of \\synctex has no effect");
         }
         return;
@@ -859,7 +808,7 @@ synctex_pdfxform(int32_t p)
 void
 synctex_mrofxfdp(void)
 {
-    if (synctex_ctxt.file) {
+    if (synctex_ctx()->file) {
         synctex_record_mrofxfdp();
     }
 }
@@ -868,7 +817,7 @@ synctex_mrofxfdp(void)
 void
 synctex_pdfrefxform(int objnum)
 {
-    if (synctex_ctxt.file) {
+    if (synctex_ctx()->file) {
         synctex_record_node_pdfrefxform(objnum);
     }
 }
@@ -882,10 +831,10 @@ synctex_record_pdfxform(int32_t form)
         return 0;
     } else {
         int len;
-        /* XXX Tectonic: guessing that SYNCTEX_PDF_CUR_FORM = synctex_ctxt.form_depth here */
-        ++synctex_ctxt.form_depth;
-        len = ttstub_fprintf(synctex_ctxt.file, "<%i\n",
-                             synctex_ctxt.form_depth);
+        /* XXX Tectonic: guessing that SYNCTEX_PDF_CUR_FORM = synctex_ctx()->form_depth here */
+        ++synctex_ctx()->form_depth;
+        len = ttstub_fprintf(synctex_ctx()->file, "<%i\n",
+                             synctex_ctx()->form_depth);
         SYNCTEX_RECORD_LEN_AND_RETURN_NOERR;
     }
 
@@ -900,8 +849,8 @@ synctex_record_mrofxfdp(void)
     if (0 == synctex_record_anchor()) {
         int len;
         /* XXX Tectonic: mistake here in original source, no %d in format string */
-        --synctex_ctxt.form_depth;
-        len = ttstub_fprintf(synctex_ctxt.file, ">\n");
+        --synctex_ctx()->form_depth;
+        len = ttstub_fprintf(synctex_ctx()->file, ">\n");
         SYNCTEX_RECORD_LEN_AND_RETURN_NOERR;
     }
 
@@ -914,18 +863,18 @@ static inline int
 synctex_record_node_pdfrefxform(int objnum) /* UNUSED form JL */
 {
 
-    synctex_ctxt.curh = SYNCTEX_CURH;
-    synctex_ctxt.curv = SYNCTEX_CURV;
+    synctex_ctx()->curh = SYNCTEX_CURH;
+    synctex_ctx()->curv = SYNCTEX_CURV;
 
     if (SYNCTEX_IGNORE(nothing)) {
         return 0;
     } else {
         int len = 0;
-        len = ttstub_fprintf(synctex_ctxt.file, "f%i:%i,%i\n",
+        len = ttstub_fprintf(synctex_ctx()->file, "f%i:%i,%i\n",
                              objnum,
-                             SYNCTEX_CURH / synctex_ctxt.unit,
-                             SYNCTEX_CURV / synctex_ctxt.unit);
-        synctex_ctxt.lastv = SYNCTEX_CURV;
+                             SYNCTEX_CURH / synctex_ctx()->unit,
+                             SYNCTEX_CURV / synctex_ctx()->unit);
+        synctex_ctx()->lastv = SYNCTEX_CURV;
         SYNCTEX_RECORD_LEN_AND_RETURN_NOERR;
     }
 
@@ -936,19 +885,19 @@ synctex_record_node_pdfrefxform(int objnum) /* UNUSED form JL */
 static inline void
 synctex_record_node_void_vlist(int32_t p)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "v%i,%i:%i,%i:%i,%i,%i\n",
+    int len = ttstub_fprintf(synctex_ctx()->file, "v%i,%i:%i,%i:%i,%i,%i\n",
                       SYNCTEX_TAG_MODEL(p,BOX),
                       SYNCTEX_LINE_MODEL(p,BOX),
-                      synctex_ctxt.curh / synctex_ctxt.unit,
-                      synctex_ctxt.curv / synctex_ctxt.unit,
-                      SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
-                      SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
-                      SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                      synctex_ctx()->curh / synctex_ctx()->unit,
+                      synctex_ctx()->curv / synctex_ctx()->unit,
+                      SYNCTEX_WIDTH(p) / synctex_ctx()->unit,
+                      SYNCTEX_HEIGHT(p) / synctex_ctx()->unit,
+                      SYNCTEX_DEPTH(p) / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -959,21 +908,21 @@ synctex_record_node_vlist(int32_t p)
 {
     int len;
 
-    synctex_ctxt.flags.not_void = 1;
+    synctex_ctx()->flags |= FLAGS_NOT_VOID;
 
-    len = ttstub_fprintf(synctex_ctxt.file, "[%i,%i:%i,%i:%i,%i,%i\n",
+    len = ttstub_fprintf(synctex_ctx()->file, "[%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,BOX),
                   SYNCTEX_LINE_MODEL(p,BOX),
-                  synctex_ctxt.curh / synctex_ctxt.unit,
-                  synctex_ctxt.curv / synctex_ctxt.unit,
-                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
-                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
-                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                  synctex_ctx()->curh / synctex_ctx()->unit,
+                  synctex_ctx()->curv / synctex_ctx()->unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctx()->unit,
+                  SYNCTEX_HEIGHT(p) / synctex_ctx()->unit,
+                  SYNCTEX_DEPTH(p) / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -982,11 +931,11 @@ synctex_record_node_vlist(int32_t p)
 static inline void
 synctex_record_node_tsilv(int32_t p __attribute__ ((unused)))
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "]\n");
+    int len = ttstub_fprintf(synctex_ctx()->file, "]\n");
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        /* is it correct that synctex_ctxt.count is not incremented here? */
+        synctex_ctx()->total_length += len;
+        /* is it correct that synctex_ctx()->count is not incremented here? */
     } else {
         synctexabort();
     }
@@ -995,19 +944,19 @@ synctex_record_node_tsilv(int32_t p __attribute__ ((unused)))
 static inline void
 synctex_record_node_void_hlist(int32_t p)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "h%i,%i:%i,%i:%i,%i,%i\n",
+    int len = ttstub_fprintf(synctex_ctx()->file, "h%i,%i:%i,%i:%i,%i,%i\n",
                       SYNCTEX_TAG_MODEL(p,BOX),
                       SYNCTEX_LINE_MODEL(p,BOX),
-                      synctex_ctxt.curh / synctex_ctxt.unit,
-                      synctex_ctxt.curv / synctex_ctxt.unit,
-                      SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
-                      SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
-                      SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                      synctex_ctx()->curh / synctex_ctx()->unit,
+                      synctex_ctx()->curv / synctex_ctx()->unit,
+                      SYNCTEX_WIDTH(p) / synctex_ctx()->unit,
+                      SYNCTEX_HEIGHT(p) / synctex_ctx()->unit,
+                      SYNCTEX_DEPTH(p) / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -1018,21 +967,21 @@ synctex_record_node_hlist(int32_t p)
 {
     int len;
 
-    synctex_ctxt.flags.not_void = 1;
+    synctex_ctx()->flags |= FLAGS_NOT_VOID;
 
-    len = ttstub_fprintf(synctex_ctxt.file, "(%i,%i:%i,%i:%i,%i,%i\n",
+    len = ttstub_fprintf(synctex_ctx()->file, "(%i,%i:%i,%i:%i,%i,%i\n",
                   SYNCTEX_TAG_MODEL(p,BOX),
                   SYNCTEX_LINE_MODEL(p,BOX),
-                  synctex_ctxt.curh / synctex_ctxt.unit,
-                  synctex_ctxt.curv / synctex_ctxt.unit,
-                  SYNCTEX_WIDTH(p) / synctex_ctxt.unit,
-                  SYNCTEX_HEIGHT(p) / synctex_ctxt.unit,
-                  SYNCTEX_DEPTH(p) / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                  synctex_ctx()->curh / synctex_ctx()->unit,
+                  synctex_ctx()->curv / synctex_ctx()->unit,
+                  SYNCTEX_WIDTH(p) / synctex_ctx()->unit,
+                  SYNCTEX_HEIGHT(p) / synctex_ctx()->unit,
+                  SYNCTEX_DEPTH(p) / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -1041,11 +990,11 @@ synctex_record_node_hlist(int32_t p)
 static inline void
 synctex_record_node_tsilh(int32_t p __attribute__ ((unused)))
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, ")\n");
+    int len = ttstub_fprintf(synctex_ctx()->file, ")\n");
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -1054,10 +1003,10 @@ synctex_record_node_tsilh(int32_t p __attribute__ ((unused)))
 static inline int
 synctex_record_count(void)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "Count:%i\n", synctex_ctxt.count);
+    int len = ttstub_fprintf(synctex_ctx()->file, "Count:%i\n", synctex_ctx()->count);
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
+        synctex_ctx()->total_length += len;
         return 0;
     }
 
@@ -1069,13 +1018,13 @@ static inline int
 synctex_record_postamble(void)
 {
     if (0 == synctex_record_anchor()) {
-        int len = ttstub_fprintf(synctex_ctxt.file, "Postamble:\n");
+        int len = ttstub_fprintf(synctex_ctx()->file, "Postamble:\n");
         if (len > 0) {
-            synctex_ctxt.total_length += len;
+            synctex_ctx()->total_length += len;
             if (!synctex_record_count() && !synctex_record_anchor()) {
-                len = ttstub_fprintf(synctex_ctxt.file, "Post scriptum:\n");
+                len = ttstub_fprintf(synctex_ctx()->file, "Post scriptum:\n");
                 if (len > 0) {
-                    synctex_ctxt.total_length += len;
+                    synctex_ctx()->total_length += len;
                     return 0;
                 }
             }
@@ -1089,16 +1038,16 @@ synctex_record_postamble(void)
 static inline void
 synctex_record_node_glue(int32_t p)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "g%i,%i:%i,%i\n",
+    int len = ttstub_fprintf(synctex_ctx()->file, "g%i,%i:%i,%i\n",
                       SYNCTEX_TAG_MODEL(p,GLUE),
                       SYNCTEX_LINE_MODEL(p,GLUE),
-                      synctex_ctxt.curh / synctex_ctxt.unit,
-                      synctex_ctxt.curv / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                      synctex_ctx()->curh / synctex_ctx()->unit,
+                      synctex_ctx()->curv / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -1107,17 +1056,17 @@ synctex_record_node_glue(int32_t p)
 static inline void
 synctex_record_node_kern(int32_t p)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "k%i,%i:%i,%i:%i\n",
+    int len = ttstub_fprintf(synctex_ctx()->file, "k%i,%i:%i,%i:%i\n",
                       SYNCTEX_TAG_MODEL(p,GLUE),
                       SYNCTEX_LINE_MODEL(p,GLUE),
-                      synctex_ctxt.curh / synctex_ctxt.unit,
-                      synctex_ctxt.curv / synctex_ctxt.unit,
-                      SYNCTEX_WIDTH(p) / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                      synctex_ctx()->curh / synctex_ctx()->unit,
+                      synctex_ctx()->curv / synctex_ctx()->unit,
+                      SYNCTEX_WIDTH(p) / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -1126,19 +1075,19 @@ synctex_record_node_kern(int32_t p)
 static inline void
 synctex_record_node_rule(int32_t p)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "r%i,%i:%i,%i:%i,%i,%i\n",
+    int len = ttstub_fprintf(synctex_ctx()->file, "r%i,%i:%i,%i:%i,%i,%i\n",
                       SYNCTEX_TAG_MODEL(p,RULE),
                       SYNCTEX_LINE_MODEL(p,RULE),
-                      synctex_ctxt.curh / synctex_ctxt.unit,
-                      synctex_ctxt.curv / synctex_ctxt.unit,
-                      rule_wd / synctex_ctxt.unit,
-                      rule_ht / synctex_ctxt.unit,
-                      rule_dp / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                      synctex_ctx()->curh / synctex_ctx()->unit,
+                      synctex_ctx()->curv / synctex_ctx()->unit,
+                      rule_wd / synctex_ctx()->unit,
+                      rule_ht / synctex_ctx()->unit,
+                      rule_dp / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
@@ -1147,16 +1096,16 @@ synctex_record_node_rule(int32_t p)
 static void
 synctex_record_node_math(int32_t p)
 {
-    int len = ttstub_fprintf(synctex_ctxt.file, "$%i,%i:%i,%i\n",
+    int len = ttstub_fprintf(synctex_ctx()->file, "$%i,%i:%i,%i\n",
                       SYNCTEX_TAG_MODEL(p,MATH),
                       SYNCTEX_LINE_MODEL(p,MATH),
-                      synctex_ctxt.curh / synctex_ctxt.unit,
-                      synctex_ctxt.curv / synctex_ctxt.unit);
-    synctex_ctxt.lastv = SYNCTEX_CURV;
+                      synctex_ctx()->curh / synctex_ctx()->unit,
+                      synctex_ctx()->curv / synctex_ctx()->unit);
+    synctex_ctx()->lastv = SYNCTEX_CURV;
 
     if (len > 0) {
-        synctex_ctxt.total_length += len;
-        ++synctex_ctxt.count;
+        synctex_ctx()->total_length += len;
+        ++synctex_ctx()->count;
     } else {
         synctexabort();
     }
