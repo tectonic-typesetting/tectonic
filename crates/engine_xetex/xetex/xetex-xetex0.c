@@ -17818,7 +17818,7 @@ close_files_and_terminate(void)
     int32_t k;
 
     for (k = 0; k <= 15; k++) {
-        if (write_open[k])
+        if (write_open(k))
             ttstub_output_close(write_file(k));
     }
 

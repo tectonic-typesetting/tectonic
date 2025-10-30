@@ -1704,11 +1704,11 @@ out_what(int32_t p)
             break;
         }
 
-        if (write_open[j])
+        if (write_open(j))
             ttstub_output_close(write_file(j));
 
         if (mem(p).b16.s0 == CLOSE_NODE) {
-            write_open[j] = false;
+            write_open(j) = false;
             break;
         }
 
@@ -1729,7 +1729,7 @@ out_what(int32_t p)
         if (write_file(j) == INVALID_HANDLE)
             _tt_abort("cannot open output file \"%s\"", name_of_file());
 
-        write_open[j] = true;
+        set_write_open(j, true);
 
         if (log_opened()) {
             old_setting = selector();
@@ -2043,7 +2043,7 @@ write_out(int32_t p)
 
     if (j == 18) {
         set_selector(SELECTOR_NEW_STRING);
-    } else if (write_open[j]) {
+    } else if (write_open(j)) {
         set_selector(j);
     } else {
         if (j == 17 && selector() == SELECTOR_TERM_AND_LOG)
