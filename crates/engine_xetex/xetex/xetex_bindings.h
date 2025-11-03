@@ -808,6 +808,10 @@ bool semantic_pagination_enabled(void);
 
 void set_semantic_pagination_enabled(bool val);
 
+const char *tex_format_default(void);
+
+void set_tex_format_default(const char *val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -887,8 +891,6 @@ void post_error_message(int32_t need_to_print_it);
 void fatal_error(const char *s);
 
 void int_error(int32_t n);
-
-extern void close_files_and_terminate(void);
 
 extern void tt_cleanup(void);
 

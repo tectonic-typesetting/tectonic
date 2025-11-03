@@ -478,7 +478,6 @@ extern small_number cur_if;
 extern int32_t if_line;
 extern int32_t skip_line;
 extern int32_t format_default_length;
-extern char *TEX_format_default;
 extern const char* output_file_extension;
 extern memory_word *font_info;
 extern font_index fmem_ptr;
