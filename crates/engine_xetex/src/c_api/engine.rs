@@ -7,7 +7,7 @@ use std::{ptr, slice};
 
 mod memory;
 
-use crate::c_api::dvi::rs_finalize_dvi_file;
+use crate::c_api::dvi::{rs_deinitialize_shipout_variables, rs_finalize_dvi_file};
 use crate::c_api::errors::rs_int_error;
 use crate::c_api::is_dir_sep;
 use crate::c_api::output::{
@@ -21,6 +21,7 @@ use crate::c_api::pool::{
 use crate::c_api::synctex::rs_synctex_terminate;
 pub use memory::*;
 use tectonic_pdf_io::sys::pdf_files_close;
+use tectonic_xetex_layout::manager::FontManager;
 
 pub const LEVEL_ZERO: u16 = 0;
 pub const LEVEL_ONE: u16 = 1;

@@ -1201,9 +1201,9 @@ snap_zone(scaled_t* value, scaled_t snap_value, scaled_t fuzz)
 void
 get_native_char_height_depth(int32_t font, int32_t ch, scaled_t* height, scaled_t* depth)
 {
-#define QUAD(f)         font_info[6+param_base[f]].b32.s1
-#define X_HEIGHT(f)     font_info[5+param_base[f]].b32.s1
-#define CAP_HEIGHT(f)   font_info[8+param_base[f]].b32.s1
+#define QUAD(f)         font_info[6+param_base(f)].b32.s1
+#define X_HEIGHT(f)     font_info[5+param_base(f)].b32.s1
+#define CAP_HEIGHT(f)   font_info[8+param_base(f)].b32.s1
 
     float ht = 0.0;
     float dp = 0.0;
@@ -1308,9 +1308,9 @@ getnativecharic(int32_t f, int32_t c)
     scaled_t lsb, rsb;
     get_native_char_sidebearings(f, c, &lsb, &rsb);
     if (rsb < 0)
-        return font_letter_space[f] - rsb;
+        return font_letter_space(f) - rsb;
     else
-        return font_letter_space[f];
+        return font_letter_space(f);
 }
 
 scaled_t
@@ -1533,9 +1533,9 @@ measure_native_node(void* pNode, int use_glyph_metrics)
         ubidi_close(pBiDi);
 
 
-        if (font_letter_space[f] != 0) {
+        if (font_letter_space(f) != 0) {
             Fixed lsDelta = 0;
-            Fixed lsUnit = font_letter_space[f];
+            Fixed lsUnit = font_letter_space(f);
             int i;
             for (i = 0; i < totalGlyphCount; ++i) {
                 if (glyphAdvances[i] == 0 && lsDelta != 0)
@@ -1557,8 +1557,8 @@ measure_native_node(void* pNode, int use_glyph_metrics)
         /* for efficiency, height and depth are the font's ascent/descent,
             not true values based on the actual content of the word,
             unless use_glyph_metrics is non-zero */
-        node_height(node) = height_base[f];
-        node_depth(node) = depth_base[f];
+        node_height(node) = height_base(f);
+        node_depth(node) = depth_base(f);
     } else {
         /* this iterates over the glyph data whether it comes from AAT or OT layout */
         FixedPoint* locations = (FixedPoint*)native_glyph_info_ptr(node);
@@ -1609,11 +1609,11 @@ real_get_native_italic_correction(void* pNode)
 #ifdef XETEX_MAC
         if (font_area(f) == AAT_FONT_FLAG)
             return D2Fix(GetGlyphItalCorr_AAT((CFDictionaryRef)(font_layout_engine(f)), glyphIDs[n-1]))
-                    + font_letter_space[f];
+                    + font_letter_space(f);
 #endif
         if (font_area(f) == OTGR_FONT_FLAG)
             return D2Fix(getGlyphItalCorr((XeTeXLayoutEngine)(font_layout_engine(f)), glyphIDs[n-1]))
-                    + font_letter_space[f];
+                    + font_letter_space(f);
     }
 
     return 0;
@@ -1669,8 +1669,8 @@ measure_native_glyph(void* pNode, int use_glyph_metrics)
         node_height(node) = D2Fix(ht);
         node_depth(node) = D2Fix(dp);
     } else {
-        node_height(node) = height_base[f];
-        node_depth(node) = depth_base[f];
+        node_height(node) = height_base(f);
+        node_depth(node) = depth_base(f);
     }
 }
 

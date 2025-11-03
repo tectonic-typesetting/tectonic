@@ -33,15 +33,37 @@ thread_local! {
 }
 
 pub struct FontCtx {
+    pub(crate) font_max: i32,
     pub(crate) font_ptr: i32,
-    pub(crate) font_layout_engine: Vec<*mut libc::c_void>,
+
     pub(crate) font_used: Vec<bool>,
+    pub(crate) font_mapping: Vec<*mut libc::c_void>,
+    pub(crate) font_layout_engine: Vec<*mut libc::c_void>,
+    pub(crate) font_flags: Vec<u8>,
+    pub(crate) font_letter_space: Vec<Scaled>,
     pub(crate) font_check: Vec<B16x4>,
     pub(crate) font_size: Vec<Scaled>,
     pub(crate) font_dsize: Vec<Scaled>,
+    pub(crate) font_params: Vec<i32>, // font index
     pub(crate) font_name: Vec<StrNumber>,
     pub(crate) font_area: Vec<StrNumber>,
-    pub(crate) font_flags: Vec<u8>,
+    pub(crate) font_bc: Vec<u16>,
+    pub(crate) font_ec: Vec<u16>,
+    pub(crate) font_glue: Vec<i32>,
+    pub(crate) hyphen_char: Vec<i32>,
+    pub(crate) skew_char: Vec<i32>,
+    pub(crate) bchar_label: Vec<i32>,      // font index
+    pub(crate) font_bchar: Vec<i32>,       // nine bits
+    pub(crate) font_false_bchar: Vec<i32>, // nine bits
+    pub(crate) char_base: Vec<i32>,
+    pub(crate) width_base: Vec<i32>,
+    pub(crate) height_base: Vec<i32>,
+    pub(crate) depth_base: Vec<i32>,
+    pub(crate) italic_base: Vec<i32>,
+    pub(crate) lig_kern_base: Vec<i32>,
+    pub(crate) kern_base: Vec<i32>,
+    pub(crate) exten_base: Vec<i32>,
+    pub(crate) param_base: Vec<i32>,
 
     pub(crate) xdv_buffer: Vec<u8>,
 }
@@ -49,16 +71,38 @@ pub struct FontCtx {
 impl FontCtx {
     const fn new() -> FontCtx {
         FontCtx {
+            font_max: 0,
             font_ptr: 0,
-            font_layout_engine: Vec::new(),
+
             font_used: Vec::new(),
+            font_mapping: Vec::new(),
+            font_layout_engine: Vec::new(),
+            font_flags: Vec::new(),
+            font_letter_space: Vec::new(),
             font_check: Vec::new(),
             font_size: Vec::new(),
             font_dsize: Vec::new(),
+            font_params: Vec::new(),
             font_name: Vec::new(),
             font_area: Vec::new(),
-            font_flags: Vec::new(),
 
+            font_bc: Vec::new(),
+            font_ec: Vec::new(),
+            font_glue: Vec::new(),
+            hyphen_char: Vec::new(),
+            skew_char: Vec::new(),
+            bchar_label: Vec::new(),
+            font_bchar: Vec::new(),
+            font_false_bchar: Vec::new(),
+            char_base: Vec::new(),
+            width_base: Vec::new(),
+            height_base: Vec::new(),
+            depth_base: Vec::new(),
+            italic_base: Vec::new(),
+            lig_kern_base: Vec::new(),
+            kern_base: Vec::new(),
+            exten_base: Vec::new(),
+            param_base: Vec::new(),
             xdv_buffer: Vec::new(),
         }
     }
@@ -68,15 +112,38 @@ impl FontCtx {
     }
 }
 
+c_var!(FontCtx => font_max: i32);
 c_var!(FontCtx => font_ptr: i32);
-c_arr!(FontCtx => font_layout_engine: *mut libc::c_void);
+
 c_arr!(FontCtx => font_used: bool);
+c_arr!(FontCtx => font_mapping: *mut libc::c_void);
+c_arr!(FontCtx => font_layout_engine: *mut libc::c_void);
+c_arr!(FontCtx => font_flags: u8);
+c_arr!(FontCtx => font_letter_space: Scaled);
 c_arr!(FontCtx => font_check: B16x4);
 c_arr!(FontCtx => font_size: Scaled);
 c_arr!(FontCtx => font_dsize: Scaled);
+c_arr!(FontCtx => font_params: i32);
 c_arr!(FontCtx => font_name: StrNumber);
 c_arr!(FontCtx => font_area: StrNumber);
-c_arr!(FontCtx => font_flags: u8);
+c_arr!(FontCtx => font_bc: u16);
+c_arr!(FontCtx => font_ec: u16);
+c_arr!(FontCtx => font_glue: i32);
+c_arr!(FontCtx => hyphen_char: i32);
+c_arr!(FontCtx => skew_char: i32);
+c_arr!(FontCtx => bchar_label: i32);
+c_arr!(FontCtx => font_bchar: i32);
+c_arr!(FontCtx => font_false_bchar: i32);
+c_arr!(FontCtx => char_base: i32);
+c_arr!(FontCtx => width_base: i32);
+c_arr!(FontCtx => height_base: i32);
+c_arr!(FontCtx => depth_base: i32);
+c_arr!(FontCtx => italic_base: i32);
+c_arr!(FontCtx => lig_kern_base: i32);
+c_arr!(FontCtx => kern_base: i32);
+c_arr!(FontCtx => exten_base: i32);
+c_arr!(FontCtx => param_base: i32);
+
 c_arr!(FontCtx => xdv_buffer: u8);
 
 #[no_mangle]

@@ -158,9 +158,13 @@ pub extern "C" fn write_to_dvi(a: i32, b: i32) {
     Globals::with(|globals| rs_write_to_dvi(globals, a as usize, b as usize))
 }
 
+pub fn rs_deinitialize_shipout_variables(globals: &mut Globals<'_, '_>) {
+    globals.dvi.buf.clear();
+}
+
 #[no_mangle]
 pub extern "C" fn deinitialize_shipout_variables() {
-    clear_dvi_buf();
+    Globals::with(|globals| rs_deinitialize_shipout_variables(globals))
 }
 
 pub fn dvi_swap(globals: &mut Globals<'_, '_>) {

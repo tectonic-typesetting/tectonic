@@ -420,7 +420,7 @@ line_break(bool d)
                         }
 
                     done2:
-                        hyf_char = hyphen_char[hf];
+                        hyf_char = hyphen_char(hf);
                         if (hyf_char < 0)
                             goto done1;
                         if (hyf_char > BIGGEST_CHAR)
@@ -606,12 +606,12 @@ line_break(bool d)
                                     hn = j;
 
                                     if (odd(NODE_subtype(s)))
-                                        hyf_bchar = font_bchar[hf];
+                                        hyf_bchar = font_bchar(hf);
                                     else
                                         hyf_bchar = TOO_BIG_CHAR; /*:932*/
                                 } else if (NODE_type(s) == KERN_NODE && NODE_subtype(s) == NORMAL) {
                                     hb = s;
-                                    hyf_bchar = font_bchar[hf];
+                                    hyf_bchar = font_bchar(hf);
                                 } else {
                                     goto done3;
                                 }
@@ -2301,7 +2301,7 @@ found1:
                     }
                     while (l <= i) {
 
-                        l = reconstitute(l, i, font_bchar[hf], TOO_BIG_CHAR) + 1;
+                        l = reconstitute(l, i, font_bchar(hf), TOO_BIG_CHAR) + 1;
                         if (mem(HOLD_HEAD).b32.s1 > TEX_NULL) {
                             if (minor_tail == TEX_NULL)
                                 mem_ptr(r + 1)->b32.s0 = mem(HOLD_HEAD).b32.s1;
@@ -2320,7 +2320,7 @@ found1:
                     minor_tail = TEX_NULL;
                     mem_ptr(r + 1)->b32.s1 = TEX_NULL;
                     c_loc = 0;
-                    if (bchar_label[hf] != NON_ADDRESS) {
+                    if (bchar_label(hf) != NON_ADDRESS) {
                         l--;
                         c = hu[l];
                         c_loc = l;
@@ -2450,7 +2450,7 @@ reconstitute(small_number j, small_number n, int32_t bchar, int32_t hchar)
     }
 continue_:
     if (cur_l == TOO_BIG_CHAR) {
-        k = bchar_label[hf];
+        k = bchar_label(hf);
         if (k == NON_ADDRESS)
             goto done;
         else
@@ -2460,10 +2460,10 @@ continue_:
         q = FONT_CHARACTER_INFO(hf, effective_char(true, hf, cur_l));
         if (((q.s1) % 4) != LIG_TAG)
             goto done;
-        k = lig_kern_base[hf] + q.s0;
+        k = lig_kern_base(hf) + q.s0;
         q = font_info[k].b16;
         if (q.s3 > 128) {
-            k = lig_kern_base[hf] + 256 * q.s1 + q.s0 + 32768L - 256 * (128);
+            k = lig_kern_base(hf) + 256 * q.s1 + q.s0 + 32768L - 256 * (128);
             q = font_info[k].b16;
         }
     }
@@ -2617,7 +2617,7 @@ continue_:
                         }
                         goto continue_;
                     }
-                    w = font_info[kern_base[hf] + 256 * q.s1 + q.s0].b32.s1;
+                    w = font_info[kern_base(hf) + 256 * q.s1 + q.s0].b32.s1;
                     goto done;
                 }
             }

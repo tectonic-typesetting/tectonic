@@ -188,9 +188,9 @@ DoAATLayout(void* p, int justify)
         if (totalGlyphCount > 0) {
             /* this is essentially a copy from similar code in XeTeX_ext.c, easier
              * to be done here */
-            if (font_letter_space[f] != 0) {
+            if (font_letter_space(f) != 0) {
                 Fixed lsDelta = 0;
-                Fixed lsUnit = font_letter_space[f];
+                Fixed lsUnit = font_letter_space(f);
                 int i;
                 for (i = 0; i < totalGlyphCount; ++i) {
                     if (glyphAdvances[i] == 0 && lsDelta != 0)
