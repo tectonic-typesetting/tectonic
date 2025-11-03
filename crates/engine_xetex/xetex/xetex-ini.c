@@ -119,7 +119,6 @@ small_number cur_if;
 int32_t if_line;
 int32_t skip_line;
 int32_t format_default_length;
-char *TEX_format_default;
 const char* output_file_extension;
 memory_word *font_info;
 font_index fmem_ptr;
@@ -2390,7 +2389,7 @@ store_fmt_file(void)
 static void
 pack_buffered_name(small_number n, int32_t a, int32_t b)
 {
-    set_name_of_file(TEX_format_default);
+    set_name_of_file(tex_format_default());
 //    name_length = strlen(name_of_file());
 }
 
@@ -3415,7 +3414,7 @@ tt_cleanup(void) {
     */
 
     pdf_files_close();
-    free(TEX_format_default);
+    set_tex_format_default(NULL);
     clear_font_used();
     deinitialize_shipout_variables();
 
@@ -3513,8 +3512,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_rust_stdout(ttstub_output_open_stdout());
 
     size_t len = strlen (dump_name);
-    TEX_format_default = xmalloc (len + 1);
-    strcpy (TEX_format_default, dump_name);
+    set_tex_format_default(dump_name);
     format_default_length = len;
 
     /* Not sure why these get custom initializations. */

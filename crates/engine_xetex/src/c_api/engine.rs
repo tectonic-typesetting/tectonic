@@ -20,6 +20,7 @@ use crate::c_api::pool::{
 };
 use crate::c_api::synctex::rs_synctex_terminate;
 pub use memory::*;
+use tectonic_pdf_io::sys::pdf_files_close;
 
 pub const LEVEL_ZERO: u16 = 0;
 pub const LEVEL_ONE: u16 = 1;
@@ -258,6 +259,7 @@ pub struct EngineCtx {
     pub(crate) max_v: Scaled,
     pub(crate) max_push: i32,
     pub(crate) semantic_pagination_enabled: bool,
+    pub(crate) tex_format_default: CString,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -633,6 +635,22 @@ c_var!(EngineCtx => max_h: i32);
 c_var!(EngineCtx => max_v: i32);
 c_var!(EngineCtx => max_push: i32);
 c_var!(EngineCtx => semantic_pagination_enabled: bool);
+
+#[no_mangle]
+pub extern "C" fn tex_format_default() -> *const libc::c_char {
+    EngineCtx::with(|engine| engine.tex_format_default.as_ptr())
+}
+
+#[no_mangle]
+pub extern "C" fn set_tex_format_default(val: *const libc::c_char) {
+    if val.is_null() {
+        EngineCtx::with(|engine| engine.tex_format_default = CString::default());
+    } else {
+        let val = unsafe { CStr::from_ptr(val) };
+        EngineCtx::with(|engine| engine.tex_format_default = val.to_owned());
+    }
+}
+
 c_arr!(EngineCtx => eqtb: MemoryWord);
 c_arr!(EngineCtx => mem: MemoryWord);
 c_arr!(EngineCtx => prim[_]: B32x2);
