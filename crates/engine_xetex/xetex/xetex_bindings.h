@@ -808,6 +808,10 @@ bool semantic_pagination_enabled(void);
 
 void set_semantic_pagination_enabled(bool val);
 
+const char *tex_format_default(void);
+
+void set_tex_format_default(const char *val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -888,13 +892,35 @@ void fatal_error(const char *s);
 
 void int_error(int32_t n);
 
-extern void close_files_and_terminate(void);
-
 extern void tt_cleanup(void);
+
+int32_t font_max(void);
+
+void set_font_max(int32_t val);
 
 int32_t font_ptr(void);
 
 void set_font_ptr(int32_t val);
+
+bool font_used(uintptr_t idx);
+
+void set_font_used(uintptr_t idx, bool val);
+
+bool *font_used_ptr(uintptr_t idx);
+
+void resize_font_used(uintptr_t len);
+
+void clear_font_used(void);
+
+void *font_mapping(uintptr_t idx);
+
+void set_font_mapping(uintptr_t idx, void *val);
+
+void **font_mapping_ptr(uintptr_t idx);
+
+void resize_font_mapping(uintptr_t len);
+
+void clear_font_mapping(void);
 
 void *font_layout_engine(uintptr_t idx);
 
@@ -906,15 +932,25 @@ void resize_font_layout_engine(uintptr_t len);
 
 void clear_font_layout_engine(void);
 
-bool font_used(uintptr_t idx);
+uint8_t font_flags(uintptr_t idx);
 
-void set_font_used(uintptr_t idx, bool val);
+void set_font_flags(uintptr_t idx, uint8_t val);
 
-bool *font_used_ptr(uintptr_t idx);
+uint8_t *font_flags_ptr(uintptr_t idx);
 
-void resize_font_used(uintptr_t len);
+void resize_font_flags(uintptr_t len);
 
-void clear_font_used(void);
+void clear_font_flags(void);
+
+Scaled font_letter_space(uintptr_t idx);
+
+void set_font_letter_space(uintptr_t idx, Scaled val);
+
+Scaled *font_letter_space_ptr(uintptr_t idx);
+
+void resize_font_letter_space(uintptr_t len);
+
+void clear_font_letter_space(void);
 
 B16x4 font_check(uintptr_t idx);
 
@@ -946,6 +982,16 @@ void resize_font_dsize(uintptr_t len);
 
 void clear_font_dsize(void);
 
+int32_t font_params(uintptr_t idx);
+
+void set_font_params(uintptr_t idx, int32_t val);
+
+int32_t *font_params_ptr(uintptr_t idx);
+
+void resize_font_params(uintptr_t len);
+
+void clear_font_params(void);
+
 StrNumber font_name(uintptr_t idx);
 
 void set_font_name(uintptr_t idx, StrNumber val);
@@ -966,15 +1012,175 @@ void resize_font_area(uintptr_t len);
 
 void clear_font_area(void);
 
-uint8_t font_flags(uintptr_t idx);
+uint16_t font_bc(uintptr_t idx);
 
-void set_font_flags(uintptr_t idx, uint8_t val);
+void set_font_bc(uintptr_t idx, uint16_t val);
 
-uint8_t *font_flags_ptr(uintptr_t idx);
+uint16_t *font_bc_ptr(uintptr_t idx);
 
-void resize_font_flags(uintptr_t len);
+void resize_font_bc(uintptr_t len);
 
-void clear_font_flags(void);
+void clear_font_bc(void);
+
+uint16_t font_ec(uintptr_t idx);
+
+void set_font_ec(uintptr_t idx, uint16_t val);
+
+uint16_t *font_ec_ptr(uintptr_t idx);
+
+void resize_font_ec(uintptr_t len);
+
+void clear_font_ec(void);
+
+int32_t font_glue(uintptr_t idx);
+
+void set_font_glue(uintptr_t idx, int32_t val);
+
+int32_t *font_glue_ptr(uintptr_t idx);
+
+void resize_font_glue(uintptr_t len);
+
+void clear_font_glue(void);
+
+int32_t hyphen_char(uintptr_t idx);
+
+void set_hyphen_char(uintptr_t idx, int32_t val);
+
+int32_t *hyphen_char_ptr(uintptr_t idx);
+
+void resize_hyphen_char(uintptr_t len);
+
+void clear_hyphen_char(void);
+
+int32_t skew_char(uintptr_t idx);
+
+void set_skew_char(uintptr_t idx, int32_t val);
+
+int32_t *skew_char_ptr(uintptr_t idx);
+
+void resize_skew_char(uintptr_t len);
+
+void clear_skew_char(void);
+
+int32_t bchar_label(uintptr_t idx);
+
+void set_bchar_label(uintptr_t idx, int32_t val);
+
+int32_t *bchar_label_ptr(uintptr_t idx);
+
+void resize_bchar_label(uintptr_t len);
+
+void clear_bchar_label(void);
+
+int32_t font_bchar(uintptr_t idx);
+
+void set_font_bchar(uintptr_t idx, int32_t val);
+
+int32_t *font_bchar_ptr(uintptr_t idx);
+
+void resize_font_bchar(uintptr_t len);
+
+void clear_font_bchar(void);
+
+int32_t font_false_bchar(uintptr_t idx);
+
+void set_font_false_bchar(uintptr_t idx, int32_t val);
+
+int32_t *font_false_bchar_ptr(uintptr_t idx);
+
+void resize_font_false_bchar(uintptr_t len);
+
+void clear_font_false_bchar(void);
+
+int32_t char_base(uintptr_t idx);
+
+void set_char_base(uintptr_t idx, int32_t val);
+
+int32_t *char_base_ptr(uintptr_t idx);
+
+void resize_char_base(uintptr_t len);
+
+void clear_char_base(void);
+
+int32_t width_base(uintptr_t idx);
+
+void set_width_base(uintptr_t idx, int32_t val);
+
+int32_t *width_base_ptr(uintptr_t idx);
+
+void resize_width_base(uintptr_t len);
+
+void clear_width_base(void);
+
+int32_t height_base(uintptr_t idx);
+
+void set_height_base(uintptr_t idx, int32_t val);
+
+int32_t *height_base_ptr(uintptr_t idx);
+
+void resize_height_base(uintptr_t len);
+
+void clear_height_base(void);
+
+int32_t depth_base(uintptr_t idx);
+
+void set_depth_base(uintptr_t idx, int32_t val);
+
+int32_t *depth_base_ptr(uintptr_t idx);
+
+void resize_depth_base(uintptr_t len);
+
+void clear_depth_base(void);
+
+int32_t italic_base(uintptr_t idx);
+
+void set_italic_base(uintptr_t idx, int32_t val);
+
+int32_t *italic_base_ptr(uintptr_t idx);
+
+void resize_italic_base(uintptr_t len);
+
+void clear_italic_base(void);
+
+int32_t lig_kern_base(uintptr_t idx);
+
+void set_lig_kern_base(uintptr_t idx, int32_t val);
+
+int32_t *lig_kern_base_ptr(uintptr_t idx);
+
+void resize_lig_kern_base(uintptr_t len);
+
+void clear_lig_kern_base(void);
+
+int32_t kern_base(uintptr_t idx);
+
+void set_kern_base(uintptr_t idx, int32_t val);
+
+int32_t *kern_base_ptr(uintptr_t idx);
+
+void resize_kern_base(uintptr_t len);
+
+void clear_kern_base(void);
+
+int32_t exten_base(uintptr_t idx);
+
+void set_exten_base(uintptr_t idx, int32_t val);
+
+int32_t *exten_base_ptr(uintptr_t idx);
+
+void resize_exten_base(uintptr_t len);
+
+void clear_exten_base(void);
+
+int32_t param_base(uintptr_t idx);
+
+void set_param_base(uintptr_t idx, int32_t val);
+
+int32_t *param_base_ptr(uintptr_t idx);
+
+void resize_param_base(uintptr_t len);
+
+void clear_param_base(void);
 
 uint8_t xdv_buffer(uintptr_t idx);
 

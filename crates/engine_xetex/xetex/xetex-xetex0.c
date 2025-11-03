@@ -392,7 +392,7 @@ short_display(int32_t p)
         if (is_char_node(p)) {
             if (p <= mem_end()) {
                 if (mem(p).b16.s1 != font_in_short_display) {
-                    if (mem(p).b16.s1 > font_max)
+                    if (mem(p).b16.s1 > font_max())
                         print_char('*');
                     else /*279:*/
                         print_esc(hash(FONT_ID_BASE + mem(p).b16.s1).s1);
@@ -471,7 +471,7 @@ void print_font_and_char(int32_t p)
         print_esc_cstr("CLOBBERED.");
     else {
 
-        if ((mem(p).b16.s1 > font_max))
+        if ((mem(p).b16.s1 > font_max()))
             print_char('*');
         else /*279: */
             print_esc(hash(FONT_ID_BASE + mem(p).b16.s1).s1);
@@ -6618,8 +6618,8 @@ void get_x_or_protected(void)
 int32_t
 effective_char(bool err_p, internal_font_number f, uint16_t c)
 {
-    if (!xtx_ligature_present && font_mapping[f] != NULL)
-        c = apply_tfm_font_mapping(font_mapping[f], c);
+    if (!xtx_ligature_present && font_mapping(f) != NULL)
+        c = apply_tfm_font_mapping(font_mapping(f), c);
 
     xtx_ligature_present = false;
     return c;
@@ -6669,11 +6669,11 @@ void find_font_dimen(bool writing)
         cur_val = fmem_ptr;
     else {
 
-        if (writing && (n <= SPACE_SHRINK_CODE) && (n >= SPACE_CODE) && (font_glue[f] != TEX_NULL)) {
-            delete_glue_ref(font_glue[f]);
-            font_glue[f] = TEX_NULL;
+        if (writing && (n <= SPACE_SHRINK_CODE) && (n >= SPACE_CODE) && (font_glue(f) != TEX_NULL)) {
+            delete_glue_ref(font_glue(f));
+            set_font_glue(f, TEX_NULL);
         }
-        if (n > font_params[f]) {
+        if (n > font_params(f)) {
 
             if (f < font_ptr())
                 cur_val = fmem_ptr;
@@ -6684,18 +6684,18 @@ void find_font_dimen(bool writing)
                         overflow("font memory", font_mem_size);
                     font_info[fmem_ptr].b32.s1 = 0;
                     fmem_ptr++;
-                    font_params[f]++;
-                } while (!(n == font_params[f]));
+                    set_font_params(f, font_params(f)+1);
+                } while (!(n == font_params(f)));
                 cur_val = fmem_ptr - 1;
             }
         } else
-            cur_val = n + param_base[f];
+            cur_val = n + param_base(f);
     }
     if (cur_val == fmem_ptr) {
         error_here_with_diagnostic("Font ");
         print_esc(hash(FONT_ID_BASE + f).s1);
         print_cstr(" has only ");
-        print_int(font_params[f]);
+        print_int(font_params(f));
         print_cstr(" fontdimen parameters");
         capture_to_diagnostic(NULL);
         {
@@ -7002,10 +7002,10 @@ restart:
     case ASSIGN_FONT_INT:
         scan_font_ident();
         if (m == 0) {
-            cur_val = hyphen_char[cur_val];
+            cur_val = hyphen_char(cur_val);
             cur_val_level = INT_VAL;
         } else if (m == 1) {
-            cur_val = skew_char[cur_val];
+            cur_val = skew_char(cur_val);
             cur_val_level = INT_VAL;
         } else {
             n = cur_val;
@@ -7162,7 +7162,7 @@ restart:
                             break;
                         }
                     } else {
-                        if (font_bc[q] <= cur_val && font_ec[q] >= cur_val) {
+                        if (font_bc(q) <= cur_val && font_ec(q) >= cur_val) {
                             i = FONT_CHARACTER_INFO(q, effective_char(true, q, cur_val));
 
                             switch (m) {
@@ -7468,9 +7468,9 @@ restart:
                         cur_val = get_font_char_range(n, m == XETEX_FIRST_CHAR_CODE);
                     } else {
                         if (m == XETEX_FIRST_CHAR_CODE)
-                            cur_val = font_bc[n];
+                            cur_val = font_bc(n);
                         else
-                            cur_val = font_ec[n];
+                            cur_val = font_ec(n);
                     }
                     break;
 
@@ -7989,9 +7989,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             goto not_found;
 
         if (scan_keyword("em"))
-            v = font_info[QUAD_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
+            v = font_info[QUAD_CODE + param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1)].b32.s1;
         else if (scan_keyword("ex"))
-            v = font_info[X_HEIGHT_CODE + param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
+            v = font_info[X_HEIGHT_CODE + param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1)].b32.s1;
         else
             goto not_found;
 
@@ -10102,7 +10102,7 @@ conditional(void)
         if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG) {
             b = (map_char_to_glyph(n, cur_val) > 0);
         } else {
-            if (font_bc[n] <= cur_val && font_ec[n] >= cur_val)
+            if (font_bc(n) <= cur_val && font_ec(n) >= cur_val)
                 b = (FONT_CHARACTER_INFO(n, effective_char(true, n, cur_val)).s3 > 0);
             else
                 b = false;
@@ -10469,8 +10469,8 @@ start_input(const char *primary_input_name)
 b16x4
 effective_char_info(internal_font_number f, uint16_t c)
 {
-    if (!xtx_ligature_present && font_mapping[f] != NULL)
-        c = apply_tfm_font_mapping(font_mapping[f], c);
+    if (!xtx_ligature_present && font_mapping(f) != NULL)
+        c = apply_tfm_font_mapping(font_mapping(f), c);
 
     xtx_ligature_present = false;
     return FONT_CHARACTER_INFO(f, c);
@@ -10591,7 +10591,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
     int32_t p;
     int32_t i, len;
 
-    if (font_mapping[f] != NULL) {
+    if (font_mapping(f) != NULL) {
         if (c > 65535L) {
             if (pool_ptr() + 2 > pool_size())
                 overflow("pool size", pool_size() - init_pool_ptr);
@@ -10609,7 +10609,7 @@ new_native_character(internal_font_number f, UnicodeScalar c)
         }
 
         len = apply_mapping(
-            font_mapping[f],
+            font_mapping(f),
             str_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR)),
             cur_length()
         );
@@ -10779,7 +10779,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     else
         num_font_dimens = 8;
 
-    if (font_ptr() == font_max || fmem_ptr + num_font_dimens > font_mem_size) {
+    if (font_ptr() == font_max() || fmem_ptr + num_font_dimens > font_mem_size) {
         error_here_with_diagnostic("Font ");
         sprint_cs(u);
         print_char('=');
@@ -10816,7 +10816,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_check_ptr(font_ptr())->s2 = 0;
     font_check_ptr(font_ptr())->s1 = 0;
     font_check_ptr(font_ptr())->s0 = 0;
-    font_glue[font_ptr()] = TEX_NULL;
+    set_font_glue(font_ptr(), TEX_NULL);
     set_font_dsize(font_ptr(), get_loaded_font_design_size());
     set_font_size(font_ptr(), actual_size);
 
@@ -10825,18 +10825,18 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     else
         ot_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht, &font_slant);
 
-    height_base[font_ptr()] = ascent;
-    depth_base[font_ptr()] = -(int32_t) descent;
-    font_params[font_ptr()] = num_font_dimens;
-    font_bc[font_ptr()] = 0;
-    font_ec[font_ptr()] = 65535L;
+    set_height_base(font_ptr(), ascent);
+    set_depth_base(font_ptr(), -(int32_t) descent);
+    set_font_params(font_ptr(), num_font_dimens);
+    set_font_bc(font_ptr(), 0);
+    set_font_ec(font_ptr(), 65535L);
     set_font_used(font_ptr(), false);
-    hyphen_char[font_ptr()] = INTPAR(default_hyphen_char);
-    skew_char[font_ptr()] = INTPAR(default_skew_char);
-    param_base[font_ptr()] = fmem_ptr - 1;
+    set_hyphen_char(font_ptr(), INTPAR(default_hyphen_char));
+    set_skew_char(font_ptr(), INTPAR(default_skew_char));
+    set_param_base(font_ptr(), fmem_ptr - 1);
     set_font_layout_engine(font_ptr(), font_engine);
-    font_mapping[font_ptr()] = 0;
-    font_letter_space[font_ptr()] = loaded_font_letter_space;
+    set_font_mapping(font_ptr(), 0);
+    set_font_letter_space(font_ptr(), loaded_font_letter_space);
 
     /* "measure the width of the space character and set up font parameters" */
     p = new_native_character(font_ptr(), ' ' );
@@ -10863,7 +10863,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
             font_info[fmem_ptr++].b32.s1 = get_ot_math_constant(font_ptr(), k);
     }
 
-    font_mapping[font_ptr()] = loaded_font_mapping;
+    set_font_mapping(font_ptr(), loaded_font_mapping);
     set_font_flags(font_ptr(), loaded_font_flags);
     return font_ptr();
 }
@@ -11066,19 +11066,19 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (np < 7)
         lf = lf + 7 - np;
 
-    if (font_ptr() == font_max || fmem_ptr + lf > font_mem_size)
+    if (font_ptr() == font_max() || fmem_ptr + lf > font_mem_size)
         _tt_abort("not enough memory to load another font");
 
     f = font_ptr() + 1;
-    char_base[f] = fmem_ptr - bc;
-    width_base[f] = char_base[f] + ec + 1;
-    height_base[f] = width_base[f] + nw;
-    depth_base[f] = height_base[f] + nh;
-    italic_base[f] = depth_base[f] + nd;
-    lig_kern_base[f] = italic_base[f] + ni;
-    kern_base[f] = lig_kern_base[f] + nl - 256 * (128);
-    exten_base[f] = kern_base[f] + 256 * (128) + nk;
-    param_base[f] = exten_base[f] + /*:585 */ ne;
+    set_char_base(f, fmem_ptr - bc);
+    set_width_base(f, char_base(f) + ec + 1);
+    set_height_base(f, width_base(f) + nw);
+    set_depth_base(f, height_base(f) + nh);
+    set_italic_base(f, depth_base(f) + nd);
+    set_lig_kern_base(f, italic_base(f) + ni);
+    set_kern_base(f, lig_kern_base(f) + nl - 256 * (128));
+    set_exten_base(f, kern_base(f) + 256 * (128) + nk);
+    set_param_base(f, exten_base(f) + /*:585 */ ne);
 
     if (lh < 2)
         goto bad_tfm;
@@ -11115,7 +11115,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
 
     set_font_size(f, z);
 
-    for (k = fmem_ptr; k <= width_base[f] - 1; k++) {
+    for (k = fmem_ptr; k <= width_base(f) - 1; k++) {
         qw.s3 = a = ttstub_input_getc (tfm_file);
         qw.s2 = b = ttstub_input_getc (tfm_file);
         qw.s1 = c = ttstub_input_getc (tfm_file);
@@ -11163,7 +11163,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     beta = 256 / alpha;
     alpha = alpha * z;
 
-    for (k = width_base[f]; k <= lig_kern_base[f] - 1; k++) {
+    for (k = width_base(f); k <= lig_kern_base(f) - 1; k++) {
         a = ttstub_input_getc (tfm_file);
         b = ttstub_input_getc (tfm_file);
         c = ttstub_input_getc (tfm_file);
@@ -11180,20 +11180,20 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             goto bad_tfm;
     }
 
-    if (font_info[width_base[f]].b32.s1 != 0)
+    if (font_info[width_base(f)].b32.s1 != 0)
         goto bad_tfm;
-    if (font_info[height_base[f]].b32.s1 != 0)
+    if (font_info[height_base(f)].b32.s1 != 0)
         goto bad_tfm;
-    if (font_info[depth_base[f]].b32.s1 != 0)
+    if (font_info[depth_base(f)].b32.s1 != 0)
         goto bad_tfm;
-    if (font_info[italic_base[f]].b32.s1 != 0)
+    if (font_info[italic_base(f)].b32.s1 != 0)
         goto bad_tfm;
 
     bch_label = 32767;
     bchar = 256;
 
     if (nl > 0) {
-        for (k = lig_kern_base[f]; k <= kern_base[f] + 256 * 128 - 1; k++) {
+        for (k = lig_kern_base(f); k <= kern_base(f) + 256 * 128 - 1; k++) {
             qw.s3 = a = ttstub_input_getc (tfm_file);
             qw.s2 = b = ttstub_input_getc (tfm_file);
             qw.s1 = c = ttstub_input_getc (tfm_file);
@@ -11206,7 +11206,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                 if (256 * c + d >= nl)
                     goto bad_tfm;
 
-                if (a == 255 && k == lig_kern_base[f])
+                if (a == 255 && k == lig_kern_base(f))
                     bchar = b;
             } else {
                 if (b != bchar) {
@@ -11227,7 +11227,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                 } else if (256 * (c - 128) + d >= nk)
                     goto bad_tfm;
 
-                if (a < 128 && k - lig_kern_base[f] + a + 1 >= nl)
+                if (a < 128 && k - lig_kern_base(f) + a + 1 >= nl)
                     goto bad_tfm;
             }
         }
@@ -11236,7 +11236,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             bch_label = 256 * c + d;
     }
 
-    for (k = kern_base[f] + 256 * 128; k <= exten_base[f] - 1; k++) {
+    for (k = kern_base(f) + 256 * 128; k <= exten_base(f) - 1; k++) {
         a = ttstub_input_getc (tfm_file);
         b = ttstub_input_getc (tfm_file);
         c = ttstub_input_getc (tfm_file);
@@ -11253,7 +11253,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             goto bad_tfm;
     }
 
-    for (k = exten_base[f]; k <= param_base[f] - 1; k++) {
+    for (k = exten_base(f); k <= param_base(f) - 1; k++) {
         qw.s3 = a = ttstub_input_getc (tfm_file);
         qw.s2 = b = ttstub_input_getc (tfm_file);
         qw.s1 = c = ttstub_input_getc (tfm_file);
@@ -11303,7 +11303,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
 
             sw = sw * 256 + ttstub_input_getc (tfm_file);
             sw = sw * 256 + ttstub_input_getc (tfm_file);
-            font_info[param_base[f]].b32.s1 = (sw * 16) + (ttstub_input_getc (tfm_file) / 16);
+            font_info[param_base(f)].b32.s1 = (sw * 16) + (ttstub_input_getc (tfm_file) / 16);
         } else {
             a = ttstub_input_getc (tfm_file);
             b = ttstub_input_getc (tfm_file);
@@ -11314,49 +11314,49 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
 
             if (a == 0)
-                font_info[param_base[f] + k - 1].b32.s1 = sw;
+                font_info[param_base(f) + k - 1].b32.s1 = sw;
             else if (a == 255)
-                font_info[param_base[f] + k - 1].b32.s1 = sw - alpha;
+                font_info[param_base(f) + k - 1].b32.s1 = sw - alpha;
             else
                 goto bad_tfm;
         }
     }
 
     for (k = np + 1; k <= 7; k++)
-        font_info[param_base[f] + k - 1].b32.s1 = 0;
+        font_info[param_base(f) + k - 1].b32.s1 = 0;
 
     if (np >= 7)
-        font_params[f] = np;
+        set_font_params(f, np);
     else
-        font_params[f] = 7;
+        set_font_params(f, 7);
 
-    hyphen_char[f] = INTPAR(default_hyphen_char);
-    skew_char[f] = INTPAR(default_skew_char);
+    set_hyphen_char(f, INTPAR(default_hyphen_char));
+    set_skew_char(f, INTPAR(default_skew_char));
     if (bch_label < nl)
-        bchar_label[f] = bch_label + lig_kern_base[f];
+        set_bchar_label(f, bch_label + lig_kern_base(f));
     else
-        bchar_label[f] = NON_ADDRESS;
-    font_bchar[f] = bchar;
-    font_false_bchar[f] = bchar;
+        set_bchar_label(f, NON_ADDRESS);
+    set_font_bchar(f, bchar);
+    set_font_false_bchar(f, bchar);
 
     if (bchar <= ec) {
         if (bchar >= bc) {
             qw = FONT_CHARACTER_INFO(f, bchar);
             if ((qw.s3 > 0))
-                font_false_bchar[f] = TOO_BIG_CHAR;
+                set_font_false_bchar(f, TOO_BIG_CHAR);
         }
     }
 
     set_font_name(f, nom);
     set_font_area(f, aire);
-    font_bc[f] = bc;
-    font_ec[f] = ec;
-    font_glue[f] = TEX_NULL;
-    param_base[f]--;
+    set_font_bc(f, bc);
+    set_font_ec(f, ec);
+    set_font_glue(f, TEX_NULL);
+    set_param_base(f, param_base(f)-1);
     fmem_ptr = fmem_ptr + lf;
     set_font_ptr(f);
     g = f;
-    font_mapping[f] = load_tfm_font_mapping();
+    set_font_mapping(f, load_tfm_font_mapping());
     goto done;
 
 bad_tfm:
@@ -11429,9 +11429,9 @@ int32_t new_character(internal_font_number f, UTF16_code c)
         return new_native_character(f, c);
     }
     ec = effective_char(false, f, c);
-    if (font_bc[f] <= ec) {
+    if (font_bc(f) <= ec) {
 
-        if (font_ec[f] >= ec) {
+        if (font_ec(f) >= ec) {
 
             if ((FONT_CHARACTER_INFO(f, ec).s3 > 0)) {
                 p = get_avail();
@@ -11489,7 +11489,7 @@ scaled_t char_pw(int32_t p, small_number side)
           && (NODE_subtype(p) == NATIVE_WORD_NODE || NODE_subtype(p) == NATIVE_WORD_NODE_AT)))) {
         if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
             f = NATIVE_NODE_font(p);
-            return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].b32.s1, get_native_word_cp(p, side), 1000);
+            return round_xn_over_d(font_info[QUAD_CODE + param_base(f)].b32.s1, get_native_word_cp(p, side), 1000);
         } else {
             return 0;
         }
@@ -11497,7 +11497,7 @@ scaled_t char_pw(int32_t p, small_number side)
     if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
           && (mem(p).b16.s0 == GLYPH_NODE)))) {
         f = mem(p + 4).b16.s2;
-        return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].b32.s1, get_cp_code(f, mem(p + 4).b16.s1, side),
+        return round_xn_over_d(font_info[QUAD_CODE + param_base(f)].b32.s1, get_cp_code(f, mem(p + 4).b16.s1, side),
                                1000);
     }
     if (!(is_char_node(p))) {
@@ -11518,7 +11518,7 @@ scaled_t char_pw(int32_t p, small_number side)
     }
     if (c == 0)
         return 0;
-    return round_xn_over_d(font_info[QUAD_CODE + param_base[f]].b32.s1, c, 1000);
+    return round_xn_over_d(font_info[QUAD_CODE + param_base(f)].b32.s1, c, 1000);
 }
 
 int32_t new_margin_kern(scaled_t w, int32_t p, small_number side)
@@ -13551,21 +13551,21 @@ void app_space(void)
             main_p = GLUEPAR(space_skip);
         else {                  /*1077: */
 
-            main_p = font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
+            main_p = font_glue(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
             if (main_p == TEX_NULL) {
                 main_p = new_spec(0);
-                main_k = param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1] + 2;
+                main_k = param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1) + 2;
                 mem_ptr(main_p + 1)->b32.s1 = font_info[main_k].b32.s1;
                 mem_ptr(main_p + 2)->b32.s1 = font_info[main_k + 1].b32.s1;
                 mem_ptr(main_p + 3)->b32.s1 = font_info[main_k + 2].b32.s1;
-                font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1] = main_p;
+                set_font_glue(eqtb_ptr(CUR_FONT_LOC)->b32.s1, main_p);
             }
         }
         main_p = new_spec(main_p);
         if (cur_list.aux.b32.s0 >= 2000)
             mem_ptr(main_p + 1)->b32.s1 =
                 mem(main_p + 1).b32.s1 + font_info[EXTRA_SPACE_CODE +
-                                                 param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1]].b32.s1;
+                                                 param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1)].b32.s1;
         mem_ptr(main_p + 2)->b32.s1 = xn_over_d(mem(main_p + 2).b32.s1, cur_list.aux.b32.s0, 1000);
         mem_ptr(main_p + 3)->b32.s1 = xn_over_d(mem(main_p + 3).b32.s1, 1000, cur_list.aux.b32.s0) /*:1079 */ ;
         q = new_glue(main_p);
@@ -14532,7 +14532,7 @@ void append_discretionary(void)
     cur_list.tail = LLIST_link(cur_list.tail);
 
     if (cur_chr == 1) {
-        c = hyphen_char[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
+        c = hyphen_char(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
         if (c >= 0) {
 
             if (c <= BIGGEST_CHAR)
@@ -14668,8 +14668,8 @@ void make_accent(void)
     p = new_character(f, cur_val);
 
     if (p != TEX_NULL) {
-        x = font_info[X_HEIGHT_CODE + param_base[f]].b32.s1;
-        s = font_info[SLANT_CODE + param_base[f]].b32.s1 / ((double)65536.0);
+        x = font_info[X_HEIGHT_CODE + param_base(f)].b32.s1;
+        s = font_info[SLANT_CODE + param_base(f)].b32.s1 / ((double)65536.0);
         if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
             a = mem(p + 1).b32.s1;
             if (a == 0)
@@ -14689,7 +14689,7 @@ void make_accent(void)
         } else
             back_input();
         if (q != TEX_NULL) { /*1160: */
-            t = font_info[SLANT_CODE + param_base[f]].b32.s1 / ((double)65536.0);
+            t = font_info[SLANT_CODE + param_base(f)].b32.s1 / ((double)65536.0);
             if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
                 w = mem(q + 1).b32.s1;
                 get_native_char_height_depth(f, cur_val, &h, &delta);
@@ -16983,7 +16983,7 @@ collect_native:
             native_len++;
         }
 
-        is_hyph = (cur_chr == hyphen_char[main_f]) || ((INTPAR(xetex_dash_break) > 0)
+        is_hyph = (cur_chr == hyphen_char(main_f)) || ((INTPAR(xetex_dash_break) > 0)
                                                        && ((cur_chr == 8212) || (cur_chr == 8211)));
 
         if ((main_h == 0) && is_hyph)
@@ -17022,8 +17022,8 @@ collect_native:
         }
 
 collected:
-        if ((font_mapping[main_f] != NULL)) {
-            main_k = apply_mapping(font_mapping[main_f], native_text, native_len);
+        if ((font_mapping(main_f) != NULL)) {
+            main_k = apply_mapping(font_mapping(main_f), native_text, native_len);
             native_len = 0;
 
             while (native_text_size <= native_len + main_k) {
@@ -17044,7 +17044,7 @@ collected:
                             native_len++;
                         }
                         if ((main_h == 0)
-                            && ((mapped_text[main_p] == hyphen_char[main_f])
+                            && ((mapped_text[main_p] == hyphen_char(main_f))
                                 || ((INTPAR(xetex_dash_break) > 0)
                                     && ((mapped_text[main_p] == 8212) || (mapped_text[main_p] == 8211)))))
                             main_h = native_len;
@@ -17143,7 +17143,7 @@ collected:
                     temp_ptr = main_h;
                     main_h = 0;
 
-                    while ((main_h < main_k) && (native_text[temp_ptr + main_h] != hyphen_char[main_f])
+                    while ((main_h < main_k) && (native_text[temp_ptr + main_h] != hyphen_char(main_f))
                            && ((!(INTPAR(xetex_dash_break) > 0))
                                || ((native_text[temp_ptr + main_h] != 8212)
                                    && (native_text[temp_ptr + main_h] != 8211))))
@@ -17164,7 +17164,7 @@ collected:
                     temp_ptr = temp_ptr + main_h;
                     main_k = main_k - main_h;
                     main_h = 0;
-                    while ((main_h < main_k) && (native_text[temp_ptr + main_h] != hyphen_char[main_f])
+                    while ((main_h < main_k) && (native_text[temp_ptr + main_h] != hyphen_char(main_f))
                            && ((!(INTPAR(xetex_dash_break) > 0))
                                || ((native_text[temp_ptr + main_h] != 8212)
                                    && (native_text[temp_ptr + main_h] != 8211))))
@@ -17313,8 +17313,8 @@ collected:
                             set_native_metrics(temp_ptr, (INTPAR(xetex_use_glyph_metrics) > 0));
                             t = mem(temp_ptr + 1).b32.s1 - mem(main_pp + 1).b32.s1 - mem(cur_list.tail + 1).b32.s1;
                             free_node(temp_ptr, mem(temp_ptr + 4).b16.s3);
-                            if (t != mem(font_glue[main_f] + 1).b32.s1) {
-                                temp_ptr = new_kern(t - mem(font_glue[main_f] + 1).b32.s1);
+                            if (t != mem(font_glue(main_f) + 1).b32.s1) {
+                                temp_ptr = new_kern(t - mem(font_glue(main_f) + 1).b32.s1);
                                 NODE_subtype(temp_ptr) = SPACE_ADJUSTMENT;
                                 mem_ptr(temp_ptr)->b32.s1 = mem(main_p).b32.s1;
                                 mem_ptr(main_p)->b32.s1 = temp_ptr;
@@ -17380,8 +17380,8 @@ collected:
     }
 
     main_f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
-    bchar = font_bchar[main_f];
-    false_bchar = font_false_bchar[main_f];
+    bchar = font_bchar(main_f);
+    false_bchar = font_false_bchar(main_f);
 
     if (cur_list.mode > 0) {
         if (INTPAR(language) != cur_list.aux.b32.s1)
@@ -17408,7 +17408,7 @@ collected:
         cancel_boundary = false;
         main_k = NON_ADDRESS;
     } else {
-        main_k = bchar_label[main_f];
+        main_k = bchar_label(main_f);
     }
 
     if (main_k == NON_ADDRESS)
@@ -17421,7 +17421,7 @@ collected:
  main_loop_wrapup: /*1070: */
     if (cur_l < TOO_BIG_CHAR) {
         if (mem(cur_q).b32.s1 > TEX_NULL) {
-            if (mem(cur_list.tail).b16.s0 == hyphen_char[main_f])
+            if (mem(cur_list.tail).b16.s0 == hyphen_char(main_f))
                 ins_disc = true;
         }
 
@@ -17464,8 +17464,8 @@ main_loop_move_1:
         goto main_loop_move_lig;
 
 main_loop_move_2:
-    if ((effective_char(false, main_f, cur_chr) > font_ec[main_f])
-                              || (effective_char(false, main_f, cur_chr) < font_bc[main_f])) {
+    if ((effective_char(false, main_f, cur_chr) > font_ec(main_f))
+                              || (effective_char(false, main_f, cur_chr) < font_bc(main_f))) {
         char_warning(main_f, cur_chr);
         mem_ptr(lig_stack)->b32.s1 = avail;
         avail = lig_stack;
@@ -17587,12 +17587,12 @@ main_lig_loop: /*1074: */
     if (cur_r == TOO_BIG_CHAR)
         goto main_loop_wrapup;
 
-    main_k = lig_kern_base[main_f] + main_i.s0;
+    main_k = lig_kern_base(main_f) + main_i.s0;
     main_j = font_info[main_k].b16;
     if (main_j.s3 <= 128)
         goto main_lig_loop_2;
 
-    main_k = lig_kern_base[main_f] + 256 * main_j.s1 + main_j.s0 + 32768L - 256 * 128;
+    main_k = lig_kern_base(main_f) + 256 * main_j.s1 + main_j.s0 + 32768L - 256 * 128;
 
 main_lig_loop_1:
     main_j = font_info[main_k].b16;
@@ -17603,7 +17603,7 @@ main_lig_loop_2:
             if (main_j.s1 >= 128) {
                 if (cur_l < TOO_BIG_CHAR) {
                     if (mem(cur_q).b32.s1 > TEX_NULL) {
-                        if (mem(cur_list.tail).b16.s0 == hyphen_char[main_f])
+                        if (mem(cur_list.tail).b16.s0 == hyphen_char(main_f))
                             ins_disc = true;
                     }
 
@@ -17635,7 +17635,7 @@ main_lig_loop_2:
                 }
 
                 mem_ptr(cur_list.tail)->b32.s1 =
-                    new_kern(font_info[kern_base[main_f] + 256 * main_j.s1 + main_j.s0].b32.s1);
+                    new_kern(font_info[kern_base(main_f) + 256 * main_j.s1 + main_j.s0].b32.s1);
                 cur_list.tail = LLIST_link(cur_list.tail);
                 goto main_loop_move;
             }
@@ -17681,7 +17681,7 @@ main_lig_loop_2:
                 if (cur_l < TOO_BIG_CHAR) {
                     if (mem(cur_q).b32.s1 > TEX_NULL) {
 
-                        if (mem(cur_list.tail).b16.s0 == hyphen_char[main_f])
+                        if (mem(cur_list.tail).b16.s0 == hyphen_char(main_f))
                             ins_disc = true;
                     }
                     if (ligature_present) {
@@ -17733,7 +17733,7 @@ main_lig_loop_2:
             if (cur_l < TOO_BIG_CHAR)
                 goto main_lig_loop;
 
-            main_k = bchar_label[main_f];
+            main_k = bchar_label(main_f);
             goto main_lig_loop_1;
         }
     }
@@ -17793,14 +17793,14 @@ append_normal_space:
     }
 
     if (GLUEPAR(space_skip) == 0) {
-        main_p = font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1];
+        main_p = font_glue(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
         if (main_p == TEX_NULL) {
             main_p = new_spec(0);
-            main_k = param_base[eqtb_ptr(CUR_FONT_LOC)->b32.s1] + 2;
+            main_k = param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1) + 2;
             mem_ptr(main_p + 1)->b32.s1 = font_info[main_k].b32.s1;
             mem_ptr(main_p + 2)->b32.s1 = font_info[main_k + 1].b32.s1;
             mem_ptr(main_p + 3)->b32.s1 = font_info[main_k + 2].b32.s1;
-            font_glue[eqtb_ptr(CUR_FONT_LOC)->b32.s1] = main_p;
+            set_font_glue(eqtb_ptr(CUR_FONT_LOC)->b32.s1, main_p);
         }
         temp_ptr = new_glue(main_p);
     } else

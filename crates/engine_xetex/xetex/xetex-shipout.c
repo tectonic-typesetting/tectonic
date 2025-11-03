@@ -305,7 +305,7 @@ hlist_out(void)
                     && !is_char_node(p)
                     && NODE_type(p) == WHATSIT_NODE
                     && (NODE_subtype(p) == NATIVE_WORD_NODE || NODE_subtype(p) == NATIVE_WORD_NODE_AT)
-                    && font_letter_space[NATIVE_NODE_font(p)] == 0
+                    && font_letter_space(NATIVE_NODE_font(p)) == 0
                 ) {
                     /* "got a word in an AAT font, might be the start of a run" */
                     r = p;
@@ -329,7 +329,7 @@ hlist_out(void)
 
                     if (q != TEX_NULL && !is_char_node(q)) {
                         if (NODE_type(q) == GLUE_NODE && GLUE_SPEC_shrink_order(q) == NORMAL) {
-                            if (GLUE_NODE_glue_ptr(q) == font_glue[NATIVE_NODE_font(r)]) {
+                            if (GLUE_NODE_glue_ptr(q) == font_glue(NATIVE_NODE_font(r))) {
                                 /* "Found a normal space; if the next node is
                                  * another word in the same font, we'll
                                  * merge." */
@@ -575,8 +575,8 @@ hlist_out(void)
             do {
                 f = CHAR_NODE_font(p);
                 c = CHAR_NODE_character(p);
-                if (p != LIG_TRICK && font_mapping[f] != NULL)
-                    c = apply_tfm_font_mapping(font_mapping[f], c);
+                if (p != LIG_TRICK && font_mapping(f) != NULL)
+                    c = apply_tfm_font_mapping(font_mapping(f), c);
 
                 if (f != dvi_f) {
                     /*643: "Change font dvi_f to f" */
@@ -599,8 +599,8 @@ hlist_out(void)
                     dvi_f = f;
                 }
 
-                if (font_ec[f] >= c) {
-                    if (font_bc[f] <= c) {
+                if (font_ec(f) >= c) {
+                    if (font_bc(f) <= c) {
                         if (FONT_CHARACTER_INFO(f, c).s3 > 0) { /* if (char_exists(orig_char_info(f)(c))) */
                             if (c >= 128)
                                 dvi_out(SET1);

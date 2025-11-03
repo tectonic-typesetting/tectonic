@@ -305,11 +305,11 @@ typedef MemoryWord memory_word;
 #define GLUE_SPEC_stretch(p) mem_ptr((p) + 2)->b32.s1 /* a scaled */
 #define GLUE_SPEC_shrink(p) mem_ptr((p) + 3)->b32.s1 /* a scaled */
 
-#define FONT_CHARACTER_INFO(f, c) font_info[char_base[f] + (c)].b16
-#define FONT_CHARINFO_WIDTH(f, info) font_info[width_base[f] + (info).s3].b32.s1
-#define FONT_CHARINFO_HEIGHT(f, info) font_info[height_base[f] + (info).s2 / 16].b32.s1
-#define FONT_CHARINFO_DEPTH(f, info) font_info[depth_base[f] + (info).s2 % 16].b32.s1
-#define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base[f] + (info).s1 / 4].b32.s1
+#define FONT_CHARACTER_INFO(f, c) font_info[char_base(f) + (c)].b16
+#define FONT_CHARINFO_WIDTH(f, info) font_info[width_base(f) + (info).s3].b32.s1
+#define FONT_CHARINFO_HEIGHT(f, info) font_info[height_base(f) + (info).s2 / 16].b32.s1
+#define FONT_CHARINFO_DEPTH(f, info) font_info[depth_base(f) + (info).s2 % 16].b32.s1
+#define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base(f) + (info).s1 / 4].b32.s1
 #define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
 
 #define TOKEN_LIST_ref_count(p) mem_ptr(p)->b32.s0
@@ -388,7 +388,6 @@ extern int32_t strings_free;
 extern int32_t string_vacancies;
 extern int32_t pool_free;
 extern int32_t font_mem_size;
-extern int32_t font_max;
 extern int32_t hyph_size;
 extern int32_t trie_size;
 extern int32_t buf_size;
@@ -482,30 +481,10 @@ extern int32_t format_default_length;
 extern const char* output_file_extension;
 extern memory_word *font_info;
 extern font_index fmem_ptr;
-extern font_index *font_params;
-extern UTF16_code *font_bc;
-extern UTF16_code *font_ec;
-extern int32_t *font_glue;
-extern int32_t *hyphen_char;
-extern int32_t *skew_char;
-extern font_index *bchar_label;
-extern nine_bits *font_bchar;
-extern nine_bits *font_false_bchar;
-extern void **font_mapping;
-extern scaled_t *font_letter_space;
 extern void *loaded_font_mapping;
 extern char loaded_font_flags;
 extern scaled_t loaded_font_letter_space;
 extern UTF16_code *mapped_text;
-extern int32_t *char_base;
-extern int32_t *width_base;
-extern int32_t *height_base;
-extern int32_t *depth_base;
-extern int32_t *italic_base;
-extern int32_t *lig_kern_base;
-extern int32_t *kern_base;
-extern int32_t *exten_base;
-extern int32_t *param_base;
 extern b16x4 null_character;
 extern int32_t dead_cycles;
 extern bool doing_leaders;
