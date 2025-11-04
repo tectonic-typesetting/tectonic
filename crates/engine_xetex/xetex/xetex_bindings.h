@@ -500,6 +500,7 @@ typedef struct {
   bool skip_next_lf;
   uint8_t encoding_mode;
   void *conversion_data;
+  void (*conversion_drop)(void*);
 } UFile;
 
 typedef int32_t Scaled;
