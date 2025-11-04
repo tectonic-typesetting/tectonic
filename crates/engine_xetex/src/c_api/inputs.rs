@@ -4,11 +4,12 @@ use std::cell::RefCell;
 // pub const MAX_IN_OPEN: usize = 15;
 
 thread_local! {
-    pub static FILE_CTX: RefCell<FileCtx> = const { RefCell::new(FileCtx::new()) };
+    static FILE_CTX: RefCell<FileCtx> = const { RefCell::new(FileCtx::new()) };
 }
 
 pub struct FileCtx {
     pub(crate) in_open: i32,
+    pub(crate) source_filename_stack: Vec<StrNumber>,
     pub(crate) full_source_filename_stack: Vec<StrNumber>,
     pub(crate) line: i32,
     pub(crate) line_stack: Vec<i32>,
@@ -18,10 +19,15 @@ impl FileCtx {
     const fn new() -> FileCtx {
         FileCtx {
             in_open: 0,
+            source_filename_stack: Vec::new(),
             full_source_filename_stack: Vec::new(),
             line: 0,
             line_stack: Vec::new(),
         }
+    }
+
+    pub fn with<T>(f: impl FnOnce(&mut FileCtx) -> T) -> T {
+        FILE_CTX.with_borrow_mut(f)
     }
 }
 
@@ -34,6 +40,8 @@ pub extern "C" fn in_open() -> i32 {
 pub extern "C" fn set_in_open(val: i32) {
     FILE_CTX.with_borrow_mut(|files| files.in_open = val)
 }
+
+c_arr!(FileCtx => source_filename_stack: StrNumber);
 
 #[no_mangle]
 pub extern "C" fn full_source_filename_stack(idx: usize) -> StrNumber {

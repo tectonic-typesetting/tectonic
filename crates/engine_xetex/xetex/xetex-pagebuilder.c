@@ -287,10 +287,10 @@ fire_up(int32_t c)
 
     if (p != TEX_NULL) {
         if (LLIST_link(CONTRIB_HEAD) == TEX_NULL) {
-            if (nest_ptr == 0)
+            if (nest_cur() == 0)
                 cur_list.tail = page_tail;
             else
-                nest[0].tail = page_tail;
+                nest_ptr(0)->tail = page_tail;
         }
 
         LLIST_link(page_tail) = LLIST_link(CONTRIB_HEAD);
@@ -379,10 +379,10 @@ fire_up(int32_t c)
     /*1058: "Perform the default output routine." */
     if (LLIST_link(PAGE_HEAD) != TEX_NULL) {
         if (LLIST_link(CONTRIB_HEAD) == TEX_NULL) {
-            if (nest_ptr == 0)
+            if (nest_cur() == 0)
                 cur_list.tail = page_tail;
             else
-                nest[0].tail = page_tail;
+                nest_ptr(0)->tail = page_tail;
         } else {
             LLIST_link(page_tail) = LLIST_link(CONTRIB_HEAD);
         }
@@ -798,8 +798,8 @@ build_page(void)
         ;
     } while (LLIST_link(CONTRIB_HEAD) != TEX_NULL);
 
-    if (nest_ptr == 0)
+    if (nest_cur() == 0)
         cur_list.tail = CONTRIB_HEAD; /* "vertical mode" */
     else
-        nest[0].tail = CONTRIB_HEAD; /* "other modes" */
+        nest_ptr(0)->tail = CONTRIB_HEAD; /* "other modes" */
 }

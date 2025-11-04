@@ -8,16 +8,6 @@
 
 #include "tectonic_bridge_core.h"
 
-
-typedef struct {
-    rust_input_handle_t handle;
-    long savedChar;
-    short skipNextLF;
-    short encodingMode;
-    void *conversionData;
-} UFILE;
-
-
 BEGIN_EXTERN_C
 
 extern char *name_of_input_file;
@@ -27,11 +17,11 @@ extern const uint8_t bytesFromUTF8[256];
 extern const uint8_t firstByteMark[7];
 
 rust_input_handle_t tt_xetex_open_input(int filefmt);
-void set_input_file_encoding(UFILE *f, int32_t mode, int32_t encodingData);
-void u_close(UFILE *f);
-int u_open_in(UFILE **f, int32_t filefmt, const char* fopen_mode, int32_t mode, int32_t encodingData);
-int get_uni_c(UFILE* f);
-int input_line(UFILE* f);
+void set_input_file_encoding(UFile *f, int32_t mode, int32_t encodingData);
+void u_close(UFile *f);
+int u_open_in(UFile **f, int32_t filefmt, const char* fopen_mode, int32_t mode, int32_t encodingData);
+int get_uni_c(UFile* f);
+int input_line(UFile* f);
 
 END_EXTERN_C
 

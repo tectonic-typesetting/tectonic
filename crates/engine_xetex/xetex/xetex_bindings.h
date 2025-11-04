@@ -486,6 +486,24 @@ typedef union {
   void *ptr;
 } MemoryWord;
 
+typedef struct {
+  int16_t mode;
+  int32_t head;
+  int32_t tail;
+  int32_t etex_aux;
+  int32_t prev_graf;
+  int32_t mode_line;
+  MemoryWord aux;
+} ListStateRecord;
+
+typedef struct {
+  Option_InputId handle;
+  int64_t saved_char;
+  bool skip_next_lf;
+  uint8_t encoding_mode;
+  void *conversion_data;
+} UFile;
+
 typedef int32_t Scaled;
 
 typedef struct {
@@ -812,6 +830,10 @@ const char *tex_format_default(void);
 
 void set_tex_format_default(const char *val);
 
+int32_t nest_cur(void);
+
+void set_nest_cur(int32_t val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -849,6 +871,156 @@ void set_buffer(uintptr_t idx, uint32_t val);
 void clear_buffer(void);
 
 uint16_t *xeq_level_array_ptr(uintptr_t idx);
+
+ListStateRecord nest(uintptr_t idx);
+
+void set_nest(uintptr_t idx, ListStateRecord val);
+
+ListStateRecord *nest_ptr(uintptr_t idx);
+
+void resize_nest(uintptr_t len);
+
+void clear_nest(void);
+
+MemoryWord save_stack(uintptr_t idx);
+
+void set_save_stack(uintptr_t idx, MemoryWord val);
+
+MemoryWord *save_stack_ptr(uintptr_t idx);
+
+void resize_save_stack(uintptr_t len);
+
+void clear_save_stack(void);
+
+UFile *input_file(uintptr_t idx);
+
+void set_input_file(uintptr_t idx, UFile *val);
+
+UFile **input_file_ptr(uintptr_t idx);
+
+void resize_input_file(uintptr_t len);
+
+void clear_input_file(void);
+
+bool eof_seen(uintptr_t idx);
+
+void set_eof_seen(uintptr_t idx, bool val);
+
+bool *eof_seen_ptr(uintptr_t idx);
+
+void resize_eof_seen(uintptr_t len);
+
+void clear_eof_seen(void);
+
+int32_t grp_stack(uintptr_t idx);
+
+void set_grp_stack(uintptr_t idx, int32_t val);
+
+int32_t *grp_stack_ptr(uintptr_t idx);
+
+void resize_grp_stack(uintptr_t len);
+
+void clear_grp_stack(void);
+
+int32_t if_stack(uintptr_t idx);
+
+void set_if_stack(uintptr_t idx, int32_t val);
+
+int32_t *if_stack_ptr(uintptr_t idx);
+
+void resize_if_stack(uintptr_t len);
+
+void clear_if_stack(void);
+
+int32_t param_stack(uintptr_t idx);
+
+void set_param_stack(uintptr_t idx, int32_t val);
+
+int32_t *param_stack_ptr(uintptr_t idx);
+
+void resize_param_stack(uintptr_t len);
+
+void clear_param_stack(void);
+
+int32_t hyph_word(uintptr_t idx);
+
+void set_hyph_word(uintptr_t idx, int32_t val);
+
+int32_t *hyph_word_ptr(uintptr_t idx);
+
+void resize_hyph_word(uintptr_t len);
+
+void clear_hyph_word(void);
+
+int32_t hyph_list(uintptr_t idx);
+
+void set_hyph_list(uintptr_t idx, int32_t val);
+
+int32_t *hyph_list_ptr(uintptr_t idx);
+
+void resize_hyph_list(uintptr_t len);
+
+void clear_hyph_list(void);
+
+uint16_t hyph_link(uintptr_t idx);
+
+void set_hyph_link(uintptr_t idx, uint16_t val);
+
+uint16_t *hyph_link_ptr(uintptr_t idx);
+
+void resize_hyph_link(uintptr_t len);
+
+void clear_hyph_link(void);
+
+uint16_t native_text(uintptr_t idx);
+
+void set_native_text(uintptr_t idx, uint16_t val);
+
+uint16_t *native_text_ptr(uintptr_t idx);
+
+void resize_native_text(uintptr_t len);
+
+void clear_native_text(void);
+
+B32x2 yhash(uintptr_t idx);
+
+void set_yhash(uintptr_t idx, B32x2 val);
+
+B32x2 *yhash_ptr(uintptr_t idx);
+
+void resize_yhash(uintptr_t len);
+
+void clear_yhash(void);
+
+int32_t trie_trl(uintptr_t idx);
+
+void set_trie_trl(uintptr_t idx, int32_t val);
+
+int32_t *trie_trl_ptr(uintptr_t idx);
+
+void resize_trie_trl(uintptr_t len);
+
+void clear_trie_trl(void);
+
+int32_t trie_tro(uintptr_t idx);
+
+void set_trie_tro(uintptr_t idx, int32_t val);
+
+int32_t *trie_tro_ptr(uintptr_t idx);
+
+void resize_trie_tro(uintptr_t len);
+
+void clear_trie_tro(void);
+
+uint16_t trie_trc(uintptr_t idx);
+
+void set_trie_trc(uintptr_t idx, uint16_t val);
+
+uint16_t *trie_trc_ptr(uintptr_t idx);
+
+void resize_trie_trc(uintptr_t len);
+
+void clear_trie_trc(void);
 
 StrNumber maketexstring(const char *str);
 
@@ -913,6 +1085,16 @@ bool *font_used_ptr(uintptr_t idx);
 void resize_font_used(uintptr_t len);
 
 void clear_font_used(void);
+
+MemoryWord font_info(uintptr_t idx);
+
+void set_font_info(uintptr_t idx, MemoryWord val);
+
+MemoryWord *font_info_ptr(uintptr_t idx);
+
+void resize_font_info(uintptr_t len);
+
+void clear_font_info(void);
 
 void *font_mapping(uintptr_t idx);
 
@@ -1221,6 +1403,16 @@ void set_hash_top(int32_t val);
 int32_t in_open(void);
 
 void set_in_open(int32_t val);
+
+StrNumber source_filename_stack(uintptr_t idx);
+
+void set_source_filename_stack(uintptr_t idx, StrNumber val);
+
+StrNumber *source_filename_stack_ptr(uintptr_t idx);
+
+void resize_source_filename_stack(uintptr_t len);
+
+void clear_source_filename_stack(void);
 
 StrNumber full_source_filename_stack(uintptr_t idx);
 
