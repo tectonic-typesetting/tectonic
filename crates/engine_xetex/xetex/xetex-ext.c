@@ -885,19 +885,6 @@ find_native_font(char* uname, int32_t scaled_size)
 }
 
 void
-release_font_engine(void* engine, int type_flag)
-{
-#ifdef XETEX_MAC
-    if (type_flag == AAT_FONT_FLAG) {
-        CFRelease((CFDictionaryRef)engine);
-    } else
-#endif
-    if (type_flag == OTGR_FONT_FLAG) {
-        deleteLayoutEngine((XeTeXLayoutEngine)engine);
-    }
-}
-
-void
 ot_get_font_metrics(void* pEngine, scaled_t* ascent, scaled_t* descent, scaled_t* xheight, scaled_t* capheight, scaled_t* slant)
 {
     XeTeXLayoutEngine engine = (XeTeXLayoutEngine)pEngine;

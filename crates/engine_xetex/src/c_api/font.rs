@@ -301,3 +301,15 @@ pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Vec<u8> {
 
     buffer
 }
+
+#[no_mangle]
+pub extern "C" fn release_font_engine(engine: *mut libc::c_void, flag: i32) {
+    if cfg!(target_os = "macos") && flag == AAT_FONT_FLAG {
+        #[cfg(target_os = "macos")]
+        unsafe {
+            CFDictionary::<CFString, CFType>::new_owned(NonNull::new(engine).unwrap().cast())
+        };
+    } else if flag == OTGR_FONT_FLAG {
+        unsafe { Box::from_raw(engine.cast::<LayoutEngine>()) };
+    }
+}

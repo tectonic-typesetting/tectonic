@@ -108,7 +108,7 @@ pub struct UFile {
 }
 
 impl UFile {
-    fn close(&mut self, state: &mut CoreBridgeState<'_>) {
+    pub fn close(&mut self, state: &mut CoreBridgeState<'_>) {
         /* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
         let Some(handle) = self.handle else {
             return;

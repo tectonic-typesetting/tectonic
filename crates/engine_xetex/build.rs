@@ -136,6 +136,8 @@ fn main() {
         cxx_cfg.flag("/wd4820"); // padding added after data member
         cxx_cfg.flag("/wd4244"); // conversion from 'type1' to 'type2', possible loss of data
         cxx_cfg.flag("/wd4365"); // conversion from 'type1' to 'type2', signed/unsigned mismatch
+
+        println!("cargo::rustc-link-lib=advapi32")
     }
 
     // OK, back to generic build rules.

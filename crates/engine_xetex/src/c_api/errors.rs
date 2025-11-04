@@ -1,6 +1,6 @@
 use crate::c_api::engine::{
     close_files_and_terminate, rs_close_files_and_terminate, rs_open_log_file, rs_show_context,
-    rs_token_show, History, InteractionMode, Local, Selector,
+    rs_token_show, rs_tt_cleanup, History, InteractionMode, Local, Selector,
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
@@ -8,6 +8,7 @@ use crate::c_api::output::{
     rs_print_int, rs_print_ln, rs_print_nl_bytes,
 };
 use std::ffi::CStr;
+use std::hint::unreachable_unchecked;
 
 pub fn rs_pre_error_message(globals: &mut Globals<'_, '_>) {
     if globals.engine.log_opened {
@@ -40,7 +41,7 @@ pub fn give_err_help(globals: &mut Globals<'_, '_>) {
     rs_token_show(globals, globals.engine.local(Local::ErrHelp) as usize);
 }
 
-pub fn rs_error(globals: &mut Globals<'_, '_>) -> Option<Box<dyn Fn()>> {
+pub fn rs_error(globals: &mut Globals<'_, '_>) {
     if globals.engine.history < History::ErrorIssued {
         globals.engine.history = History::ErrorIssued;
     }
@@ -50,10 +51,8 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Option<Box<dyn Fn()>> {
     if globals.engine.halt_on_error_p != 0 {
         globals.engine.history = History::FatalError;
         // Execute this outside the globals lock for now
-        return Some(Box::new(|| {
-            post_error_message(0);
-            panic!("halted on potentially-recoverable error as specified");
-        }));
+        rs_post_error_message(globals, 0);
+        panic!("halted on potentially-recoverable error as specified");
     }
 
     /* This used to be where there was a bunch of code if "interaction ==
@@ -64,10 +63,8 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Option<Box<dyn Fn()>> {
     if globals.engine.error_count == 100 {
         rs_print_nl_bytes(globals, b"(That makes 100 errors; please try again.)");
         globals.engine.history = History::FatalError;
-        return Some(Box::new(|| {
-            post_error_message(0);
-            panic!("halted after 100 potentially-recoverable errors");
-        }));
+        rs_post_error_message(globals, 0);
+        panic!("halted after 100 potentially-recoverable errors");
     }
 
     if globals.engine.interaction != InteractionMode::Batch {
@@ -108,76 +105,70 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Option<Box<dyn Fn()>> {
         }
     }
     rs_print_ln(globals);
-    None
 }
 
 #[no_mangle]
 extern "C-unwind" fn error() {
-    let out_of_lock = Globals::with(|globals| rs_error(globals));
-    out_of_lock.map(|f| f());
+    Globals::with(|globals| rs_error(globals))
+}
+
+pub fn rs_post_error_message(globals: &mut Globals<'_, '_>, need_to_print_it: i32) {
+    rs_capture_to_diagnostic(globals, None);
+    if globals.engine.interaction == InteractionMode::ErrorStop {
+        globals.engine.interaction = InteractionMode::Scroll;
+    }
+
+    if need_to_print_it != 0 && globals.engine.log_opened {
+        rs_error(globals);
+    }
+    globals.engine.history = History::FatalError;
+    rs_close_files_and_terminate(globals);
+    rs_tt_cleanup(globals);
+    globals
+        .out
+        .rust_stdout
+        .map(|stdout| globals.state.output_flush(stdout));
 }
 
 #[no_mangle]
 extern "C" fn post_error_message(need_to_print_it: i32) {
-    let out_of_lock = Globals::with(|globals| {
-        rs_capture_to_diagnostic(globals, None);
-        if globals.engine.interaction == InteractionMode::ErrorStop {
-            globals.engine.interaction = InteractionMode::Scroll;
-        }
+    Globals::with(|globals| rs_post_error_message(globals, need_to_print_it))
+}
 
-        if need_to_print_it != 0 && globals.engine.log_opened {
-            return rs_error(globals);
-        }
-        globals.engine.history = History::FatalError;
-        rs_close_files_and_terminate(globals);
-        None
-    });
-    out_of_lock.map(|f| f());
-    unsafe { tt_cleanup() };
-    Globals::with(|globals| {
-        globals
-            .out
-            .rust_stdout
-            .map(|stdout| globals.state.output_flush(stdout))
-    });
+pub fn rs_fatal_error(globals: &mut Globals<'_, '_>, s: &[u8]) -> ! {
+    rs_pre_error_message(globals);
+    rs_print_bytes(globals, b"Emergency stop");
+    rs_print_nl_bytes(globals, s);
+    rs_capture_to_diagnostic(globals, None);
+    rs_close_files_and_terminate(globals);
+    rs_tt_cleanup(globals);
+    globals
+        .out
+        .rust_stdout
+        .map(|stdout| globals.state.output_flush(stdout));
+    unsafe { _tt_abort(s.as_ptr().cast()) };
+    // _tt_abort actually does a longjmp (I know, I know, I'll fix it later)
+    unsafe { unreachable_unchecked() }
 }
 
 #[no_mangle]
 pub extern "C-unwind" fn fatal_error(s: *const libc::c_char) {
     let s = unsafe { CStr::from_ptr(s) }.to_bytes();
-    Globals::with(|globals| {
-        rs_pre_error_message(globals);
-        rs_print_bytes(globals, b"Emergency stop");
-        rs_print_nl_bytes(globals, s);
-        rs_capture_to_diagnostic(globals, None);
-        rs_close_files_and_terminate(globals);
-    });
-    unsafe { tt_cleanup() };
-    Globals::with(|globals| {
-        globals
-            .out
-            .rust_stdout
-            .map(|stdout| globals.state.output_flush(stdout))
-    });
-    unsafe { _tt_abort(s.as_ptr().cast()) };
+    Globals::with(|globals| rs_fatal_error(globals, s))
 }
 
-pub fn rs_int_error(globals: &mut Globals<'_, '_>, n: i32) -> Option<Box<dyn Fn()>> {
+pub fn rs_int_error(globals: &mut Globals<'_, '_>, n: i32) {
     rs_print_bytes(globals, b" (");
     rs_print_int(globals, n);
     rs_print_char(globals, ')' as i32);
-    rs_error(globals)
+    rs_error(globals);
 }
 
 #[no_mangle]
 pub extern "C" fn int_error(n: i32) {
-    let outside_lock = Globals::with(|globals| rs_int_error(globals, n));
-    outside_lock.map(|f| f());
+    Globals::with(|globals| rs_int_error(globals, n))
 }
 
-// TODO: Use the Rust versions directly once they're ported. These just rely indirectly on this
-//       function, making it easier to port piecemeal.
 extern "C" {
-    fn tt_cleanup();
     fn _tt_abort(s: *const libc::c_char, ...) -> libc::c_int;
 }
