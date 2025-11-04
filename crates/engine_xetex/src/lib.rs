@@ -329,6 +329,7 @@ pub mod c_api {
     mod pool;
     mod scaled_math;
     mod synctex;
+    /// cbindgen:ignore
     mod teckit;
 
     /// Copy of `IS_DIR_SEP` from bridge_core

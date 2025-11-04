@@ -4,8 +4,8 @@ use crate::c_api::engine::{
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
-    rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print_bytes, rs_print_char,
-    rs_print_int, rs_print_ln, rs_print_nl_bytes,
+    rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print, rs_print_bytes,
+    rs_print_char, rs_print_int, rs_print_ln, rs_print_nl_bytes,
 };
 use std::ffi::CStr;
 
@@ -164,4 +164,85 @@ pub fn rs_int_error(globals: &mut Globals<'_, '_>, n: i32) {
 #[no_mangle]
 pub extern "C" fn int_error(n: i32) {
     Globals::with(|globals| rs_int_error(globals, n))
+}
+
+pub fn rs_overflow(globals: &mut Globals<'_, '_>, s: &[u8], n: i32) -> ! {
+    pre_error_message();
+    rs_print_bytes(globals, b"TeX capacity exceeded, sorry [");
+    rs_print_bytes(globals, s);
+    rs_print_char(globals, '=' as i32);
+    rs_print_int(globals, n);
+    rs_print_char(globals, ']' as i32);
+
+    globals.engine.help_ptr = 2;
+    globals.engine.help_line[1] = c"If you really absolutely need more capacity,".as_ptr();
+    globals.engine.help_line[0] = c"you can ask a wizard to enlarge me.".as_ptr();
+    rs_post_error_message(globals, 1);
+    panic!("halted on overflow()")
+}
+
+#[no_mangle]
+pub extern "C-unwind" fn overflow(s: *const libc::c_char, n: i32) {
+    let s = unsafe { CStr::from_ptr(s).to_bytes() };
+    Globals::with(|globals| rs_overflow(globals, s, n))
+}
+
+pub fn rs_confusion(globals: &mut Globals<'_, '_>, s: &[u8]) -> ! {
+    rs_pre_error_message(globals);
+
+    if (globals.engine.history < History::ErrorIssued) {
+        rs_print_bytes(globals, b"This can't happen (");
+        rs_print_bytes(globals, s);
+        rs_print_char(globals, ')' as i32);
+
+        globals.engine.help_ptr = 1;
+        globals.engine.help_line[0] =
+            c"I'm broken. Please show this to someone who can fix can fix".as_ptr();
+    } else {
+        rs_print_bytes(globals, b"I can't go on meeting you like this");
+
+        globals.engine.help_ptr = 2;
+        globals.engine.help_line[1] =
+            c"One of your faux pas seems to have wounded me deeply...".as_ptr();
+        globals.engine.help_line[0] =
+            c"in fact, I'm barely conscious. Please fix it and try again.".as_ptr();
+    }
+
+    post_error_message(1);
+    panic!("halted on confusion()")
+}
+
+#[no_mangle]
+pub extern "C-unwind" fn confusion(s: *const libc::c_char) {
+    let s = unsafe { CStr::from_ptr(s).to_bytes() };
+    Globals::with(|globals| rs_confusion(globals, s))
+}
+
+pub fn rs_pdf_error(globals: &mut Globals<'_, '_>, t: Option<&[u8]>, p: &[u8]) -> ! {
+    pre_error_message();
+
+    rs_print_bytes(globals, b"Error");
+
+    if let Some(t) = t {
+        rs_print_bytes(globals, b" (");
+        rs_print_bytes(globals, t);
+        rs_print(globals, ')' as i32);
+    }
+
+    rs_print_bytes(globals, b": ");
+    rs_print_bytes(globals, p);
+
+    post_error_message(1);
+    panic!("halted on pdf_error()")
+}
+
+#[no_mangle]
+pub extern "C-unwind" fn pdf_error(t: *const libc::c_char, p: *const libc::c_char) {
+    let t = if t.is_null() {
+        None
+    } else {
+        Some(unsafe { CStr::from_ptr(t).to_bytes() })
+    };
+    let p = unsafe { CStr::from_ptr(p).to_bytes() };
+    Globals::with(|globals| rs_pdf_error(globals, t, p))
 }
