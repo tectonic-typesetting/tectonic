@@ -305,11 +305,11 @@ typedef MemoryWord memory_word;
 #define GLUE_SPEC_stretch(p) mem_ptr((p) + 2)->b32.s1 /* a scaled */
 #define GLUE_SPEC_shrink(p) mem_ptr((p) + 3)->b32.s1 /* a scaled */
 
-#define FONT_CHARACTER_INFO(f, c) font_info[char_base(f) + (c)].b16
-#define FONT_CHARINFO_WIDTH(f, info) font_info[width_base(f) + (info).s3].b32.s1
-#define FONT_CHARINFO_HEIGHT(f, info) font_info[height_base(f) + (info).s2 / 16].b32.s1
-#define FONT_CHARINFO_DEPTH(f, info) font_info[depth_base(f) + (info).s2 % 16].b32.s1
-#define FONT_CHARINFO_ITALCORR(f, info) font_info[italic_base(f) + (info).s1 / 4].b32.s1
+#define FONT_CHARACTER_INFO(f, c) font_info_ptr(char_base(f) + (c))->b16
+#define FONT_CHARINFO_WIDTH(f, info) font_info_ptr(width_base(f) + (info).s3)->b32.s1
+#define FONT_CHARINFO_HEIGHT(f, info) font_info_ptr(height_base(f) + (info).s2 / 16)->b32.s1
+#define FONT_CHARINFO_DEPTH(f, info) font_info_ptr(depth_base(f) + (info).s2 % 16)->b32.s1
+#define FONT_CHARINFO_ITALCORR(f, info) font_info_ptr(italic_base(f) + (info).s1 / 4)->b32.s1
 #define FONT_CHARACTER_WIDTH(f, c) FONT_CHARINFO_WIDTH(f, FONT_CHARACTER_INFO(f, c))
 
 #define TOKEN_LIST_ref_count(p) mem_ptr(p)->b32.s0
@@ -336,16 +336,6 @@ typedef unsigned short trie_opcode;
 typedef unsigned short hyph_pointer;
 typedef int32_t save_pointer;
 
-typedef struct {
-    short mode; /* which mode we are: horz, vert, etc. */
-    int32_t head; /* pointer to head of list being built */
-    int32_t tail; /* pointer to tail of list being built */
-    int32_t eTeX_aux; /* LR_save or LR_box or delim_ptr */
-    int32_t prev_graf; /* number of lines that have already been put into the current vlist */
-    int32_t mode_line; /* source line number at which this level was entered */
-    memory_word aux; /* prev_depth or space_factor/clang or incompleat_noad */
-} list_state_record;
-
 typedef enum {
     HISTORY_SPOTLESS = 0,
     HISTORY_WARNING_ISSUED = 1,
@@ -371,7 +361,7 @@ bool is_new_source(str_number, int);
 pool_pointer make_src_special(str_number, int);
 void remember_source_info(str_number, int);
 
-/* Needed here for UFILE */
+/* Needed here for UFile */
 #include "xetex-io.h"
 
 /* variables! */
@@ -403,7 +393,6 @@ extern bool insert_src_special_every_math;
 extern bool insert_src_special_every_vbox;
 extern pool_pointer init_pool_ptr;
 extern str_number init_str_ptr;
-extern UTF16_code *native_text;
 extern int32_t native_text_size;
 extern int32_t native_len;
 extern int32_t save_native_len;
@@ -426,17 +415,14 @@ extern int32_t global_prev_p;
 extern int32_t font_in_short_display;
 extern int32_t depth_threshold;
 extern int32_t breadth_max;
-extern list_state_record *nest;
-extern int32_t nest_ptr;
 extern int32_t max_nest_stack;
-extern list_state_record cur_list;
+extern ListStateRecord cur_list;
 extern short shown_mode;
 extern unsigned char old_setting;
 extern int32_t hash_high;
 extern bool no_new_control_sequence;
 extern int32_t cs_count;
 extern int32_t prim_used;
-extern memory_word *save_stack;
 extern int32_t save_ptr;
 extern int32_t max_save_stack;
 extern uint16_t cur_level;
@@ -448,12 +434,9 @@ extern int32_t cur_cs;
 extern int32_t cur_tok;
 extern int32_t max_in_stack;
 extern int32_t open_parens;
-extern UFILE **input_file;
-extern str_number *source_filename_stack;
 extern unsigned char scanner_status;
 extern int32_t warning_index;
 extern int32_t def_ref;
-extern int32_t *param_stack;
 extern int32_t param_ptr;
 extern int32_t max_param_stack;
 extern int32_t align_state;
@@ -470,7 +453,7 @@ extern int32_t cur_val1;
 extern unsigned char cur_val_level;
 extern small_number radix;
 extern glue_ord cur_order;
-extern UFILE *read_file[16];
+extern UFile *read_file[16];
 extern unsigned char read_open[17];
 extern int32_t cond_ptr;
 extern unsigned char if_limit;
@@ -479,7 +462,6 @@ extern int32_t if_line;
 extern int32_t skip_line;
 extern int32_t format_default_length;
 extern const char* output_file_extension;
-extern memory_word *font_info;
 extern font_index fmem_ptr;
 extern void *loaded_font_mapping;
 extern char loaded_font_flags;
@@ -524,16 +506,10 @@ extern int32_t cur_q;
 extern int32_t lig_stack;
 extern bool ligature_present;
 extern bool lft_hit, rt_hit;
-extern trie_pointer *trie_trl;
-extern trie_pointer *trie_tro;
-extern uint16_t *trie_trc;
 extern small_number hyf_distance[TRIE_OP_SIZE + 1];
 extern small_number hyf_num[TRIE_OP_SIZE + 1];
 extern trie_opcode hyf_next[TRIE_OP_SIZE + 1];
 extern int32_t op_start[256];
-extern str_number *hyph_word;
-extern int32_t *hyph_list;
-extern hyph_pointer *hyph_link;
 extern int32_t hyph_count;
 extern int32_t hyph_next;
 extern trie_opcode trie_used[256];
@@ -587,13 +563,10 @@ extern scaled_t cur_h_offset;
 extern scaled_t cur_v_offset;
 extern int32_t pdf_last_x_pos;
 extern int32_t pdf_last_y_pos;
-extern bool *eof_seen;
 extern int32_t LR_ptr;
 extern int32_t LR_problems;
 extern small_number cur_dir;
 extern int32_t pseudo_files;
-extern save_pointer *grp_stack;
-extern int32_t *if_stack;
 extern int32_t max_reg_num;
 extern const char* max_reg_help_line;
 extern int32_t sa_root[8];

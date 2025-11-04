@@ -84,18 +84,18 @@ firstByteMark[7] = {
 };
 
 void
-set_input_file_encoding(UFILE* f, int32_t mode, int32_t encodingData)
+set_input_file_encoding(UFile* f, int32_t mode, int32_t encodingData)
 {
-    if ((f->encodingMode == ICUMAPPING) && (f->conversionData != NULL))
-        ucnv_close((UConverter*)(f->conversionData));
-    f->conversionData = 0;
+    if ((f->encoding_mode == ICUMAPPING) && (f->conversion_data != NULL))
+        ucnv_close((UConverter*)(f->conversion_data));
+    f->conversion_data = 0;
 
     switch (mode) {
         case UTF8:
         case UTF16BE:
         case UTF16LE:
         case RAW:
-            f->encodingMode = mode;
+            f->encoding_mode = mode;
             break;
 
         case ICUMAPPING:
@@ -112,10 +112,10 @@ set_input_file_encoding(UFILE* f, int32_t mode, int32_t encodingData)
                     print_c_string(name);
                     print_c_string("'; reading as raw bytes");
                     end_diagnostic(1);
-                    f->encodingMode = RAW;
+                    f->encoding_mode = RAW;
                 } else {
-                    f->encodingMode = ICUMAPPING;
-                    f->conversionData = cnv;
+                    f->encoding_mode = ICUMAPPING;
+                    f->conversion_data = cnv;
                 }
                 free(name);
             }
@@ -125,7 +125,7 @@ set_input_file_encoding(UFILE* f, int32_t mode, int32_t encodingData)
 
 
 int
-u_open_in(UFILE **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int32_t encodingData)
+u_open_in(UFile **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int32_t encodingData)
 {
     rust_input_handle_t handle;
     int B1, B2;
@@ -134,11 +134,11 @@ u_open_in(UFILE **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int3
     if (handle == INVALID_HANDLE)
         return 0;
 
-    *f = xmalloc(sizeof(UFILE));
-    (*f)->encodingMode = 0;
-    (*f)->conversionData = 0;
-    (*f)->savedChar = -1;
-    (*f)->skipNextLF = 0;
+    *f = xmalloc(sizeof(UFile));
+    (*f)->encoding_mode = 0;
+    (*f)->conversion_data = 0;
+    (*f)->saved_char = -1;
+    (*f)->skip_next_lf = 0;
     (*f)->handle = handle;
 
     if (mode == AUTO) {
@@ -218,7 +218,7 @@ apply_normalization(uint32_t* buf, int len, int norm)
 
 
 int
-input_line(UFILE* f)
+input_line(UFile* f)
 {
     static char* byteBuffer = NULL;
     static uint32_t *utf32Buf = NULL;
@@ -231,7 +231,7 @@ input_line(UFILE* f)
 
     last = first;
 
-    if (f->encodingMode == ICUMAPPING) {
+    if (f->encoding_mode == ICUMAPPING) {
         uint32_t bytesRead = 0;
         UConverter* cnv;
         int outLen;
@@ -242,8 +242,8 @@ input_line(UFILE* f)
 
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = ttstub_input_getc (f->handle);
-        if (f->skipNextLF) {
-            f->skipNextLF = 0;
+        if (f->skip_next_lf) {
+            f->skip_next_lf = 0;
             if (i == '\n')
                 i = ttstub_input_getc (f->handle);
         }
@@ -261,7 +261,7 @@ input_line(UFILE* f)
             buffer_overflow();
 
         /* now apply the mapping to turn external bytes into Unicode characters in buffer */
-        cnv = (UConverter*)(f->conversionData);
+        cnv = (UConverter*)(f->conversion_data);
         switch (norm) {
             case 1: // NFC
             case 2: // NFD
@@ -292,8 +292,8 @@ input_line(UFILE* f)
     } else {
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = get_uni_c(f);
-        if (f->skipNextLF) {
-            f->skipNextLF = 0;
+        if (f->skip_next_lf) {
+            f->skip_next_lf = 0;
             if (i == '\n')
                 i = get_uni_c(f);
         }
@@ -339,7 +339,7 @@ input_line(UFILE* f)
 
     /* If line ended with CR, remember to skip following LF. */
     if (i == '\r')
-        f->skipNextLF = 1;
+        f->skip_next_lf = 1;
 
     set_buffer(last, ' ');
     if (last >= max_buf_stack)
@@ -355,7 +355,7 @@ input_line(UFILE* f)
 
 
 void
-u_close(UFILE* f)
+u_close(UFile* f)
 {
     if (f == NULL || f->handle == INVALID_HANDLE)
         /* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
@@ -363,26 +363,26 @@ u_close(UFILE* f)
 
     ttstub_input_close (f->handle);
 
-    if (f->encodingMode == ICUMAPPING && f->conversionData != NULL)
-        ucnv_close ((UConverter*) f->conversionData);
+    if (f->encoding_mode == ICUMAPPING && f->conversion_data != NULL)
+        ucnv_close ((UConverter*) f->conversion_data);
 
     free (f);
 }
 
 
 int
-get_uni_c(UFILE* f)
+get_uni_c(UFile* f)
 {
     int rval;
     int c;
 
-    if (f->savedChar != -1) {
-        rval = f->savedChar;
-        f->savedChar = -1;
+    if (f->saved_char != -1) {
+        rval = f->saved_char;
+        f->saved_char = -1;
         return rval;
     }
 
-    switch (f->encodingMode) {
+    switch (f->encoding_mode) {
         case UTF8:
             c = rval = ttstub_input_getc(f->handle);
             if (rval != EOF) {
@@ -441,7 +441,7 @@ get_uni_c(UFILE* f)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
                         rval = 0xfffd;
-                        f->savedChar = lo;
+                        f->saved_char = lo;
                     }
                 } else if (rval >= 0xdc00 && rval <= 0xdfff)
                     rval = 0xfffd;
@@ -459,7 +459,7 @@ get_uni_c(UFILE* f)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
                         rval = 0xfffd;
-                        f->savedChar = lo;
+                        f->saved_char = lo;
                     }
                 } else if (rval >= 0xdc00 && rval <= 0xdfff)
                     rval = 0xfffd;
@@ -471,7 +471,7 @@ get_uni_c(UFILE* f)
             break;
 
         default:
-            _tt_abort("internal error; file input mode=%d", f->encodingMode);
+            _tt_abort("internal error; file input mode=%d", f->encoding_mode);
     }
 
     return rval;

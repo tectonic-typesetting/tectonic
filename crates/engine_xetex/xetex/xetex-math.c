@@ -99,9 +99,9 @@ void init_math(void)
         w = -MAX_HALFWORD;
         if (cur_list.head == cur_list.tail) {       /*1520: */
             pop_nest();
-            if (cur_list.eTeX_aux == TEX_NULL)
+            if (cur_list.etex_aux == TEX_NULL)
                 x = 0;
-            else if (mem(cur_list.eTeX_aux).b32.s0 >= R_CODE)
+            else if (mem(cur_list.etex_aux).b32.s0 >= R_CODE)
                 x = -1;
             else
                 x = 1 /*:1519 */ ;
@@ -129,9 +129,9 @@ void init_math(void)
             BOX_glue_set(j) = BOX_glue_set(just_box);
 
             v = mem(just_box + 4).b32.s1;
-            if (cur_list.eTeX_aux == TEX_NULL)
+            if (cur_list.etex_aux == TEX_NULL)
                 x = 0;
-            else if (mem(cur_list.eTeX_aux).b32.s0 >= R_CODE)
+            else if (mem(cur_list.etex_aux).b32.s0 >= R_CODE)
                 x = -1;
             else
                 x = 1 /*:1519 */ ;
@@ -146,7 +146,7 @@ void init_math(void)
                 just_copy(mem(just_box + 5).b32.s1, p, new_math(0, END_L_CODE));
                 cur_dir = RIGHT_TO_LEFT;
             }
-            v = v + 2 * font_info[QUAD_CODE + param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1)].b32.s1;
+            v = v + 2 * font_info(QUAD_CODE + param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1)).b32.s1;
             if (INTPAR(texxet) > 0) {    /*1497: */
                 temp_ptr = get_avail();
                 mem_ptr(temp_ptr)->b32.s0 = BEFORE;
@@ -320,7 +320,7 @@ void init_math(void)
         cur_list.mode = MMODE;
         eq_word_define(INT_BASE + INT_PAR__cur_fam, -1);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__pre_display_size, w);
-        cur_list.eTeX_aux = j;
+        cur_list.etex_aux = j;
         eq_word_define(INT_BASE + INT_PAR__pre_display_direction, x);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_width, l);
         eq_word_define(DIMEN_BASE + DIMEN_PAR__display_indent, s);
@@ -331,7 +331,7 @@ void init_math(void)
 
         if (LOCAL(every_display) != TEX_NULL)
             begin_token_list(LOCAL(every_display), EVERY_DISPLAY_TEXT);
-        if (nest_ptr == 1)
+        if (nest_cur() == 1)
             build_page();
     } else {
 
@@ -355,7 +355,7 @@ void init_math(void)
 void start_eq_no(void)
 {
 
-    save_stack[save_ptr + 0].b32.s1 = cur_chr;
+    save_stack_ptr(save_ptr + 0)->b32.s1 = cur_chr;
     save_ptr++;
 
     push_math(MATH_SHIFT_GROUP);
@@ -538,7 +538,7 @@ void append_choices(void)
         cur_list.tail = LLIST_link(cur_list.tail);
     }
     save_ptr++;
-    save_stack[save_ptr - 1].b32.s1 = 0;
+    save_stack_ptr(save_ptr - 1)->b32.s1 = 0;
     push_math(MATH_CHOICE_GROUP);
     scan_left_brace();
 }
@@ -554,10 +554,10 @@ int32_t fin_mlist(int32_t p)
         else {
 
             q = mem(cur_list.aux.b32.s1 + 2).b32.s0;
-            if ((mem(q).b16.s1 != LEFT_NOAD) || (cur_list.eTeX_aux == TEX_NULL))
+            if ((mem(q).b16.s1 != LEFT_NOAD) || (cur_list.etex_aux == TEX_NULL))
                 confusion("right");
-            mem_ptr(cur_list.aux.b32.s1 + 2)->b32.s0 = mem(cur_list.eTeX_aux).b32.s1;
-            mem_ptr(cur_list.eTeX_aux)->b32.s1 = cur_list.aux.b32.s1;
+            mem_ptr(cur_list.aux.b32.s1 + 2)->b32.s0 = mem(cur_list.etex_aux).b32.s1;
+            mem_ptr(cur_list.etex_aux)->b32.s1 = cur_list.aux.b32.s1;
             mem_ptr(cur_list.aux.b32.s1)->b32.s1 = p;
         }
     } else {
@@ -574,7 +574,7 @@ void build_choices(void)
     int32_t p;
     unsave();
     p = fin_mlist(TEX_NULL);
-    switch (save_stack[save_ptr - 1].b32.s1) {
+    switch (save_stack(save_ptr - 1).b32.s1) {
     case 0:
         mem_ptr(cur_list.tail + 1)->b32.s0 = p;
         break;
@@ -592,7 +592,7 @@ void build_choices(void)
         }
         break;
     }
-    save_stack[save_ptr - 1].b32.s1++;
+    save_stack_ptr(save_ptr - 1)->b32.s1++;
     push_math(MATH_CHOICE_GROUP);
     scan_left_brace();
 }
@@ -749,7 +749,7 @@ void math_left_right(void)
             push_math(MATH_LEFT_GROUP);
             mem_ptr(cur_list.head)->b32.s1 = q;
             cur_list.tail = p;
-            cur_list.eTeX_aux = p;
+            cur_list.etex_aux = p;
         } else {
 
             {
@@ -899,7 +899,7 @@ void after_math(void)
     danger = false;
 
     if (cur_list.mode == MMODE)
-        j = cur_list.eTeX_aux /*:1530 */ ;
+        j = cur_list.etex_aux /*:1530 */ ;
     if (((font_params(MATH_FONT(2)) < TOTAL_MATHSY_PARAMS)
          &&
          (!((font_area(MATH_FONT(2)) == OTGR_FONT_FLAG)
@@ -973,11 +973,11 @@ void after_math(void)
         mem_ptr(a)->b16.s0 = DLIST;
         unsave();
         save_ptr--;
-        if (save_stack[save_ptr + 0].b32.s1 == 1)
+        if (save_stack(save_ptr + 0).b32.s1 == 1)
             l = true;
         danger = false;
         if (cur_list.mode == MMODE)
-            j = cur_list.eTeX_aux /*:1530 */ ;
+            j = cur_list.etex_aux /*:1530 */ ;
         if (((font_params(MATH_FONT(2)) < TOTAL_MATHSY_PARAMS)
              &&
              (!((font_area(MATH_FONT(2)) == OTGR_FONT_FLAG)
@@ -1221,7 +1221,7 @@ void resume_after_display(void)
         if (cur_cmd != SPACER)
             back_input();
     }
-    if (nest_ptr == 1)
+    if (nest_cur() == 1)
         build_page();
 }
 
@@ -1236,7 +1236,7 @@ math_x_height(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 5);
     else
-        rval = font_info[5 + param_base(f)].b32.s1;
+        rval = font_info(5 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1251,7 +1251,7 @@ math_quad(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 6);
     else
-        rval = font_info[6 + param_base(f)].b32.s1;
+        rval = font_info(6 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1265,7 +1265,7 @@ num1(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 8);
     else
-        rval = font_info[8 + param_base(f)].b32.s1;
+        rval = font_info(8 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1280,7 +1280,7 @@ num2(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 9);
     else
-        rval = font_info[9 + param_base(f)].b32.s1;
+        rval = font_info(9 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1295,7 +1295,7 @@ num3(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 10);
     else
-        rval = font_info[10 + param_base(f)].b32.s1;
+        rval = font_info(10 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1310,7 +1310,7 @@ denom1(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 11);
     else
-        rval = font_info[11 + param_base(f)].b32.s1;
+        rval = font_info(11 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1325,7 +1325,7 @@ denom2(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 12);
     else
-        rval = font_info[12 + param_base(f)].b32.s1;
+        rval = font_info(12 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1340,7 +1340,7 @@ sup1(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 13);
     else
-        rval = font_info[13 + param_base(f)].b32.s1;
+        rval = font_info(13 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1355,7 +1355,7 @@ sup2(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 14);
     else
-        rval = font_info[14 + param_base(f)].b32.s1;
+        rval = font_info(14 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1369,7 +1369,7 @@ sup3(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 15);
     else
-        rval = font_info[15 + param_base(f)].b32.s1;
+        rval = font_info(15 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1383,7 +1383,7 @@ sub1(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 16);
     else
-        rval = font_info[16 + param_base(f)].b32.s1;
+        rval = font_info(16 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1397,7 +1397,7 @@ sub2(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 17);
     else
-        rval = font_info[17 + param_base(f)].b32.s1;
+        rval = font_info(17 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1411,7 +1411,7 @@ sup_drop(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 18);
     else
-        rval = font_info[18 + param_base(f)].b32.s1;
+        rval = font_info(18 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1425,7 +1425,7 @@ sub_drop(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 19);
     else
-        rval = font_info[19 + param_base(f)].b32.s1;
+        rval = font_info(19 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1439,7 +1439,7 @@ delim1(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 20);
     else
-        rval = font_info[20 + param_base(f)].b32.s1;
+        rval = font_info(20 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1453,7 +1453,7 @@ delim2(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 21);
     else
-        rval = font_info[21 + param_base(f)].b32.s1;
+        rval = font_info(21 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1467,7 +1467,7 @@ axis_height(int32_t size_code)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathsy_param(f, 22);
     else
-        rval = font_info[22 + param_base(f)].b32.s1;
+        rval = font_info(22 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1481,7 +1481,7 @@ default_rule_thickness(void)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 8);
     else
-        rval = font_info[8 + param_base(f)].b32.s1;
+        rval = font_info(8 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1495,7 +1495,7 @@ big_op_spacing1(void)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 9);
     else
-        rval = font_info[9 + param_base(f)].b32.s1;
+        rval = font_info(9 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1509,7 +1509,7 @@ big_op_spacing2(void)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 10);
     else
-        rval = font_info[10 + param_base(f)].b32.s1;
+        rval = font_info(10 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1523,7 +1523,7 @@ big_op_spacing3(void)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 11);
     else
-        rval = font_info[11 + param_base(f)].b32.s1;
+        rval = font_info(11 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1537,7 +1537,7 @@ big_op_spacing4(void)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 12);
     else
-        rval = font_info[12 + param_base(f)].b32.s1;
+        rval = font_info(12 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1551,7 +1551,7 @@ big_op_spacing5(void)
     if (((font_area(f) == OTGR_FONT_FLAG) && (isOpenTypeMathFont(font_layout_engine(f)))))
         rval = get_native_mathex_param(f, 13);
     else
-        rval = font_info[13 + param_base(f)].b32.s1;
+        rval = font_info(13 + param_base(f)).b32.s1;
     return rval;
 }
 
@@ -1889,10 +1889,10 @@ make_math_accent(int32_t q)
             fetch(q + 1);
             if (((cur_i.s1) % 4) == LIG_TAG) {
                 a = lig_kern_base(cur_f) + cur_i.s0;
-                cur_i = font_info[a].b16;
+                cur_i = font_info(a).b16;
                 if (cur_i.s3 > 128) {
                     a = lig_kern_base(cur_f) + 256 * cur_i.s1 + cur_i.s0 + 32768L - 256 * (128);
-                    cur_i = font_info[a].b16;
+                    cur_i = font_info(a).b16;
                 }
                 while (true) {
 
@@ -1900,14 +1900,14 @@ make_math_accent(int32_t q)
                         if (cur_i.s1 >= 128) {
 
                             if (cur_i.s3 <= 128)
-                                s = font_info[kern_base(cur_f) + 256 * cur_i.s1 + cur_i.s0].b32.s1;
+                                s = font_info(kern_base(cur_f) + 256 * cur_i.s1 + cur_i.s0).b32.s1;
                         }
                         goto done1;
                     }
                     if (cur_i.s3 >= 128)
                         goto done1;
                     a = a + cur_i.s3 + 1;
-                    cur_i = font_info[a].b16;
+                    cur_i = font_info(a).b16;
                 }
             }
         }
@@ -1940,10 +1940,10 @@ make_math_accent(int32_t q)
                 delta = h;
             else
                 delta = get_ot_math_constant(f, ACCENTBASEHEIGHT);
-        } else if (h < font_info[X_HEIGHT_CODE + param_base(f)].b32.s1)
+        } else if (h < font_info(X_HEIGHT_CODE + param_base(f)).b32.s1)
             delta = h;
         else
-            delta = font_info[X_HEIGHT_CODE + param_base(f)].b32.s1;
+            delta = font_info(X_HEIGHT_CODE + param_base(f)).b32.s1;
         if ((mem(q + 2).b32.s1 != EMPTY) || (mem(q + 3).b32.s1 != EMPTY)) {
 
             if (mem(q + 1).b32.s1 == MATH_CHAR) {      /*769: */
@@ -2315,10 +2315,10 @@ restart:
                                 if (((cur_i.s1) % 4) == LIG_TAG) {
                                     a = lig_kern_base(cur_f) + cur_i.s0;
                                     cur_c = mem(p + 1).b16.s0;
-                                    cur_i = font_info[a].b16;
+                                    cur_i = font_info(a).b16;
                                     if (cur_i.s3 > 128) {
                                         a = lig_kern_base(cur_f) + 256 * cur_i.s1 + cur_i.s0 + 32768L - 256 * (128);
-                                        cur_i = font_info[a].b16;
+                                        cur_i = font_info(a).b16;
                                     }
                                     while (true) {
 
@@ -2328,7 +2328,7 @@ restart:
 
                                                 if (cur_i.s1 >= 128) {
                                                     p = new_kern(font_info
-                                                                 [kern_base(cur_f) + 256 * cur_i.s1 + cur_i.s0].b32.s1);
+                                                                 (kern_base(cur_f) + 256 * cur_i.s1 + cur_i.s0).b32.s1);
                                                     mem_ptr(p)->b32.s1 = mem(q).b32.s1;
                                                     mem_ptr(q)->b32.s1 = p;
                                                     return;
@@ -2377,7 +2377,7 @@ restart:
                                         if (cur_i.s3 >= 128)
                                             return;
                                         a = a + cur_i.s3 + 1;
-                                        cur_i = font_info[a].b16;
+                                        cur_i = font_info(a).b16;
                                     }
                                 }
                             }
@@ -3127,7 +3127,7 @@ mlist_to_hlist(void)
                     delta = FONT_CHARINFO_ITALCORR(cur_f, cur_i);
                     p = new_character(cur_f, cur_c);
                     if ((mem(q + 1).b32.s1 == MATH_TEXT_CHAR)
-                        && (font_info[SPACE_CODE + param_base(cur_f)].b32.s1 != 0))
+                        && (font_info(SPACE_CODE + param_base(cur_f)).b32.s1 != 0))
                         delta = 0;
                     if ((mem(q + 3).b32.s1 == EMPTY) && (delta != 0)) {
                         mem_ptr(p)->b32.s1 = new_kern(delta);
@@ -3460,7 +3460,7 @@ var_delimiter(int32_t d, int32_t s, scaled_t v)
             if (((q.s1) % 4) == EXT_TAG) {      /*739: */
                 b = new_null_box();
                 NODE_type(b) = VLIST_NODE;
-                r = font_info[exten_base(f) + q.s0].b16;
+                r = font_info(exten_base(f) + q.s0).b16;
                 c = r.s0;
                 u = height_plus_depth(f, c);
                 w = 0;

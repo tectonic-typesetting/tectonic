@@ -2,7 +2,7 @@ use crate::c_api::dvi::{DviCtx, DVI_CTX};
 use crate::c_api::engine::EngineCtx;
 use crate::c_api::font::FontCtx;
 use crate::c_api::hash::{HashCtx, HASH_CTX};
-use crate::c_api::inputs::{FileCtx, FILE_CTX};
+use crate::c_api::inputs::FileCtx;
 use crate::c_api::output::{OutputCtx, OUTPUT_CTX};
 use crate::c_api::pool::{StringPool, STRING_POOL};
 use crate::c_api::synctex::SynctexCtx;
@@ -27,7 +27,7 @@ impl Globals<'_, '_> {
             EngineCtx::with(|engine| {
                 STRING_POOL.with_borrow_mut(|strings| {
                     HASH_CTX.with_borrow_mut(|hash| {
-                        FILE_CTX.with_borrow_mut(|files| {
+                        FileCtx::with(|files| {
                             OUTPUT_CTX.with_borrow_mut(|out| {
                                 DVI_CTX.with_borrow_mut(|dvi| {
                                     FontCtx::with(|fonts| {

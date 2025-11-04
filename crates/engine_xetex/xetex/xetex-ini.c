@@ -43,7 +43,6 @@ bool insert_src_special_every_math;
 bool insert_src_special_every_vbox;
 pool_pointer init_pool_ptr;
 str_number init_str_ptr;
-UTF16_code *native_text;
 int32_t native_text_size;
 int32_t native_len;
 int32_t save_native_len;
@@ -66,17 +65,14 @@ int32_t global_prev_p;
 int32_t font_in_short_display;
 int32_t depth_threshold;
 int32_t breadth_max;
-list_state_record *nest;
-int32_t nest_ptr;
 int32_t max_nest_stack;
-list_state_record cur_list;
+ListStateRecord cur_list;
 short shown_mode;
 unsigned char old_setting;
 int32_t hash_high;
 bool no_new_control_sequence;
 int32_t cs_count;
 int32_t prim_used;
-memory_word *save_stack;
 int32_t save_ptr;
 int32_t max_save_stack;
 uint16_t cur_level;
@@ -88,12 +84,9 @@ int32_t cur_cs;
 int32_t cur_tok;
 int32_t max_in_stack;
 int32_t open_parens;
-UFILE **input_file;
-str_number *source_filename_stack;
 unsigned char scanner_status;
 int32_t warning_index;
 int32_t def_ref;
-int32_t *param_stack;
 int32_t param_ptr;
 int32_t max_param_stack;
 int32_t align_state;
@@ -110,7 +103,7 @@ int32_t cur_val1;
 unsigned char cur_val_level;
 small_number radix;
 glue_ord cur_order;
-UFILE *read_file[16];
+UFile *read_file[16];
 unsigned char read_open[17];
 int32_t cond_ptr;
 unsigned char if_limit;
@@ -119,7 +112,6 @@ int32_t if_line;
 int32_t skip_line;
 int32_t format_default_length;
 const char* output_file_extension;
-memory_word *font_info;
 font_index fmem_ptr;
 void *loaded_font_mapping;
 char loaded_font_flags;
@@ -164,16 +156,10 @@ int32_t cur_q;
 int32_t lig_stack;
 bool ligature_present;
 bool lft_hit, rt_hit;
-trie_pointer *trie_trl;
-trie_pointer *trie_tro;
-uint16_t *trie_trc;
 small_number hyf_distance[TRIE_OP_SIZE + 1];
 small_number hyf_num[TRIE_OP_SIZE + 1];
 trie_opcode hyf_next[TRIE_OP_SIZE + 1];
 int32_t op_start[256];
-str_number *hyph_word;
-int32_t *hyph_list;
-hyph_pointer *hyph_link;
 int32_t hyph_count;
 int32_t hyph_next;
 trie_opcode trie_used[256];
@@ -218,13 +204,10 @@ scaled_t cur_h_offset;
 scaled_t cur_v_offset;
 int32_t pdf_last_x_pos;
 int32_t pdf_last_y_pos;
-bool *eof_seen;
 int32_t LR_ptr;
 int32_t LR_problems;
 small_number cur_dir;
 int32_t pseudo_files;
-save_pointer *grp_stack;
-int32_t *if_stack;
 int32_t max_reg_num;
 const char* max_reg_help_line;
 int32_t sa_root[8];
@@ -259,8 +242,6 @@ bool output_active;
 
 static int32_t _trie_op_hash_array[TRIE_OP_SIZE - NEG_TRIE_OP_SIZE + 1];
 #define TRIE_OP_HASH(i) _trie_op_hash_array[(i) - NEG_TRIE_OP_SIZE]
-
-static b32x2 *yhash;
 
 #define FORMAT_HEADER_MAGIC 0x54544E43 /* "TTNC" in ASCII */
 #define FORMAT_FOOTER_MAGIC 0x0000029A
@@ -645,8 +626,8 @@ void first_fit(trie_pointer p)
             do {
                 trie_max++;
                 trie_taken[trie_max] = false;
-                trie_trl[trie_max] = trie_max + 1;
-                trie_tro[trie_max] = trie_max - 1;
+                set_trie_trl(trie_max, trie_max + 1);
+                set_trie_tro(trie_max, trie_max - 1);
             } while (!(trie_max == h + max_hyph_char));
         }
         if (trie_taken[h])
@@ -654,23 +635,23 @@ void first_fit(trie_pointer p)
         q = trie_r[p];
         while (q > 0) {
 
-            if (trie_trl[h + trie_c[q]] == 0)
+            if (trie_trl(h + trie_c[q]) == 0)
                 goto not_found;
             q = trie_r[q];
         }
         goto found;
-    not_found:                        /*not_found */ z = trie_trl[z];
+    not_found:                        /*not_found */ z = trie_trl(z);
     }
 found:                        /*found *//*991: */ trie_taken[h] = true;
     trie_hash[p] = h;
     q = p;
     do {
         z = h + trie_c[q];
-        l = trie_tro[z];
-        r = trie_trl[z];
-        trie_tro[r] = l;
-        trie_trl[l] = r;
-        trie_trl[z] = 0;
+        l = trie_tro(z);
+        r = trie_trl(z);
+        set_trie_tro(r, l);
+        set_trie_trl(l, r);
+        set_trie_trl(z, 0);
         if (l < max_hyph_char) {
             if (z < max_hyph_char)
                 ll = z;
@@ -707,9 +688,9 @@ void trie_fix(trie_pointer p)
     do {
         q = trie_l[p];
         c = trie_c[p];
-        trie_trl[z + c] = trie_hash[q];
-        trie_trc[z + c] = c;
-        trie_tro[z + c] = trie_o[p];
+        set_trie_trl(z + c, trie_hash[q]);
+        set_trie_trc(z + c, c);
+        set_trie_tro(z + c, trie_o[p]);
         if (q > 0)
             trie_fix(q);
         p = trie_r[p];
@@ -1009,7 +990,7 @@ void init_trie(void)
                 trie_min[p] = p + 1;
             while (p++ < for_end);
     }
-    trie_trl[0] = 1;
+    set_trie_trl(0, 1);
     trie_max = 0 /*:987 */ ;
     if (trie_l[0] != 0) {
         first_fit(trie_l[0]);
@@ -1036,9 +1017,9 @@ void init_trie(void)
             for_end = max_hyph_char;
             if (r <= for_end)
                 do {
-                    trie_trl[r] = 0;
-                    trie_tro[r] = MIN_TRIE_OP;
-                    trie_trc[r] = 0;
+                    set_trie_trl(r, 0);
+                    set_trie_tro(r, MIN_TRIE_OP);
+                    set_trie_trc(r, 0);
                 }
                 while (r++ < for_end);
         }
@@ -1051,16 +1032,16 @@ void init_trie(void)
             trie_fix(trie_l[0]);
         r = 0;
         do {
-            s = trie_trl[r];
+            s = trie_trl(r);
             {
-                trie_trl[r] = 0;
-                trie_tro[r] = MIN_TRIE_OP;
-                trie_trc[r] = 0;
+                set_trie_trl(r, 0);
+                set_trie_tro(r, MIN_TRIE_OP);
+                set_trie_trc(r, 0);
             }
             r = s;
         } while (!(r > trie_max));
     }
-    trie_trc[0] = '?' ;
+    set_trie_trc(0, '?');
     trie_not_ready = false;
 }
 
@@ -1092,10 +1073,10 @@ new_hyph_exceptions(void)
         goto not_found1;
     }
 
-    if (trie_trc[hyph_start + cur_lang] != cur_lang)
+    if (trie_trc(hyph_start + cur_lang) != cur_lang)
         hyph_index = 0;
     else
-        hyph_index = trie_trl[hyph_start + cur_lang];
+        hyph_index = trie_trl(hyph_start + cur_lang);
 
 not_found1: /*970:*/
     n = 0;
@@ -1119,10 +1100,10 @@ not_found1: /*970:*/
             } else {
                 if (hyph_index == 0 || cur_chr > 255)
                     hc[0] = LC_CODE(cur_chr);
-                else if (trie_trc[hyph_index + cur_chr] != cur_chr)
+                else if (trie_trc(hyph_index + cur_chr) != cur_chr)
                     hc[0] = 0;
                 else
-                    hc[0] = trie_tro[hyph_index + cur_chr];
+                    hc[0] = trie_tro(hyph_index + cur_chr);
 
                 if (hc[0] == 0) {
                     error_here_with_diagnostic("Not a letter");
@@ -1170,7 +1151,7 @@ not_found1: /*970:*/
                 s = make_string();
 
                 if (hyph_next <= HYPH_PRIME) {
-                    while (hyph_next > 0 && hyph_word[hyph_next - 1] > 0)
+                    while (hyph_next > 0 && hyph_word(hyph_next - 1) > 0)
                         hyph_next--;
                 }
 
@@ -1179,8 +1160,8 @@ not_found1: /*970:*/
 
                 hyph_count++;
 
-                while (hyph_word[h] != 0) {
-                    k = hyph_word[h];
+                while (hyph_word(h) != 0) {
+                    k = hyph_word(h);
                     if (length(k) != length(s))
                         goto not_found;
 
@@ -1196,24 +1177,24 @@ not_found1: /*970:*/
 
                     set_str_ptr(str_ptr()-1);
                     set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
-                    s = hyph_word[h];
+                    s = hyph_word(h);
                     hyph_count--;
                     goto found;
 
                 not_found: /*:976*/
-                    if (hyph_link[h] == 0) {
-                        hyph_link[h] = hyph_next;
+                    if (hyph_link(h) == 0) {
+                        set_hyph_link(h, hyph_next);
                         if (hyph_next >= hyph_size)
                             hyph_next = HYPH_PRIME;
                         if (hyph_next > HYPH_PRIME)
                             hyph_next++;
                     }
-                    h = hyph_link[h] - 1;
+                    h = hyph_link(h) - 1;
                 }
 
             found:
-                hyph_word[h] = s;
-                hyph_list[h] = p; /*:975*/
+                set_hyph_word(h, s);
+                set_hyph_list(h, p); /*:975*/
             }
 
             if (cur_cmd == RIGHT_BRACE)
@@ -1943,7 +1924,7 @@ prefixed_command(void)
         k = cur_val;
         scan_optional_equals();
         scan_dimen(false, false, false);
-        font_info[k].b32.s1 = cur_val;
+        font_info_ptr(k)->b32.s1 = cur_val;
         break;
 
     case ASSIGN_FONT_INT:
@@ -2236,7 +2217,7 @@ store_fmt_file(void)
     /* fonts */
 
     dump_int(fmem_ptr);
-    dump_things(font_info[0], fmem_ptr);
+    dump_ptr(font_info_ptr(0), fmem_ptr);
     dump_int(font_ptr());
     dump_ptr(font_check_ptr(FONT_BASE), font_ptr() + 1);
     dump_ptr(font_size_ptr(FONT_BASE), font_ptr() + 1);
@@ -2306,10 +2287,10 @@ store_fmt_file(void)
     dump_int(hyph_next);
 
     for (k = 0; k <= hyph_size; k++) {
-        if (hyph_word[k] != 0) {
-            dump_int(k + 65536L * hyph_link[k]);
-            dump_int(hyph_word[k]);
-            dump_int(hyph_list[k]);
+        if (hyph_word(k) != 0) {
+            dump_int(k + 65536L * hyph_link(k));
+            dump_int(hyph_word(k));
+            dump_int(hyph_list(k));
         }
     }
 
@@ -2325,9 +2306,9 @@ store_fmt_file(void)
 
     dump_int(trie_max);
     dump_int(hyph_start);
-    dump_things(trie_trl[0], trie_max + 1);
-    dump_things(trie_tro[0], trie_max + 1);
-    dump_things(trie_trc[0], trie_max + 1);
+    dump_ptr(trie_trl_ptr(0), trie_max + 1);
+    dump_ptr(trie_tro_ptr(0), trie_max + 1);
+    dump_ptr(trie_trc_ptr(0), trie_max + 1);
     dump_int(max_hyph_char);
     dump_int(trie_op_ptr);
     dump_things(hyf_distance[1], trie_op_ptr);
@@ -2395,10 +2376,10 @@ load_fmt_file(void)
     cur_input_ptr()->loc = j;
 
     if (in_initex_mode) {
-        free(font_info);
+        clear_font_info();
         clear_str_pool();
         clear_str_start();
-        free(yhash);
+        clear_yhash();
         clear_eqtb();
         clear_mem();
     }
@@ -2650,8 +2631,8 @@ load_fmt_file(void)
     if (fmem_ptr > font_mem_size)
         font_mem_size = fmem_ptr;
 
-    font_info = xmalloc_array(memory_word, font_mem_size);
-    undump_things(font_info[0], fmem_ptr);
+    resize_font_info(font_mem_size+1);
+    undump_ptr(font_info_ptr(0), fmem_ptr);
 
     undump_int(x);
     if (x < FONT_BASE)
@@ -2748,19 +2729,19 @@ load_fmt_file(void)
         if (j >= hyph_size || hyph_next > hyph_size)
             goto bad_fmt;
 
-        hyph_link[j] = hyph_next;
+        set_hyph_link(j, hyph_next);
 
         undump_int(x);
         if (x < 0 || x > str_ptr())
             goto bad_fmt;
         else
-            hyph_word[j] = x;
+            set_hyph_word(j, x);
 
         undump_int(x);
         if (x < MIN_HALFWORD || x > MAX_HALFWORD)
             goto bad_fmt;
         else
-            hyph_list[j] = x;
+            set_hyph_list(j, x);
     }
 
     j++;
@@ -2788,17 +2769,14 @@ load_fmt_file(void)
     else
         hyph_start = x;
 
-    if (!trie_trl)
-        trie_trl = xmalloc_array(trie_pointer, j + 1);
-    undump_things(trie_trl[0], j + 1);
+    resize_trie_trl(j + 2);
+    undump_ptr(trie_trl_ptr(0), j + 1);
 
-    if (!trie_tro)
-        trie_tro = xmalloc_array(trie_pointer, j + 1);
-    undump_things(trie_tro[0], j + 1);
+    resize_trie_tro(j + 2);
+    undump_ptr(trie_tro_ptr(0), j + 1);
 
-    if (!trie_trc)
-        trie_trc = xmalloc_array(uint16_t, j + 1);
-    undump_things(trie_trc[0], j + 1);
+    resize_trie_trc(j + 2);
+    undump_ptr(trie_trc_ptr(0), j + 1);
 
     undump_int(max_hyph_char);
 
@@ -2950,18 +2928,18 @@ final_cleanup(void)
 
 /* Engine initialization */
 
-static UFILE stdin_ufile;
+static UFile stdin_ufile;
 
 static void
 init_io(void)
 {
     /* This is largely vestigial at this point */
     stdin_ufile.handle = INVALID_HANDLE;
-    stdin_ufile.savedChar = -1;
-    stdin_ufile.skipNextLF = 0;
-    stdin_ufile.encodingMode = UTF8;
-    stdin_ufile.conversionData = 0;
-    input_file[0] = &stdin_ufile;
+    stdin_ufile.saved_char = -1;
+    stdin_ufile.skip_next_lf = 0;
+    stdin_ufile.encoding_mode = UTF8;
+    stdin_ufile.conversion_data = 0;
+    set_input_file(0, &stdin_ufile);
 
     set_buffer(first, 0);
     last = first;
@@ -2979,7 +2957,7 @@ initialize_more_variables(void)
 
     set_doing_special(false);
     native_text_size = 128;
-    native_text = xmalloc(native_text_size * sizeof(UTF16_code));
+    resize_native_text(native_text_size);
 
     set_interaction(ERROR_STOP_MODE);
 
@@ -3010,12 +2988,12 @@ initialize_more_variables(void)
         spec_log[k] = two_to_the[27 - k];
     spec_log[28] = 1;
 
-    nest_ptr = 0;
+    set_nest_cur(0);
     max_nest_stack = 0;
     cur_list.mode = VMODE;
     cur_list.head = CONTRIB_HEAD;
     cur_list.tail = CONTRIB_HEAD;
-    cur_list.eTeX_aux = TEX_NULL;
+    cur_list.etex_aux = TEX_NULL;
     cur_list.aux.b32.s1 = IGNORE_DEPTH;
     cur_list.mode_line = 0;
     cur_list.prev_graf = 0;
@@ -3092,9 +3070,9 @@ initialize_more_variables(void)
     max_hyph_char = TOO_BIG_LANG;
 
     for (z = 0; z <= hyph_size; z++) {
-        hyph_word[z] = 0;
-        hyph_list[z] = TEX_NULL;
-        hyph_link[z] = 0;
+        set_hyph_word(z, 0);
+        set_hyph_list(z, TEX_NULL);
+        set_hyph_link(z, 0);
     }
 
     hyph_count = 0;
@@ -3412,38 +3390,38 @@ tt_cleanup(void) {
     }
 
     for (int i = 1; i <= in_open(); i++) {
-        if (input_file[i] != NULL) {
-            u_close(input_file[i]);
+        if (input_file(i) != NULL) {
+            u_close(input_file(i));
         }
     }
 
     // Free the big allocated arrays
     clear_buffer();
-    free(nest);
-    free(save_stack);
+    clear_nest();
+    clear_save_stack();
     clear_input_stack();
-    free(input_file);
+    clear_input_file();
     clear_line_stack();
-    free(eof_seen);
-    free(grp_stack);
-    free(if_stack);
-    free(source_filename_stack);
+    clear_eof_seen();
+    clear_grp_stack();
+    clear_if_stack();
+    clear_source_filename_stack();
     clear_full_source_filename_stack();
-    free(param_stack);
-    free(hyph_word);
-    free(hyph_list);
-    free(hyph_link);
+    clear_param_stack();
+    clear_hyph_word();
+    clear_hyph_list();
+    clear_hyph_link();
 
     // initialize_more_variables @ 3277
-    free(native_text);
+    clear_native_text();
 
     // Free arrays allocated in load_fmt_file
-    free(yhash);
+    clear_yhash();
     clear_eqtb();
     clear_mem();
     clear_str_start();
     clear_str_pool();
-    free(font_info);
+    clear_font_info();
 
     clear_font_mapping();
     clear_font_layout_engine();
@@ -3473,9 +3451,9 @@ tt_cleanup(void) {
     clear_exten_base();
     clear_param_base();
 
-    trie_trl = mfree(trie_trl);
-    trie_tro = mfree(trie_tro);
-    trie_trc = mfree(trie_trc);
+    clear_trie_trl();
+    clear_trie_tro();
+    clear_trie_trc();
 }
 
 tt_history_t
@@ -3526,18 +3504,18 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     /* Allocate many of our big arrays. */
 
     resize_buffer(buf_size+1);
-    nest = xmalloc_array(list_state_record, nest_size);
-    save_stack = xmalloc_array(memory_word, save_size);
+    resize_nest(nest_size+1);
+    resize_save_stack(save_size+1);
     resize_input_stack(stack_size+1);
-    input_file = xmalloc_array(UFILE *, max_in_open);
-    eof_seen = xmalloc_array(bool, max_in_open);
-    grp_stack = xmalloc_array(save_pointer, max_in_open);
-    if_stack = xmalloc_array(int32_t, max_in_open);
-    source_filename_stack = xmalloc_array(str_number, max_in_open);
-    param_stack = xmalloc_array(int32_t, param_size);
-    hyph_word = xmalloc_array(str_number, hyph_size);
-    hyph_list = xmalloc_array(int32_t, hyph_size);
-    hyph_link = xmalloc_array(hyph_pointer, hyph_size);
+    resize_input_file(max_in_open+1);
+    resize_eof_seen(max_in_open+1);
+    resize_grp_stack(max_in_open+1);
+    resize_if_stack(max_in_open+1);
+    resize_source_filename_stack(max_in_open+1);
+    resize_param_stack(param_size+1);
+    resize_hyph_word(hyph_size+1);
+    resize_hyph_list(hyph_size+1);
+    resize_hyph_link(hyph_size+1);
 
     /* First bit of initex handling: more allocations. */
 
@@ -3560,7 +3538,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 		resize_eqtb(eqtb_top() + 1);
         resize_str_start(max_strings());
         resize_str_pool(pool_size());
-        font_info = xmalloc_array(memory_word, font_mem_size);
+        resize_font_info(font_mem_size+1);
     }
 
     /* Sanity-check various invariants. */
@@ -3637,13 +3615,13 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
 
     set_input_ptr(0);
     max_in_stack = 0;
-    source_filename_stack[0] = 0;
+    set_source_filename_stack(0, 0);
     set_full_source_filename_stack(0, 0);
     set_in_open(0);
     open_parens = 0;
     max_buf_stack = 0;
-    grp_stack[0] = 0;
-    if_stack[0] = TEX_NULL;
+    set_grp_stack(0, 0);
+    set_if_stack(0, TEX_NULL);
     param_ptr = 0;
     max_param_stack = 0;
     used_tectonic_coda_tokens = false;
@@ -3699,9 +3677,9 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     }
 
     if (trie_not_ready) {
-        trie_trl = xmalloc_array(trie_pointer, trie_size);
-        trie_tro = xmalloc_array(trie_pointer, trie_size);
-        trie_trc = xmalloc_array(uint16_t, trie_size);
+        resize_trie_trl(trie_size+1);
+        resize_trie_tro(trie_size+1);
+        resize_trie_trc(trie_size+1);
         trie_c = xmalloc_array(packed_UTF16_code, trie_size);
         trie_o = xmalloc_array(trie_opcode, trie_size);
         trie_l = xmalloc_array(trie_pointer, trie_size);
@@ -3767,7 +3745,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
         set_param_base(FONT_BASE, -1);
 
         for (font_k = 0; font_k <= 6; font_k++)
-            font_info[font_k].b32.s1 = 0;
+            font_info_ptr(font_k)->b32.s1 = 0;
     }
 
     resize_font_used(font_max()+1);

@@ -20,6 +20,7 @@ use crate::c_api::pool::{
 };
 use crate::c_api::synctex::rs_synctex_terminate;
 pub use memory::*;
+use tectonic_bridge_core::InputId;
 use tectonic_pdf_io::sys::pdf_files_close;
 use tectonic_xetex_layout::manager::FontManager;
 
@@ -261,6 +262,7 @@ pub struct EngineCtx {
     pub(crate) max_push: i32,
     pub(crate) semantic_pagination_enabled: bool,
     pub(crate) tex_format_default: CString,
+    pub(crate) nest_cur: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -268,6 +270,162 @@ pub struct EngineCtx {
     pub(crate) mem: Vec<MemoryWord>,
     pub(crate) buffer: Vec<char>,
     pub(crate) xeq_level_array: Vec<u16>,
+    pub(crate) nest: Vec<ListStateRecord>,
+    pub(crate) save_stack: Vec<MemoryWord>,
+    pub(crate) input_file: Vec<*mut UFile>,
+    pub(crate) eof_seen: Vec<bool>,
+    pub(crate) grp_stack: Vec<i32>, // save pointer
+    pub(crate) if_stack: Vec<i32>,
+    pub(crate) param_stack: Vec<i32>,
+    pub(crate) hyph_word: Vec<StrNumber>,
+    pub(crate) hyph_list: Vec<i32>,
+    pub(crate) hyph_link: Vec<u16>, // hyph pointer
+    pub(crate) native_text: Vec<u16>,
+    pub(crate) yhash: Vec<B32x2>,
+    pub(crate) trie_trl: Vec<i32>, // trie pointer
+    pub(crate) trie_tro: Vec<i32>, // trie pointer
+    pub(crate) trie_trc: Vec<u16>,
+}
+
+impl EngineCtx {
+    fn new() -> EngineCtx {
+        EngineCtx {
+            selector: Selector::File(0),
+            tally: 0,
+            error_line: 0,
+            trick_count: 0,
+            trick_buf: [0; 256],
+            eqtb_top: 0,
+            name_of_file: None,
+            name_of_file_utf16: None,
+            file_name_quote_char: 0,
+            cur_area: 0,
+            cur_ext: 0,
+            cur_name: 0,
+            job_name: 0,
+            area_delimiter: 0,
+            ext_delimiter: 0,
+            name_in_progress: false,
+            stop_at_space: false,
+            quoted_filename: false,
+            texmf_log_name: 0,
+            log_opened: false,
+            input_stack: Vec::new(),
+            input_ptr: 0,
+            cur_input: InputState::default(),
+            interaction: InteractionMode::Batch,
+            history: History::Spotless,
+            total_pages: 0,
+            last_bop: 0,
+            base_ptr: 0,
+            first_count: 0,
+            half_error_line: 0,
+            hi_mem_min: 0,
+            mem_end: 0,
+            halt_on_error_p: 0,
+            error_count: 0,
+            use_err_help: false,
+            help_ptr: 0,
+            help_line: [ptr::null(); 6],
+            mag_set: 0,
+            max_h: 0,
+            max_v: 0,
+            max_push: 0,
+            semantic_pagination_enabled: false,
+            tex_format_default: CString::default(),
+            nest_cur: 0,
+
+            eqtb: Vec::new(),
+            prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
+            mem: Vec::new(),
+            buffer: Vec::new(),
+            xeq_level_array: vec![0; EQTB_SIZE - INT_BASE + 1],
+            nest: Vec::new(),
+            save_stack: Vec::new(),
+            input_file: Vec::new(),
+            eof_seen: Vec::new(),
+            grp_stack: Vec::new(),
+            if_stack: Vec::new(),
+            param_stack: Vec::new(),
+            hyph_word: Vec::new(),
+            hyph_list: Vec::new(),
+            hyph_link: Vec::new(),
+            native_text: Vec::new(),
+            yhash: Vec::new(),
+            trie_trl: Vec::new(),
+            trie_tro: Vec::new(),
+            trie_trc: Vec::new(),
+        }
+    }
+
+    pub fn with<T>(f: impl FnOnce(&mut EngineCtx) -> T) -> T {
+        ENGINE_CTX.with_borrow_mut(f)
+    }
+
+    pub fn raw_mem(&self, idx: usize) -> MemoryWord {
+        self.mem[idx]
+    }
+
+    pub fn try_node<T: ?Sized + Node>(&self, idx: usize) -> Result<&T, NodeError> {
+        let ptr = self.mem.as_ptr().wrapping_add(idx);
+        let base = unsafe { &*NodeBase::from_ptr(ptr) };
+
+        if T::ty() != base.ty() || T::subty().is_some_and(|subty| subty != base.subty()) {
+            return Err(NodeError {
+                ty: base.ty(),
+                subty: base.subty(),
+            });
+        }
+
+        let ptr = unsafe { T::from_ptr(ptr) };
+        Ok(unsafe { &*ptr })
+    }
+
+    pub fn base_node(&self, idx: usize) -> &NodeBase {
+        let ptr = self.mem.as_ptr().wrapping_add(idx);
+        let ptr = NodeBase::from_ptr(ptr);
+        unsafe { &*ptr }
+    }
+
+    pub fn node<T: ?Sized + Node>(&self, idx: usize) -> &T {
+        match self.try_node::<T>(idx) {
+            Ok(node) => node,
+            Err(e) => {
+                panic!(
+                    "Invalid node type. expected {}:{:?}, found {}:{}",
+                    T::ty(),
+                    T::subty(),
+                    e.ty,
+                    e.subty,
+                );
+            }
+        }
+    }
+
+    pub fn local(&self, local: Local) -> i32 {
+        unsafe { self.eqtb[LOCAL_BASE + local as usize].b32.s1 }
+    }
+
+    pub fn set_local(&mut self, local: Local, val: i32) {
+        self.eqtb[LOCAL_BASE + local as usize].b32.s1 = val
+    }
+
+    pub fn int_par(&self, par: IntPar) -> i32 {
+        unsafe { self.eqtb[INT_BASE + par as usize].b32.s1 }
+    }
+
+    pub fn set_int_par(&mut self, par: IntPar, val: i32) {
+        self.eqtb[INT_BASE + par as usize].b32.s1 = val
+    }
+
+    pub fn cat_code(&self, p: usize) -> Result<CatCode, i32> {
+        let val = unsafe { self.eqtb[CAT_CODE_BASE + p].b32.s1 };
+        CatCode::try_from(val)
+    }
+
+    pub fn set_xeq_level(&mut self, idx: usize, val: u16) {
+        self.xeq_level_array[idx - INT_BASE] = val;
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]
@@ -350,131 +508,6 @@ impl TryFrom<u8> for History {
     }
 }
 
-impl EngineCtx {
-    fn new() -> EngineCtx {
-        EngineCtx {
-            selector: Selector::File(0),
-            tally: 0,
-            error_line: 0,
-            trick_count: 0,
-            trick_buf: [0; 256],
-            eqtb_top: 0,
-            name_of_file: None,
-            name_of_file_utf16: None,
-            file_name_quote_char: 0,
-            cur_area: 0,
-            cur_ext: 0,
-            cur_name: 0,
-            job_name: 0,
-            area_delimiter: 0,
-            ext_delimiter: 0,
-            name_in_progress: false,
-            stop_at_space: false,
-            quoted_filename: false,
-            texmf_log_name: 0,
-            log_opened: false,
-            input_stack: Vec::new(),
-            input_ptr: 0,
-            cur_input: InputState::default(),
-            interaction: InteractionMode::Batch,
-            history: History::Spotless,
-            total_pages: 0,
-            last_bop: 0,
-            base_ptr: 0,
-            first_count: 0,
-            half_error_line: 0,
-            hi_mem_min: 0,
-            mem_end: 0,
-            halt_on_error_p: 0,
-            error_count: 0,
-            use_err_help: false,
-            help_ptr: 0,
-            help_line: [ptr::null(); 6],
-            mag_set: 0,
-            max_h: 0,
-            max_v: 0,
-            max_push: 0,
-            semantic_pagination_enabled: false,
-            tex_format_default: CString::default(),
-
-            eqtb: Vec::new(),
-            prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
-            mem: Vec::new(),
-            buffer: Vec::new(),
-            xeq_level_array: vec![0; EQTB_SIZE - INT_BASE + 1],
-        }
-    }
-
-    pub fn with<T>(f: impl FnOnce(&mut EngineCtx) -> T) -> T {
-        ENGINE_CTX.with_borrow_mut(f)
-    }
-
-    pub fn raw_mem(&self, idx: usize) -> MemoryWord {
-        self.mem[idx]
-    }
-
-    pub fn try_node<T: ?Sized + Node>(&self, idx: usize) -> Result<&T, NodeError> {
-        let ptr = self.mem.as_ptr().wrapping_add(idx);
-        let base = unsafe { &*NodeBase::from_ptr(ptr) };
-
-        if T::ty() != base.ty() || T::subty().is_some_and(|subty| subty != base.subty()) {
-            return Err(NodeError {
-                ty: base.ty(),
-                subty: base.subty(),
-            });
-        }
-
-        let ptr = unsafe { T::from_ptr(ptr) };
-        Ok(unsafe { &*ptr })
-    }
-
-    pub fn base_node(&self, idx: usize) -> &NodeBase {
-        let ptr = self.mem.as_ptr().wrapping_add(idx);
-        let ptr = NodeBase::from_ptr(ptr);
-        unsafe { &*ptr }
-    }
-
-    pub fn node<T: ?Sized + Node>(&self, idx: usize) -> &T {
-        match self.try_node::<T>(idx) {
-            Ok(node) => node,
-            Err(e) => {
-                panic!(
-                    "Invalid node type. expected {}:{:?}, found {}:{}",
-                    T::ty(),
-                    T::subty(),
-                    e.ty,
-                    e.subty,
-                );
-            }
-        }
-    }
-
-    pub fn local(&self, local: Local) -> i32 {
-        unsafe { self.eqtb[LOCAL_BASE + local as usize].b32.s1 }
-    }
-
-    pub fn set_local(&mut self, local: Local, val: i32) {
-        self.eqtb[LOCAL_BASE + local as usize].b32.s1 = val
-    }
-
-    pub fn int_par(&self, par: IntPar) -> i32 {
-        unsafe { self.eqtb[INT_BASE + par as usize].b32.s1 }
-    }
-
-    pub fn set_int_par(&mut self, par: IntPar, val: i32) {
-        self.eqtb[INT_BASE + par as usize].b32.s1 = val
-    }
-
-    pub fn cat_code(&self, p: usize) -> Result<CatCode, i32> {
-        let val = unsafe { self.eqtb[CAT_CODE_BASE + p].b32.s1 };
-        CatCode::try_from(val)
-    }
-
-    pub fn set_xeq_level(&mut self, idx: usize, val: u16) {
-        self.xeq_level_array[idx - INT_BASE] = val;
-    }
-}
-
 #[derive(Copy, Clone, PartialEq)]
 pub enum Selector {
     File(u8),
@@ -515,6 +548,28 @@ impl TryFrom<u32> for Selector {
             _ => Err(()),
         }
     }
+}
+
+#[derive(Clone, Default)]
+#[repr(C)]
+pub struct ListStateRecord {
+    mode: i16,
+    head: i32,
+    tail: i32,
+    etex_aux: i32,
+    prev_graf: i32,
+    mode_line: i32,
+    aux: MemoryWord,
+}
+
+#[derive(Clone, PartialEq, Default)]
+#[repr(C)]
+pub struct UFile {
+    handle: Option<InputId>,
+    saved_char: i64,
+    skip_next_lf: bool,
+    encoding_mode: u8,
+    conversion_data: *mut libc::c_void,
 }
 
 c_var!(EngineCtx => selector: into u32);
@@ -653,6 +708,8 @@ pub extern "C" fn set_tex_format_default(val: *const libc::c_char) {
     }
 }
 
+c_var!(EngineCtx => nest_cur: i32);
+
 c_arr!(EngineCtx => eqtb: MemoryWord);
 c_arr!(EngineCtx => mem: MemoryWord);
 c_arr!(EngineCtx => prim[_]: B32x2);
@@ -688,6 +745,22 @@ pub extern "C" fn clear_buffer() {
 pub extern "C" fn xeq_level_array_ptr(idx: usize) -> *mut u16 {
     ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.xeq_level_array[idx]))
 }
+
+c_arr!(EngineCtx => nest: ListStateRecord);
+c_arr!(EngineCtx => save_stack: MemoryWord);
+c_arr!(EngineCtx => input_file: *mut UFile);
+c_arr!(EngineCtx => eof_seen: bool);
+c_arr!(EngineCtx => grp_stack: i32);
+c_arr!(EngineCtx => if_stack: i32);
+c_arr!(EngineCtx => param_stack: i32);
+c_arr!(EngineCtx => hyph_word: i32);
+c_arr!(EngineCtx => hyph_list: i32);
+c_arr!(EngineCtx => hyph_link: u16);
+c_arr!(EngineCtx => native_text: u16);
+c_arr!(EngineCtx => yhash: B32x2);
+c_arr!(EngineCtx => trie_trl: i32);
+c_arr!(EngineCtx => trie_tro: i32);
+c_arr!(EngineCtx => trie_trc: u16);
 
 fn checkpool_pointer(pool: &mut StringPool, pool_ptr: usize, len: usize) {
     if pool_ptr + len >= pool.pool_size {

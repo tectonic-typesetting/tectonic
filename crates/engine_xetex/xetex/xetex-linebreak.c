@@ -247,10 +247,10 @@ line_break(bool d)
             l_hyf = init_l_hyf;
             r_hyf = init_r_hyf;
 
-            if (trie_trc[hyph_start + cur_lang] != cur_lang)
+            if (trie_trc(hyph_start + cur_lang) != cur_lang)
                 hyph_index = 0;
             else
-                hyph_index = trie_trl[hyph_start + cur_lang];
+                hyph_index = trie_trl(hyph_start + cur_lang);
         }
 
         q = get_node(active_node_size); /*893:*/
@@ -312,10 +312,10 @@ line_break(bool d)
                     l_hyf = LANGUAGE_NODE_what_lhm(cur_p);
                     r_hyf = LANGUAGE_NODE_what_rhm(cur_p);
 
-                    if (trie_trc[hyph_start + cur_lang] != cur_lang)
+                    if (trie_trc(hyph_start + cur_lang) != cur_lang)
                         hyph_index = 0;
                     else
-                        hyph_index = trie_trl[hyph_start + cur_lang];
+                        hyph_index = trie_trl(hyph_start + cur_lang);
                 } else if (NODE_subtype(cur_p) == NATIVE_WORD_NODE
                            || NODE_subtype(cur_p) == NATIVE_WORD_NODE_AT
                            || NODE_subtype(cur_p) == GLYPH_NODE
@@ -389,10 +389,10 @@ line_break(bool d)
                                     l_hyf = LANGUAGE_NODE_what_lhm(s);
                                     r_hyf = LANGUAGE_NODE_what_rhm(s);
 
-                                    if (trie_trc[hyph_start + cur_lang] != cur_lang)
+                                    if (trie_trc(hyph_start + cur_lang) != cur_lang)
                                         hyph_index = 0;
                                     else
-                                        hyph_index = trie_trl[hyph_start + cur_lang];
+                                        hyph_index = trie_trl(hyph_start + cur_lang);
                                 }
 
                                 goto _continue;
@@ -402,10 +402,10 @@ line_break(bool d)
 
                             if (hyph_index == 0 || c > 255)
                                 hc[0] = LC_CODE(c);
-                            else if (trie_trc[hyph_index + c] != c)
+                            else if (trie_trc(hyph_index + c) != c)
                                 hc[0] = 0;
                             else
-                                hc[0] = trie_tro[hyph_index + c];
+                                hc[0] = trie_tro(hyph_index + c);
 
                             if (hc[0] != 0) {
                                 if (hc[0] == c || INTPAR(uc_hyph) > 0)
@@ -482,10 +482,10 @@ line_break(bool d)
 
                                 if (hyph_index == 0 || c > 255)
                                     hc[0] = LC_CODE(c);
-                                else if (trie_trc[hyph_index + c] != c)
+                                else if (trie_trc(hyph_index + c) != c)
                                     hc[0] = 0;
                                 else
-                                    hc[0] = trie_tro[hyph_index + c];
+                                    hc[0] = trie_tro(hyph_index + c);
 
                                 if (hc[0] == 0) {
                                     if (hn > 0) {
@@ -550,10 +550,10 @@ line_break(bool d)
 
                                     if (hyph_index == 0 || c > 255)
                                         hc[0] = LC_CODE(c);
-                                    else if (trie_trc[hyph_index + c] != c)
+                                    else if (trie_trc(hyph_index + c) != c)
                                         hc[0] = 0;
                                     else
-                                        hc[0] = trie_tro[hyph_index + c];
+                                        hc[0] = trie_tro(hyph_index + c);
 
                                     if (hc[0] == 0)
                                         goto done3;
@@ -584,10 +584,10 @@ line_break(bool d)
 
                                         if (hyph_index == 0 || c > 255)
                                             hc[0] = LC_CODE(c);
-                                        else if (trie_trc[hyph_index + c] != c)
+                                        else if (trie_trc(hyph_index + c) != c)
                                             hc[0] = 0;
                                         else
-                                            hc[0] = trie_tro[hyph_index + c];
+                                            hc[0] = trie_tro(hyph_index + c);
 
                                         if (hc[0] == 0)
                                             goto done3;
@@ -992,7 +992,7 @@ post_line_break(bool d)
     int32_t cur_line;
     int32_t LR_ptr;
 
-    LR_ptr = cur_list.eTeX_aux;
+    LR_ptr = cur_list.etex_aux;
 
     /* Reverse the list of break nodes (907) */
 
@@ -1378,7 +1378,7 @@ post_line_break(bool d)
         confusion("line breaking");
 
     cur_list.prev_graf = best_line - 1;
-    cur_list.eTeX_aux = LR_ptr;
+    cur_list.etex_aux = LR_ptr;
 }
 
 
@@ -2048,7 +2048,7 @@ hyphenate(void)
     }
     while (true) {
 
-        k = hyph_word[h];
+        k = hyph_word(h);
         if (k == 0)
             goto not_found;
         if (length(k) == hn) {
@@ -2060,7 +2060,7 @@ hyphenate(void)
                 j++;
                 u++;
             } while (!(j > hn));
-            s = hyph_list[h];
+            s = hyph_list(h);
             while (s != TEX_NULL) {
 
                 hyf[mem(s).b32.s0] = 1;
@@ -2070,14 +2070,14 @@ hyphenate(void)
             goto found;
         } /*:966 */
     done:
-        h = hyph_link[h];
+        h = hyph_link(h);
         if (h == 0)
             goto not_found;
         h--;
     }
 not_found:
     hn--;
-    if (trie_trc[cur_lang + 1] != cur_lang)
+    if (trie_trc(cur_lang + 1) != cur_lang)
         return;
     hc[0] = 0;
     hc[hn + 1] = 0;
@@ -2088,12 +2088,12 @@ not_found:
         for_end = hn - r_hyf + 1;
         if (j <= for_end)
             do {
-                z = trie_trl[cur_lang + 1] + hc[j];
+                z = trie_trl(cur_lang + 1) + hc[j];
                 l = j;
-                while (hc[l] == trie_trc[z]) {
+                while (hc[l] == trie_trc(z)) {
 
-                    if (trie_tro[z] != MIN_TRIE_OP) {   /*959: */
-                        v = trie_tro[z];
+                    if (trie_tro(z) != MIN_TRIE_OP) {   /*959: */
+                        v = trie_tro(z);
                         do {
                             v = v + op_start[cur_lang];
                             i = l - hyf_distance[v];
@@ -2103,7 +2103,7 @@ not_found:
                         } while (!(v == MIN_TRIE_OP));
                     }
                     l++;
-                    z = trie_trl[z] + hc[l];
+                    z = trie_trl(z) + hc[l];
                 }
             }
             while (j++ < for_end);
@@ -2454,17 +2454,17 @@ continue_:
         if (k == NON_ADDRESS)
             goto done;
         else
-            q = font_info[k].b16;
+            q = font_info(k).b16;
     } else {
 
         q = FONT_CHARACTER_INFO(hf, effective_char(true, hf, cur_l));
         if (((q.s1) % 4) != LIG_TAG)
             goto done;
         k = lig_kern_base(hf) + q.s0;
-        q = font_info[k].b16;
+        q = font_info(k).b16;
         if (q.s3 > 128) {
             k = lig_kern_base(hf) + 256 * q.s1 + q.s0 + 32768L - 256 * (128);
-            q = font_info[k].b16;
+            q = font_info(k).b16;
         }
     }
     if (cur_rh < TOO_BIG_CHAR)
@@ -2617,7 +2617,7 @@ continue_:
                         }
                         goto continue_;
                     }
-                    w = font_info[kern_base(hf) + 256 * q.s1 + q.s0].b32.s1;
+                    w = font_info(kern_base(hf) + 256 * q.s1 + q.s0).b32.s1;
                     goto done;
                 }
             }
@@ -2633,7 +2633,7 @@ continue_:
             }
         }
         k = k + q.s3 + 1;
-        q = font_info[k].b16;
+        q = font_info(k).b16;
     } /*:944*/
 done:
     if (ligature_present) {

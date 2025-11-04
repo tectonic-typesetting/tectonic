@@ -1,5 +1,5 @@
 use crate::c_api::d_to_fix;
-use crate::c_api::engine::B16x4;
+use crate::c_api::engine::{B16x4, MemoryWord};
 use crate::c_api::globals::Globals;
 use crate::ty::{Scaled, StrNumber};
 use std::borrow::Cow;
@@ -34,6 +34,7 @@ pub struct FontCtx {
     pub(crate) font_ptr: i32,
 
     pub(crate) font_used: Vec<bool>,
+    pub(crate) font_info: Vec<MemoryWord>,
     pub(crate) font_mapping: Vec<*mut libc::c_void>,
     pub(crate) font_layout_engine: Vec<*mut libc::c_void>,
     pub(crate) font_flags: Vec<u8>,
@@ -72,6 +73,7 @@ impl FontCtx {
             font_ptr: 0,
 
             font_used: Vec::new(),
+            font_info: Vec::new(),
             font_mapping: Vec::new(),
             font_layout_engine: Vec::new(),
             font_flags: Vec::new(),
@@ -113,6 +115,7 @@ c_var!(FontCtx => font_max: i32);
 c_var!(FontCtx => font_ptr: i32);
 
 c_arr!(FontCtx => font_used: bool);
+c_arr!(FontCtx => font_info: MemoryWord);
 c_arr!(FontCtx => font_mapping: *mut libc::c_void);
 c_arr!(FontCtx => font_layout_engine: *mut libc::c_void);
 c_arr!(FontCtx => font_flags: u8);

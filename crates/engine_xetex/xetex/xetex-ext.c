@@ -1201,9 +1201,9 @@ snap_zone(scaled_t* value, scaled_t snap_value, scaled_t fuzz)
 void
 get_native_char_height_depth(int32_t font, int32_t ch, scaled_t* height, scaled_t* depth)
 {
-#define QUAD(f)         font_info[6+param_base(f)].b32.s1
-#define X_HEIGHT(f)     font_info[5+param_base(f)].b32.s1
-#define CAP_HEIGHT(f)   font_info[8+param_base(f)].b32.s1
+#define QUAD(f)         font_info_ptr(6+param_base(f))->b32.s1
+#define X_HEIGHT(f)     font_info_ptr(5+param_base(f))->b32.s1
+#define CAP_HEIGHT(f)   font_info_ptr(8+param_base(f))->b32.s1
 
     float ht = 0.0;
     float dp = 0.0;
