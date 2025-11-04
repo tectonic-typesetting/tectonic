@@ -399,8 +399,6 @@ extern int32_t save_native_len;
 extern bool deletions_allowed;
 extern bool set_box_allowed;
 extern scaled_t random_seed;
-extern int32_t two_to_the[31];
-extern int32_t spec_log[29];
 extern int32_t temp_ptr;
 extern int32_t lo_mem_max;
 extern int32_t var_used, dyn_used;

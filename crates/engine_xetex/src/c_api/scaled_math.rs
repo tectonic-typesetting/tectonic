@@ -1,21 +1,60 @@
+use crate::c_api::errors::rs_error;
+use crate::c_api::globals::Globals;
+use crate::c_api::output::{
+    rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print_bytes, rs_print_scaled,
+};
 use crate::ty::Scaled;
 use std::cell::RefCell;
 use std::mem;
 
 thread_local! {
-    static MATH_CTX: RefCell<MathContext> = const { RefCell::new(MathContext::new()) };
+    static MATH_CTX: RefCell<MathCtx> = const { RefCell::new(MathCtx::new()) };
 }
 
-struct MathContext {
+const POWERS_OF_TWO: [i32; 31] = {
+    let mut out = [1; 31];
+    let mut i = 1;
+    while i < 31 {
+        out[i] = out[i - 1] * 2;
+        i += 1;
+    }
+    out
+};
+
+const SPEC_LOG: [i32; 29] = {
+    let mut out = [0; 29];
+    out[1] = 93032640;
+    out[2] = 38612034;
+    out[3] = 17922280;
+    out[4] = 8662214;
+    out[5] = 4261238;
+    out[6] = 2113709;
+    out[7] = 1052693;
+    out[8] = 525315;
+    out[9] = 262400;
+    out[10] = 131136;
+    out[11] = 65552;
+    out[12] = 32772;
+    out[13] = 16385;
+    let mut k = 14;
+    while k < 28 {
+        out[k] = POWERS_OF_TWO[27 - k];
+        k += 1;
+    }
+    out[28] = 1;
+    out
+};
+
+pub struct MathCtx {
     arith_error: bool,
     tex_remainder: Scaled,
     randoms: [i32; 55],
     j_random: u8,
 }
 
-impl MathContext {
-    const fn new() -> MathContext {
-        MathContext {
+impl MathCtx {
+    const fn new() -> MathCtx {
+        MathCtx {
             arith_error: false,
             tex_remainder: 0,
             randoms: [0; 55],
@@ -23,9 +62,13 @@ impl MathContext {
         }
     }
 
+    pub fn with<T>(f: impl FnOnce(&mut MathCtx) -> T) -> T {
+        MATH_CTX.with_borrow_mut(f)
+    }
+
     fn next_rand(&mut self) -> i32 {
         if self.j_random == 0 {
-            rs_new_randoms(self);
+            new_randoms(self);
         } else {
             self.j_random -= 1;
         }
@@ -33,40 +76,15 @@ impl MathContext {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn arith_error() -> bool {
-    MATH_CTX.with_borrow(|ctx| ctx.arith_error)
-}
-
-#[no_mangle]
-pub extern "C" fn set_arith_error(val: bool) {
-    MATH_CTX.with_borrow_mut(|ctx| ctx.arith_error = val)
-}
-
-#[no_mangle]
-pub extern "C" fn tex_remainder() -> Scaled {
-    MATH_CTX.with_borrow(|ctx| ctx.tex_remainder)
-}
-
-#[no_mangle]
-pub extern "C" fn set_tex_remainder(val: Scaled) {
-    MATH_CTX.with_borrow_mut(|ctx| ctx.tex_remainder = val)
-}
+c_var!(MathCtx => arith_error: bool);
+c_var!(MathCtx => tex_remainder: Scaled);
 
 #[no_mangle]
 pub extern "C" fn randoms(idx: usize) -> i32 {
     MATH_CTX.with_borrow(|ctx| ctx.randoms[idx])
 }
 
-#[no_mangle]
-pub extern "C" fn j_random() -> u8 {
-    MATH_CTX.with_borrow(|ctx| ctx.j_random)
-}
-
-#[no_mangle]
-pub extern "C" fn set_j_random(val: u8) {
-    MATH_CTX.with_borrow_mut(|ctx| ctx.j_random = val)
-}
+c_var!(MathCtx => j_random: u8);
 
 #[no_mangle]
 pub extern "C" fn tex_round(r: f64) -> i32 {
@@ -202,8 +220,7 @@ pub extern "C" fn round_xn_over_d(mut x: Scaled, n: i32, d: i32) -> Scaled {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn make_frac(mut p: i32, mut q: i32) -> i32 {
+pub fn make_frac(math: &mut MathCtx, mut p: i32, mut q: i32) -> i32 {
     let mut neg = p < 0;
     if neg {
         p = -p;
@@ -218,7 +235,7 @@ pub extern "C" fn make_frac(mut p: i32, mut q: i32) -> i32 {
     p %= q;
 
     if n >= 8 {
-        set_arith_error(true);
+        math.arith_error = true;
         if neg {
             -0x7FFFFFFF
         } else {
@@ -257,8 +274,7 @@ pub extern "C" fn make_frac(mut p: i32, mut q: i32) -> i32 {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn take_frac(mut q: i32, mut f: i32) -> i32 {
+pub fn take_frac(math: &mut MathCtx, mut q: i32, mut f: i32) -> i32 {
     let mut neg = f < 0;
 
     if neg {
@@ -280,7 +296,7 @@ pub extern "C" fn take_frac(mut q: i32, mut f: i32) -> i32 {
         if q <= 0x7FFFFFFF / n {
             n *= q;
         } else {
-            set_arith_error(true);
+            math.arith_error = true;
             n = 0x7FFFFFFF;
         }
     }
@@ -317,7 +333,7 @@ pub extern "C" fn take_frac(mut q: i32, mut f: i32) -> i32 {
     let be_careful = n - 0x7FFFFFFF;
 
     if be_careful + p > 0 {
-        set_arith_error(true);
+        math.arith_error = true;
         n = 0x7FFFFFFF - p;
     }
 
@@ -328,8 +344,7 @@ pub extern "C" fn take_frac(mut q: i32, mut f: i32) -> i32 {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn ab_vs_cd(mut a: i32, mut b: i32, mut c: i32, mut d: i32) -> i32 {
+pub fn ab_vs_cd(mut a: i32, mut b: i32, mut c: i32, mut d: i32) -> i32 {
     if a < 0 {
         return ab_vs_cd(-a, -b, c, d);
     } else if c < 0 {
@@ -385,7 +400,7 @@ pub extern "C" fn ab_vs_cd(mut a: i32, mut b: i32, mut c: i32, mut d: i32) -> i3
     }
 }
 
-fn rs_new_randoms(math: &mut MathContext) {
+fn new_randoms(math: &mut MathCtx) {
     for k in 0..24 {
         let mut x = math.randoms[k] - math.randoms[k + 31];
         if x < 0 {
@@ -403,13 +418,6 @@ fn rs_new_randoms(math: &mut MathContext) {
     }
 
     math.j_random = 54;
-}
-
-#[no_mangle]
-pub extern "C" fn new_randoms() {
-    MATH_CTX.with_borrow_mut(|math| {
-        rs_new_randoms(math);
-    })
 }
 
 #[no_mangle]
@@ -432,16 +440,17 @@ pub extern "C" fn init_randoms(seed: i32) {
             math.randoms[(i * 21) % 55] = j;
         }
 
-        rs_new_randoms(math);
-        rs_new_randoms(math);
-        rs_new_randoms(math);
+        new_randoms(math);
+        new_randoms(math);
+        new_randoms(math);
     })
 }
 
 #[no_mangle]
 pub extern "C" fn unif_rand(x: i32) -> i32 {
     MATH_CTX.with_borrow_mut(|math| {
-        let y = take_frac(x.abs(), math.next_rand());
+        let next_rand = math.next_rand();
+        let y = take_frac(math, x.abs(), next_rand);
         if y == x.abs() {
             0
         } else if x > 0 {
@@ -452,36 +461,83 @@ pub extern "C" fn unif_rand(x: i32) -> i32 {
     })
 }
 
-#[no_mangle]
-pub extern "C" fn norm_rand() -> i32 {
-    MATH_CTX.with_borrow_mut(|math| {
-        let mut x;
+pub fn rs_norm_rand(globals: &mut Globals<'_, '_>) -> i32 {
+    let mut x;
+
+    loop {
+        let mut u;
 
         loop {
-            let mut u;
+            let next_rand = globals.math.next_rand() - 0x08000000;
+            x = take_frac(globals.math, 112429, next_rand);
 
-            loop {
-                x = take_frac(112429, math.next_rand() - 0x08000000);
+            u = globals.math.next_rand();
 
-                u = math.next_rand();
-
-                if x.abs() < u {
-                    break;
-                }
-            }
-
-            x = make_frac(x, u);
-            let l = 139548960 - m_log(u);
-
-            if ab_vs_cd(1024, l, x, x) >= 0 {
+            if x.abs() < u {
                 break;
             }
         }
 
-        x
-    })
+        x = make_frac(globals.math, x, u);
+        let l = 139548960 - rs_m_log(globals, u);
+
+        if ab_vs_cd(1024, l, x, x) >= 0 {
+            break;
+        }
+    }
+
+    x
 }
 
-unsafe extern "C" {
-    safe fn m_log(val: i32) -> i32;
+#[no_mangle]
+pub extern "C" fn norm_rand() -> i32 {
+    Globals::with(|globals| rs_norm_rand(globals))
+}
+
+pub fn rs_m_log(globals: &mut Globals<'_, '_>, mut x: i32) -> i32 {
+    if (x <= 0) {
+        /*125: */
+        rs_error_here_with_diagnostic(globals, b"Logarithm of ");
+        rs_print_scaled(globals, x);
+        rs_print_bytes(globals, b" has been replaced by 0");
+        rs_capture_to_diagnostic(globals, None);
+        globals.engine.help_ptr = 2;
+        globals.engine.help_line[1] = c"Since I don't take logs of non-positive numbers,".as_ptr();
+        globals.engine.help_line[0] =
+            c"I'm zeroing this one. Proceed, with fingers crossed.".as_ptr();
+        rs_error(globals);
+        0
+    } else {
+        let mut y = 1302456860;
+        let mut z = 6581195;
+
+        while (x < 0x40000000) {
+            x = x + x;
+            y = y - 93032639;
+            z = z - 48782;
+        }
+
+        y = y + (z / 65536);
+        let mut k = 2;
+
+        while (x > 0x40000004) {
+            /*124: */
+            z = ((x - 1) / POWERS_OF_TWO[k]) + 1;
+
+            while (x < 0x40000000 + z) {
+                z = (z + 1) / 2;
+                k = k + 1;
+            }
+
+            y = y + SPEC_LOG[k];
+            x = x - z;
+        }
+
+        y / 8
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn m_log(x: i32) -> i32 {
+    Globals::with(|globals| rs_m_log(globals, x))
 }

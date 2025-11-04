@@ -49,8 +49,6 @@ int32_t save_native_len;
 bool deletions_allowed;
 bool set_box_allowed;
 scaled_t random_seed;
-int32_t two_to_the[31];
-int32_t spec_log[29];
 int32_t temp_ptr;
 int32_t lo_mem_max;
 int32_t var_used, dyn_used;
@@ -2966,27 +2964,6 @@ initialize_more_variables(void)
     set_error_count(0);
     set_help_ptr(0);
     set_use_err_help(false);
-
-    two_to_the[0] = 1;
-    for (k = 1; k <= 30; k++)
-        two_to_the[k] = 2 * two_to_the[k - 1];
-
-    spec_log[1] = 93032640L;
-    spec_log[2] = 38612034L;
-    spec_log[3] = 17922280L;
-    spec_log[4] = 8662214L;
-    spec_log[5] = 4261238L;
-    spec_log[6] = 2113709L;
-    spec_log[7] = 1052693L;
-    spec_log[8] = 525315L;
-    spec_log[9] = 262400L;
-    spec_log[10] = 131136L;
-    spec_log[11] = 65552L;
-    spec_log[12] = 32772L;
-    spec_log[13] = 16385;
-    for (k = 14; k <= 27; k++)
-        spec_log[k] = two_to_the[27 - k];
-    spec_log[28] = 1;
 
     set_nest_cur(0);
     max_nest_stack = 0;
