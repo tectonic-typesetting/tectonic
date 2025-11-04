@@ -5,6 +5,7 @@ use crate::c_api::hash::{HashCtx, HASH_CTX};
 use crate::c_api::inputs::FileCtx;
 use crate::c_api::output::{OutputCtx, OUTPUT_CTX};
 use crate::c_api::pool::{StringPool, STRING_POOL};
+use crate::c_api::scaled_math::MathCtx;
 use crate::c_api::synctex::SynctexCtx;
 use tectonic_bridge_core::CoreBridgeState;
 
@@ -19,6 +20,7 @@ pub struct Globals<'a, 'b> {
     pub dvi: &'a mut DviCtx,
     pub fonts: &'a mut FontCtx,
     pub synctex: &'a mut SynctexCtx,
+    pub math: &'a mut MathCtx,
 }
 
 impl Globals<'_, '_> {
@@ -32,18 +34,21 @@ impl Globals<'_, '_> {
                                 DVI_CTX.with_borrow_mut(|dvi| {
                                     FontCtx::with(|fonts| {
                                         SynctexCtx::with(|synctex| {
-                                            let mut globals = Globals {
-                                                state,
-                                                engine,
-                                                strings,
-                                                hash,
-                                                files,
-                                                out,
-                                                dvi,
-                                                fonts,
-                                                synctex,
-                                            };
-                                            f(&mut globals)
+                                            MathCtx::with(|math| {
+                                                let mut globals = Globals {
+                                                    state,
+                                                    engine,
+                                                    strings,
+                                                    hash,
+                                                    files,
+                                                    out,
+                                                    dvi,
+                                                    fonts,
+                                                    synctex,
+                                                    math,
+                                                };
+                                                f(&mut globals)
+                                            })
                                         })
                                     })
                                 })
