@@ -384,6 +384,9 @@ impl<'a> CoreBridgeState<'a> {
     pub fn with_global_state<T, F: for<'b> FnOnce(&mut CoreBridgeState<'b>) -> T>(f: F) -> T {
         /// Ensures we only enter the state once at a time, globally
         static GLOBAL: Mutex<()> = Mutex::new(());
+        // We ignore prior panics - the engine should always either be in a continuable state, or
+        // about to restart and will fix up any bad state.
+        GLOBAL.clear_poison();
         let _lock = GLOBAL.lock().unwrap();
         // SAFETY: Pointer is either null or valid, set by the engine on entrance
         let state = unsafe { _ttbc_get_core_state().as_mut() }
