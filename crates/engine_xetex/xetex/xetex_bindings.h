@@ -645,6 +645,40 @@ void dvi_font_def(uintptr_t f);
 
 void finalize_dvi_file(void);
 
+StrNumber maketexstring(const char *str);
+
+char *gettexstring(StrNumber s);
+
+void pack_file_name(StrNumber n, StrNumber a, StrNumber e);
+
+void pack_job_name(const char *s);
+
+void make_utf16_name(void);
+
+void begin_name(void);
+
+void end_name(void);
+
+bool more_name(uint16_t c);
+
+StrNumber make_name_string(void);
+
+void open_log_file(void);
+
+void show_token_list(int32_t p, int32_t q, int32_t l);
+
+void show_context(void);
+
+void token_show(int32_t p);
+
+void geq_word_define(int32_t p, int32_t w);
+
+void prepare_mag(void);
+
+void close_files_and_terminate(void);
+
+void tt_cleanup(void);
+
 uint32_t selector(void);
 
 void set_selector(uint32_t val);
@@ -1025,38 +1059,6 @@ void resize_trie_trc(uintptr_t len);
 
 void clear_trie_trc(void);
 
-StrNumber maketexstring(const char *str);
-
-char *gettexstring(StrNumber s);
-
-void pack_file_name(StrNumber n, StrNumber a, StrNumber e);
-
-void pack_job_name(const char *s);
-
-void make_utf16_name(void);
-
-void begin_name(void);
-
-void end_name(void);
-
-bool more_name(uint16_t c);
-
-StrNumber make_name_string(void);
-
-void open_log_file(void);
-
-void show_token_list(int32_t p, int32_t q, int32_t l);
-
-void show_context(void);
-
-void token_show(int32_t p);
-
-void geq_word_define(int32_t p, int32_t w);
-
-void prepare_mag(void);
-
-void close_files_and_terminate(void);
-
 void pre_error_message(void);
 
 void error(void);
@@ -1067,7 +1069,11 @@ void fatal_error(const char *s);
 
 void int_error(int32_t n);
 
-extern void tt_cleanup(void);
+void overflow(const char *s, int32_t n);
+
+void confusion(const char *s);
+
+void pdf_error(const char *t, const char *p);
 
 int32_t font_max(void);
 
@@ -1381,6 +1387,8 @@ void clear_xdv_buffer(void);
 
 uintptr_t xdv_buf_size(void);
 
+void release_font_engine(void *engine, int32_t flag);
+
 void resize_hash(uintptr_t len);
 
 B32x2 hash(uintptr_t idx);
@@ -1650,19 +1658,13 @@ Scaled xn_over_d(Scaled x, int32_t n, int32_t d);
 
 Scaled round_xn_over_d(Scaled x, int32_t n, int32_t d);
 
-int32_t make_frac(int32_t p, int32_t q);
-
-int32_t take_frac(int32_t q, int32_t f);
-
-int32_t ab_vs_cd(int32_t a, int32_t b, int32_t c, int32_t d);
-
-void new_randoms(void);
-
 void init_randoms(int32_t seed);
 
 int32_t unif_rand(int32_t x);
 
 int32_t norm_rand(void);
+
+int32_t m_log(int32_t x);
 
 SynctexCtx *synctex_ctx(void);
 

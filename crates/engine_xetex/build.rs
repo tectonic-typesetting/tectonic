@@ -203,7 +203,6 @@ const C_FLAGS: &[&str] = &[
 
 const C_FILES: &[&str] = &[
     "xetex/xetex-engine-interface.c",
-    "xetex/xetex-errors.c",
     "xetex/xetex-ext.c",
     "xetex/xetex-ini.c",
     "xetex/xetex-io.c",
