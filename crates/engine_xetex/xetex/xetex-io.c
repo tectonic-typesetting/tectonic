@@ -356,22 +356,6 @@ input_line(UFile* f)
 }
 
 
-void
-u_close(UFile* f)
-{
-    if (f == NULL || f->handle == INVALID_HANDLE)
-        /* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
-        return;
-
-    ttstub_input_close (f->handle);
-
-    if (f->encoding_mode == ICUMAPPING && f->conversion_data != NULL)
-        (f->conversion_drop)(f->conversion_data);
-
-    free(f);
-}
-
-
 int
 get_uni_c(UFile* f)
 {

@@ -439,6 +439,8 @@ typedef unsigned char Flags;
 
 #define HASH_BASE 2228226
 
+#define ICUMAPPING 5
+
 #define MAX_PRINT_LINE 79
 
 #define BIGGEST_CHAR 65535
@@ -1430,6 +1432,8 @@ int32_t line_stack(uintptr_t idx);
 void set_line_stack(uintptr_t idx, int32_t val);
 
 void clear_line_stack(void);
+
+void u_close(UFile *file);
 
 int32_t file_line_error_style_p(void);
 
