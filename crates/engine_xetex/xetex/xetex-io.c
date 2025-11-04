@@ -87,8 +87,9 @@ void
 set_input_file_encoding(UFile* f, int32_t mode, int32_t encodingData)
 {
     if ((f->encoding_mode == ICUMAPPING) && (f->conversion_data != NULL))
-        ucnv_close((UConverter*)(f->conversion_data));
+        (f->conversion_drop)(f->conversion_data);
     f->conversion_data = 0;
+    f->conversion_drop = NULL;
 
     switch (mode) {
         case UTF8:
@@ -116,6 +117,7 @@ set_input_file_encoding(UFile* f, int32_t mode, int32_t encodingData)
                 } else {
                     f->encoding_mode = ICUMAPPING;
                     f->conversion_data = cnv;
+                    f->conversion_drop = (void(*)(void*))&ucnv_close;
                 }
                 free(name);
             }
@@ -364,9 +366,9 @@ u_close(UFile* f)
     ttstub_input_close (f->handle);
 
     if (f->encoding_mode == ICUMAPPING && f->conversion_data != NULL)
-        ucnv_close ((UConverter*) f->conversion_data);
+        (f->conversion_drop)(f->conversion_data);
 
-    free (f);
+    free(f);
 }
 
 

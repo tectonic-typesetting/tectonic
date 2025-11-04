@@ -570,6 +570,7 @@ pub struct UFile {
     skip_next_lf: bool,
     encoding_mode: u8,
     conversion_data: *mut libc::c_void,
+    conversion_drop: Option<extern "C" fn(*mut libc::c_void)>,
 }
 
 c_var!(EngineCtx => selector: into u32);
