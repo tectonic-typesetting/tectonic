@@ -9,6 +9,7 @@ mod memory;
 
 use crate::c_api::dvi::{rs_deinitialize_shipout_variables, rs_finalize_dvi_file};
 use crate::c_api::errors::rs_int_error;
+use crate::c_api::inputs::UFile;
 use crate::c_api::is_dir_sep;
 use crate::c_api::output::{
     rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print, rs_print_bytes,
@@ -560,17 +561,6 @@ pub struct ListStateRecord {
     prev_graf: i32,
     mode_line: i32,
     aux: MemoryWord,
-}
-
-#[derive(Clone, PartialEq, Default)]
-#[repr(C)]
-pub struct UFile {
-    handle: Option<InputId>,
-    saved_char: i64,
-    skip_next_lf: bool,
-    encoding_mode: u8,
-    conversion_data: *mut libc::c_void,
-    conversion_drop: Option<extern "C" fn(*mut libc::c_void)>,
 }
 
 c_var!(EngineCtx => selector: into u32);

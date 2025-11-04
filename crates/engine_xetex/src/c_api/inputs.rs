@@ -1,7 +1,10 @@
+use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
+use tectonic_bridge_core::{CoreBridgeState, InputId};
 
 // pub const MAX_IN_OPEN: usize = 15;
+pub const ICUMAPPING: u8 = 5;
 
 thread_local! {
     static FILE_CTX: RefCell<FileCtx> = const { RefCell::new(FileCtx::new()) };
@@ -91,4 +94,39 @@ pub extern "C" fn set_line_stack(idx: usize, val: i32) {
 #[no_mangle]
 pub extern "C" fn clear_line_stack() {
     FILE_CTX.with_borrow_mut(|files| files.line_stack.clear())
+}
+
+#[derive(Clone, PartialEq, Default)]
+#[repr(C)]
+pub struct UFile {
+    handle: Option<InputId>,
+    saved_char: i64,
+    skip_next_lf: bool,
+    encoding_mode: u8,
+    conversion_data: *mut libc::c_void,
+    conversion_drop: Option<extern "C" fn(*mut libc::c_void)>,
+}
+
+impl UFile {
+    fn close(&mut self, state: &mut CoreBridgeState<'_>) {
+        /* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
+        let Some(handle) = self.handle else {
+            return;
+        };
+
+        state.input_close(handle);
+
+        if self.encoding_mode == ICUMAPPING && !self.conversion_data.is_null() {
+            self.conversion_drop.map(|f| f(self.conversion_data));
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn u_close(file: *mut UFile) {
+    if file.is_null() {
+        return;
+    }
+    Globals::with(|globals| (unsafe { &mut *file }).close(globals.state));
+    unsafe { libc::free(file.cast()) };
 }
