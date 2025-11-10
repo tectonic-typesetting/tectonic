@@ -42,6 +42,7 @@ pub const TEXT_SIZE: usize = 0;
 pub const SCRIPT_SIZE: usize = 256;
 pub const SCRIPT_SCRIPT_SIZE: usize = 512;
 
+pub const ESCAPE: i32 = 0;
 pub const LEFT_BRACE: i32 = 1;
 pub const RIGHT_BRACE: i32 = 2;
 pub const MATH_SHIFT: i32 = 3;
@@ -205,6 +206,11 @@ pub const EVERY_EOF_TEXT: u16 = 16;
 pub const INTER_CHAR_TEXT: u16 = 17;
 pub const WRITE_TEXT: u16 = 18;
 pub const TECTONIC_CODA_TEXT: u16 = 19;
+
+/* input state */
+pub const MID_LINE: i32 = 1;
+pub const SKIP_BLANKS: i32 = 17;
+pub const NEW_LINE: i32 = 33;
 
 pub const EOP: u8 = 140;
 pub const POP: u8 = 142;

@@ -94,7 +94,7 @@ void init_math(void)
 
     get_token();
 
-    if ((cur_cmd == MATH_SHIFT) && (cur_list.mode > 0)) { /*1180: */
+    if ((cur_cmd() == MATH_SHIFT) && (cur_list.mode > 0)) { /*1180: */
         j = TEX_NULL;
         w = -MAX_HALFWORD;
         if (cur_list.head == cur_list.tail) {       /*1520: */
@@ -355,7 +355,7 @@ void init_math(void)
 void start_eq_no(void)
 {
 
-    save_stack_ptr(save_ptr + 0)->b32.s1 = cur_chr;
+    save_stack_ptr(save_ptr + 0)->b32.s1 = cur_chr();
     save_ptr++;
 
     push_math(MATH_SHIFT_GROUP);
@@ -371,7 +371,7 @@ void math_limit_switch(void)
     if (cur_list.head != cur_list.tail) {
 
         if (mem(cur_list.tail).b16.s1 == OP_NOAD) {
-            mem_ptr(cur_list.tail)->b16.s0 = cur_chr;
+            mem_ptr(cur_list.tail)->b16.s0 = cur_chr();
             return;
         }
     }
@@ -389,7 +389,7 @@ static void
 scan_delimiter(int32_t p, bool r)
 {
     if (r) {
-        if (cur_chr == 1) {
+        if (cur_chr() == 1) {
             cur_val1 = 0x40000000;
             scan_math_fam_int();
             cur_val1 += cur_val * 0x200000;
@@ -401,16 +401,16 @@ scan_delimiter(int32_t p, bool r)
     } else {
         do {
             get_x_token();
-        } while (cur_cmd == SPACER || cur_cmd == RELAX);
+        } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-        switch (cur_cmd) {
+        switch (cur_cmd()) {
         case LETTER:
         case OTHER_CHAR:
-            cur_val = DEL_CODE(cur_chr);
+            cur_val = DEL_CODE(cur_chr());
             break;
 
         case DELIM_NUM:
-            if (cur_chr == 1) {
+            if (cur_chr() == 1) {
                 cur_val1 = 0x40000000;
                 scan_math_class_int();
                 scan_math_fam_int();
@@ -478,7 +478,7 @@ void math_ac(void)
 {
     int32_t c;
 
-    if (cur_cmd == ACCENT) {   /*1201: */
+    if (cur_cmd() == ACCENT) {   /*1201: */
         error_here_with_diagnostic("Please use ");
         print_esc_cstr("mathaccent");
         print_cstr(" for accents in math mode");
@@ -500,7 +500,7 @@ void math_ac(void)
     mem_ptr(cur_list.tail + 3)->b32 = empty;
     mem_ptr(cur_list.tail + 2)->b32 = empty;
     mem_ptr(cur_list.tail + 4)->b32.s1 = MATH_CHAR;
-    if (cur_chr == 1) {
+    if (cur_chr() == 1) {
         if (scan_keyword("fixed"))
             mem_ptr(cur_list.tail)->b16.s0 = FIXED_ACC;
         else if (scan_keyword("bottom")) {
@@ -607,7 +607,7 @@ void sub_sup(void)
 
         if ((mem(cur_list.tail).b16.s1 >= ORD_NOAD)
             && (mem(cur_list.tail).b16.s1 < LEFT_NOAD)) {
-            p = cur_list.tail + 2 + cur_cmd - 7;
+            p = cur_list.tail + 2 + cur_cmd() - 7;
             t = mem(p).b32.s1;
         }
     }
@@ -616,9 +616,9 @@ void sub_sup(void)
             mem_ptr(cur_list.tail)->b32.s1 = new_noad();
             cur_list.tail = LLIST_link(cur_list.tail);
         }
-        p = cur_list.tail + 2 + cur_cmd - 7;
+        p = cur_list.tail + 2 + cur_cmd() - 7;
         if (t != EMPTY) {
-            if (cur_cmd == SUP_MARK) {
+            if (cur_cmd() == SUP_MARK) {
                 error_here_with_diagnostic("Double superscript");
                 capture_to_diagnostic(NULL);
                 {
@@ -646,7 +646,7 @@ math_fraction(void)
 {
     small_number c;
 
-    c = cur_chr;
+    c = cur_chr();
 
     if (cur_list.aux.b32.s1 != TEX_NULL) { /*1218:*/
         if (c >= DELIMITED_CODE) {
@@ -706,7 +706,7 @@ void math_left_right(void)
     small_number t;
     int32_t p;
     int32_t q;
-    t = cur_chr;
+    t = cur_chr();
     if ((t != LEFT_NOAD) && (cur_group != MATH_LEFT_GROUP)) { /*1227: */
         if (cur_group == MATH_SHIFT_GROUP) {
             scan_delimiter(GARBAGE, false);
@@ -954,7 +954,7 @@ void after_math(void)
     if (cur_list.mode == -(int32_t) m) {
         {
             get_x_token();
-            if (cur_cmd != MATH_SHIFT) {
+            if (cur_cmd() != MATH_SHIFT) {
                 error_here_with_diagnostic("Display math should end with $$");
                 capture_to_diagnostic(NULL);
                 {
@@ -1058,7 +1058,7 @@ void after_math(void)
 
         if (a == TEX_NULL) { /*1232: */
             get_x_token();
-            if (cur_cmd != MATH_SHIFT) {
+            if (cur_cmd() != MATH_SHIFT) {
                 error_here_with_diagnostic("Display math should end with $$");
                 capture_to_diagnostic(NULL);
                 {
@@ -1218,7 +1218,7 @@ void resume_after_display(void)
          norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
     {
         get_x_token();
-        if (cur_cmd != SPACER)
+        if (cur_cmd() != SPACER)
             back_input();
     }
     if (nest_cur() == 1)

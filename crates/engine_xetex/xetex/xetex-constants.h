@@ -178,7 +178,7 @@
 #define LIST_TAG 2
 #define EXT_TAG 3
 
-/* scanner_status values: */
+/* scanner_status() values: */
 #define NORMAL 0
 #define SKIPPING 1
 #define DEFINING 2

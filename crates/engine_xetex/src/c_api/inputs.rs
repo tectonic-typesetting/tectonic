@@ -1,7 +1,9 @@
+use crate::c_api::engine::rs_gettexstring;
 use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
-use tectonic_bridge_core::{CoreBridgeState, InputId};
+use std::io::Write;
+use tectonic_bridge_core::{CoreBridgeState, FileFormat, InputId};
 
 // pub const MAX_IN_OPEN: usize = 15;
 pub const ICUMAPPING: u8 = 5;
@@ -129,4 +131,36 @@ pub extern "C" fn u_close(file: *mut UFile) {
     }
     Globals::with(|globals| (unsafe { &mut *file }).close(globals.state));
     unsafe { libc::free(file.cast()) };
+}
+
+/// Given a file name stored in the string pool, insert into the string pool text
+/// giving its size in bytes.
+pub fn rs_getfilesize(globals: &mut Globals<'_, '_>, s: StrNumber) {
+    let name = rs_gettexstring(globals, s);
+    let Some(handle) = globals.state.input_open(&name, FileFormat::Tex, false) else {
+        return;
+    };
+    let len = globals.state.input_get_size(handle);
+    globals.state.input_close(handle);
+
+    let mut buf = [0u8; 20];
+    let buf_len = buf.len();
+    let mut write = &mut buf[..];
+
+    write!(write, "{}", len).unwrap();
+    let written = buf_len - write.len();
+    if globals.strings.pool_ptr + written >= globals.strings.pool_size {
+        globals.strings.pool_ptr = globals.strings.pool_size;
+        /* error by str_toks that calls str_room(1) */
+    } else {
+        for b in &buf[..written] {
+            globals.strings.str_pool[globals.strings.pool_ptr] = *b as u16;
+            globals.strings.pool_ptr += 1;
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn getfilesize(s: StrNumber) {
+    Globals::with(|globals| rs_getfilesize(globals, s))
 }

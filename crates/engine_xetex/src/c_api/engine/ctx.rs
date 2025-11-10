@@ -58,6 +58,11 @@ pub struct EngineCtx {
     pub(crate) semantic_pagination_enabled: bool,
     pub(crate) tex_format_default: CString,
     pub(crate) nest_cur: i32,
+    pub(crate) cur_chr: i32,
+    pub(crate) cur_cmd: u8,
+    pub(crate) cur_cs: i32,
+    pub(crate) cur_tok: i32,
+    pub(crate) scanner_status: u8,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -129,6 +134,11 @@ impl EngineCtx {
             semantic_pagination_enabled: false,
             tex_format_default: CString::default(),
             nest_cur: 0,
+            cur_chr: 0,
+            cur_cmd: 0,
+            cur_cs: 0,
+            cur_tok: 0,
+            scanner_status: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -360,6 +370,11 @@ pub extern "C" fn set_tex_format_default(val: *const libc::c_char) {
 }
 
 c_var!(EngineCtx => nest_cur: i32);
+c_var!(EngineCtx => cur_chr: i32);
+c_var!(EngineCtx => cur_cmd: u8);
+c_var!(EngineCtx => cur_cs: i32);
+c_var!(EngineCtx => cur_tok: i32);
+c_var!(EngineCtx => scanner_status: u8);
 
 c_arr!(EngineCtx => eqtb: MemoryWord);
 c_arr!(EngineCtx => mem: MemoryWord);
