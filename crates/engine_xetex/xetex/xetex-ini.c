@@ -46,7 +46,6 @@ str_number init_str_ptr;
 int32_t native_text_size;
 int32_t native_len;
 int32_t save_native_len;
-bool deletions_allowed;
 bool set_box_allowed;
 scaled_t random_seed;
 int32_t temp_ptr;
@@ -76,13 +75,8 @@ int32_t max_save_stack;
 uint16_t cur_level;
 group_code cur_group;
 int32_t cur_boundary;
-eight_bits cur_cmd;
-int32_t cur_chr;
-int32_t cur_cs;
-int32_t cur_tok;
 int32_t max_in_stack;
 int32_t open_parens;
-unsigned char scanner_status;
 int32_t warning_index;
 int32_t def_ref;
 int32_t param_ptr;
@@ -721,16 +715,16 @@ new_patterns(void)
         while (true) {
             get_x_token();
 
-            switch (cur_cmd) {
+            switch (cur_cmd()) {
             case LETTER:
             case OTHER_CHAR:
-                if (digit_sensed || cur_chr < '0'  || cur_chr > '9' ) {
-                    if (cur_chr == '.' ) {
-                        cur_chr = 0;
+                if (digit_sensed || cur_chr() < '0'  || cur_chr() > '9' ) {
+                    if (cur_chr() == '.' ) {
+                        set_cur_chr(0);
                     } else {
-                        cur_chr = LC_CODE(cur_chr);
+                        set_cur_chr(LC_CODE(cur_chr()));
 
-                        if (cur_chr == 0) {
+                        if (cur_chr() == 0) {
                             error_here_with_diagnostic("Nonletter");
                             capture_to_diagnostic(NULL);
                             set_help_ptr(1);
@@ -739,17 +733,17 @@ new_patterns(void)
                         }
                     }
 
-                    if (cur_chr > max_hyph_char)
-                        max_hyph_char = cur_chr;
+                    if (cur_chr() > max_hyph_char)
+                        max_hyph_char = cur_chr();
 
                     if (k < max_hyphenatable_length()) {
                         k++;
-                        hc[k] = cur_chr;
+                        hc[k] = cur_chr();
                         hyf[k] = 0;
                         digit_sensed = false;
                     }
                 } else if (k < max_hyphenatable_length()) {
-                    hyf[k] = cur_chr - 48;
+                    hyf[k] = cur_chr() - 48;
                     digit_sensed = true;
                 }
                 break;
@@ -818,7 +812,7 @@ new_patterns(void)
                     trie_o[q] = v;
                 }
 
-                if (cur_cmd == RIGHT_BRACE)
+                if (cur_cmd() == RIGHT_BRACE)
                     goto done;
 
                 k = 0;
@@ -1084,11 +1078,11 @@ not_found1: /*970:*/
         get_x_token();
 
     reswitch:
-        switch (cur_cmd) {
+        switch (cur_cmd()) {
         case LETTER:
         case OTHER_CHAR:
         case CHAR_GIVEN:
-            if (cur_chr == '-' ) { /*973:*/
+            if (cur_chr() == '-' ) { /*973:*/
                 if (n < max_hyphenatable_length()) {
                     q = get_avail();
                     mem_ptr(q)->b32.s1 = p;
@@ -1096,12 +1090,12 @@ not_found1: /*970:*/
                     p = q;
                 }
             } else {
-                if (hyph_index == 0 || cur_chr > 255)
-                    hc[0] = LC_CODE(cur_chr);
-                else if (trie_trc(hyph_index + cur_chr) != cur_chr)
+                if (hyph_index == 0 || cur_chr() > 255)
+                    hc[0] = LC_CODE(cur_chr());
+                else if (trie_trc(hyph_index + cur_chr()) != cur_chr())
                     hc[0] = 0;
                 else
-                    hc[0] = trie_tro(hyph_index + cur_chr);
+                    hc[0] = trie_tro(hyph_index + cur_chr());
 
                 if (hc[0] == 0) {
                     error_here_with_diagnostic("Not a letter");
@@ -1126,8 +1120,8 @@ not_found1: /*970:*/
 
         case CHAR_NUM:
             scan_char_num();
-            cur_chr = cur_val;
-            cur_cmd = CHAR_GIVEN;
+            set_cur_chr(cur_val);
+            set_cur_cmd(CHAR_GIVEN);
             goto reswitch;
             break;
 
@@ -1195,7 +1189,7 @@ not_found1: /*970:*/
                 set_hyph_list(h, p); /*:975*/
             }
 
-            if (cur_cmd == RIGHT_BRACE)
+            if (cur_cmd() == RIGHT_BRACE)
                 return;
 
             n = 0;
@@ -1230,17 +1224,17 @@ prefixed_command(void)
 
     a = 0;
 
-    while (cur_cmd == PREFIX) {
-        if (!odd(a / cur_chr))
-            a = a + cur_chr;
+    while (cur_cmd() == PREFIX) {
+        if (!odd(a / cur_chr()))
+            a = a + cur_chr();
 
         do {
             get_x_token();
-        } while (cur_cmd == SPACER || cur_cmd == RELAX);
+        } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-        if (cur_cmd <= MAX_NON_PREFIXED_COMMAND) { /*1247:*/
+        if (cur_cmd() <= MAX_NON_PREFIXED_COMMAND) { /*1247:*/
             error_here_with_diagnostic("You can't use a prefix with `");
-            print_cmd_chr(cur_cmd, cur_chr);
+            print_cmd_chr(cur_cmd(), cur_chr());
             print_char('\'');
             capture_to_diagnostic(NULL);
             set_help_ptr(1);
@@ -1261,7 +1255,7 @@ prefixed_command(void)
         j = 0;
     }
 
-    if (cur_cmd != DEF && (a % 4 != 0 || j != 0)) {
+    if (cur_cmd() != DEF && (a % 4 != 0 || j != 0)) {
         error_here_with_diagnostic("You can't use `");
         print_esc_cstr("long");
         print_cstr("' or `");
@@ -1269,7 +1263,7 @@ prefixed_command(void)
         print_cstr("' or `");
         print_esc_cstr("protected");
         print_cstr("' with `");
-        print_cmd_chr(cur_cmd, cur_chr);
+        print_cmd_chr(cur_cmd(), cur_chr());
         print_char('\'');
         capture_to_diagnostic(NULL);
         set_help_ptr(1);
@@ -1287,21 +1281,21 @@ prefixed_command(void)
         }
     }
 
-    switch (cur_cmd) { /*1252:*/
+    switch (cur_cmd()) { /*1252:*/
     case SET_FONT:
         if (a >= 4)
-            geq_define(CUR_FONT_LOC, DATA, cur_chr);
+            geq_define(CUR_FONT_LOC, DATA, cur_chr());
         else
-            eq_define(CUR_FONT_LOC, DATA, cur_chr);
+            eq_define(CUR_FONT_LOC, DATA, cur_chr());
         break;
 
     case DEF:
-        if (odd(cur_chr) && a < 4 && INTPAR(global_defs) >= 0)
+        if (odd(cur_chr()) && a < 4 && INTPAR(global_defs) >= 0)
             a = a + 4;
 
-        e = (cur_chr >= 2);
+        e = (cur_chr() >= 2);
         get_r_token();
-        p = cur_cs;
+        p = cur_cs();
         q = scan_toks(true, e);
 
         if (j != 0) {
@@ -1318,44 +1312,44 @@ prefixed_command(void)
         break;
 
     case LET:
-        n = cur_chr;
+        n = cur_chr();
         get_r_token();
-        p = cur_cs;
+        p = cur_cs();
 
         if (n == NORMAL) {
             do {
                 get_token();
-            } while (cur_cmd == SPACER);
+            } while (cur_cmd() == SPACER);
 
-            if (cur_tok == (OTHER_TOKEN + '=' )) {
+            if (cur_tok() == (OTHER_TOKEN + '=' )) {
                 get_token();
-                if (cur_cmd == SPACER)
+                if (cur_cmd() == SPACER)
                     get_token();
             }
         } else {
             get_token();
-            q = cur_tok;
+            q = cur_tok();
             get_token();
             back_input();
-            cur_tok = q;
+            set_cur_tok(q);
             back_input();
         }
 
-        if (cur_cmd >= CALL) {
-            mem_ptr(cur_chr)->b32.s0++;
-        } else if (cur_cmd == REGISTER || cur_cmd == TOKS_REGISTER) {
-            if (cur_chr < 0 || cur_chr > 19) /* 19 = lo_mem_stat_max, I think */
-                mem_ptr(cur_chr + 1)->b32.s0++;
+        if (cur_cmd() >= CALL) {
+            mem_ptr(cur_chr())->b32.s0++;
+        } else if (cur_cmd() == REGISTER || cur_cmd() == TOKS_REGISTER) {
+            if (cur_chr() < 0 || cur_chr() > 19) /* 19 = lo_mem_stat_max, I think */
+                mem_ptr(cur_chr() + 1)->b32.s0++;
         }
 
         if (a >= 4)
-            geq_define(p, cur_cmd, cur_chr);
+            geq_define(p, cur_cmd(), cur_chr());
         else
-            eq_define(p, cur_cmd, cur_chr);
+            eq_define(p, cur_cmd(), cur_chr());
         break;
 
     case SHORTHAND_DEF:
-        if (cur_chr == CHAR_SUB_DEF_CODE) {
+        if (cur_chr() == CHAR_SUB_DEF_CODE) {
             /* Tectonic customization! */
             error_here_with_diagnostic("vestigial MLTeX shorthand encountered??");
             capture_to_diagnostic(NULL);
@@ -1363,9 +1357,9 @@ prefixed_command(void)
             set_help_line(0, "This should never happen in Tectonic, where MLTeX has been excised.");
             error();
         } else {
-            n = cur_chr;
+            n = cur_chr();
             get_r_token();
-            p = cur_cs;
+            p = cur_cs();
 
             if (a >= 4)
                 geq_define(p, RELAX, TOO_BIG_USV);
@@ -1473,7 +1467,7 @@ prefixed_command(void)
         break;
 
     case READ_TO_CS:
-        j = cur_chr;
+        j = cur_chr();
         scan_int();
         n = cur_val;
         if (!scan_keyword("to")) {
@@ -1486,7 +1480,7 @@ prefixed_command(void)
         }
 
         get_r_token();
-        p = cur_cs;
+        p = cur_cs();
         read_toks(n, p, j);
 
         if (a >= 4)
@@ -1497,42 +1491,42 @@ prefixed_command(void)
 
     case TOKS_REGISTER:
     case ASSIGN_TOKS:
-        q = cur_cs;
+        q = cur_cs();
         e = false;
 
-        if (cur_cmd == TOKS_REGISTER) {
-            if (cur_chr == 0) {
+        if (cur_cmd() == TOKS_REGISTER) {
+            if (cur_chr() == 0) {
                 scan_register_num();
                 if (cur_val > 255) {
                     find_sa_element(TOK_VAL, cur_val, true);
-                    cur_chr = cur_ptr;
+                    set_cur_chr(cur_ptr);
                     e = true;
                 } else {
-                    cur_chr = TOKS_BASE + cur_val;
+                    set_cur_chr(TOKS_BASE + cur_val);
                 }
             } else {
                 e = true;
             }
-        } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
+        } else if (cur_chr() == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
             scan_char_class_not_ignored();
             cur_ptr = cur_val;
             scan_char_class_not_ignored();
             find_sa_element(INTER_CHAR_VAL, cur_ptr * CHAR_CLASS_LIMIT + cur_val, true);
-            cur_chr = cur_ptr;
+            set_cur_chr(cur_ptr);
             e = true;
         }
 
-        p = cur_chr;
+        p = cur_chr();
         scan_optional_equals();
 
         do {
             get_x_token();
-        } while (cur_cmd == SPACER || cur_cmd == RELAX);
+        } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-        if (cur_cmd != LEFT_BRACE) { /*1262:*/
-            if (cur_cmd == TOKS_REGISTER || cur_cmd == ASSIGN_TOKS) {
-                if (cur_cmd == TOKS_REGISTER) {
-                    if (cur_chr == 0) {
+        if (cur_cmd() != LEFT_BRACE) { /*1262:*/
+            if (cur_cmd() == TOKS_REGISTER || cur_cmd() == ASSIGN_TOKS) {
+                if (cur_cmd() == TOKS_REGISTER) {
+                    if (cur_chr() == 0) {
                         scan_register_num();
                         if (cur_val < 256) {
                             q = TOKS_REG(cur_val);
@@ -1544,9 +1538,9 @@ prefixed_command(void)
                                 q = mem(cur_ptr + 1).b32.s1;
                         }
                     } else {
-                        q = mem(cur_chr + 1).b32.s1;
+                        q = mem(cur_chr() + 1).b32.s1;
                     }
-                } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
+                } else if (cur_chr() == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                     scan_char_class_not_ignored();
                     cur_ptr = cur_val;
                     scan_char_class_not_ignored();
@@ -1556,7 +1550,7 @@ prefixed_command(void)
                     else
                         q = mem(cur_ptr + 1).b32.s1;
                 } else {
-                    q = eqtb_ptr(cur_chr)->b32.s1;
+                    q = eqtb_ptr(cur_chr())->b32.s1;
                 }
 
                 if (q == TEX_NULL) {
@@ -1589,7 +1583,7 @@ prefixed_command(void)
         }
 
         back_input();
-        cur_cs = q;
+        set_cur_cs(q);
         q = scan_toks(false, false);
 
         if (mem(def_ref).b32.s1 == TEX_NULL) {
@@ -1632,7 +1626,7 @@ prefixed_command(void)
         break;
 
     case ASSIGN_INT:
-        p = cur_chr;
+        p = cur_chr();
         scan_optional_equals();
         scan_int();
         if (a >= 4)
@@ -1642,7 +1636,7 @@ prefixed_command(void)
         break;
 
     case ASSIGN_DIMEN:
-        p = cur_chr;
+        p = cur_chr();
         scan_optional_equals();
         scan_dimen(false, false, false);
         if (a >= 4)
@@ -1653,8 +1647,8 @@ prefixed_command(void)
 
     case ASSIGN_GLUE:
     case ASSIGN_MU_GLUE:
-        p = cur_chr;
-        n = cur_cmd;
+        p = cur_chr();
+        n = cur_cmd();
         scan_optional_equals();
         if (n == ASSIGN_MU_GLUE)
             scan_glue(MU_VAL);
@@ -1668,8 +1662,8 @@ prefixed_command(void)
         break;
 
     case XETEX_DEF_CODE:
-        if (cur_chr == SF_CODE_BASE) {
-            p = cur_chr;
+        if (cur_chr() == SF_CODE_BASE) {
+            p = cur_chr();
             scan_usv_num();
             p = p + cur_val;
             n = SF_CODE(cur_val) % 65536L;
@@ -1679,8 +1673,8 @@ prefixed_command(void)
                 geq_define(p, DATA, cur_val * 65536L + n);
             else
                 eq_define(p, DATA, cur_val * 65536L + n);
-        } else if (cur_chr == MATH_CODE_BASE) {
-            p = cur_chr;
+        } else if (cur_chr() == MATH_CODE_BASE) {
+            p = cur_chr();
             scan_usv_num();
             p = p + cur_val;
             scan_optional_equals();
@@ -1689,8 +1683,8 @@ prefixed_command(void)
                 geq_define(p, DATA, cur_val);
             else
                 eq_define(p, DATA, cur_val);
-        } else if (cur_chr == MATH_CODE_BASE + 1) {
-            p = cur_chr - 1;
+        } else if (cur_chr() == MATH_CODE_BASE + 1) {
+            p = cur_chr() - 1;
             scan_usv_num();
             p = p + cur_val;
             scan_optional_equals();
@@ -1704,8 +1698,8 @@ prefixed_command(void)
                 geq_define(p, DATA, n);
             else
                 eq_define(p, DATA, n);
-        } else if (cur_chr == DEL_CODE_BASE) {
-            p = cur_chr;
+        } else if (cur_chr() == DEL_CODE_BASE) {
+            p = cur_chr();
             scan_usv_num();
             p = p + cur_val;
             scan_optional_equals();
@@ -1715,7 +1709,7 @@ prefixed_command(void)
             else
                 eq_word_define(p, cur_val);
         } else {
-            p = cur_chr - 1;
+            p = cur_chr() - 1;
             scan_usv_num();
             p = p + cur_val;
             scan_optional_equals();
@@ -1732,18 +1726,18 @@ prefixed_command(void)
         break;
 
     case DEF_CODE:
-        if (cur_chr == CAT_CODE_BASE)
+        if (cur_chr() == CAT_CODE_BASE)
             n = MAX_CHAR_CODE;
-        else if (cur_chr == MATH_CODE_BASE)
+        else if (cur_chr() == MATH_CODE_BASE)
             n = 0x8000;
-        else if (cur_chr == SF_CODE_BASE)
+        else if (cur_chr() == SF_CODE_BASE)
             n = 0x7FFF;
-        else if (cur_chr == DEL_CODE_BASE)
+        else if (cur_chr() == DEL_CODE_BASE)
             n = 0xFFFFFF;
         else
             n = BIGGEST_USV; /*:1268 */
 
-        p = cur_chr;
+        p = cur_chr();
         scan_usv_num();
         p = p + cur_val;
         scan_optional_equals();
@@ -1794,7 +1788,7 @@ prefixed_command(void)
         break;
 
     case DEF_FAMILY:
-        p = cur_chr;
+        p = cur_chr();
         scan_math_fam_int();
         p = p + cur_val;
         scan_optional_equals();
@@ -1855,7 +1849,7 @@ prefixed_command(void)
         break;
 
     case SET_SHAPE:
-        q = cur_chr;
+        q = cur_chr();
         scan_optional_equals();
         scan_int();
         n = cur_val;
@@ -1895,7 +1889,7 @@ prefixed_command(void)
         break;
 
     case HYPH_DATA:
-        if (cur_chr == 1) {
+        if (cur_chr() == 1) {
             if (in_initex_mode) {
                 new_patterns();
                 goto done;
@@ -1908,7 +1902,7 @@ prefixed_command(void)
 
             do {
                 get_token();
-            } while (cur_cmd != RIGHT_BRACE);
+            } while (cur_cmd() != RIGHT_BRACE);
 
             return;
         } else {
@@ -1926,7 +1920,7 @@ prefixed_command(void)
         break;
 
     case ASSIGN_FONT_INT:
-        n = cur_chr;
+        n = cur_chr();
         scan_font_ident();
         f = cur_val;
 
@@ -1972,7 +1966,7 @@ prefixed_command(void)
 
 done: /*1304:*/
     if (after_token != 0) {
-        cur_tok = after_token;
+        set_cur_tok(after_token);
         back_input();
         after_token = 0;
     }
@@ -2833,7 +2827,7 @@ final_cleanup(void)
 {
     small_number c;
 
-    c = cur_chr;
+    c = cur_chr();
 
     if (c != 1)
         INTPAR(new_line_char) = -1;
@@ -2959,7 +2953,6 @@ initialize_more_variables(void)
 
     set_interaction(ERROR_STOP_MODE);
 
-    deletions_allowed = true;
     set_box_allowed = true;
     set_error_count(0);
     set_help_ptr(0);
@@ -3511,7 +3504,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     memset(buffer_ptr(), 0, buf_size * sizeof(buffer(0)));
     first = 0;
 
-    scanner_status = NORMAL;
+    set_scanner_status(NORMAL);
     warning_index = TEX_NULL;
     first = 1;
     cur_input_ptr()->state = NEW_LINE;

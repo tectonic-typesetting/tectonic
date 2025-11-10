@@ -182,44 +182,6 @@ getfilemoddate(str_number s)
   }
 }
 
-/* Given a file name stored in the string pool, insert into the string pool text
- * giving its size in bytes. */
-void
-getfilesize(str_number s)
-{
-  char *name;
-  size_t file_len, text_len;
-  rust_input_handle_t handle;
-  char buf[20];
-  int i;
-
-  name = gettexstring(s);
-  handle = ttstub_input_open(name, TTBC_FILE_FORMAT_TEX, 0);
-  free(name);
-
-  if (handle == INVALID_HANDLE)
-    return; /* => evaluate to the empty string; intentional */
-
-  file_len = ttstub_input_get_size(handle);
-  ttstub_input_close(handle);
-
-  i = snprintf(buf, sizeof(buf), "%lu", (long unsigned int) file_len);
-  check_nprintf(i, sizeof(buf));
-  text_len = strlen(buf);
-
-  if ((unsigned) (pool_ptr() + text_len) >= (unsigned) pool_size()) {
-      set_pool_ptr(pool_size());
-      /* error by str_toks that calls str_room(1) */
-  } else {
-      int i;
-
-      for (i = 0; i < text_len; i++) {
-          set_str_pool(pool_ptr(), (uint16_t) buf[i]);
-          set_pool_ptr(pool_ptr()+1);
-      }
-  }
-}
-
 void getfiledump(int32_t s, int offset, int length)
 {
   char *name;

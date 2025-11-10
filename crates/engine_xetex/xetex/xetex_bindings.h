@@ -58,6 +58,8 @@ typedef unsigned char Flags;
 
 #define SCRIPT_SCRIPT_SIZE 512
 
+#define ESCAPE 0
+
 #define LEFT_BRACE 1
 
 #define RIGHT_BRACE 2
@@ -376,6 +378,12 @@ typedef unsigned char Flags;
 #define WRITE_TEXT 18
 
 #define TECTONIC_CODA_TEXT 19
+
+#define MID_LINE 1
+
+#define SKIP_BLANKS 17
+
+#define NEW_LINE 33
 
 #define EOP 140
 
@@ -870,6 +878,26 @@ void set_tex_format_default(const char *val);
 int32_t nest_cur(void);
 
 void set_nest_cur(int32_t val);
+
+int32_t cur_chr(void);
+
+void set_cur_chr(int32_t val);
+
+uint8_t cur_cmd(void);
+
+void set_cur_cmd(uint8_t val);
+
+int32_t cur_cs(void);
+
+void set_cur_cs(int32_t val);
+
+int32_t cur_tok(void);
+
+void set_cur_tok(int32_t val);
+
+uint8_t scanner_status(void);
+
+void set_scanner_status(uint8_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 
@@ -1442,6 +1470,8 @@ void set_line_stack(uintptr_t idx, int32_t val);
 void clear_line_stack(void);
 
 void u_close(UFile *file);
+
+void getfilesize(StrNumber s);
 
 int32_t file_line_error_style_p(void);
 

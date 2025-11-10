@@ -2019,11 +2019,11 @@ write_out(int32_t p)
 
     old_mode = cur_list.mode;
     cur_list.mode = 0;
-    cur_cs = write_loc;
+    set_cur_cs(write_loc);
     q = scan_toks(false, true);
     get_token();
 
-    if (cur_tok != CS_TOKEN_FLAG + END_WRITE) { /*1412:*/
+    if (cur_tok() != CS_TOKEN_FLAG + END_WRITE) { /*1412:*/
         error_here_with_diagnostic("Unbalanced write command");
         capture_to_diagnostic(NULL);
         set_help_ptr(2);
@@ -2033,7 +2033,7 @@ write_out(int32_t p)
 
         do {
             get_token();
-        } while (cur_tok != CS_TOKEN_FLAG + END_WRITE);
+        } while (cur_tok() != CS_TOKEN_FLAG + END_WRITE);
     }
 
     cur_list.mode = old_mode;

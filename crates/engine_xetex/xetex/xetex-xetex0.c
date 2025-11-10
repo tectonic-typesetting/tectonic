@@ -42,8 +42,8 @@ runaway(void)
 {
     int32_t p = TEX_NULL;
 
-    if (scanner_status > SKIPPING) {
-        switch (scanner_status) {
+    if (scanner_status() > SKIPPING) {
+        switch (scanner_status()) {
         case DEFINING:
             print_nl_cstr("Runaway definition");
             p = def_ref;
@@ -4373,17 +4373,17 @@ void unsave(void)
                 goto done;
             p = save_stack(save_ptr).b32.s1;
             if (save_stack(save_ptr).b16.s1 == INSERT_TOKEN) {   /*338: */
-                t = cur_tok;
-                cur_tok = p;
+                t = cur_tok();
+                set_cur_tok(p);
                 if (a) {
                     p = get_avail();
-                    mem_ptr(p)->b32.s0 = cur_tok;
+                    mem_ptr(p)->b32.s0 = cur_tok();
                     mem_ptr(p)->b32.s1 = cur_input().loc;
                     cur_input_ptr()->loc = p;
                     cur_input_ptr()->start = p;
-                    if (cur_tok < RIGHT_BRACE_LIMIT) {
+                    if (cur_tok() < RIGHT_BRACE_LIMIT) {
 
-                        if (cur_tok < LEFT_BRACE_LIMIT)
+                        if (cur_tok() < LEFT_BRACE_LIMIT)
                             align_state--;
                         else
                             align_state++;
@@ -4392,7 +4392,7 @@ void unsave(void)
                     back_input();
                     a = true;
                 }
-                cur_tok = t;
+                set_cur_tok(t);
             } else if (save_stack(save_ptr).b16.s1 == RESTORE_SA) {
                 sa_restore();
                 sa_chain = p;
@@ -4431,15 +4431,15 @@ void unsave(void)
 
 void print_meaning(void)
 {
-    print_cmd_chr(cur_cmd, cur_chr);
-    if (cur_cmd >= CALL) {
+    print_cmd_chr(cur_cmd(), cur_chr());
+    if (cur_cmd() >= CALL) {
         print_char(':');
         print_ln();
-        token_show(cur_chr);
-    } else if ((cur_cmd == TOP_BOT_MARK) && (cur_chr < 5)) {
+        token_show(cur_chr());
+    } else if ((cur_cmd() == TOP_BOT_MARK) && (cur_chr() < 5)) {
         print_char(':');
         print_ln();
-        token_show(cur_mark[cur_chr]);
+        token_show(cur_mark[cur_chr()]);
     }
 }
 
@@ -4460,14 +4460,14 @@ void show_cur_cmd_chr(void)
         print_cstr(": ");
         shown_mode = cur_list.mode;
     }
-    print_cmd_chr(cur_cmd, cur_chr);
+    print_cmd_chr(cur_cmd(), cur_chr());
     if (INTPAR(tracing_ifs) > 0) {
 
-        if (cur_cmd >= IF_TEST) {
+        if (cur_cmd() >= IF_TEST) {
 
-            if (cur_cmd <= FI_OR_ELSE) {
+            if (cur_cmd() <= FI_OR_ELSE) {
                 print_cstr(": ");
-                if (cur_cmd == FI_OR_ELSE) {
+                if (cur_cmd() == FI_OR_ELSE) {
                     print_cmd_chr(IF_TEST, cur_if);
                     print_char(' ');
                     n = 0;
@@ -4587,10 +4587,10 @@ void back_input(void)
            && (cur_input().index != V_TEMPLATE))
         end_token_list();
     p = get_avail();
-    mem_ptr(p)->b32.s0 = cur_tok;
-    if (cur_tok < RIGHT_BRACE_LIMIT) {
+    mem_ptr(p)->b32.s0 = cur_tok();
+    if (cur_tok() < RIGHT_BRACE_LIMIT) {
 
-        if (cur_tok < LEFT_BRACE_LIMIT)
+        if (cur_tok() < LEFT_BRACE_LIMIT)
             align_state--;
         else
             align_state++;
@@ -4679,33 +4679,31 @@ check_outer_validity(void)
     int32_t p;
     int32_t q;
 
-    if (scanner_status != NORMAL) {
-        deletions_allowed = false;
-
-        if (cur_cs != 0) {
+    if (scanner_status() != NORMAL) {
+        if (cur_cs() != 0) {
             if (cur_input().state == TOKEN_LIST || cur_input().name < 1 || cur_input().name > 17) {
                 p = get_avail();
-                mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + cur_cs;
+                mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + cur_cs();
                 begin_token_list(p, BACKED_UP);
             }
 
-            cur_cmd = SPACER;
-            cur_chr = ' ' ;
+            set_cur_cmd(SPACER);
+            set_cur_chr(' ' );
         }
 
-        if (scanner_status > SKIPPING) { /*350:*/
+        if (scanner_status() > SKIPPING) { /*350:*/
             runaway();
 
-            if (cur_cs == 0) {
+            if (cur_cs() == 0) {
                 error_here_with_diagnostic("File ended");
             } else {
-                cur_cs = 0;
+                set_cur_cs(0);
                 error_here_with_diagnostic("Forbidden control sequence found");
             }
 
             p = get_avail();
 
-            switch (scanner_status) {
+            switch (scanner_status()) {
             case DEFINING:
                 print_cstr(" while scanning definition");
                 mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
@@ -4753,16 +4751,14 @@ check_outer_validity(void)
             set_help_line(1, "This kind of error happens when you say `\\if...' and forget");
             set_help_line(0, "the matching `\\fi'. I've inserted a `\\fi'; this might work.");
 
-            if (cur_cs != 0)
-                cur_cs = 0;
+            if (cur_cs() != 0)
+                set_cur_cs(0);
             else
                 set_help_line(2, "The file ended while I was skipping conditional text.");
 
-            cur_tok = CS_TOKEN_FLAG + FROZEN_FI;
+            set_cur_tok(CS_TOKEN_FLAG + FROZEN_FI);
             ins_error();
         }
-
-        deletions_allowed = true;
     }
 }
 
@@ -4786,25 +4782,25 @@ get_next(void)
     small_number sup_count;
 
 restart:
-    cur_cs = 0;
+    set_cur_cs(0);
 
     if (cur_input().state != TOKEN_LIST) { /*355:*/
     texswitch:
         if (cur_input().loc <= cur_input().limit) {
-            cur_chr = buffer(cur_input().loc);
+            set_cur_chr(buffer(cur_input().loc));
             cur_input_ptr()->loc++;
 
-            if (cur_chr >= 0xD800 && cur_chr < 0xDC00 && cur_input().loc <= cur_input().limit &&
+            if (cur_chr() >= 0xD800 && cur_chr() < 0xDC00 && cur_input().loc <= cur_input().limit &&
                 buffer(cur_input().loc) >= 0xDC00 && buffer(cur_input().loc) < 0xE000) {
                 lower = buffer(cur_input().loc) - 0xDC00;
                 cur_input_ptr()->loc++;
-                cur_chr = 65536L + (cur_chr - 0xD800) * 1024 + lower;
+                set_cur_chr(65536L + (cur_chr() - 0xD800) * 1024 + lower);
             }
 
         reswitch:
-            cur_cmd = CAT_CODE(cur_chr);
+            set_cur_cmd(CAT_CODE(cur_chr()));
 
-            switch (cur_input().state + cur_cmd) { /*357:*/
+            switch (cur_input().state + cur_cmd()) { /*357:*/
             ANY_STATE_PLUS(IGNORE):
             case SKIP_BLANKS + SPACER:
             case NEW_LINE + SPACER:
@@ -4813,12 +4809,12 @@ restart:
 
             ANY_STATE_PLUS(ESCAPE):
                 if (cur_input().loc > cur_input().limit) {
-                    cur_cs = NULL_CS;
+                    set_cur_cs(NULL_CS);
                 } else {
                 start_cs:
                     k = cur_input().loc;
-                    cur_chr = buffer(k);
-                    cat = CAT_CODE(cur_chr);
+                    set_cur_chr(buffer(k));
+                    cat = CAT_CODE(cur_chr());
                     k++;
 
                     if (cat == LETTER)
@@ -4830,12 +4826,12 @@ restart:
 
                     if (cat == LETTER && k <= cur_input().limit) { /*368:*/
                         do {
-                            cur_chr = buffer(k);
-                            cat = CAT_CODE(cur_chr);
+                            set_cur_chr(buffer(k));
+                            cat = CAT_CODE(cur_chr());
                             k++;
                         } while (cat == LETTER && k <= cur_input().limit);
 
-                        if (cat == SUP_MARK && buffer(k) == cur_chr && k < cur_input().limit) {
+                        if (cat == SUP_MARK && buffer(k) == cur_chr() && k < cur_input().limit) {
                             /* Special characters: either ^^X, or up to six
                              * ^'s followed by one hex character for each
                              * ^. */
@@ -4847,7 +4843,7 @@ restart:
                             sup_count = 2;
 
                             while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input().limit &&
-                                   buffer(k + sup_count - 1) == cur_chr)
+                                   buffer(k + sup_count - 1) == cur_chr())
                                 sup_count++;
 
                             /* If they are followed by a sufficient number of
@@ -4881,20 +4877,20 @@ restart:
                             }
 
                             if (sup_count > 0) {
-                                cur_chr = 0;
+                                set_cur_chr(0);
 
                                 for (d = 1; d <= sup_count; d++) {
                                     c = buffer(k + sup_count - 2 + d);
                                     if (c <= '9' )
-                                        cur_chr = 16 * cur_chr + c - '0';
+                                        set_cur_chr(16 * cur_chr() + c - '0');
                                     else
-                                        cur_chr = 16 * cur_chr + c - 'a' + 10;
+                                        set_cur_chr(16 * cur_chr() + c - 'a' + 10);
                                 }
 
-                                if (cur_chr > BIGGEST_USV) {
-                                    cur_chr = buffer(k);
+                                if (cur_chr() > BIGGEST_USV) {
+                                    set_cur_chr(buffer(k));
                                 } else {
-                                    set_buffer(k - 1, cur_chr);
+                                    set_buffer(k - 1, cur_chr());
                                     d = 2 * sup_count - 1;
                                     cur_input_ptr()->limit = cur_input().limit - d;
 
@@ -4911,18 +4907,18 @@ restart:
                             k--;
 
                         if (k > cur_input().loc + 1) {
-                            cur_cs = id_lookup(cur_input().loc, k - cur_input().loc);
+                            set_cur_cs(id_lookup(cur_input().loc, k - cur_input().loc));
                             cur_input_ptr()->loc = k;
                             goto found;
                         }
                     } else { /*367:*/
-                        if (cat == SUP_MARK && buffer(k) == cur_chr && k < cur_input().limit) {
+                        if (cat == SUP_MARK && buffer(k) == cur_chr() && k < cur_input().limit) {
                             int32_t sup_count_save;
 
                             sup_count = 2;
 
                             while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input().limit &&
-                                   buffer(k + sup_count - 1) == cur_chr)
+                                   buffer(k + sup_count - 1) == cur_chr())
                                 sup_count++;
 
                             sup_count_save = sup_count;
@@ -4949,20 +4945,20 @@ restart:
                             }
 
                             if (sup_count > 0) {
-                                cur_chr = 0;
+                                set_cur_chr(0);
 
                                 for (d = 1; d <= sup_count; d++) {
                                     c = buffer(k + sup_count - 2 + d);
                                     if (c <= '9' )
-                                        cur_chr = 16 * cur_chr + c - '0';
+                                        set_cur_chr(16 * cur_chr() + c - '0');
                                     else
-                                        cur_chr = 16 * cur_chr + c - 'a' + 10;
+                                        set_cur_chr(16 * cur_chr() + c - 'a' + 10);
                                 }
 
-                                if (cur_chr > BIGGEST_USV) {
-                                    cur_chr = buffer(k);
+                                if (cur_chr() > BIGGEST_USV) {
+                                    set_cur_chr(buffer(k));
                                 } else {
-                                    set_buffer(k - 1, cur_chr);
+                                    set_buffer(k - 1, cur_chr());
                                     d = 2 * sup_count - 1;
                                     cur_input_ptr()->limit = cur_input().limit - d;
                                     while (k <= cur_input().limit) {
@@ -4976,38 +4972,38 @@ restart:
                     }
 
                     if (buffer(cur_input().loc) > 65535L) {
-                        cur_cs = id_lookup(cur_input().loc, 1);
+                        set_cur_cs(id_lookup(cur_input().loc, 1));
                         cur_input_ptr()->loc++;
                         goto found;
                     }
 
-                    cur_cs = SINGLE_BASE + buffer(cur_input().loc);
+                    set_cur_cs(SINGLE_BASE + buffer(cur_input().loc));
                     cur_input_ptr()->loc++;
                 }
 
             found:
-                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
-                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
-                if (cur_cmd >= OUTER_CALL)
+                set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
+                set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
+                if (cur_cmd() >= OUTER_CALL)
                     check_outer_validity();
                 break;
 
             ANY_STATE_PLUS(ACTIVE_CHAR):
-                cur_cs = cur_chr + 1;
-                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
-                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
+                set_cur_cs(cur_chr() + 1);
+                set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
+                set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
                 cur_input_ptr()->state = MID_LINE;
-                if (cur_cmd >= OUTER_CALL)
+                if (cur_cmd() >= OUTER_CALL)
                     check_outer_validity();
                 break;
 
             ANY_STATE_PLUS(SUP_MARK):
-                if (cur_chr == buffer(cur_input().loc)) {
+                if (cur_chr() == buffer(cur_input().loc)) {
                     if (cur_input().loc < cur_input().limit) {
                         sup_count = 2;
 
                         while (sup_count < 6 && cur_input().loc + 2 * sup_count - 2 <= cur_input().limit &&
-                               cur_chr == buffer(cur_input().loc + sup_count - 1))
+                               cur_chr() == buffer(cur_input().loc + sup_count - 1))
                             sup_count++;
 
                         for (d = 1; d <= sup_count; d++) {
@@ -5016,27 +5012,27 @@ restart:
                                 if (c < 128) {
                                     cur_input_ptr()->loc = cur_input().loc + 2;
                                     if (c < 64)
-                                        cur_chr = c + 64;
+                                        set_cur_chr(c + 64);
                                     else
-                                        cur_chr = c - 64;
+                                        set_cur_chr(c - 64);
                                     goto reswitch;
                                 }
                                 goto not_exp;
                             }
                         }
 
-                        cur_chr = 0;
+                        set_cur_chr(0);
 
                         for (d = 1; d <= sup_count; d++) {
                             c = buffer(cur_input().loc + sup_count - 2 + d);
                             if (c <= '9' )
-                                cur_chr = 16 * cur_chr + c - '0';
+                                set_cur_chr(16 * cur_chr() + c - '0');
                             else
-                                cur_chr = 16 * cur_chr + c - 'a' + 10;
+                                set_cur_chr(16 * cur_chr() + c - 'a' + 10);
                         }
 
-                        if (cur_chr > BIGGEST_USV) {
-                            cur_chr = buffer(cur_input().loc);
+                        if (cur_chr() > BIGGEST_USV) {
+                            set_cur_chr(buffer(cur_input().loc));
                             goto not_exp;
                         }
 
@@ -5056,21 +5052,19 @@ restart:
                 set_help_ptr(2);
                 set_help_line(1, "A funny symbol that I can't read has just been input.");
                 set_help_line(0, "Continue, and I'll forget that it ever happened.");
-                deletions_allowed = false;
                 error();
-                deletions_allowed = true;
                 goto restart;
                 break;
 
             case MID_LINE + SPACER:
                 cur_input_ptr()->state = SKIP_BLANKS;
-                cur_chr = ' ' ;
+                set_cur_chr(' ' );
                 break;
 
             case MID_LINE + CAR_RET:
                 cur_input_ptr()->loc = cur_input().limit + 1;
-                cur_cmd = SPACER;
-                cur_chr = ' ' ;
+                set_cur_cmd(SPACER);
+                set_cur_chr(' ' );
                 break;
 
             ANY_STATE_PLUS(COMMENT):
@@ -5081,10 +5075,10 @@ restart:
 
             case NEW_LINE + CAR_RET:
                 cur_input_ptr()->loc = cur_input().limit + 1;
-                cur_cs = par_loc;
-                cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
-                cur_chr = eqtb_ptr(cur_cs)->b32.s1;
-                if (cur_cmd >= OUTER_CALL)
+                set_cur_cs(par_loc);
+                set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
+                set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
+                if (cur_cmd() >= OUTER_CALL)
                     check_outer_validity();
                 break;
 
@@ -5176,8 +5170,8 @@ restart:
                 cur_input_ptr()->loc = cur_input().start;
             } else {
                 if (cur_input().name != 0) {
-                    cur_cmd = 0;
-                    cur_chr = 0;
+                    set_cur_cmd(0);
+                    set_cur_chr(0);
                     return;
                 }
 
@@ -5209,29 +5203,29 @@ restart:
         cur_input_ptr()->loc = LLIST_link(cur_input().loc);
 
         if (t >= CS_TOKEN_FLAG) {
-            cur_cs = t - CS_TOKEN_FLAG;
-            cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
-            cur_chr = eqtb_ptr(cur_cs)->b32.s1;
+            set_cur_cs(t - CS_TOKEN_FLAG);
+            set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
+            set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
 
-            if (cur_cmd >= OUTER_CALL) {
-                if (cur_cmd == DONT_EXPAND) { /*370:*/
-                    cur_cs = mem(cur_input().loc).b32.s0 - CS_TOKEN_FLAG;
+            if (cur_cmd() >= OUTER_CALL) {
+                if (cur_cmd() == DONT_EXPAND) { /*370:*/
+                    set_cur_cs(mem(cur_input().loc).b32.s0 - CS_TOKEN_FLAG);
                     cur_input_ptr()->loc = TEX_NULL;
-                    cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
-                    cur_chr = eqtb_ptr(cur_cs)->b32.s1;
-                    if (cur_cmd > MAX_COMMAND) {
-                        cur_cmd = RELAX;
-                        cur_chr = NO_EXPAND_FLAG;
+                    set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
+                    set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
+                    if (cur_cmd() > MAX_COMMAND) {
+                        set_cur_cmd(RELAX);
+                        set_cur_chr(NO_EXPAND_FLAG);
                     }
                 } else {
                     check_outer_validity();
                 }
             }
         } else {
-            cur_cmd = t / MAX_CHAR_VAL;
-            cur_chr = t % MAX_CHAR_VAL;
+            set_cur_cmd(t / MAX_CHAR_VAL);
+            set_cur_chr(t % MAX_CHAR_VAL);
 
-            switch (cur_cmd) {
+            switch (cur_cmd()) {
             case LEFT_BRACE:
                 align_state++;
                 break;
@@ -5239,7 +5233,7 @@ restart:
                 align_state--;
                 break;
             case OUT_PARAM:
-                begin_token_list(param_stack(cur_input().limit + cur_chr - 1), PARAMETER);
+                begin_token_list(param_stack(cur_input().limit + cur_chr() - 1), PARAMETER);
                 goto restart;
                 break;
             default:
@@ -5251,13 +5245,13 @@ restart:
         goto restart;
     }
 
-    if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == 0) { /*818:*/
-        if (scanner_status == ALIGNING || cur_align == TEX_NULL)
+    if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state == 0) { /*818:*/
+        if (scanner_status() == ALIGNING || cur_align == TEX_NULL)
             fatal_error("(interwoven alignment preambles are not allowed)");
 
-        cur_cmd = mem(cur_align + 5).b32.s0;
-        mem_ptr(cur_align + 5)->b32.s0 = cur_chr;
-        if (cur_cmd == OMIT)
+        set_cur_cmd(mem(cur_align + 5).b32.s0);
+        mem_ptr(cur_align + 5)->b32.s0 = cur_chr();
+        if (cur_cmd() == OMIT)
             begin_token_list(OMIT_TEMPLATE, V_TEMPLATE);
         else
             begin_token_list(mem(cur_align + 2).b32.s1, V_TEMPLATE);
@@ -5272,10 +5266,10 @@ void get_token(void)
     no_new_control_sequence = false;
     get_next();
     no_new_control_sequence = true;
-    if (cur_cs == 0)
-        cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+    if (cur_cs() == 0)
+        set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
     else
-        cur_tok = CS_TOKEN_FLAG + cur_cs;
+        set_cur_tok(CS_TOKEN_FLAG + cur_cs());
 }
 
 
@@ -5297,10 +5291,10 @@ macro_call(void)
     int32_t save_warning_index;
     UTF16_code match_chr;
 
-    save_scanner_status = scanner_status;
+    save_scanner_status = scanner_status();
     save_warning_index = warning_index;
-    warning_index = cur_cs;
-    ref_count = cur_chr;
+    warning_index = cur_cs();
+    ref_count = cur_chr();
     r = mem(ref_count).b32.s1;
     n = 0;
 
@@ -5340,9 +5334,9 @@ macro_call(void)
         r = LLIST_link(r);
 
     if (mem(r).b32.s0 != END_MATCH_TOKEN) { /*409:*/
-        scanner_status = MATCHING;
+        set_scanner_status(MATCHING);
         unbalance = 0;
-        long_state = eqtb_ptr(cur_cs)->b16.s1;
+        long_state = eqtb_ptr(cur_cs())->b16.s1;
 
         if (long_state >= OUTER_CALL)
             long_state = long_state - 2;
@@ -5362,10 +5356,10 @@ macro_call(void)
         continue_:
             get_token();
 
-            if (cur_tok == mem(r).b32.s0) { /*412:*/
+            if (cur_tok() == mem(r).b32.s0) { /*412:*/
                 r = LLIST_link(r);
                 if (mem(r).b32.s0 >= MATCH_TOKEN && mem(r).b32.s0 <= END_MATCH_TOKEN) {
-                    if (cur_tok < LEFT_BRACE_LIMIT)
+                    if (cur_tok() < LEFT_BRACE_LIMIT)
                         align_state--;
                     goto found;
                 } else {
@@ -5401,7 +5395,7 @@ macro_call(void)
 
                         while (true) {
                             if (u == r) {
-                                if (cur_tok != mem(v).b32.s0) {
+                                if (cur_tok() != mem(v).b32.s0) {
                                     goto done;
                                 } else {
                                     r = mem(v).b32.s1;
@@ -5424,7 +5418,7 @@ macro_call(void)
                 }
             }
 
-            if (cur_tok == par_token) {
+            if (cur_tok() == par_token) {
                 if (long_state != LONG_CALL) { /*414:*/
                     if (long_state == CALL) {
                         runaway();
@@ -5449,8 +5443,8 @@ macro_call(void)
                 }
             }
 
-            if (cur_tok < RIGHT_BRACE_LIMIT) {
-                if (cur_tok < LEFT_BRACE_LIMIT) { /*417:*/
+            if (cur_tok() < RIGHT_BRACE_LIMIT) {
+                if (cur_tok() < LEFT_BRACE_LIMIT) { /*417:*/
                     unbalance = 1;
 
                     while (true) {
@@ -5463,12 +5457,12 @@ macro_call(void)
                         }
 
                         mem_ptr(p)->b32.s1 = q;
-                        mem_ptr(q)->b32.s0 = cur_tok;
+                        mem_ptr(q)->b32.s0 = cur_tok();
                         p = q;
 
                         get_token();
 
-                        if (cur_tok == par_token) {
+                        if (cur_tok() == par_token) {
                             if (long_state != LONG_CALL) { /*414:*/
                                 if (long_state == CALL) {
                                     runaway();
@@ -5493,8 +5487,8 @@ macro_call(void)
                             }
                         }
 
-                        if (cur_tok < RIGHT_BRACE_LIMIT) {
-                            if (cur_tok < LEFT_BRACE_LIMIT) {
+                        if (cur_tok() < RIGHT_BRACE_LIMIT) {
+                            if (cur_tok() < LEFT_BRACE_LIMIT) {
                                 unbalance++;
                             } else {
                                 unbalance--;
@@ -5510,7 +5504,7 @@ macro_call(void)
 
                     q = get_avail();
                     mem_ptr(p)->b32.s1 = q;
-                    mem_ptr(q)->b32.s0 = cur_tok;
+                    mem_ptr(q)->b32.s0 = cur_tok();
                     p = q;
                 } else { /*413:*/
                     back_input();
@@ -5529,12 +5523,12 @@ macro_call(void)
                     set_help_line(0, "your `}' was spurious, just type `2' and it will go away.");
                     align_state++;
                     long_state = CALL;
-                    cur_tok = par_token;
+                    set_cur_tok(par_token);
                     ins_error();
                     goto continue_;
                 }
             } else { /*411:*/
-                if (cur_tok == SPACE_TOKEN) {
+                if (cur_tok() == SPACE_TOKEN) {
                     if (mem(r).b32.s0 <= END_MATCH_TOKEN) {
                         if (mem(r).b32.s0 >= MATCH_TOKEN)
                             goto continue_;
@@ -5543,7 +5537,7 @@ macro_call(void)
 
                 q = get_avail();
                 mem_ptr(p)->b32.s1 = q;
-                mem_ptr(q)->b32.s0 = cur_tok;
+                mem_ptr(q)->b32.s0 = cur_tok();
                 p = q;
             }
 
@@ -5607,7 +5601,7 @@ macro_call(void)
     }
 
 exit:
-    scanner_status = save_scanner_status;
+    set_scanner_status(save_scanner_status);
     warning_index = save_warning_index;
 }
 
@@ -5615,9 +5609,9 @@ exit:
 void
 insert_relax(void)
 {
-    cur_tok = CS_TOKEN_FLAG + cur_cs;
+    set_cur_tok(CS_TOKEN_FLAG + cur_cs());
     back_input();
-    cur_tok = CS_TOKEN_FLAG + FROZEN_RELAX;
+    set_cur_tok(CS_TOKEN_FLAG + FROZEN_RELAX);
     back_input();
     cur_input_ptr()->index = INSERTED;
 }
@@ -5802,15 +5796,15 @@ expand(void)
     backup_backup = mem(BACKUP_HEAD).b32.s1;
 
 reswitch:
-    if (cur_cmd < CALL) { /*384:*/
+    if (cur_cmd() < CALL) { /*384:*/
         if (INTPAR(tracing_commands) > 1)
             show_cur_cmd_chr();
 
-        switch (cur_cmd) {
+        switch (cur_cmd()) {
         case TOP_BOT_MARK:
-            t = cur_chr % 5;
+            t = cur_chr() % 5;
 
-            if (cur_chr >= 5)
+            if (cur_chr() >= 5)
                 scan_register_num();
             else
                 cur_val = 0;
@@ -5832,28 +5826,28 @@ reswitch:
             break;
 
         case EXPAND_AFTER: /*385:*/
-            if (cur_chr == 0) {
+            if (cur_chr() == 0) {
                 get_token();
-                t = cur_tok;
+                t = cur_tok();
                 get_token();
-                if (cur_cmd > MAX_COMMAND)
+                if (cur_cmd() > MAX_COMMAND)
                     expand();
                 else
                     back_input();
-                cur_tok = t;
+                set_cur_tok(t);
                 back_input();
             } else { /*1553: "\unless" implementation */
                 get_token();
 
-                if (cur_cmd == IF_TEST && cur_chr != IF_CASE_CODE) {
-                    cur_chr = cur_chr + UNLESS_CODE;
+                if (cur_cmd() == IF_TEST && cur_chr() != IF_CASE_CODE) {
+                    set_cur_chr(cur_chr() + UNLESS_CODE);
                     goto reswitch;
                 }
 
                 error_here_with_diagnostic("You can't use `");
                 print_esc_cstr("unless");
                 print_cstr("' before `");
-                print_cmd_chr(cur_cmd, cur_chr);
+                print_cmd_chr(cur_cmd(), cur_chr());
                 print_char('\'');
                 capture_to_diagnostic(NULL);
                 set_help_ptr(1);
@@ -5863,12 +5857,12 @@ reswitch:
             break;
 
         case NO_EXPAND: /*386:*/
-            if (cur_chr == 0) {
-                save_scanner_status = scanner_status;
-                scanner_status = NORMAL;
+            if (cur_chr() == 0) {
+                save_scanner_status = scanner_status();
+                set_scanner_status(NORMAL);
                 get_token();
-                scanner_status = save_scanner_status;
-                t = cur_tok;
+                set_scanner_status(save_scanner_status);
+                t = cur_tok();
                 back_input();
                 if (t >= CS_TOKEN_FLAG) {
                     p = get_avail();
@@ -5878,23 +5872,23 @@ reswitch:
                     cur_input_ptr()->loc = p;
                 }
             } else { /*387: \primitive implementation */
-                save_scanner_status = scanner_status;
-                scanner_status = NORMAL;
+                save_scanner_status = scanner_status();
+                set_scanner_status(NORMAL);
                 get_token();
-                scanner_status = save_scanner_status;
+                set_scanner_status(save_scanner_status);
 
-                if (cur_cs < HASH_BASE)
-                    cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
+                if (cur_cs() < HASH_BASE)
+                    set_cur_cs(prim_lookup(cur_cs() - SINGLE_BASE));
                 else
-                    cur_cs = prim_lookup(hash(cur_cs).s1);
+                    set_cur_cs(prim_lookup(hash(cur_cs()).s1));
 
-                if (cur_cs != UNDEFINED_PRIMITIVE) {
-                    t = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
+                if (cur_cs() != UNDEFINED_PRIMITIVE) {
+                    t = eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1;
                     if (t > MAX_COMMAND) {
-                        cur_cmd = t;
-                        cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
-                        cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
-                        cur_cs = 0;
+                        set_cur_cmd(t);
+                        set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
+                        set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
+                        set_cur_cs(0);
                         goto reswitch;
                     } else {
                         back_input();
@@ -5916,15 +5910,15 @@ reswitch:
 
             do {
                 get_x_token();
-                if (cur_cs == 0) {
+                if (cur_cs() == 0) {
                     q = get_avail();
                     mem_ptr(p)->b32.s1 = q;
-                    mem_ptr(q)->b32.s0 = cur_tok;
+                    mem_ptr(q)->b32.s0 = cur_tok();
                     p = q;
                 }
-            } while (cur_cs == 0);
+            } while (cur_cs() == 0);
 
-            if (cur_cmd != END_CS_NAME) { /*391:*/
+            if (cur_cmd() != END_CS_NAME) { /*391:*/
                 error_here_with_diagnostic("Missing ");
                 print_esc_cstr("endcsname");
                 print_cstr(" inserted");
@@ -5953,20 +5947,20 @@ reswitch:
 
             if (j > first + 1 || buffer(first) > 65535L) {
                 no_new_control_sequence = false;
-                cur_cs = id_lookup(first, j - first);
+                set_cur_cs(id_lookup(first, j - first));
                 no_new_control_sequence = true;
             } else if (j == first) {
-                cur_cs = NULL_CS;
+                set_cur_cs(NULL_CS);
             } else {
-                cur_cs = SINGLE_BASE + buffer(first); /*:392*/
+                set_cur_cs(SINGLE_BASE + buffer(first)); /*:392*/
             }
 
             flush_list(r);
 
-            if (eqtb_ptr(cur_cs)->b16.s1 == UNDEFINED_CS)
-                eq_define(cur_cs, RELAX, TOO_BIG_USV);
+            if (eqtb_ptr(cur_cs())->b16.s1 == UNDEFINED_CS)
+                eq_define(cur_cs(), RELAX, TOO_BIG_USV);
 
-            cur_tok = cur_cs + CS_TOKEN_FLAG;
+            set_cur_tok(cur_cs() + CS_TOKEN_FLAG);
             back_input();
             break;
 
@@ -5988,12 +5982,12 @@ reswitch:
                     show_cur_cmd_chr();
             }
 
-            if (cur_chr > if_limit) {
+            if (cur_chr() > if_limit) {
                 if (if_limit == IF_CODE) {
                     insert_relax();
                 } else {
                     error_here_with_diagnostic("Extra ");
-                    print_cmd_chr(FI_OR_ELSE, cur_chr);
+                    print_cmd_chr(FI_OR_ELSE, cur_chr());
                     capture_to_diagnostic(NULL);
 
                     set_help_ptr(1);
@@ -6001,7 +5995,7 @@ reswitch:
                     error();
                 }
             } else {
-                while (cur_chr != FI_CODE)
+                while (cur_chr() != FI_CODE)
                     pass_text();
 
                 if (if_stack(in_open()) == cond_ptr)
@@ -6016,9 +6010,9 @@ reswitch:
             break;
 
         case INPUT:
-            if (cur_chr == 1) /* \endinput */
+            if (cur_chr() == 1) /* \endinput */
                 force_eof = true; /*1537:*/
-            else if (cur_chr == 2) /* \scantokens */
+            else if (cur_chr() == 2) /* \scantokens */
                 pseudo_start();
             else if (name_in_progress())
                 insert_relax();
@@ -6039,10 +6033,10 @@ reswitch:
             error();
             break;
         }
-    } else if (cur_cmd < END_TEMPLATE) {
+    } else if (cur_cmd() < END_TEMPLATE) {
         macro_call();
     } else { /*393:*/
-        cur_tok = CS_TOKEN_FLAG + FROZEN_ENDV;
+        set_cur_tok(CS_TOKEN_FLAG + FROZEN_ENDV);
         back_input();
     }
 
@@ -6060,39 +6054,39 @@ void get_x_token(void)
  restart:
     get_next();
 
-    if (cur_cmd <= MAX_COMMAND)
+    if (cur_cmd() <= MAX_COMMAND)
         goto done;
-    if (cur_cmd >= CALL) {
+    if (cur_cmd() >= CALL) {
 
-        if (cur_cmd < END_TEMPLATE)
+        if (cur_cmd() < END_TEMPLATE)
             macro_call();
         else {
 
-            cur_cs = FROZEN_ENDV;
-            cur_cmd = ENDV;
+            set_cur_cs(FROZEN_ENDV);
+            set_cur_cmd(ENDV);
             goto done;
         }
     } else
         expand();
     goto restart;
 done:
-    if (cur_cs == 0)
-        cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+    if (cur_cs() == 0)
+        set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
     else
-        cur_tok = CS_TOKEN_FLAG + cur_cs;
+        set_cur_tok(CS_TOKEN_FLAG + cur_cs());
 }
 
 void x_token(void)
 {
-    while (cur_cmd > MAX_COMMAND) {
+    while (cur_cmd() > MAX_COMMAND) {
 
         expand();
         get_next();
     }
-    if (cur_cs == 0)
-        cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+    if (cur_cs() == 0)
+        set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
     else
-        cur_tok = CS_TOKEN_FLAG + cur_cs;
+        set_cur_tok(CS_TOKEN_FLAG + cur_cs());
 }
 
 
@@ -6101,9 +6095,9 @@ scan_left_brace(void)
 {
     do {
         get_x_token();
-    } while (cur_cmd == SPACER || cur_cmd == RELAX);
+    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-    if (cur_cmd != LEFT_BRACE) {
+    if (cur_cmd() != LEFT_BRACE) {
         error_here_with_diagnostic("Missing { inserted");
         capture_to_diagnostic(NULL);
 
@@ -6113,9 +6107,9 @@ scan_left_brace(void)
         set_help_line(1, "so that I will find a matching right brace soon.");
         set_help_line(0, "(If you're confused by all this, try typing `I}' now.)");
         back_error();
-        cur_tok = (LEFT_BRACE_TOKEN + '{' );
-        cur_cmd = LEFT_BRACE;
-        cur_chr = '{' ;
+        set_cur_tok((LEFT_BRACE_TOKEN + '{' ));
+        set_cur_cmd(LEFT_BRACE);
+        set_cur_chr('{' );
         align_state++;
     }
 }
@@ -6126,9 +6120,9 @@ scan_optional_equals(void)
 {
     do {
         get_x_token();
-    } while (cur_cmd == SPACER);
+    } while (cur_cmd() == SPACER);
 
-    if (cur_tok != OTHER_TOKEN + 61 /*"="*/)
+    if (cur_tok() != OTHER_TOKEN + 61 /*"="*/)
         back_input();
 }
 
@@ -6143,24 +6137,24 @@ bool scan_keyword(const char* s)
 
     if (strlen(s) == 1) {
         char c = s[0];
-        save_cur_cs = cur_cs;
+        save_cur_cs = cur_cs();
 
         while (true) {
             get_x_token();
-            if ((cur_cs == 0) && ((cur_chr == c) || (cur_chr == c - 32))) {
+            if ((cur_cs() == 0) && ((cur_chr() == c) || (cur_chr() == c - 32))) {
                 {
                     q = get_avail();
                     mem_ptr(p)->b32.s1 = q;
-                    mem_ptr(q)->b32.s0 = cur_tok;
+                    mem_ptr(q)->b32.s0 = cur_tok();
                     p = q;
                 }
                 flush_list(mem(BACKUP_HEAD).b32.s1);
                 return true;
-            } else if ((cur_cmd != SPACER) || (p != BACKUP_HEAD)) {
+            } else if ((cur_cmd() != SPACER) || (p != BACKUP_HEAD)) {
                 back_input();
                 if (p != BACKUP_HEAD)
                     begin_token_list(mem(BACKUP_HEAD).b32.s1, BACKED_UP);
-                cur_cs = save_cur_cs;
+                set_cur_cs(save_cur_cs);
                 return false;
             }
         }
@@ -6171,15 +6165,15 @@ bool scan_keyword(const char* s)
     while (i < slen) {
 
         get_x_token();
-        if ((cur_cs == 0) && ((cur_chr == s[i]) || (cur_chr == s[i] - 32))) {
+        if ((cur_cs() == 0) && ((cur_chr() == s[i]) || (cur_chr() == s[i] - 32))) {
             {
                 q = get_avail();
                 mem_ptr(p)->b32.s1 = q;
-                mem_ptr(q)->b32.s0 = cur_tok;
+                mem_ptr(q)->b32.s0 = cur_tok();
                 p = q;
             }
             i++;
-        } else if ((cur_cmd != SPACER) || (p != BACKUP_HEAD)) {
+        } else if ((cur_cmd() != SPACER) || (p != BACKUP_HEAD)) {
             back_input();
             if (p != BACKUP_HEAD)
                 begin_token_list(mem(BACKUP_HEAD).b32.s1, BACKED_UP);
@@ -6347,19 +6341,19 @@ void scan_math(int32_t p)
 restart: /*422:*/
     do {
         get_x_token();
-    } while (cur_cmd == SPACER || cur_cmd == RELAX);
+    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 reswitch:
-    switch (cur_cmd) {
+    switch (cur_cmd()) {
     case 11:
     case 12:
     case 68:
         {
-            c = MATH_CODE(cur_chr);
+            c = MATH_CODE(cur_chr());
             if (math_char(c) == ACTIVE_MATH_CHAR) {
                 {
-                    cur_cs = cur_chr + 1;
-                    cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
-                    cur_chr = eqtb_ptr(cur_cs)->b32.s1;
+                    set_cur_cs(cur_chr() + 1);
+                    set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
+                    set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
                     x_token();
                     back_input();
                 }
@@ -6370,20 +6364,20 @@ reswitch:
     case 16:
         {
             scan_char_num();
-            cur_chr = cur_val;
-            cur_cmd = CHAR_GIVEN;
+            set_cur_chr(cur_val);
+            set_cur_cmd(CHAR_GIVEN);
             goto reswitch;
         }
         break;
     case 17:
-        if (cur_chr == 2) {
+        if (cur_chr() == 2) {
             scan_math_class_int();
             c = set_class(cur_val);
             scan_math_fam_int();
             c = c + set_family(cur_val);
             scan_usv_num();
             c = c + cur_val;
-        } else if (cur_chr == 1) {
+        } else if (cur_chr() == 1) {
             scan_xetex_math_char_int();
             c = cur_val;
         } else {
@@ -6394,15 +6388,15 @@ reswitch:
         break;
     case 69:
         {
-            c = set_class(cur_chr / 4096) + set_family((cur_chr % 4096) / 256) + (cur_chr % 256);
+            c = set_class(cur_chr() / 4096) + set_family((cur_chr() % 4096) / 256) + (cur_chr() % 256);
         }
         break;
     case 70:
-        c = cur_chr;
+        c = cur_chr();
         break;
     case 15:
         {
-            if (cur_chr == 1) {
+            if (cur_chr() == 1) {
                 scan_math_class_int();
                 c = set_class(cur_val);
                 scan_math_fam_int();
@@ -6445,9 +6439,9 @@ void set_math_char(int32_t c)
     UnicodeScalar ch;
 
     if (math_char(c) == ACTIVE_MATH_CHAR) {        /*1187: */
-        cur_cs = cur_chr + 1;
-        cur_cmd = eqtb_ptr(cur_cs)->b16.s1;
-        cur_chr = eqtb_ptr(cur_cs)->b32.s1;
+        set_cur_cs(cur_chr() + 1);
+        set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
+        set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
         x_token();
         back_input();
     } else {
@@ -6603,11 +6597,11 @@ void get_x_or_protected(void)
     while (true) {
 
         get_token();
-        if (cur_cmd <= MAX_COMMAND)
+        if (cur_cmd() <= MAX_COMMAND)
             return;
-        if ((cur_cmd >= CALL) && (cur_cmd < END_TEMPLATE)) {
+        if ((cur_cmd() >= CALL) && (cur_cmd() < END_TEMPLATE)) {
 
-            if (mem(mem(cur_chr).b32.s1).b32.s0 == PROTECTED_TOKEN)
+            if (mem(mem(cur_chr()).b32.s1).b32.s0 == PROTECTED_TOKEN)
                 return;
         }
         expand();
@@ -6633,14 +6627,14 @@ void scan_font_ident(void)
 
     do {
         get_x_token();
-    } while (cur_cmd == SPACER);
+    } while (cur_cmd() == SPACER);
 
-    if (cur_cmd == DEF_FONT)
+    if (cur_cmd() == DEF_FONT)
         f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
-    else if (cur_cmd == SET_FONT)
-        f = cur_chr;
-    else if (cur_cmd == DEF_FAMILY) {
-        m = cur_chr;
+    else if (cur_cmd() == SET_FONT)
+        f = cur_chr();
+    else if (cur_cmd() == DEF_FAMILY) {
+        m = cur_chr();
         scan_math_fam_int();
         f = eqtb_ptr(m + cur_val)->b32.s1;
     } else {
@@ -6719,9 +6713,9 @@ scan_something_internal(small_number level, bool negative)
     int32_t p;
 
 restart:
-    m = cur_chr;
+    m = cur_chr();
 
-    switch (cur_cmd) {
+    switch (cur_cmd()) {
     case DEF_CODE:
         scan_usv_num();
         if (m == MATH_CODE_BASE) {
@@ -6822,8 +6816,8 @@ restart:
             back_error();
             cur_val = 0;
             cur_val_level = DIMEN_VAL;
-        } else if (cur_cmd <= ASSIGN_TOKS) {
-            if (cur_cmd < ASSIGN_TOKS) {
+        } else if (cur_cmd() <= ASSIGN_TOKS) {
+            if (cur_cmd() < ASSIGN_TOKS) {
                 if (m == 0) {
                     scan_register_num();
                     if (cur_val < 256) {
@@ -6838,7 +6832,7 @@ restart:
                 } else {
                     cur_val = mem(m + 1).b32.s1;
                 }
-            } else if (cur_chr == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
+            } else if (cur_chr() == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
                 scan_char_class_not_ignored();
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
@@ -6988,7 +6982,7 @@ restart:
     case CHAR_GIVEN:
     case MATH_GIVEN:
     case XETEX_MATH_GIVEN:
-        cur_val = cur_chr;
+        cur_val = cur_chr();
         cur_val_level = INT_VAL;
         break;
 
@@ -7188,7 +7182,7 @@ restart:
                 case PAR_SHAPE_LENGTH_CODE:
                 case PAR_SHAPE_INDENT_CODE:
                 case PAR_SHAPE_DIMEN_CODE:
-                    q = cur_chr - PAR_SHAPE_LENGTH_CODE;
+                    q = cur_chr() - PAR_SHAPE_LENGTH_CODE;
                     scan_int();
                     if (LOCAL(par_shape) == TEX_NULL || cur_val <= 0) {
                         cur_val = 0;
@@ -7551,16 +7545,16 @@ restart:
                 }
             }
 
-            if (cur_chr == LAST_NODE_TYPE_CODE) {
+            if (cur_chr() == LAST_NODE_TYPE_CODE) {
                 cur_val_level = INT_VAL;
                 if (tx == cur_list.head || cur_list.mode == 0)
                     cur_val = -1;
             } else {
-                cur_val_level = cur_chr;
+                cur_val_level = cur_chr();
             }
 
             if (tx < hi_mem_min() && cur_list.mode != 0)
-                switch (cur_chr) {
+                switch (cur_chr()) {
                 case INT_VAL:
                     if (NODE_type(tx) == PENALTY_NODE)
                         cur_val = mem(tx + 1).b32.s1;
@@ -7583,7 +7577,7 @@ restart:
                         cur_val = (UNSET_NODE + 2);
                     break;
             } else if (cur_list.mode == VMODE && tx == cur_list.head)
-                switch (cur_chr) {
+                switch (cur_chr()) {
                 case INT_VAL:
                     cur_val = last_penalty;
                     break;
@@ -7602,25 +7596,25 @@ restart:
         break;
 
     case IGNORE_SPACES:
-        if (cur_chr == 1) { /*406: */
+        if (cur_chr() == 1) { /*406: */
             get_token();
 
-            if (cur_cs < HASH_BASE) {
-                cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
+            if (cur_cs() < HASH_BASE) {
+                set_cur_cs(prim_lookup(cur_cs() - SINGLE_BASE));
             } else {
-                cur_cs = prim_lookup(hash(cur_cs).s1);
+                set_cur_cs(prim_lookup(hash(cur_cs()).s1));
             }
 
-            if (cur_cs != UNDEFINED_PRIMITIVE) {
-                cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
-                cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
-                cur_cs = PRIM_EQTB_BASE + cur_cs;
-                cur_tok = CS_TOKEN_FLAG + cur_cs;
+            if (cur_cs() != UNDEFINED_PRIMITIVE) {
+                set_cur_cmd(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1);
+                set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
+                set_cur_cs(PRIM_EQTB_BASE + cur_cs());
+                set_cur_tok(CS_TOKEN_FLAG + cur_cs());
             } else {
-                cur_cmd = RELAX;
-                cur_chr = 0;
-                cur_tok = CS_TOKEN_FLAG + FROZEN_RELAX;
-                cur_cs = FROZEN_RELAX;
+                set_cur_cmd(RELAX);
+                set_cur_chr(0);
+                set_cur_tok(CS_TOKEN_FLAG + FROZEN_RELAX);
+                set_cur_cs(FROZEN_RELAX);
             }
             goto restart;
         }
@@ -7628,7 +7622,7 @@ restart:
 
     default:
         error_here_with_diagnostic("You can't use `");
-        print_cmd_chr(cur_cmd, cur_chr);
+        print_cmd_chr(cur_cmd(), cur_chr());
         print_cstr("' after ");
         print_esc_cstr("the");
         capture_to_diagnostic(NULL);
@@ -7684,30 +7678,30 @@ scan_int(void)
     do { /*424:*/
         do {
             get_x_token();
-        } while (cur_cmd == SPACER);
+        } while (cur_cmd() == SPACER);
 
-        if (cur_tok == OTHER_TOKEN + '-' ) {
+        if (cur_tok() == OTHER_TOKEN + '-' ) {
             negative = !negative;
-            cur_tok = OTHER_TOKEN + '+';
+            set_cur_tok(OTHER_TOKEN + '+');
         }
-    } while (cur_tok == OTHER_TOKEN + '+');
+    } while (cur_tok() == OTHER_TOKEN + '+');
 
 restart:
-    if (cur_tok == ALPHA_TOKEN) { /*460:*/
+    if (cur_tok() == ALPHA_TOKEN) { /*460:*/
         get_token();
 
-        if (cur_tok < CS_TOKEN_FLAG) {
-            cur_val = cur_chr;
-            if (cur_cmd <= RIGHT_BRACE) {
-                if (cur_cmd == RIGHT_BRACE)
+        if (cur_tok() < CS_TOKEN_FLAG) {
+            cur_val = cur_chr();
+            if (cur_cmd() <= RIGHT_BRACE) {
+                if (cur_cmd() == RIGHT_BRACE)
                     align_state++;
                 else
                     align_state--;
             }
-        } else if (cur_tok < CS_TOKEN_FLAG + SINGLE_BASE) {
-            cur_val = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
+        } else if (cur_tok() < CS_TOKEN_FLAG + SINGLE_BASE) {
+            cur_val = cur_tok() - (CS_TOKEN_FLAG + ACTIVE_BASE);
         } else {
-            cur_val = cur_tok - (CS_TOKEN_FLAG + SINGLE_BASE);
+            cur_val = cur_tok() - (CS_TOKEN_FLAG + SINGLE_BASE);
         }
 
         if (cur_val > BIGGEST_USV) {
@@ -7721,41 +7715,41 @@ restart:
             back_error();
         } else { /*461:*/
             get_x_token();
-            if (cur_cmd != SPACER)
+            if (cur_cmd() != SPACER)
                 back_input();
         }
-    } else if (cur_tok == CS_TOKEN_FLAG + FROZEN_PRIMITIVE) { /*406:*/
+    } else if (cur_tok() == CS_TOKEN_FLAG + FROZEN_PRIMITIVE) { /*406:*/
         get_token();
 
-        if (cur_cs < HASH_BASE) {
-            cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
+        if (cur_cs() < HASH_BASE) {
+            set_cur_cs(prim_lookup(cur_cs() - SINGLE_BASE));
         } else {
-            cur_cs = prim_lookup(hash(cur_cs).s1);
+            set_cur_cs(prim_lookup(hash(cur_cs()).s1));
         }
 
-        if (cur_cs != UNDEFINED_PRIMITIVE) {
-            cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
-            cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
-            cur_cs = PRIM_EQTB_BASE + cur_cs;
-            cur_tok = CS_TOKEN_FLAG + cur_cs;
+        if (cur_cs() != UNDEFINED_PRIMITIVE) {
+            set_cur_cmd(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1);
+            set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
+            set_cur_cs(PRIM_EQTB_BASE + cur_cs());
+            set_cur_tok(CS_TOKEN_FLAG + cur_cs());
         } else {
-            cur_cmd = RELAX;
-            cur_chr = 0;
-            cur_tok = CS_TOKEN_FLAG + FROZEN_RELAX;
-            cur_cs = FROZEN_RELAX;
+            set_cur_cmd(RELAX);
+            set_cur_chr(0);
+            set_cur_tok(CS_TOKEN_FLAG + FROZEN_RELAX);
+            set_cur_cs(FROZEN_RELAX);
         }
         goto restart;
-    } else if (cur_cmd >= MIN_INTERNAL && cur_cmd <= MAX_INTERNAL) {
+    } else if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL) {
         scan_something_internal(INT_VAL, false);
     } else { /*462:*/
         radix = 10;
         m = 0xCCCCCCC;
 
-        if (cur_tok == OCTAL_TOKEN) {
+        if (cur_tok() == OCTAL_TOKEN) {
             radix = 8;
             m = 0x10000000;
             get_x_token();
-        } else if (cur_tok == HEX_TOKEN) {
+        } else if (cur_tok() == HEX_TOKEN) {
             radix = 16;
             m = 0x8000000;
             get_x_token();
@@ -7765,13 +7759,13 @@ restart:
         cur_val = 0;
 
         while (true) {
-            if (cur_tok < ZERO_TOKEN + radix && cur_tok >= ZERO_TOKEN && cur_tok <= ZERO_TOKEN + 9) {
-                d = cur_tok - ZERO_TOKEN;
+            if (cur_tok() < ZERO_TOKEN + radix && cur_tok() >= ZERO_TOKEN && cur_tok() <= ZERO_TOKEN + 9) {
+                d = cur_tok() - ZERO_TOKEN;
             } else if (radix == 16) {
-                if (cur_tok <= A_TOKEN + 5 && cur_tok >= A_TOKEN)
-                    d = cur_tok - A_TOKEN + 10;
-                else if (cur_tok <= OTHER_A_TOKEN + 5 && cur_tok >= OTHER_A_TOKEN)
-                    d = cur_tok - OTHER_A_TOKEN + 10;
+                if (cur_tok() <= A_TOKEN + 5 && cur_tok() >= A_TOKEN)
+                    d = cur_tok() - A_TOKEN + 10;
+                else if (cur_tok() <= OTHER_A_TOKEN + 5 && cur_tok() >= OTHER_A_TOKEN)
+                    d = cur_tok() - OTHER_A_TOKEN + 10;
                 else
                     break;
             } else {
@@ -7808,7 +7802,7 @@ restart:
             set_help_line(1, "(If you can't figure out why I needed to see a number,");
             set_help_line(0, "look up `weird error' in the index to The TeXbook.)");
             back_error();
-        } else if (cur_cmd != SPACER) {
+        } else if (cur_cmd() != SPACER) {
             back_input();
         }
     }
@@ -7854,15 +7848,15 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         do {
             do {
                 get_x_token();
-            } while (cur_cmd == SPACER);
+            } while (cur_cmd() == SPACER);
 
-            if (cur_tok == OTHER_TOKEN + '-' ) {
+            if (cur_tok() == OTHER_TOKEN + '-' ) {
                 negative = !negative;
-                cur_tok = OTHER_TOKEN + '+';
+                set_cur_tok(OTHER_TOKEN + '+');
             }
-        } while (cur_tok == OTHER_TOKEN + '+');
+        } while (cur_tok() == OTHER_TOKEN + '+');
 
-        if (cur_cmd >= MIN_INTERNAL && cur_cmd <= MAX_INTERNAL) { /*468:*/
+        if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL) { /*468:*/
             if (mu) {
                 scan_something_internal(MU_VAL, false);
                 if (cur_val_level >= GLUE_VAL) {
@@ -7883,33 +7877,33 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         } else {
             back_input();
 
-            if (cur_tok == CONTINENTAL_POINT_TOKEN)
-                cur_tok = POINT_TOKEN;
+            if (cur_tok() == CONTINENTAL_POINT_TOKEN)
+                set_cur_tok(POINT_TOKEN);
 
-            if (cur_tok != POINT_TOKEN) {
+            if (cur_tok() != POINT_TOKEN) {
                 scan_int();
             } else {
                 radix = 10;
                 cur_val = 0;
             }
 
-            if (cur_tok == CONTINENTAL_POINT_TOKEN)
-                cur_tok = POINT_TOKEN;
+            if (cur_tok() == CONTINENTAL_POINT_TOKEN)
+                set_cur_tok(POINT_TOKEN);
 
-            if (radix == 10 && cur_tok == POINT_TOKEN) { /*471:*/
+            if (radix == 10 && cur_tok() == POINT_TOKEN) { /*471:*/
                 k = 0;
                 p = TEX_NULL;
                 get_token();
 
                 while (true) {
                     get_x_token();
-                    if (cur_tok > ZERO_TOKEN + 9 || cur_tok < ZERO_TOKEN)
+                    if (cur_tok() > ZERO_TOKEN + 9 || cur_tok() < ZERO_TOKEN)
                         goto done1;
 
                     if (k < 17) {
                         q = get_avail();
                         mem_ptr(q)->b32.s1 = p;
-                        mem_ptr(q)->b32.s0 = cur_tok - ZERO_TOKEN;
+                        mem_ptr(q)->b32.s0 = cur_tok() - ZERO_TOKEN;
                         p = q;
                         k++;
                     }
@@ -7925,7 +7919,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                 }
 
                 f = round_decimals(k);
-                if (cur_cmd != SPACER)
+                if (cur_cmd() != SPACER)
                     back_input();
             }
         }
@@ -7963,9 +7957,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
         do {
             get_x_token();
-        } while (cur_cmd == SPACER);
+        } while (cur_cmd() == SPACER);
 
-        if (cur_cmd < MIN_INTERNAL || cur_cmd > MAX_INTERNAL) {
+        if (cur_cmd() < MIN_INTERNAL || cur_cmd() > MAX_INTERNAL) {
             back_input();
         } else {
             if (mu) {
@@ -7996,7 +7990,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             goto not_found;
 
         get_x_token();
-        if (cur_cmd != SPACER)
+        if (cur_cmd() != SPACER)
             back_input();
 
     found:
@@ -8088,7 +8082,7 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
     done:
         get_x_token();
-        if (cur_cmd != SPACER)
+        if (cur_cmd() != SPACER)
             back_input();
     } else { /* if(requires_units) */
         if (cur_val >= 16384)
@@ -8139,15 +8133,15 @@ scan_glue(small_number level)
     do {
         do {
             get_x_token();
-        } while (cur_cmd == SPACER);
+        } while (cur_cmd() == SPACER);
 
-        if (cur_tok == OTHER_TOKEN + 45 /*"-"*/) {
+        if (cur_tok() == OTHER_TOKEN + 45 /*"-"*/) {
             negative = !negative;
-            cur_tok = OTHER_TOKEN + 43 /*"+"*/;
+            set_cur_tok(OTHER_TOKEN + 43 /*"+"*/);
         }
-    } while (cur_tok == OTHER_TOKEN + 43 /*"+"*/);
+    } while (cur_tok() == OTHER_TOKEN + 43 /*"+"*/);
 
-    if (cur_cmd >= MIN_INTERNAL && cur_cmd <= MAX_INTERNAL) {
+    if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL) {
         scan_something_internal(level, negative);
         if (cur_val_level >= GLUE_VAL) {
             if (cur_val_level != level)
@@ -8369,8 +8363,8 @@ continue_:
         o = INT_VAL;
     do {
         get_x_token();
-    } while (cur_cmd == SPACER);
-    if (cur_tok == (OTHER_TOKEN + 40)) {    /*1576: */
+    } while (cur_cmd() == SPACER);
+    if (cur_tok() == (OTHER_TOKEN + 40)) {    /*1576: */
         q = get_node(EXPR_NODE_SIZE);
         mem_ptr(q)->b32.s1 = p;
         mem_ptr(q)->b16.s1 = l;
@@ -8395,22 +8389,22 @@ continue_:
 found: /*1572:*//*424:*/
     do {
         get_x_token();
-    } while (cur_cmd == SPACER);
-    if (cur_tok == (OTHER_TOKEN + 43))
+    } while (cur_cmd() == SPACER);
+    if (cur_tok() == (OTHER_TOKEN + 43))
         o = EXPR_ADD;
-    else if (cur_tok == (OTHER_TOKEN + 45))
+    else if (cur_tok() == (OTHER_TOKEN + 45))
         o = EXPR_SUB;
-    else if (cur_tok == (OTHER_TOKEN + 42))
+    else if (cur_tok() == (OTHER_TOKEN + 42))
         o = EXPR_MULT;
-    else if (cur_tok == (OTHER_TOKEN + 47))
+    else if (cur_tok() == (OTHER_TOKEN + 47))
         o = EXPR_DIV;
     else {
 
         o = EXPR_NONE;
         if (p == TEX_NULL) {
-            if (cur_cmd != RELAX)
+            if (cur_cmd() != RELAX)
                 back_input();
-        } else if (cur_tok != (OTHER_TOKEN + 41)) {
+        } else if (cur_tok() != (OTHER_TOKEN + 41)) {
             error_here_with_diagnostic("Missing ) inserted for expression");
             capture_to_diagnostic(NULL);
 
@@ -8580,7 +8574,7 @@ int32_t scan_rule_spec(void)
 {
     int32_t q;
     q = new_rule();
-    if (cur_cmd == VRULE)
+    if (cur_cmd() == VRULE)
         mem_ptr(q + 1)->b32.s1 = DEFAULT_RULE;
     else {
 
@@ -8614,11 +8608,11 @@ void scan_general_text(void)
     int32_t p;
     int32_t q;
     int32_t unbalance;
-    s = scanner_status;
+    s = scanner_status();
     w = warning_index;
     d = def_ref;
-    scanner_status = ABSORBING;
-    warning_index = cur_cs;
+    set_scanner_status(ABSORBING);
+    warning_index = cur_cs();
     def_ref = get_avail();
     mem_ptr(def_ref)->b32.s0 = TEX_NULL;
     p = def_ref;
@@ -8627,9 +8621,9 @@ void scan_general_text(void)
     while (true) {
 
         get_token();
-        if (cur_tok < RIGHT_BRACE_LIMIT) {
+        if (cur_tok() < RIGHT_BRACE_LIMIT) {
 
-            if (cur_cmd < RIGHT_BRACE)
+            if (cur_cmd() < RIGHT_BRACE)
                 unbalance++;
             else {
 
@@ -8641,7 +8635,7 @@ void scan_general_text(void)
         {
             q = get_avail();
             mem_ptr(p)->b32.s1 = q;
-            mem_ptr(q)->b32.s0 = cur_tok;
+            mem_ptr(q)->b32.s0 = cur_tok();
             p = q;
         }
     }
@@ -8656,7 +8650,7 @@ void scan_general_text(void)
     else
         cur_val = p;
     mem_ptr(TEMP_HEAD)->b32.s1 = q;
-    scanner_status = s;
+    set_scanner_status(s);
     warning_index = w;
     def_ref = d;
 }
@@ -8825,8 +8819,8 @@ int32_t the_toks(void)
     int32_t p, q, r;
     pool_pointer b;
     small_number c;
-    if (odd(cur_chr)) {
-        c = cur_chr;
+    if (odd(cur_chr())) {
+        c = cur_chr();
         scan_general_text();
         if (c == 1)
             return cur_val;
@@ -8936,7 +8930,7 @@ conv_toks(void)
     int32_t p = TEX_NULL, q, j;
 
     cat = 0;
-    c = cur_chr;
+    c = cur_chr();
 
     switch (c) {
     case NUMBER_CODE:
@@ -8946,10 +8940,10 @@ conv_toks(void)
 
     case STRING_CODE:
     case MEANING_CODE:
-        save_scanner_status = scanner_status;
-        scanner_status = NORMAL;
+        save_scanner_status = scanner_status();
+        set_scanner_status(NORMAL);
         get_token();
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         break;
 
     case FONT_NAME_CODE:
@@ -8960,7 +8954,7 @@ conv_toks(void)
         break;
 
     case EXPANDED_CODE:
-        save_scanner_status = scanner_status;
+        save_scanner_status = scanner_status();
         save_warning_index = warning_index;
         save_def_ref = def_ref;
         if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
@@ -8969,7 +8963,7 @@ conv_toks(void)
             u = 0;
         scan_pdf_ext_toks();
         warning_index = save_warning_index;
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         begin_token_list(mem(def_ref).b32.s1, INSERTED);
         mem_ptr(def_ref)->b32.s1 = avail;
         avail = def_ref;
@@ -9004,7 +8998,7 @@ conv_toks(void)
         break;
 
     case PDF_FILE_MOD_DATE_CODE:
-        save_scanner_status = scanner_status;
+        save_scanner_status = scanner_status();
         save_warning_index = warning_index;
         save_def_ref = def_ref;
         if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
@@ -9024,7 +9018,7 @@ conv_toks(void)
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         b = pool_ptr();
         getfilemoddate(s);  /* <= the difference-maker */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
@@ -9040,7 +9034,7 @@ conv_toks(void)
         return;
 
     case PDF_FILE_SIZE_CODE:
-        save_scanner_status = scanner_status;
+        save_scanner_status = scanner_status();
         save_warning_index = warning_index;
         save_def_ref = def_ref;
         if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
@@ -9060,7 +9054,7 @@ conv_toks(void)
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         b = pool_ptr();
         getfilesize(s);  /* <= the difference-maker */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
@@ -9076,7 +9070,7 @@ conv_toks(void)
         return;
 
     case PDF_MDFIVE_SUM_CODE:
-        save_scanner_status = scanner_status;
+        save_scanner_status = scanner_status();
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
@@ -9099,7 +9093,7 @@ conv_toks(void)
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         b = pool_ptr();
         getmd5sum(s, boolvar); /* <== the difference-maker */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
@@ -9116,7 +9110,7 @@ conv_toks(void)
         break;
 
     case PDF_FILE_DUMP_CODE:
-        save_scanner_status = scanner_status;
+        save_scanner_status = scanner_status();
         save_warning_index = warning_index;
         save_def_ref = def_ref;
 
@@ -9173,7 +9167,7 @@ conv_toks(void)
         delete_token_ref(def_ref);
         def_ref = save_def_ref;
         warning_index = save_warning_index;
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         b = pool_ptr();
         getfiledump(s, i, j); /* <=== non-boilerplate */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
@@ -9189,7 +9183,7 @@ conv_toks(void)
         return;
 
     case PDF_STRCMP_CODE:
-        save_scanner_status = scanner_status;
+        save_scanner_status = scanner_status();
         save_warning_index = warning_index;
         save_def_ref = def_ref;
         if (str_start(str_ptr() - TOO_BIG_CHAR) < pool_ptr())
@@ -9199,7 +9193,7 @@ conv_toks(void)
         compare_strings();
         def_ref = save_def_ref;
         warning_index = save_warning_index;
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         if (u != 0)
             set_str_ptr(str_ptr()-1);
         break;
@@ -9310,10 +9304,10 @@ conv_toks(void)
         break;
 
     case STRING_CODE:
-        if (cur_cs != 0)
-            sprint_cs(cur_cs);
+        if (cur_cs() != 0)
+            sprint_cs(cur_cs());
         else
-            print_char(cur_chr);
+            print_char(cur_chr());
         break;
 
     case MEANING_CODE:
@@ -9476,10 +9470,10 @@ int32_t scan_toks(bool macro_def, bool xpand)
     int32_t unbalance;
     int32_t hash_brace;
     if (macro_def)
-        scanner_status = DEFINING;
+        set_scanner_status(DEFINING);
     else
-        scanner_status = ABSORBING;
-    warning_index = cur_cs;
+        set_scanner_status(ABSORBING);
+    warning_index = cur_cs();
     def_ref = get_avail();
     mem_ptr(def_ref)->b32.s0 = TEX_NULL;
     p = def_ref;
@@ -9489,17 +9483,17 @@ int32_t scan_toks(bool macro_def, bool xpand)
         while (true) {
 
             get_token();
-            if (cur_tok < RIGHT_BRACE_LIMIT)
+            if (cur_tok() < RIGHT_BRACE_LIMIT)
                 goto done1;
-            if (cur_cmd == MAC_PARAM) { /*495: */
-                s = MATCH_TOKEN + cur_chr;
+            if (cur_cmd() == MAC_PARAM) { /*495: */
+                s = MATCH_TOKEN + cur_chr();
                 get_token();
-                if (cur_tok < LEFT_BRACE_LIMIT) {
-                    hash_brace = cur_tok;
+                if (cur_tok() < LEFT_BRACE_LIMIT) {
+                    hash_brace = cur_tok();
                     {
                         q = get_avail();
                         mem_ptr(p)->b32.s1 = q;
-                        mem_ptr(q)->b32.s0 = cur_tok;
+                        mem_ptr(q)->b32.s0 = cur_tok();
                         p = q;
                     }
                     {
@@ -9523,7 +9517,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
                 } else {
 
                     t++;
-                    if (cur_tok != t) {
+                    if (cur_tok() != t) {
                         error_here_with_diagnostic("Parameters must be numbered consecutively");
                         {
                             set_help_ptr(2);
@@ -9532,13 +9526,13 @@ int32_t scan_toks(bool macro_def, bool xpand)
                         }
                         back_error();
                     }
-                    cur_tok = s;
+                    set_cur_tok(s);
                 }
             }
             {
                 q = get_avail();
                 mem_ptr(p)->b32.s1 = q;
-                mem_ptr(q)->b32.s0 = cur_tok;
+                mem_ptr(q)->b32.s0 = cur_tok();
                 p = q;
             }
         }
@@ -9549,7 +9543,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
             mem_ptr(q)->b32.s0 = END_MATCH_TOKEN;
             p = q;
         }
-        if (cur_cmd == RIGHT_BRACE) {   /*494: */
+        if (cur_cmd() == RIGHT_BRACE) {   /*494: */
             error_here_with_diagnostic("Missing { inserted");
             capture_to_diagnostic(NULL);
 
@@ -9571,16 +9565,16 @@ int32_t scan_toks(bool macro_def, bool xpand)
             while (true) {
 
                 get_next();
-                if (cur_cmd >= CALL) {
+                if (cur_cmd() >= CALL) {
 
-                    if (mem(mem(cur_chr).b32.s1).b32.s0 == PROTECTED_TOKEN) {
-                        cur_cmd = RELAX;
-                        cur_chr = NO_EXPAND_FLAG;
+                    if (mem(mem(cur_chr()).b32.s1).b32.s0 == PROTECTED_TOKEN) {
+                        set_cur_cmd(RELAX);
+                        set_cur_chr(NO_EXPAND_FLAG);
                     }
                 }
-                if (cur_cmd <= MAX_COMMAND)
+                if (cur_cmd() <= MAX_COMMAND)
                     goto done2;
-                if (cur_cmd != THE)
+                if (cur_cmd() != THE)
                     expand();
                 else {
 
@@ -9595,9 +9589,9 @@ int32_t scan_toks(bool macro_def, bool xpand)
             x_token();
         } else
             get_token();
-        if (cur_tok < RIGHT_BRACE_LIMIT) {
+        if (cur_tok() < RIGHT_BRACE_LIMIT) {
 
-            if (cur_cmd < RIGHT_BRACE)
+            if (cur_cmd() < RIGHT_BRACE)
                 unbalance++;
             else {
 
@@ -9605,17 +9599,17 @@ int32_t scan_toks(bool macro_def, bool xpand)
                 if (unbalance == 0)
                     goto found;
             }
-        } else if (cur_cmd == MAC_PARAM) {
+        } else if (cur_cmd() == MAC_PARAM) {
 
             if (macro_def) {    /*498: */
-                s = cur_tok;
+                s = cur_tok();
                 if (xpand)
                     get_x_token();
                 else
                     get_token();
-                if (cur_cmd != MAC_PARAM) {
+                if (cur_cmd() != MAC_PARAM) {
 
-                    if ((cur_tok <= ZERO_TOKEN) || (cur_tok > t)) {
+                    if ((cur_tok() <= ZERO_TOKEN) || (cur_tok() > t)) {
                         error_here_with_diagnostic("Illegal parameter number in definition of ");
                         sprint_cs(warning_index);
                         capture_to_diagnostic(NULL);
@@ -9626,21 +9620,21 @@ int32_t scan_toks(bool macro_def, bool xpand)
                             set_help_line(0, "are all screwed up? I'm going to assume that you meant ##.");
                         }
                         back_error();
-                        cur_tok = s;
+                        set_cur_tok(s);
                     } else
-                        cur_tok = (OUT_PARAM_TOKEN - 48) + cur_chr;
+                        set_cur_tok((OUT_PARAM_TOKEN - 48) + cur_chr());
                 }
             }
         }
         {
             q = get_avail();
             mem_ptr(p)->b32.s1 = q;
-            mem_ptr(q)->b32.s0 = cur_tok;
+            mem_ptr(q)->b32.s0 = cur_tok();
             p = q;
         }
     }
 found:
-    scanner_status = NORMAL;
+    set_scanner_status(NORMAL);
     if (hash_brace != 0) {
         q = get_avail();
         mem_ptr(p)->b32.s1 = q;
@@ -9659,7 +9653,7 @@ read_toks(int32_t n, int32_t r, int32_t j)
     int32_t s;
     small_number m;
 
-    scanner_status = DEFINING;
+    set_scanner_status(DEFINING);
     warning_index = r;
     def_ref = get_avail();
     mem_ptr(def_ref)->b32.s0 = TEX_NULL;
@@ -9722,16 +9716,16 @@ read_toks(int32_t n, int32_t r, int32_t j)
 
         if (j == 1) {
             while (cur_input().loc <= cur_input().limit) {
-                cur_chr = buffer(cur_input().loc);
+                set_cur_chr(buffer(cur_input().loc));
                 cur_input_ptr()->loc++;
-                if (cur_chr == ' ' )
-                    cur_tok = SPACE_TOKEN;
+                if (cur_chr() == ' ' )
+                    set_cur_tok(SPACE_TOKEN);
                 else
-                    cur_tok = cur_chr + OTHER_TOKEN;
+                    set_cur_tok(cur_chr() + OTHER_TOKEN);
 
                 q = get_avail();
                 mem_ptr(p)->b32.s1 = q;
-                mem_ptr(q)->b32.s0 = cur_tok;
+                mem_ptr(q)->b32.s0 = cur_tok();
                 p = q;
             }
             goto done;
@@ -9739,20 +9733,20 @@ read_toks(int32_t n, int32_t r, int32_t j)
 
         while (true) {
             get_token();
-            if (cur_tok == 0)
+            if (cur_tok() == 0)
                 goto done;
 
             if (align_state < 1000000L) {
                 do {
                     get_token();
-                } while (cur_tok != 0);
+                } while (cur_tok() != 0);
                 align_state = 1000000L;
                 goto done;
             }
 
             q = get_avail();
             mem_ptr(p)->b32.s1 = q;
-            mem_ptr(q)->b32.s0 = cur_tok;
+            mem_ptr(q)->b32.s0 = cur_tok();
             p = q;
         }
 
@@ -9761,7 +9755,7 @@ read_toks(int32_t n, int32_t r, int32_t j)
     } while (align_state != 1000000L);
 
     cur_val = def_ref;
-    scanner_status = NORMAL;
+    set_scanner_status(NORMAL);
     align_state = s;
 }
 
@@ -9771,24 +9765,24 @@ void pass_text(void)
     int32_t l;
     small_number save_scanner_status;
 
-    save_scanner_status = scanner_status;
-    scanner_status = SKIPPING;
+    save_scanner_status = scanner_status();
+    set_scanner_status(SKIPPING);
     l = 0;
     skip_line = line();
 
     while (true) {
 
         get_next();
-        if (cur_cmd == FI_OR_ELSE) {
+        if (cur_cmd() == FI_OR_ELSE) {
             if (l == 0)
                 goto done;
-            if (cur_chr == FI_CODE)
+            if (cur_chr() == FI_CODE)
                 l--;
-        } else if (cur_cmd == IF_TEST)
+        } else if (cur_cmd() == IF_TEST)
             l++;
     }
 done:
-    scanner_status = save_scanner_status;
+    set_scanner_status(save_scanner_status);
     if (INTPAR(tracing_ifs) > 0)
         show_cur_cmd_chr();
 }
@@ -9839,52 +9833,52 @@ conditional(void)
     mem_ptr(p)->b16.s0 = cur_if;
     mem_ptr(p + 1)->b32.s1 = if_line;
     cond_ptr = p;
-    cur_if = cur_chr;
+    cur_if = cur_chr();
     if_limit = IF_CODE;
     if_line = line();
 
     save_cond_ptr = cond_ptr;
-    is_unless = (cur_chr >= UNLESS_CODE);
-    this_if = cur_chr % UNLESS_CODE;
+    is_unless = (cur_chr() >= UNLESS_CODE);
+    this_if = cur_chr() % UNLESS_CODE;
 
     switch (this_if) {
     case IF_CHAR_CODE:
     case IF_CAT_CODE:
         get_x_token();
 
-        if (cur_cmd == RELAX) {
-            if (cur_chr == NO_EXPAND_FLAG) {
-                cur_cmd = ACTIVE_CHAR;
-                cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
+        if (cur_cmd() == RELAX) {
+            if (cur_chr() == NO_EXPAND_FLAG) {
+                set_cur_cmd(ACTIVE_CHAR);
+                set_cur_chr(cur_tok() - (CS_TOKEN_FLAG + ACTIVE_BASE));
             }
         }
 
-        if (cur_cmd > ACTIVE_CHAR || cur_chr > BIGGEST_USV) {
+        if (cur_cmd() > ACTIVE_CHAR || cur_chr() > BIGGEST_USV) {
             m = RELAX;
             n = TOO_BIG_USV;
         } else {
-            m = cur_cmd;
-            n = cur_chr;
+            m = cur_cmd();
+            n = cur_chr();
         }
 
         get_x_token();
 
-        if (cur_cmd == RELAX) {
-            if (cur_chr == NO_EXPAND_FLAG) {
-                cur_cmd = ACTIVE_CHAR;
-                cur_chr = cur_tok - (CS_TOKEN_FLAG + ACTIVE_BASE);
+        if (cur_cmd() == RELAX) {
+            if (cur_chr() == NO_EXPAND_FLAG) {
+                set_cur_cmd(ACTIVE_CHAR);
+                set_cur_chr(cur_tok() - (CS_TOKEN_FLAG + ACTIVE_BASE));
             }
         }
 
-        if (cur_cmd > ACTIVE_CHAR || cur_chr > BIGGEST_USV) {
-            cur_cmd = RELAX;
-            cur_chr = TOO_BIG_USV;
+        if (cur_cmd() > ACTIVE_CHAR || cur_chr() > BIGGEST_USV) {
+            set_cur_cmd(RELAX);
+            set_cur_chr(TOO_BIG_USV);
         }
 
         if (this_if == IF_CHAR_CODE)
-            b = (n == cur_chr);
+            b = (n == cur_chr());
         else
-            b = (m == cur_cmd);
+            b = (m == cur_cmd());
         break;
 
     case IF_INT_CODE:
@@ -9898,10 +9892,10 @@ conditional(void)
 
         do {
             get_x_token();
-        } while (cur_cmd == SPACER);
+        } while (cur_cmd() == SPACER);
 
-        if (cur_tok >= OTHER_TOKEN + 60 && cur_tok <= OTHER_TOKEN + 62) {
-            r = cur_tok - OTHER_TOKEN;
+        if (cur_tok() >= OTHER_TOKEN + 60 && cur_tok() <= OTHER_TOKEN + 62) {
+            r = cur_tok() - OTHER_TOKEN;
         } else {
             error_here_with_diagnostic("Missing = inserted for ");
             print_cmd_chr(IF_TEST, this_if);
@@ -9977,20 +9971,20 @@ conditional(void)
         break;
 
     case IFX_CODE:
-        save_scanner_status = scanner_status;
-        scanner_status = NORMAL;
+        save_scanner_status = scanner_status();
+        set_scanner_status(NORMAL);
         get_next();
-        n = cur_cs;
-        p = cur_cmd;
-        q = cur_chr;
+        n = cur_cs();
+        p = cur_cmd();
+        q = cur_chr();
         get_next();
 
-        if (cur_cmd != p) {
+        if (cur_cmd() != p) {
             b = false;
-        } else if (cur_cmd < CALL) {
-            b = (cur_chr == q);
+        } else if (cur_cmd() < CALL) {
+            b = (cur_chr() == q);
         } else { /*527:*/
-            p = mem(cur_chr).b32.s1;
+            p = mem(cur_chr()).b32.s1;
             q = mem(eqtb_ptr(n)->b32.s1).b32.s1;
             if (p == q) {
                 b = true;
@@ -10008,7 +10002,7 @@ conditional(void)
             }
         }
 
-        scanner_status = save_scanner_status;
+        set_scanner_status(save_scanner_status);
         break;
 
     case IF_EOF_CODE:
@@ -10028,11 +10022,11 @@ conditional(void)
         break;
 
     case IF_DEF_CODE:
-        save_scanner_status = scanner_status;
-        scanner_status = NORMAL;
+        save_scanner_status = scanner_status();
+        set_scanner_status(NORMAL);
         get_next();
-        b = (cur_cmd != UNDEFINED_CS);
-        scanner_status = save_scanner_status;
+        b = (cur_cmd() != UNDEFINED_CS);
+        set_scanner_status(save_scanner_status);
         break;
 
     case IF_CS_CODE:
@@ -10043,15 +10037,15 @@ conditional(void)
 
         do {
             get_x_token();
-            if (cur_cs == 0) {
+            if (cur_cs() == 0) {
                 q = get_avail();
                 mem_ptr(p)->b32.s1 = q;
-                mem_ptr(q)->b32.s0 = cur_tok;
+                mem_ptr(q)->b32.s0 = cur_tok();
                 p = q;
             }
-        } while (cur_cs == 0);
+        } while (cur_cs() == 0);
 
-        if (cur_cmd != END_CS_NAME) { /*391:*/
+        if (cur_cmd() != END_CS_NAME) { /*391:*/
             error_here_with_diagnostic("Missing ");
             print_esc_cstr("endcsname");
             print_cstr(" inserted");
@@ -10079,14 +10073,14 @@ conditional(void)
         }
 
         if (m == first)
-            cur_cs = NULL_CS;
+            set_cur_cs(NULL_CS);
         else if (m == first + 1)
-            cur_cs = SINGLE_BASE + buffer(first);
+            set_cur_cs(SINGLE_BASE + buffer(first));
         else
-            cur_cs = id_lookup(first, m - first); /*:1556*/
+            set_cur_cs(id_lookup(first, m - first)); /*:1556*/
 
         flush_list(n);
-        b = (eqtb_ptr(cur_cs)->b16.s1 != UNDEFINED_CS);
+        b = (eqtb_ptr(cur_cs())->b16.s1 != UNDEFINED_CS);
         is_in_csname = e;
         break;
 
@@ -10127,11 +10121,11 @@ conditional(void)
             pass_text();
 
             if (cond_ptr == save_cond_ptr) {
-                if (cur_chr == OR_CODE)
+                if (cur_chr() == OR_CODE)
                     n--;
                 else
                     goto common_ending;
-            } else if (cur_chr == FI_CODE) { /*515:*/
+            } else if (cur_chr() == FI_CODE) { /*515:*/
                 if (if_stack(in_open()) == cond_ptr)
                     if_warning();
                 p = cond_ptr;
@@ -10147,18 +10141,18 @@ conditional(void)
         break;
 
     case IF_PRIMITIVE_CODE:
-        save_scanner_status = scanner_status;
-        scanner_status = NORMAL;
+        save_scanner_status = scanner_status();
+        set_scanner_status(NORMAL);
         get_next();
-        scanner_status = save_scanner_status;
-        if (cur_cs < HASH_BASE)
-            m = prim_lookup(cur_cs - SINGLE_BASE);
+        set_scanner_status(save_scanner_status);
+        if (cur_cs() < HASH_BASE)
+            m = prim_lookup(cur_cs() - SINGLE_BASE);
         else
-            m = prim_lookup(hash(cur_cs).s1);
-        b = (cur_cmd != UNDEFINED_CS
+            m = prim_lookup(hash(cur_cs()).s1);
+        b = (cur_cmd() != UNDEFINED_CS
              && m != UNDEFINED_PRIMITIVE
-             && cur_cmd == eqtb_ptr(PRIM_EQTB_BASE + m)->b16.s1
-             && cur_chr == eqtb_ptr(PRIM_EQTB_BASE + m)->b32.s1);
+             && cur_cmd() == eqtb_ptr(PRIM_EQTB_BASE + m)->b16.s1
+             && cur_chr() == eqtb_ptr(PRIM_EQTB_BASE + m)->b32.s1);
         break;
     }
 
@@ -10185,7 +10179,7 @@ conditional(void)
         pass_text();
 
         if (cond_ptr == save_cond_ptr) {
-            if (cur_chr != OR_CODE)
+            if (cur_chr() != OR_CODE)
                 goto common_ending;
 
             error_here_with_diagnostic("Extra ");
@@ -10195,7 +10189,7 @@ conditional(void)
             set_help_ptr(1);
             set_help_line(0, "I'm ignoring this; it doesn't match any \\if.");
             error();
-        } else if (cur_chr == FI_CODE) { /*515:*/
+        } else if (cur_chr() == FI_CODE) { /*515:*/
             if (if_stack(in_open()) == cond_ptr)
                 if_warning();
             p = cond_ptr;
@@ -10208,7 +10202,7 @@ conditional(void)
     }
 
 common_ending:
-    if (cur_chr == FI_CODE) { /*515:*/
+    if (cur_chr() == FI_CODE) { /*515:*/
         if (if_stack(in_open()) == cond_ptr)
             if_warning();
         p = cond_ptr;
@@ -10231,10 +10225,10 @@ scan_file_name_braced(void)
     int32_t i;
     bool save_stop_at_space;
 
-    save_scanner_status = scanner_status;
+    save_scanner_status = scanner_status();
     save_def_ref = def_ref;
-    save_cur_cs = cur_cs;
-    cur_cs = warning_index;
+    save_cur_cs = cur_cs();
+    set_cur_cs(warning_index);
     scan_toks(false, true);
 
     old_setting = selector();
@@ -10244,8 +10238,8 @@ scan_file_name_braced(void)
     s = make_string();
     delete_token_ref(def_ref);
     def_ref = save_def_ref;
-    cur_cs = save_cur_cs;
-    scanner_status = save_scanner_status;
+    set_cur_cs(save_cur_cs);
+    set_scanner_status(save_scanner_status);
     save_stop_at_space = stop_at_space();
 
     begin_name();
@@ -10262,15 +10256,15 @@ scan_file_name(void)
 {
     int32_t save_warning_index;
     save_warning_index = warning_index;
-    warning_index = cur_cs;
+    warning_index = cur_cs();
 
     do {
         get_x_token();
-    } while (cur_cmd == SPACER || cur_cmd == RELAX);
+    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
     back_input();
 
-    if (cur_cmd == LEFT_BRACE) {
+    if (cur_cmd() == LEFT_BRACE) {
         scan_file_name_braced();
     } else {
         set_name_in_progress(true);
@@ -10278,15 +10272,15 @@ scan_file_name(void)
 
         do {
             get_x_token();
-        } while(cur_cmd == SPACER);
+        } while(cur_cmd() == SPACER);
 
         while (true) {
-            if (cur_cmd > OTHER_CHAR || cur_chr > BIGGEST_CHAR) {
+            if (cur_cmd() > OTHER_CHAR || cur_chr() > BIGGEST_CHAR) {
                 back_input();
                 break;
             }
 
-            if (!more_name(cur_chr))
+            if (!more_name(cur_chr()))
                 break;
 
             get_x_token();
@@ -12317,17 +12311,17 @@ void get_preamble_token(void)
 restart:
     get_token();
 
-    while ((cur_chr == SPAN_CODE) && (cur_cmd == TAB_MARK)) {
+    while ((cur_chr() == SPAN_CODE) && (cur_cmd() == TAB_MARK)) {
 
         get_token();
-        if (cur_cmd > MAX_COMMAND) {
+        if (cur_cmd() > MAX_COMMAND) {
             expand();
             get_token();
         }
     }
-    if (cur_cmd == ENDV)
+    if (cur_cmd() == ENDV)
         fatal_error("(interwoven alignment preambles are not allowed)");
-    if ((cur_cmd == ASSIGN_GLUE) && (cur_chr == (GLUE_BASE + 11))) {
+    if ((cur_cmd() == ASSIGN_GLUE) && (cur_chr() == (GLUE_BASE + 11))) {
         scan_optional_equals();
         scan_glue(GLUE_VAL);
         if (INTPAR(global_defs) > 0)
@@ -12345,7 +12339,7 @@ init_align(void)
     int32_t save_cs_ptr;
     int32_t p;
 
-    save_cs_ptr = cur_cs;
+    save_cs_ptr = cur_cs();
     push_alignment();
     align_state = -1000000L;
 
@@ -12375,14 +12369,14 @@ init_align(void)
     mem_ptr(ALIGN_HEAD)->b32.s1 = TEX_NULL;
     cur_align = ALIGN_HEAD;
     cur_loop = TEX_NULL;
-    scanner_status = ALIGNING;
+    set_scanner_status(ALIGNING);
     warning_index = save_cs_ptr;
     align_state = -1000000L;
 
     while (true) {
         mem_ptr(cur_align)->b32.s1 = new_param_glue(GLUE_PAR__tab_skip);
         cur_align = LLIST_link(cur_align); /*:807*/
-        if (cur_cmd == CAR_RET)
+        if (cur_cmd() == CAR_RET)
             goto done;
 
         p = HOLD_HEAD;
@@ -12390,11 +12384,11 @@ init_align(void)
 
         while (true) {
             get_preamble_token();
-            if (cur_cmd == MAC_PARAM)
+            if (cur_cmd() == MAC_PARAM)
                 goto done1;
 
-            if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == -1000000L) {
-                if (p == HOLD_HEAD && cur_loop == TEX_NULL && cur_cmd == TAB_MARK) {
+            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state == -1000000L) {
+                if (p == HOLD_HEAD && cur_loop == TEX_NULL && cur_cmd() == TAB_MARK) {
                     cur_loop = cur_align;
                 } else {
                     error_here_with_diagnostic("Missing # inserted in alignment preamble");
@@ -12406,10 +12400,10 @@ init_align(void)
                     back_error();
                     goto done1;
                 }
-            } else if (cur_cmd != SPACER || p != HOLD_HEAD) {
+            } else if (cur_cmd() != SPACER || p != HOLD_HEAD) {
                 mem_ptr(p)->b32.s1 = get_avail();
                 p = LLIST_link(p);
-                mem_ptr(p)->b32.s0 = cur_tok;
+                mem_ptr(p)->b32.s0 = cur_tok();
             }
         }
 
@@ -12425,10 +12419,10 @@ init_align(void)
         while (true) {
         continue_:
             get_preamble_token();
-            if (cur_cmd <= CAR_RET && cur_cmd >= TAB_MARK && align_state == -1000000L)
+            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state == -1000000L)
                 goto done2;
 
-            if (cur_cmd == MAC_PARAM) {
+            if (cur_cmd() == MAC_PARAM) {
                 error_here_with_diagnostic("Only one # is allowed per tab");
                 capture_to_diagnostic(NULL);
 
@@ -12442,7 +12436,7 @@ init_align(void)
 
             mem_ptr(p)->b32.s1 = get_avail();
             p = LLIST_link(p);
-            mem_ptr(p)->b32.s0 = cur_tok;
+            mem_ptr(p)->b32.s0 = cur_tok();
         }
 
     done2:
@@ -12453,7 +12447,7 @@ init_align(void)
     }
 
 done:
-    scanner_status = NORMAL; /*:806 */
+    set_scanner_status(NORMAL); /*:806 */
     new_save_level(ALIGN_GROUP);
 
     if (LOCAL(every_cr) != TEX_NULL)
@@ -12497,8 +12491,8 @@ void init_row(void)
 
 void init_col(void)
 {
-    mem_ptr(cur_align + 5)->b32.s0 = cur_cmd;
-    if (cur_cmd == OMIT)
+    mem_ptr(cur_align + 5)->b32.s0 = cur_cmd();
+    if (cur_cmd() == OMIT)
         align_state = 0;
     else {
 
@@ -12651,7 +12645,7 @@ bool fin_col(void)
     align_state = 1000000L;
     do {
         get_x_or_protected();
-    } while (!(cur_cmd != SPACER));
+    } while (!(cur_cmd() != SPACER));
     cur_align = p;
     init_col();
     return false;
@@ -12932,7 +12926,7 @@ void fin_align(void)
     pop_nest();
     if (cur_list.mode == MMODE) {       /*1241: */
         do_assignments();
-        if (cur_cmd != MATH_SHIFT) {    /*1242: */
+        if (cur_cmd() != MATH_SHIFT) {    /*1242: */
             error_here_with_diagnostic("Missing $$ inserted");
             capture_to_diagnostic(NULL);
             {
@@ -12944,7 +12938,7 @@ void fin_align(void)
         } else {                /*1232: */
 
             get_x_token();
-            if (cur_cmd != MATH_SHIFT) {
+            if (cur_cmd() != MATH_SHIFT) {
                 error_here_with_diagnostic("Display math should end with $$");
                 capture_to_diagnostic(NULL);
                 {
@@ -12996,15 +12990,15 @@ restart:
 
     do {
         get_x_or_protected();
-    } while (!(cur_cmd != SPACER));
-    if (cur_cmd == NO_ALIGN) {
+    } while (!(cur_cmd() != SPACER));
+    if (cur_cmd() == NO_ALIGN) {
         scan_left_brace();
         new_save_level(NO_ALIGN_GROUP);
         if (cur_list.mode == -1)
             normal_paragraph();
-    } else if (cur_cmd == RIGHT_BRACE)
+    } else if (cur_cmd() == RIGHT_BRACE)
         fin_align();
-    else if ((cur_cmd == CAR_RET) && (cur_chr == CR_CR_CODE))
+    else if ((cur_cmd() == CAR_RET) && (cur_chr() == CR_CR_CODE))
         goto restart;
     else {
 
@@ -13579,7 +13573,7 @@ void
 insert_dollar_sign(void)
 {
     back_input();
-    cur_tok = (MATH_SHIFT_TOKEN + 36 /*'$'*/);
+    set_cur_tok((MATH_SHIFT_TOKEN + 36 /*'$'*/));
 
     error_here_with_diagnostic("Missing $ inserted");
     capture_to_diagnostic(NULL);
@@ -13593,7 +13587,7 @@ insert_dollar_sign(void)
 void you_cant(void)
 {
     error_here_with_diagnostic("You can't use `");
-    print_cmd_chr(cur_cmd, cur_chr);
+    print_cmd_chr(cur_cmd(), cur_chr());
     print_in_mode(cur_list.mode);
     capture_to_diagnostic(NULL);
 }
@@ -13650,7 +13644,7 @@ bool its_all_over(void)
 void append_glue(void)
 {
     small_number s;
-    s = cur_chr;
+    s = cur_chr();
     switch (s) {
     case 0:
         cur_val = 4;
@@ -13685,7 +13679,7 @@ void append_glue(void)
 void append_kern(void)
 {
     uint16_t s;
-    s = cur_chr;
+    s = cur_chr();
     scan_dimen(s == MU_GLUE, false, false);
     {
         mem_ptr(cur_list.tail)->b32.s1 = new_kern(cur_val);
@@ -13702,7 +13696,7 @@ off_save(void)
 
     if (cur_group == BOTTOM_LEVEL) { /*1101:*/
         error_here_with_diagnostic("Extra ");
-        print_cmd_chr(cur_cmd, cur_chr);
+        print_cmd_chr(cur_cmd(), cur_chr());
         capture_to_diagnostic(NULL);
 
         set_help_ptr(1);
@@ -13874,9 +13868,9 @@ box_end(int32_t box_context)
         if (box_context > SHIP_OUT_FLAG) { /*1113:*/
             do {
                 get_x_token();
-            } while (cur_cmd == SPACER || cur_cmd == RELAX);
+            } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-            if ((cur_cmd == HSKIP && abs(cur_list.mode) != VMODE) || (cur_cmd == VSKIP && abs(cur_list.mode) == VMODE)) {
+            if ((cur_cmd() == HSKIP && abs(cur_list.mode) != VMODE) || (cur_cmd() == VSKIP && abs(cur_list.mode) == VMODE)) {
                 append_glue();
                 mem_ptr(cur_list.tail)->b16.s0 = box_context - (LEADER_FLAG - A_LEADERS);
                 mem_ptr(cur_list.tail + 1)->b32.s1 = cur_box;
@@ -13909,7 +13903,7 @@ begin_box(int32_t box_context)
     int32_t k;
     int32_t n;
 
-    switch (cur_chr) {
+    switch (cur_chr()) {
     case BOX_CODE:
         scan_register_num();
 
@@ -14047,7 +14041,7 @@ begin_box(int32_t box_context)
         break;
 
     default:
-        k = cur_chr - 4;
+        k = cur_chr() - 4;
         save_stack_ptr(save_ptr + 0)->b32.s1 = box_context;
         if (k == HMODE) {
             if (box_context < BOX_FLAG && abs(cur_list.mode) == VMODE)
@@ -14089,11 +14083,11 @@ scan_box(int32_t box_context)
 {
     do {
         get_x_token();
-    } while (cur_cmd == SPACER || cur_cmd == RELAX);
+    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-    if (cur_cmd == MAKE_BOX) {
+    if (cur_cmd() == MAKE_BOX) {
         begin_box(box_context);
-    } else if (box_context >= LEADER_FLAG && (cur_cmd == HRULE || cur_cmd == VRULE)) {
+    } else if (box_context >= LEADER_FLAG && (cur_cmd() == HRULE || cur_cmd() == VRULE)) {
         cur_box = scan_rule_spec();
         box_end(box_context);
     } else {
@@ -14201,7 +14195,7 @@ void indent_in_hmode(void)
 {
     int32_t p, q;
 
-    if (cur_chr > 0) {
+    if (cur_chr() > 0) {
         p = new_null_box();
         mem_ptr(p + 1)->b32.s1 = eqtb_ptr(DIMEN_BASE)->b32.s1;
         if (abs(cur_list.mode) == HMODE)
@@ -14224,7 +14218,7 @@ void head_for_vmode(void)
 {
     if (cur_list.mode < 0) {
 
-        if (cur_cmd != HRULE)
+        if (cur_cmd() != HRULE)
             off_save();
         else {
             error_here_with_diagnostic("You can't use `");
@@ -14242,7 +14236,7 @@ void head_for_vmode(void)
     } else {
 
         back_input();
-        cur_tok = par_token;
+        set_cur_tok(par_token);
         back_input();
         cur_input_ptr()->index = INSERTED;
     }
@@ -14269,7 +14263,7 @@ end_graf(void)
 
 void begin_insert_or_adjust(void)
 {
-    if (cur_cmd == VADJUST)
+    if (cur_cmd() == VADJUST)
         cur_val = 255;
     else {
 
@@ -14289,7 +14283,7 @@ void begin_insert_or_adjust(void)
         }
     }
     save_stack_ptr(save_ptr + 0)->b32.s1 = cur_val;
-    if ((cur_cmd == VADJUST) && scan_keyword("pre"))
+    if ((cur_cmd() == VADJUST) && scan_keyword("pre"))
         save_stack_ptr(save_ptr + 1)->b32.s1 = 1;
     else
         save_stack_ptr(save_ptr + 1)->b32.s1 = 0;
@@ -14306,7 +14300,7 @@ void make_mark(void)
 {
     int32_t p;
     int32_t c;
-    if (cur_chr == 0)
+    if (cur_chr() == 0)
         c = 0;
     else {
 
@@ -14342,16 +14336,16 @@ void delete_last(void)
     int32_t tx;
     uint16_t m;
     if ((cur_list.mode == VMODE) && (cur_list.tail == cur_list.head)) {       /*1141: */
-        if ((cur_chr != GLUE_NODE) || (last_glue != MAX_HALFWORD)) {
+        if ((cur_chr() != GLUE_NODE) || (last_glue != MAX_HALFWORD)) {
             you_cant();
             {
                 set_help_ptr(2);
                 set_help_line(1, "Sorry...I usually can't take things from the current page.");
                 set_help_line(0, "Try `I\\vskip-\\lastskip' instead.");
             }
-            if (cur_chr == KERN_NODE)
+            if (cur_chr() == KERN_NODE)
                 set_help_line(0, "Try `I\\kern-\\lastkern' instead.");
-            else if (cur_chr != GLUE_NODE)
+            else if (cur_chr() != GLUE_NODE)
                 set_help_line(0, "Perhaps you can make the output routine do it.");
             error();
         }
@@ -14371,7 +14365,7 @@ void delete_last(void)
         }
         if (!(is_char_node(tx))) {
 
-            if (mem(tx).b16.s1 == cur_chr) {
+            if (mem(tx).b16.s1 == cur_chr()) {
                 q = cur_list.head;
                 p = TEX_NULL;
                 do {
@@ -14423,12 +14417,12 @@ void unpackage(void)
     int32_t r;
     unsigned char /*copy_code */ c;
 
-    if (cur_chr > COPY_CODE) {  /*1651: */
-        mem_ptr(cur_list.tail)->b32.s1 = disc_ptr[cur_chr];
-        disc_ptr[cur_chr] = TEX_NULL;
+    if (cur_chr() > COPY_CODE) {  /*1651: */
+        mem_ptr(cur_list.tail)->b32.s1 = disc_ptr[cur_chr()];
+        disc_ptr[cur_chr()] = TEX_NULL;
         goto done;
     }
-    c = cur_chr;
+    c = cur_chr();
     scan_register_num();
     if (cur_val < 256)
         p = BOX_REG(cur_val);
@@ -14531,7 +14525,7 @@ void append_discretionary(void)
     mem_ptr(cur_list.tail)->b32.s1 = new_disc();
     cur_list.tail = LLIST_link(cur_list.tail);
 
-    if (cur_chr == 1) {
+    if (cur_chr() == 1) {
         c = hyphen_char(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
         if (c >= 0) {
 
@@ -14680,10 +14674,10 @@ void make_accent(void)
         do_assignments();
         q = TEX_NULL;
         f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
-        if ((cur_cmd == LETTER) || (cur_cmd == OTHER_CHAR) || (cur_cmd == CHAR_GIVEN)) {
-            q = new_character(f, cur_chr);
-            cur_val = cur_chr;
-        } else if (cur_cmd == CHAR_NUM) {
+        if ((cur_cmd() == LETTER) || (cur_cmd() == OTHER_CHAR) || (cur_cmd() == CHAR_GIVEN)) {
+            q = new_character(f, cur_chr());
+            cur_val = cur_chr();
+        } else if (cur_cmd() == CHAR_NUM) {
             scan_char_num();
             q = new_character(f, cur_val);
         } else
@@ -14727,10 +14721,10 @@ void align_error(void)
 {
     if (abs(align_state) > 2) {      /*1163: */
         error_here_with_diagnostic("Misplaced ");
-        print_cmd_chr(cur_cmd, cur_chr);
+        print_cmd_chr(cur_cmd(), cur_chr());
         capture_to_diagnostic(NULL);
 
-        if (cur_tok == (TAB_TOKEN + 38)) {
+        if (cur_tok() == (TAB_TOKEN + 38)) {
             {
                 set_help_ptr(6);
                 set_help_line(5, "I can't figure out why you would want to use a tab mark");
@@ -14759,12 +14753,12 @@ void align_error(void)
             error_here_with_diagnostic("Missing { inserted");
             capture_to_diagnostic(NULL);
             align_state++;
-            cur_tok = (LEFT_BRACE_TOKEN + 123);
+            set_cur_tok((LEFT_BRACE_TOKEN + 123));
         } else {
             error_here_with_diagnostic("Missing } inserted");
             capture_to_diagnostic(NULL);
             align_state--;
-            cur_tok = (RIGHT_BRACE_TOKEN + 125);
+            set_cur_tok((RIGHT_BRACE_TOKEN + 125));
         }
         {
             set_help_ptr(3);
@@ -15072,9 +15066,9 @@ get_r_token(void)
 restart:
     do {
         get_token();
-    } while (cur_tok == SPACE_TOKEN);
+    } while (cur_tok() == SPACE_TOKEN);
 
-    if (cur_cs == 0 || cur_cs > eqtb_top() || (cur_cs > FROZEN_CONTROL_SEQUENCE && cur_cs <= EQTB_SIZE)) {
+    if (cur_cs() == 0 || cur_cs() > eqtb_top() || (cur_cs() > FROZEN_CONTROL_SEQUENCE && cur_cs() <= EQTB_SIZE)) {
         error_here_with_diagnostic("Missing control sequence inserted");
         capture_to_diagnostic(NULL);
 
@@ -15085,10 +15079,10 @@ restart:
         set_help_line(1, "You can recover graciously from this error, if you're");
         set_help_line(0, "careful; see exercise 27.2 in The TeXbook.");
 
-        if (cur_cs == 0)
+        if (cur_cs() == 0)
             back_input();
 
-        cur_tok = CS_TOKEN_FLAG + FROZEN_PROTECTION;
+        set_cur_tok(CS_TOKEN_FLAG + FROZEN_PROTECTION);
         ins_error();
         goto restart;
     }
@@ -15114,21 +15108,21 @@ do_register_command(small_number a)
     bool e;
     int32_t w = 0;
 
-    q = cur_cmd;
+    q = cur_cmd();
     e = false;
 
     if (q != REGISTER) {
         get_x_token();
 
-        if (cur_cmd >= ASSIGN_INT && cur_cmd <= ASSIGN_MU_GLUE) {
-            l = cur_chr;
-            p = cur_cmd - ASSIGN_INT;
+        if (cur_cmd() >= ASSIGN_INT && cur_cmd() <= ASSIGN_MU_GLUE) {
+            l = cur_chr();
+            p = cur_cmd() - ASSIGN_INT;
             goto found;
         }
 
-        if (cur_cmd != REGISTER) {
+        if (cur_cmd() != REGISTER) {
             error_here_with_diagnostic("You can't use `");
-            print_cmd_chr(cur_cmd, cur_chr);
+            print_cmd_chr(cur_cmd(), cur_chr());
             print_cstr("' after ");
             print_cmd_chr(q, 0);
             capture_to_diagnostic(NULL);
@@ -15140,12 +15134,12 @@ do_register_command(small_number a)
         }
     }
 
-    if (cur_chr < 0 || cur_chr > 19 /*lo_mem_stat_max*/) {
-        l = cur_chr;
+    if (cur_chr() < 0 || cur_chr() > 19 /*lo_mem_stat_max*/) {
+        l = cur_chr();
         p = (mem(l).b16.s1 / 64);
         e = true;
     } else {
-        p = cur_chr;
+        p = cur_chr();
         scan_register_num();
         if (cur_val > 255) {
             find_sa_element(p, cur_val, true);
@@ -15302,11 +15296,11 @@ found:
 void alter_aux(void)
 {
     int32_t c;
-    if (cur_chr != abs(cur_list.mode))
+    if (cur_chr() != abs(cur_list.mode))
         report_illegal_case();
     else {
 
-        c = cur_chr;
+        c = cur_chr();
         scan_optional_equals();
         if (c == VMODE) {
             scan_dimen(false, false, false);
@@ -15359,7 +15353,7 @@ void alter_prev_graf(void)
 void alter_page_so_far(void)
 {
     unsigned char c;
-    c = cur_chr;
+    c = cur_chr();
     scan_optional_equals();
     scan_dimen(false, false, false);
     page_so_far[c] = cur_val;
@@ -15368,7 +15362,7 @@ void alter_page_so_far(void)
 void alter_integer(void)
 {
     small_number c;
-    c = cur_chr;
+    c = cur_chr();
     scan_optional_equals();
     scan_int();
     if (c == 0)
@@ -15386,7 +15380,7 @@ void alter_integer(void)
             int_error(cur_val);
         } else {
 
-            cur_chr = cur_val;
+            set_cur_chr(cur_val);
             new_interaction();
         }
     } else
@@ -15398,7 +15392,7 @@ void alter_box_dimen(void)
     small_number c;
     int32_t b;
 
-    c = cur_chr;
+    c = cur_chr();
     scan_register_num();
     if (cur_val < 256)
         b = BOX_REG(cur_val);
@@ -15428,7 +15422,7 @@ void new_font(small_number a)
         open_log_file();
 
     get_r_token();
-    u = cur_cs;
+    u = cur_cs();
     if (u >= HASH_BASE)
         t = hash(u).s1;
     else if (u >= SINGLE_BASE) {
@@ -15549,7 +15543,7 @@ common_ending:
 void new_interaction(void)
 {
     print_ln();
-    set_interaction(cur_chr);
+    set_interaction(cur_chr());
     if (interaction() == BATCH_MODE)
         set_selector(SELECTOR_NO_PRINT);
     else
@@ -15564,7 +15558,7 @@ void issue_message(void)
     unsigned char c;
     str_number s;
 
-    c = cur_chr;
+    c = cur_chr();
     mem_ptr(GARBAGE)->b32.s1 = scan_toks(false, true);
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
@@ -15623,7 +15617,7 @@ shift_case(void)
     int32_t t;
     int32_t c;
 
-    b = cur_chr;
+    b = cur_chr();
     p = scan_toks(false, false);
     p = mem(def_ref).b32.s1;
 
@@ -15654,7 +15648,7 @@ void show_whatever(void)
     // In all cases we eventually call error().
     diagnostic_begin_capture_warning_here();
 
-    switch (cur_chr) {
+    switch (cur_chr()) {
     case 3:
         {
             begin_diagnostic();
@@ -15688,8 +15682,8 @@ void show_whatever(void)
         {
             get_token();
             print_nl_cstr("> ");
-            if (cur_cs != 0) {
-                sprint_cs(cur_cs);
+            if (cur_cs() != 0) {
+                sprint_cs(cur_cs());
                 print_char('=');
             }
             print_meaning();
@@ -15798,7 +15792,7 @@ common_ending:
 
 void new_write_whatsit(small_number w)
 {
-    new_whatsit(cur_chr, w);
+    new_whatsit(cur_chr(), w);
     if (w != WRITE_NODE_SIZE)
         scan_four_bit_int();
     else {
@@ -15823,7 +15817,7 @@ void do_extension(void)
     int32_t i, j, k;
     int32_t p;
 
-    switch (cur_chr) {
+    switch (cur_chr()) {
     case OPEN_NODE:
         {
             new_write_whatsit(OPEN_NODE_SIZE);
@@ -15837,9 +15831,9 @@ void do_extension(void)
 
     case WRITE_NODE:
         {
-            k = cur_cs;
+            k = cur_cs();
             new_write_whatsit(WRITE_NODE_SIZE);
-            cur_cs = k;
+            set_cur_cs(k);
             p = scan_toks(false, false);
             mem_ptr(cur_list.tail + 1)->b32.s1 = def_ref;
         }
@@ -15864,7 +15858,7 @@ void do_extension(void)
     case IMMEDIATE_CODE:
         {
             get_x_token();
-            if ((cur_cmd == EXTENSION) && (cur_chr <= CLOSE_NODE)) {
+            if ((cur_cmd() == EXTENSION) && (cur_chr() <= CLOSE_NODE)) {
                 p = cur_list.tail;
                 do_extension();
                 out_what(cur_list.tail);
@@ -16239,7 +16233,7 @@ handle_right_brace(void)
 
     case ALIGN_GROUP:
         back_input();
-        cur_tok = CS_TOKEN_FLAG + FROZEN_CR;
+        set_cur_tok(CS_TOKEN_FLAG + FROZEN_CR);
 
         error_here_with_diagnostic("Missing ");
         print_esc_cstr("cr");
@@ -16333,7 +16327,7 @@ reswitch:
     if (INTPAR(tracing_commands) > 0)
         show_cur_cmd_chr();
 
-    switch (abs(cur_list.mode) + cur_cmd) {
+    switch (abs(cur_list.mode) + cur_cmd()) {
     case HMODE + LETTER:
     case HMODE + OTHER_CHAR:
     case HMODE + CHAR_GIVEN:
@@ -16342,13 +16336,13 @@ reswitch:
 
     case HMODE + CHAR_NUM:
         scan_usv_num();
-        cur_chr = cur_val;
+        set_cur_chr(cur_val);
         goto main_loop;
         break;
 
     case HMODE + NO_BOUNDARY:
         get_x_token();
-        if (cur_cmd == LETTER || cur_cmd == OTHER_CHAR || cur_cmd == CHAR_GIVEN || cur_cmd == CHAR_NUM)
+        if (cur_cmd() == LETTER || cur_cmd() == OTHER_CHAR || cur_cmd() == CHAR_GIVEN || cur_cmd() == CHAR_NUM)
             cancel_boundary = true;
         goto reswitch;
         break;
@@ -16369,12 +16363,12 @@ reswitch:
             );
 
             if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                if (cur_cs == 0) {
-                    if (cur_cmd == CHAR_NUM)
-                        cur_cmd = OTHER_CHAR;
-                    cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                if (cur_cs() == 0) {
+                    if (cur_cmd() == CHAR_NUM)
+                        set_cur_cmd(OTHER_CHAR);
+                    set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                 } else
-                    cur_tok = CS_TOKEN_FLAG + cur_cs;
+                    set_cur_tok(CS_TOKEN_FLAG + cur_cs());
 
                 back_input();
                 begin_token_list(ETEX_SA_ptr(cur_ptr), INTER_CHAR_TEXT);
@@ -16383,7 +16377,7 @@ reswitch:
         }
     }
 
-    switch (abs(cur_list.mode) + cur_cmd) {
+    switch (abs(cur_list.mode) + cur_cmd()) {
     case HMODE + SPACER:
         if (cur_list.aux.b32.s0 /*space_factor*/ == 1000)
             goto append_normal_space;
@@ -16414,25 +16408,25 @@ reswitch:
         break;
 
     case ANY_MODE(IGNORE_SPACES):
-        if (cur_chr == 0) {
+        if (cur_chr() == 0) {
             do {
                 get_x_token();
-            } while (cur_cmd == SPACER);
+            } while (cur_cmd() == SPACER);
         } else {
-            t = scanner_status;
-            scanner_status = NORMAL;
+            t = scanner_status();
+            set_scanner_status(NORMAL);
             get_next();
-            scanner_status = t;
+            set_scanner_status(t);
 
-            if (cur_cs < HASH_BASE)
-                cur_cs = prim_lookup(cur_cs - SINGLE_BASE);
+            if (cur_cs() < HASH_BASE)
+                set_cur_cs(prim_lookup(cur_cs() - SINGLE_BASE));
             else
-                cur_cs = prim_lookup(hash(cur_cs).s1);
+                set_cur_cs(prim_lookup(hash(cur_cs()).s1));
 
-            if (cur_cs != UNDEFINED_PRIMITIVE) {
-                cur_cmd = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b16.s1;
-                cur_chr = eqtb_ptr(PRIM_EQTB_BASE + cur_cs)->b32.s1;
-                cur_tok = CS_TOKEN_FLAG + PRIM_EQTB_BASE + cur_cs;
+            if (cur_cs() != UNDEFINED_PRIMITIVE) {
+                set_cur_cmd(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1);
+                set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
+                set_cur_tok(CS_TOKEN_FLAG + PRIM_EQTB_BASE + cur_cs());
             }
         }
         goto reswitch;
@@ -16528,7 +16522,7 @@ reswitch:
     case VMODE + HMOVE:
     case HMODE + VMOVE:
     case MMODE + VMOVE:
-        t = cur_chr;
+        t = cur_chr();
         scan_dimen(false, false, false);
         if (t == 0)
             scan_box(cur_val);
@@ -16537,7 +16531,7 @@ reswitch:
         break;
 
     case ANY_MODE(LEADER_SHIP):
-        scan_box(LEADER_FLAG - A_LEADERS + cur_chr);
+        scan_box(LEADER_FLAG - A_LEADERS + cur_chr());
         break;
 
     case ANY_MODE(MAKE_BOX):
@@ -16545,7 +16539,7 @@ reswitch:
         break;
 
     case VMODE + START_PAR:
-        new_graf(cur_chr > 0);
+        new_graf(cur_chr() > 0);
         break;
 
     case VMODE + LETTER:
@@ -16652,9 +16646,9 @@ reswitch:
         break;
 
     case HMODE + VALIGN:
-        if (cur_chr > 0) {
-            if (eTeX_enabled(INTPAR(texxet) > 0, cur_cmd, cur_chr)) {
-                mem_ptr(cur_list.tail)->b32.s1 = new_math(0, cur_chr);
+        if (cur_chr() > 0) {
+            if (eTeX_enabled(INTPAR(texxet) > 0, cur_cmd(), cur_chr())) {
+                mem_ptr(cur_list.tail)->b32.s1 = new_math(0, cur_chr());
                 cur_list.tail = LLIST_link(cur_list.tail);
             }
         } else /*:1490 */
@@ -16704,17 +16698,17 @@ reswitch:
     case MMODE + LETTER:
     case MMODE + OTHER_CHAR:
     case MMODE + CHAR_GIVEN:
-        set_math_char(MATH_CODE(cur_chr));
+        set_math_char(MATH_CODE(cur_chr()));
         break;
 
     case MMODE + CHAR_NUM:
         scan_char_num();
-        cur_chr = cur_val;
-        set_math_char(MATH_CODE(cur_chr));
+        set_cur_chr(cur_val);
+        set_math_char(MATH_CODE(cur_chr()));
         break;
 
     case MMODE + MATH_CHAR_NUM:
-        if (cur_chr == 2) { /* \Umathchar? */
+        if (cur_chr() == 2) { /* \Umathchar? */
             scan_math_class_int();
             t = set_class(cur_val);
             scan_math_fam_int();
@@ -16722,7 +16716,7 @@ reswitch:
             scan_usv_num();
             t = t + cur_val;
             set_math_char(t);
-        } else if (cur_chr == 1) { /* \Umathcharnum/ */
+        } else if (cur_chr() == 1) { /* \Umathcharnum/ */
             scan_xetex_math_char_int();
             set_math_char(cur_val);
         } else {
@@ -16734,16 +16728,16 @@ reswitch:
 
     case MMODE + MATH_GIVEN:
         set_math_char(
-            set_class(cur_chr / 4096) + set_family((cur_chr % 4096) / 256) + (cur_chr % 256)
+            set_class(cur_chr() / 4096) + set_family((cur_chr() % 4096) / 256) + (cur_chr() % 256)
         );
         break;
 
     case MMODE + XETEX_MATH_GIVEN:
-        set_math_char(cur_chr);
+        set_math_char(cur_chr());
         break;
 
     case MMODE + DELIM_NUM:
-        if (cur_chr == 1) { /* \Udelimiter? */
+        if (cur_chr() == 1) { /* \Udelimiter? */
             scan_math_class_int();
             t = set_class(cur_val);
             scan_math_fam_int();
@@ -16762,7 +16756,7 @@ reswitch:
     case MMODE + MATH_COMP:
         mem_ptr(cur_list.tail)->b32.s1 = new_noad();
         cur_list.tail = LLIST_link(cur_list.tail);
-        mem_ptr(cur_list.tail)->b16.s1 = cur_chr;
+        mem_ptr(cur_list.tail)->b16.s1 = cur_chr();
         scan_math(cur_list.tail + 1);
         break;
 
@@ -16792,7 +16786,7 @@ reswitch:
         break;
 
     case MMODE + MATH_STYLE:
-        mem_ptr(cur_list.tail)->b32.s1 = new_style(cur_chr);
+        mem_ptr(cur_list.tail)->b32.s1 = new_style(cur_chr());
         cur_list.tail = LLIST_link(cur_list.tail);
         break;
 
@@ -16865,12 +16859,12 @@ reswitch:
 
     case ANY_MODE(AFTER_ASSIGNMENT):
         get_token();
-        after_token = cur_tok;
+        after_token = cur_tok();
         break;
 
     case ANY_MODE(AFTER_GROUP):
         get_token();
-        save_for_after(cur_tok);
+        save_for_after(cur_tok());
         break;
 
     case ANY_MODE(IN_STREAM):
@@ -16915,7 +16909,7 @@ main_loop: /*1069: */
         native_len = 0;
 
 collect_native:
-        main_s = SF_CODE(cur_chr) % 65536L;
+        main_s = SF_CODE(cur_chr()) % 65536L;
 
         if (main_s == 1000) {
             cur_list.aux.b32.s0 = 1000;
@@ -16929,7 +16923,7 @@ collect_native:
         }
 
         cur_ptr = TEX_NULL;
-        space_class = SF_CODE(cur_chr) / 65536L;
+        space_class = SF_CODE(cur_chr()) / 65536L;
 
         if (INTPAR(xetex_inter_char_tokens) > 0 && space_class != CHAR_CLASS_LIMIT) {
             if (prev_class == CHAR_CLASS_LIMIT - 1) {
@@ -16938,9 +16932,9 @@ collect_native:
                                     ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class,
                                     false);
                     if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                        if (cur_cmd != LETTER)
-                            cur_cmd = OTHER_CHAR;
-                        cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                        if (cur_cmd() != LETTER)
+                            set_cur_cmd(OTHER_CHAR);
+                        set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                         back_input();
                         cur_input_ptr()->index = BACKED_UP_CHAR;
                         begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -16950,9 +16944,9 @@ collect_native:
             } else {
                 find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
                 if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                    if (cur_cmd != LETTER)
-                        cur_cmd = OTHER_CHAR;
-                    cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                    if (cur_cmd() != LETTER)
+                        set_cur_cmd(OTHER_CHAR);
+                    set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                     back_input();
                     cur_input_ptr()->index = BACKED_UP_CHAR;
                     begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -16963,15 +16957,15 @@ collect_native:
             prev_class = space_class;
         }
 
-        if (cur_chr > 65535L) {
+        if (cur_chr() > 65535L) {
             while (native_text_size <= native_len + 2) {
                 native_text_size = native_text_size + 128;
                 resize_native_text(native_text_size);
             }
 
-            set_native_text(native_len, (cur_chr - 65536L) / 1024 + 0xD800);
+            set_native_text(native_len, (cur_chr() - 65536L) / 1024 + 0xD800);
             native_len++;
-            set_native_text(native_len, (cur_chr - 65536L) % 1024 + 0xDC00);
+            set_native_text(native_len, (cur_chr() - 65536L) % 1024 + 0xDC00);
             native_len++;
         } else {
             while (native_text_size <= native_len + 1) {
@@ -16979,27 +16973,27 @@ collect_native:
                 resize_native_text(native_text_size);
             }
 
-            set_native_text(native_len, cur_chr);
+            set_native_text(native_len, cur_chr());
             native_len++;
         }
 
-        is_hyph = (cur_chr == hyphen_char(main_f)) || ((INTPAR(xetex_dash_break) > 0)
-                                                       && ((cur_chr == 8212) || (cur_chr == 8211)));
+        is_hyph = (cur_chr() == hyphen_char(main_f)) || ((INTPAR(xetex_dash_break) > 0)
+                                                       && ((cur_chr() == 8212) || (cur_chr() == 8211)));
 
         if ((main_h == 0) && is_hyph)
             main_h = native_len;
 
         get_next();
-        if (cur_cmd == LETTER || cur_cmd == OTHER_CHAR || cur_cmd == CHAR_GIVEN)
+        if (cur_cmd() == LETTER || cur_cmd() == OTHER_CHAR || cur_cmd() == CHAR_GIVEN)
             goto collect_native;
 
         x_token();
-        if (cur_cmd == LETTER || cur_cmd == OTHER_CHAR || cur_cmd == CHAR_GIVEN)
+        if (cur_cmd() == LETTER || cur_cmd() == OTHER_CHAR || cur_cmd() == CHAR_GIVEN)
             goto collect_native;
 
-        if (cur_cmd == CHAR_NUM) {
+        if (cur_cmd() == CHAR_NUM) {
             scan_usv_num();
-            cur_chr = cur_val;
+            set_cur_chr(cur_val);
             goto collect_native;
         }
 
@@ -17009,12 +17003,12 @@ collect_native:
             find_sa_element(INTER_CHAR_VAL,
                             space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)), false);
             if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                if (cur_cs == 0) {
-                    if (cur_cmd == CHAR_NUM)
-                        cur_cmd = OTHER_CHAR;
-                    cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                if (cur_cs() == 0) {
+                    if (cur_cmd() == CHAR_NUM)
+                        set_cur_cmd(OTHER_CHAR);
+                    set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                 } else
-                    cur_tok = CS_TOKEN_FLAG + cur_cs;
+                    set_cur_tok(CS_TOKEN_FLAG + cur_cs());
                 back_input();
                 begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
                 goto collected;
@@ -17331,7 +17325,7 @@ collected:
             goto reswitch;
     }
 
-    main_s = SF_CODE(cur_chr) % 65536L;
+    main_s = SF_CODE(cur_chr()) % 65536L;
 
     if (main_s == 1000) {
         cur_list.aux.b32.s0 = 1000;
@@ -17345,7 +17339,7 @@ collected:
     }
 
     cur_ptr = TEX_NULL;
-    space_class = SF_CODE(cur_chr) / 65536L;
+    space_class = SF_CODE(cur_chr()) / 65536L;
 
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
@@ -17353,9 +17347,9 @@ collected:
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
                 if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                    if (cur_cmd != LETTER)
-                        cur_cmd = OTHER_CHAR;
-                    cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                    if (cur_cmd() != LETTER)
+                        set_cur_cmd(OTHER_CHAR);
+                    set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                     back_input();
                     cur_input_ptr()->index = BACKED_UP_CHAR;
                     begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -17365,9 +17359,9 @@ collected:
         } else {
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
             if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                if (cur_cmd != LETTER)
-                    cur_cmd = OTHER_CHAR;
-                cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                if (cur_cmd() != LETTER)
+                    set_cur_cmd(OTHER_CHAR);
+                set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                 back_input();
                 cur_input_ptr()->index = BACKED_UP_CHAR;
                 begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -17400,7 +17394,7 @@ collected:
     }
 
     mem_ptr(lig_stack)->b16.s1 = main_f;
-    cur_l = cur_chr;
+    cur_l = cur_chr();
     mem_ptr(lig_stack)->b16.s0 = cur_l;
     cur_q = cur_list.tail;
 
@@ -17464,9 +17458,9 @@ main_loop_move_1:
         goto main_loop_move_lig;
 
 main_loop_move_2:
-    if ((effective_char(false, main_f, cur_chr) > font_ec(main_f))
-                              || (effective_char(false, main_f, cur_chr) < font_bc(main_f))) {
-        char_warning(main_f, cur_chr);
+    if ((effective_char(false, main_f, cur_chr()) > font_ec(main_f))
+                              || (effective_char(false, main_f, cur_chr()) < font_bc(main_f))) {
+        char_warning(main_f, cur_chr());
         mem_ptr(lig_stack)->b32.s1 = avail;
         avail = lig_stack;
         goto big_switch;
@@ -17475,7 +17469,7 @@ main_loop_move_2:
     main_i = effective_char_info(main_f, cur_l);
 
     if (!(main_i.s3 > 0)) {
-        char_warning(main_f, cur_chr);
+        char_warning(main_f, cur_chr());
         mem_ptr(lig_stack)->b32.s1 = avail;
         avail = lig_stack;
         goto big_switch;
@@ -17487,28 +17481,28 @@ main_loop_move_2:
 main_loop_lookahead: /*1073: */
     get_next();
 
-    if (cur_cmd == LETTER)
+    if (cur_cmd() == LETTER)
         goto main_loop_lookahead_1;
-    if (cur_cmd == OTHER_CHAR)
+    if (cur_cmd() == OTHER_CHAR)
         goto main_loop_lookahead_1;
-    if (cur_cmd == CHAR_GIVEN)
+    if (cur_cmd() == CHAR_GIVEN)
         goto main_loop_lookahead_1;
 
     x_token();
-    if (cur_cmd == LETTER)
+    if (cur_cmd() == LETTER)
         goto main_loop_lookahead_1;
-    if (cur_cmd == OTHER_CHAR)
+    if (cur_cmd() == OTHER_CHAR)
         goto main_loop_lookahead_1;
-    if (cur_cmd == CHAR_GIVEN)
+    if (cur_cmd() == CHAR_GIVEN)
         goto main_loop_lookahead_1;
 
-    if (cur_cmd == CHAR_NUM) {
+    if (cur_cmd() == CHAR_NUM) {
         scan_char_num();
-        cur_chr = cur_val;
+        set_cur_chr(cur_val);
         goto main_loop_lookahead_1;
     }
 
-    if (cur_cmd == NO_BOUNDARY)
+    if (cur_cmd() == NO_BOUNDARY)
         bchar = TOO_BIG_CHAR;
 
     cur_r = bchar;
@@ -17516,7 +17510,7 @@ main_loop_lookahead: /*1073: */
     goto main_lig_loop;
 
 main_loop_lookahead_1:
-    main_s = SF_CODE(cur_chr) % 65536L;
+    main_s = SF_CODE(cur_chr()) % 65536L;
 
     if (main_s == 1000) {
         cur_list.aux.b32.s0 = 1000;
@@ -17530,7 +17524,7 @@ main_loop_lookahead_1:
     }
 
     cur_ptr = TEX_NULL;
-    space_class = SF_CODE(cur_chr) / 65536L;
+    space_class = SF_CODE(cur_chr()) / 65536L;
 
     if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
         if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
@@ -17538,9 +17532,9 @@ main_loop_lookahead_1:
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
                 if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                    if (cur_cmd != LETTER)
-                        cur_cmd = OTHER_CHAR;
-                    cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                    if (cur_cmd() != LETTER)
+                        set_cur_cmd(OTHER_CHAR);
+                    set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                     back_input();
                     cur_input_ptr()->index = BACKED_UP_CHAR;
                     begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -17550,9 +17544,9 @@ main_loop_lookahead_1:
         } else {
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
             if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                if (cur_cmd != LETTER)
-                    cur_cmd = OTHER_CHAR;
-                cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+                if (cur_cmd() != LETTER)
+                    set_cur_cmd(OTHER_CHAR);
+                set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                 back_input();
                 cur_input_ptr()->index = BACKED_UP_CHAR;
                 begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -17575,7 +17569,7 @@ main_loop_lookahead_1:
     }
 
     mem_ptr(lig_stack)->b16.s1 = main_f;
-    cur_r = cur_chr;
+    cur_r = cur_chr();
     mem_ptr(lig_stack)->b16.s0 = cur_r;
 
     if (cur_r == false_bchar)
@@ -17780,12 +17774,12 @@ append_normal_space:
         find_sa_element(INTER_CHAR_VAL,
                         space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)), false);
         if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-            if (cur_cs == 0) {
-                if (cur_cmd == CHAR_NUM)
-                    cur_cmd = OTHER_CHAR;
-                cur_tok = (cur_cmd * MAX_CHAR_VAL) + cur_chr;
+            if (cur_cs() == 0) {
+                if (cur_cmd() == CHAR_NUM)
+                    set_cur_cmd(OTHER_CHAR);
+                set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
             } else
-                cur_tok = CS_TOKEN_FLAG + cur_cs;
+                set_cur_tok(CS_TOKEN_FLAG + cur_cs());
             back_input();
             begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
             goto big_switch;
@@ -17842,13 +17836,13 @@ void compare_strings(void)
     pool_pointer i1, i2, j1, j2;
     int32_t save_cur_cs;
 
-    save_cur_cs = cur_cs;
+    save_cur_cs = cur_cs();
     {
         scan_toks(false, true);
     }
     s1 = tokens_to_string(def_ref);
     delete_token_ref(def_ref);
-    cur_cs = save_cur_cs;
+    set_cur_cs(save_cur_cs);
     {
         scan_toks(false, true);
     }
@@ -18036,9 +18030,9 @@ do_assignments(void)
     while (true) {
         do {
             get_x_token();
-        } while (cur_cmd == SPACER || cur_cmd == RELAX);
+        } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-        if (cur_cmd <= MAX_NON_PREFIXED_COMMAND)
+        if (cur_cmd() <= MAX_NON_PREFIXED_COMMAND)
             return;
 
         set_box_allowed = false;

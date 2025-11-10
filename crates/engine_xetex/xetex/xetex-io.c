@@ -470,7 +470,7 @@ open_or_close_in(void)
     unsigned char c, n;
     int32_t k;
 
-    c = cur_chr;
+    c = cur_chr();
     scan_four_bit_int();
     n = cur_val;
 
