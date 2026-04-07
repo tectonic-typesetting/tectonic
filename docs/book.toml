@@ -9,3 +9,4 @@ src = "src"
 [output.html]
 git-repository-url = "https://github.com/tectonic-typesetting/tectonic"
 git-repository-icon = "fa-github"
+curly-quotes = true

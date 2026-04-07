@@ -5,15 +5,14 @@
 
 use nom::{
     error::ErrorKind as NomErrorKind, error::ParseError, number::complete::be_i32, Err as NomErr,
-    IResult, InputIter, InputLength, Slice,
+    IResult, Input,
 };
-use std::ops::RangeFrom;
 
 pub fn satisfy_be_i32<I, Error: ParseError<I>>(
     expected: i32,
 ) -> impl Fn(I) -> IResult<I, i32, Error>
 where
-    I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
+    I: Input<Item = u8>,
 {
     move |i: I| {
         let (new_input, value) = be_i32(i)?;
@@ -32,7 +31,7 @@ pub fn ranged_be_i32<I, Error: ParseError<I>>(
     max: i32,
 ) -> impl Fn(I) -> IResult<I, i32, Error>
 where
-    I: Slice<RangeFrom<usize>> + InputIter<Item = u8> + InputLength,
+    I: Input<Item = u8>,
 {
     move |i: I| {
         let (new_input, value) = be_i32(i)?;

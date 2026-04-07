@@ -13,8 +13,8 @@ engine, powered by [XeTeX](http://xetex.sourceforge.net/) and
 
 If you just want to compile TeX documents, you should probably **click through
 to [the main Tectonic website](https://tectonic-typesetting.github.io/)**. This
-page is primarily aimed at folks interested in how Tectonic works “under the
-hood.” If you want to build the [`tectonic`][crate] Rust crate, check out [its
+page is primarily aimed at folks interested in how Tectonic works "under the
+hood." If you want to build the [`tectonic`][crate] Rust crate, check out [its
 README](./CARGO_README.md).
 
 [crate]: https://crates.io/crates/tectonic
@@ -47,7 +47,7 @@ If you’re interested in Tectonic as a software tool, you might also want to ch
   [project](https://github.com/Mrmaxmeier/tectonic-on-arXiv) by
   [@Mrmaxmeier](https://github.com/Mrmaxmeier/)
 
-## The “reference sources”
+## The "reference sources"
 
 Much of the core code of Tectonic is derived from
 [XeTeX](http://xetex.sourceforge.net/), and we strive to track and maintain
@@ -58,7 +58,7 @@ XeTeX, but the expression of those changes in source form may well change
 greatly over time.
 
 In this repository, the Git submodule `reference_sources` links to the
-[“staging repository”](https://github.com/tectonic-typesetting/tectonic-staging)
+["staging repository"](https://github.com/tectonic-typesetting/tectonic-staging)
 that tracks the XeTeX source
 code that we use as a reference. In particular, the version of the reference
 code in the submodule is the most recent code whose semantics are *guaranteed*

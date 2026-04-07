@@ -5,6 +5,8 @@
 
 #[cfg(feature = "external-harfbuzz")]
 mod inner {
+    use std::env;
+    use tectonic_cfg_support::target_cfg;
     use tectonic_dep_support::{Configuration, Dependency, Spec};
 
     struct HarfbuzzSpec;
@@ -39,9 +41,19 @@ mod inner {
 
         let mut sep = "cargo:include-path=";
 
+        let is_macos_external =
+            target_cfg!(target_os = "macos") && env::var("CARGO_FEATURE_EXTERNAL_HARFBUZZ").is_ok();
+
         dep.foreach_include_path(|p| {
+            // HACK: On macOS, the default brew harfbuzz for some reason points into the harfbuzz
+            // folder itself, so we need to go up one level to the includes folder.
+            if is_macos_external && p.ends_with("harfbuzz") {
+                print!("{}{}", sep, p.parent().unwrap().to_str().unwrap());
+                sep = ";";
+            }
             print!("{}{}", sep, p.to_str().unwrap());
             sep = ";";
+            print!("{}{}", sep, p.parent().unwrap().to_str().unwrap());
         });
 
         println!();
@@ -127,14 +139,14 @@ mod inner {
         );
 
         for item in graphite2_include_path.split(';') {
-            print!(";{}", item);
+            print!(";{item}");
         }
 
         println!();
 
         let dest_dir = include_dir.join("harfbuzz");
-        // CC build process already creates this for us:
-        //fs::create_dir(&dest_dir).expect("error creating dest_dir");
+        // Create the dest_dir if it does not exist
+        fs::create_dir_all(&dest_dir).expect("error creating dest_dir");
 
         for entry in fs::read_dir(&src_dir).expect("failed to read dir") {
             let entry = entry.expect("failed to get dir entry");

@@ -1,5 +1,11 @@
 # rc: micro bump
 
+- Global lint fixes
+- Update to edition 2021
+
+
+# tectonic_bridge_icu 0.2.1 (2024-02-05)
+
 - Adjust the build script to try to get proper link ordering with libicudata
   (#1092, @pkgw).
 

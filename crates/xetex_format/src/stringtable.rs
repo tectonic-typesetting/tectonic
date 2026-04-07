@@ -1,12 +1,14 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(missing_docs)]
+
 //! Dealing with the TeX string table.
 
 use nom::{
     multi::count,
     number::complete::{be_i32, be_u16},
-    Err as NomErr, IResult,
+    Err as NomErr, IResult, Parser,
 };
 
 use crate::parseutils;
@@ -67,9 +69,9 @@ impl StringTable {
         let n_strings = str_ptr - TOO_BIG_CHAR + 1;
 
         let (input, str_starts) =
-            count(parseutils::ranged_be_i32(0, pool_ptr), n_strings as usize)(input)?;
+            count(parseutils::ranged_be_i32(0, pool_ptr), n_strings as usize).parse(input)?;
 
-        let (input, str_pool) = count(be_u16, pool_ptr as usize)(input)?;
+        let (input, str_pool) = count(be_u16, pool_ptr as usize).parse(input)?;
         let mut strings = Vec::new();
 
         for i in 0..(n_strings as usize) {

@@ -1,6 +1,8 @@
 // Copyright 2020-2021 the Tectonic Project
 // Licensed under the MIT License.
 
+//! Build script for bridging flate2 into C code
+
 use std::{env, path::PathBuf};
 
 fn main() {

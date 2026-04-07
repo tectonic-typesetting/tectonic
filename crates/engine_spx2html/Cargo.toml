@@ -3,6 +3,8 @@
 
 # See README.md for discussion of features (or lack thereof) in this crate.
 
+lints.workspace = true
+
 [package]
 name = "tectonic_engine_spx2html"
 version = "0.0.0-dev.0"  # assigned with cranko (see README)
@@ -15,7 +17,7 @@ documentation = "https://docs.rs/tectonic_engine_spx2html"
 repository = "https://github.com/tectonic-typesetting/tectonic/"
 readme = "README.md"
 license = "MIT"
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 byteorder = "^1.4"

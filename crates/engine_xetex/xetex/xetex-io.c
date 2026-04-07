@@ -35,13 +35,13 @@ tt_xetex_open_input (int filefmt)
         diagnostic_begin_capture_warning_here();
         print_cstr("piped inputs from external commands are not implemented in Tectonic");
         capture_to_diagnostic(NULL);
-        return NULL;
+        return INVALID_HANDLE;
     } else {
         handle = ttstub_input_open (name_of_file, (ttbc_file_format) filefmt, 0);
     }
 
-    if (handle == NULL)
-        return NULL;
+    if (handle == INVALID_HANDLE)
+        return INVALID_HANDLE;
 
     if (ttstub_get_last_input_abspath(abspath_of_input_file, sizeof(abspath_of_input_file)) < 1) {
         abspath_of_input_file[0] = '\0';
@@ -131,7 +131,7 @@ u_open_in(UFILE **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int3
     int B1, B2;
 
     handle = tt_xetex_open_input (filefmt);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return 0;
 
     *f = xmalloc(sizeof(UFILE));
@@ -225,7 +225,7 @@ input_line(UFILE* f)
     int i, tmpLen;
     int norm = get_input_normalization_state();
 
-    if (f->handle == NULL)
+    if (f->handle == INVALID_HANDLE)
         /* NULL 'handle' means this: */
         _tt_abort ("reads from synthetic \"terminal\" file #0 should never happen");
 
@@ -357,7 +357,7 @@ input_line(UFILE* f)
 void
 u_close(UFILE* f)
 {
-    if (f == NULL || f->handle == NULL)
+    if (f == NULL || f->handle == INVALID_HANDLE)
         /* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
         return;
 

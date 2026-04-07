@@ -1,4 +1,12 @@
-# rc: micro bump
+# rc: minor bump
+
+- Global lint fixes
+- Update to edition 2021
+- Various bug-fixes from the Rust port
+- Work towards simplifying and cleaning up the code to make maintenance simpler
+
+
+# tectonic_engine_bibtex 0.2.2 (2024-02-05)
 
 - Complete the port of BibTeX to pure Rust (#1077, #1083, @CraftSpider)!
 
@@ -21,8 +29,11 @@ legacy C/C++ code in Tectonic can gradually be replaced with safer, more modern,
 more maintainable code.
 
 [@CraftSpider]: https://github.com/CraftSpider
+
 [#1032]: https://github.com/tectonic-typesetting/tectonic/pull/1032
+
 [#1037]: https://github.com/tectonic-typesetting/tectonic/pull/1037
+
 [#1039]: https://github.com/tectonic-typesetting/tectonic/pull/1039
 
 This effort benefited significantly from work by [@Mrmaxmeier] to revitalize the
@@ -30,7 +41,9 @@ This effort benefited significantly from work by [@Mrmaxmeier] to revitalize the
 of [arxiv.org] preprints and reports any changes in the outputs.
 
 [@Mrmaxmeier]: https://github.com/Mrmaxmeier
+
 [tectonic-on-arXiv]: https://github.com/mrmaxmeier/tectonic-on-arXiv
+
 [arxiv.org]: https://arxiv.org/
 
 
@@ -53,6 +66,7 @@ APIs.
   should speed builds too.
 
 [cbindgen]: https://github.com/eqrion/cbindgen
+
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
 
 
@@ -64,6 +78,7 @@ APIs.
   turned off.
 
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
+
 [cbindgen]: https://github.com/eqrion/cbindgen
 
 

@@ -1,0 +1,25 @@
+tex/latex/listings/listings.sty
+2057,2075c2057,2059
+<     \typeout{^^J! Package Listings Error: File `#1(.#2)' not found.^^J%
+<         ^^JType X to quit or <RETURN> to proceed,^^J%
+<         or enter new name. (Default extension: #2)^^J}%
+<     \message{Enter file name: }%
+<     {\endlinechar\m@ne \global\read\m@ne to\@gtempa}%
+<     \ifx\@gtempa\@empty \else
+<         \def\reserved@a{x}\ifx\reserved@a\@gtempa\batchmode\@@end\fi
+<         \def\reserved@a{X}\ifx\reserved@a\@gtempa\batchmode\@@end\fi
+<         \filename@parse\@gtempa
+<         \edef\filename@ext{%
+<             \ifx\filename@ext\relax#2\else\filename@ext\fi}%
+<         \edef\reserved@a{\noexpand\IfFileExists %
+<                 {\filename@area\filename@base.\filename@ext}%
+<             {\noexpand\lst@InputListing %
+<                 {\filename@area\filename@base.\filename@ext}}%
+<             {\noexpand\lst@MissingFileError
+<                 {\filename@area\filename@base}{\filename@ext}}}%
+<         \expandafter\reserved@a %
+<     \fi}
+---
+>     % Tectonic: no terminal input allowed, so this is always a fatal error.
+>     \errmessage{! Package Listings Error: File `#1(.#2)' not found.}%
+> }

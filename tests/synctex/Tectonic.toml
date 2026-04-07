@@ -1,0 +1,13 @@
+[doc]
+name = "synctex"
+bundle = "https://data1.fullyjustified.net/tlextras-2022.0r0.tar"
+
+[[output]]
+name = "default"
+type = "pdf"
+synctex = true
+inputs = [
+    "_preamble.tex",
+    "index.tex",
+    "_postamble.tex",
+]

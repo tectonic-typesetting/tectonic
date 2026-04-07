@@ -64,11 +64,11 @@ read_thumbnail (const char *thumb_filename)
 {
   pdf_obj *image_ref;
   int      xobj_id;
-  rust_input_handle_t handle = NULL;
+  rust_input_handle_t handle = INVALID_HANDLE;
   load_options options = {1, 0, NULL};
 
   handle = ttstub_input_open(thumb_filename, TTBC_FILE_FORMAT_PICT, 0);
-  if (handle == NULL) {
+  if (handle == INVALID_HANDLE) {
     dpx_warning("Could not open thumbnail file \"%s\"", thumb_filename);
     return NULL;
   }

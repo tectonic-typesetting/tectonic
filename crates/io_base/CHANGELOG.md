@@ -1,4 +1,11 @@
-# rc: micro bump
+# rc: minor bump
+
+- Global lint fixes
+- Update to edition 2021
+- Changes needed for bundle rewrite
+
+
+# tectonic_io_base 0.4.3 (2024-02-05)
 
 - Once again, tidy up recent Clippy warnings (#1076, @CraftSpider).
 

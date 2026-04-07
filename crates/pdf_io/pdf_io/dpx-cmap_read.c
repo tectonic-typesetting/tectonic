@@ -485,7 +485,7 @@ CMap_parse_check_sig (rust_input_handle_t handle)
     int  result = -1;
     char sig[CMAP_SIG_MAX+1];
 
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return -1;
 
     ttstub_input_seek(handle, 0, SEEK_SET);

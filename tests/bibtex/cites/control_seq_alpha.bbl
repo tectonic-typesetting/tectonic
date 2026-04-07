@@ -1,0 +1,11 @@
+\begin{thebibliography}{{\i}{\j}{\oe}{\OE}{\ae}{\AE}{\aa}{\AA}{\o}{\O}{\l}{\L}{\ss}}
+
+\bibitem[{\.I}]{SequenceExample2}
+B{\"U}chi {\.I}lhan.
+\newblock {\em A book with other sequences}.
+
+\bibitem[{\i}{\j}{\oe}{\OE}{\ae}{\AE}{\aa}{\AA}{\o}{\O}{\l}{\L}{\ss}]{SequenceExample}
+{\i}~{\j} {\oe} {\OE} {\ae} {\AE} {\aa} {\AA} {\o} {\O}~{\l} {\L}~{\ss}.
+\newblock {\em A book with many sequences}.
+
+\end{thebibliography}

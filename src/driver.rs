@@ -1,8 +1,6 @@
 // Copyright 2018-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! The high-level Tectonic document processing interface.
 //!
 //! The main struct in this module is [`ProcessingSession`], which knows how to
@@ -15,7 +13,7 @@
 //! For an example of how to use this module, see `src/bin/tectonic/main.rs`,
 //! which contains tectonic's main CLI program.
 
-use byte_unit::Byte;
+use byte_unit::{Byte, UnitType};
 use quick_xml::{events::Event, NsReader};
 use std::{
     collections::{HashMap, HashSet},
@@ -37,6 +35,7 @@ use tectonic_io_base::{
     stdstreams::{BufferedPrimaryIo, GenuineStdoutIo},
     InputHandle, IoProvider, OpenResult, OutputHandle,
 };
+use which::which;
 
 use crate::{
     ctry, errmsg,
@@ -213,7 +212,7 @@ enum OutputDestination {
 /// the larger [`ProcessingSession`] type.
 ///
 /// Due to the needs of the C/C++ engines, this means that [`BridgeState`] must
-/// hold the fully-prepared I/O stack information as well as the “event”
+/// hold the fully-prepared I/O stack information as well as the "event"
 /// information that helps the driver implement the rerun logic.
 struct BridgeState {
     /// I/O for the primary input source. This is boxed since it can come
@@ -257,8 +256,8 @@ struct BridgeState {
 }
 
 impl BridgeState {
-    /// Tell the IoProvider implementation of the bridge state to enter “format
-    /// mode”, in which the “primary input” is fixed, based on the requested
+    /// Tell the IoProvider implementation of the bridge state to enter "format
+    /// mode", in which the "primary input" is fixed, based on the requested
     /// format file name, and filesystem I/O is bypassed.
     fn enter_format_mode(&mut self, format_file_name: &str) {
         self.format_primary = Some(BufferedPrimaryIo::from_text(format!(
@@ -266,7 +265,7 @@ impl BridgeState {
         )));
     }
 
-    /// Leave “format mode”.
+    /// Leave "format mode".
     fn leave_format_mode(&mut self) {
         self.format_primary = None;
     }
@@ -641,12 +640,7 @@ impl DriverHooks for BridgeState {
         self
     }
 
-    fn event_output_closed(
-        &mut self,
-        name: String,
-        digest: DigestData,
-        _status: &mut dyn StatusBackend,
-    ) {
+    fn event_output_closed(&mut self, name: String, digest: DigestData) {
         let summ = self
             .events
             .get_mut(&name)
@@ -704,6 +698,12 @@ impl DriverHooks for BridgeState {
                 }
 
                 let real_path = work.root().join(name);
+                if let Some(prefix) = real_path.parent() {
+                    std::fs::create_dir_all(prefix).map_err(|e| {
+                        tt_error!(status, "failed to create sub directory `{}`", prefix.display(); e.into());
+                        SystemRequestError::Failed
+                    })?;
+                }
                 let mut f = File::create(&real_path).map_err(|e| {
                     tt_error!(status, "failed to create file `{}`", real_path.display(); e.into());
                     SystemRequestError::Failed
@@ -1132,7 +1132,7 @@ impl ProcessingSessionBuilder {
                     }
                 };
 
-                filesystem_root = parent.clone();
+                filesystem_root.clone_from(&parent);
                 let pio: Box<dyn IoProvider> = Box::new(FilesystemPrimaryInputIo::new(&p));
                 (pio, Some(p), parent)
             }
@@ -1160,7 +1160,7 @@ impl ProcessingSessionBuilder {
         let format_cache_path = self
             .format_cache_path
             .unwrap_or_else(|| filesystem_root.clone());
-        let format_cache = FormatCache::new(bundle.get_digest(status)?, format_cache_path);
+        let format_cache = FormatCache::new(bundle.get_digest()?, format_cache_path);
 
         let genuine_stdout = if self.print_stdout {
             Some(GenuineStdoutIo::new())
@@ -1426,7 +1426,7 @@ impl ProcessingSession {
                 let tempdir = ctry!(tempfile::Builder::new().tempdir(); "can't create temporary directory for shell-escape work");
                 (
                     Some(FilesystemIo::new(
-                        &tempdir.into_path(),
+                        &tempdir.keep(),
                         false,
                         false,
                         HashSet::new(),
@@ -1638,12 +1638,16 @@ impl ProcessingSession {
             }
 
             let real_path = root.join(name);
-            let byte_len = Byte::from_bytes(file.data.len() as u128);
+            let byte_len = Byte::from_u128(file.data.len() as u128).unwrap();
             status.note_highlighted(
                 "Writing ",
                 &format!("`{}`", real_path.display()),
-                &format!(" ({})", byte_len.get_appropriate_unit(true)),
+                &format!(" ({})", byte_len.get_appropriate_unit(UnitType::Binary)),
             );
+
+            if let Some(parent) = real_path.parent() {
+                std::fs::create_dir_all(parent)?;
+            }
 
             let mut f = File::create(&real_path)?;
             f.write_all(&file.data)?;
@@ -1678,7 +1682,7 @@ impl ProcessingSession {
             Some(RerunReason::Bibtex)
         } else {
             warnings = self.tex_pass(None, status)?;
-            let maybe_biber = self.check_biber_requirement()?;
+            let maybe_biber = self.check_biber_requirement(status)?;
 
             if let Some(biber) = maybe_biber {
                 self.bs.external_tool_pass(&biber, status)?;
@@ -2029,7 +2033,10 @@ impl ProcessingSession {
     /// `loqreq` package to figure out what files `biber` needs. This
     /// functionality should probably become more generic, but I don't have a
     /// great sense as to how widely-used `logreq` is.
-    fn check_biber_requirement(&self) -> Result<Option<ExternalToolPass>> {
+    fn check_biber_requirement(
+        &self,
+        status: &mut dyn StatusBackend,
+    ) -> Result<Option<ExternalToolPass>> {
         // Is there a `.run.xml` file?
 
         let mut run_xml_path = PathBuf::from(&self.primary_input_tex_path);
@@ -2052,9 +2059,35 @@ impl ProcessingSession {
         );
 
         let mut argv = match s {
-            (true, Ok(text)) => text.split_whitespace().map(|x| x.to_owned()).collect(),
+            (true, Ok(text)) if !text.trim().is_empty() => {
+                text.split_whitespace().map(|x| x.to_owned()).collect()
+            }
+            // when `TECTONIC_TEST_FAKE_BIBER` is empty, proceed to discover
+            // the biber binary as follows.
             _ => vec!["biber".to_owned()],
         };
+
+        // Moreover, we allow an override of the biber executable, to cope with
+        // possible version mismatch of the bundled biblatex package, as filed
+        // in issue #893. Since PR #1103, the `tectonic-biber` override can
+        // also be invoked with `tectonic -X biber`.
+        let find_by = |binary_name: &str| -> Option<String> {
+            if let Ok(pathbuf) = which(binary_name) {
+                if let Some(biber_path) = pathbuf.to_str() {
+                    return Some(biber_path.to_owned());
+                }
+            }
+            None
+        };
+
+        let mut use_tectonic_biber_override = false;
+        for binary_name in ["./tectonic-biber", "tectonic-biber"] {
+            if let Some(biber_path) = find_by(binary_name) {
+                argv = vec![biber_path];
+                use_tectonic_biber_override = true;
+                break;
+            }
+        }
 
         let mut extra_requires = HashSet::new();
 
@@ -2103,7 +2136,10 @@ impl ProcessingSession {
 
             match (state, event) {
                 (State::Searching, Event::Start(ref e)) => {
-                    let name = reader.decoder().decode(e.local_name().into_inner())?;
+                    let name = reader
+                        .decoder()
+                        .decode(e.local_name().into_inner())
+                        .map_err(quick_xml::Error::from)?;
 
                     if name == "binary" {
                         state = State::InBinaryName;
@@ -2125,7 +2161,10 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberCmdline, Event::Start(ref e)) => {
-                    let name = reader.decoder().decode(e.local_name().into_inner())?;
+                    let name = reader
+                        .decoder()
+                        .decode(e.local_name().into_inner())
+                        .map_err(quick_xml::Error::from)?;
 
                     // Note that the "infile" might be `foo` without the `.bcf`
                     // extension, so we can't use it for file-finding.
@@ -2136,7 +2175,10 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberCmdline, Event::End(ref e)) => {
-                    let name = reader.decoder().decode(e.local_name().into_inner())?;
+                    let name = reader
+                        .decoder()
+                        .decode(e.local_name().into_inner())
+                        .map_err(quick_xml::Error::from)?;
 
                     if name == "cmdline" {
                         state = State::InBiberRemainder;
@@ -2149,7 +2191,10 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberRemainder, Event::Start(ref e)) => {
-                    let name = reader.decoder().decode(e.local_name().into_inner())?;
+                    let name = reader
+                        .decoder()
+                        .decode(e.local_name().into_inner())
+                        .map_err(quick_xml::Error::from)?;
 
                     state = match &*name {
                         "input" | "requires" => State::InBiberRequirementSection,
@@ -2158,7 +2203,10 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberRemainder, Event::End(ref e)) => {
-                    let name = reader.decoder().decode(e.local_name().into_inner())?;
+                    let name = reader
+                        .decoder()
+                        .decode(e.local_name().into_inner())
+                        .map_err(quick_xml::Error::from)?;
 
                     if name == "external" {
                         break;
@@ -2166,7 +2214,10 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberRequirementSection, Event::Start(ref e)) => {
-                    let name = reader.decoder().decode(e.local_name().into_inner())?;
+                    let name = reader
+                        .decoder()
+                        .decode(e.local_name().into_inner())
+                        .map_err(quick_xml::Error::from)?;
 
                     state = match &*name {
                         "file" => State::InBiberFileRequirement,
@@ -2175,7 +2226,10 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberRequirementSection, Event::End(ref e)) => {
-                    let name = reader.decoder().decode(e.local_name().into_inner())?;
+                    let name = reader
+                        .decoder()
+                        .decode(e.local_name().into_inner())
+                        .map_err(quick_xml::Error::from)?;
 
                     if name == "input" || name == "requires" {
                         state = State::InBiberRemainder;
@@ -2201,6 +2255,9 @@ impl ProcessingSession {
             // No biber invocation, in the end.
             None
         } else {
+            if use_tectonic_biber_override {
+                tt_note!(status, "using `tectonic-biber`, found at {}", argv[0]);
+            }
             Some(ExternalToolPass {
                 argv,
                 extra_requires,

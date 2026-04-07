@@ -35,5 +35,5 @@ that simply reformat existing code.
 ## Legalities
 
 New Tectonic code is licensed under the MIT License, and we assign its copyright
-to “the Tectonic Project”. Any code that you submit to Tectonic will be assumed
+to "the Tectonic Project". Any code that you submit to Tectonic will be assumed
 to be made available under these terms unless explicitly stated otherwise.

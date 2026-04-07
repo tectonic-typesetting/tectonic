@@ -158,7 +158,7 @@ getfilemoddate(str_number s)
   handle = ttstub_input_open(name, TTBC_FILE_FORMAT_TEX, 0);
   free(name);
 
-  if (handle == NULL)
+  if (handle == INVALID_HANDLE)
     return; /* => evaluate to the empty string; intentional */
 
   mtime = ttstub_input_get_mtime(handle);
@@ -193,7 +193,7 @@ getfilesize(str_number s)
   handle = ttstub_input_open(name, TTBC_FILE_FORMAT_TEX, 0);
   free(name);
 
-  if (handle == NULL)
+  if (handle == INVALID_HANDLE)
     return; /* => evaluate to the empty string; intentional */
 
   file_len = ttstub_input_get_size(handle);
@@ -242,7 +242,7 @@ void getfiledump(int32_t s, int offset, int length)
   handle = ttstub_input_open(name, TTBC_FILE_FORMAT_TEX, 0);
   free(name);
 
-  if (handle == NULL) {
+  if (handle == INVALID_HANDLE) {
     free(buffer);
     return; /* => evaluate to the empty string; intentional */
   }

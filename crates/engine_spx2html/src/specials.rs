@@ -96,7 +96,7 @@ impl<'a> Special<'a> {
     }
 }
 
-impl<'a> Display for Special<'a> {
+impl Display for Special<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
         let (cmd, rest) = match self {
             Special::AddTemplate(t) => ("addTemplate", Some(t)),

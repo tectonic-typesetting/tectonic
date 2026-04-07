@@ -1,9 +1,7 @@
 // Copyright 2020 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
-//! Support for locating third-party libraries (“dependencies”) when building
+//! Support for locating third-party libraries ("dependencies") when building
 //! Tectonic. The main point of interest is that both pkg-config and vcpkg are
 //! supported as dep-finding backends. This crate does *not* deal with the
 //! choice of whether to provide a library externally or through vendoring.
@@ -45,7 +43,7 @@ impl Default for Configuration {
                 "pkg-config" => Backend::PkgConfig,
                 "vcpkg" => Backend::Vcpkg,
                 "default" => Backend::default(),
-                other => panic!("unrecognized TECTONIC_DEP_BACKEND setting {:?}", other),
+                other => panic!("unrecognized TECTONIC_DEP_BACKEND setting {other:?}"),
             }
         } else {
             Backend::default()
@@ -136,7 +134,7 @@ impl DepState {
                         }
                     }
 
-                    panic!("failed to load package {} from vcpkg: {}", dep, e)
+                    panic!("failed to load package {dep} from vcpkg: {e}")
                 }
             };
 
@@ -245,9 +243,8 @@ impl<'a, T: Spec> Dependency<'a, T> {
 
             DepState::VcPkg(_) => {
                 for dep in self.spec.get_vcpkg_spec() {
-                    vcpkg::find_package(dep).unwrap_or_else(|e| {
-                        panic!("failed to load package {} from vcpkg: {}", dep, e)
-                    });
+                    vcpkg::find_package(dep)
+                        .unwrap_or_else(|e| panic!("failed to load package {dep} from vcpkg: {e}"));
                 }
             }
         }

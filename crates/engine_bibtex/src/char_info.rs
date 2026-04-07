@@ -94,7 +94,7 @@ const ID_CLASS: [IdClass; 256] = {
     id_class
 };
 
-pub static CHAR_WIDTH: [i32; 256] = {
+pub static CHAR_WIDTH: [i64; 256] = {
     let mut char_width = [0; 256];
 
     // Values taken from the bibtex web2c implementation

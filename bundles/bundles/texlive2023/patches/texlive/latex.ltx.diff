@@ -1,0 +1,32 @@
+tex/{latex,latex-dev}/base/latex.ltx
+7211,7237c7211,7212
+<      \typeout{^^J! LaTeX Error: File `#1.#2' not found.^^J^^J%
+<       Type X to quit or <RETURN> to proceed,^^J%
+<       or enter new name. (Default extension: #2)^^J}%
+<      \message{Enter file name: }%
+<       {\endlinechar\m@ne
+<        \global\read\m@ne to\@gtempa}%
+<     \ifx\@gtempa\@empty
+<       \let\@missingfile@area\@empty
+<       \let\@missingfile@base\@empty
+<       \def\@missingfile@ext{tex}%
+<     \else
+<       \def\reserved@b{\batchmode\read-1 to \reserved@a}%
+<       \def\reserved@a{x}\ifx\reserved@a\@gtempa\reserved@b\fi
+<       \def\reserved@a{X}\ifx\reserved@a\@gtempa\reserved@b\fi
+<       \filename@parse\@gtempa
+<       \edef\filename@ext{%
+<         \ifx\filename@ext\relax#2\else\filename@ext\fi}%
+<      \edef\reserved@a{%
+<        \noexpand\IfFileExists
+<          {\filename@area\filename@base.\filename@ext}%
+<          {\def\noexpand\@missingfile@area{\filename@area}%
+<           \def\noexpand\@missingfile@base{\filename@base}%
+<           \def\noexpand\@missingfile@ext {\filename@ext}}%
+<          {\noexpand\@missingfileerror
+<             {\filename@area\filename@base}{\filename@ext}}}%
+<       \reserved@a
+<     \fi
+---
+>     % Tectonic: no terminal input allowed, so this is always a fatal error.
+>     \errmessage{! LaTeX Error: File `#1.#2' not found.}%

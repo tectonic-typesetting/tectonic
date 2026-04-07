@@ -481,7 +481,7 @@ CIDFont_type2_dofont (pdf_font *font)
         via_cid_to_gid,
     } maptype = via_cid_to_code;
     int      i, unicode_cmap = 0;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
 
     if (!font->reference)
         return 0;
@@ -791,7 +791,7 @@ CIDFont_type2_dofont (pdf_font *font)
 
         for (cid = 1; cid <= last_cid; cid++) {
             int32_t code;
-            uint16_t gid;
+            uint16_t gid = 0;
 
             if (!is_used_char2(v_used_chars, cid))
                 continue;
@@ -1004,7 +1004,7 @@ CIDFont_type2_open (pdf_font *font, const char *name,
     char    *fontname;
     sfnt    *sfont;
     ULONG    offset = 0;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
 
     assert(font && opt);
 

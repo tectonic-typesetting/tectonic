@@ -1,5 +1,131 @@
 # rc: minor bump
 
+The first release of tectonic in several years! There's a lot in this one.
+
+- Bundles have been entirely reworked to resolve a number of bugs. These changes should be non-breaking, and existing
+  zip and tar bundles will still work, they simply won't be written ([#1215], [@rm-dr]).
+- A new bundle added for texlive 2024 ([#1230], [@rm-dr]).
+- Port `xetex_layout` entirely to Rust ([#1138], [@CraftSpider]). This entirely rewrites the crate, and is a major step
+  towards rewriting the core engine from XeTeX into Rust, which will unblock hopefully some improvements
+  to document compile time and multi-threading support.
+- The Rust bibtex port has received several minor bugfixes and improvements ([#1309], [#1308], [#1250]), with more to
+  come.
+- Fix locating the `build_dir` in the `select` and `pack` actions ([#1246], [@lituzou]).
+- If an executable named `tectonic-biber` is installed, it's now preferred over `biber` ([#1166], [@bryango]).
+- The web bundle can now be overriden at build-time via the `TECTONIC_BUNDLE_PREFIX` and `TECTONIC_BUNDLE_LOCKED`
+  environment variables ([#1131], [@bryango]). This should help with building tectonic for distros, and where web access
+  is limited.
+- In addition to preamble/postamble keys, `Tectonic.toml` now supports an `inputs` key ([#1123], [@rm-dr]). This key
+  accepts
+  several kinds of values, such as:
+  - A plain string representing a file relative to the `./src` directory, such as `"main.tex"`.
+  - A list of such paths which will be concatenated in order, such as `["preamble.tex", "main.tex"]`.
+  - An inline document as a member of a list, for setting options without making a new file, such as
+    `[{ inline = "\\documentclass[a4paper]{article}" }, "main.tex"]`.
+  - Thanks to [@ororktn] for catching and fixing an issue in the above implementation ([#1287]).
+- A new `synctex` key has also been added, which configures an output to write the files needed by synctex ([#1197],
+  [@Yoz0]).
+- A new `extra_paths` key which can be used to provide paths from which external resources can be
+  loaded ([#1106], [@rm-dr]).
+- Several fixes to the `watch` command
+  - A fix when run through `nextonic` ([#1270], [@mky2]).
+  - Make sure ctrl-C shuts down gracefully ([#1253], [@CraftSpider]).
+  - Make sure rebuilds happen on the first change, not the second ([#1253]).
+- A fix to attached files where they would only work correctly if their length was a multiple of 1024 bytes ([#1261],
+  [@vlasakm]).
+- Various places will now create intermediate subdirectories before writing files if
+  necessary ([#1151], [@derchr], [#1182], [@Yoz0]).
+- Added a new command `nextonic show shell-completions <shell>`, which will generate autocompletion files for the
+  provided shell type ([@rm-dr]).
+
+Internal Improvements:
+
+- Tectonic now builds with edition 2021 ([#1289]).
+- Dependencies now use C++17 ([#1202], [@winstxnhdw]).
+- Dependencies have been updated to more recent versions generally.
+- CI has been ported to GitHub actions. This unlocks more parallel builds than the previous Azure Pipelines CI,
+  as well as tighter integration with GitHub's UI ([#1294], many more).
+- `undocumented_unsafe_blocks` has been enabled across the entire codebase, and linting has been standardized ([#1305]).
+- Coverage now uses llvm-cov ([#1291]). `cargo kcov` hasn't been updated in several years, and llvm-cov provides both
+  faster and more detailed results.
+- The `tectonic` and `tectonic(bin)` projects have been fixed to not rebuild on any change, only ones that should affect
+  them ([#1173]).
+
+Doc Improvements:
+
+- Quotes have been normalized to not use unicode curly quotes, preferring standard ASCII quotes ([#1148], [@rm-dr]).
+
+[#1309]: https://github.com/tectonic-typesetting/tectonic/pull/1309
+
+[#1308]: https://github.com/tectonic-typesetting/tectonic/pull/1308
+
+[#1305]: https://github.com/tectonic-typesetting/tectonic/pull/1305
+
+[#1294]: https://github.com/tectonic-typesetting/tectonic/pull/1294
+
+[#1291]: https://github.com/tectonic-typesetting/tectonic/pull/1291
+
+[#1289]: https://github.com/tectonic-typesetting/tectonic/pull/1289
+
+[#1287]: https://github.com/tectonic-typesetting/tectonic/pull/1287
+
+[#1202]: https://github.com/tectonic-typesetting/tectonic/pull/1202
+
+[#1182]: https://github.com/tectonic-typesetting/tectonic/pull/1282
+
+[#1270]: https://github.com/tectonic-typesetting/tectonic/pull/1270
+
+[#1261]: https://github.com/tectonic-typesetting/tectonic/pull/1261
+
+[#1253]: https://github.com/tectonic-typesetting/tectonic/pull/1253
+
+[#1250]: https://github.com/tectonic-typesetting/tectonic/pull/1250
+
+[#1246]: https://github.com/tectonic-typesetting/tectonic/pull/1246
+
+[#1230]: https://github.com/tectonic-typesetting/tectonic/pull/1230
+
+[#1215]: https://github.com/tectonic-typesetting/tectonic/pull/1215
+
+[#1197]: https://github.com/tectonic-typesetting/tectonic/pull/1197
+
+[#1173]: https://github.com/tectonic-typesetting/tectonic/pull/1173
+
+[#1166]: https://github.com/tectonic-typesetting/tectonic/pull/1166
+
+[#1151]: https://github.com/tectonic-typesetting/tectonic/pull/1151
+
+[#1148]: https://github.com/tectonic-typesetting/tectonic/pull/1148
+
+[#1138]: https://github.com/tectonic-typesetting/tectonic/pull/1138
+
+[#1131]: https://github.com/tectonic-typesetting/tectonic/pull/1131
+
+[#1123]: https://github.com/tectonic-typesetting/tectonic/pull/1123
+
+[#1106]: https://github.com/tectonic-typesetting/tectonic/pull/1106
+
+[@bryango]: https://github.com/bryango
+
+[@CraftSpider]: https://github.com/craftspider
+
+[@lituzou]: https://github.com/lituzou
+
+[@mky2]: https://github.com/mky2
+
+[@ororktn]: https://github.com/ororktn
+
+[@rm-dr]: https://github.com/rm-dr
+
+[@vlasakm]: https://github.com/vlasakm
+
+[@winstxnhdw]: https://github.com/winstxnhdw
+
+[@Yoz0]: https://github.com/Yoz0
+
+
+# tectonic 0.15.0 (2024-02-05)
+
 This release contains a grab-bag of nice improvements:
 
 - The port of Tectonic’s BibTeX engine to a pure-Rust implementation has been
@@ -42,29 +168,53 @@ Documentation fixes:
 - Various other corrections ([#1065], [#1068], [@ColeFrench])
 
 [@CraftSpider]: https://github.com/CraftSpider
+
 [#1064]: https://github.com/tectonic-typesetting/tectonic/pull/1064
+
 [#1065]: https://github.com/tectonic-typesetting/tectonic/pull/1065
+
 [#1068]: https://github.com/tectonic-typesetting/tectonic/pull/1068
+
 [#1076]: https://github.com/tectonic-typesetting/tectonic/pull/1076
+
 [#1077]: https://github.com/tectonic-typesetting/tectonic/pull/1077
+
 [#1083]: https://github.com/tectonic-typesetting/tectonic/pull/1083
+
 [#1084]: https://github.com/tectonic-typesetting/tectonic/pull/1084
+
 [#1089]: https://github.com/tectonic-typesetting/tectonic/pull/1089
+
 [#1092]: https://github.com/tectonic-typesetting/tectonic/pull/1092
+
 [#1103]: https://github.com/tectonic-typesetting/tectonic/pull/1103
+
 [#1111]: https://github.com/tectonic-typesetting/tectonic/pull/1111
+
 [#1116]: https://github.com/tectonic-typesetting/tectonic/pull/1116
+
 [#1119]: https://github.com/tectonic-typesetting/tectonic/pull/1119
+
 [#1120]: https://github.com/tectonic-typesetting/tectonic/pull/1120
+
 [#1127]: https://github.com/tectonic-typesetting/tectonic/pull/1127
+
 [#1129]: https://github.com/tectonic-typesetting/tectonic/pull/1129
+
 [#1132]: https://github.com/tectonic-typesetting/tectonic/pull/1132
+
 [@bryango]: https://github.com/bryango
+
 [@rm-dr]: https://github.com/rm-dr
+
 [@pkgw]: https://github.com/pkgw
+
 [@ColeFrench]: https://github.com/ColeFrench
+
 [@goyalyashpal]: https://github.com/goyalyashpal
+
 [@eljamm]: https://github.com/eljamm
+
 [@felixonmars]: https://github.com/felixonmars
 
 
@@ -81,12 +231,19 @@ This is a bugfix release:
   Proper quoting addresses the issue ([#1053], [@xinslu]).
 
 [#1003]: https://github.com/tectonic-typesetting/tectonic/issues/1003
+
 [#1053]: https://github.com/tectonic-typesetting/tectonic/pull/1053
+
 [#1054]: https://github.com/tectonic-typesetting/tectonic/issues/1054
+
 [#1055]: https://github.com/tectonic-typesetting/tectonic/pull/1055
+
 [@giammirove]: https://github.com/giammirove
+
 [@CraftSpider]: https://github.com/CraftSpider
+
 [@m-haug]: https://github.com/m-haug
+
 [@xinslu]: https://github.com/xinslu
 
 
@@ -121,16 +278,27 @@ Thanks to our new contributor [@xinslu] and everyone else contributing to this
 release!
 
 [#1032]: https://github.com/tectonic-typesetting/tectonic/pull/1032
+
 [#1036]: https://github.com/tectonic-typesetting/tectonic/pull/1036
+
 [#1037]: https://github.com/tectonic-typesetting/tectonic/pull/1037
+
 [#1039]: https://github.com/tectonic-typesetting/tectonic/pull/1039
+
 [#1042]: https://github.com/tectonic-typesetting/tectonic/pull/1042
+
 [#1043]: https://github.com/tectonic-typesetting/tectonic/pull/1043
+
 [#1052]: https://github.com/tectonic-typesetting/tectonic/pull/1052
+
 [@CraftSpider]: https://github.com/CraftSpider
+
 [@Mrmaxmeier]: https://github.com/Mrmaxmeier
+
 [@pkgw]: https://github.com/pkgw
+
 [@xinslu]: https://github.com/xinslu
+
 [tectonic-on-arXiv]: https://github.com/Mrmaxmeier/tectonic-on-arXiv
 
 
@@ -145,12 +313,16 @@ release!
 Big thanks to [@LudvigHz] and [@CraftSpider] for the prompt report and solution!
 
 [#1040]: https://github.com/tectonic-typesetting/tectonic/issues/1040
-[#1041]: https://github.com/tectonic-typesetting/tectonic/pull/1041
-[#1042]: https://github.com/tectonic-typesetting/tectonic/pull/1042
-[@LudvigHz]: https://github.com/LudvigHz
-[@CraftSpider]: https://github.com/CraftSpider
-[@pkgw]: https://github.com/pkgw
 
+[#1041]: https://github.com/tectonic-typesetting/tectonic/pull/1041
+
+[#1042]: https://github.com/tectonic-typesetting/tectonic/pull/1042
+
+[@LudvigHz]: https://github.com/LudvigHz
+
+[@CraftSpider]: https://github.com/CraftSpider
+
+[@pkgw]: https://github.com/pkgw
 
 
 # tectonic 0.13.0 (2023-05-18)
@@ -167,13 +339,21 @@ project's technical infrastructure in several important ways.
   [#966]).
 
 [`tectonic -X init`]: https://tectonic-typesetting.github.io/book/latest/v2cli/init.html
+
 [`tectonic -X new`]: https://tectonic-typesetting.github.io/book/latest/v2cli/new.html
+
 [`shell-escape-cwd`]: https://tectonic-typesetting.github.io/book/latest/v2cli/compile.html#unstable-options
+
 [#983]: https://github.com/tectonic-typesetting/tectonic/pull/983
+
 [#966]: https://github.com/tectonic-typesetting/tectonic/pull/966
+
 [#933]: https://github.com/tectonic-typesetting/tectonic/issues/933
+
 [@caiogeraldes]: https://github.com/caiogeraldes
+
 [@pkgw]: https://github.com/pkgw
+
 [@mskblackbelt]: https://github.com/mskblackbelt
 
 On the infrastructure side:
@@ -198,14 +378,23 @@ On the infrastructure side:
   [`cargo clippy`].
 
 [`cargo-vcpkg`]: https://crates.io/crates/cargo-vcpkg
+
 [vcpkg]: https://vcpkg.io/
+
 [Tectonopedia]: https://github.com/tectonic-typesetting/tectonopedia
+
 [`cargo clippy`]: https://github.com/rust-lang/rust-clippy
+
 [tt-weave]: https://github.com/tectonic-typesetting/tt-weave
+
 [#961]: https://github.com/tectonic-typesetting/tectonic/pull/961
+
 [#1016]: https://github.com/tectonic-typesetting/tectonic/pull/1016
+
 [#1033]: https://github.com/tectonic-typesetting/tectonic/pull/1033
+
 [#1038]: https://github.com/tectonic-typesetting/tectonic/pull/1038
+
 [@CraftSpider]: https://github.com/CraftSpider
 
 Thank you to our new contributors [@caiogeraldes] and [@CraftSpider]! You will
@@ -245,8 +434,11 @@ More noteworthy are several non-code improvements!
 Thank you to all of our contributors!
 
 [auctex]: https://tectonic-typesetting.github.io/book/latest/howto/auctex-setup/
+
 [tt-weave]: https://github.com/tectonic-typesetting/tt-weave/
+
 [xap]: https://stacks.fullyjustified.net/xap/2022.0/
+
 [ttp]: https://www.worldcat.org/title/876762639
 
 
@@ -341,6 +533,7 @@ forward from the previous sync point of TeXLive 2020.0.
   crate][edcl] for more details.
 
 [excl]: https://github.com/tectonic-typesetting/tectonic/releases/tag/tectonic_engine_xetex%400.3.0
+
 [edcl]: https://github.com/tectonic-typesetting/tectonic/releases/tag/tectonic_engine_xdvipdfmx%400.2.0
 
 Separately, the “GitHub Discussions” feature for the Tectonic repository has
@@ -390,6 +583,7 @@ were using turned out to break `cargo install tectonic`. Thanks to [@dfrg] for
 prompt follow-up!
 
 [pinot]: https://crates.io/crates/pinot
+
 [@dfrg]: https://github.com/dfrg
 
 
@@ -424,12 +618,19 @@ for now, but lay the groundwork for future work:
   report soon!
 
 [#843]: https://github.com/tectonic-typesetting/tectonic/issues/843
+
 [#844]: https://github.com/tectonic-typesetting/tectonic/issues/844
+
 [#845]: https://github.com/tectonic-typesetting/tectonic/pull/845
+
 [#847]: https://github.com/tectonic-typesetting/tectonic/pull/847
+
 [#865]: https://github.com/tectonic-typesetting/tectonic/pull/865
+
 [#868]: https://github.com/tectonic-typesetting/tectonic/pull/868
+
 [s2h]: https://crates.io/crates/tectonic_engine_spx2html
+
 [xf]: https://crates.io/crates/tectonic_xetex_format
 
 This release also includes the usual updates to internal dependencies, build and
@@ -465,6 +666,7 @@ important, it is blocked in China, preventing a potentially large userbase from
 trying Tectonic.
 
 [#832]: https://github.com/tectonic-typesetting/tectonic/pull/832
+
 [#833]: https://github.com/tectonic-typesetting/tectonic/pull/833
 
 The new URL that is queried is:
@@ -477,7 +679,9 @@ defined in Terraform configuration in the [tectonic-cloud-infra] repo. [@pkgw] o
 the domain name and Azure subscription.
 
 [tectonic-relay-service]: https://github.com/tectonic-typesetting/tectonic-relay-service
+
 [tectonic-cloud-infra]: https://github.com/tectonic-typesetting/tectonic-cloud-infra
+
 [@pkgw]: https://github.com/pkgw
 
 Along with the above change, this release contains the following improvements:
@@ -500,6 +704,7 @@ Along with the above change, this release contains the following improvements:
   shell-escape (#823, @ratmice)
 
 [`tectonic -X dump`]: https://tectonic-typesetting.github.io/book/latest/v2cli/dump.html
+
 [sp]: https://tectonic-typesetting.github.io/book/latest/v2cli/compile.html#unstable-options
 
 
@@ -514,10 +719,15 @@ Along with the above change, this release contains the following improvements:
   for Tectonic, but we haven't set that up just yet ([#802], [@pkgw]).
 
 [#796]: https://github.com/tectonic-typesetting/tectonic/issues/796
+
 [#802]: https://github.com/tectonic-typesetting/tectonic/pull/802
+
 [#803]: https://github.com/tectonic-typesetting/tectonic/pull/803
+
 [#804]: https://github.com/tectonic-typesetting/tectonic/pull/804
+
 [@pkgw]: https://github.com/pkgw
+
 [@ralismark]: https://github.com/ralismark
 
 
@@ -664,8 +874,11 @@ systems. (@pkgw, #785, #786)
   ([#780], [#782], [@pkgw])
 
 [`watchexec`]: https://github.com/watchexec/watchexec
+
 [#780]: https://github.com/tectonic-typesetting/tectonic/issues/780
+
 [#782]: https://github.com/tectonic-typesetting/tectonic/pull/782
+
 [@pkgw]: https://github.com/pkgw
 
 
@@ -680,7 +893,9 @@ addressed yet.
   ([#779], [@lmartinez-mirror])
 
 [#779]: https://github.com/tectonic-typesetting/tectonic/pull/779
+
 [@lmartinez-mirror]: https://github.com/lmartinez-mirror
+
 [#780]: https://github.com/tectonic-typesetting/tectonic/issues/780
 
 
@@ -693,8 +908,11 @@ put in the work to deliver a solid implementation and track ongoing changes to
 the Tectonic backend. Thank you, [@ralismark]!
 
 [i38]: https://github.com/tectonic-typesetting/tectonic/issues/38
+
 [minted]: https://ctan.org/pkg/minted
+
 [#708]: https://github.com/tectonic-typesetting/tectonic/pull/708
+
 [@ralismark]: https://github.com/ralismark
 
 Shell-escape remains disabled by default because it is, frankly, a hack that
@@ -705,6 +923,7 @@ you can activate it with an [unstable option] in the [“V1”] command-line
 interface:
 
 [unstable option]: https://tectonic-typesetting.github.io/book/latest/v2cli/compile.html#unstable-options
+
 [“V1”]: https://tectonic-typesetting.github.io/book/latest/ref/v1cli.html
 
 ```
@@ -715,6 +934,7 @@ In the [“V2”] model, you can activate shell-escape by adding the following l
 to one or more `[output]` sections in your [`Tectonic.toml`] file:
 
 [“V2”]: https://tectonic-typesetting.github.io/book/latest/ref/v2cli.html
+
 [`Tectonic.toml`]: https://tectonic-typesetting.github.io/book/latest/ref/tectonic-toml.html
 
 ```toml
@@ -745,8 +965,11 @@ entirely automate the Tectonic release processes in a way that’s been nothing
 short of transformative.
 
 [Cranko]: https://pkgw.github.io/cranko/
+
 [@pkgw]: https://github.com/pkgw
+
 [jitv]: https://pkgw.github.io/cranko/book/latest/jit-versioning/index.html
+
 [monorepo]: https://en.wikipedia.org/wiki/Monorepo
 
 This change comes with a bit of a downside, in that there have been a lot of API
@@ -781,18 +1004,31 @@ There’s the usual collection of smaller improvements as well:
 - The usual updates to dependencies, build fixes, and documentation tweaks
 
 [#109]: https://github.com/tectonic-typesetting/tectonic/issues/109
+
 [#719]: https://github.com/tectonic-typesetting/tectonic/issues/719
+
 [#745]: https://github.com/tectonic-typesetting/tectonic/issues/745
+
 [#749]: https://github.com/tectonic-typesetting/tectonic/issues/749
+
 [#752]: https://github.com/tectonic-typesetting/tectonic/issues/752
+
 [#754]: https://github.com/tectonic-typesetting/tectonic/issues/754
+
 [#733]: https://github.com/tectonic-typesetting/tectonic/pull/733
+
 [#734]: https://github.com/tectonic-typesetting/tectonic/pull/734
+
 [#746]: https://github.com/tectonic-typesetting/tectonic/pull/746
+
 [#753]: https://github.com/tectonic-typesetting/tectonic/pull/753
+
 [#758]: https://github.com/tectonic-typesetting/tectonic/pull/758
+
 [#759]: https://github.com/tectonic-typesetting/tectonic/pull/759
+
 [@sslab-gatech]: https://github.com/sslab-gatech
+
 [@jeffa5]: https://github.com/jeffa5
 
 
@@ -863,6 +1099,7 @@ synchronization, but this release incorporates the new changes introduced
 between the last update and the release of TeXLive 2020.0.
 
 [XeTeX]: https://tug.org/xetex/
+
 [tectonic-staging]: https://github.com/tectonic-typesetting/tectonic-staging
 
 The changes for TeXLive 2020.0 include:
@@ -907,6 +1144,7 @@ Other changes:
   `-Z` infrastructure introduced in 0.2!
 
 [vcpkg]: https://github.com/microsoft/vcpkg
+
 [vcpkg-issue]: https://github.com/tectonic-typesetting/tectonic/issues/668
 
 
@@ -974,6 +1212,7 @@ low-friction framework for making releases even when there are many crates in
 one repository.
 
 [Cranko]: https://github.com/pkgw/cranko
+
 [jitv]: https://pkgw.github.io/cranko/book/latest/jit-versioning/
 
 User-facing improvements:

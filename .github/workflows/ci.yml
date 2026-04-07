@@ -1,0 +1,14 @@
+name: "PR CI"
+
+on:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  prep:
+    uses: ./.github/workflows/prep.yml
+  build_and_test:
+    needs: prep
+    uses: ./.github/workflows/build_and_test.yml
+    secrets: inherit

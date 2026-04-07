@@ -1,0 +1,339 @@
+name: "Build and Test"
+
+on: [ workflow_call ]
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+        with:
+          install-all-deps: 'true'
+      - name: "Install clippy"
+        run: |
+          rustup component add clippy
+          cargo clippy --version
+      - name: "cargo clippy"
+        run: cargo clippy --all --all-targets --all-features -- --deny warnings
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Set up code coverage"
+        run: |
+          echo "CC=clang" >> "$GITHUB_ENV"
+          echo "CXX=clang++" >> "$GITHUB_ENV"
+          cargo install cargo-llvm-cov
+      - name: "cargo llvm-cov"
+        run: cargo llvm-cov --workspace --include-ffi --ignore-filename-regex '/harfbuzz/' --codecov --output-path coverage.json
+      - name: "Report coverage results"
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+  appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+          echo "TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC=true" >> "$GITHUB_ENV"
+      - name: "Build AppImage"
+        shell: bash
+        run: |
+          artifact_dir="appimage"
+          mkdir -p "$artifact_dir"
+          
+          if [[ $SOURCE_BRANCH == master ]] ; then
+            export TECTONIC_APPIMAGE_TAG=continuous
+            export UPDATE_INFORMATION="gh-releases-zsync|tectonic-typesetting|tectonic|continuous|tectonic-*.AppImage.zsync"
+          fi
+          
+          ./dist/appimage/build.sh
+          cp dist/appimage/tectonic-*.AppImage* "$artifact_dir"
+        env:
+          SOURCE_BRANCH: ${{ github.ref_name }}
+      - name: "Upload AppImage"
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: appimage
+  book:
+    runs-on: ubuntu-latest
+    env:
+      MDBOOK_VERSION: 0.4.2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install mdbook ${{ env.MDBOOK_VERSION }}"
+        run: |
+          fn="mdbook-v${{ env.MDBOOK_VERSION }}-x86_64-unknown-linux-gnu.tar.gz"
+          url="https://github.com/rust-lang/mdBook/releases/download/v${{ env.MDBOOK_VERSION }}/$fn"
+          wget -q --progress=dot "$url"
+          tar xzf "$fn"
+          rm -f "$fn"
+      - name: "mdbook build"
+        run: |
+          artifact_dir="${{ github.workspace }}/book"
+          mkdir -p "$artifact_dir"
+          cd docs && ../mdbook build -d "$artifact_dir"
+      - name: "mdbook test"
+        run: |
+          cd docs && ../mdbook test
+      - name: "Publish book artifacts"
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/book
+          name: book
+  linux-semistatic:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+          echo "TECTONIC_PKGCONFIG_FORCE_SEMI_STATIC=true" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+          publish: true
+  linux-toolchains:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain: [ "beta", "nightly" ]
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+  linux-feature-tests:
+    strategy:
+      matrix:
+        features: [ "_all_", "_none_", "geturl-curl serialization" ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+        with:
+          install-all-deps: ${{ matrix.features == '_all_' }}
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: x86_64-unknown-linux-gnu
+          features: ${{ matrix.features }}
+  pkg-config:
+    strategy:
+      matrix:
+        image: [ ubuntu-latest, windows-latest, macos-latest ]
+        install-all-deps: [ true, false ]
+        include:
+          # By default, all items have toolchain: stable, and don't publish
+          - toolchain: stable
+            publish: false
+          # Windows uses a different toolchain
+          - image: windows-latest
+            toolchain: stable-x86_64-pc-windows-gnu
+          # Windows intdeps publishes
+          - image: windows-latest
+            install-all-deps: false
+            publish: true
+          # Set primary build for exactly one build
+          - image: ubuntu-latest
+            install-all-deps: false
+            primary-build: true
+          # Add targets for each image type
+          - image: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - image: windows-latest
+            target: x86_64-pc-windows-gnu
+          - image: macos-latest
+            target: aarch64-apple-darwin
+          # When install-all-deps is true, set feature "external-harfbuzz"
+          - install-all-deps: true
+            features: "external-harfbuzz"
+      fail-fast: false
+    runs-on: ${{ matrix.image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Install pkg-config dependencies"
+        uses: ./.github/actions/pkgconfig-deps
+        with:
+          install-all-deps: ${{ matrix.install-all-deps }}
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=pkg-config" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: ${{ matrix.target }}
+          features: ${{ matrix.features }}
+          publish: ${{ matrix.publish }}
+  vcpkg:
+    strategy:
+      matrix:
+        data:
+          - image: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - image: windows-latest
+            target: x86_64-pc-windows-msvc
+          - image: macos-latest
+            target: x86_64-apple-darwin
+          - image: macos-latest
+            target: aarch64-apple-darwin
+      fail-fast: false
+    runs-on: ${{ matrix.data.image }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - name: "Install vcpkg dependencies"
+        uses: ./.github/actions/vcpkg-deps
+        with:
+          target: ${{ matrix.data.target }}
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          echo "TECTONIC_DEP_BACKEND=vcpkg" >> "$GITHUB_ENV"
+          echo "VCPKG_ROOT=$GITHUB_WORKSPACE/target/vcpkg" >> "$GITHUB_ENV"
+      - name: "Setup build variables (Windows)"
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: |
+          echo "RUSTFLAGS=-Ctarget-feature=+crt-static" >> "$GITHUB_ENV"
+          echo "VCPKGRS_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          echo "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          # Format file locking issue workaround:
+          echo "RUST_TEST_THREADS=1" >> "$GITHUB_ENV"
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: ${{ matrix.data.target }}
+          publish: ${{ matrix.data.image != 'ubuntu-latest' }}
+  cross:
+    strategy:
+      matrix:
+        target:
+          - aarch64-unknown-linux-musl
+          - arm-unknown-linux-musleabihf
+          - i686-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+      fail-fast: false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: "Generic Setup"
+        uses: ./.github/actions/build-setup
+      - name: "Set up QEMU"
+        shell: bash
+        run:
+          docker run --rm --privileged multiarch/qemu-user-static:register --reset --credential yes
+      - name: "cargo install cross"
+        shell: bash
+        run:
+          cargo install cross
+      - name: "Setup build variables"
+        shell: bash
+        run: |
+          HOST_UID=$(id -u)
+          HOST_GID=$(id -g)
+          echo "CROSS_ROOTLESS_CONTAINER_ENGINE=1" >> "$GITHUB_ENV"
+          echo "DOCKER_OPTS=--privileged -e HOST_UID=${HOST_UID} -e HOST_GID=${HOST_GID}" >> "$GITHUB_ENV"
+      # TODO: Add font files to the cross images so we can include fontconfig_bridge in tests
+      # TODO: Figure out why doctests are broken so we can drop all-targets
+      - name: "Build and Test"
+        uses: ./.github/actions/build-and-test
+        with:
+          target: ${{ matrix.target }}
+          publish: 'true'
+          executable: 'cross'
+          test-flags: '--all-targets --exclude tectonic_bridge_fontconfig'
+          package-flags: '--command-name=cross --reroot=.'
+
