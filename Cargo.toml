@@ -27,7 +27,7 @@ categories = [
 ]
 license = "MIT"
 edition = "2021"
-exclude = ["/dist/", "/reference_sources/"]
+exclude = ["/dist/", "/reference_sources/", "/release-bundle/"]
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
