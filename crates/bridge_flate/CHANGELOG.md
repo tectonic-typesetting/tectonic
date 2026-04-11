@@ -1,5 +1,10 @@
 # rc: micro bump
 
+- Fix for publish not going through
+
+
+# tectonic_bridge_flate 0.1.8 (2026-04-11)
+
 - Global lint fixes
 - Update to edition 2021
 

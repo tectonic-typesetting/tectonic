@@ -1,4 +1,9 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix for publish not going through
+
+
+# tectonic_bridge_harfbuzz 0.3.0 (2026-04-11)
 
 - Global lint fixes
 - Update to edition 2021

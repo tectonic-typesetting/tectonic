@@ -1,4 +1,9 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix for publish not going through
+
+
+# tectonic_bridge_core 0.5.0 (2026-04-11)
 
 - Expose more types and functions to Rust to support non-C backends
 - Global lint fixes

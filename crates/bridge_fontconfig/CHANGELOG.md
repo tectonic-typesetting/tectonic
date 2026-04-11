@@ -1,4 +1,8 @@
-# rc: minor bump
+# rc: micro bump
+
+- Update bridge_fontconfig for publish
+
+# tectonic_bridge_fontconfig 0.1.0 (2026-04-11)
 
 A new bridge for use in the `tectonic_xetex_layout` rewrite to Rust. Exposes fontconfig APIs.
 

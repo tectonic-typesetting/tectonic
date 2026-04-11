@@ -1,4 +1,9 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix for publish not going through
+
+
+# tectonic 0.16.0 (2026-04-11)
 
 The first release of tectonic in several years! There's a lot in this one.
 

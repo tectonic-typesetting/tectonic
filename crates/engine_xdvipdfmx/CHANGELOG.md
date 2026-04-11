@@ -1,5 +1,10 @@
 # rc: micro bump
 
+- Fix for publish not going through
+
+
+# tectonic_engine_xdvipdfmx 0.4.2 (2026-04-11)
+
 - Global lint fixes
 - Update to edition 2021
 
