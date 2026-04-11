@@ -6,7 +6,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic"
-version = "0.16.5"
+version = "0.16.6"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
@@ -27,7 +27,7 @@ categories = [
 ]
 license = "MIT"
 edition = "2021"
-exclude = ["/dist/", "/reference_sources/"]
+exclude = ["/dist/", "/reference_sources/", "/release-bundle/"]
 
 [badges]
 travis-ci = { repository = "tectonic-typesetting/tectonic" }
