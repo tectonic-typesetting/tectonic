@@ -11,6 +11,10 @@ inputs:
     description: "Whether to set up git actions"
     required: false
     default: 'false'
+  artifacts:
+    description: "Whether to download artifacts"
+    required: false
+    default: 'true'
 outputs:
   top-level:
     description: "Whether we're continuous, rc, or a new version"
@@ -19,6 +23,7 @@ runs:
   using: "composite"
   steps:
     - name: Install all artifacts
+      if: ${{ inputs.artifacts == 'true' }}
       uses: actions/download-artifact@v4
     - name: Restore release commit
       shell: bash

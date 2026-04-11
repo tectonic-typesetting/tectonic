@@ -131,6 +131,7 @@ jobs:
         with:
           is-dev: ${{ inputs.is-dev }}
           is-release: ${{ inputs.is-release }}
+          artifacts: 'false'
       - name: "Publish updated Cargo crates"
         run: cranko cargo foreach-released --pause=30 -- publish --no-verify --allow-dirty
         env:
