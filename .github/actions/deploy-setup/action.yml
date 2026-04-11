@@ -69,7 +69,7 @@ runs:
       env:
         IS_DEV: ${{ inputs.is-dev }}
         IS_RELEASE: ${{ inputs.is-release }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
     - name: "Set up Git actions"
       shell: bash
       run: |
