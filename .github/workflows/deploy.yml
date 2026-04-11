@@ -70,7 +70,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   branch-and-tag:
     runs-on: ubuntu-latest
-    if: ${{ inputs.is-main }}
+    if: ${{ inputs.is-release }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   github-releases:
     runs-on: ubuntu-latest
-    if: ${{ inputs.is-main }}
+    if: ${{ inputs.is-release }}
     needs: branch-and-tag
     steps:
       - name: Checkout repository
@@ -118,7 +118,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   cargo-publish:
     runs-on: ubuntu-latest
-    if: ${{ inputs.is-main }}
+    if: ${{ inputs.is-release }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -137,7 +137,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
   update-website:
     runs-on: ubuntu-latest
-    if: ${{ inputs.is-main }}
+    if: ${{ inputs.is-release }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
