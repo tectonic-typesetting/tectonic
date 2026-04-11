@@ -1,3 +1,5 @@
+# tectonic_engine_spx2html 0.4.2 (2026-04-11)
+
 # tectonic_engine_spx2html 0.4.1 (2026-04-11)
 
 - Fix for publish not going through

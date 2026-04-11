@@ -1,3 +1,5 @@
+# tectonic_engine_xetex 0.5.2 (2026-04-11)
+
 # tectonic_engine_xetex 0.5.1 (2026-04-11)
 
 - Fix for publish not going through

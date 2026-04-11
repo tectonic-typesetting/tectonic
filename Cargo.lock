@@ -2939,7 +2939,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic"
-version = "0.16.1"
+version = "0.16.2"
 dependencies = [
  "anyhow",
  "byte-unit",
@@ -2986,7 +2986,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_core"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "cc",
  "flate2",
@@ -3000,7 +3000,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_flate"
-version = "0.1.9"
+version = "0.1.10"
 dependencies = [
  "flate2",
  "libc",
@@ -3008,7 +3008,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_fontconfig"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "libc",
  "tectonic_bridge_png",
@@ -3017,7 +3017,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_freetype2"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "libc",
  "tectonic_bridge_flate",
@@ -3027,7 +3027,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_graphite2"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "libc",
  "tectonic_dep_support",
@@ -3035,7 +3035,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_harfbuzz"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "cc",
  "libc",
@@ -3048,14 +3048,14 @@ dependencies = [
 
 [[package]]
 name = "tectonic_bridge_icu"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "tectonic_dep_support",
 ]
 
 [[package]]
 name = "tectonic_bridge_png"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "tectonic_dep_support",
 ]
@@ -3099,7 +3099,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_bibtex"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "indexmap",
  "libc",
@@ -3111,7 +3111,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_spx2html"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "byteorder",
  "html-escape",
@@ -3130,7 +3130,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xdvipdfmx"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "cc",
  "libc",
@@ -3141,7 +3141,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_engine_xetex"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "cc",
  "libc",
@@ -3198,7 +3198,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_pdf_io"
-version = "0.5.1"
+version = "0.5.2"
 dependencies = [
  "cc",
  "tectonic_bridge_core",
@@ -3234,7 +3234,7 @@ dependencies = [
 
 [[package]]
 name = "tectonic_xetex_layout"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "cc",
  "enrede",

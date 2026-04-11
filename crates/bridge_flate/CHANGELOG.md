@@ -1,3 +1,5 @@
+# tectonic_bridge_flate 0.1.10 (2026-04-11)
+
 # tectonic_bridge_flate 0.1.9 (2026-04-11)
 
 - Fix for publish not going through

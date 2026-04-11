@@ -7,7 +7,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_bridge_flate"
-version = "0.1.9"
+version = "0.1.10"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Exposing flate compression to the Tectonic C code.

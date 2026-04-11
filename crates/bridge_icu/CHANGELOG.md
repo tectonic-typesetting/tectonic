@@ -1,3 +1,5 @@
+# tectonic_bridge_icu 0.2.4 (2026-04-11)
+
 # tectonic_bridge_icu 0.2.3 (2026-04-11)
 
 - Fix for publish not going through
