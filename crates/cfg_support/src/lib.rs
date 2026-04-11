@@ -184,7 +184,7 @@ macro_rules! target_cfg {
         $({$($grouped:tt)+})+
     ) => {
         ($(
-            (target_cfg!($($grouped)+))
+            target_cfg!($($grouped)+)
         )&&+)
     };
 
@@ -195,7 +195,7 @@ macro_rules! target_cfg {
         $({$($grouped:tt)+})+
     ) => {
         ($(
-            (target_cfg!($($grouped)+))
+            target_cfg!($($grouped)+)
         )||+)
     };
 
