@@ -1,4 +1,4 @@
-# tectonic 0.16.3 (2026-04-11)
+# tectonic 0.16.4 (2026-04-11)
 
 - Fix for publish not going through
 
