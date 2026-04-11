@@ -25,6 +25,7 @@
  *   Unsupported features: Transparency, etc.
  */
 
+#include "tectonic_bridge_core.h"
 #include "dpx-bmpimage.h"
 
 #include <fcntl.h>
@@ -73,7 +74,7 @@ check_for_bmp (rust_input_handle_t handle)
 {
     unsigned char sigbytes[2];
 
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return 0;
 
     ttstub_input_seek (handle, 0, SEEK_SET);

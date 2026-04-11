@@ -1,3 +1,10 @@
+# tectonic_xetex_format 0.4.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Depdency bumps and fixes
+
+
 # tectonic_xetex_format 0.3.2 (2024-02-05)
 
 - Update for latest Clippy complaints (#1119, @pkgw).
@@ -15,6 +22,7 @@
     which is disabled in XeTeX. This section of the equivalents table had one
     entry for every USV, which is a lot of space.
   - Synchronize PRIM_SIZE with TeXLive 2022, and provide PRIM_PRIME
+
 
 # tectonic_xetex_format 0.2.0 (2022-04-26)
 

@@ -5,31 +5,14 @@
 
 use std::{env, path::PathBuf};
 use tectonic_cfg_support::*;
-use tectonic_dep_support::{Configuration, Dependency, Spec};
-
-struct LibpngSpec;
-
-impl Spec for LibpngSpec {
-    fn get_pkgconfig_spec(&self) -> &str {
-        "libpng"
-    }
-
-    fn get_vcpkg_spec(&self) -> &[&str] {
-        &["libpng"]
-    }
-}
 
 fn main() {
     let manifest_dir: PathBuf = env::var("CARGO_MANIFEST_DIR").unwrap().into();
 
-    // Dependencies.
-
-    let dep_cfg = Configuration::default();
-    let dep = Dependency::probe(LibpngSpec, &dep_cfg);
-
     // Include paths and settings exported by our internal dependencies.
 
     let core_include_dir = env::var("DEP_TECTONIC_BRIDGE_CORE_INCLUDE").unwrap();
+    let png_include_path = env::var("DEP_PNG_INCLUDE_PATH").unwrap();
     let flate_include_dir = env::var("DEP_TECTONIC_BRIDGE_FLATE_INCLUDE").unwrap();
 
     // Define the C support library.
@@ -88,9 +71,9 @@ fn main() {
         .include(&flate_include_dir)
         .include(&core_include_dir);
 
-    dep.foreach_include_path(|p| {
-        ccfg.include(p);
-    });
+    for item in png_include_path.split(';') {
+        ccfg.include(item);
+    }
 
     let is_big_endian = target_cfg!(target_endian = "big");
     if is_big_endian {
@@ -176,8 +159,6 @@ fn main() {
     }
 
     ccfg.compile("libtectonic_pdf_io.a");
-
-    dep.emit();
 
     // Cargo exposes this as the environment variable DEP_XXX_INCLUDE_PATH,
     // where XXX is the "links" setting in Cargo.toml. This is the key element

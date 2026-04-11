@@ -179,7 +179,7 @@ pub(crate) fn create_output_path(
 
     for piece in dest_path.split('/') {
         if let Some(out_path) = out_path.as_mut() {
-            match std::fs::create_dir(&out_path) {
+            match std::fs::create_dir(out_path.as_path()) {
                 Ok(_) => {}
                 Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {}
                 Err(e) => {

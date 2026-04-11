@@ -884,7 +884,7 @@ int
 CMap_cache_find (const char *cmap_name)
 {
     int id = 0;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
 
     if (!__cache)
         CMap_cache_init();
@@ -900,7 +900,7 @@ CMap_cache_find (const char *cmap_name)
     }
 
     handle = ttstub_input_open(cmap_name, TTBC_FILE_FORMAT_CMAP, 0);
-    if (handle == NULL)
+    if (handle == INVALID_HANDLE)
         return -1;
 
     if (CMap_parse_check_sig(handle) < 0) {

@@ -1,3 +1,9 @@
+# tectonic_engine_xdvipdfmx 0.4.2 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+
+
 # tectonic_engine_xdvipdfmx 0.4.1 (2023-05-18)
 
 - Tidy up recent Clippy warnings.
@@ -51,6 +57,7 @@ which contains most of the actual exported xdvipdfmx code.
   should speed builds too.
 
 [cbindgen]: https://github.com/eqrion/cbindgen
+
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
 
 
@@ -62,6 +69,7 @@ which contains most of the actual exported xdvipdfmx code.
   turned off.
 
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
+
 [cbindgen]: https://github.com/eqrion/cbindgen
 
 

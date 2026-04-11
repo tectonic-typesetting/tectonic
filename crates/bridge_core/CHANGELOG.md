@@ -1,3 +1,10 @@
+# tectonic_bridge_core 0.5.0 (2026-04-11)
+
+- Expose more types and functions to Rust to support non-C backends
+- Global lint fixes
+- Update to edition 2021
+
+
 # tectonic_bridge_core 0.4.1 (2024-02-05)
 
 - Add a safety comment and fix some new Clippy complaints (#1076, @CraftSpider)
@@ -34,6 +41,7 @@
   should speed builds too.
 
 [cbindgen]: https://github.com/eqrion/cbindgen
+
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
 
 
@@ -45,6 +53,7 @@
   turned off.
 
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
+
 [cbindgen]: https://github.com/eqrion/cbindgen
 
 

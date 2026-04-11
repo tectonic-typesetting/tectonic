@@ -1,3 +1,10 @@
+# tectonic_bridge_graphite2 0.3.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Expose the C API in Rust for use in `tectonic_xetex_layout` Rust rewrite
+
+
 # tectonic_bridge_graphite2 0.2.2 (2023-05-18)
 
 - Tidy up recent Clippy warnings.
@@ -15,10 +22,12 @@
   to a list of them.
 - Some improvements to the documentation
 
+
 # tectonic_bridge_graphite2 0.1.1 (2021-01-16)
 
 - Export information about the `GRAPHITE2_STATIC` C preprocessor define that is
   sometimes needed.
+
 
 # tectonic_bridge_graphite2 0.1.0 (2021-01-04)
 

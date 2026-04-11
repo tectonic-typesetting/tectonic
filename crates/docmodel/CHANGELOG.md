@@ -1,3 +1,10 @@
+# tectonic_docmodel 0.3.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Updates for new `synctex`, `inputs`, and `extra_paths` toml key
+
+
 # tectonic_docmodel 0.2.2 (2024-02-05)
 
 - Add a `metadata` field to the Tectonic.toml file specification, allowing

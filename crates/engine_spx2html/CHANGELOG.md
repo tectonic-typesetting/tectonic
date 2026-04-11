@@ -1,3 +1,10 @@
+# tectonic_engine_spx2html 0.4.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Changes needed for bundle rewrite
+
+
 # tectonic_engine_spx2html 0.3.2 (2024-02-05)
 
 - Fix (well, suppress) a new Clippy complaint (#1137, @pkgw).
@@ -51,4 +58,5 @@ CSS templates haven't yet been published anywhere, so it's not very useful as
 yet, but hopefully that will all be changing soon.
 
 [tera]: https://crates.io/crates/tera
+
 [pinot]: https://crates.io/crates/pinot

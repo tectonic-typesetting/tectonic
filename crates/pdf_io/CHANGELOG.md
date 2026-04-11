@@ -1,3 +1,10 @@
+# tectonic_pdf_io 0.5.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Fix issues with incomplete file attachments
+
+
 # tectonic_pdf_io 0.4.1 (2023-05-18)
 
 - Tidy up recent Clippy warnings.

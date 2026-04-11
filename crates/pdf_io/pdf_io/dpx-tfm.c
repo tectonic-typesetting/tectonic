@@ -679,7 +679,7 @@ read_tfm (struct font_metric *fm, rust_input_handle_t tfm_handle, off_t tfm_file
 int
 tfm_open (const char *tfm_name, int must_exist)
 {
-    rust_input_handle_t tfm_handle = NULL;
+    rust_input_handle_t tfm_handle = INVALID_HANDLE;
     int i, format = TFM_FORMAT;
     off_t tfm_file_size;
     char *ofm_name, *suffix;
@@ -718,17 +718,17 @@ tfm_open (const char *tfm_name, int must_exist)
         ofm_name = NULL;
     }
 
-    if (ofm_name && (tfm_handle = ttstub_input_open(ofm_name, TTBC_FILE_FORMAT_OFM, 0)) != NULL) {
+    if (ofm_name && (tfm_handle = ttstub_input_open(ofm_name, TTBC_FILE_FORMAT_OFM, 0)) != INVALID_HANDLE) {
         format = OFM_FORMAT;
-    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_TFM, 0)) != NULL) {
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_TFM, 0)) != INVALID_HANDLE) {
         format = TFM_FORMAT;
-    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_OFM, 0)) != NULL) {
+    } else if ((tfm_handle = ttstub_input_open(tfm_name, TTBC_FILE_FORMAT_OFM, 0)) != INVALID_HANDLE) {
         format = OFM_FORMAT;
     }
 
     free(ofm_name);
 
-    if (tfm_handle == NULL) {
+    if (tfm_handle == INVALID_HANDLE) {
         if (must_exist)
             _tt_abort("Unable to find TFM file \"%s\".", tfm_name);
         return -1;

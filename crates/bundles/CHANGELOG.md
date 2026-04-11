@@ -1,3 +1,11 @@
+# tectonic_bundles 0.4.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Changes needed for bundle rewrite
+- Support for env variables during build to override web bundle
+
+
 # tectonic_bundles 0.3.1 (2023-05-18)
 
 - Bump the `zip` dependency to the 0.6 series (#1038, @CraftSpider)
@@ -44,6 +52,7 @@ runs on Microsoft Azure and is configured using Terraform files in the
 [tectonic-cloud-infra] repo.
 
 [tectonic-relay-service]: https://github.com/tectonic-typesetting/tectonic-relay-service
+
 [tectonic-cloud-infra]: https://github.com/tectonic-typesetting/tectonic-cloud-infra
 
 @pkgw owns the `fullyjustified.net` domain name and the Azure subscription into

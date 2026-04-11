@@ -1,0 +1,11 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: missing_bst.aux
+I couldn't open style file missing.bst
+---line 3 of file missing_bst.aux
+ : \bibstyle{missing
+ :                  }
+I'm skipping whatever remains of this command
+I found no \citation commands---while reading file missing_bst.aux
+I found no style file---while reading file missing_bst.aux
+(There were 3 error messages)

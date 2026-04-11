@@ -23,7 +23,7 @@ This crate provides the following [Cargo features][features]:
 [curl]: https://docs.rs/curl/
 [reqwest]: https://docs.rs/reqwest/
 
-There is always a “null” backend available, which will always return errors. If
+There is always a "null" backend available, which will always return errors. If
 more than one backend is enabled, their prioritization is:
 
 - `reqwest` (most preferred)

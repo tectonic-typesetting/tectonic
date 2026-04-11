@@ -1,0 +1,12 @@
+This is BibTeX, Version 0.99d
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: dup_bib.aux
+This database file appears more than once: ../empty.bib
+---line 2 of file dup_bib.aux
+ : \bibdata{../empty,../empty
+ :                           }
+I'm skipping whatever remains of this command
+The style file: ../plain.bst
+I found no \citation commands---while reading file dup_bib.aux
+Database file #1: ../empty.bib
+(There were 2 error messages)

@@ -5,11 +5,13 @@
 
 use std::{
     fs,
+    io::Read,
     path::{Path, PathBuf},
+    str::FromStr,
 };
 use tectonic_errors::prelude::*;
-use tectonic_io_base::{filesystem::FilesystemIo, InputHandle, IoProvider, OpenResult};
-use tectonic_status_base::StatusBackend;
+use tectonic_io_base::{digest, filesystem::FilesystemIo, InputHandle, IoProvider, OpenResult};
+use tectonic_status_base::{NoopStatusBackend, StatusBackend};
 
 use super::Bundle;
 
@@ -56,21 +58,34 @@ impl IoProvider for DirBundle {
 }
 
 impl Bundle for DirBundle {
-    fn all_files(&mut self, _status: &mut dyn StatusBackend) -> Result<Vec<String>> {
-        let mut files = Vec::new();
+    fn all_files(&self) -> Vec<String> {
+        fs::read_dir(self.0.root())
+            .unwrap()
+            .filter_map(|x| x.ok())
+            .filter(|x| !x.file_type().map(|x| x.is_dir()).unwrap_or(false))
+            .map(|x| x.file_name().to_str().unwrap_or("").to_owned())
+            .filter(|x| !x.is_empty())
+            .collect()
+    }
 
-        // We intentionally do not explore the directory recursively.
-        for entry in fs::read_dir(self.0.root())? {
-            let entry = entry?;
-
-            // This catches both regular files and symlinks:`
-            if !entry.file_type()?.is_dir() {
-                if let Some(s) = entry.file_name().to_str() {
-                    files.push(s.to_owned());
-                }
+    fn get_digest(&mut self) -> Result<tectonic_io_base::digest::DigestData> {
+        let digest_text = match self.input_open_name(digest::DIGEST_NAME, &mut NoopStatusBackend {})
+        {
+            OpenResult::Ok(h) => {
+                let mut text = String::new();
+                h.take(64).read_to_string(&mut text)?;
+                text
             }
-        }
 
-        Ok(files)
+            OpenResult::NotAvailable => {
+                bail!("bundle does not provide needed SHA256SUM file");
+            }
+
+            OpenResult::Err(e) => {
+                return Err(e);
+            }
+        };
+
+        Ok(atry!(digest::DigestData::from_str(&digest_text); ["corrupted SHA256 digest data"]))
     }
 }

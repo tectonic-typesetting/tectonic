@@ -1,3 +1,11 @@
+# tectonic_engine_xetex 0.5.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Changes needed for the port of `tectonic_xetex_layout` to Rust
+- Expose some APIs in Rust for usage by downstream backends not written in C
+
+
 # tectonic_engine_xetex 0.4.4 (2024-02-05)
 
 - Support aarch64-unknown-linux-musl as a cross-buildable architecture (#1089,
@@ -78,6 +86,7 @@ Update the XeTeX engine for TeXLive 2021 (#882, @pkgw).
   - This updates Unicode character names and normalization data to 13.0.0
 
 [ucc]: https://github.com/TeX-Live/xetex/commit/0b12b29abb4748a9a85cc3e195ad388eba0d674e
+
 [tex82]: https://ctan.math.utah.edu/ctan/tex-archive/systems/knuth/dist/errata/tex82.bug
 
 Also:
@@ -108,6 +117,7 @@ Also:
 - Fix new warnings reported by Clippy 1.53.0
 
 [#803]: https://github.com/tectonic-typesetting/tectonic/pull/803
+
 [@ralismark]: https://github.com/ralismark
 
 
@@ -118,6 +128,7 @@ Also:
   should speed builds too.
 
 [cbindgen]: https://github.com/eqrion/cbindgen
+
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
 
 
@@ -129,6 +140,7 @@ Also:
   turned off.
 
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
+
 [cbindgen]: https://github.com/eqrion/cbindgen
 
 

@@ -63,7 +63,7 @@ int
 pdf_font_open_type1c (pdf_font *font, const char *ident, int index, int encoding_id, int embedding)
 {
     char     *fontname;
-    rust_input_handle_t handle = NULL;
+    rust_input_handle_t handle = INVALID_HANDLE;
     sfnt     *sfont;
     cff_font *cffont;
     pdf_obj  *descriptor, *tmp;

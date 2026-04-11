@@ -1,3 +1,10 @@
+# tectonic_geturl 0.4.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Changes needed for bundle rewrite
+
+
 # tectonic_geturl 0.3.2 (2023-05-18)
 
 - Tidy up recent Clippy warnings.

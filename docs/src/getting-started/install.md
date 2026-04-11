@@ -57,7 +57,7 @@ a convention of a leading `$` to indicate a command that you should run at your
 computer’s command prompt. You don’t type the dollar sign itself.)
 
 To be explicit, *Tectonic does not invoke an external `latex` program, and
-Tectonic is not a “wrapper” for (La)TeX.* Tectonic *is* the LaTeX program. This
+Tectonic is not a "wrapper" for (La)TeX.* Tectonic *is* the LaTeX program. This
 is essential. [The goals of the Tectonic project][goals] involve a fundamental
 transformation of how we use TeX to create technical documents, and it is not
 possible to achieve that without radical surgery to the heart of how TeX has

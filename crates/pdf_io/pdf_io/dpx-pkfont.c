@@ -88,7 +88,7 @@ dpx_open_pk_font_at (const char *ident, unsigned int dpi)
   /*kpse_glyph_file_type kpse_file_info;*/
   /*char * fqpn = kpse_find_glyph(ident, dpi, kpse_pk_format, &kpse_file_info);*/
   dpx_warning("Tectonic unable to generate PK font \"%s\" (dpi %u) on-the-fly", ident, dpi);
-  return NULL;
+  return INVALID_HANDLE;
 }
 
 

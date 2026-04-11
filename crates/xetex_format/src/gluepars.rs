@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! Glue parameters defined by the engine.
 
 use std::io::Write;

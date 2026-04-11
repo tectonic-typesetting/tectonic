@@ -1,3 +1,9 @@
+# tectonic_dep_support 0.1.2 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+
+
 # tectonic_dep_support 0.1.1 (2023-05-18)
 
 - Default the Windows vcpkg build to use a custom triplet that doesn't

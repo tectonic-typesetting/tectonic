@@ -1,0 +1,50 @@
+name: 'build-setup'
+description: 'Generic setup for all builds'
+inputs:
+  toolchain:
+    description: "Rust toolchain to use"
+    required: false
+    default: "stable"
+runs:
+  using: "composite"
+  steps:
+    - uses: r7kamura/rust-problem-matchers@v1
+    - name: "Set up rust"
+      shell: bash
+      run: |
+        rustup set profile minimal
+        rustup component remove --toolchain=${{ inputs.toolchain }} rust-docs || echo "already removed"
+        rustup update --no-self-update ${{ inputs.toolchain }}
+        rustup default ${{ inputs.toolchain }}
+        # Log versions
+        rustup -V
+        rustc -Vv
+        cargo -V
+    - name: Install latest Cranko (Ubuntu/macOS)
+      if: ${{ runner.os != 'Windows' }}
+      shell: bash
+      run: |
+        d="$(mktemp -d /tmp/cranko.XXXXXX)"
+        cd "$d"
+        curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
+        echo "PATH=$d:$PATH" >> "$GITHUB_ENV"
+    - name: Install latest Cranko (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        $d = Join-Path $Env:Temp cranko-$(New-Guid)
+        [void][System.IO.Directory]::CreateDirectory($d)
+        cd $d
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://pkgw.github.io/cranko/fetch-latest.ps1'))
+        Add-Content -Value "PATH=${d};$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
+    - name: Install release artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: release-bundle
+        path: ${{ github.workspace }}/release-bundle
+    - name: Restore release commit
+      shell: bash
+      run: |
+        git switch -c release
+        git pull --ff-only $GITHUB_WORKSPACE/release-bundle/release.bundle

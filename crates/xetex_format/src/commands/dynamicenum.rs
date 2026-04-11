@@ -1,8 +1,6 @@
 // Copyright 2021 the Tectonic Project
 // Licensed under the MIT License.
 
-//#![deny(missing_docs)]
-
 //! Commands whose arguments map to the values of dynamic enums.
 
 use tectonic_errors::prelude::*;

@@ -1,3 +1,9 @@
+# tectonic_bridge_flate 0.1.8 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+
+
 # tectonic_bridge_flate 0.1.7 (2023-05-18)
 
 - Tidy up recent Clippy warnings.
@@ -16,6 +22,7 @@ APIs.
   should speed builds too.
 
 [cbindgen]: https://github.com/eqrion/cbindgen
+
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
 
 
@@ -27,6 +34,7 @@ APIs.
   turned off.
 
 [#788]: https://github.com/tectonic-typesetting/tectonic/issues/788
+
 [cbindgen]: https://github.com/eqrion/cbindgen
 
 

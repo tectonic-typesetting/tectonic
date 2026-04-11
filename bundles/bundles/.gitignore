@@ -1,0 +1,3 @@
+# Ignore build files & resources
+/build
+*.tar

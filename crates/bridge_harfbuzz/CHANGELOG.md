@@ -1,3 +1,11 @@
+# tectonic_bridge_harfbuzz 0.3.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Expose the C API in Rust for use in `tectonic_xetex_layout` Rust rewrite
+- Add hack to fix macOS brew installations of harfbuzz not putting the C header files in the expected location.
+
+
 # tectonic_bridge_harfbuzz 0.2.9 (2024-02-05)
 
 - Update the vendored Harfbuzz to 8.3.0.
@@ -44,6 +52,7 @@
   ([#781], [@pkgw])
 
 [#781]: https://github.com/tectonic-typesetting/tectonic/pull/781
+
 [@pkgw]: https://github.com/pkgw
 
 
@@ -55,6 +64,7 @@
   ([#777], [@pkgw])
 
 [#777]: https://github.com/tectonic-typesetting/tectonic/pull/777
+
 [@pkgw]: https://github.com/pkgw
 
 

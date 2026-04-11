@@ -1,0 +1,77 @@
+name: 'deploy-setup'
+description: 'Generic setup for deployment jobs'
+inputs:
+  is-dev:
+    description: "Whether we're running a dev deployment"
+    required: true
+  is-release:
+    description: "Whether we're running a release deployment"
+    required: true
+  setup-git:
+    description: "Whether to set up git actions"
+    required: false
+    default: 'false'
+outputs:
+  top-level:
+    description: "Whether we're continuous, rc, or a new version"
+    value: ${{ steps.set-toplevel.outputs.top-level }}
+runs:
+  using: "composite"
+  steps:
+    - name: Install all artifacts
+      uses: actions/download-artifact@v4
+    - name: Restore release commit
+      shell: bash
+      run: |
+        git switch -c release
+        git pull --ff-only $GITHUB_WORKSPACE/release-bundle/release.bundle
+    - name: Install latest Cranko (Ubuntu)
+      if: ${{ runner.os == 'Linux' }}
+      shell: bash
+      run: |
+        d="$(mktemp -d /tmp/cranko.XXXXXX)"
+        cd "$d"
+        curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
+        echo "PATH=$d:$PATH" >> "$GITHUB_ENV"
+    # We determine a "toplevel" release mode that affects things like updates to the
+    # book. The `top-level` variable has three settings:
+    #
+    # - "latest" if this is continuous deployment/delivery, i.e. a push to the
+    #   `master` branch. In this case we update things like the book under the
+    #   version code "latest"
+    # - "skip" if this is an RC update that does *not* update the main `tectonic`
+    #   project. In this case we do not update things.
+    # - Otherwise, the text of the variable is the version string of a new official
+    #   release of the `tectonic` project. Things like the book should be updated
+    #   with a real version number.
+    #
+    # The boolean parameters stringify to `True` or `False`
+    - name: "Set toplevel release mode"
+      id: set-toplevel
+      shell: bash
+      run: |
+        if [[ -z $GITHUB_TOKEN ]] ; then
+          >&2 echo '$GITHUB_TOKEN is unset, skipping deployment'
+          version_text=skip
+        elif [[ "$IS_DEV" == "true" ]] ; then
+          version_text=latest
+        elif cranko show if-released --exit-code tectonic ; then
+          version_text="$(cranko show version tectonic)"
+        else
+          version_text=skip
+        fi
+
+        echo "toplevel version: $IS_DEV, $IS_RELEASE => $version_text"
+
+        # `set -x` messes up `setvariable` behavior:
+        set +x
+        echo "top-level=$version_text" >> "$GITHUB_OUTPUT"
+      env:
+        IS_DEV: ${{ inputs.is-dev }}
+        IS_RELEASE: ${{ inputs.is-release }}
+    - name: "Set up Git actions"
+      shell: bash
+      run: |
+        cranko github install-credential-helper
+        git config --global user.email "notifications@github.com"
+        git config --global user.name "Tectonic CI"

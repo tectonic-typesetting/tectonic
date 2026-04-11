@@ -1,3 +1,10 @@
+# tectonic_xdv 0.3.0 (2026-04-11)
+
+- Global lint fixes
+- Update to edition 2021
+- Bump clap to newer version in examples
+
+
 # tectonic_xdv 0.2.2 (2023-05-18)
 
 - Tidy up formatting and recent Clippy warnings.

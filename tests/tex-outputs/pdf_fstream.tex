@@ -1,0 +1,22 @@
+\special{dvipdfmx:config C 0x40} % don't use object streams
+\special{dvipdfmx:config z 0}    % don't use compression
+
+\special{pdf:fstream @SourceFile (\jobname.tex)}
+\special{pdf:ann width 10bp height 20bp
+    <<
+    /Type /Annot
+    /Subtype /FileAttachment
+    /FS <<
+    /Type /Filespec
+    /F (\jobname.tex)
+    /EF << /F @SourceFile >>
+    >>
+    /Name /PushPin
+    /C [0.8 0.2 0.2]
+    /T (Source code of this document)
+    /Subj (Source code of this document)
+    /Contents (Source code of this document)
+    >>
+}
+
+\bye

@@ -1,8 +1,6 @@
 // Copyright 2020 the Tectonic Project
 // Licensed under the MIT License.
 
-#![deny(missing_docs)]
-
 //! This crate provides a few extern "C" functions that expose the functionality
 //! of the flate2 crate in a C API that can be consumed by other C/C++ code in
 //! the Tectonic codebase.
@@ -10,10 +8,7 @@
 //! If you change the interfaces here, rerun cbindgen as described in the README!
 
 use flate2::{Compress, Compression, Decompress, FlushCompress, FlushDecompress, Status};
-use std::{
-    io::{Error, ErrorKind},
-    slice,
-};
+use std::{io::Error, slice};
 
 /// Re-export of the flate2 crate linked by this crate.
 pub use flate2;
@@ -113,7 +108,7 @@ struct Decompressor<'a> {
     done: bool,
 }
 
-impl<'a> Decompressor<'a> {
+impl Decompressor<'_> {
     fn decompress_chunk(&mut self, output: &mut [u8]) -> Result<usize, Error> {
         if self.done {
             return Ok(0);
@@ -132,10 +127,7 @@ impl<'a> Decompressor<'a> {
                 self.done = true;
             }
             Status::BufError => {
-                return Err(Error::new(
-                    ErrorKind::Other,
-                    "incomplete input or too-small output buffer",
-                ));
+                return Err(Error::other("incomplete input or too-small output buffer"));
             }
         }
 
@@ -162,7 +154,7 @@ pub unsafe extern "C" fn tectonic_flate_new_decompressor(
         done: false,
     };
 
-    Box::leak(Box::new(dc)) as *mut Decompressor as *mut _
+    Box::into_raw(Box::new(dc)).cast::<libc::c_void>()
 }
 
 /// Decompress some DEFLATEd data.
@@ -183,7 +175,7 @@ pub unsafe extern "C" fn tectonic_flate_decompress_chunk(
     output_ptr: *mut u8,
     output_len: *mut u64,
 ) -> libc::c_int {
-    let mut dc = Box::from_raw(handle as *mut Decompressor);
+    let mut dc = Box::from_raw(handle.cast::<Decompressor>());
     let output = slice::from_raw_parts_mut(output_ptr, *output_len as usize);
 
     let (amount, flag) = match dc.decompress_chunk(output) {
@@ -203,6 +195,6 @@ pub unsafe extern "C" fn tectonic_flate_decompress_chunk(
 /// This is a C API function, so it is unsafe.
 #[no_mangle]
 pub unsafe extern "C" fn tectonic_flate_free_decompressor(handle: *mut libc::c_void) {
-    let _dc = Box::from_raw(handle as *mut Decompressor);
+    let _dc = Box::from_raw(handle.cast::<Decompressor>());
     // The box will be freed as we exit.
 }
