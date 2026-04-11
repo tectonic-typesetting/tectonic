@@ -25,8 +25,13 @@ runs:
     - name: Install all artifacts
       if: ${{ inputs.artifacts == 'true' }}
       uses: actions/download-artifact@v4
+    - name: Install release bundle
+      if: ${{ inputs.artifacts != 'true' }}
+      uses: actions/download-artifact@v4
+      with:
+        name: release-bundle
+        path: ${{ github.workspace }}/release-bundle
     - name: Restore release commit
-      if: ${{ inputs.artifacts == 'true' }}
       shell: bash
       run: |
         git switch -c release
