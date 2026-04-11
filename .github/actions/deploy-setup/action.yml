@@ -26,6 +26,7 @@ runs:
       if: ${{ inputs.artifacts == 'true' }}
       uses: actions/download-artifact@v4
     - name: Restore release commit
+      if: ${{ inputs.artifacts == 'true' }}
       shell: bash
       run: |
         git switch -c release
