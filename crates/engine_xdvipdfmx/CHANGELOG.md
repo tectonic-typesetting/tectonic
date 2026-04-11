@@ -1,5 +1,8 @@
 # rc: micro bump
 
+
+# tectonic_engine_xdvipdfmx 0.4.3 (2026-04-11)
+
 - Fix for publish not going through
 
 

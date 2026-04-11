@@ -2,6 +2,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_bridge_fontconfig"
+license = "MIT"
 version = "0.0.0-dev.0"
 edition = "2021"
 links = "fontconfig"

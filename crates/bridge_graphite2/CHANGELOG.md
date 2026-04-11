@@ -1,5 +1,8 @@
 # rc: micro bump
 
+
+# tectonic_bridge_graphite2 0.3.1 (2026-04-11)
+
 - Fix for publish not going through
 
 

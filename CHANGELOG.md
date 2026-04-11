@@ -1,5 +1,8 @@
 # rc: micro bump
 
+
+# tectonic 0.16.1 (2026-04-11)
+
 - Fix for publish not going through
 
 
