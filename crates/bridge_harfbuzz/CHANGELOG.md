@@ -1,3 +1,8 @@
+# tectonic_bridge_harfbuzz 0.3.1 (2026-04-11)
+
+- Fix for publish not going through
+
+
 # tectonic_bridge_harfbuzz 0.3.0 (2026-04-11)
 
 - Global lint fixes

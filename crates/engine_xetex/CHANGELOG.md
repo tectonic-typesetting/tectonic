@@ -1,3 +1,8 @@
+# tectonic_engine_xetex 0.5.1 (2026-04-11)
+
+- Fix for publish not going through
+
+
 # tectonic_engine_xetex 0.5.0 (2026-04-11)
 
 - Global lint fixes

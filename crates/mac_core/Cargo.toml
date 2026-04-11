@@ -3,8 +3,15 @@ lints.workspace = true
 [package]
 name = "tectonic_mac_core"
 license = "MIT"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+description = """
+Exposing macOS framework APIs to the Tectonic Rust code.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_mac_core"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
 
 [dependencies]
 libc = "0.2"

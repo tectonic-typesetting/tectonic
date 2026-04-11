@@ -7,7 +7,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_bridge_graphite2"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose the graphite2 library to Rust/Cargo.

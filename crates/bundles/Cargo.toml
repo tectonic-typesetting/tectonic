@@ -7,7 +7,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_bundles"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Tectonic "bundle" (support file collection) implementations.

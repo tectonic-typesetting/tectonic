@@ -7,7 +7,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_engine_xetex"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 The [XeTeX](http://xetex.sourceforge.net/) engine as a reusable crate.
