@@ -274,7 +274,7 @@ impl Font {
                     let sz = engine.input_get_size(afm_handle);
                     let mut backing_data2 = vec![0; sz];
                     engine
-                        .input_read(handle, &mut backing_data2)
+                        .input_read(afm_handle, &mut backing_data2)
                         .expect("failed to read AFM file");
 
                     self.ft_face().attach_stream_mem(backing_data2).unwrap();

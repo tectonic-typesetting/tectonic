@@ -31,6 +31,7 @@ mod commands;
 #[derive(Debug, Parser)]
 #[command(
     name = "tectonic -X",
+    version,
     about = "Process (La)TeX documents",
     no_binary_name(true)
 )]

@@ -1,3 +1,23 @@
+# tectonic 0.16.9 (2026-04-17)
+
+Quick update to fix a major bug on macOS
+
+- macOS shouldn't immediately crash on trying to set the main font anymore ([#1346], [@nadimkobeissi]).
+- The `--version` flag went missing in a clap update. It's been re-added ([#1351], [@CraftSpider]).
+- General dependency updates for versions with known security issues ([#1348], [@jxoesneon]).
+
+[#1351]: https://github.com/tectonic-typesetting/tectonic/pull/1351
+
+[#1348]: https://github.com/tectonic-typesetting/tectonic/pull/1348
+
+[#1346]: https://github.com/tectonic-typesetting/tectonic/pull/1346
+
+[@CraftSpider]: https://github.com/craftspider
+
+[@jxoesneon]: https://github.com/jxoesneon
+
+[@nadimkobeissi]: https://github.com/nadimkobeissi
+
 # tectonic 0.16.8 (2026-04-11)
 
 - Fix for publish not going through

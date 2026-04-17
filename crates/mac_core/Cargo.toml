@@ -3,7 +3,7 @@ lints.workspace = true
 [package]
 name = "tectonic_mac_core"
 license = "MIT"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = """
 Exposing macOS framework APIs to the Tectonic Rust code.

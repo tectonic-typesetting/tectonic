@@ -7,7 +7,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_xetex_layout"
-version = "0.3.2"
+version = "0.3.3"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 XeTeX's font loading and layout interface encapsulation, as a crate.

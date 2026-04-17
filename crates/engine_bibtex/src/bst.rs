@@ -557,6 +557,8 @@ fn bst_read_command(
                 let &cite = globals.hash.get(cite_loc).extra();
                 let mut parent =
                     cite * globals.other.num_fields() + globals.other.pre_defined_fields();
+
+                #[allow(clippy::explicit_counter_loop)]
                 for idx in (field_start + globals.other.pre_defined_fields())
                     ..(field_start + globals.other.num_fields())
                 {

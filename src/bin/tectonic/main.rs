@@ -38,7 +38,7 @@ mod v2cli {
 }
 
 #[derive(Debug, Parser)]
-#[command(name = "Tectonic", about = "Process a (La)TeX document")]
+#[command(name = "Tectonic", version, about = "Process a (La)TeX document")]
 struct CliOptions {
     /// Use experimental V2 interface (see `tectonic -X --help`)
     #[arg(short = 'X')]

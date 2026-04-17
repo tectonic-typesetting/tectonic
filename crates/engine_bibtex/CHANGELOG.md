@@ -1,3 +1,7 @@
+# tectonic_engine_bibtex 0.3.3 (2026-04-17)
+
+- Allow a new clippy warning that doesn't improve the code
+
 # tectonic_engine_bibtex 0.3.2 (2026-04-11)
 
 # tectonic_engine_bibtex 0.3.1 (2026-04-11)

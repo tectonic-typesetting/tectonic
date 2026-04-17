@@ -21,11 +21,11 @@ fn find_fonts_with_name(name: CFString, key: FontAttribute) -> CFArray<CTFontDes
 fn find_font_with_name(name: CFString, key: FontAttribute) -> Option<CTFontDescriptor> {
     let matches = find_fonts_with_name(name, key);
 
-    let mut matched = None;
     if !matches.is_empty() {
-        matched = Some(matches[0].clone());
+        Some(matches.get(0))
+    } else {
+        None
     }
-    matched
 }
 
 fn append_name_to_list(font: &CTFont, name_list: &mut Vec<CString>, name_key: FontNameKey) {
@@ -48,9 +48,9 @@ impl MacBackend {
 
     fn add_fonts_to_caches(&self, maps: &mut FontMaps, members: CFArray<CTFontDescriptor>) {
         for i in 0..members.len() {
-            let font = &members[i];
+            let font = members.get(i);
             let names = self.read_names(font.clone());
-            maps.add_to_maps(self, font.clone(), &names)
+            maps.add_to_maps(self, font, &names)
         }
     }
 
