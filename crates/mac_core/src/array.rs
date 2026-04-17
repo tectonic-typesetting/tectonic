@@ -1,6 +1,5 @@
 use super::{sys, CoreType};
 use std::marker::PhantomData;
-use std::ops::Index;
 use std::ptr;
 use std::ptr::NonNull;
 
@@ -53,20 +52,22 @@ impl<T: CoreType> CFArray<T> {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
-}
 
-impl<T: CoreType> Index<usize> for CFArray<T> {
-    type Output = T;
-
-    fn index(&self, index: usize) -> &Self::Output {
+    /// Get a borrowed value at the given index. The returned value has its reference count
+    /// incremented and will be released when dropped.
+    ///
+    /// `CFArrayGetValueAtIndex` returns the stored `CFTypeRef` value directly (not a pointer
+    /// to it), so we must construct a new borrowed `T` from it rather than casting to `&T`.
+    pub fn get(&self, index: usize) -> T {
         if index >= self.len() {
             panic!("Index {index} out of bounds for CFArray");
         }
         // SAFETY: Internal pointer is guaranteed valid. Index has been verified in-bounds.
-        let ptr =
-            unsafe { sys::CFArrayGetValueAtIndex(self.0.cast().as_ptr(), index as sys::CFIndex) }
-                .cast::<T>();
-        // SAFETY: API contracts ensure all values are of the correct type and live for our lifetime.
-        unsafe { &*ptr }
+        let value =
+            unsafe { sys::CFArrayGetValueAtIndex(self.0.cast().as_ptr(), index as sys::CFIndex) };
+        // SAFETY: The returned value is a valid CFTypeRef for type T.
+        //         new_borrowed calls CFRetain, giving us ownership of a new reference.
+        let ptr = NonNull::new(value.cast_mut()).unwrap();
+        unsafe { T::new_borrowed(ptr.cast()) }
     }
 }
