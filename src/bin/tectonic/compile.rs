@@ -8,18 +8,17 @@
 use clap::Parser;
 use std::path::{Path, PathBuf};
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
+use tectonic_bundles::detect_bundle;
+use tectonic_errors::{Error, Result};
 
+use tectonic::errors::EngineError;
 use tectonic::{
     config::{maybe_return_test_bundle, PersistentConfig},
     driver::{OutputFormat, PassSetting, ProcessingSession, ProcessingSessionBuilder},
-    errmsg,
-    errors::{ErrorKind, Result},
     status::StatusBackend,
     tt_error, tt_note,
     unstable_opts::{UnstableArg, UnstableOptions},
 };
-
-use tectonic_bundles::detect_bundle;
 
 #[derive(Debug, Parser)]
 pub struct CompileOptions {
@@ -145,28 +144,28 @@ impl CompileOptions {
             if let Some(fname) = input_path.file_name() {
                 sess_builder.tex_input_name(&fname.to_string_lossy());
             } else {
-                return Err(errmsg!(
+                return Err(Error::msg(format!(
                     "can't figure out a basename for input path \"{}\"",
                     input_path.to_string_lossy()
-                ));
+                )));
             };
 
             if let Some(par) = input_path.parent() {
                 sess_builder.output_dir(par);
             } else {
-                return Err(errmsg!(
+                return Err(Error::msg(format!(
                     "can't figure out a parent directory for input path \"{}\"",
                     input_path.to_string_lossy()
-                ));
+                )));
             }
         }
 
         if let Some(output_dir) = self.outdir {
             if !output_dir.is_dir() {
-                return Err(errmsg!(
+                return Err(Error::msg(format!(
                     "output directory \"{}\" does not exist",
                     output_dir.display()
-                ));
+                )));
             }
             sess_builder.output_dir(output_dir);
         }
@@ -194,7 +193,9 @@ impl CompileOptions {
             } else if let Some(bundle) = detect_bundle(bundle.clone(), self.only_cached, None)? {
                 sess_builder.bundle(bundle);
             } else {
-                return Err(errmsg!("`{bundle}` doesn't specify a valid bundle."));
+                return Err(Error::msg(format!(
+                    "`{bundle}` doesn't specify a valid bundle."
+                )));
             }
         } else if let Ok(bundle) = maybe_return_test_bundle(None) {
             // TODO: this is ugly too.
@@ -216,20 +217,20 @@ pub(crate) fn run_and_report(
     let result = sess.run(status);
 
     if let Err(e) = &result {
-        if let ErrorKind::EngineError(engine) = e.kind() {
+        if let Some(err) = e.downcast_ref::<EngineError>() {
             let output = sess.get_stdout_content();
 
             if output.is_empty() {
                 tt_error!(
                     status,
                     "something bad happened inside {}, but no output was logged",
-                    engine
+                    err.engine()
                 );
             } else {
                 tt_error!(
                     status,
                     "something bad happened inside {}; its output follows:\n",
-                    engine
+                    err.engine()
                 );
                 status.dump_error_logs(&output);
             }
