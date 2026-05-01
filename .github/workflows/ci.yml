@@ -12,3 +12,7 @@ jobs:
     needs: prep
     uses: ./.github/workflows/build_and_test.yml
     secrets: inherit
+  tectonic-on-arxiv:
+    needs: prep
+    uses: ./.github/workflows/tectonic-on-arxiv.yml
+    secrets: inherit

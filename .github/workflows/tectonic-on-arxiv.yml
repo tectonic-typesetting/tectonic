@@ -1,0 +1,12 @@
+name: "Tectonic on arXiv"
+
+on: [ workflow_call ]
+
+jobs:
+  tectonic-on-arxiv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Tectonic-on-ArXiv
+        uses: craftspider/tectonic-on-arxiv@master
