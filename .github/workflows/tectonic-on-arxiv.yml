@@ -8,5 +8,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - name: Tectonic-on-ArXiv
         uses: craftspider/tectonic-on-arxiv@master
