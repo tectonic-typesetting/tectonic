@@ -26,3 +26,5 @@ jobs:
           tar -xzvf 1702.tar.gz -C datasets
       - name: Tectonic-on-ArXiv
         uses: craftspider/tectonic-on-arxiv@master
+        with:
+          head: ${{ github.event.pull_request.head.sha }}
