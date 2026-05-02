@@ -19,6 +19,7 @@ jobs:
       - name: Load Dataset
         run: |
           s3cmd get ${{ secrets.CLOUDFLARE_URL }}/1702.tar.gz 1702.tar.gz
-          tar -xzvf 1702.tar.gz
+          mkdir datasets
+          tar -xzvf 1702.tar.gz -C datasets
       - name: Tectonic-on-ArXiv
         uses: craftspider/tectonic-on-arxiv@master
