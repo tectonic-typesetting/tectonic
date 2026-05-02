@@ -21,7 +21,7 @@ jobs:
           account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Load Dataset
         run: |
-          s3cmd get ${{ env.CLOUDFLARE_URL }}/1702.tar.gz 1702.tar.gz
+          s3cmd get ${{ vars.CLOUDFLARE_URL }}/1702.tar.gz 1702.tar.gz
           mkdir datasets
           tar -xzvf 1702.tar.gz -C datasets
       - name: Tectonic-on-ArXiv
