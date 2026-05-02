@@ -1,6 +1,7 @@
 name: "Tectonic on arXiv"
 
-on: [ workflow_call ]
+on:
+  pull_request_target:
 
 jobs:
   tectonic-on-arxiv:
@@ -10,6 +11,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Set up s3
         uses: s3-actions/s3cmd@v3.0.0
         with:
