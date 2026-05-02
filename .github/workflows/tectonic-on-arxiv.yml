@@ -16,6 +16,7 @@ jobs:
           provider: cloudflare
           access_key: ${{ secrets.CLOUDFLARE_ACCESS_KEY }}
           secret_key: ${{ secrets.CLOUDFLARE_SECRET_KEY }}
+          account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Load Dataset
         run: |
           s3cmd get ${{ secrets.CLOUDFLARE_URL }}/1702.tar.gz 1702.tar.gz
