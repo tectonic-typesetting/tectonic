@@ -2,6 +2,12 @@ name: "Tectonic on arXiv"
 
 on:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Base branch to compare this run against"
+        required: false
+        default: ""
 
 jobs:
   tectonic-on-arxiv:
@@ -27,4 +33,13 @@ jobs:
       - name: Tectonic-on-ArXiv
         uses: craftspider/tectonic-on-arxiv@master
         with:
-          head: ${{ github.event.pull_request.head.sha }}
+          head: |
+            ${{ case(
+              github.event_name == "pull_request", github.event.pull_request.head.sha,
+              github.event_name == "workflow_dispatch", github.sha,
+            ) }}
+          base: |
+            ${{ case(
+              github.event_name == "pull_request", github.event.pull_request.base.sha,
+              github.event_name == "workflow_dispatch", inputs.base,
+            }}
