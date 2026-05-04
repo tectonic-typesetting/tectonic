@@ -33,13 +33,13 @@ jobs:
       - name: Tectonic-on-ArXiv
         uses: craftspider/tectonic-on-arxiv@master
         with:
-          head: |
+          head: |-
             ${{ case(
-              github.event_name == "pull_request", github.event.pull_request.head.sha,
-              github.event_name == "workflow_dispatch", github.sha,
+              github.event_name == 'pull_request', github.event.pull_request.head.sha,
+              github.event_name == 'workflow_dispatch', github.sha,
             ) }}
-          base: |
+          base: |-
             ${{ case(
-              github.event_name == "pull_request", github.event.pull_request.base.sha,
-              github.event_name == "workflow_dispatch", inputs.base,
+              github.event_name == 'pull_request', github.event.pull_request.base.sha,
+              github.event_name == 'workflow_dispatch', inputs.base,
             }}
