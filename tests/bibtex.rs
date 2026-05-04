@@ -7,9 +7,10 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 
 use tectonic::io::{FilesystemIo, IoProvider, IoStack, MemoryIo};
-use tectonic::{errors::Result, BibtexEngine};
+use tectonic::BibtexEngine;
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 use tectonic_engine_xetex::TexOutcome;
+use tectonic_errors::Result;
 use tectonic_status_base::NoopStatusBackend;
 
 #[path = "util/mod.rs"]

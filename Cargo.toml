@@ -6,7 +6,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic"
-version = "0.16.9"
+version = "0.16.9+20260504"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A modernized, complete, embeddable TeX/LaTeX engine. Tectonic is forked from the XeTeX
@@ -62,8 +62,6 @@ members = [
 ]
 
 [workspace.lints.rust]
-# FIXME(CraftSpider): Switch from error-chain to a newer package, as it's a deprecated project
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(has_error_description_deprecated)'] }
 missing_docs = "deny"
 
 [workspace.lints.clippy]
@@ -76,13 +74,13 @@ crate-type = ["rlib"]
 [dependencies]
 byte-unit = "^5.0"
 cfg-if = "1.0"
-error-chain = "^0.12"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 lazy_static = "^1.4"
 open = "^5.0"
-quick-xml = "0.37"
+quick-xml = "0.39"
 serde = { version = "^1.0", features = ["derive"], optional = true }
-sha2 = "^0.10"
+sha2 = "0.11"
+digest-io = "0.1"
 clap = { version = "4.5.1", features = ["derive"] }
 tectonic_bridge_core = { path = "crates/bridge_core", version = ">=0.4.0,<1" }
 tectonic_bundles = { path = "crates/bundles", version = ">=0.3.0,<1", default-features = false }
@@ -100,13 +98,13 @@ tectonic_xetex_layout = { path = "crates/xetex_layout", version = ">=0.1.0,<1" }
 tempfile = "^3.1"
 termcolor = "^1.1"
 tokio = "^1.0"
-toml = { version = "^0.8", optional = true }
+toml = { version = "1.0", optional = true }
 watchexec = "8.0"
 watchexec-filterer-globset = "8.0"
 watchexec-signals = "5.0"
 watchexec-supervisor = "5.0"
 which = "8.0"
-zip = { version = "4.0", default-features = false, features = ["deflate"] }
+zip = { version = "8.0", default-features = false, features = ["deflate"] }
 clap_complete = "4.5.1"
 walkdir = "2"
 regex = "1.10.2"

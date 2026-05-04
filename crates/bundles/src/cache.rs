@@ -112,7 +112,7 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         };
 
         let hash_dir = ensure_dir!(inline, &cache_root.join("hashes"));
-        let hash_file = hash_dir.join(app_dirs::app_dirs2::sanitized(&bundle.get_location()));
+        let hash_file = hash_dir.join(app_dirs::sanitize(&bundle.get_location()));
 
         let saved_hash = {
             if !hash_file.exists() {

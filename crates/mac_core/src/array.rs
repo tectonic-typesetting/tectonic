@@ -65,9 +65,40 @@ impl<T: CoreType> CFArray<T> {
         // SAFETY: Internal pointer is guaranteed valid. Index has been verified in-bounds.
         let value =
             unsafe { sys::CFArrayGetValueAtIndex(self.0.cast().as_ptr(), index as sys::CFIndex) };
+        let ptr = NonNull::new(value.cast_mut()).unwrap();
         // SAFETY: The returned value is a valid CFTypeRef for type T.
         //         new_borrowed calls CFRetain, giving us ownership of a new reference.
-        let ptr = NonNull::new(value.cast_mut()).unwrap();
         unsafe { T::new_borrowed(ptr.cast()) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::CFString;
+
+    #[test]
+    fn test_array_index() {
+        let foo = CFString::new("foo");
+        let bar = CFString::new("bar");
+
+        let arr = CFArray::new(&[foo.clone(), bar.clone()]);
+
+        assert_eq!(arr.get(0).as_type_ref(), foo.as_type_ref());
+        assert_eq!(arr.get(1).as_type_ref(), bar.as_type_ref());
+        assert_eq!(arr.get(0).as_str(), "foo");
+        assert_eq!(arr.get(1).as_str(), "bar");
+    }
+
+    #[test]
+    fn test_array_len() {
+        let empty = CFArray::<CFString>::empty();
+        let two = CFArray::new(&[CFString::new("foo"), CFString::new("bar")]);
+
+        assert!(empty.is_empty());
+        assert_eq!(empty.len(), 0);
+
+        assert!(!two.is_empty());
+        assert_eq!(two.len(), 2);
     }
 }

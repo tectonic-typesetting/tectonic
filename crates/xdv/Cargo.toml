@@ -5,7 +5,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_xdv"
-version = "0.3.0"
+version = "0.3.0+20260504"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A decoder for the XDV and SPX file formats used by XeTeX and Tectonic.

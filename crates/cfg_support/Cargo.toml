@@ -5,7 +5,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_cfg_support"
-version = "0.1.5"
+version = "0.1.5+20260504"
 authors = [
     "Matt Rice <ratmice@gmail.com>",
     "Peter Williams <peter@newton.cx>"

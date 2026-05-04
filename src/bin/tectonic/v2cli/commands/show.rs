@@ -1,5 +1,6 @@
 use clap::{CommandFactory, Parser};
-use tectonic::{config::PersistentConfig, errors::Result};
+use tectonic::config::PersistentConfig;
+use tectonic_errors::Result;
 use tectonic_io_base::app_dirs;
 use tectonic_status_base::StatusBackend;
 

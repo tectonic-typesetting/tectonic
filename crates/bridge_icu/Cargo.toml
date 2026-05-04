@@ -7,7 +7,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_bridge_icu"
-version = "0.2.4"
+version = "0.2.4+20260504"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Expose a subset of the ICU Unicode APIs to Rust/Cargo.

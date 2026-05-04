@@ -5,7 +5,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_geturl"
-version = "0.4.0"
+version = "0.4.0+20260504"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 A generic interface for HTTP GETs and byte-range requests, with pluggable backends.
@@ -20,7 +20,7 @@ edition = "2021"
 [dependencies]
 cfg-if = "^1.0"
 curl = { version = "^0.4", optional = true }
-reqwest = { version = "^0.12", optional = true, features = ["blocking"] }
+reqwest = { version = "0.13", optional = true, features = ["blocking"] }
 tectonic_errors = { path = "../errors", version = ">=0.1.0,<1" }
 tectonic_status_base = { path = "../status_base", version = ">=0.1.0,<1" }
 

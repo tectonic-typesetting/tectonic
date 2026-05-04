@@ -3,7 +3,7 @@ lints.workspace = true
 [package]
 name = "tectonic_bridge_png"
 license = "MIT"
-version = "0.1.2"
+version = "0.1.2+20260504"
 edition = "2021"
 links = "png"
 description = """

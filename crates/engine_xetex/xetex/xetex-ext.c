@@ -2138,8 +2138,9 @@ print_glyph_name(int32_t font, int32_t gid)
     } else {
         _tt_abort("bad native font flag in `print_glyph_name`");
     }
-    while (len-- > 0)
-        print_char(*s++);
+    for (int i = 0; i < len; i++) {
+    	print_char(s[i]);
+    }
     if (s)
     	freeGlyphName(s);
 }

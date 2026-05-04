@@ -1,4 +1,5 @@
 use anyhow::Result;
+use digest_io::IoWrapper;
 use sha2::{Digest, Sha256};
 use std::{
     fs::File,
@@ -24,9 +25,10 @@ impl TarBundleInput {
         info!("computing hash of {}", path.to_str().unwrap());
 
         let hash = {
-            let mut hasher = Sha256::new();
+            let mut hasher = IoWrapper(Sha256::new());
             let _ = std::io::copy(&mut file, &mut hasher)?;
             hasher
+                .0
                 .finalize()
                 .iter()
                 .map(|b| format!("{b:02x}"))

@@ -5,7 +5,7 @@ lints.workspace = true
 
 [package]
 name = "tectonic_dep_support"
-version = "0.1.2"
+version = "0.1.2+20260504"
 authors = ["Peter Williams <peter@newton.cx>"]
 description = """
 Support for finding third-party libraries using either pkg-config or vcpkg.

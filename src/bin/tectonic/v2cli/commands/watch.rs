@@ -1,7 +1,8 @@
 use clap::Parser;
 use std::time::Duration;
 use std::{env, path::PathBuf, sync::Arc};
-use tectonic::{config::PersistentConfig, errors::Result, tt_error};
+use tectonic::{config::PersistentConfig, tt_error};
+use tectonic_errors::Result;
 use tectonic_status_base::StatusBackend;
 use tokio::runtime;
 use watchexec::command::Program;

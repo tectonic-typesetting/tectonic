@@ -8,9 +8,9 @@ use clap::{Parser, ValueEnum};
 use std::{env, io::IsTerminal, process};
 use tectonic_status_base::plain::PlainStatusBackend;
 
+use tectonic::errors::dump_uncolorized;
 use tectonic::{
     config::PersistentConfig,
-    errors::SyncError,
     status::{
         termcolor::TermcolorStatusBackend,
         {ChatterLevel, StatusBackend},
@@ -160,7 +160,7 @@ fn main() {
             // have yet. If we can't even load the config we might really be
             // in trouble, so it seems safest to keep things simple anyway and
             // just use bare stderr without colorization.
-            e.dump_uncolorized();
+            dump_uncolorized(e);
             process::exit(1);
         }
     };
@@ -181,7 +181,7 @@ fn main() {
     // parallels various bits of the `error_chain` crate.
 
     if let Err(e) = args.compile.execute(config, &mut *status) {
-        status.report_error(&SyncError::new(e).into());
+        status.report_error(&e);
         process::exit(1)
     }
 }

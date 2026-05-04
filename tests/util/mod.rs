@@ -20,9 +20,10 @@ use std::{
     path::{Path, PathBuf},
 };
 use tectonic::errors::DefinitelySame;
-use tectonic::{errors::Result, io::memory::MemoryFileCollection};
+use tectonic::io::memory::MemoryFileCollection;
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 use tectonic_engine_xetex::TexOutcome;
+use tectonic_errors::Result;
 
 pub use tectonic::test_util::test_path;
 use tectonic_errors::prelude::StdResult;
