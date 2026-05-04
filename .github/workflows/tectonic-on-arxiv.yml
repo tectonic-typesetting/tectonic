@@ -37,9 +37,11 @@ jobs:
             ${{ case(
               github.event_name == 'pull_request', github.event.pull_request.head.sha,
               github.event_name == 'workflow_dispatch', github.sha,
+              github.sha
             ) }}
           base: |-
             ${{ case(
               github.event_name == 'pull_request', github.event.pull_request.base.sha,
               github.event_name == 'workflow_dispatch', inputs.base,
+              ''
             }}
