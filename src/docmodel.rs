@@ -218,6 +218,6 @@ impl WorkspaceCreatorExt for WorkspaceCreator {
             gub.resolve_url(&loc)?
         };
 
-        Ok(self.create(bundle_loc, Vec::new())?)
+        self.create(bundle_loc, Vec::new())
     }
 }

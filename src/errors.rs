@@ -20,6 +20,7 @@ cfg_if::cfg_if! {
     } else {
         use std::error;
 
+        /// Null error to replace lack of `toml` dependency
         #[derive(Debug)]
         pub enum ReadError {}
 
@@ -31,6 +32,7 @@ cfg_if::cfg_if! {
 
         impl error::Error for ReadError { }
 
+        /// Null error to replace lack of `toml` dependency
         #[derive(Debug)]
         pub enum WriteError {}
 

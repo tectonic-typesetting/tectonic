@@ -34,7 +34,7 @@ fn get_a_bundle(
 
         Err(e) => {
             if e.downcast_ref::<NoWorkspaceFoundError>().is_none() {
-                Err(e.into())
+                Err(e)
             } else {
                 tt_note!(
                     status,

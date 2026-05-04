@@ -173,18 +173,22 @@ mod tests {
         let arr = CFArray::<CFType>::empty();
         let ty = arr.into_ty();
 
+        // SAFETY: Same type as original array
         assert!(unsafe { ty.downcast::<CFArray<CFType>>() }.is_ok());
 
         let arr = CFArray::<CFType>::empty();
         let ty = arr.into_ty();
+        // SAFETY: String has no generics
         assert!(unsafe { ty.downcast::<CFString>() }.is_err());
 
         let str = CFString::new("");
         let ty = str.into_ty();
+        // SAFETY: String has no generics
         assert!(unsafe { ty.downcast::<CFString>() }.is_ok());
 
         let str = CFString::new("");
         let ty = str.into_ty();
+        // SAFETY: Not a CFArray, so generic doesn't matter
         assert!(unsafe { ty.downcast::<CFArray<CFString>>() }.is_err());
     }
 }

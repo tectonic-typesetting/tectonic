@@ -160,7 +160,7 @@ fn main() {
             // have yet. If we can't even load the config we might really be
             // in trouble, so it seems safest to keep things simple anyway and
             // just use bare stderr without colorization.
-            dump_uncolorized(&e);
+            dump_uncolorized(e);
             process::exit(1);
         }
     };

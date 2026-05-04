@@ -54,7 +54,7 @@ pub fn maybe_return_test_bundle(bundle: Option<String>) -> Result<Box<dyn Bundle
     if is_test_bundle_wanted(bundle) {
         Ok(Box::<crate::test_util::TestBundle>::default())
     } else {
-        Err(Error::msg("not asking for the default test bundle").into())
+        Err(Error::msg("not asking for the default test bundle"))
     }
 }
 
@@ -144,9 +144,9 @@ impl PersistentConfig {
         }
 
         if self.default_bundles.len() != 1 {
-            return Err(
-                Error::msg("exactly one default_bundle item must be specified (for now)").into(),
-            );
+            return Err(Error::msg(
+                "exactly one default_bundle item must be specified (for now)",
+            ));
         }
 
         Ok(

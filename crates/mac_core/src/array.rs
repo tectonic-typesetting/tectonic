@@ -65,9 +65,9 @@ impl<T: CoreType> CFArray<T> {
         // SAFETY: Internal pointer is guaranteed valid. Index has been verified in-bounds.
         let value =
             unsafe { sys::CFArrayGetValueAtIndex(self.0.cast().as_ptr(), index as sys::CFIndex) };
+        let ptr = NonNull::new(value.cast_mut()).unwrap();
         // SAFETY: The returned value is a valid CFTypeRef for type T.
         //         new_borrowed calls CFRetain, giving us ownership of a new reference.
-        let ptr = NonNull::new(value.cast_mut()).unwrap();
         unsafe { T::new_borrowed(ptr.cast()) }
     }
 }

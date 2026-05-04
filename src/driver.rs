@@ -1787,7 +1787,6 @@ impl ProcessingSession {
                 "incomprehensible format file name \"{}\"",
                 self.format_name
             ))
-            .into()
         });
         let stem = r?;
 
@@ -1812,10 +1811,10 @@ impl ProcessingSession {
             }
             Ok(TexOutcome::Errors) => {
                 tt_error!(status, "errors were issued by the TeX engine; use --print and/or --keep-logs for details.");
-                return Err(Error::msg("unhandled TeX engine error".to_owned()).into());
+                return Err(Error::msg("unhandled TeX engine error".to_owned()));
             }
             Err(e) => {
-                return Err(e.into());
+                return Err(e);
             }
         }
 

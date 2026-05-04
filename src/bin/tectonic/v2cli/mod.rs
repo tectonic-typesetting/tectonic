@@ -70,7 +70,7 @@ pub fn v2_main(effective_args: &[OsString]) {
     let config = match PersistentConfig::open(false) {
         Ok(c) => c,
         Err(ref e) => {
-            dump_uncolorized(&e);
+            dump_uncolorized(e);
             process::exit(1);
         }
     };
