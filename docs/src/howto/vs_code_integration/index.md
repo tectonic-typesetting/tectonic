@@ -1,7 +1,7 @@
 # VS Code Integration
 
-There are certainly different ways to do this, but here we provide one way that has been already
-successuflly tested by our community.
+There are certainly different ways to do this, but here we provide one way that has already been
+successfully tested by our community.
 
 This solution is based on the [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) extension that you can install for free from the VS Code Marketplace.
 
