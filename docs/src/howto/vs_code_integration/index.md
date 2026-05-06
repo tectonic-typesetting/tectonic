@@ -5,7 +5,7 @@ successuflly tested by our community.
 
 This solution is based on the [LaTeX Workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop) extension that you can install for free from the VS Code Marketplace.
 
-For further details on its configuration please, refer to the upstream [documentation](https://github.com/James-Yu/LaTeX-Workshop/wiki).
+For further details on its configuration, please refer to the upstream [documentation](https://github.com/James-Yu/LaTeX-Workshop/wiki).
 
 At the root of your VS Code project / workspace create a file named
 `.vscode/settings.json` with the following content:
