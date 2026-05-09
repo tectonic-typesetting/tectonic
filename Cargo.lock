@@ -3392,6 +3392,7 @@ dependencies = [
 name = "tectonic_bundles"
 version = "0.0.0-dev.0"
 dependencies = [
+ "chrono",
  "flate2",
  "tectonic_errors",
  "tectonic_geturl",
