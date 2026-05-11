@@ -140,6 +140,7 @@ profile = []
 [dev-dependencies]
 filetime = "^0.2"
 tempfile = "^3.1"
+send_ctrlc = "0.6"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"

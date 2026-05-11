@@ -3,6 +3,7 @@
 //! Test suite for the top-level `tectonic` executable.
 
 use lazy_static::lazy_static;
+use send_ctrlc::{Interruptible, InterruptibleCommand};
 use std::io::ErrorKind;
 use std::{
     env,
@@ -94,14 +95,15 @@ fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool)
     command.env("BROWSER", "echo");
 
     println!("running {command:?} until test passes");
-    let mut child = command.spawn().expect("tectonic failed to start");
+    let mut child = command
+        .spawn_interruptible()
+        .expect("tectonic failed to start");
     while !kill() {
         thread::sleep(Duration::from_secs(1));
     }
 
     // Ignore if the child already died
-    // TODO: This causes coverage to not be reported
-    let _ = child.kill();
+    let _ = child.interrupt();
     child
         .wait_with_output()
         .expect("tectonic failed to execute")

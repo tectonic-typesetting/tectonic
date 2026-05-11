@@ -2988,6 +2988,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a7852d02fc848982e0c167ef163aaff9cd91dc640ba85e263cb1ce46fae51cd"
 
 [[package]]
+name = "send_ctrlc"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d07beb664b54f51140baf2769d12d5eb07d0e3eccee78fb95c3e76c2644a4cad"
+dependencies = [
+ "libc",
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "serde"
 version = "1.0.228"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3281,6 +3291,7 @@ dependencies = [
  "open",
  "quick-xml",
  "regex",
+ "send_ctrlc",
  "serde",
  "sha2 0.11.0",
  "tar",
