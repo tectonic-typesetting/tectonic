@@ -3,11 +3,12 @@
 //! Test suite for the top-level `tectonic` executable.
 
 use lazy_static::lazy_static;
-use send_ctrlc::{Interruptible, InterruptibleCommand};
+use send_ctrlc::{Interruptible, InterruptibleChild, InterruptibleCommand};
 use std::io::ErrorKind;
 use std::{
     env,
     fs::{self, File, OpenOptions},
+    io,
     io::{Read, Write},
     path::{Path, PathBuf},
     process::{Command, Output, Stdio},
@@ -48,6 +49,32 @@ fn get_plain_format_arg() -> String {
     util::set_test_root();
     let path = ensure_plain_format().expect("couldn't write format file");
     format!("--format={}", path.display())
+}
+
+fn wait_interruptible(mut child: InterruptibleChild) -> io::Result<Output> {
+    drop(child.stdin.take());
+
+    let (mut stdout, mut stderr) = (Vec::new(), Vec::new());
+    match (child.stdout.take(), child.stderr.take()) {
+        (None, None) => {}
+        (Some(mut out), None) => {
+            out.read_to_end(&mut stdout)?;
+        }
+        (None, Some(mut err)) => {
+            err.read_to_end(&mut stderr)?;
+        }
+        (Some(mut out), Some(mut err)) => {
+            out.read_to_end(&mut stdout)?;
+            err.read_to_end(&mut stderr)?;
+        }
+    }
+
+    let status = child.wait()?;
+    Ok(Output {
+        status,
+        stdout,
+        stderr,
+    })
 }
 
 /// Note the special sauce here — we set the magic environment variable that
@@ -104,9 +131,7 @@ fn run_tectonic_until(cwd: &Path, args: &[&str], mut kill: impl FnMut() -> bool)
 
     // Ignore if the child already died
     let _ = child.interrupt();
-    child
-        .wait_with_output()
-        .expect("tectonic failed to execute")
+    wait_interruptible(child).expect("tectonic failed to execute")
 }
 
 fn run_tectonic_with_stdin(cwd: &Path, args: &[&str], stdin: &str) -> Output {
