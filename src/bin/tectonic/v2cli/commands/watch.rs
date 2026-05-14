@@ -107,8 +107,7 @@ impl WatchCommand {
             [],
             [],
         )
-        .await
-        .unwrap();
+        .await?;
 
         async fn end_task(end: Ticket, job: Job) {
             end.await;
@@ -136,17 +135,17 @@ impl WatchCommand {
             Box::new(async move {
                 // When we spawn a job it doesn't immediately become available. So we chain it
                 // with existing jobs.
-                let mut new_job = None;
+                let mut new_jobs = Vec::new();
 
-                if action.get_job(cmds[0].0).is_none() {
-                    for (id, cmd) in &*cmds {
-                        let job = action.get_or_create_job(*id, || Arc::clone(cmd));
-                        job.set_spawn_hook(|_, ctx| {
-                            println!("[Running `{}`]", ctx.command);
-                        });
-                        new_job = Some((*id, job));
-                    }
+                for (id, cmd) in &*cmds {
+                    let job = action.get_or_create_job(*id, || Arc::clone(cmd));
+                    job.set_spawn_hook(|_, ctx| {
+                        println!("[Running `{}`]", ctx.command);
+                    });
+                    new_jobs.push((*id, job));
                 }
+
+                let mut is_path = false;
 
                 for event in &*action.events {
                     let is_kill = event.signals().any(|signal| {
@@ -165,16 +164,19 @@ impl WatchCommand {
                         return action;
                     }
 
-                    let paths = event.paths().collect::<Vec<_>>();
-                    if !paths.is_empty() {
-                        for (_, job) in action.list_jobs().chain(new_job) {
+                    is_path |= event.paths().next().is_some();
+                }
+
+                if is_path {
+                    for (_, job) in action.list_jobs().chain(new_jobs) {
+                        if !job.is_running() {
                             job.start().await;
                             let end = job.to_wait();
                             tokio::spawn(end_task(end, job));
                         }
-                        return action;
                     }
                 }
+
                 action
             })
         });
@@ -193,7 +195,7 @@ impl WatchCommand {
                     .config
                     .pathset([current_dir])
                     .filterer(Arc::new(filter));
-                exec_handler.main().await.unwrap().unwrap();
+                exec_handler.main().await??;
                 Ok(0)
             }
         }
@@ -204,10 +206,7 @@ impl TectonicCommand for WatchCommand {
     fn customize(&self, _cc: &mut CommandCustomizations) {}
 
     fn execute(self, _config: PersistentConfig, status: &mut dyn StatusBackend) -> Result<i32> {
-        let rt = runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
+        let rt = runtime::Builder::new_multi_thread().enable_all().build()?;
         rt.block_on(self.execute_inner(status))
     }
 }
