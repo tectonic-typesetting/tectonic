@@ -19,6 +19,10 @@ inputs:
   test-flags:
     description: "Extra flags to pass to `cargo test`"
     required: false
+  run-tests:
+    description: "Whether to run tests after building"
+    required: false
+    default: 'true'
   package-flags:
     description: "Extra flags to pass to cranko package-released-binaries"
 runs:
@@ -54,6 +58,7 @@ runs:
       run: |
         ${{ inputs.executable }} build --workspace --target ${{ inputs.target }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "cargo test"
+      if: ${{ inputs.run-tests == 'true' }}
       shell: bash
       run: |
         ${{ inputs.executable }} test --workspace --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE

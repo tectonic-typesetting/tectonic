@@ -169,6 +169,12 @@ x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
     "harfbuzz[graphite2]",
     "icu",
 ] }
+aarch64-pc-windows-msvc = { triplet = "arm64-windows-static-release", install = [
+    "fontconfig",
+    "freetype",
+    "harfbuzz[graphite2]",
+    "icu",
+] }
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "thiscommit:2023-06-11:PvhF7YB"
