@@ -17,7 +17,7 @@ use tempfile::TempDir;
 
 #[path = "util/mod.rs"]
 mod util;
-use crate::util::{cargo_dir, ensure_plain_format};
+use crate::util::{ensure_plain_format, tectonic_exe};
 
 lazy_static! {
     static ref TEST_ROOT: PathBuf = {
@@ -53,9 +53,7 @@ fn get_plain_format_arg() -> String {
 /// tells the Tectonic binary to go into "test mode" and use local test
 /// assets, rather than an actual network bundle.
 fn prep_tectonic(cwd: &Path, args: &[&str]) -> Command {
-    let tectonic = cargo_dir()
-        .join("tectonic")
-        .with_extension(env::consts::EXE_EXTENSION);
+    let tectonic = tectonic_exe();
 
     if fs::metadata(&tectonic).is_err() {
         panic!("tectonic binary not found at {tectonic:?}. Do you need to run `cargo build`?")
