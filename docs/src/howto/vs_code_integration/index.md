@@ -32,7 +32,8 @@ At the root of your VS Code project / workspace create a file named
                 "-X",
                 "build",
                 "--keep-intermediates",
-                "--keep-logs"
+                "--keep-logs",
+                "--print"
             ],
         }
     ],
