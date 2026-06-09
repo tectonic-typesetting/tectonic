@@ -96,8 +96,6 @@ fn test_single_entry() {
     TestCase::new(&["cites", "single_entry"]).go()
 }
 
-/// Empty `@string` macro ("") at the start of a stored field: used to panic in
-/// `scan_a_field_token_and_eat_white` (cryptobib defines many such macros).
 #[test]
 fn test_empty_macro() {
     TestCase::new(&["cites", "empty_macro"]).go()
