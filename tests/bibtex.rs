@@ -97,6 +97,11 @@ fn test_single_entry() {
 }
 
 #[test]
+fn test_empty_macro() {
+    TestCase::new(&["cites", "empty_macro"]).go()
+}
+
+#[test]
 fn test_odd_strings() {
     TestCase::new(&["cites", "odd_strings"])
         .expect(Ok(TexOutcome::Warnings))
