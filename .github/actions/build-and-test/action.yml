@@ -64,6 +64,7 @@ runs:
       run: |
         artifact_dir="test_failures"
         mkdir -p "$artifact_dir"
+        dumpbin /imports "target/*/release/deps/*.exe" >> "$artifact_dir/dump.txt" || true
         mv *.observed "$artifact_dir" || true
         mv *.expected "$artifact_dir" || true
         if [ -n "$(ls -A $artifact_dir)" ]; then
