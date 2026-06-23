@@ -92,6 +92,7 @@ impl IoProvider for FormatCache {
         _status: &mut dyn StatusBackend,
     ) -> Result<()> {
         let final_path = self.path_for_format(name)?;
+        std::fs::create_dir_all(&self.formats_base)?;
         let mut temp_dest = tempfile::Builder::new()
             .prefix("format_")
             .rand_bytes(6)

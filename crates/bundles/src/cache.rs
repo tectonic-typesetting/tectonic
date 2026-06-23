@@ -8,6 +8,7 @@
 //! [`BundleCache`].
 
 use crate::{Bundle, CachableBundle, FileIndex, FileInfo};
+use chrono::{DateTime, Duration, Utc};
 use std::{
     fs::{self, File},
     io::{self, BufReader, Read, Write},
@@ -113,37 +114,63 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
 
         let hash_dir = ensure_dir!(inline, &cache_root.join("hashes"));
         let hash_file = hash_dir.join(app_dirs::sanitize(&bundle.get_location()));
+        let check_file = hash_dir
+            .join(app_dirs::sanitize(&bundle.get_location()))
+            .with_extension("lock");
 
-        let saved_hash = {
-            if !hash_file.exists() {
-                None
-            } else {
-                match File::open(&hash_file) {
-                    Err(e) => return Err(e.into()),
-                    Ok(f) => {
-                        let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
-                        f.take(digest::DIGEST_LEN as u64)
-                            .read_to_string(&mut digest_text)
+        let saved_hash = match File::open(&hash_file) {
+            Ok(f) => {
+                let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
+                f.take(digest::DIGEST_LEN as u64)
+                    .read_to_string(&mut digest_text)
+                    .with_context(|| format!("while reading hash from {hash_file:?} in cache"))?;
+                let digest = DigestData::from_str(&digest_text)
+                    .with_context(|| format!("while parsing hash `{digest_text}`"))?;
+
+                let last_check = match File::open(&check_file) {
+                    Ok(mut f) => {
+                        let mut last_check = String::new();
+                        f.read_to_string(&mut last_check).with_context(|| {
+                            format!("while reading last check time from {check_file:?} in cache")
+                        })?;
+                        DateTime::from_timestamp_secs(i64::from_str(last_check.trim())?)
                             .with_context(|| {
-                                format!("while reading hash from {hash_file:?} in cache")
-                            })?;
-                        Some(
-                            DigestData::from_str(&digest_text)
-                                .with_context(|| format!("while parsing hash `{digest_text}`"))?,
-                        )
+                                format!("Invalid timestamp for check time {}", last_check.trim())
+                            })?
                     }
-                }
+                    Err(e) if e.kind() == io::ErrorKind::NotFound => {
+                        DateTime::from_timestamp_secs(0).unwrap()
+                    }
+                    Err(e) => return Err(e.into()),
+                };
+                Some((digest, last_check))
             }
+            Err(e) if e.kind() == io::ErrorKind::NotFound => None,
+            Err(e) => return Err(e.into()),
         };
 
-        let live_hash = bundle.get_digest();
+        let now = Utc::now();
+        let live_hash = if saved_hash.is_none_or(|(_, time)| now - time > Duration::days(7)) {
+            bundle.get_digest()
+        } else {
+            Err(Error::msg(
+                "You should never see this message. Please report a bug.",
+            ))
+        };
 
         // Check remote bundle digest
         let bundle_hash: DigestData = match (saved_hash, live_hash) {
             (None, Err(e)) => {
                 bail!("this bundle isn't cached, and we couldn't get it from the internet. Error: {e}");
             }
-            (Some(s), Ok(l)) => {
+            (Some((s, t)), Ok(l)) => {
+                if now - t > Duration::days(7) {
+                    // Update time we last checked for hash mismatch
+                    file_create_write(&check_file, |f| write!(f, "{}", now.timestamp()))
+                        .with_context(|| {
+                            format!("while updating bundle check time in {check_file:?} in cache")
+                        })?;
+                }
                 if s != l {
                     // Silently update hash in cache.
                     // We don't need to delete anything, since data is indexed by hash.
@@ -161,9 +188,12 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
                 file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string())).with_context(
                     || format!("while writing bundle hash to {hash_file:?} in cache"),
                 )?;
+                file_create_write(&check_file, |f| write!(f, "{}", now.timestamp())).with_context(
+                    || format!("while writing bundle check time to {check_file:?} in cache"),
+                )?;
                 l
             }
-            (Some(h), Err(_)) => h, // Bundle is offline, but we're ok.
+            (Some((h, _)), Err(_)) => h, // Bundle is offline, but we're ok.
         };
 
         let bundle = BundleCache {
