@@ -28,7 +28,7 @@ tectonic -X bundle cat <filename>
 #### Example
 
 ```sh
-$ tectonic -X bundle cat latex.ltx
+tectonic -X bundle cat latex.ltx
 %%
 %% This is file `latex.ltx',
 %% generated with the docstrip utility.
@@ -55,7 +55,7 @@ tectonic -X bundle search [term]
 #### Example
 
 ```sh
-$ tectonic -X bundle search minted
+tectonic -X bundle search minted
 minted1.sty
 tcbminted.code.tex
 minted.4ht
