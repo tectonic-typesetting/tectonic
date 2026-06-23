@@ -1,0 +1,47 @@
+name: "Tectonic on arXiv"
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: "Base branch to compare this run against"
+        required: false
+        default: ""
+
+jobs:
+  tectonic-on-arxiv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Set up s3
+        uses: s3-actions/s3cmd@v3.0.0
+        with:
+          provider: cloudflare
+          access_key: ${{ secrets.CLOUDFLARE_ACCESS_KEY }}
+          secret_key: ${{ secrets.CLOUDFLARE_SECRET_KEY }}
+          account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      - name: Load Dataset
+        run: |
+          s3cmd get "s3://tectonic-on-arxiv/1702.tar.gz" 1702.tar.gz
+          mkdir datasets
+          tar -xzvf 1702.tar.gz -C datasets
+      - name: Tectonic-on-ArXiv
+        uses: craftspider/tectonic-on-arxiv@master
+        with:
+          head: |-
+            ${{ case(
+              github.event_name == 'pull_request', github.event.pull_request.head.sha,
+              github.event_name == 'workflow_dispatch', github.sha,
+              github.sha
+            ) }}
+          base: |-
+            ${{ case(
+              github.event_name == 'pull_request', github.event.pull_request.base.sha,
+              github.event_name == 'workflow_dispatch', inputs.base,
+              ''
+            ) }}
