@@ -14,7 +14,6 @@
 BEGIN_EXTERN_C
 
 int load_pool_strings(int32_t spare_size);
-int32_t length(str_number s);
 str_number make_string(void);
 void append_str(str_number s);
 bool str_eq_buf(str_number s, int32_t k);

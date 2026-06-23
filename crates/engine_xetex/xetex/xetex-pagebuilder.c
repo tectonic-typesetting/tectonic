@@ -14,6 +14,7 @@
 
 #include "xetex-core.h"
 #include "xetex-xetexd.h"
+#include "xetex_bindings.h"
 
 
 static int32_t best_page_break;
@@ -59,10 +60,10 @@ ensure_vbox(eight_bits n)
 
     error_here_with_diagnostic("Insertions can only be added to a vbox");
     capture_to_diagnostic(NULL);
-    help_ptr = 3;
-    help_line[2] = "Tut tut: You're trying to \\insert into a";
-    help_line[1] = "\\box register that now contains an \\hbox.";
-    help_line[0] = "Proceed, and I'll discard its present contents.";
+    set_help_ptr(3);
+    set_help_line(2, "Tut tut: You're trying to \\insert into a");
+    set_help_line(1, "\\box register that now contains an \\hbox.");
+    set_help_line(0, "Proceed, and I'll discard its present contents.");
     box_error(n);
 }
 
@@ -126,9 +127,9 @@ fire_up(int32_t c)
         print_esc_cstr("box");
         print_cstr("255 is not void");
         capture_to_diagnostic(NULL);
-        help_ptr = 2;
-        help_line[1] = "You shouldn't use \\box255 except in \\output routines.";
-        help_line[0] = "Proceed, and I'll discard its present contents.";
+        set_help_ptr(2);
+        set_help_line(1, "You shouldn't use \\box255 except in \\output routines.");
+        set_help_line(0, "Proceed, and I'll discard its present contents.");
         box_error(255);
     }
 
@@ -354,10 +355,10 @@ fire_up(int32_t c)
             print_int(dead_cycles);
             print_cstr(" consecutive dead cycles");
             capture_to_diagnostic(NULL);
-            help_ptr = 3;
-            help_line[2] = "I've concluded that your \\output is awry; it never does a";
-            help_line[1] = "\\shipout, so I'm shipping \\box255 out myself. Next time";
-            help_line[0] = "increase \\maxdeadcycles if you want me to be more patient!";
+            set_help_ptr(3);
+            set_help_line(2, "I've concluded that your \\output is awry; it never does a");
+            set_help_line(1, "\\shipout, so I'm shipping \\box255 out myself. Next time");
+            set_help_line(0, "increase \\maxdeadcycles if you want me to be more patient!");
             error();
         } else {
             /*1060: "Fire up the user's output routine and return" */
@@ -366,7 +367,7 @@ fire_up(int32_t c)
             push_nest();
             cur_list.mode = -VMODE;
             cur_list.aux.b32.s1 = IGNORE_DEPTH; /* this is `prev_depth` */
-            cur_list.mode_line = -line;
+            cur_list.mode_line = -line();
             begin_token_list(LOCAL(output_routine), OUTPUT_TEXT);
             new_save_level(OUTPUT_GROUP);
             normal_paragraph();
@@ -588,10 +589,10 @@ build_page(void)
                     print_esc_cstr("skip");
                     print_int(n);
                     capture_to_diagnostic(NULL);
-                    help_ptr = 3;
-                    help_line[2] = "The correction glue for page breaking with insertions";
-                    help_line[1] = "must have finite shrinkability. But you may proceed,";
-                    help_line[0] = "since the offensive shrinkability has been made finite.";
+                    set_help_ptr(3);
+                    set_help_line(2, "The correction glue for page breaking with insertions");
+                    set_help_line(1, "must have finite shrinkability. But you may proceed,");
+                    set_help_line(0, "since the offensive shrinkability has been made finite.");
                     error();
                 }
             }
@@ -736,11 +737,11 @@ build_page(void)
                 error_here_with_diagnostic("Infinite glue shrinkage found on current page");
                 capture_to_diagnostic(NULL);
 
-                help_ptr = 4;
-                help_line[3] = "The page about to be output contains some infinitely";
-                help_line[2] = "shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.";
-                help_line[1] = "Such glue doesn't belong there; but you can safely proceed,";
-                help_line[0] = "since the offensive shrinkability has been made finite.";
+                set_help_ptr(4);
+                set_help_line(3, "The page about to be output contains some infinitely");
+                set_help_line(2, "shrinkable glue, e.g., `\\vss' or `\\vskip 0pt minus 1fil'.");
+                set_help_line(1, "Such glue doesn't belong there; but you can safely proceed,");
+                set_help_line(0, "since the offensive shrinkability has been made finite.");
                 error();
 
                 r = new_spec(q);

@@ -5,6 +5,16 @@ include_guard = "TECTONIC_ENGINE_XETEX_BINDGEN_H"
 
 [export.rename]
 "CoreBridgeState" = "ttbc_state_t"
+"Diagnostic" = "ttbc_diagnostic_t"
+"FileFormat" = "ttbc_file_format"
+"OutputId" = "rust_output_handle_t"
+"InputState" = "input_state_t"
+
+[export]
+exclude = ["Option_OutputId", "Option_InputId"]
+
+[defines]
+"target_endian = big" = "WORDS_BIGENDIAN"
 
 [enum]
 prefix_with_name = true
