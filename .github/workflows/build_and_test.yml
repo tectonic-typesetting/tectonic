@@ -256,12 +256,24 @@ jobs:
         data:
           - image: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            run-tests: true
+            publish: false
           - image: windows-latest
             target: x86_64-pc-windows-msvc
+            run-tests: true
+            publish: true
+          - image: windows-latest
+            target: aarch64-pc-windows-msvc
+            run-tests: false
+            publish: false
           - image: macos-latest
             target: x86_64-apple-darwin
+            run-tests: true
+            publish: true
           - image: macos-latest
             target: aarch64-apple-darwin
+            run-tests: true
+            publish: true
       fail-fast: false
     runs-on: ${{ matrix.data.image }}
     steps:
@@ -274,10 +286,6 @@ jobs:
         uses: ./.github/actions/build-setup
         with:
           toolchain: ${{ matrix.toolchain }}
-      - name: "Install vcpkg dependencies"
-        uses: ./.github/actions/vcpkg-deps
-        with:
-          target: ${{ matrix.data.target }}
       - name: "Setup build variables"
         shell: bash
         run: |
@@ -288,15 +296,24 @@ jobs:
         shell: bash
         run: |
           echo "RUSTFLAGS=-Ctarget-feature=+crt-static" >> "$GITHUB_ENV"
-          echo "VCPKGRS_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          if [[ "${{ matrix.data.target }}" == "aarch64-pc-windows-msvc" ]]; then
+            echo "VCPKGRS_TRIPLET=arm64-windows-static-release" >> "$GITHUB_ENV"
+          else
+            echo "VCPKGRS_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+          fi
           echo "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
           # Format file locking issue workaround:
           echo "RUST_TEST_THREADS=1" >> "$GITHUB_ENV"
+      - name: "Install vcpkg dependencies"
+        uses: ./.github/actions/vcpkg-deps
+        with:
+          target: ${{ matrix.data.target }}
       - name: "Build and Test"
         uses: ./.github/actions/build-and-test
         with:
           target: ${{ matrix.data.target }}
-          publish: ${{ matrix.data.image != 'ubuntu-latest' }}
+          run-tests: ${{ matrix.data.run-tests }}
+          publish: ${{ matrix.data.publish }}
   cross:
     strategy:
       matrix:
