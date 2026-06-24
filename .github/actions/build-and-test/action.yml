@@ -64,7 +64,9 @@ runs:
       run: |
         artifact_dir="test_failures"
         mkdir -p "$artifact_dir"
-        mv "target/*/release/deps/*.exe" "$artifact_dir" || true
+        ls . || true
+        ls target || true
+        mv "target/${{ inputs.target }}/release/deps/*.exe" "$artifact_dir" || true
         mv *.observed "$artifact_dir" || true
         mv *.expected "$artifact_dir" || true
         if [ -n "$(ls -A $artifact_dir)" ]; then
