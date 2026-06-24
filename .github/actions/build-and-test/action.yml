@@ -71,7 +71,7 @@ runs:
           echo "failure-artifacts=true" >> "$GITHUB_OUTPUT"
         fi
     - name: "Publish packaged test failures"
-      if: ${{ steps.package-tests.outputs.failure-artifacts }}
+      if: ${{ failure() && steps.package-tests.outputs.failure-artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: test-failures-${{ inputs.target }}
