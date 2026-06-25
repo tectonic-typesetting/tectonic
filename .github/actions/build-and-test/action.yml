@@ -61,16 +61,9 @@ runs:
       if: ${{ failure() }}
       shell: powershell
       run: |
-        reg query HKLM\SOFTWARE\Classes /s /f ADVAPI32.dll
-        reg query HKLM\SOFTWARE\Classes /s /f libicuuc78.dll
-        reg query HKLM\SOFTWARE\Classes /s /f libpng16-16.dll
-        reg query HKLM\SOFTWARE\Classes /s /f libstdc++-6.dll
-        reg query HKLM\SOFTWARE\Classes /s /f api-ms-win-core-winrt-error-l1-1-0.dll
-        reg query HKLM\SOFTWARE\Classes /s /f advapi32.dll
-        reg query HKLM\SOFTWARE\Classes /s /f ktmw32.dll
-        reg query HKLM\SOFTWARE\Classes /s /f oleaut32.dll
-        reg query HKLM\SOFTWARE\Classes /s /f bcrypt.dll
-        reg query HKLM\SOFTWARE\Classes /s /f crypt32.dll
+        $env:Path += "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\;"
+        gflags /i "target/${{ inputs.target }}/release/deps"/bibtex-*.exe +sls
+        cdb -c "g;q" "target/${{ inputs.target }}/release/deps"/bibtex-*.exe
     - name: "Package test failure files"
       id: package-tests
       if: ${{ failure() }}
