@@ -49,7 +49,7 @@ runs:
     - name: "Set MSYS64 paths (Windows)"
       if: ${{ runner.os == 'Windows' }}
       shell: pwsh
-      run: Add-Content -Value "PATH=C:\msys64\usr\bin;C:\msys64\mingw64\bin;$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
+      run: Add-Content -Value "PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
     - name: "Install pkg-config dependencies (Windows)"
       if: ${{ runner.os == 'Windows' }}
       shell: bash

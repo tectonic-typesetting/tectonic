@@ -57,6 +57,13 @@ runs:
       shell: bash
       run: |
         ${{ inputs.executable }} test --workspace --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
+    - name: "dll"
+      if: ${{ failure() }}
+      shell: powershell
+      run: |
+        $env:Path += "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\;"
+        gflags /i "target/${{ inputs.target }}/release/deps"/bibtex-*.exe +sls
+        cdb -c "g;q" "target/${{ inputs.target }}/release/deps"/bibtex-*.exe
     - name: "Package test failure files"
       id: package-tests
       if: ${{ failure() }}
@@ -64,13 +71,14 @@ runs:
       run: |
         artifact_dir="test_failures"
         mkdir -p "$artifact_dir"
+        mv "target/${{ inputs.target }}/release/deps"/*.exe "$artifact_dir" || true
         mv *.observed "$artifact_dir" || true
         mv *.expected "$artifact_dir" || true
         if [ -n "$(ls -A $artifact_dir)" ]; then
-          echo "failure-artifacts=true" >> "$GITHUB_OUTPUTS"
+          echo "failure-artifacts=true" >> "$GITHUB_OUTPUT"
         fi
     - name: "Publish packaged test failures"
-      if: ${{ steps.package-tests.outputs.failure-artifacts }}
+      if: ${{ failure() && steps.package-tests.outputs.failure-artifacts == 'true' }}
       uses: actions/upload-artifact@v4
       with:
         name: test-failures-${{ inputs.target }}
