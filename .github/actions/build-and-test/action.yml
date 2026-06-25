@@ -57,6 +57,20 @@ runs:
       shell: bash
       run: |
         ${{ inputs.executable }} test --workspace --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
+    - name: "dll"
+      if: ${{ failure() }}
+      shell: powershell
+      run: |
+        reg query HKLM\SOFTWARE\Classes /s /f ADVAPI32.dll
+        reg query HKLM\SOFTWARE\Classes /s /f libicuuc78.dll
+        reg query HKLM\SOFTWARE\Classes /s /f libpng16-16.dll
+        reg query HKLM\SOFTWARE\Classes /s /f libstdc++-6.dll
+        reg query HKLM\SOFTWARE\Classes /s /f api-ms-win-core-winrt-error-l1-1-0.dll
+        reg query HKLM\SOFTWARE\Classes /s /f advapi32.dll
+        reg query HKLM\SOFTWARE\Classes /s /f ktmw32.dll
+        reg query HKLM\SOFTWARE\Classes /s /f oleaut32.dll
+        reg query HKLM\SOFTWARE\Classes /s /f bcrypt.dll
+        reg query HKLM\SOFTWARE\Classes /s /f crypt32.dll
     - name: "Package test failure files"
       id: package-tests
       if: ${{ failure() }}
