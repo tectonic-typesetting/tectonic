@@ -1047,6 +1047,7 @@ typedef struct {
 static cmap_plat_enc_rec cmap_plat_encs[] = {
     { 3, 10 },
     { 0, 3 },
+    { 0, 4 },
     { 0, 0 },
     { 3, 1 },
     { 0, 1 }
