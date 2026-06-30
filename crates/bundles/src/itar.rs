@@ -21,6 +21,7 @@ use std::{
     collections::HashMap,
     io::{BufRead, BufReader, Cursor, Read},
     str::FromStr,
+    sync::atomic::{AtomicUsize, Ordering},
     thread,
     time::Duration,
 };
@@ -28,6 +29,56 @@ use tectonic_errors::prelude::*;
 use tectonic_geturl::{DefaultBackend, DefaultRangeReader, GetUrlBackend, RangeReader};
 use tectonic_io_base::{digest, InputHandle, InputOrigin, IoProvider, OpenResult};
 use tectonic_status_base::{tt_note, tt_warning, NoopStatusBackend, StatusBackend};
+
+/// Default number of concurrent connections used to prefetch files.
+const DEFAULT_PREFETCH_CONCURRENCY: usize = 16;
+
+/// Read a single file's bytes through `reader`, retrying on transient failures.
+///
+/// This is the shared core used by both the one-at-a-time [`ItarBundle::open_fileinfo`]
+/// path and the concurrent [`ItarBundle::batch_open`] path.
+fn read_file_with_retries(
+    reader: &mut DefaultRangeReader,
+    info: &ItarFileInfo,
+    status: &mut dyn StatusBackend,
+) -> OpenResult<Vec<u8>> {
+    // Edge case for zero-sized reads (these cause errors on some web hosts).
+    if info.length == 0 {
+        return OpenResult::Ok(Vec::new());
+    }
+
+    for i in 0..NET_RETRY_ATTEMPTS {
+        let mut stream = match reader.read_range(info.offset, info.length) {
+            Ok(r) => r,
+            Err(e) => {
+                tt_warning!(status,
+                    "failure fetching \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                    info.name, i+1; e
+                );
+                thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                continue;
+            }
+        };
+
+        let mut v = Vec::with_capacity(info.length);
+        match stream.read_to_end(&mut v) {
+            Ok(_) => return OpenResult::Ok(v),
+            Err(e) => {
+                tt_warning!(status,
+                    "failure downloading \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                    info.name, i+1; e.into()
+                );
+                thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                continue;
+            }
+        };
+    }
+
+    OpenResult::Err(anyhow!(
+        "failed to download \"{}\"; please check your network connection.",
+        info.name
+    ))
+}
 
 /// The internal file-information struct used by the [`ItarBundle`].
 #[derive(Clone, Debug)]
@@ -228,60 +279,86 @@ impl CachableBundle<'_, ItarFileIndex> for ItarBundle {
             Err(e) => return OpenResult::Err(e),
         };
 
-        let mut v = Vec::with_capacity(info.length);
         tt_note!(status, "downloading {}", info.name);
 
-        // Edge case for zero-sized reads
-        // (these cause errors on some web hosts)
-        if info.length == 0 {
-            return OpenResult::Ok(InputHandle::new_read_only(
+        match read_file_with_retries(self.reader.as_mut().unwrap(), info, status) {
+            OpenResult::Ok(v) => OpenResult::Ok(InputHandle::new_read_only(
                 info.name.to_owned(),
                 Cursor::new(v),
                 InputOrigin::Other,
-            ));
+            )),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+            OpenResult::Err(e) => OpenResult::Err(e),
+        }
+    }
+
+    /// Download many files concurrently.
+    ///
+    /// Each file is an independent HTTP byte-range request, so on a cold cache
+    /// the dominant cost is round-trip latency multiplied by the number of
+    /// files. Issuing them one-at-a-time (as the engine does on demand) is
+    /// therefore badly latency-bound. Here we fan the requests out across a pool
+    /// of worker threads, each with its own range reader (and thus its own
+    /// pooled HTTP connection), which collapses N serial round-trips into
+    /// roughly N/concurrency.
+    fn batch_open(
+        &mut self,
+        infos: &[ItarFileInfo],
+        status: &mut dyn StatusBackend,
+    ) -> Vec<OpenResult<Vec<u8>>> {
+        if let Err(e) = self.ensure_index() {
+            return infos
+                .iter()
+                .map(|_| OpenResult::Err(anyhow!("failed to load bundle index: {e}")))
+                .collect();
         }
 
-        // Get file with retries
-        for i in 0..NET_RETRY_ATTEMPTS {
-            let mut stream = match self
-                .reader
-                .as_mut()
-                .unwrap()
-                .read_range(info.offset, info.length)
-            {
-                Ok(r) => r,
-                Err(e) => {
-                    tt_warning!(status,
-                        "failure fetching \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
-                        info.name, i+1; e
-                    );
-                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
-                    continue;
-                }
-            };
+        let concurrency = std::env::var("TECTONIC_PREFETCH_CONCURRENCY")
+            .ok()
+            .and_then(|s| s.parse::<usize>().ok())
+            .filter(|n| *n > 0)
+            .unwrap_or(DEFAULT_PREFETCH_CONCURRENCY)
+            .min(infos.len().max(1));
 
-            match stream.read_to_end(&mut v) {
-                Ok(_) => {}
-                Err(e) => {
-                    tt_warning!(status,
-                        "failure downloading \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
-                        info.name, i+1; e.into()
-                    );
-                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
-                    continue;
-                }
-            };
+        tt_note!(
+            status,
+            "prefetching {} files ({}-way concurrent)",
+            infos.len(),
+            concurrency
+        );
 
-            return OpenResult::Ok(InputHandle::new_read_only(
-                info.name.to_owned(),
-                Cursor::new(v),
-                InputOrigin::Other,
-            ));
-        }
+        let url = self.url.clone();
+        let next = AtomicUsize::new(0);
+        // One result slot per input, written exactly once by the worker that
+        // claims that index. `NoopStatusBackend` is used inside workers because
+        // `StatusBackend` is not `Sync`; transient retry warnings are dropped.
+        let result_slots: Vec<std::sync::Mutex<OpenResult<Vec<u8>>>> = (0..infos.len())
+            .map(|_| std::sync::Mutex::new(OpenResult::NotAvailable))
+            .collect();
 
-        OpenResult::Err(anyhow!(
-            "failed to download \"{}\"; please check your network connection.",
-            info.name
-        ))
+        thread::scope(|scope| {
+            let next = &next;
+            let result_slots = &result_slots;
+            let url = &url;
+            for _ in 0..concurrency {
+                scope.spawn(move || {
+                    let mut reader = DefaultBackend::default().open_range_reader(url);
+                    let mut noop = NoopStatusBackend {};
+                    loop {
+                        let i = next.fetch_add(1, Ordering::Relaxed);
+                        if i >= infos.len() {
+                            break;
+                        }
+                        let res = read_file_with_retries(&mut reader, &infos[i], &mut noop);
+                        *result_slots[i].lock().unwrap() = res;
+                    }
+                });
+            }
+        });
+
+        result_slots
+            .into_iter()
+            .map(|m| m.into_inner().unwrap())
+            .collect()
     }
 }
