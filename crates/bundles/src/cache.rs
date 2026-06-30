@@ -10,8 +10,9 @@
 use crate::{Bundle, CachableBundle, FileIndex, FileInfo};
 use chrono::{DateTime, Duration, Utc};
 use std::{
+    collections::HashSet,
     fs::{self, File},
-    io::{self, BufReader, Read, Write},
+    io::{self, BufRead, BufReader, Read, Write},
     path::{Path, PathBuf},
     process,
     str::FromStr,
@@ -22,7 +23,7 @@ use tectonic_io_base::{
     digest::{self, DigestData},
     InputHandle, InputOrigin, IoProvider, OpenResult,
 };
-use tectonic_status_base::StatusBackend;
+use tectonic_status_base::{tt_note, StatusBackend};
 
 /// A convenience method to provide a better error message when writing to a created file.
 fn file_create_write<P, F, E>(path: P, write_fn: F) -> Result<()>
@@ -41,6 +42,31 @@ where
         ["couldn't write to {}", path.display()]
     );
     Ok(())
+}
+
+/// Load a prefetch manifest (one file name per line). Missing or unreadable
+/// manifests yield an empty set; the manifest is purely an optimization hint, so
+/// any error here is non-fatal.
+/// Upper bound on the number of file names recorded in a prefetch manifest.
+///
+/// The set of files a given bundle is asked for naturally converges (it's a
+/// subset of the bundle's contents), so this isn't expected to bind in normal
+/// use. It's an explicit backstop so the manifest -- and therefore the
+/// cold-cache prefetch fan-out -- can't grow without bound across many
+/// different documents sharing one bundle.
+const MAX_MANIFEST_ENTRIES: usize = 4096;
+
+fn load_manifest(path: &Path) -> HashSet<String> {
+    let mut out = HashSet::new();
+    if let Ok(f) = File::open(path) {
+        for line in BufReader::new(f).lines().map_while(Result::ok) {
+            let line = line.trim();
+            if !line.is_empty() {
+                out.insert(line.to_owned());
+            }
+        }
+    }
+    out
 }
 
 // Make sure a directory exists.
@@ -93,6 +119,21 @@ pub struct BundleCache<'this, T> {
 
     // The hash of the bundle we're caching.
     bundle_hash: DigestData,
+
+    /// Path to the prefetch manifest: the set of file names this bundle has been
+    /// observed to need. We record into it as files are fetched, and replay it
+    /// concurrently on a cold cache so the engine's serial on-demand requests
+    /// all hit warm cache.
+    manifest_path: PathBuf,
+
+    /// Names of files known to be needed (loaded from `manifest_path`).
+    touched: HashSet<String>,
+
+    /// Whether `touched` has grown since load and should be written back.
+    manifest_dirty: bool,
+
+    /// Whether we've already attempted the concurrent prefetch this session.
+    prefetched: bool,
 }
 
 impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
@@ -196,11 +237,18 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             (Some((h, _)), Err(_)) => h, // Bundle is offline, but we're ok.
         };
 
+        let manifest_path = cache_root.join(format!("data/{bundle_hash}.prefetch"));
+        let touched = load_manifest(&manifest_path);
+
         let bundle = BundleCache {
             only_cached,
             bundle,
             cache_root,
             bundle_hash,
+            manifest_path,
+            touched,
+            manifest_dirty: false,
+            prefetched: false,
         };
 
         // Right now, files are stored in
@@ -339,6 +387,16 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             return OpenResult::NotAvailable;
         }
 
+        // Record that this file is part of our working set, so future cold
+        // caches can prefetch it concurrently. We append eagerly rather than
+        // relying on `Drop`, because the CLI exits via `process::exit` (which
+        // skips destructors).
+        if self.touched.len() < MAX_MANIFEST_ENTRIES && self.touched.insert(info.name().to_owned())
+        {
+            self.manifest_dirty = true;
+            self.append_to_manifest(info.name());
+        }
+
         // Get the file.
         let mut handle = match self.bundle.open_fileinfo(&info, status) {
             OpenResult::Ok(c) => c,
@@ -358,6 +416,104 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
 
         OpenResult::Ok(target)
     }
+
+    /// On a cold cache, concurrently fetch every file in the recorded working
+    /// set that isn't already cached.
+    ///
+    /// This runs at most once per session. It is a best-effort optimization:
+    /// any file it fails to fetch is simply left for the normal on-demand path,
+    /// so prefetch errors never fail a build. The win comes from collapsing the
+    /// engine's hundreds of serial, latency-bound range requests into one
+    /// concurrent burst.
+    fn prefetch(&mut self, status: &mut dyn StatusBackend) {
+        if self.prefetched || self.only_cached || self.touched.is_empty() {
+            return;
+        }
+        self.prefetched = true;
+
+        if let Err(e) = self.ensure_index() {
+            tt_note!(status, "skipping prefetch, couldn't load bundle index: {e}");
+            return;
+        }
+
+        // Resolve the recorded names to file infos, dropping any that are already
+        // cached or no longer present in the bundle.
+        let names: Vec<String> = self.touched.iter().cloned().collect();
+        let mut infos = Vec::new();
+        for name in &names {
+            if let Some(info) = self.bundle.search(name) {
+                if !self.get_file_path(&info).exists() {
+                    infos.push(info);
+                }
+            }
+        }
+
+        if infos.is_empty() {
+            return;
+        }
+
+        let results = self.bundle.batch_open(&infos, status);
+        for (info, res) in infos.iter().zip(results) {
+            let bytes = match res {
+                OpenResult::Ok(b) => b,
+                _ => continue, // leave it for the on-demand path
+            };
+
+            let target = self.get_file_path(info);
+            if fs::create_dir_all(target.parent().unwrap()).is_err() {
+                continue;
+            }
+            let tmp_path = self.get_file_path_tmp(info);
+            if file_create_write(&tmp_path, |f| f.write_all(&bytes)).is_err() {
+                continue;
+            }
+            // If the rename fails (e.g. another process won the race to write
+            // the target), don't leave the temp file behind.
+            if fs::rename(&tmp_path, &target).is_err() {
+                let _ = fs::remove_file(&tmp_path);
+            }
+        }
+    }
+}
+
+impl<T> BundleCache<'_, T> {
+    /// Append a single file name to the on-disk prefetch manifest.
+    ///
+    /// Best-effort: a failure here only means a future cold cache misses this
+    /// file in its prefetch and falls back to an on-demand fetch.
+    fn append_to_manifest(&self, name: &str) {
+        if let Ok(mut f) = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.manifest_path)
+        {
+            let _ = writeln!(f, "{name}");
+        }
+    }
+
+    /// Write the prefetch manifest back to disk if it has grown.
+    fn flush_manifest(&mut self) {
+        if !self.manifest_dirty {
+            return;
+        }
+        let mut names: Vec<&String> = self.touched.iter().collect();
+        names.sort();
+        let res = file_create_write(&self.manifest_path, |f| {
+            for name in names {
+                writeln!(f, "{name}")?;
+            }
+            Ok::<(), io::Error>(())
+        });
+        if res.is_ok() {
+            self.manifest_dirty = false;
+        }
+    }
+}
+
+impl<T> Drop for BundleCache<'_, T> {
+    fn drop(&mut self) {
+        self.flush_manifest();
+    }
 }
 
 impl<'this, T: FileIndex<'this>> IoProvider for BundleCache<'this, T> {
@@ -366,6 +522,10 @@ impl<'this, T: FileIndex<'this>> IoProvider for BundleCache<'this, T> {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
+        // On the first lookup of a cold cache, warm the recorded working set
+        // concurrently so the engine's subsequent serial requests hit cache.
+        self.prefetch(status);
+
         let path = match self.get_fileinfo(name) {
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),

@@ -150,6 +150,36 @@ where
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle>;
 
+    /// Fetch a batch of files, returning the raw bytes of each one in the same
+    /// order as `infos`.
+    ///
+    /// This exists so that network bundles can download many files concurrently
+    /// instead of one-at-a-time. The default implementation simply calls
+    /// [`Self::open_fileinfo`] serially, which is correct but slow; network
+    /// backends should override it. Per-file failures are reported in-band so
+    /// that one bad file doesn't sink the whole batch (the caller can fall back
+    /// to an on-demand fetch for those).
+    fn batch_open(
+        &mut self,
+        infos: &[T::InfoType],
+        status: &mut dyn StatusBackend,
+    ) -> Vec<OpenResult<Vec<u8>>> {
+        infos
+            .iter()
+            .map(|info| match self.open_fileinfo(info, status) {
+                OpenResult::Ok(mut h) => {
+                    let mut v = Vec::new();
+                    match h.read_to_end(&mut v) {
+                        Ok(_) => OpenResult::Ok(v),
+                        Err(e) => OpenResult::Err(e.into()),
+                    }
+                }
+                OpenResult::NotAvailable => OpenResult::NotAvailable,
+                OpenResult::Err(e) => OpenResult::Err(e),
+            })
+            .collect()
+    }
+
     /// Search for a file in this bundle.
     /// This should foward the call to `self.index`
     fn search(&mut self, name: &str) -> Option<T::InfoType>;
@@ -184,6 +214,14 @@ impl<'this, T: FileIndex<'this>, B: CachableBundle<'this, T> + ?Sized> CachableB
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).open_fileinfo(info, status)
+    }
+
+    fn batch_open(
+        &mut self,
+        infos: &[T::InfoType],
+        status: &mut dyn StatusBackend,
+    ) -> Vec<OpenResult<Vec<u8>>> {
+        (**self).batch_open(infos, status)
     }
 
     fn search(&mut self, name: &str) -> Option<T::InfoType> {
