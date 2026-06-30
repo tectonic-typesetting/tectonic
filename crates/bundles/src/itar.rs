@@ -182,11 +182,19 @@ impl ItarBundle {
 
     /// Fill this bundle's index, if it is empty.
     fn ensure_index(&mut self) -> Result<()> {
+        // Always make sure we have a range reader for fetching file contents.
+        // The index may have been initialized from the on-disk cache (via
+        // `initialize_index`, called by `BundleCache`) rather than downloaded
+        // here. In that case the early return below would leave `self.reader`
+        // as `None`, and the on-demand fetch path (`open_fileinfo`) would panic
+        // unwrapping it. `connect_reader` is idempotent and does no network I/O
+        // until a range is actually read, so this is cheap.
+        self.connect_reader();
+
         // Fetch index if it is empty
         if self.index.is_initialized() {
             return Ok(());
         }
-        self.connect_reader();
 
         let mut reader = self.get_index_reader()?;
         self.index.initialize(&mut reader)?;
