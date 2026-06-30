@@ -147,7 +147,7 @@ validate_name (char *fontname, int len)
  */
 
 #define WIN_UCS_INDEX_MAX   1
-#define KNOWN_ENCODINGS_MAX 9
+#define KNOWN_ENCODINGS_MAX 10
 static struct
 {
     unsigned short  platform;
@@ -164,6 +164,7 @@ static struct
     {TT_MAC, TT_MAC_TRADITIONAL_CHINESE, {"B5pc",     NULL}},
     {TT_MAC, TT_MAC_SIMPLIFIED_CHINESE,  {"GBpc-EUC", NULL}},
     {TT_MAC, TT_MAC_KOREAN,   {"KSCpc-EUC", NULL}},
+    {0, 4,  {"UCSms-UCS4", "UCSms-UCS2", "UCS4", "UCS2", NULL}},
     {0, 0, {NULL}}
 };
 
