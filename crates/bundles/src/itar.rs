@@ -33,6 +33,12 @@ use tectonic_status_base::{tt_note, tt_warning, NoopStatusBackend, StatusBackend
 /// Default number of concurrent connections used to prefetch files.
 const DEFAULT_PREFETCH_CONCURRENCY: usize = 16;
 
+/// Hard upper bound on prefetch concurrency, applied even when the user sets
+/// `TECTONIC_PREFETCH_CONCURRENCY` explicitly. This keeps a large manifest or a
+/// mistakenly huge env value from spawning an unreasonable number of worker
+/// threads and simultaneous connections.
+const MAX_PREFETCH_CONCURRENCY: usize = 64;
+
 /// Read a single file's bytes through `reader`, retrying on transient failures.
 ///
 /// This is the shared core used by both the one-at-a-time [`ItarBundle::open_fileinfo`]
@@ -326,6 +332,7 @@ impl CachableBundle<'_, ItarFileIndex> for ItarBundle {
             .and_then(|s| s.parse::<usize>().ok())
             .filter(|n| *n > 0)
             .unwrap_or(DEFAULT_PREFETCH_CONCURRENCY)
+            .min(MAX_PREFETCH_CONCURRENCY)
             .min(infos.len().max(1));
 
         tt_note!(

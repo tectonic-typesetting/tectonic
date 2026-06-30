@@ -47,6 +47,15 @@ where
 /// Load a prefetch manifest (one file name per line). Missing or unreadable
 /// manifests yield an empty set; the manifest is purely an optimization hint, so
 /// any error here is non-fatal.
+/// Upper bound on the number of file names recorded in a prefetch manifest.
+///
+/// The set of files a given bundle is asked for naturally converges (it's a
+/// subset of the bundle's contents), so this isn't expected to bind in normal
+/// use. It's an explicit backstop so the manifest -- and therefore the
+/// cold-cache prefetch fan-out -- can't grow without bound across many
+/// different documents sharing one bundle.
+const MAX_MANIFEST_ENTRIES: usize = 4096;
+
 fn load_manifest(path: &Path) -> HashSet<String> {
     let mut out = HashSet::new();
     if let Ok(f) = File::open(path) {
@@ -382,7 +391,8 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         // caches can prefetch it concurrently. We append eagerly rather than
         // relying on `Drop`, because the CLI exits via `process::exit` (which
         // skips destructors).
-        if self.touched.insert(info.name().to_owned()) {
+        if self.touched.len() < MAX_MANIFEST_ENTRIES && self.touched.insert(info.name().to_owned())
+        {
             self.manifest_dirty = true;
             self.append_to_manifest(info.name());
         }
@@ -457,7 +467,11 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             if file_create_write(&tmp_path, |f| f.write_all(&bytes)).is_err() {
                 continue;
             }
-            let _ = fs::rename(&tmp_path, &target);
+            // If the rename fails (e.g. another process won the race to write
+            // the target), don't leave the temp file behind.
+            if fs::rename(&tmp_path, &target).is_err() {
+                let _ = fs::remove_file(&tmp_path);
+            }
         }
     }
 }
