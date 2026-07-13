@@ -146,7 +146,7 @@ tempfile = "^3.1"
 
 [package.metadata.vcpkg]
 git = "https://github.com/microsoft/vcpkg"
-rev = "a62ce77d56ee07513b4b67de1ec2daeaebfae51a"
+rev = "f87344cac03158cbf1467264565f1fd36b382a24"
 overlay-triplets-path = "dist/vcpkg-triplets"
 
 # If other targets start using custom triplets like x86_64-pc-windows-msvc,
