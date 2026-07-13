@@ -131,11 +131,15 @@ impl ItarBundle {
 
     /// Fill this bundle's index, if it is empty.
     fn ensure_index(&mut self) -> Result<()> {
+        // The index may have been initialized from the on-disk cache. Make sure
+        // file reads still have a range reader before taking the early return.
+        // Creating the reader does not perform network I/O.
+        self.connect_reader();
+
         // Fetch index if it is empty
         if self.index.is_initialized() {
             return Ok(());
         }
-        self.connect_reader();
 
         let mut reader = self.get_index_reader()?;
         self.index.initialize(&mut reader)?;
@@ -283,5 +287,23 @@ impl CachableBundle<'_, ItarFileIndex> for ItarBundle {
             "failed to download \"{}\"; please check your network connection.",
             info.name
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cached_index_still_connects_range_reader() {
+        let mut bundle = ItarBundle::new("https://example.invalid/bundle.tar".into()).unwrap();
+        bundle
+            .index
+            .initialize(&mut Cursor::new(b"plain.tex 0 1\n"))
+            .unwrap();
+
+        assert!(bundle.reader.is_none());
+        bundle.ensure_index().unwrap();
+        assert!(bundle.reader.is_some());
     }
 }
