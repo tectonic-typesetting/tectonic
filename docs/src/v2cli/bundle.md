@@ -31,7 +31,7 @@ tectonic -X bundle cat <filename>
 tectonic -X bundle cat latex.ltx
 ```
 
-```
+```ltx
 %%
 %% This is file `latex.ltx',
 %% generated with the docstrip utility.
@@ -61,7 +61,7 @@ tectonic -X bundle search [term]
 tectonic -X bundle search minted
 ```
 
-```
+```text
 minted1.sty
 tcbminted.code.tex
 minted.4ht
