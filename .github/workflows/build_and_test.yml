@@ -298,10 +298,11 @@ jobs:
           echo "RUSTFLAGS=-Ctarget-feature=+crt-static" >> "$GITHUB_ENV"
           if [[ "${{ matrix.data.target }}" == "aarch64-pc-windows-msvc" ]]; then
             echo "VCPKGRS_TRIPLET=arm64-windows-static-release" >> "$GITHUB_ENV"
+            echo "VCPKG_DEFAULT_HOST_TRIPLET=arm64-windows-static-release" >> "$GITHUB_ENV"
           else
             echo "VCPKGRS_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
+            echo "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
           fi
-          echo "VCPKG_DEFAULT_HOST_TRIPLET=x64-windows-static-release" >> "$GITHUB_ENV"
           # Format file locking issue workaround:
           echo "RUST_TEST_THREADS=1" >> "$GITHUB_ENV"
       - name: "Install vcpkg dependencies"
