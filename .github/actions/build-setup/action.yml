@@ -38,6 +38,11 @@ runs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://pkgw.github.io/cranko/fetch-latest.ps1'))
         Add-Content -Value "PATH=${d};$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
+    - name: Add debug tools to PATH (Windows)
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        Add-Content -Value "PATH=C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\;$Env:PATH" -Path $Env:GITHUB_ENV -Encoding utf8
     - name: Install release artifact
       uses: actions/download-artifact@v4
       with:

@@ -175,19 +175,18 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
                     // Silently update hash in cache.
                     // We don't need to delete anything, since data is indexed by hash.
                     // TODO: show a warning
-                    file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))
-                        .with_context(|| {
-                            format!("while updating bundle hash in {hash_file:?} in cache")
-                        })?;
+                    file_create_write(&hash_file, |f| writeln!(f, "{}", l)).with_context(|| {
+                        format!("while updating bundle hash in {hash_file:?} in cache")
+                    })?;
                     l
                 } else {
                     l
                 }
             }
             (None, Ok(l)) => {
-                file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string())).with_context(
-                    || format!("while writing bundle hash to {hash_file:?} in cache"),
-                )?;
+                file_create_write(&hash_file, |f| writeln!(f, "{}", l)).with_context(|| {
+                    format!("while writing bundle hash to {hash_file:?} in cache")
+                })?;
                 file_create_write(&check_file, |f| write!(f, "{}", now.timestamp())).with_context(
                     || format!("while writing bundle check time to {check_file:?} in cache"),
                 )?;
