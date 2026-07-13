@@ -191,6 +191,16 @@ fn a4paper() {
 }
 
 #[test]
+fn cmap04_unicode() {
+    TestCase::new("cmap04_unicode").check_pdf(true).go()
+}
+
+#[test]
+fn cidtype2_cmap04() {
+    TestCase::new("cidtype2_cmap04").check_pdf(true).go()
+}
+
+#[test]
 fn file_encoding() {
     // Need to do this here since we call test_path unusually early.
     util::set_test_root();
