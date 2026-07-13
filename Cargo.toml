@@ -137,6 +137,9 @@ native-tls-vendored = [
 # developer feature to compile with the necessary flags for profiling tectonic.
 profile = []
 
+[profile.bench]
+debug = true
+
 [dev-dependencies]
 filetime = "^0.2"
 tempfile = "^3.1"

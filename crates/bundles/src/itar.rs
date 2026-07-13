@@ -213,7 +213,7 @@ impl CachableBundle<'_, ItarFileIndex> for ItarBundle {
 
     fn get_index_reader(&mut self) -> Result<Box<dyn Read>> {
         let mut geturl_backend = DefaultBackend::default();
-        let index_url = format!("{}.index.gz", &self.url);
+        let index_url = format!("{}.index.gz", self.url);
         let reader = GzDecoder::new(geturl_backend.get_url(&index_url)?);
         Ok(Box::new(reader))
     }

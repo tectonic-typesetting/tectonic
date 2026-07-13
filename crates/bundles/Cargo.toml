@@ -27,6 +27,7 @@ tectonic_io_base = { path = "../io_base", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }
 zip = { version = "8.0", default-features = false, features = ["deflate"] }
 url = "^2.0"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 
 [features]
 default = ["geturl-reqwest"]
