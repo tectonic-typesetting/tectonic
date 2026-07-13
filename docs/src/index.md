@@ -24,7 +24,7 @@ in the `docs/` subdirectory of [the main tectonic repository]. To make and view
 changes, all you need to do is [install mdbook], then run the command:
 
 ```sh
-$ mdbook serve
+mdbook serve
 ```
 
 in the `docs/` directory.
