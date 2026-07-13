@@ -29,6 +29,55 @@ use tectonic_geturl::{DefaultBackend, DefaultRangeReader, GetUrlBackend, RangeRe
 use tectonic_io_base::{digest, InputHandle, InputOrigin, IoProvider, OpenResult};
 use tectonic_status_base::{tt_note, tt_warning, NoopStatusBackend, StatusBackend};
 
+mod batch;
+
+/// Read a single file's bytes through `reader`, retrying on transient failures.
+///
+/// This is the shared core used by both the one-at-a-time [`ItarBundle::open_fileinfo`]
+/// path and the concurrent [`ItarBundle::batch_open`] path.
+fn read_file_with_retries(
+    reader: &mut DefaultRangeReader,
+    info: &ItarFileInfo,
+    status: &mut dyn StatusBackend,
+) -> OpenResult<Vec<u8>> {
+    // Edge case for zero-sized reads (these cause errors on some web hosts).
+    if info.length == 0 {
+        return OpenResult::Ok(Vec::new());
+    }
+
+    for i in 0..NET_RETRY_ATTEMPTS {
+        let mut stream = match reader.read_range(info.offset, info.length) {
+            Ok(r) => r,
+            Err(e) => {
+                tt_warning!(status,
+                    "failure fetching \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                    info.name, i+1; e
+                );
+                thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                continue;
+            }
+        };
+
+        let mut v = Vec::with_capacity(info.length);
+        match stream.read_to_end(&mut v) {
+            Ok(_) => return OpenResult::Ok(v),
+            Err(e) => {
+                tt_warning!(status,
+                    "failure downloading \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
+                    info.name, i+1; e.into()
+                );
+                thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
+                continue;
+            }
+        };
+    }
+
+    OpenResult::Err(anyhow!(
+        "failed to download \"{}\"; please check your network connection.",
+        info.name
+    ))
+}
+
 /// The internal file-information struct used by the [`ItarBundle`].
 #[derive(Clone, Debug)]
 pub struct ItarFileInfo {
@@ -198,6 +247,10 @@ impl Bundle for ItarBundle {
 }
 
 impl CachableBundle<'_, ItarFileIndex> for ItarBundle {
+    fn supports_batch_open(&self) -> bool {
+        true
+    }
+
     fn get_location(&mut self) -> String {
         self.url.clone()
     }
@@ -232,61 +285,34 @@ impl CachableBundle<'_, ItarFileIndex> for ItarBundle {
             Err(e) => return OpenResult::Err(e),
         };
 
-        let mut v = Vec::with_capacity(info.length);
         tt_note!(status, "downloading {}", info.name);
 
-        // Edge case for zero-sized reads
-        // (these cause errors on some web hosts)
-        if info.length == 0 {
-            return OpenResult::Ok(InputHandle::new_read_only(
+        match read_file_with_retries(self.reader.as_mut().unwrap(), info, status) {
+            OpenResult::Ok(v) => OpenResult::Ok(InputHandle::new_read_only(
                 info.name.to_owned(),
                 Cursor::new(v),
                 InputOrigin::Other,
-            ));
+            )),
+            OpenResult::NotAvailable => OpenResult::NotAvailable,
+            OpenResult::Err(e) => OpenResult::Err(e),
         }
+    }
 
-        // Get file with retries
-        for i in 0..NET_RETRY_ATTEMPTS {
-            let mut stream = match self
-                .reader
-                .as_mut()
-                .unwrap()
-                .read_range(info.offset, info.length)
-            {
-                Ok(r) => r,
-                Err(e) => {
-                    tt_warning!(status,
-                        "failure fetching \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
-                        info.name, i+1; e
-                    );
-                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
-                    continue;
-                }
-            };
-
-            match stream.read_to_end(&mut v) {
-                Ok(_) => {}
-                Err(e) => {
-                    tt_warning!(status,
-                        "failure downloading \"{}\" from network ({}/{NET_RETRY_ATTEMPTS})",
-                        info.name, i+1; e.into()
-                    );
-                    thread::sleep(Duration::from_millis(NET_RETRY_SLEEP_MS));
-                    continue;
-                }
-            };
-
-            return OpenResult::Ok(InputHandle::new_read_only(
-                info.name.to_owned(),
-                Cursor::new(v),
-                InputOrigin::Other,
-            ));
-        }
-
-        OpenResult::Err(anyhow!(
-            "failed to download \"{}\"; please check your network connection.",
-            info.name
-        ))
+    /// Download many files concurrently.
+    ///
+    /// Each file is an independent HTTP byte-range request, so on a cold cache
+    /// the dominant cost is round-trip latency multiplied by the number of
+    /// files. Issuing them one-at-a-time (as the engine does on demand) is
+    /// therefore badly latency-bound. Here we fan the requests out across a pool
+    /// of worker threads, each with its own range reader (and thus its own
+    /// pooled HTTP connection), which collapses N serial round-trips into
+    /// roughly N/concurrency.
+    fn batch_open(
+        &mut self,
+        infos: &[ItarFileInfo],
+        status: &mut dyn StatusBackend,
+    ) -> Vec<OpenResult<Vec<u8>>> {
+        batch::open(self, infos, status)
     }
 }
 
