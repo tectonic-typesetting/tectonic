@@ -26,3 +26,16 @@ impl<T: CoreType> CFSet<T> {
         unsafe { CFSet::new_owned(ptr) }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::CFString;
+
+    #[test]
+    fn test_new() {
+        // Ensure empty and with-value set construction don't segfault
+        let _ = CFSet::<CFString>::new(&[]);
+        let _ = CFSet::new(&[CFString::new("foo")]);
+    }
+}

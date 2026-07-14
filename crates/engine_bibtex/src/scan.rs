@@ -660,6 +660,7 @@ fn scan_a_field_token_and_eat_white(
                     let mut str = globals.pool.get_str(strnum);
 
                     if globals.buffers.offset(BufTy::Ex, 1) == 0
+                        && !str.is_empty()
                         && LexClass::of(str[0]) == LexClass::Whitespace
                     {
                         if globals.buffers.offset(BufTy::Ex, 1) >= globals.buffers.len() {

@@ -97,7 +97,8 @@ pub use crate::engines::bibtex::BibtexEngine;
 pub use crate::engines::spx2html::Spx2HtmlEngine;
 pub use crate::engines::tex::{TexEngine, TexOutcome};
 pub use crate::engines::xdvipdfmx::XdvipdfmxEngine;
-pub use crate::errors::{Error, ErrorKind, Result};
+pub use crate::errors::Error;
+pub use tectonic_errors::Result;
 
 // Convenienece re-exports for migration into our multi-crate setup
 pub use tectonic_engine_xetex::FORMAT_SERIAL;
@@ -177,8 +178,8 @@ pub fn latex_to_pdf<T: AsRef<str>>(latex: T) -> Result<Vec<u8>> {
 
     match files.remove("texput.pdf") {
         Some(file) => Ok(file.data),
-        None => Err(errmsg!(
-            "LaTeX didn't report failure, but no PDF was created (??)"
+        None => Err(Error::msg(
+            "LaTeX didn't report failure, but no PDF was created (??)",
         )),
     }
 }

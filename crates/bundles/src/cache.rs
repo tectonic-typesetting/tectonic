@@ -8,7 +8,9 @@
 //! [`BundleCache`].
 
 use crate::{Bundle, CachableBundle, FileIndex, FileInfo};
+use chrono::{DateTime, Duration, Utc};
 use std::{
+    collections::HashSet,
     fs::{self, File},
     io::{self, BufReader, Read, Write},
     path::{Path, PathBuf},
@@ -22,6 +24,8 @@ use tectonic_io_base::{
     InputHandle, InputOrigin, IoProvider, OpenResult,
 };
 use tectonic_status_base::StatusBackend;
+
+mod prefetch;
 
 /// A convenience method to provide a better error message when writing to a created file.
 fn file_create_write<P, F, E>(path: P, write_fn: F) -> Result<()>
@@ -92,6 +96,21 @@ pub struct BundleCache<'this, T> {
 
     // The hash of the bundle we're caching.
     bundle_hash: DigestData,
+
+    /// Path to the prefetch manifest: the set of file names this bundle has been
+    /// observed to need. We record into it as files are fetched, and replay it
+    /// concurrently on a cold cache so the engine's serial on-demand requests
+    /// all hit warm cache.
+    manifest_path: PathBuf,
+
+    /// Names of files known to be needed (loaded from `manifest_path`).
+    touched: HashSet<String>,
+
+    /// Whether the backend can benefit from replaying a prefetch manifest.
+    prefetch_supported: bool,
+
+    /// Whether we've already attempted the concurrent prefetch this session.
+    prefetched: bool,
 }
 
 impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
@@ -112,58 +131,97 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
         };
 
         let hash_dir = ensure_dir!(inline, &cache_root.join("hashes"));
-        let hash_file = hash_dir.join(app_dirs::app_dirs2::sanitized(&bundle.get_location()));
+        let bundle_location = app_dirs::sanitize(&bundle.get_location());
+        let hash_file = hash_dir.join(&bundle_location);
+        let check_file = hash_dir.join(&bundle_location).with_extension("lock");
 
-        let saved_hash = {
-            if !hash_file.exists() {
-                None
-            } else {
-                match File::open(&hash_file) {
-                    Err(e) => return Err(e.into()),
-                    Ok(f) => {
-                        let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
-                        f.take(digest::DIGEST_LEN as u64)
-                            .read_to_string(&mut digest_text)
+        let saved_hash = match File::open(&hash_file) {
+            Ok(f) => {
+                let mut digest_text = String::with_capacity(digest::DIGEST_LEN);
+                f.take(digest::DIGEST_LEN as u64)
+                    .read_to_string(&mut digest_text)
+                    .with_context(|| format!("while reading hash from {hash_file:?} in cache"))?;
+                let digest = DigestData::from_str(&digest_text)
+                    .with_context(|| format!("while parsing hash `{digest_text}`"))?;
+
+                let last_check = match File::open(&check_file) {
+                    Ok(mut f) => {
+                        let mut last_check = String::new();
+                        f.read_to_string(&mut last_check).with_context(|| {
+                            format!("while reading last check time from {check_file:?} in cache")
+                        })?;
+                        DateTime::from_timestamp_secs(i64::from_str(last_check.trim())?)
                             .with_context(|| {
-                                format!("while reading hash from {hash_file:?} in cache")
-                            })?;
-                        Some(
-                            DigestData::from_str(&digest_text)
-                                .with_context(|| format!("while parsing hash `{digest_text}`"))?,
-                        )
+                                format!("Invalid timestamp for check time {}", last_check.trim())
+                            })?
                     }
-                }
+                    Err(e) if e.kind() == io::ErrorKind::NotFound => {
+                        DateTime::from_timestamp_secs(0).unwrap()
+                    }
+                    Err(e) => return Err(e.into()),
+                };
+                Some((digest, last_check))
             }
+            Err(e) if e.kind() == io::ErrorKind::NotFound => None,
+            Err(e) => return Err(e.into()),
         };
 
-        let live_hash = bundle.get_digest();
+        let now = Utc::now();
+        let live_hash = if saved_hash.is_none_or(|(_, time)| now - time > Duration::days(7)) {
+            bundle.get_digest()
+        } else {
+            Err(Error::msg(
+                "You should never see this message. Please report a bug.",
+            ))
+        };
 
         // Check remote bundle digest
         let bundle_hash: DigestData = match (saved_hash, live_hash) {
             (None, Err(e)) => {
                 bail!("this bundle isn't cached, and we couldn't get it from the internet. Error: {e}");
             }
-            (Some(s), Ok(l)) => {
+            (Some((s, t)), Ok(l)) => {
+                if now - t > Duration::days(7) {
+                    // Update time we last checked for hash mismatch
+                    file_create_write(&check_file, |f| write!(f, "{}", now.timestamp()))
+                        .with_context(|| {
+                            format!("while updating bundle check time in {check_file:?} in cache")
+                        })?;
+                }
                 if s != l {
                     // Silently update hash in cache.
                     // We don't need to delete anything, since data is indexed by hash.
                     // TODO: show a warning
-                    file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string()))
-                        .with_context(|| {
-                            format!("while updating bundle hash in {hash_file:?} in cache")
-                        })?;
+                    file_create_write(&hash_file, |f| writeln!(f, "{}", l)).with_context(|| {
+                        format!("while updating bundle hash in {hash_file:?} in cache")
+                    })?;
                     l
                 } else {
                     l
                 }
             }
             (None, Ok(l)) => {
-                file_create_write(&hash_file, |f| writeln!(f, "{}", &l.to_string())).with_context(
-                    || format!("while writing bundle hash to {hash_file:?} in cache"),
+                file_create_write(&hash_file, |f| writeln!(f, "{}", l)).with_context(|| {
+                    format!("while writing bundle hash to {hash_file:?} in cache")
+                })?;
+                file_create_write(&check_file, |f| write!(f, "{}", now.timestamp())).with_context(
+                    || format!("while writing bundle check time to {check_file:?} in cache"),
                 )?;
                 l
             }
-            (Some(h), Err(_)) => h, // Bundle is offline, but we're ok.
+            (Some((h, _)), Err(_)) => h, // Bundle is offline, but we're ok.
+        };
+
+        // Key the working set by bundle location rather than content hash so a
+        // routine bundle refresh can reuse the names learned from the previous
+        // revision. Stale names are harmless: prefetch resolves every name
+        // against the current index before fetching it.
+        let manifest_path = cache_root.join(format!("data/{bundle_location}.prefetch"));
+        let prefetch_supported = bundle.supports_batch_open();
+        let touched = if prefetch_supported {
+            prefetch::load_manifest(&manifest_path)
+        } else {
+            HashSet::new()
         };
 
         let bundle = BundleCache {
@@ -171,6 +229,10 @@ impl<'this, T: FileIndex<'this>> BundleCache<'this, T> {
             bundle,
             cache_root,
             bundle_hash,
+            manifest_path,
+            touched,
+            prefetch_supported,
+            prefetched: false,
         };
 
         // Right now, files are stored in
@@ -336,15 +398,34 @@ impl<'this, T: FileIndex<'this>> IoProvider for BundleCache<'this, T> {
         name: &str,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
-        let path = match self.get_fileinfo(name) {
+        // On the first lookup of a cold cache, warm the recorded working set
+        // concurrently so the engine's subsequent serial requests hit cache.
+        self.prefetch(status);
+
+        let (in_cache, info) = match self.get_fileinfo(name) {
             OpenResult::NotAvailable => return OpenResult::NotAvailable,
             OpenResult::Err(e) => return OpenResult::Err(e),
-            OpenResult::Ok((true, f)) => self.get_file_path(&f),
-            OpenResult::Ok((false, f)) => match self.fetch_file(f, status) {
-                OpenResult::Ok(p) => p,
+            OpenResult::Ok(resolved) => resolved,
+        };
+
+        let path = if in_cache {
+            // Record the original lookup rather than the resolved file name:
+            // the index may apply search rules, and replaying the lookup
+            // preserves those semantics. Warm hits count too, allowing an
+            // existing cache to learn a working set without redownloading it.
+            self.record_resolved_name(name);
+            self.get_file_path(&info)
+        } else {
+            match self.fetch_file(info, status) {
+                OpenResult::Ok(p) => {
+                    // Failed downloads stay out of the learned set. They will
+                    // be retried normally if the engine requests them again.
+                    self.record_resolved_name(name);
+                    p
+                }
                 OpenResult::NotAvailable => return OpenResult::NotAvailable,
                 OpenResult::Err(e) => return OpenResult::Err(e),
-            },
+            }
         };
 
         let f = match File::open(path) {

@@ -1,24 +1,8 @@
-# tectonic_bridge_freetype2 0.3.2 (2026-04-11)
+# See elsewhere for changelog
 
-# tectonic_bridge_freetype2 0.3.1 (2026-04-11)
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-- Fix for publish not going through
-
-
-# tectonic_bridge_freetype2 0.3.0 (2026-04-11)
-
-- Global lint fixes
-- Update to edition 2021
-- Expose the C API in Rust for use in `tectonic_xetex_layout` Rust rewrite
-
-
-# tectonic_bridge_freetype2 0.2.0 (2021-06-03)
-
-Fix up handling of how C/C++ header file paths are exported to dependent crates.
-This is a breaking change: we've moved from a single include directory to a list
-of them.
-
-
-# tectonic_bridge_freetype2 0.1.0 (2021-01-15)
-
-Initial release of FreeType "bridge" crate for Tectonic.
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_freetype2/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

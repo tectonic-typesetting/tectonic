@@ -25,7 +25,7 @@ of other powerful tools such as [git] and [cargo]. To create a new document, we
 use a [`new`][cli-new] subcommand that looks like this:
 
 ```sh
-$ tectonic -X new myfirstdoc
+tectonic -X new myfirstdoc
 ```
 
 [git]: https://git-scm.com/
@@ -39,7 +39,7 @@ Enter this new directory in your command prompt.
 [workspace]: ../ref/workspaces.md
 
 ```sh
-$ cd myfirstdoc
+cd myfirstdoc
 ```
 
 **Note:** *The `-X` flag activates the V2 interface. Don’t forget it! Eventually
@@ -49,7 +49,7 @@ that changeover hasn’t happened yet.*
 If you’ve got an existing TeX file, you can process it in one-off fashion with:
 
 ```sh
-$ tectonic -X compile myfile.tex
+tectonic -X compile myfile.tex
 ```
 
 See [the `tectonic -X compile` documentation][cli-compile] for all of the options.
@@ -62,7 +62,7 @@ See [the `tectonic -X compile` documentation][cli-compile] for all of the option
 To compile your document, run:
 
 ```sh
-$ tectonic -X build
+tectonic -X build
 ```
 
 If you haven’t run Tectonic on your computer before, this command will take a
@@ -72,7 +72,7 @@ these files and avoid downloading them again. Test it out by running the build
 again:
 
 ```sh
-$ tectonic -X build
+tectonic -X build
 ```
 
 This time the command should finish much more quickly, with no messages about
@@ -80,7 +80,7 @@ downloading files. The output PDF document will be placed at the path
 `build/default/default.pdf` relative to your document directory:
 
 ```sh
-$ ls -l build/default/
+ls -l build/default/
 ```
 
 If you’re familiar with traditional TeX engines, you’ll have noticed that

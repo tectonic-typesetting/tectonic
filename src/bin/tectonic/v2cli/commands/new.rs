@@ -1,10 +1,9 @@
 use clap::Parser;
 use std::env;
 use std::path::PathBuf;
-use tectonic::{
-    config::PersistentConfig, ctry, docmodel::WorkspaceCreatorExt, errors::Result, tt_note,
-};
+use tectonic::{config::PersistentConfig, ctry, docmodel::WorkspaceCreatorExt, tt_note};
 use tectonic_docmodel::workspace::WorkspaceCreator;
+use tectonic_errors::Result;
 use tectonic_status_base::StatusBackend;
 
 use crate::v2cli::{CommandCustomizations, TectonicCommand};

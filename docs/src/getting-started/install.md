@@ -48,7 +48,7 @@ You’ll know that you’re set up when you can go to your computer’s command 
 and run:
 
 ```sh
-$ tectonic --help
+tectonic --help
 ```
 
 and the result is that you get a printout of information about different options

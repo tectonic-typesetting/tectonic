@@ -29,7 +29,7 @@ impl StrLike for CStr {
         if self.to_str().is_ok() {
             sys::kCFStringEncodingUTF8
         } else {
-            sys::kCFStringEncodingNonLossyASCII
+            sys::kCFStringEncodingASCII
         }
     }
 
@@ -139,7 +139,7 @@ impl CFString {
     }
 
     /// Get this value as a null-terminated C-string
-    pub fn get_cstring(&self) -> CString {
+    pub fn get_cstring(&self) -> Option<CString> {
         let len = self.len() * 4 + 1;
         let mut buf = vec![0; len];
         // SAFETY: Self is guaranteed valid. Buffer is definitely of sufficient length to hold the
@@ -154,24 +154,61 @@ impl CFString {
         };
         if res {
             let buf = buf.into_iter().take_while(|&c| c != 0).collect::<Vec<_>>();
-            CString::new(buf).unwrap()
+            if buf.len() != self.len() {
+                None
+            } else {
+                Some(CString::new(buf).unwrap())
+            }
         } else {
-            panic!("Invalid C String")
+            None
         }
     }
 
     /// Attempt to get a reference to this value as a `CStr`, if the value is natively UTF-8,
     /// otherwise allocate a CString in that encoding.
-    pub fn as_cstr(&self) -> Cow<'_, CStr> {
+    pub fn as_cstr(&self) -> Option<Cow<'_, CStr>> {
         // SAFETY: Self is guaranteed valid
         let cstr =
             unsafe { sys::CFStringGetCStringPtr(self.as_type_ref(), sys::kCFStringEncodingUTF8) };
         if cstr.is_null() {
-            Cow::Owned(self.get_cstring())
+            self.get_cstring().map(Cow::Owned)
         } else {
             // SAFETY: If non-null, the return value of CFStringGetCStringPtr is guaranteed to be a
             //         valid C-string
-            Cow::Borrowed(unsafe { CStr::from_ptr(cstr) })
+            Some(Cow::Borrowed(unsafe { CStr::from_ptr(cstr) }))
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_as_str() {
+        let str = CFString::new("foo");
+        assert_eq!(str.as_str(), Cow::Borrowed("foo"));
+
+        let cstr = CFString::new(c"foo");
+        assert_eq!(cstr.as_str(), Cow::Borrowed("foo"));
+
+        // Invalid UTF-8 CStrings are treated as extended-ASCII.
+        let non_str = CFString::new(c"\xC3\x28bar");
+        assert_eq!(non_str.as_str(), Cow::<str>::Owned("Ã(bar".to_string()));
+    }
+
+    #[test]
+    fn test_as_cstr() {
+        let str = CFString::new("foo");
+        assert_eq!(str.as_cstr(), Some(Cow::<CStr>::Owned(c"foo".to_owned())));
+
+        let cstr = CFString::new(c"foo");
+        assert_eq!(cstr.as_cstr(), Some(Cow::Borrowed(c"foo")));
+    }
+
+    #[test]
+    fn test_as_non_cstr() {
+        let non_cstr = CFString::new("fo\0o");
+        assert!(non_cstr.as_cstr().is_none());
     }
 }

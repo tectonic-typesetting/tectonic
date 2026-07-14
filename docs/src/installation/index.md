@@ -100,14 +100,14 @@ Conda packaging project. To install Tectonic you must activate conda-forge,
 which can be done temporarily like so:
 
 ```sh
-$ conda install -c conda-forge tectonic
+conda install -c conda-forge tectonic
 ```
 
 ### Arch Linux
 
 For users of [Arch Linux], there are two Tectonic packages available: [tectonic][arch-tectonic] from the official repositories, which can be installed with
 ```sh
-$ sudo pacman -S tectonic
+sudo pacman -S tectonic
 ```
 and [tectonic-git][arch-tectonic-git] from the [AUR].
 
@@ -122,7 +122,7 @@ There is a `tectonic` package in [Homebrew](https://brew.sh/). If you already
 have Homebrew installed, installing Tectonic should be as simple as:
 
 ```sh
-$ brew install tectonic
+brew install tectonic
 ```
 
 We also have instructions about [installing Tectonic’s dependencies using
@@ -137,7 +137,7 @@ There is a `tectonic` port in [MacPorts](https://www.macports.org/). If you
 already have MacPorts installed, installing Tectonic should be as simple as:
 
 ```sh
-$ sudo port install tectonic
+sudo port install tectonic
 ```
 
 ### nix or nixOS
@@ -145,14 +145,14 @@ $ sudo port install tectonic
 If you’re using [nix], you can imperatively install [`tectonic`][nix-tectonic] with:
 
 ```sh
-$ nix-env -f '<nixpkgs>' -iA tectonic
+nix-env -f '<nixpkgs>' -iA tectonic
 ```
 
 in your shell. You can also create a temporary environment using
 [`nix-shell`](https://nixos.org/nix/manual/#sec-nix-shell):
 
 ```sh
-$ nix-shell '<nixpkgs>' -A tectonic
+nix-shell '<nixpkgs>' -A tectonic
 ```
 
 [nix]: https://nixos.org/
@@ -164,7 +164,7 @@ Void Linux has a `tectonic` package in the [void-packages] repository. To
 install it, run:
 
 ```sh
-$ sudo xbps-install -S tectonic
+sudo xbps-install -S tectonic
 ```
 
 [void-packages]: https://github.com/void-linux/void-packages/blob/master/srcpkgs/tectonic/template
@@ -177,7 +177,7 @@ You can always compile Tectonic yourself. If your system has C++ and Rust
 compilers installed, this may be as simple as running:
 
 ```sh
-$ cargo install tectonic
+cargo install tectonic
 ```
 
 However, Tectonic requires various C/C++ support libraries that may not be

@@ -121,14 +121,22 @@ impl<B: Bundle + ?Sized> Bundle for Box<B> {
 
 /// A bundle that may be cached.
 ///
-/// These methods do not implement any new features.
-/// Instead, they give the [`cache::BundleCache`] wrapper
-/// more direct access to existing bundle functionality.
+/// These methods give the [`cache::BundleCache`] wrapper direct access to
+/// bundle operations, including optional concurrent batch fetching.
 pub trait CachableBundle<'this, T>
 where
     Self: Bundle + 'this,
     T: FileIndex<'this>,
 {
+    /// Whether this backend provides a concurrent [`Self::batch_open`]
+    /// implementation suitable for cache prefetching.
+    ///
+    /// Backends are opt-in so that the cache never turns ordinary on-demand
+    /// reads into a large serial prefetch.
+    fn supports_batch_open(&self) -> bool {
+        false
+    }
+
     /// Initialize this bundle's file index from an external reader
     /// This allows us to retrieve the FileIndex from the cache WITHOUT
     /// touching the network.
@@ -150,6 +158,22 @@ where
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle>;
 
+    /// Fetch a batch of files, returning the raw bytes of each one in the same
+    /// order as `infos`.
+    ///
+    /// This exists so that network bundles can download many files concurrently
+    /// instead of one-at-a-time. Unsupported backends retain their normal
+    /// on-demand behavior because the cache only calls this method when
+    /// [`Self::supports_batch_open`] is true. Per-file failures are reported
+    /// in-band so that one bad file doesn't sink the whole batch.
+    fn batch_open(
+        &mut self,
+        infos: &[T::InfoType],
+        _status: &mut dyn StatusBackend,
+    ) -> Vec<OpenResult<Vec<u8>>> {
+        infos.iter().map(|_| OpenResult::NotAvailable).collect()
+    }
+
     /// Search for a file in this bundle.
     /// This should foward the call to `self.index`
     fn search(&mut self, name: &str) -> Option<T::InfoType>;
@@ -162,6 +186,10 @@ where
 impl<'this, T: FileIndex<'this>, B: CachableBundle<'this, T> + ?Sized> CachableBundle<'this, T>
     for Box<B>
 {
+    fn supports_batch_open(&self) -> bool {
+        (**self).supports_batch_open()
+    }
+
     fn initialize_index(&mut self, source: &mut dyn Read) -> Result<()> {
         (**self).initialize_index(source)
     }
@@ -184,6 +212,14 @@ impl<'this, T: FileIndex<'this>, B: CachableBundle<'this, T> + ?Sized> CachableB
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
         (**self).open_fileinfo(info, status)
+    }
+
+    fn batch_open(
+        &mut self,
+        infos: &[T::InfoType],
+        status: &mut dyn StatusBackend,
+    ) -> Vec<OpenResult<Vec<u8>>> {
+        (**self).batch_open(infos, status)
     }
 
     fn search(&mut self, name: &str) -> Option<T::InfoType> {

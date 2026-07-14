@@ -98,7 +98,7 @@ impl TectonicCommand for BundleCreateCommand {
                 Ok(_) => {}
                 Err(e) => {
                     error!("select job failed with error: {e}");
-                    return Err(e.into());
+                    return Err(e);
                 }
             };
         }
@@ -108,7 +108,7 @@ impl TectonicCommand for BundleCreateCommand {
                 Ok(_) => {}
                 Err(e) => {
                     error!("bundle packer failed with error: {e}");
-                    return Err(e.into());
+                    return Err(e);
                 }
             };
         }

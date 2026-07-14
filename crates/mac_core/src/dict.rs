@@ -75,6 +75,7 @@ cfty! {
 }
 
 impl<K: CoreType, V: CoreType> CFDictionary<K, V> {
+    // TODO: Bind the keys/values of P to K and V
     /// Create a new [`CFDictionary`] that contains the provided key/value pairs.
     pub fn new<P: Pairs>(pairs: P) -> CFDictionary<K, V> {
         let (keys, values) = pairs.into_pairs();
@@ -94,5 +95,33 @@ impl<K: CoreType, V: CoreType> CFDictionary<K, V> {
         let ptr = NonNull::new(ptr.cast_mut()).unwrap();
         // SAFETY: If non-null, pointer from CFDictionaryCreate is a new, owned CFDictionary.
         unsafe { CFDictionary::new_owned(ptr) }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::CFString;
+
+    #[test]
+    fn test_new_arr() {
+        let one = CFString::new("1");
+        let two = CFString::new("2");
+        let three = CFString::new("3");
+        let four = CFString::new("4");
+
+        let _ = CFDictionary::<CFString, CFString>::new::<[(CFString, CFString); 0]>([]);
+        let _ = CFDictionary::<CFString, CFString>::new([(one, two), (three, four)]);
+    }
+
+    #[test]
+    fn test_new_vec() {
+        let one = CFString::new("1");
+        let two = CFString::new("2");
+        let three = CFString::new("3");
+        let four = CFString::new("4");
+
+        let _ = CFDictionary::<CFString, CFString>::new::<Vec<(CFString, CFString)>>(vec![]);
+        let _ = CFDictionary::<CFString, CFString>::new(vec![(one, two), (three, four)]);
     }
 }

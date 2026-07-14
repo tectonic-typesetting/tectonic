@@ -30,12 +30,12 @@ fn find_font_with_name(name: CFString, key: FontAttribute) -> Option<CTFontDescr
 
 fn append_name_to_list(font: &CTFont, name_list: &mut Vec<CString>, name_key: FontNameKey) {
     let name = font.name(name_key);
-    if let Some(name) = name {
-        FontManager::append_to_list(name_list, name.as_cstr());
+    if let Some(name) = name.as_ref().and_then(|n| n.as_cstr()) {
+        FontManager::append_to_list(name_list, name);
     }
     let name = font.localized_name(name_key);
-    if let Some(name) = name {
-        FontManager::append_to_list(name_list, name.as_cstr());
+    if let Some(name) = name.as_ref().and_then(|n| n.as_cstr()) {
+        FontManager::append_to_list(name_list, name);
     }
 }
 
@@ -152,7 +152,7 @@ impl FontManagerBackend for MacBackend {
         // SAFETY: CFString has no generic parameters
         let ps_name = unsafe { ps_name.downcast::<CFString>() }.unwrap();
 
-        names.ps_name = Some(ps_name.get_cstring());
+        names.ps_name = ps_name.get_cstring();
 
         let font = CTFont::new_descriptor(&font, 0.0);
         append_name_to_list(&font, &mut names.full_names, FontNameKey::Full);

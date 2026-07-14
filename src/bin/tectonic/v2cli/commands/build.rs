@@ -3,11 +3,11 @@ use tectonic::{
     config::is_config_test_mode_activated,
     config::PersistentConfig,
     docmodel::{DocumentExt, DocumentSetupOptions},
-    errors::Result,
     tt_error, tt_note,
 };
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_docmodel::workspace::Workspace;
+use tectonic_errors::Result;
 use tectonic_status_base::StatusBackend;
 
 use crate::v2cli::{CommandCustomizations, TectonicCommand};
