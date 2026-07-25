@@ -262,10 +262,10 @@ jobs:
             target: x86_64-pc-windows-msvc
             run-tests: true
             publish: true
-          - image: windows-latest
+          - image: windows-11-arm
             target: aarch64-pc-windows-msvc
-            run-tests: false
-            publish: false
+            run-tests: true
+            publish: true
           - image: macos-latest
             target: x86_64-apple-darwin
             run-tests: true
@@ -358,4 +358,3 @@ jobs:
           executable: 'cross'
           test-flags: '--all-targets --exclude tectonic_bridge_fontconfig'
           package-flags: '--command-name=cross --reroot=.'
-
