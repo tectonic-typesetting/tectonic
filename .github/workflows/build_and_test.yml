@@ -210,10 +210,6 @@ jobs:
           - image: windows-latest
             install-all-deps: false
             publish: true
-          # Set primary build for exactly one build
-          - image: ubuntu-latest
-            install-all-deps: false
-            primary-build: true
           # Add targets for each image type
           - image: ubuntu-latest
             target: x86_64-unknown-linux-gnu
