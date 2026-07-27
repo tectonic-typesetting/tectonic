@@ -1,3 +1,13 @@
+# tectonic_pdf_io 0.5.3 (2026-07-27)
+
+Improvements:
+
+- pdf_io: support fonts with only a Unicode (0,4) cmap ([#1377], [@hh2210])
+
+[#1377]: https://github.com/tectonic-typesetting/tectonic/pull/1377
+
+[@hh2210]: https://github.com/hh2210
+
 # tectonic_pdf_io 0.5.2 (2026-04-11)
 
 # tectonic_pdf_io 0.5.1 (2026-04-11)

@@ -1,3 +1,13 @@
+# tectonic_engine_xetex 0.5.3 (2026-07-27)
+
+Fixes:
+
+- Fix `SEGFAULT` in `\XeTeXglyphname` ([#1353], [@CraftSpider])
+
+[#1353]: https://github.com/tectonic-typesetting/tectonic/pull/1353
+
+[@CraftSpider]: https://github.com/craftspider
+
 # tectonic_engine_xetex 0.5.2 (2026-04-11)
 
 # tectonic_engine_xetex 0.5.1 (2026-04-11)

@@ -1,3 +1,11 @@
+# tectonic_bridge_core 0.5.3 (2026-07-27)
+
+Internal Improvments:
+
+- Bump all dependencies ([#1355])
+
+[#1355]: https://github.com/tectonic-typesetting/tectonic/pull/1355
+
 # tectonic_bridge_core 0.5.2 (2026-04-11)
 
 # tectonic_bridge_core 0.5.1 (2026-04-11)

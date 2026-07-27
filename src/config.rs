@@ -16,9 +16,8 @@ use std::{
     sync::atomic::{AtomicBool, Ordering},
 };
 use tectonic_bundles::{detect_bundle, Bundle};
+use tectonic_errors::{Error, Result};
 use tectonic_io_base::app_dirs;
-
-use crate::errors::{ErrorKind, Result};
 
 /// Awesome hack time!!!
 ///
@@ -55,7 +54,7 @@ pub fn maybe_return_test_bundle(bundle: Option<String>) -> Result<Box<dyn Bundle
     if is_test_bundle_wanted(bundle) {
         Ok(Box::<crate::test_util::TestBundle>::default())
     } else {
-        Err(ErrorKind::Msg("not asking for the default test bundle".to_owned()).into())
+        Err(Error::msg("not asking for the default test bundle"))
     }
 }
 
@@ -145,10 +144,9 @@ impl PersistentConfig {
         }
 
         if self.default_bundles.len() != 1 {
-            return Err(ErrorKind::Msg(
-                "exactly one default_bundle item must be specified (for now)".to_owned(),
-            )
-            .into());
+            return Err(Error::msg(
+                "exactly one default_bundle item must be specified (for now)",
+            ));
         }
 
         Ok(

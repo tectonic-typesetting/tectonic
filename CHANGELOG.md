@@ -1,3 +1,64 @@
+# tectonic 0.17.0 (2026-07-27)
+
+Important segfault fixes for MacOS and XeTeXglyphname, as well as improvements to watchexec and updating
+to newer non-deprecated dependencies.
+
+Improvements:
+
+- pdf_io: support fonts with only a Unicode (0,4) cmap ([#1377], [@hh2210])
+- Remove dollar signs from shell commands in book ([#1328], [@lababidi])
+- Pre-fetch itar cache entries concurrently for major speed improvements on first build ([#1379], [@hh2210])
+
+Fixes:
+
+- Fix `SEGFAULT` in `\XeTeXglyphname` ([#1353], [@CraftSpider])
+- Fix `SIGBUS` on MacOS for any `\setmainfont` call ([#1345], [@nadimkobeissi])
+- Don't pass a possibe-null pointer to `slice::from_raw_parts` ([#1380], [@z-erica])
+- Change bundle caching to only re-check remote once per week ([#1363], [@CraftSpider])
+- bibtex: don't panic on an empty @string macro ([#1372], [@osdnk])
+- Improve watchexec handling to not spawn multiple processes when more than one file has changed ([#1362], [@CraftSpider])
+
+Internal Improvements:
+
+- Remove usage of long-deprecated `CARGO_BIN_PATH` ([#1369])
+- Update to more recent dependencies and compiler toolchains ([#1361], [#1355])
+
+[#1380]: https://github.com/tectonic-typesetting/tectonic/pull/1380
+
+[#1379]: https://github.com/tectonic-typesetting/tectonic/pull/1379
+
+[#1377]: https://github.com/tectonic-typesetting/tectonic/pull/1377
+
+[#1372]: https://github.com/tectonic-typesetting/tectonic/pull/1372
+
+[#1369]: https://github.com/tectonic-typesetting/tectonic/pull/1369
+
+[#1363]: https://github.com/tectonic-typesetting/tectonic/pull/1363
+
+[#1362]: https://github.com/tectonic-typesetting/tectonic/pull/1362
+
+[#1361]: https://github.com/tectonic-typesetting/tectonic/pull/1361
+
+[#1355]: https://github.com/tectonic-typesetting/tectonic/pull/1355
+
+[#1353]: https://github.com/tectonic-typesetting/tectonic/pull/1353
+
+[#1345]: https://github.com/tectonic-typesetting/tectonic/pull/1345
+
+[#1328]: https://github.com/tectonic-typesetting/tectonic/pull/1328
+
+[@hh2210]: https://github.com/hh2210
+
+[@lababidi]: https://github.com/lababidi
+
+[@nadimkobeissi]: https://github.com/nadimkobeissi
+
+[@osdnk]: https://github.com/osdnk
+
+[@CraftSpider]: https://github.com/craftspider
+
+[@z-erica]: https://github.com/z-erica
+
 # tectonic 0.16.9 (2026-04-17)
 
 Quick update to fix a major bug on macOS

@@ -1047,6 +1047,7 @@ typedef struct {
 static cmap_plat_enc_rec cmap_plat_encs[] = {
     { 3, 10 },
     { 0, 3 },
+    { 0, 4 },
     { 0, 0 },
     { 3, 1 },
     { 0, 1 }
@@ -1469,6 +1470,9 @@ otf_load_Unicode_CMap (const char *map_name, uint32_t ttc_index, /* 0 for non-TT
         ttcmap = tt_cmap_read(sfont, 3, 1); /* Microsoft UCS2 */
         if (!ttcmap) {
             ttcmap = tt_cmap_read(sfont, 0, 3); /* Unicode 2.0 or later */
+        }
+        if (!ttcmap) {
+            ttcmap = tt_cmap_read(sfont, 0, 4); /* Unicode 2.0 or later */
         }
     }
 

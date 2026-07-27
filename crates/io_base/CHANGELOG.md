@@ -1,3 +1,13 @@
+# tectonic_io_base 0.6.0 (2026-07-27)
+
+Internal Improvements:
+
+- Update to more recent dependencies and compiler toolchains ([#1361], [#1355])
+
+[#1363]: https://github.com/tectonic-typesetting/tectonic/pull/1363
+
+[#1361]: https://github.com/tectonic-typesetting/tectonic/pull/1361
+
 # tectonic_io_base 0.5.0 (2026-04-11)
 
 - Global lint fixes

@@ -125,6 +125,13 @@ fn main() {
     if target.contains("-msvc") {
         c_cfg.flag("/EHsc");
         cxx_cfg.flag("/EHsc");
+        cxx_cfg.flag("/std:c++17");
+        // Disable noisy warnings that are enabled by -Wall
+        cxx_cfg.flag("/wd4514"); // unreferenced inline function has been removed
+        cxx_cfg.flag("/wd5045"); // Spectre mitigation insertion (informational)
+        cxx_cfg.flag("/wd4820"); // padding added after data member
+        cxx_cfg.flag("/wd4244"); // conversion from 'type1' to 'type2', possible loss of data
+        cxx_cfg.flag("/wd4365"); // conversion from 'type1' to 'type2', signed/unsigned mismatch
     }
 
     // OK, back to generic build rules.

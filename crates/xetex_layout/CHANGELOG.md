@@ -1,3 +1,13 @@
+# tectonic_xetex_layout 0.3.4 (2026-07-27)
+
+Fixes:
+
+- Fix `SIGBUS` on MacOS for any `\setmainfont` call ([#1345], [@nadimkobeissi])
+
+[#1345]: https://github.com/tectonic-typesetting/tectonic/pull/1345
+
+[@nadimkobeissi]: https://github.com/nadimkobeissi
+
 # tectonic_xetex_layout 0.3.3 (2026-04-17)
 
 - Fix SIGBUS crash on macOS arm64 for any `\setmainfont{}` call

@@ -7,6 +7,7 @@
 //! `tectonic_docmodel` crate with the actual document-processing capabilities
 //! provided by the processing engines.
 
+use anyhow::Context;
 use std::{fmt::Write as FmtWrite, fs, io, path::PathBuf};
 use tectonic_bridge_core::SecuritySettings;
 use tectonic_bundles::{detect_bundle, Bundle};
@@ -14,12 +15,12 @@ use tectonic_docmodel::{
     document::{BuildTargetType, Document, InputFile},
     workspace::{Workspace, WorkspaceCreator},
 };
+use tectonic_errors::{Error, Result};
 use tectonic_geturl::{DefaultBackend, GetUrlBackend};
 
 use crate::{
-    config, ctry,
+    config,
     driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
-    errors::{ErrorKind, Result},
     status::StatusBackend,
     test_util, tt_note,
     unstable_opts::UnstableOptions,
@@ -110,7 +111,7 @@ impl DocumentExt for Document {
         status: &mut dyn StatusBackend,
     ) -> Result<ProcessingSessionBuilder> {
         let profile = self.outputs.get(output_profile).ok_or_else(|| {
-            ErrorKind::Msg(format!(
+            Error::msg(format!(
                 "unrecognized output profile name \"{output_profile}\""
             ))
         })?;
@@ -177,10 +178,12 @@ impl DocumentExt for Document {
 
         let mut output_dir = self.build_dir().to_owned();
         output_dir.push(output_profile);
-        ctry!(
-            fs::create_dir_all(&output_dir);
-            "couldn\'t create output directory `{}`", output_dir.display()
-        );
+        fs::create_dir_all(&output_dir).with_context(|| {
+            format!(
+                "couldn\'t create output directory `{}`",
+                output_dir.display()
+            )
+        })?;
         sess_builder.output_dir(&output_dir);
 
         Ok(sess_builder)
@@ -215,6 +218,6 @@ impl WorkspaceCreatorExt for WorkspaceCreator {
             gub.resolve_url(&loc)?
         };
 
-        Ok(self.create(bundle_loc, Vec::new())?)
+        self.create(bundle_loc, Vec::new())
     }
 }

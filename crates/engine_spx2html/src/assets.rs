@@ -198,7 +198,7 @@ pub(crate) fn create_output_path(
         if piece == ".." {
             bail!(
                 "illegal provideFile dest path `{}`: it contains a `..` component",
-                &dest_path
+                dest_path
             );
         }
 
@@ -207,7 +207,7 @@ pub(crate) fn create_output_path(
         if as_path.is_absolute() || as_path.has_root() {
             bail!(
                 "illegal provideFile path `{}`: it contains an absolute/rooted component",
-                &dest_path,
+                dest_path,
             );
         }
 

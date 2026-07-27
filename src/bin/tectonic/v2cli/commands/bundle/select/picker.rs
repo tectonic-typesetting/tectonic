@@ -1,4 +1,5 @@
 use anyhow::{bail, Context, Result};
+use digest_io::IoWrapper;
 use regex::Regex;
 use sha2::{Digest, Sha256};
 use std::{
@@ -208,7 +209,7 @@ impl FilePicker {
                 hash: match file {
                     None => None,
                     Some(f) => {
-                        let mut hasher = Sha256::new();
+                        let mut hasher = IoWrapper(Sha256::new());
                         let _ = std::io::copy(
                             &mut fs::File::open(f)
                                 .with_context(|| format!("while computing hash of {path:?}"))?,
@@ -216,6 +217,7 @@ impl FilePicker {
                         )?;
                         Some(
                             hasher
+                                .0
                                 .finalize()
                                 .iter()
                                 .map(|b| format!("{b:02x}"))
@@ -541,9 +543,10 @@ impl FilePicker {
             let mut file = File::create(self.build_dir.join("content/SHA256SUM"))
                 .context("while writing SHA256SUM")?;
 
-            let mut hasher = Sha256::new();
+            let mut hasher = IoWrapper(Sha256::new());
             let _ = std::io::copy(&mut fs::File::open(&filelist_path)?, &mut hasher)?;
             let hash = hasher
+                .0
                 .finalize()
                 .iter()
                 .map(|b| format!("{b:02x}"))

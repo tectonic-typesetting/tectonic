@@ -106,7 +106,7 @@ impl Document {
             if outputs.insert(output.name.clone(), output).is_some() {
                 bail!(
                     "duplicated output name `{}` in TOML specification",
-                    &toml_output.name
+                    toml_output.name
                 );
             }
         }

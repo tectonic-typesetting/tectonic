@@ -733,7 +733,7 @@ mod tests {
 
     #[test]
     fn test_tag() {
-        let raw = u32::from_be_bytes([b't', b'e', b's', b't']);
+        let raw = u32::from_be_bytes(*b"test");
 
         assert_eq!(Tag::new(raw).to_raw(), raw);
         assert_eq!(Tag::from_str("test"), Tag::new(raw));

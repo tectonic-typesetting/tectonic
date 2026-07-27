@@ -1,3 +1,9 @@
+# tectonic_engine_spx2html 0.4.3 (2026-07-27)
+
+Internal Improvements:
+
+- Fix new clippy lints
+
 # tectonic_engine_spx2html 0.4.2 (2026-04-11)
 
 # tectonic_engine_spx2html 0.4.1 (2026-04-11)

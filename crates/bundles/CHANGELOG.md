@@ -1,3 +1,26 @@
+# tectonic_bundles 0.4.2 (2026-07-27)
+
+Improvements:
+
+- Pre-fetch itar cache entries concurrently for major speed improvements on first build ([#1379], [@hh2210])
+- Change bundle caching to only re-check remote once per week ([#1363], [@CraftSpider])
+
+Internal Improvements:
+
+- Update to more recent dependencies and compiler toolchains ([#1361], [#1355])
+
+[#1379]: https://github.com/tectonic-typesetting/tectonic/pull/1379
+
+[#1363]: https://github.com/tectonic-typesetting/tectonic/pull/1363
+
+[#1361]: https://github.com/tectonic-typesetting/tectonic/pull/1361
+
+[#1355]: https://github.com/tectonic-typesetting/tectonic/pull/1355
+
+[@hh2210]: https://github.com/hh2210
+
+[@CraftSpider]: https://github.com/craftspider
+
 # tectonic_bundles 0.4.1 (2026-04-11)
 
 - Fix for publish not going through
