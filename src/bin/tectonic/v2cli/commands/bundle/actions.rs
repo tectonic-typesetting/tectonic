@@ -115,7 +115,7 @@ pub(super) fn pack(cli: &BundleCreateCommand) -> Result<()> {
         return Ok(());
     }
 
-    let target_name = format!("{}.ttb", &bundle_config.bundle.name);
+    let target_name = format!("{}.ttb", bundle_config.bundle.name);
     let target = build_dir.join(&target_name);
     if target.exists() {
         if target.is_file() {

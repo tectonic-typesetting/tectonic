@@ -18,10 +18,10 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
-app_dirs2 = "^2.3"
+directories = "6.0"
 flate2 = { version = "^1.0.19", default-features = false, features = ["zlib"] }
 libc = "^0.2" # for EISDIR :-(
-sha2 = "^0.10" # for digest computations
+sha2 = "0.11" # for digest computations
 thiserror = "2.0"
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_status_base = { path = "../status_base", version = "0.0.0-dev.0" }

@@ -19,8 +19,13 @@ impl<'a> FontSetRef<'a> {
         let ptr = unsafe { (*self.as_ptr()).fonts.cast() };
         // SAFETY: Internal pointer guaranteed valid
         let len = unsafe { (*self.as_ptr()).nfont } as usize;
-        // SAFETY: Fonts pointer guaranteed to be to a valid array of length nfont
-        unsafe { slice::from_raw_parts(ptr, len) }
+        if len == 0 {
+            // slice::from_raw_parts can't take a null pointer, even if the length is zero
+            &[]
+        } else {
+            // SAFETY: Fonts pointer guaranteed to be to a valid array of length nfont
+            unsafe { slice::from_raw_parts(ptr, len) }
+        }
     }
 }
 

@@ -1,5 +1,15 @@
 # rc: micro bump
 
+Fixes:
+
+- bibtex: don't panic on an empty @string macro ([#1372], [@osdnk])
+
+[#1372]: https://github.com/tectonic-typesetting/tectonic/pull/1372
+
+[@osdnk]: https://github.com/osdnk
+
+# tectonic_engine_bibtex 0.3.3 (2026-04-17)
+
 - Allow a new clippy warning that doesn't improve the code
 
 # tectonic_engine_bibtex 0.3.2 (2026-04-11)

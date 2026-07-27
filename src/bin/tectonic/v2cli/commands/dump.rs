@@ -6,11 +6,11 @@ use tectonic::{
     ctry,
     docmodel::{DocumentExt, DocumentSetupOptions},
     driver::PassSetting,
-    errors::Result,
     tt_error,
 };
 use tectonic_bridge_core::{SecuritySettings, SecurityStance};
 use tectonic_docmodel::workspace::Workspace;
+use tectonic_errors::{Error, Result};
 use tectonic_status_base::StatusBackend;
 
 use crate::v2cli::{CommandCustomizations, TectonicCommand};
@@ -100,9 +100,9 @@ impl TectonicCommand for DumpCommand {
                 return Ok(1);
             }
         } else {
-            let info = files
-                .get(&self.filename)
-                .ok_or_else(|| format!("no such intermediate file `{}`", self.filename))?;
+            let info = files.get(&self.filename).ok_or_else(|| {
+                Error::msg(format!("no such intermediate file `{}`", self.filename))
+            })?;
             ctry!(
                 std::io::stdout().write_all(&info.data[..]);
                 "error dumping intermediate file `{}`", self.filename

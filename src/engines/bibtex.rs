@@ -7,7 +7,8 @@ use tectonic_bridge_core::CoreBridgeLauncher;
 use tectonic_engine_bibtex::{BibtexEngine as RealBibtexEngine, BibtexOutcome};
 
 use super::tex::TexOutcome;
-use crate::{errors::Result, unstable_opts::UnstableOptions};
+use crate::unstable_opts::UnstableOptions;
+use tectonic_errors::Result;
 
 /// A struct for invoking the `bibtex` engine.
 ///

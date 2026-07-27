@@ -37,15 +37,8 @@ impl<'a> Special<'a> {
 
         let mut pieces = text.splitn(2, ' ');
 
-        let (cmd, remainder) = if let Some(p) = pieces.next() {
-            if let Some(cmd) = p.strip_prefix("tdux:") {
-                (cmd, pieces.next().unwrap_or_default())
-            } else {
-                return None;
-            }
-        } else {
-            return None;
-        };
+        let cmd = pieces.next()?.strip_prefix("tdux:")?;
+        let remainder = pieces.next().unwrap_or_default();
 
         Some(match cmd {
             "asp" => Special::AutoStartParagraph,

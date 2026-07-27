@@ -3,11 +3,11 @@ use create::BundleCreateCommand;
 use tectonic::{
     config::PersistentConfig,
     docmodel::{DocumentExt, DocumentSetupOptions},
-    errors::Result,
     tt_note,
 };
 use tectonic_bundles::Bundle;
 use tectonic_docmodel::workspace::Workspace;
+use tectonic_errors::Result;
 use tectonic_status_base::StatusBackend;
 
 use crate::v2cli::{CommandCustomizations, TectonicCommand};
@@ -34,7 +34,7 @@ fn get_a_bundle(
 
         Err(e) => {
             if e.downcast_ref::<NoWorkspaceFoundError>().is_none() {
-                Err(e.into())
+                Err(e)
             } else {
                 tt_note!(
                     status,

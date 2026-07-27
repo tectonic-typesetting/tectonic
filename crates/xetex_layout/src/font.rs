@@ -581,7 +581,9 @@ pub(crate) fn get_file_name_from_ct_font(ct_font: &CTFont, index: &mut u32) -> O
                             *index = i as u32;
                             break;
                         }
-                        (Some(name1), Some(name2)) if &*name1.as_cstr() == name2 => {
+                        (Some(name1), Some(name2))
+                            if name1.as_cstr().is_some_and(|name1| name1 == name2) =>
+                        {
                             *index = i as u32;
                             break;
                         }

@@ -20,9 +20,10 @@ use std::{
     path::{Path, PathBuf},
 };
 use tectonic::errors::DefinitelySame;
-use tectonic::{errors::Result, io::memory::MemoryFileCollection};
+use tectonic::io::memory::MemoryFileCollection;
 use tectonic_bridge_core::{CoreBridgeLauncher, MinimalDriver};
 use tectonic_engine_xetex::TexOutcome;
+use tectonic_errors::Result;
 
 pub use tectonic::test_util::test_path;
 use tectonic_errors::prelude::StdResult;
@@ -35,20 +36,9 @@ pub fn set_test_root() {
     ::tectonic::test_util::set_test_root_augmented(env!("CARGO_MANIFEST_DIR"));
 }
 
-// Duplicated from Cargo's own testing code:
-// https://github.com/rust-lang/cargo/blob/19fdb308/tests/cargotest/support/mod.rs#L305-L318
-pub fn cargo_dir() -> PathBuf {
-    env::var_os("CARGO_BIN_PATH")
+pub fn tectonic_exe() -> PathBuf {
+    env::var_os("CARGO_BIN_EXE_tectonic")
         .map(PathBuf::from)
-        .or_else(|| {
-            env::current_exe().ok().map(|mut path| {
-                path.pop();
-                if path.ends_with("deps") {
-                    path.pop();
-                }
-                path
-            })
-        })
         .unwrap_or_else(|| panic!("CARGO_BIN_PATH wasn't set. Cannot continue running test"))
 }
 

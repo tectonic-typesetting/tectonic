@@ -4,18 +4,6 @@
 //! The "v2cli" command-line interface -- a "multitool" interface resembling
 //! Cargo, as compared to the classic "rustc-like" CLI.
 
-use clap::{Parser, Subcommand};
-use std::{env, ffi::OsString, fs, path::Path, path::PathBuf, process};
-use tectonic::{
-    config::PersistentConfig,
-    errors::{Result, SyncError},
-    status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
-    tt_note,
-};
-use tectonic_errors::prelude::anyhow;
-use tectonic_status_base::plain::PlainStatusBackend;
-use tracing::level_filters::LevelFilter;
-
 use self::commands::{
     build::BuildCommand,
     bundle::BundleCommand,
@@ -24,6 +12,17 @@ use self::commands::{
     show::ShowCommand,
     watch::WatchCommand,
 };
+use clap::{Parser, Subcommand};
+use std::{env, ffi::OsString, fs, path::Path, path::PathBuf, process};
+use tectonic::errors::dump_uncolorized;
+use tectonic::{
+    config::PersistentConfig,
+    status::{termcolor::TermcolorStatusBackend, ChatterLevel, StatusBackend},
+    tt_note,
+};
+use tectonic_errors::{prelude::anyhow, Result};
+use tectonic_status_base::plain::PlainStatusBackend;
+use tracing::level_filters::LevelFilter;
 
 mod commands;
 
@@ -71,7 +70,7 @@ pub fn v2_main(effective_args: &[OsString]) {
     let config = match PersistentConfig::open(false) {
         Ok(c) => c,
         Err(ref e) => {
-            e.dump_uncolorized();
+            dump_uncolorized(e);
             process::exit(1);
         }
     };
@@ -145,7 +144,7 @@ pub fn v2_main(effective_args: &[OsString]) {
     process::exit(match r {
         Ok(c) => c,
         Err(e) => {
-            status.report_error(&SyncError::new(e).into());
+            status.report_error(&e);
             1
         }
     })

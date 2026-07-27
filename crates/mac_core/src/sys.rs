@@ -78,6 +78,7 @@ pub const kCFStringEncodingASCII: CFStringEncoding = 0x0600;
 pub const kCFStringEncodingNonLossyASCII: CFStringEncoding = 0x0BFF;
 pub const kCFStringEncodingUnicode: CFStringEncoding = 0x0100;
 pub const kCFStringEncodingUTF8: CFStringEncoding = 0x08000100;
+pub const kCFStringEncodingInvalidId: CFStringEncoding = 0xFFFFFFFF;
 
 #[link(name = "CoreFoundation", kind = "framework")]
 extern "C" {
