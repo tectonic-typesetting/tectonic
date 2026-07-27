@@ -1,4 +1,4 @@
-name: "Tectonic CI/CD"
+name: "Tectonic"
 
 on:
   pull_request:
