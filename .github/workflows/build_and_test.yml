@@ -275,6 +275,7 @@ jobs:
             run-tests: true
             publish: true
       fail-fast: false
+    name: "vcpkg (${{ matrix.data.target }})"
     runs-on: ${{ matrix.data.image }}
     steps:
       - name: Checkout repository

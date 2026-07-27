@@ -1,9 +1,11 @@
-name: "PR CI"
+name: "Tectonic CI/CD"
 
 on:
   pull_request:
   schedule:
     - cron: '0 0 * * *'
+  push:
+    branches: [ master, rc ]
 
 jobs:
   prep:
@@ -11,4 +13,12 @@ jobs:
   build_and_test:
     needs: prep
     uses: ./.github/workflows/build_and_test.yml
+    secrets: inherit
+  deploy:
+    needs: build_and_test
+    if: ${{ github.event_name == 'push' }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      is-dev: ${{ github.ref_name == 'master' }}
+      is-release: ${{ github.ref_name == 'rc' }}
     secrets: inherit
