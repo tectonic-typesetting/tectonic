@@ -41,9 +41,8 @@ jobs:
           account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Load Dataset
         run: |
-          mkdir reports
-          mkdir datasets
-          mkdir objects
+          pwd
+          mkdir datasets reports objects
           
           s3cmd get "s3://tectonic-on-arxiv/1702.tar.gz" 1702.tar.gz
           tar -xzvf 1702.tar.gz -C datasets
