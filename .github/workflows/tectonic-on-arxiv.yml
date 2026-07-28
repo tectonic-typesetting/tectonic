@@ -9,6 +9,20 @@ on:
         required: false
         default: ""
 
+env:
+  HEAD_SHA: |-
+    ${{ case(
+      github.event_name == 'pull_request', github.event.pull_request.head.sha,
+      github.event_name == 'workflow_dispatch', github.sha,
+      github.sha
+    ) }}
+  BASE_SHA: |-
+    ${{ case(
+      github.event_name == 'pull_request', github.event.pull_request.base.sha,
+      github.event_name == 'workflow_dispatch', inputs.base,
+      ''
+    ) }}
+
 jobs:
   tectonic-on-arxiv:
     runs-on: ubuntu-latest
@@ -27,21 +41,21 @@ jobs:
           account_id: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: Load Dataset
         run: |
-          s3cmd get "s3://tectonic-on-arxiv/1702.tar.gz" 1702.tar.gz
+          mkdir reports
           mkdir datasets
+          
+          s3cmd get "s3://tectonic-on-arxiv/1702.tar.gz" 1702.tar.gz
           tar -xzvf 1702.tar.gz -C datasets
+      - name: Load Base Report
+        if: ${{ env.BASE_SHA != '' }}
+        run: |
+          s3cmd get "s3://tectonic-on-arxiv/reports/${{ env.BASE_SHA }}.jsonl" reports/${{ env.BASE_SHA }}.jsonl
       - name: Tectonic-on-ArXiv
         uses: craftspider/tectonic-on-arxiv@master
         with:
-          head: |-
-            ${{ case(
-              github.event_name == 'pull_request', github.event.pull_request.head.sha,
-              github.event_name == 'workflow_dispatch', github.sha,
-              github.sha
-            ) }}
-          base: |-
-            ${{ case(
-              github.event_name == 'pull_request', github.event.pull_request.base.sha,
-              github.event_name == 'workflow_dispatch', inputs.base,
-              ''
-            ) }}
+          head: ${{ env.HEAD_SHA }}
+          base: ${{ env.BASE_SHA }}
+      - name: Upload Report
+        if: ${{ env.BASE_SHA == '' }}
+        run: |
+          s3cmd put "${{ env.HEAD_SHA }}.jsonl" "s3://tectonic-on-arxiv/reports/${{ env.HEAD_SHA }}.jsonl"
