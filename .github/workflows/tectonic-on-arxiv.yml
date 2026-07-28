@@ -49,7 +49,7 @@ jobs:
       - name: Load Base Report
         if: ${{ env.BASE_SHA != '' }}
         run: |
-          s3cmd get "s3://tectonic-on-arxiv/reports/${{ env.BASE_SHA }}.jsonl" reports/${{ env.BASE_SHA }}.jsonl
+          s3cmd get "s3://tectonic-on-arxiv/reports/${{ env.BASE_SHA }}.jsonl" reports/${{ env.BASE_SHA }}.jsonl || echo "Failed to load base"
       - name: Tectonic-on-ArXiv
         uses: craftspider/tectonic-on-arxiv@master
         with:
