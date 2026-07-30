@@ -55,7 +55,12 @@ jobs:
         with:
           head: ${{ env.HEAD_SHA }}
           base: ${{ env.BASE_SHA }}
-      - name: Upload Report
+      - name: Upload Report to S3
         if: ${{ env.BASE_SHA == '' }}
         run: |
-          s3cmd put "${{ env.HEAD_SHA }}.jsonl" "s3://tectonic-on-arxiv/reports/${{ env.HEAD_SHA }}.jsonl"
+          s3cmd put "reports/${{ env.HEAD_SHA }}.jsonl" "s3://tectonic-on-arxiv/reports/${{ env.HEAD_SHA }}.jsonl"
+      - name: Upload Report Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: toa-report
+          path: reports/${{ env.HEAD_SHA }}.jsonl
