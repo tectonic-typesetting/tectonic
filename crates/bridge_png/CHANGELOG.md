@@ -1,12 +1,8 @@
-# tectonic_bridge_png 0.1.2 (2026-04-11)
+# See elsewhere for changelog
 
-- Add license
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-# tectonic_bridge_png 0.1.1 (2026-04-11)
-
-- Update bridge_png for publish
-
-# tectonic_bridge_png 0.1.0 (2026-04-11)
-
-A new bridge for use in the `tectonic_xetex_layout` rewrite to Rust. Exposes fontconfig APIs.
-
+[branch]: https://github.com/tectonic-typesetting/tectonic/blob/release/crates/bridge_png/CHANGELOG.md
+[gh-releases]: https://github.com/tectonic-typesetting/tectonic/releases

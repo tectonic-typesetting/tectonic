@@ -19,6 +19,10 @@ inputs:
   test-flags:
     description: "Extra flags to pass to `cargo test`"
     required: false
+  run-tests:
+    description: "Whether to run tests after building"
+    required: false
+    default: 'true'
   package-flags:
     description: "Extra flags to pass to cranko package-released-binaries"
 runs:
@@ -54,14 +58,14 @@ runs:
       run: |
         ${{ inputs.executable }} build --workspace --target ${{ inputs.target }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE
     - name: "cargo test (non-Windows)"
-      if: ${{ runner.os != 'Windows' }}
+      if: ${{ inputs.run-tests == 'true' && runner.os != 'Windows' }}
       shell: bash
       run: |
         ${{ inputs.executable }} test --workspace --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE -- --nocapture
     # TODO: Using powershell because, for some reason, MinGW bash fails to locate some DLL we're using, and I can't figure out why
     #       Best guess is `api-ms-win-core-synch-l1-2-0.dll`, but that's an API Set and should just automatically exist!
-    - name: "carg test (Windows)"
-      if: ${{ runner.os == 'Windows' }}
+    - name: "cargo test (Windows)"
+      if: ${{ inputs.run-tests == 'true' && runner.os == 'Windows' }}
       shell: pwsh
       run: |
         ${{ inputs.executable }} test --workspace --target ${{ inputs.target }} ${{ inputs.test-flags }} --release ${{ steps.set-feature-flags.outputs.cargo-features }} $CARGO_VERBOSE -- --nocapture
