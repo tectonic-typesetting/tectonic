@@ -1,7 +1,6 @@
 name: "Tectonic on arXiv"
 
 on:
-  pull_request:
   workflow_dispatch:
     inputs:
       base:
