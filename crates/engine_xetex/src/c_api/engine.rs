@@ -271,7 +271,7 @@ pub struct InputState {
     synctex_tag: i32,
 }
 
-struct NodeError {
+pub struct NodeError {
     ty: u16,
     subty: u16,
 }
