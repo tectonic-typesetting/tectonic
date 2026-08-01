@@ -391,8 +391,8 @@ pub extern "C" fn buffer_ptr() -> *mut char {
 }
 
 #[no_mangle]
-pub extern "C" fn buffer(idx: usize) -> char {
-    ENGINE_CTX.with_borrow(|engine| engine.buffer[idx])
+pub extern "C" fn buffer(idx: usize) -> u32 {
+    ENGINE_CTX.with_borrow(|engine| engine.buffer[idx]) as u32
 }
 
 #[no_mangle]

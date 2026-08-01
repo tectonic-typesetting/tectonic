@@ -179,7 +179,7 @@ pub extern "C" fn make_string() -> StrNumber {
 
 #[no_mangle]
 pub extern "C" fn slow_make_string() -> StrNumber {
-    STRING_POOL.with_borrow_mut(|pool| rs_slow_make_string(pool))
+    STRING_POOL.with_borrow_mut(rs_slow_make_string)
 }
 
 pub fn rs_str_length(pool: &StringPool, s: StrNumber) -> usize {

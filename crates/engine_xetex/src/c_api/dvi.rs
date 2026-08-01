@@ -1,14 +1,12 @@
 use crate::c_api::engine::{
     rs_prepare_mag, IntPar, DEFINE_NATIVE_FONT, EOP, FNT_DEF1, FONT_BASE, POP, POST, POST_POST,
-    TEX_INFINITY, TEX_NULL,
+    TEX_INFINITY,
 };
-use crate::c_api::errors::{fatal_error, ffi_abort, rs_fatal_error, EngineError};
+use crate::c_api::errors::{ffi_abort, rs_fatal_error, EngineError};
 use crate::c_api::font::{make_font_def, AAT_FONT_FLAG, OTGR_FONT_FLAG};
 use crate::c_api::globals::Globals;
-use crate::c_api::output::{
-    rs_print, rs_print_bytes, rs_print_char, rs_print_int, rs_print_nl_bytes,
-};
-use crate::c_api::pool::{length, rs_str_length};
+use crate::c_api::output::{rs_print, rs_print_bytes, rs_print_int, rs_print_nl_bytes};
+use crate::c_api::pool::rs_str_length;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
 use std::io::Write;
@@ -164,7 +162,7 @@ pub fn rs_deinitialize_shipout_variables(globals: &mut Globals<'_, '_>) {
 
 #[no_mangle]
 pub extern "C" fn deinitialize_shipout_variables() {
-    Globals::with(|globals| rs_deinitialize_shipout_variables(globals))
+    Globals::with(rs_deinitialize_shipout_variables)
 }
 
 pub fn dvi_swap(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
@@ -206,15 +204,15 @@ pub fn rs_dvi_four(globals: &mut Globals<'_, '_>, mut x: i32) -> Result<(), Engi
     if x >= 0 {
         rs_dvi_out(globals, (x / 0x1000000) as u8)?;
     } else {
-        x = x + 0x40000000;
-        x = x + 0x40000000;
+        x += 0x40000000;
+        x += 0x40000000;
         rs_dvi_out(globals, ((x / 0x1000000) + 128) as u8)?;
     }
 
-    x = x % 0x1000000;
+    x %= 0x1000000;
     rs_dvi_out(globals, (x / 0x10000) as u8)?;
 
-    x = x % 0x10000;
+    x %= 0x10000;
     rs_dvi_out(globals, (x / 0x100) as u8)?;
     rs_dvi_out(globals, (x % 0x100) as u8)?;
     Ok(())
@@ -293,17 +291,17 @@ pub fn rs_dvi_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<(), En
             rs_str_length(globals.strings, globals.fonts.font_area[f] as StrNumber) as u8,
         )?;
 
-        let mut k = globals.strings.tex_str(globals.fonts.font_name[f]);
+        let k = globals.strings.tex_str(globals.fonts.font_name[f]);
         let l = k.iter().position(|c| *c == ':' as u16).unwrap_or(k.len());
 
         rs_dvi_out(globals, l as u8)?;
 
-        let a = globals.strings.tex_str(globals.fonts.font_area[f]);
-        for b in a.to_vec() {
+        let a = globals.strings.tex_str(globals.fonts.font_area[f]).to_vec();
+        for b in a {
             rs_dvi_out(globals, b as u8)?;
         }
-        let n = globals.strings.tex_str(globals.fonts.font_name[f]);
-        for b in n[..l].to_vec() {
+        let n = globals.strings.tex_str(globals.fonts.font_name[f]).to_vec();
+        for &b in &n[..l] {
             rs_dvi_out(globals, b as u8)?;
         }
     }
@@ -421,6 +419,6 @@ pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) -> Result<(), EngineE
 
 #[no_mangle]
 pub extern "C-unwind" fn finalize_dvi_file() {
-    let res = Globals::with(|globals| rs_finalize_dvi_file(globals));
+    let res = Globals::with(rs_finalize_dvi_file);
     ffi_abort(res)
 }

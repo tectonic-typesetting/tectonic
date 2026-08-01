@@ -25,7 +25,7 @@ pub const BIGGEST_CHAR: i32 = 0xFFFF;
 
 pub const BIGGEST_USV: i32 = 0x10FFFF;
 
-pub const NUMBER_USVS: i32 = (BIGGEST_USV + 1);
+pub const NUMBER_USVS: i32 = BIGGEST_USV + 1;
 
 thread_local! {
     pub static OUTPUT_CTX: RefCell<OutputCtx> = const { RefCell::new(OutputCtx::new()) }
@@ -249,44 +249,25 @@ pub fn rs_print_ln(globals: &mut Globals<'_, '_>) {
     match globals.engine.selector {
         Selector::File(val) => {
             // TODO: Replace all write!(get_output) with output_write on state
-            write!(
-                globals
-                    .state
-                    .get_output(globals.out.write_file[val as usize].unwrap()),
-                "\n"
-            )
+            writeln!(globals
+                .state
+                .get_output(globals.out.write_file[val as usize].unwrap()))
             .unwrap();
         }
         Selector::TermOnly => {
             rs_warn_char(globals.out, '\n');
-            write!(
-                globals.state.get_output(globals.out.rust_stdout.unwrap()),
-                "\n"
-            )
-            .unwrap();
+            writeln!(globals.state.get_output(globals.out.rust_stdout.unwrap())).unwrap();
             globals.out.term_offset = 0;
         }
         Selector::LogOnly => {
             rs_warn_char(globals.out, '\n');
-            write!(
-                globals.state.get_output(globals.out.log_file.unwrap()),
-                "\n"
-            )
-            .unwrap();
+            writeln!(globals.state.get_output(globals.out.log_file.unwrap())).unwrap();
             globals.out.file_offset = 0;
         }
         Selector::TermAndLog => {
             rs_warn_char(globals.out, '\n');
-            write!(
-                globals.state.get_output(globals.out.rust_stdout.unwrap()),
-                "\n"
-            )
-            .unwrap();
-            write!(
-                globals.state.get_output(globals.out.log_file.unwrap()),
-                "\n"
-            )
-            .unwrap();
+            writeln!(globals.state.get_output(globals.out.rust_stdout.unwrap())).unwrap();
+            writeln!(globals.state.get_output(globals.out.log_file.unwrap())).unwrap();
             globals.out.term_offset = 0;
             globals.out.file_offset = 0;
         }
@@ -296,7 +277,7 @@ pub fn rs_print_ln(globals: &mut Globals<'_, '_>) {
 
 #[no_mangle]
 pub extern "C" fn print_ln() {
-    Globals::with(|globals| rs_print_ln(globals))
+    Globals::with(rs_print_ln)
 }
 
 pub fn rs_print_raw_char(globals: &mut Globals<'_, '_>, s: u16, incr_offset: bool) {
@@ -309,12 +290,12 @@ pub fn rs_print_raw_char(globals: &mut Globals<'_, '_>, s: u16, incr_offset: boo
             globals
                 .state
                 .get_output(globals.out.rust_stdout.unwrap())
-                .write(raw)
+                .write_all(raw)
                 .unwrap();
             globals
                 .state
                 .get_output(globals.out.log_file.unwrap())
-                .write(raw)
+                .write_all(raw)
                 .unwrap();
             if incr_offset {
                 globals.out.term_offset += 1;
@@ -334,7 +315,7 @@ pub fn rs_print_raw_char(globals: &mut Globals<'_, '_>, s: u16, incr_offset: boo
             globals
                 .state
                 .get_output(globals.out.log_file.unwrap())
-                .write(raw)
+                .write_all(raw)
                 .unwrap();
             if incr_offset {
                 globals.out.file_offset += 1;
@@ -349,7 +330,7 @@ pub fn rs_print_raw_char(globals: &mut Globals<'_, '_>, s: u16, incr_offset: boo
             globals
                 .state
                 .get_output(globals.out.rust_stdout.unwrap())
-                .write(raw)
+                .write_all(raw)
                 .unwrap();
             if incr_offset {
                 globals.out.term_offset += 1;
@@ -376,7 +357,7 @@ pub fn rs_print_raw_char(globals: &mut Globals<'_, '_>, s: u16, incr_offset: boo
             globals
                 .state
                 .get_output(globals.out.write_file[val as usize].unwrap())
-                .write(raw)
+                .write_all(raw)
                 .unwrap();
         }
     }
@@ -491,7 +472,7 @@ pub fn rs_print_nl_bytes(globals: &mut Globals<'_, '_>, bytes: &[u8]) {
 
 pub fn rs_print_esc_bytes(globals: &mut Globals<'_, '_>, bytes: &[u8]) {
     let c = globals.engine.int_par(IntPar::EscapeChar);
-    if c >= 0 && c <= BIGGEST_USV {
+    if (0..=BIGGEST_USV).contains(&c) {
         rs_print_char(globals, c);
     }
     rs_print_bytes(globals, bytes);
@@ -584,7 +565,7 @@ pub fn rs_print_nl(globals: &mut Globals<'_, '_>, str: StrNumber) {
 
 pub fn rs_print_esc(globals: &mut Globals<'_, '_>, str: StrNumber) {
     let c = globals.engine.int_par(IntPar::EscapeChar);
-    if c >= 0 && c <= BIGGEST_USV {
+    if (0..=BIGGEST_USV).contains(&c) {
         rs_print_char(globals, c);
     }
     rs_print(globals, str);
@@ -681,7 +662,7 @@ pub extern "C" fn print_int(n: i32) {
 
 #[no_mangle]
 pub extern "C" fn print_file_line() {
-    Globals::with(|globals| rs_print_file_line(globals))
+    Globals::with(rs_print_file_line)
 }
 
 pub fn rs_print_cs(globals: &mut Globals<'_, '_>, p: i32) {
@@ -703,14 +684,14 @@ pub fn rs_print_cs(globals: &mut Globals<'_, '_>, p: i32) {
         } else {
             rs_print_char(globals, (p - 1) as i32);
         }
-    } else if (p >= UNDEFINED_CONTROL_SEQUENCE && p <= EQTB_SIZE)
+    } else if (UNDEFINED_CONTROL_SEQUENCE..=EQTB_SIZE).contains(&p)
         || (p > globals.engine.eqtb_top as usize)
     {
         rs_print_esc_bytes(globals, b"IMPOSSIBLE.");
     } else if globals.hash.hash(p).s1 as usize >= globals.strings.str_ptr {
         rs_print_esc_bytes(globals, b"NONEXISTENT.");
     } else {
-        if p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT {
+        if (PRIM_EQTB_BASE..FROZEN_NULL_FONT).contains(&p) {
             rs_print_esc(globals, globals.engine.prim[p - PRIM_EQTB_BASE].s1 - 1);
         } else {
             rs_print_esc(globals, globals.hash.hash(p).s1);
@@ -730,7 +711,7 @@ pub fn rs_sprint_cs(globals: &mut Globals<'_, '_>, p: i32) {
             rs_print_esc_bytes(globals, b"csname");
             rs_print_esc_bytes(globals, b"endcsname");
         }
-    } else if p >= PRIM_EQTB_BASE && p < FROZEN_NULL_FONT {
+    } else if (PRIM_EQTB_BASE..FROZEN_NULL_FONT).contains(&p) {
         rs_print_esc(globals, globals.engine.prim[p - PRIM_EQTB_BASE].s1 - 1);
     } else {
         rs_print_esc(globals, globals.hash.hash(p).s1);
@@ -848,10 +829,10 @@ pub fn rs_print_native_word(globals: &mut Globals<'_, '_>, p: i32) {
 
         let node = globals.engine.node::<NativeWordNode>(p);
         let c = node.text()[i];
-        if c >= 0xD800 && c < 0xDC00 {
+        if (0xD800..0xDC00).contains(&c) {
             if i < size - 1 {
                 let cc = node.text()[i + 1];
-                if cc >= 0xDC00 && cc < 0xE000 {
+                if (0xDC00..0xE000).contains(&cc) {
                     let c = 0x10000 + (c as i32 - 0xD800) * 1024 + (cc as i32 - 0xDC00);
                     rs_print_char(globals, c);
                     skip = true;

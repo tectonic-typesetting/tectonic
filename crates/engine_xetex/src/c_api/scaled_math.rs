@@ -491,12 +491,12 @@ pub fn rs_norm_rand(globals: &mut Globals<'_, '_>) -> Result<i32, EngineError> {
 
 #[no_mangle]
 pub extern "C-unwind" fn norm_rand() -> i32 {
-    let res = Globals::with(|globals| rs_norm_rand(globals));
+    let res = Globals::with(rs_norm_rand);
     ffi_abort(res)
 }
 
 pub fn rs_m_log(globals: &mut Globals<'_, '_>, mut x: i32) -> Result<i32, EngineError> {
-    if (x <= 0) {
+    if x <= 0 {
         /*125: */
         rs_error_here_with_diagnostic(globals, b"Logarithm of ");
         rs_print_scaled(globals, x);
@@ -512,26 +512,26 @@ pub fn rs_m_log(globals: &mut Globals<'_, '_>, mut x: i32) -> Result<i32, Engine
         let mut y = 1302456860;
         let mut z = 6581195;
 
-        while (x < 0x40000000) {
+        while x < 0x40000000 {
             x = x + x;
-            y = y - 93032639;
-            z = z - 48782;
+            y -= 93032639;
+            z -= 48782;
         }
 
-        y = y + (z / 65536);
+        y += z / 65536;
         let mut k = 2;
 
-        while (x > 0x40000004) {
+        while x > 0x40000004 {
             /*124: */
             z = ((x - 1) / POWERS_OF_TWO[k]) + 1;
 
-            while (x < 0x40000000 + z) {
+            while x < 0x40000000 + z {
                 z = (z + 1) / 2;
-                k = k + 1;
+                k += 1;
             }
 
-            y = y + SPEC_LOG[k];
-            x = x - z;
+            y += SPEC_LOG[k];
+            x -= z;
         }
 
         Ok(y / 8)

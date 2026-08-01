@@ -1,7 +1,6 @@
 use crate::c_api::dvi::{rs_deinitialize_shipout_variables, rs_finalize_dvi_file};
 use crate::c_api::errors::{ffi_abort, rs_int_error, EngineError};
 use crate::c_api::globals::Globals;
-use crate::c_api::inputs::UFile;
 use crate::c_api::is_dir_sep;
 use crate::c_api::output::{
     rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print, rs_print_bytes,
@@ -12,12 +11,10 @@ use crate::c_api::pool::{
     rs_make_string, rs_search_string, rs_slow_make_string, StringPool, EMPTY_STRING, TOO_BIG_CHAR,
 };
 use crate::c_api::synctex::rs_synctex_terminate;
-use crate::ty::{Scaled, StrNumber};
-use std::cell::RefCell;
+use crate::ty::StrNumber;
 use std::ffi::{CStr, CString};
 use std::io::Write;
-use std::{ptr, slice};
-use tectonic_bridge_core::InputId;
+use std::ptr;
 use tectonic_pdf_io::sys::pdf_files_close;
 use tectonic_xetex_layout::manager::FontManager;
 
@@ -271,7 +268,7 @@ pub struct InputState {
     synctex_tag: i32,
 }
 
-struct NodeError {
+pub struct NodeError {
     ty: u16,
     subty: u16,
 }
@@ -377,7 +374,7 @@ pub fn rs_maketexstring(
     globals: &mut Globals<'_, '_>,
     str: &str,
 ) -> Result<StrNumber, EngineError> {
-    if str.len() == 0 {
+    if str.is_empty() {
         return Ok(EMPTY_STRING);
     }
 
@@ -547,7 +544,7 @@ pub fn rs_more_name(globals: &mut Globals<'_, '_>, c: u16) -> bool {
         todo!("overflow(\"pool size\", pool_size() - init_pool_ptr)");
     }
 
-    globals.strings.str_pool[globals.strings.pool_ptr as usize] = c;
+    globals.strings.str_pool[globals.strings.pool_ptr] = c;
     globals.strings.pool_ptr += 1;
 
     if is_dir_sep(char::from_u32(c as u32).unwrap_or(char::REPLACEMENT_CHARACTER)) {
@@ -644,17 +641,17 @@ pub extern "C-unwind" fn pack_job_name(s: *const libc::c_char) {
 
 #[no_mangle]
 pub extern "C" fn make_utf16_name() {
-    EngineCtx::with(|engine| rs_make_utf16_name(engine))
+    EngineCtx::with(rs_make_utf16_name)
 }
 
 #[no_mangle]
 pub extern "C-unwind" fn begin_name() {
-    Globals::with(|globals| rs_begin_name(globals))
+    Globals::with(rs_begin_name)
 }
 
 #[no_mangle]
 pub extern "C" fn end_name() {
-    Globals::with(|globals| rs_end_name(globals))
+    Globals::with(rs_end_name)
 }
 
 #[no_mangle]
@@ -664,7 +661,7 @@ pub extern "C" fn more_name(c: u16) -> bool {
 
 #[no_mangle]
 pub extern "C" fn make_name_string() -> StrNumber {
-    Globals::with(|globals| rs_make_name_string(globals))
+    Globals::with(rs_make_name_string)
 }
 
 pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
@@ -719,7 +716,7 @@ pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) -> Result<(), EngineError
 
 #[no_mangle]
 pub extern "C-unwind" fn open_log_file() {
-    let res = Globals::with(|globals| rs_open_log_file(globals));
+    let res = Globals::with(rs_open_log_file);
     ffi_abort(res)
 }
 
@@ -815,10 +812,10 @@ pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
     let mut bottom_line = false;
     loop {
         globals.engine.cur_input = globals.engine.input_stack[globals.engine.base_ptr].clone();
-        if globals.engine.cur_input.state != TOKEN_LIST {
-            if globals.engine.cur_input.name > 19 || globals.engine.base_ptr == 0 {
-                bottom_line = true;
-            }
+        if globals.engine.cur_input.state != TOKEN_LIST
+            && (globals.engine.cur_input.name > 19 || globals.engine.base_ptr == 0)
+        {
+            bottom_line = true;
         }
 
         if globals.engine.base_ptr == globals.engine.input_ptr
@@ -869,14 +866,13 @@ pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
                     globals.engine.selector = Selector::Pseudo;
                     globals.engine.trick_count = 1000000;
 
-                    let j;
-                    if globals.engine.buffer[globals.engine.cur_input.limit as usize] as i32
+                    let j = if globals.engine.buffer[globals.engine.cur_input.limit as usize] as i32
                         == globals.engine.int_par(IntPar::EndLineChar)
                     {
-                        j = globals.engine.cur_input.limit;
+                        globals.engine.cur_input.limit
                     } else {
-                        j = globals.engine.cur_input.limit + 1;
-                    }
+                        globals.engine.cur_input.limit + 1
+                    };
                     if j > 0 {
                         let mut i = globals.engine.cur_input.start;
                         let for_end = j - 1;
@@ -968,23 +964,21 @@ pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
                     }
                 }
 
-                let m;
-                if globals.engine.tally < globals.engine.trick_count {
-                    m = globals.engine.tally - globals.engine.first_count;
+                let m = if globals.engine.tally < globals.engine.trick_count {
+                    globals.engine.tally - globals.engine.first_count
                 } else {
-                    m = globals.engine.trick_count - globals.engine.first_count;
-                }
+                    globals.engine.trick_count - globals.engine.first_count
+                };
 
-                let n;
-                let p;
-                if l + globals.engine.first_count <= globals.engine.half_error_line {
-                    p = 0;
-                    n = l + globals.engine.first_count;
+                let (p, n) = if l + globals.engine.first_count <= globals.engine.half_error_line {
+                    (0, l + globals.engine.first_count)
                 } else {
                     rs_print_bytes(globals, b"...");
-                    p = l + globals.engine.first_count - globals.engine.half_error_line + 3;
-                    n = globals.engine.half_error_line;
-                }
+                    (
+                        l + globals.engine.first_count - globals.engine.half_error_line + 3,
+                        globals.engine.half_error_line,
+                    )
+                };
 
                 let mut q = p;
                 let for_end = globals.engine.first_count - 1;
@@ -1016,12 +1010,11 @@ pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
                     }
                 }
 
-                let p;
-                if m + n <= globals.engine.error_line {
-                    p = globals.engine.first_count + m;
+                let p = if m + n <= globals.engine.error_line {
+                    globals.engine.first_count + m
                 } else {
-                    p = globals.engine.first_count + (globals.engine.error_line - n - 3);
-                }
+                    globals.engine.first_count + (globals.engine.error_line - n - 3)
+                };
 
                 let mut q = globals.engine.first_count;
                 let for_end = p - 1;
@@ -1060,7 +1053,7 @@ pub fn rs_show_context(globals: &mut Globals<'_, '_>) {
 
 #[no_mangle]
 pub extern "C" fn show_context() {
-    Globals::with(|globals| rs_show_context(globals))
+    Globals::with(rs_show_context)
 }
 
 pub fn rs_token_show(globals: &mut Globals<'_, '_>, p: usize) {
@@ -1141,7 +1134,7 @@ pub fn rs_prepare_mag(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> 
 
 #[no_mangle]
 pub extern "C-unwind" fn prepare_mag() {
-    let res = Globals::with(|globals| rs_prepare_mag(globals));
+    let res = Globals::with(rs_prepare_mag);
     ffi_abort(res)
 }
 
@@ -1157,7 +1150,7 @@ pub fn rs_close_files_and_terminate(globals: &mut Globals<'_, '_>) -> Result<(),
 
     if globals.engine.log_opened {
         let log = globals.state.get_output(globals.out.log_file.unwrap());
-        write!(log, "\n").unwrap();
+        writeln!(log).unwrap();
         globals.state.output_close(globals.out.log_file.unwrap());
         globals.engine.selector = match globals.engine.selector {
             Selector::TermAndLog => Selector::TermOnly,
@@ -1177,7 +1170,7 @@ pub fn rs_close_files_and_terminate(globals: &mut Globals<'_, '_>) -> Result<(),
 
 #[no_mangle]
 pub extern "C-unwind" fn close_files_and_terminate() {
-    let res = Globals::with(|globals| rs_close_files_and_terminate(globals));
+    let res = Globals::with(rs_close_files_and_terminate);
     ffi_abort(res)
 }
 
@@ -1211,7 +1204,9 @@ pub fn rs_tt_cleanup(globals: &mut Globals<'_, '_>) {
 
     for i in 1..=globals.files.in_open as usize {
         let ptr = globals.engine.input_file[i];
-        unsafe { ptr.as_mut() }.map(|i| i.close(globals.state));
+        if let Some(i) = unsafe { ptr.as_mut() } {
+            i.close(globals.state);
+        }
         if !ptr.is_null() {
             unsafe { libc::free(ptr.cast()) };
         }
@@ -1280,5 +1275,5 @@ pub fn rs_tt_cleanup(globals: &mut Globals<'_, '_>) {
 
 #[no_mangle]
 pub extern "C" fn tt_cleanup() {
-    Globals::with(|globals| rs_tt_cleanup(globals))
+    Globals::with(rs_tt_cleanup)
 }

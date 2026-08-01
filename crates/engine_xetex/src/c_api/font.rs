@@ -5,7 +5,6 @@ use crate::c_api::globals::Globals;
 use crate::ty::{Scaled, StrNumber};
 use std::borrow::Cow;
 use std::cell::RefCell;
-use std::ptr::NonNull;
 #[cfg(target_os = "macos")]
 use tectonic_mac_core::sys::{
     kCTFontAttributeName, kCTForegroundColorAttributeName, kCTVerticalFormsAttributeName,
@@ -255,25 +254,20 @@ pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<Vec<u8>,
     //  l[1] n[l]
     //  if flags & COLORED:
     //      c[4]
-    let mut font_def_length = 4 + 2 + 1 + filename_len + 4;
 
     if globals.fonts.font_flags[f] & FONT_FLAGS_COLORED != 0 {
-        font_def_length += 4;
         flags |= XDV_FLAG_COLORED;
     }
 
     if extend != 1.0 {
-        font_def_length += 4;
         flags |= XDV_FLAG_EXTEND;
     }
 
     if slant != 0.0 {
-        font_def_length += 4;
         flags |= XDV_FLAG_SLANT;
     }
 
     if embolden != 0.0 {
-        font_def_length += 4;
         flags |= XDV_FLAG_EMBOLDEN;
     }
 

@@ -1,8 +1,7 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
-#![allow(clippy::undocumented_unsafe_blocks, unused)]
-#![deny(unused_must_use)]
+#![allow(clippy::undocumented_unsafe_blocks, dead_code)]
 
 //! The [XeTeX] program as a reusable crate.
 //!
@@ -248,7 +247,6 @@ pub mod c_api {
     // If you change the interfaces here, rerun cbindgen as described in the README!
 
     use tectonic_bridge_core::CoreBridgeState;
-    use tectonic_bridge_freetype2::Fixed;
 
     /// Helper for exposing variables in a thread-local context to C
     macro_rules! c_var {

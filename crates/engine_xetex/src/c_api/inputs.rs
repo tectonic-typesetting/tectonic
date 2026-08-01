@@ -98,7 +98,7 @@ pub extern "C" fn clear_line_stack() {
     FILE_CTX.with_borrow_mut(|files| files.line_stack.clear())
 }
 
-#[derive(Clone, PartialEq, Default)]
+#[derive(Clone, Default)]
 #[repr(C)]
 pub struct UFile {
     handle: Option<InputId>,
@@ -119,7 +119,9 @@ impl UFile {
         state.input_close(handle);
 
         if self.encoding_mode == ICUMAPPING && !self.conversion_data.is_null() {
-            self.conversion_drop.map(|f| f(self.conversion_data));
+            if let Some(f) = self.conversion_drop {
+                f(self.conversion_data);
+            }
         }
     }
 }

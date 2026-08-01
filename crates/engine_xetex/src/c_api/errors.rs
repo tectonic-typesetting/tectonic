@@ -1,6 +1,6 @@
 use crate::c_api::engine::{
-    close_files_and_terminate, rs_close_files_and_terminate, rs_open_log_file, rs_show_context,
-    rs_token_show, rs_tt_cleanup, History, InteractionMode, Local, Selector,
+    rs_close_files_and_terminate, rs_open_log_file, rs_show_context, rs_token_show, rs_tt_cleanup,
+    History, InteractionMode, Local, Selector,
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
@@ -59,7 +59,7 @@ pub fn rs_pre_error_message(globals: &mut Globals<'_, '_>) -> Result<(), EngineE
 
 #[no_mangle]
 extern "C-unwind" fn pre_error_message() {
-    let res = Globals::with(|globals| rs_pre_error_message(globals));
+    let res = Globals::with(rs_pre_error_message);
     ffi_abort(res)
 }
 
@@ -139,7 +139,7 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
 
 #[no_mangle]
 extern "C-unwind" fn error() {
-    let res = Globals::with(|globals| rs_error(globals));
+    let res = Globals::with(rs_error);
     ffi_abort(res)
 }
 
@@ -189,7 +189,7 @@ pub fn rs_fatal_error(globals: &mut Globals<'_, '_>, s: &CStr) -> Result<Infalli
 pub extern "C-unwind" fn fatal_error(s: *const libc::c_char) {
     let s = unsafe { CStr::from_ptr(s) };
     let res = Globals::with(|globals| rs_fatal_error(globals, s));
-    match ffi_abort(res) {}
+    ffi_abort(res);
 }
 
 pub fn rs_int_error(globals: &mut Globals<'_, '_>, n: i32) -> Result<(), EngineError> {
@@ -228,13 +228,13 @@ pub fn rs_overflow(
 pub extern "C-unwind" fn overflow(s: *const libc::c_char, n: i32) {
     let s = unsafe { CStr::from_ptr(s).to_bytes() };
     let res = Globals::with(|globals| rs_overflow(globals, s, n));
-    match ffi_abort(res) {}
+    ffi_abort(res);
 }
 
 pub fn rs_confusion(globals: &mut Globals<'_, '_>, s: &[u8]) -> Result<Infallible, EngineError> {
     rs_pre_error_message(globals)?;
 
-    if (globals.engine.history < History::ErrorIssued) {
+    if globals.engine.history < History::ErrorIssued {
         rs_print_bytes(globals, b"This can't happen (");
         rs_print_bytes(globals, s);
         rs_print_char(globals, ')' as i32);
@@ -260,7 +260,7 @@ pub fn rs_confusion(globals: &mut Globals<'_, '_>, s: &[u8]) -> Result<Infallibl
 pub extern "C-unwind" fn confusion(s: *const libc::c_char) {
     let s = unsafe { CStr::from_ptr(s).to_bytes() };
     let res = Globals::with(|globals| rs_confusion(globals, s));
-    match ffi_abort(res) {}
+    ffi_abort(res);
 }
 
 pub fn rs_pdf_error(globals: &mut Globals<'_, '_>, t: Option<&[u8]>, p: &[u8]) -> ! {

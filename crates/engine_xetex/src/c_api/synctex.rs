@@ -1,7 +1,6 @@
 use crate::c_api::globals::Globals;
 use bitflags::bitflags;
 use std::cell::RefCell;
-use std::ffi::CString;
 use std::io::Write;
 use std::ptr;
 use tectonic_bridge_core::OutputId;
@@ -93,7 +92,7 @@ impl SynctexCtx {
 
 #[no_mangle]
 pub extern "C" fn synctex_ctx() -> *mut SynctexCtx {
-    SYNCTEX.with_borrow_mut(|synctex| ptr::from_mut(synctex))
+    SYNCTEX.with_borrow_mut(ptr::from_mut)
 }
 
 pub fn rs_synctex_record_anchor(globals: &mut Globals<'_, '_>) -> Option<()> {
@@ -121,13 +120,13 @@ pub fn rs_synctex_record_count(globals: &mut Globals<'_, '_>) -> Option<()> {
 pub fn rs_synctex_record_postamble(globals: &mut Globals<'_, '_>) -> Option<()> {
     rs_synctex_record_anchor(globals)?;
     let output = globals.state.get_output(globals.synctex.file?);
-    if write!(output, "Postamble:\n").is_ok() {
+    if writeln!(output, "Postamble:").is_ok() {
         globals.synctex.total_length += "Postamble:\n".len() as i32;
         rs_synctex_record_count(globals)?;
         rs_synctex_record_anchor(globals)?;
 
         let output = globals.state.get_output(globals.synctex.file?);
-        if write!(output, "Post scriptum:\n").is_ok() {
+        if writeln!(output, "Post scriptum:").is_ok() {
             globals.synctex.total_length += "Post scriptum:\n".len() as i32;
             return Some(());
         }
@@ -170,14 +169,14 @@ pub fn rs_synctex_abort(globals: &mut Globals<'_, '_>) -> Option<()> {
 
 #[no_mangle]
 pub extern "C" fn synctexabort() {
-    Globals::with(|globals| rs_synctex_abort(globals));
+    Globals::with(rs_synctex_abort);
 }
 
 /// Free all memory used and close the file,
 ///  sent by close_files_and_terminate in tex.web.
 ///  synctexterminate() is called when the TeX run terminates.
-pub fn rs_synctex_terminate(globals: &mut Globals<'_, '_>, log_opened: bool) {
-    if let Some(file) = globals.synctex.file {
+pub fn rs_synctex_terminate(globals: &mut Globals<'_, '_>, _: bool) {
+    if globals.synctex.file.is_some() {
         /* We keep the file even if no tex output is produced
          * (synctex_ctx()->flags.not_void == 0). I assume that this means that there
          * was an error and tectonic will not save anything anyway. */
