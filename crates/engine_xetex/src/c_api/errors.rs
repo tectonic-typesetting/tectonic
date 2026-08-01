@@ -9,6 +9,8 @@ use crate::c_api::output::{
 };
 use std::ffi::CStr;
 
+struct Error;
+
 pub fn rs_pre_error_message(globals: &mut Globals<'_, '_>) {
     if globals.engine.log_opened {
         globals.engine.selector = Selector::TermAndLog;
@@ -145,7 +147,8 @@ pub fn rs_fatal_error(globals: &mut Globals<'_, '_>, s: &[u8]) -> ! {
         .out
         .rust_stdout
         .map(|stdout| globals.state.output_flush(stdout));
-    panic!("{}", String::from_utf8_lossy(s))
+    // SAFETY: YOLO
+    unsafe { _tt_abort(s.as_ptr().cast()) };
 }
 
 #[no_mangle]
@@ -245,4 +248,8 @@ pub extern "C-unwind" fn pdf_error(t: *const libc::c_char, p: *const libc::c_cha
     };
     let p = unsafe { CStr::from_ptr(p).to_bytes() };
     Globals::with(|globals| rs_pdf_error(globals, t, p))
+}
+
+extern "C" {
+    pub fn _tt_abort(s: *const libc::c_char, ...) -> !;
 }
