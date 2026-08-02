@@ -426,6 +426,8 @@
 
 #define BIGGEST_USV 1114111
 
+#define NUMBER_USVS (BIGGEST_USV + 1)
+
 #define TOO_BIG_CHAR 65536
 
 typedef int32_t StrNumber;
@@ -479,8 +481,6 @@ extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *dump_name,
                                 const char *input_file_name,
                                 uint64_t build_date);
-
-extern void fatal_error(const char *s);
 
 rust_output_handle_t dvi_file(void);
 
@@ -716,20 +716,6 @@ bool semantic_pagination_enabled(void);
 
 void set_semantic_pagination_enabled(bool val);
 
-bool font_used(uintptr_t idx);
-
-void set_font_used(uintptr_t idx, bool val);
-
-bool *font_used_ptr(uintptr_t idx);
-
-void resize_font_used(uintptr_t len);
-
-void clear_font_used(void);
-
-int32_t font_ptr(void);
-
-void set_font_ptr(int32_t val);
-
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -811,6 +797,8 @@ void int_error(int32_t n);
 extern void close_files_and_terminate(void);
 
 extern void tt_cleanup(void);
+
+extern int _tt_abort(const char *s, ...);
 
 int32_t font_ptr(void);
 

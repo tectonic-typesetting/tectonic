@@ -181,5 +181,5 @@ pub extern "C" fn int_error(n: i32) {
 extern "C" {
     fn close_files_and_terminate();
     fn tt_cleanup();
-    fn _tt_abort(s: *const libc::c_char, ...);
+    fn _tt_abort(s: *const libc::c_char, ...) -> libc::c_int;
 }

@@ -32,7 +32,6 @@ void u_close(UFILE *f);
 int u_open_in(UFILE **f, int32_t filefmt, const char* fopen_mode, int32_t mode, int32_t encodingData);
 int get_uni_c(UFILE* f);
 int input_line(UFILE* f);
-void make_utf16_name(void);
 
 END_EXTERN_C
 

@@ -366,7 +366,6 @@ void getfilemoddate(int32_t s);
 void getfilesize(int32_t s);
 void getfiledump(int32_t s, int offset, int length);
 
-char *gettexstring(str_number);
 bool is_new_source(str_number, int);
 pool_pointer make_src_special(str_number, int);
 void remember_source_info(str_number, int);
@@ -647,7 +646,6 @@ extern bool gave_char_warning_help;
 
 int32_t badness(scaled_t t, scaled_t s);
 void print_word(memory_word w);
-void show_token_list(int32_t p, int32_t q, int32_t l);
 void runaway(void);
 int32_t get_avail(void);
 void flush_list(int32_t p);
@@ -670,7 +668,6 @@ void check_mem(bool print_locs);
 void search_mem(int32_t p);
 int32_t prev_rightmost(int32_t s, int32_t e);
 int32_t get_microinterval(void);
-scaled_t round_xn_over_d(scaled_t x, int32_t n, int32_t d);
 void short_display(int32_t p);
 void print_font_and_char(int32_t p);
 void print_mark(int32_t p);
@@ -729,14 +726,10 @@ void eq_save(int32_t p, uint16_t l);
 void eq_define(int32_t p, uint16_t t, int32_t e);
 void eq_word_define(int32_t p, int32_t w);
 void geq_define(int32_t p, uint16_t t, int32_t e);
-void geq_word_define(int32_t p, int32_t w);
 void save_for_after(int32_t t);
 void unsave(void);
-void prepare_mag(void);
-void token_show(int32_t p);
 void print_meaning(void);
 void show_cur_cmd_chr(void);
-void show_context(void);
 void begin_token_list(int32_t p, uint16_t t);
 void end_token_list(void);
 void back_input(void);
@@ -801,14 +794,7 @@ void read_toks(int32_t n, int32_t r, int32_t j);
 void pass_text(void);
 void change_if_limit(small_number l, int32_t p);
 void conditional(void);
-void begin_name(void);
-bool more_name(UTF16_code c);
-void end_name(void);
-void pack_file_name(str_number n, str_number a, str_number e);
-str_number make_name_string(void);
 void scan_file_name(void);
-void pack_job_name(const char*);
-void open_log_file(void);
 void start_input(const char *primary_input_name);
 b16x4 effective_char_info(internal_font_number f, uint16_t c);
 void char_warning(internal_font_number f, int32_t c);
@@ -930,7 +916,6 @@ void insert_src_special(void);
 void append_src_special(void);
 void handle_right_brace(void);
 void main_control(void);
-void close_files_and_terminate(void);
 void debug_help(void);
 void flush_str(str_number s);
 str_number tokens_to_string(int32_t p);
@@ -939,8 +924,6 @@ void compare_strings(void);
 
 /* xetex-errors */
 
-void error(void);
-NORETURN void fatal_error(const char* s);
 NORETURN void overflow(const char* s, int32_t n);
 NORETURN void confusion(const char* s);
 NORETURN void pdf_error(const char* t, const char* p);
@@ -967,21 +950,9 @@ void flush_math(void);
 void initialize_pagebuilder_variables(void);
 void build_page(void);
 
-/* xetex-scaledmath */
-
-int32_t tex_round(double);
-int32_t half(int32_t x);
-scaled_t mult_and_add(int32_t n, scaled_t x, scaled_t y, scaled_t max_answer);
-scaled_t x_over_n(scaled_t x, int32_t n);
-scaled_t xn_over_d(scaled_t x, int32_t n, int32_t d);
-void init_randoms(int32_t seed);
-int32_t unif_rand(int32_t x);
-int32_t norm_rand(void);
-
 /* xetex-shipout */
 
 void initialize_shipout_variables(void);
-void deinitialize_shipout_variables(void);
 void ship_out(int32_t p);
 void finalize_dvi_file(void);
 
@@ -1013,7 +984,6 @@ cur_length(void) {
 
 
 /* Tectonic related functions */
-void tt_cleanup(void);
 tt_history_t tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_date);
 
 void tt_insert_special(const char *ascii_text);

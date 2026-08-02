@@ -1,5 +1,5 @@
 use crate::c_api::engine::{rs_prepare_mag, IntPar, POP, POST, TEX_INFINITY};
-use crate::c_api::fatal_error;
+use crate::c_api::errors::fatal_error;
 use crate::c_api::globals::Globals;
 use crate::ty::StrNumber;
 use std::cell::RefCell;
@@ -156,6 +156,7 @@ pub fn dvi_swap(globals: &mut Globals<'_, '_>) {
     if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
         globals.dvi.cur_s = -2;
         // TODO: This may violate Globals::with uniqueness if we're already in a fatal_error
+
         unsafe { fatal_error(c"dvi length exceeds 0x7FFFFFFF".as_ptr()) };
     }
 

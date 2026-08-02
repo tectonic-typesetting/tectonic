@@ -44,9 +44,6 @@ authorization from the copyright holders.
 typedef void* CFDictionaryRef; /* dummy declaration just so the stubs can compile */
 #endif
 
-#define AAT_FONT_FLAG   0xFFFFu
-#define OTGR_FONT_FLAG  0xFFFEu
-
 /* some typedefs that XeTeX uses - on Mac OS, we get these from Apple headers,
    but otherwise we'll need these substitute definitions */
 
@@ -157,7 +154,6 @@ unsigned int read_rgb_a(const char** cp);
 
 int count_pdf_file_pages(void);
 
-int maketexstring(const char* s);
 double Fix2D(Fixed f);
 Fixed D2Fix(double d);
 

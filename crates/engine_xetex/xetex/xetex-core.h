@@ -82,9 +82,4 @@ typedef enum {
     SELECTOR_NEW_STRING = 21
 } selector_t;
 
-/* Misc */
-
-#define FONT_FLAGS_COLORED  0x01
-#define FONT_FLAGS_VERTICAL 0x02
-
 #endif /* not TECTONIC_XETEX_CORE_H */

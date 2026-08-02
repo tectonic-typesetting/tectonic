@@ -14,8 +14,18 @@ use std::ptr::NonNull;
 use tectonic_bridge_core::{Diagnostic, OutputId};
 
 pub const MAX_PRINT_LINE: usize = 79;
+
+/* characters
+ *
+ * TeX thinks there are only 256 character but we know better. We use UTF16
+ * codepoints. Actual Unicode character codes can exceed this, up to
+ * BIGGEST_USV. "USV" here means Unicode Scalar Value. */
+
 pub const BIGGEST_CHAR: i32 = 0xFFFF;
+
 pub const BIGGEST_USV: i32 = 0x10FFFF;
+
+pub const NUMBER_USVS: i32 = (BIGGEST_USV + 1);
 
 thread_local! {
     pub static OUTPUT_CTX: RefCell<OutputCtx> = const { RefCell::new(OutputCtx::new()) }

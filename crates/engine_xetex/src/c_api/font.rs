@@ -5,12 +5,15 @@ use crate::ty::{Scaled, StrNumber};
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::ptr::NonNull;
+#[cfg(target_os = "macos")]
 use tectonic_mac_core::sys::{
     kCTFontAttributeName, kCTForegroundColorAttributeName, kCTVerticalFormsAttributeName,
     CFStringRef,
 };
+#[cfg(target_os = "macos")]
 use tectonic_mac_core::{CFDictionary, CFNumber, CFString, CFType, CGColor, CTFont, CoreType};
 use tectonic_xetex_layout::engine::LayoutEngine;
+#[cfg(target_os = "macos")]
 use tectonic_xetex_layout::font::get_file_name_from_ct_font;
 
 pub const AAT_FONT_FLAG: i32 = 0xFFFF;

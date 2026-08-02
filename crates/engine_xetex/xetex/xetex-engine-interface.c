@@ -9,14 +9,7 @@
 
 #include <string.h>
 
-int tt_xetex_set_int_variable (const char *var_name, int value);
 int tt_xetex_set_string_variable (const char *var_name, const char *value);
-int tt_engine_xetex_main(
-    ttbc_state_t *api,
-    const char *dump_name,
-    const char *input_file_name,
-    uint64_t build_date
-);
 
 /* These functions aren't used within the C/C++ library, but are called
  * by the Rust code to configure the XeTeX engine before launching it. */
