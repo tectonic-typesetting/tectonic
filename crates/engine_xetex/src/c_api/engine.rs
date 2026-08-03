@@ -1,5 +1,5 @@
 use crate::c_api::dvi::{rs_deinitialize_shipout_variables, rs_finalize_dvi_file};
-use crate::c_api::errors::rs_int_error;
+use crate::c_api::errors::{ffi_abort, rs_int_error, EngineError};
 use crate::c_api::globals::Globals;
 use crate::c_api::inputs::UFile;
 use crate::c_api::is_dir_sep;
@@ -353,25 +353,36 @@ pub struct ListStateRecord {
     aux: MemoryWord,
 }
 
-fn checkpool_pointer(pool: &mut StringPool, pool_ptr: usize, len: usize) {
+fn checkpool_pointer(
+    pool: &mut StringPool,
+    pool_ptr: usize,
+    len: usize,
+) -> Result<(), EngineError> {
     if pool_ptr + len >= pool.pool_size {
-        panic!("string pool overflow [{} bytes]", pool.pool_size);
+        Err(EngineError::new(
+            format!("string pool overflow [{} bytes]", pool.pool_size).into_bytes(),
+        ))
+    } else {
+        Ok(())
     }
 }
 
-pub fn rs_maketexstring(globals: &mut Globals<'_, '_>, str: &str) -> StrNumber {
+pub fn rs_maketexstring(
+    globals: &mut Globals<'_, '_>,
+    str: &str,
+) -> Result<StrNumber, EngineError> {
     if str.len() == 0 {
-        return EMPTY_STRING;
+        return Ok(EMPTY_STRING);
     }
 
-    checkpool_pointer(globals.strings, globals.strings.pool_ptr, str.len());
+    checkpool_pointer(globals.strings, globals.strings.pool_ptr, str.len())?;
 
     for b in str.encode_utf16() {
         globals.strings.str_pool[globals.strings.pool_ptr] = b;
         globals.strings.pool_ptr += 1;
     }
 
-    rs_make_string(globals.strings)
+    Ok(rs_make_string(globals.strings))
 }
 
 pub fn rs_gettexstring(globals: &mut Globals<'_, '_>, s: StrNumber) -> String {
@@ -399,9 +410,9 @@ pub fn rs_pack_file_name(globals: &mut Globals<'_, '_>, n: StrNumber, a: StrNumb
     globals.engine.name_of_file = Some(CString::new(buffer).unwrap());
 }
 
-pub fn rs_pack_job_name(globals: &mut Globals<'_, '_>, s: &str) {
+pub fn rs_pack_job_name(globals: &mut Globals<'_, '_>, s: &str) -> Result<(), EngineError> {
     globals.engine.cur_area = EMPTY_STRING;
-    globals.engine.cur_ext = rs_maketexstring(globals, s);
+    globals.engine.cur_ext = rs_maketexstring(globals, s)?;
     globals.engine.cur_name = globals.engine.job_name;
     rs_pack_file_name(
         globals,
@@ -409,6 +420,7 @@ pub fn rs_pack_job_name(globals: &mut Globals<'_, '_>, s: &str) {
         globals.engine.cur_area,
         globals.engine.cur_ext,
     );
+    Ok(())
 }
 
 pub fn rs_make_utf16_name(engine: &mut EngineCtx) {
@@ -594,12 +606,13 @@ pub fn rs_make_name_string(globals: &mut Globals<'_, '_>) -> StrNumber {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn maketexstring(str: *const libc::c_char) -> StrNumber {
+pub unsafe extern "C-unwind" fn maketexstring(str: *const libc::c_char) -> StrNumber {
     if str.is_null() {
         return EMPTY_STRING;
     }
     let str = unsafe { CStr::from_ptr(str) }.to_string_lossy();
-    Globals::with(|globals| rs_maketexstring(globals, &str))
+    let res = Globals::with(|globals| rs_maketexstring(globals, &str));
+    ffi_abort(res)
 }
 
 #[no_mangle]
@@ -617,9 +630,10 @@ pub extern "C" fn pack_file_name(n: StrNumber, a: StrNumber, e: StrNumber) {
 }
 
 #[no_mangle]
-pub extern "C" fn pack_job_name(s: *const libc::c_char) {
+pub extern "C-unwind" fn pack_job_name(s: *const libc::c_char) {
     let s = unsafe { CStr::from_ptr(s) }.to_str().unwrap();
-    Globals::with(|globals| rs_pack_job_name(globals, s))
+    let res = Globals::with(|globals| rs_pack_job_name(globals, s));
+    ffi_abort(res)
 }
 
 #[no_mangle]
@@ -628,7 +642,7 @@ pub extern "C" fn make_utf16_name() {
 }
 
 #[no_mangle]
-pub extern "C" fn begin_name() {
+pub extern "C-unwind" fn begin_name() {
     Globals::with(|globals| rs_begin_name(globals))
 }
 
@@ -647,14 +661,14 @@ pub extern "C" fn make_name_string() -> StrNumber {
     Globals::with(|globals| rs_make_name_string(globals))
 }
 
-pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) {
+pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
     let old = globals.engine.selector;
 
     if globals.engine.job_name == 0 {
-        globals.engine.job_name = rs_maketexstring(globals, "texput");
+        globals.engine.job_name = rs_maketexstring(globals, "texput")?;
     }
 
-    rs_pack_job_name(globals, ".log");
+    rs_pack_job_name(globals, ".log")?;
 
     let file_name = globals
         .engine
@@ -664,7 +678,11 @@ pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) {
         .to_string_lossy();
     match globals.state.output_open(&file_name, false) {
         Some(file) => globals.out.log_file = Some(file),
-        None => panic!("cannot open log file output \"{}\"", file_name),
+        None => {
+            return Err(EngineError::new(
+                format!("cannot open log file output \"{}\"", file_name).into_bytes(),
+            ))
+        }
     }
 
     globals.engine.texmf_log_name = rs_make_name_string(globals);
@@ -689,11 +707,13 @@ pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) {
         Selector::TermOnly => Selector::TermAndLog,
         _ => panic!(),
     };
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn open_log_file() {
-    Globals::with(|globals| rs_open_log_file(globals))
+pub extern "C-unwind" fn open_log_file() {
+    let res = Globals::with(|globals| rs_open_log_file(globals));
+    ffi_abort(res)
 }
 
 pub fn rs_show_token_list(globals: &mut Globals<'_, '_>, mut p: usize, q: usize, l: i32) {
@@ -1062,7 +1082,7 @@ pub extern "C" fn geq_word_define(p: i32, w: i32) {
     Globals::with(|globals| rs_geq_word_define(globals, p as usize, w))
 }
 
-pub fn rs_prepare_mag(globals: &mut Globals<'_, '_>) {
+pub fn rs_prepare_mag(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
     if globals.engine.mag_set > 0 && globals.engine.int_par(IntPar::Mag) != globals.engine.mag_set {
         rs_error_here_with_diagnostic(globals, b"Incompatible magnification (");
         rs_print_int(globals, globals.engine.int_par(IntPar::Mag));
@@ -1083,7 +1103,7 @@ pub fn rs_prepare_mag(globals: &mut Globals<'_, '_>) {
         globals.engine.help_line[0] =
             c"reverted to the magnification you used earlier on this run.".as_ptr();
 
-        rs_int_error(globals, globals.engine.mag_set);
+        rs_int_error(globals, globals.engine.mag_set)?;
         rs_geq_word_define(
             globals,
             INT_BASE + IntPar::Mag as usize,
@@ -1104,26 +1124,28 @@ pub fn rs_prepare_mag(globals: &mut Globals<'_, '_>) {
         globals.engine.help_ptr = 1;
         globals.engine.help_line[0] =
             c"The magnification ratio must be between 1 and 32768.".as_ptr();
-        rs_int_error(globals, globals.engine.int_par(IntPar::Mag));
+        rs_int_error(globals, globals.engine.int_par(IntPar::Mag))?;
         rs_geq_word_define(globals, INT_BASE + IntPar::Mag as usize, 1000);
     }
 
     globals.engine.mag_set = globals.engine.int_par(IntPar::Mag);
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn prepare_mag() {
-    Globals::with(|globals| rs_prepare_mag(globals))
+pub extern "C-unwind" fn prepare_mag() {
+    let res = Globals::with(|globals| rs_prepare_mag(globals));
+    ffi_abort(res)
 }
 
-pub fn rs_close_files_and_terminate(globals: &mut Globals<'_, '_>) {
+pub fn rs_close_files_and_terminate(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
     for k in 0..16 {
         if globals.out.write_open[k] {
             globals.out.write_file[k].map(|id| globals.state.output_close(id));
         }
     }
     globals.engine.set_int_par(IntPar::NewLineChar, -1);
-    rs_finalize_dvi_file(globals);
+    rs_finalize_dvi_file(globals)?;
     rs_synctex_terminate(globals, globals.engine.log_opened);
 
     if globals.engine.log_opened {
@@ -1143,11 +1165,13 @@ pub fn rs_close_files_and_terminate(globals: &mut Globals<'_, '_>) {
     }
 
     rs_print_ln(globals);
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn close_files_and_terminate() {
-    Globals::with(|globals| rs_close_files_and_terminate(globals))
+pub extern "C-unwind" fn close_files_and_terminate() {
+    let res = Globals::with(|globals| rs_close_files_and_terminate(globals));
+    ffi_abort(res)
 }
 
 pub fn rs_tt_cleanup(globals: &mut Globals<'_, '_>) {

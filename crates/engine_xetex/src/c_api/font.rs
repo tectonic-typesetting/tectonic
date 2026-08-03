@@ -1,5 +1,6 @@
 use crate::c_api::d_to_fix;
 use crate::c_api::engine::{B16x4, MemoryWord};
+use crate::c_api::errors::EngineError;
 use crate::c_api::globals::Globals;
 use crate::ty::{Scaled, StrNumber};
 use std::borrow::Cow;
@@ -167,7 +168,7 @@ fn cgcolor_to_rgba32(color: CGColor) -> u32 {
     out
 }
 
-pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Vec<u8> {
+pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<Vec<u8>, EngineError> {
     let mut flags = 0;
     let rgba;
     let index;
@@ -243,7 +244,9 @@ pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Vec<u8> {
         embolden = engine.embolden();
         size = d_to_fix(engine.font().point_size() as f64);
     } else {
-        panic!("bad native font flag in `make_font_def`");
+        return Err(EngineError::new(
+            *b"bad native font flag in `make_font_def`",
+        ));
     }
 
     let filename_len = filename.to_bytes().len();
@@ -299,7 +302,7 @@ pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Vec<u8> {
         buffer.extend(d_to_fix(embolden as f64).to_be_bytes());
     }
 
-    buffer
+    Ok(buffer)
 }
 
 #[no_mangle]
@@ -310,6 +313,6 @@ pub extern "C" fn release_font_engine(engine: *mut libc::c_void, flag: i32) {
             CFDictionary::<CFString, CFType>::new_owned(NonNull::new(engine).unwrap().cast())
         };
     } else if flag == OTGR_FONT_FLAG {
-        unsafe { Box::from_raw(engine.cast::<LayoutEngine>()) };
+        let _ = unsafe { Box::from_raw(engine.cast::<LayoutEngine>()) };
     }
 }

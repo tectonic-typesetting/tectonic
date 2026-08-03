@@ -2,7 +2,7 @@ use crate::c_api::engine::{
     rs_prepare_mag, IntPar, DEFINE_NATIVE_FONT, EOP, FNT_DEF1, FONT_BASE, POP, POST, POST_POST,
     TEX_INFINITY, TEX_NULL,
 };
-use crate::c_api::errors::fatal_error;
+use crate::c_api::errors::{fatal_error, ffi_abort, rs_fatal_error, EngineError};
 use crate::c_api::font::{make_font_def, AAT_FONT_FLAG, OTGR_FONT_FLAG};
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
@@ -167,11 +167,10 @@ pub extern "C" fn deinitialize_shipout_variables() {
     Globals::with(|globals| rs_deinitialize_shipout_variables(globals))
 }
 
-pub fn dvi_swap(globals: &mut Globals<'_, '_>) {
+pub fn dvi_swap(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
     if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
         globals.dvi.cur_s = -2;
-        // TODO: fatal_error(b"dvi length exceeds 0x7FFFFFFF")
-        todo!()
+        rs_fatal_error(globals, b"dvi length exceeds 0x7FFFFFFF")?;
     }
 
     if globals.dvi.limit == DVI_BUF_SIZE {
@@ -184,132 +183,145 @@ pub fn dvi_swap(globals: &mut Globals<'_, '_>) {
         globals.dvi.limit = DVI_BUF_SIZE;
     }
     globals.dvi.gone += HALF_BUF;
+    Ok(())
 }
 
-pub fn rs_dvi_out(globals: &mut Globals<'_, '_>, c: u8) {
+pub fn rs_dvi_out(globals: &mut Globals<'_, '_>, c: u8) -> Result<(), EngineError> {
     globals.dvi.buf[globals.dvi.ptr as usize] = c;
     globals.dvi.ptr += 1;
     if globals.dvi.ptr == globals.dvi.limit {
-        dvi_swap(globals);
+        dvi_swap(globals)?;
     }
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn dvi_out(c: u8) {
-    Globals::with(|globals| rs_dvi_out(globals, c))
+pub extern "C-unwind" fn dvi_out(c: u8) {
+    let res = Globals::with(|globals| rs_dvi_out(globals, c));
+    ffi_abort(res)
 }
 
-pub fn rs_dvi_four(globals: &mut Globals<'_, '_>, mut x: i32) {
+pub fn rs_dvi_four(globals: &mut Globals<'_, '_>, mut x: i32) -> Result<(), EngineError> {
     // TODO: Honestly, this could just use `x.to_*_bytes()`
     if x >= 0 {
-        rs_dvi_out(globals, (x / 0x1000000) as u8);
+        rs_dvi_out(globals, (x / 0x1000000) as u8)?;
     } else {
         x = x + 0x40000000;
         x = x + 0x40000000;
-        rs_dvi_out(globals, ((x / 0x1000000) + 128) as u8);
+        rs_dvi_out(globals, ((x / 0x1000000) + 128) as u8)?;
     }
 
     x = x % 0x1000000;
-    rs_dvi_out(globals, (x / 0x10000) as u8);
+    rs_dvi_out(globals, (x / 0x10000) as u8)?;
 
     x = x % 0x10000;
-    rs_dvi_out(globals, (x / 0x100) as u8);
-    rs_dvi_out(globals, (x % 0x100) as u8);
+    rs_dvi_out(globals, (x / 0x100) as u8)?;
+    rs_dvi_out(globals, (x % 0x100) as u8)?;
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn dvi_four(x: i32) {
-    Globals::with(|globals| rs_dvi_four(globals, x))
+pub extern "C-unwind" fn dvi_four(x: i32) {
+    let res = Globals::with(|globals| rs_dvi_four(globals, x));
+    ffi_abort(res)
 }
 
-pub fn rs_dvi_two(globals: &mut Globals<'_, '_>, s: u16) {
-    rs_dvi_out(globals, (s / 0x100) as u8);
-    rs_dvi_out(globals, (s % 0x100) as u8);
+pub fn rs_dvi_two(globals: &mut Globals<'_, '_>, s: u16) -> Result<(), EngineError> {
+    rs_dvi_out(globals, (s / 0x100) as u8)?;
+    rs_dvi_out(globals, (s % 0x100) as u8)?;
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn dvi_two(s: u16) {
-    Globals::with(|globals| rs_dvi_two(globals, s))
+pub extern "C-unwind" fn dvi_two(s: u16) {
+    let res = Globals::with(|globals| rs_dvi_two(globals, s));
+    ffi_abort(res)
 }
 
-pub fn rs_dvi_pop(globals: &mut Globals<'_, '_>, l: i32) {
+pub fn rs_dvi_pop(globals: &mut Globals<'_, '_>, l: i32) -> Result<(), EngineError> {
     if l == globals.dvi.offset + globals.dvi.ptr && globals.dvi.ptr > 0 {
         globals.dvi.ptr -= 1;
     } else {
-        rs_dvi_out(globals, POP);
+        rs_dvi_out(globals, POP)?;
     }
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn dvi_pop(l: i32) {
-    Globals::with(|globals| rs_dvi_pop(globals, l))
+pub extern "C-unwind" fn dvi_pop(l: i32) {
+    let res = Globals::with(|globals| rs_dvi_pop(globals, l));
+    ffi_abort(res)
 }
 
-pub fn rs_dvi_native_font_def(globals: &mut Globals<'_, '_>, f: usize) {
-    rs_dvi_out(globals, DEFINE_NATIVE_FONT);
-    rs_dvi_four(globals, (f - 1) as i32);
-    for byte in make_font_def(globals, f) {
-        rs_dvi_out(globals, byte);
+pub fn rs_dvi_native_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<(), EngineError> {
+    rs_dvi_out(globals, DEFINE_NATIVE_FONT)?;
+    rs_dvi_four(globals, (f - 1) as i32)?;
+    for byte in make_font_def(globals, f)? {
+        rs_dvi_out(globals, byte)?;
     }
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn dvi_native_font_def(f: usize) {
-    Globals::with(|globals| rs_dvi_native_font_def(globals, f))
+pub extern "C-unwind" fn dvi_native_font_def(f: usize) {
+    let res = Globals::with(|globals| rs_dvi_native_font_def(globals, f));
+    ffi_abort(res)
 }
 
-pub fn rs_dvi_font_def(globals: &mut Globals<'_, '_>, f: usize) {
+pub fn rs_dvi_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<(), EngineError> {
     if globals.fonts.font_area[f] == AAT_FONT_FLAG || globals.fonts.font_area[f] == OTGR_FONT_FLAG {
-        rs_dvi_native_font_def(globals, f)
+        rs_dvi_native_font_def(globals, f)?;
     } else {
         if f <= 256 {
-            rs_dvi_out(globals, FNT_DEF1);
-            rs_dvi_out(globals, (f - 1) as u8);
+            rs_dvi_out(globals, FNT_DEF1)?;
+            rs_dvi_out(globals, (f - 1) as u8)?;
         } else {
-            rs_dvi_out(globals, FNT_DEF1 + 1);
-            rs_dvi_out(globals, ((f - 1) / 256) as u8);
-            rs_dvi_out(globals, ((f - 1) % 256) as u8);
+            rs_dvi_out(globals, FNT_DEF1 + 1)?;
+            rs_dvi_out(globals, ((f - 1) / 256) as u8)?;
+            rs_dvi_out(globals, ((f - 1) % 256) as u8)?;
         }
 
-        rs_dvi_out(globals, globals.fonts.font_check[f].s3 as u8);
-        rs_dvi_out(globals, globals.fonts.font_check[f].s2 as u8);
-        rs_dvi_out(globals, globals.fonts.font_check[f].s1 as u8);
-        rs_dvi_out(globals, globals.fonts.font_check[f].s0 as u8);
-        rs_dvi_four(globals, globals.fonts.font_size[f]);
-        rs_dvi_four(globals, globals.fonts.font_dsize[f]);
+        rs_dvi_out(globals, globals.fonts.font_check[f].s3 as u8)?;
+        rs_dvi_out(globals, globals.fonts.font_check[f].s2 as u8)?;
+        rs_dvi_out(globals, globals.fonts.font_check[f].s1 as u8)?;
+        rs_dvi_out(globals, globals.fonts.font_check[f].s0 as u8)?;
+        rs_dvi_four(globals, globals.fonts.font_size[f])?;
+        rs_dvi_four(globals, globals.fonts.font_dsize[f])?;
 
         rs_dvi_out(
             globals,
             rs_str_length(globals.strings, globals.fonts.font_area[f] as StrNumber) as u8,
-        );
+        )?;
 
         let mut k = globals.strings.tex_str(globals.fonts.font_name[f]);
         let l = k.iter().position(|c| *c == ':' as u16).unwrap_or(k.len());
 
-        rs_dvi_out(globals, l as u8);
+        rs_dvi_out(globals, l as u8)?;
 
         let a = globals.strings.tex_str(globals.fonts.font_area[f]);
         for b in a.to_vec() {
-            rs_dvi_out(globals, b as u8);
+            rs_dvi_out(globals, b as u8)?;
         }
         let n = globals.strings.tex_str(globals.fonts.font_name[f]);
         for b in n[..l].to_vec() {
-            rs_dvi_out(globals, b as u8);
+            rs_dvi_out(globals, b as u8)?;
         }
     }
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn dvi_font_def(f: usize) {
-    Globals::with(|globals| rs_dvi_font_def(globals, f))
+pub extern "C-unwind" fn dvi_font_def(f: usize) {
+    let res = Globals::with(|globals| rs_dvi_font_def(globals, f));
+    ffi_abort(res)
 }
 
-pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) {
+pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
     while globals.dvi.cur_s > -1 {
         if globals.dvi.cur_s > 0 {
-            rs_dvi_out(globals, POP);
+            rs_dvi_out(globals, POP)?;
         } else {
-            rs_dvi_out(globals, EOP);
+            rs_dvi_out(globals, EOP)?;
             globals.engine.total_pages += 1;
         }
 
@@ -318,47 +330,47 @@ pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) {
 
     if globals.engine.total_pages == 0 {
         rs_print_nl_bytes(globals, b"No pages of output.");
-        return;
+        return Ok(());
     }
 
     if globals.dvi.cur_s == -2 {
         /* This happens when the DVI gets too big; a message has already been printed */
-        return;
+        return Ok(());
     }
 
-    rs_dvi_out(globals, POST);
-    rs_dvi_four(globals, globals.engine.last_bop);
+    rs_dvi_out(globals, POST)?;
+    rs_dvi_four(globals, globals.engine.last_bop)?;
     globals.engine.last_bop = globals.dvi.offset + globals.dvi.ptr - 5;
-    rs_dvi_four(globals, 25400000); /* magic values: conversion ratio for sp */
-    rs_dvi_four(globals, 473628672); /* magic values: conversion ratio for sp */
-    rs_prepare_mag(globals);
-    rs_dvi_four(globals, globals.engine.int_par(IntPar::Mag));
-    rs_dvi_four(globals, globals.engine.max_v);
-    rs_dvi_four(globals, globals.engine.max_h);
-    rs_dvi_out(globals, (globals.engine.max_push / 256) as u8);
-    rs_dvi_out(globals, (globals.engine.max_push % 256) as u8);
-    rs_dvi_out(globals, (globals.engine.total_pages / 256 % 256) as u8);
-    rs_dvi_out(globals, (globals.engine.total_pages % 256) as u8);
+    rs_dvi_four(globals, 25400000)?; /* magic values: conversion ratio for sp */
+    rs_dvi_four(globals, 473628672)?; /* magic values: conversion ratio for sp */
+    rs_prepare_mag(globals)?;
+    rs_dvi_four(globals, globals.engine.int_par(IntPar::Mag))?;
+    rs_dvi_four(globals, globals.engine.max_v)?;
+    rs_dvi_four(globals, globals.engine.max_h)?;
+    rs_dvi_out(globals, (globals.engine.max_push / 256) as u8)?;
+    rs_dvi_out(globals, (globals.engine.max_push % 256) as u8)?;
+    rs_dvi_out(globals, (globals.engine.total_pages / 256 % 256) as u8)?;
+    rs_dvi_out(globals, (globals.engine.total_pages % 256) as u8)?;
 
     while globals.fonts.font_ptr > FONT_BASE {
         if globals.fonts.font_used[globals.fonts.font_ptr as usize] {
-            rs_dvi_font_def(globals, globals.fonts.font_ptr as usize);
+            rs_dvi_font_def(globals, globals.fonts.font_ptr as usize)?;
         }
         globals.fonts.font_ptr -= 1;
     }
 
-    rs_dvi_out(globals, POST_POST);
-    rs_dvi_four(globals, globals.engine.last_bop);
+    rs_dvi_out(globals, POST_POST)?;
+    rs_dvi_four(globals, globals.engine.last_bop)?;
 
     if globals.engine.semantic_pagination_enabled {
-        rs_dvi_out(globals, SPX_ID_BYTE);
+        rs_dvi_out(globals, SPX_ID_BYTE)?;
     } else {
-        rs_dvi_out(globals, XDV_ID_BYTE);
+        rs_dvi_out(globals, XDV_ID_BYTE)?;
     }
 
     let mut k = 4 + (DVI_BUF_SIZE - globals.dvi.ptr) % 4;
     while k > 0 {
-        rs_dvi_out(globals, 223);
+        rs_dvi_out(globals, 223)?;
         k -= 1;
     }
 
@@ -368,8 +380,7 @@ pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) {
 
     if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
         globals.dvi.cur_s = -2;
-        // TODO: fatal_error(b"dvi length exceeds 0x7FFFFFFF");
-        todo!();
+        rs_fatal_error(globals, b"dvi length exceeds 0x7FFFFFFF")?;
     }
 
     if globals.dvi.ptr > 0 {
@@ -405,9 +416,11 @@ pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) {
         rs_print_int(globals, globals.dvi.offset + globals.dvi.ptr);
         rs_print_bytes(globals, b" bytes).");
     }
+    Ok(())
 }
 
 #[no_mangle]
-pub extern "C" fn finalize_dvi_file() {
-    Globals::with(|globals| rs_finalize_dvi_file(globals));
+pub extern "C-unwind" fn finalize_dvi_file() {
+    let res = Globals::with(|globals| rs_finalize_dvi_file(globals));
+    ffi_abort(res)
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 #![allow(clippy::undocumented_unsafe_blocks, unused)]
+#![deny(unused_must_use)]
 
 //! The [XeTeX] program as a reusable crate.
 //!
