@@ -170,7 +170,7 @@ pub extern "C" fn deinitialize_shipout_variables() {
 pub fn dvi_swap(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
     if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
         globals.dvi.cur_s = -2;
-        rs_fatal_error(globals, b"dvi length exceeds 0x7FFFFFFF")?;
+        rs_fatal_error(globals, c"dvi length exceeds 0x7FFFFFFF")?;
     }
 
     if globals.dvi.limit == DVI_BUF_SIZE {
@@ -380,7 +380,7 @@ pub fn rs_finalize_dvi_file(globals: &mut Globals<'_, '_>) -> Result<(), EngineE
 
     if globals.dvi.ptr > TEX_INFINITY - globals.dvi.offset {
         globals.dvi.cur_s = -2;
-        rs_fatal_error(globals, b"dvi length exceeds 0x7FFFFFFF")?;
+        rs_fatal_error(globals, c"dvi length exceeds 0x7FFFFFFF")?;
     }
 
     if globals.dvi.ptr > 0 {

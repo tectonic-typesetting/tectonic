@@ -8,13 +8,13 @@ use crate::c_api::output::{
     rs_print_int, rs_print_ln, rs_print_nl_bytes,
 };
 use std::convert::Infallible;
-use std::ffi::CStr;
+use std::ffi::{CStr, CString};
 use std::hint::unreachable_unchecked;
 
-pub struct EngineError(Box<[u8]>);
+pub struct EngineError(CString);
 
 impl EngineError {
-    pub fn new(s: impl Into<Box<[u8]>>) -> EngineError {
+    pub fn new(s: impl Into<CString>) -> EngineError {
         EngineError(s.into())
     }
 }
@@ -79,7 +79,7 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
         // Execute this outside the globals lock for now
         rs_post_error_message(globals, 0)?;
         return Err(EngineError::new(
-            *b"halted on potentially-recoverable error as specified",
+            c"halted on potentially-recoverable error as specified",
         ));
     }
 
@@ -93,7 +93,7 @@ pub fn rs_error(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
         globals.engine.history = History::FatalError;
         rs_post_error_message(globals, 0)?;
         return Err(EngineError::new(
-            *b"halted after 100 potentially-recoverable errors",
+            c"halted after 100 potentially-recoverable errors",
         ));
     }
 
@@ -172,10 +172,10 @@ extern "C-unwind" fn post_error_message(need_to_print_it: i32) {
     ffi_abort(res)
 }
 
-pub fn rs_fatal_error(globals: &mut Globals<'_, '_>, s: &[u8]) -> Result<Infallible, EngineError> {
+pub fn rs_fatal_error(globals: &mut Globals<'_, '_>, s: &CStr) -> Result<Infallible, EngineError> {
     rs_pre_error_message(globals)?;
     rs_print_bytes(globals, b"Emergency stop");
-    rs_print_nl_bytes(globals, s);
+    rs_print_nl_bytes(globals, s.to_bytes());
     rs_capture_to_diagnostic(globals, None);
     rs_close_files_and_terminate(globals)?;
     rs_tt_cleanup(globals);
@@ -188,7 +188,7 @@ pub fn rs_fatal_error(globals: &mut Globals<'_, '_>, s: &[u8]) -> Result<Infalli
 
 #[no_mangle]
 pub extern "C-unwind" fn fatal_error(s: *const libc::c_char) {
-    let s = unsafe { CStr::from_ptr(s) }.to_bytes();
+    let s = unsafe { CStr::from_ptr(s) };
     let res = Globals::with(|globals| rs_fatal_error(globals, s));
     match ffi_abort(res) {}
 }

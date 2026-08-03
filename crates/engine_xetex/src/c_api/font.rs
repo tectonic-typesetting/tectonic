@@ -244,9 +244,7 @@ pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<Vec<u8>,
         embolden = engine.embolden();
         size = d_to_fix(engine.font().point_size() as f64);
     } else {
-        return Err(EngineError::new(
-            *b"bad native font flag in `make_font_def`",
-        ));
+        return Err(EngineError::new(c"bad native font flag in `make_font_def`"));
     }
 
     let filename_len = filename.to_bytes().len();

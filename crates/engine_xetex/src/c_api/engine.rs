@@ -360,7 +360,7 @@ fn checkpool_pointer(
 ) -> Result<(), EngineError> {
     if pool_ptr + len >= pool.pool_size {
         Err(EngineError::new(
-            format!("string pool overflow [{} bytes]", pool.pool_size).into_bytes(),
+            CString::new(format!("string pool overflow [{} bytes]", pool.pool_size)).unwrap(),
         ))
     } else {
         Ok(())
@@ -680,7 +680,8 @@ pub fn rs_open_log_file(globals: &mut Globals<'_, '_>) -> Result<(), EngineError
         Some(file) => globals.out.log_file = Some(file),
         None => {
             return Err(EngineError::new(
-                format!("cannot open log file output \"{}\"", file_name).into_bytes(),
+                CString::new(format!("cannot open log file output \"{}\"", file_name).into_bytes())
+                    .unwrap(),
             ))
         }
     }
