@@ -79,9 +79,7 @@ int32_t max_in_stack;
 int32_t open_parens;
 int32_t warning_index;
 int32_t def_ref;
-int32_t param_ptr;
 int32_t max_param_stack;
-int32_t align_state;
 int32_t par_loc;
 int32_t par_token;
 bool force_eof;
@@ -3496,7 +3494,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     max_buf_stack = 0;
     set_grp_stack(0, 0);
     set_if_stack(0, TEX_NULL);
-    param_ptr = 0;
+    set_param_ptr(0);
     max_param_stack = 0;
     used_tectonic_coda_tokens = false;
     gave_char_warning_help = false;
@@ -3513,7 +3511,7 @@ tt_run_engine(const char *dump_name, const char *input_file_name, time_t build_d
     set_line(0);
     cur_input_ptr()->name = 0;
     force_eof = false;
-    align_state = 1000000L;
+    set_align_state(1000000L);
 
     init_io();
 

@@ -4384,9 +4384,9 @@ void unsave(void)
                     if (cur_tok() < RIGHT_BRACE_LIMIT) {
 
                         if (cur_tok() < LEFT_BRACE_LIMIT)
-                            align_state--;
+                            set_align_state(align_state() - 1);
                         else
-                            align_state++;
+                            set_align_state(align_state() + 1);
                     }
                 } else {
                     back_input();
@@ -4521,7 +4521,7 @@ begin_token_list(int32_t p, uint16_t t)
         mem_ptr(p)->b32.s0++;
 
         if (t == MACRO) {
-            cur_input_ptr()->limit = param_ptr;
+            cur_input_ptr()->limit = param_ptr();
         } else {
             cur_input_ptr()->loc = mem(p).b32.s1;
 
@@ -4561,16 +4561,15 @@ void end_token_list(void)
 
             delete_token_ref(cur_input().start);
             if (cur_input().index == MACRO)
-                while (param_ptr > cur_input().limit) {
-
-                    param_ptr--;
-                    flush_list(param_stack(param_ptr));
+                while (param_ptr() > cur_input().limit) {
+                    set_param_ptr(param_ptr() - 1);
+                    flush_list(param_stack(param_ptr()));
                 }
         }
     } else if (cur_input().index == U_TEMPLATE) {
 
-        if (align_state > 500000L)
-            align_state = 0;
+        if (align_state() > 500000L)
+            set_align_state(0);
         else
             fatal_error("(interwoven alignment preambles are not allowed)");
     }
@@ -4591,9 +4590,9 @@ void back_input(void)
     if (cur_tok() < RIGHT_BRACE_LIMIT) {
 
         if (cur_tok() < LEFT_BRACE_LIMIT)
-            align_state--;
+            set_align_state(align_state() - 1);
         else
-            align_state++;
+            set_align_state(align_state() + 1);
     }
     {
         if (input_ptr() > max_in_stack) {
@@ -4721,7 +4720,7 @@ check_outer_validity(void)
                 p = get_avail();
                 mem_ptr(p)->b32.s1 = q;
                 mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_CR;
-                align_state = -1000000L;
+                set_align_state(-1000000L);
                 break;
 
             case ABSORBING:
@@ -5083,23 +5082,23 @@ restart:
                 break;
 
             case MID_LINE + LEFT_BRACE:
-                align_state++;
+                set_align_state(align_state() + 1);
                 break;
 
             case SKIP_BLANKS + LEFT_BRACE:
             case NEW_LINE + LEFT_BRACE:
                 cur_input_ptr()->state = MID_LINE;
-                align_state++;
+                set_align_state(align_state() + 1);
                 break;
 
             case MID_LINE + RIGHT_BRACE:
-                align_state--;
+                set_align_state(align_state() - 1);
                 break;
 
             case SKIP_BLANKS + RIGHT_BRACE:
             case NEW_LINE + RIGHT_BRACE:
                 cur_input_ptr()->state = MID_LINE;
-                align_state--;
+                set_align_state(align_state() - 1);
                 break;
 
             ADD_DELIMS_TO(SKIP_BLANKS):
@@ -5227,10 +5226,10 @@ restart:
 
             switch (cur_cmd()) {
             case LEFT_BRACE:
-                align_state++;
+                set_align_state(align_state() + 1);
                 break;
             case RIGHT_BRACE:
-                align_state--;
+                set_align_state(align_state() - 1);
                 break;
             case OUT_PARAM:
                 begin_token_list(param_stack(cur_input().limit + cur_chr() - 1), PARAMETER);
@@ -5245,7 +5244,7 @@ restart:
         goto restart;
     }
 
-    if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state == 0) { /*818:*/
+    if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == 0) { /*818:*/
         if (scanner_status() == ALIGNING || cur_align == TEX_NULL)
             fatal_error("(interwoven alignment preambles are not allowed)");
 
@@ -5255,7 +5254,7 @@ restart:
             begin_token_list(OMIT_TEMPLATE, V_TEMPLATE);
         else
             begin_token_list(mem(cur_align + 2).b32.s1, V_TEMPLATE);
-        align_state = 1000000L;
+        set_align_state(1000000L);
         goto restart;
     }
 }
@@ -5360,7 +5359,7 @@ macro_call(void)
                 r = LLIST_link(r);
                 if (mem(r).b32.s0 >= MATCH_TOKEN && mem(r).b32.s0 <= END_MATCH_TOKEN) {
                     if (cur_tok() < LEFT_BRACE_LIMIT)
-                        align_state--;
+                        set_align_state(align_state() - 1);
                     goto found;
                 } else {
                     goto continue_;
@@ -5434,7 +5433,7 @@ macro_call(void)
                     }
 
                     pstack[n] = mem(TEMP_HEAD).b32.s1;
-                    align_state = align_state - unbalance;
+                    set_align_state(align_state() - unbalance);
 
                     for (m = 0; m <= n; m++)
                         flush_list(pstack[m]);
@@ -5478,7 +5477,7 @@ macro_call(void)
                                 }
 
                                 pstack[n] = mem(TEMP_HEAD).b32.s1;
-                                align_state = align_state - unbalance;
+                                set_align_state(align_state() - unbalance);
 
                                 for (m = 0; m <= n; m++)
                                     flush_list(pstack[m]);
@@ -5521,7 +5520,7 @@ macro_call(void)
                     set_help_line(2, "I've just inserted will cause me to report a runaway");
                     set_help_line(1, "argument that might be the root of the problem. But if");
                     set_help_line(0, "your `}' was spurious, just type `2' and it will go away.");
-                    align_state++;
+                    set_align_state(align_state() + 1);
                     long_state = CALL;
                     set_cur_tok(par_token);
                     ins_error();
@@ -5588,16 +5587,16 @@ macro_call(void)
     cur_input_ptr()->loc = mem(r).b32.s1;
 
     if (n > 0) {
-        if (param_ptr + n > max_param_stack) {
-            max_param_stack = param_ptr + n;
+        if (param_ptr() + n > max_param_stack) {
+            max_param_stack = param_ptr() + n;
             if (max_param_stack > param_size)
                 overflow("parameter stack size", param_size);
         }
 
         for (m = 0; m <= n - 1; m++)
-            set_param_stack(param_ptr + m, pstack[m]);
+            set_param_stack(param_ptr() + m, pstack[m]);
 
-        param_ptr += n;
+        set_param_ptr(param_ptr() + n);
     }
 
 exit:
@@ -6110,7 +6109,7 @@ scan_left_brace(void)
         set_cur_tok((LEFT_BRACE_TOKEN + '{' ));
         set_cur_cmd(LEFT_BRACE);
         set_cur_chr('{' );
-        align_state++;
+        set_align_state(align_state() + 1);
     }
 }
 
@@ -7694,9 +7693,9 @@ restart:
             cur_val = cur_chr();
             if (cur_cmd() <= RIGHT_BRACE) {
                 if (cur_cmd() == RIGHT_BRACE)
-                    align_state++;
+                    set_align_state(align_state() + 1);
                 else
-                    align_state--;
+                    set_align_state(align_state() - 1);
             }
         } else if (cur_tok() < CS_TOKEN_FLAG + SINGLE_BASE) {
             cur_val = cur_tok() - (CS_TOKEN_FLAG + ACTIVE_BASE);
@@ -9547,7 +9546,7 @@ int32_t scan_toks(bool macro_def, bool xpand)
             error_here_with_diagnostic("Missing { inserted");
             capture_to_diagnostic(NULL);
 
-            align_state++;
+            set_align_state(align_state() + 1);
             set_help_ptr(2);
             set_help_line(1, "Where was the left brace? You said something like `\\def\\a}',");
             set_help_line(0, "which I'm going to interpret as `\\def\\a{}'.");
@@ -9669,8 +9668,8 @@ read_toks(int32_t n, int32_t r, int32_t j)
     else
         m = n;
 
-    s = align_state;
-    align_state = 1000000L;
+    s = align_state();
+    set_align_state(1000000L);
 
     do { /*502:*/
         begin_file_reading();
@@ -9689,14 +9688,14 @@ read_toks(int32_t n, int32_t r, int32_t j)
             if (!input_line(read_file[m])) {
                 u_close(read_file[m]);
                 read_open[m] = CLOSED;
-                if (align_state != 1000000L) {
+                if (align_state() != 1000000L) {
                     runaway();
                     error_here_with_diagnostic("File ended within ");
                     print_esc_cstr("read");
                     capture_to_diagnostic(NULL);
                     set_help_ptr(1);
                     set_help_line(0, "This \\read has unbalanced braces.");
-                    align_state = 1000000L;
+                    set_align_state(1000000L);
                     cur_input_ptr()->limit = 0;
                     error();
                 }
@@ -9736,11 +9735,11 @@ read_toks(int32_t n, int32_t r, int32_t j)
             if (cur_tok() == 0)
                 goto done;
 
-            if (align_state < 1000000L) {
+            if (align_state() < 1000000L) {
                 do {
                     get_token();
                 } while (cur_tok() != 0);
-                align_state = 1000000L;
+                set_align_state(1000000L);
                 goto done;
             }
 
@@ -9752,11 +9751,11 @@ read_toks(int32_t n, int32_t r, int32_t j)
 
     done:
         end_file_reading();
-    } while (align_state != 1000000L);
+    } while (align_state() != 1000000L);
 
     cur_val = def_ref;
     set_scanner_status(NORMAL);
-    align_state = s;
+    set_align_state(s);
 }
 
 
@@ -12270,7 +12269,7 @@ void push_alignment(void)
     mem_ptr(p + 1)->b32.s0 = mem(ALIGN_HEAD).b32.s1;
     mem_ptr(p + 1)->b32.s1 = cur_span;
     mem_ptr(p + 2)->b32.s1 = cur_loop;
-    mem_ptr(p + 3)->b32.s1 = align_state;
+    mem_ptr(p + 3)->b32.s1 = align_state();
     mem_ptr(p + 4)->b32.s0 = cur_head;
     mem_ptr(p + 4)->b32.s1 = cur_tail;
     mem_ptr(p + 5)->b32.s0 = cur_pre_head;
@@ -12296,7 +12295,7 @@ void pop_alignment(void)
     cur_head = mem(p + 4).b32.s0;
     cur_pre_tail = mem(p + 5).b32.s1;
     cur_pre_head = mem(p + 5).b32.s0;
-    align_state = mem(p + 3).b32.s1;
+    set_align_state(mem(p + 3).b32.s1);
     cur_loop = mem(p + 2).b32.s1;
     cur_span = mem(p + 1).b32.s1;
     mem_ptr(ALIGN_HEAD)->b32.s1 = mem(p + 1).b32.s0;
@@ -12341,7 +12340,7 @@ init_align(void)
 
     save_cs_ptr = cur_cs();
     push_alignment();
-    align_state = -1000000L;
+    set_align_state(-1000000L);
 
     if (cur_list.mode == MMODE && (cur_list.tail != cur_list.head || cur_list.aux.b32.s1 != TEX_NULL)) {
         error_here_with_diagnostic("Improper ");
@@ -12371,7 +12370,7 @@ init_align(void)
     cur_loop = TEX_NULL;
     set_scanner_status(ALIGNING);
     warning_index = save_cs_ptr;
-    align_state = -1000000L;
+    set_align_state(-1000000L);
 
     while (true) {
         mem_ptr(cur_align)->b32.s1 = new_param_glue(GLUE_PAR__tab_skip);
@@ -12387,7 +12386,7 @@ init_align(void)
             if (cur_cmd() == MAC_PARAM)
                 goto done1;
 
-            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state == -1000000L) {
+            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == -1000000L) {
                 if (p == HOLD_HEAD && cur_loop == TEX_NULL && cur_cmd() == TAB_MARK) {
                     cur_loop = cur_align;
                 } else {
@@ -12419,7 +12418,7 @@ init_align(void)
         while (true) {
         continue_:
             get_preamble_token();
-            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state == -1000000L)
+            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == -1000000L)
                 goto done2;
 
             if (cur_cmd() == MAC_PARAM) {
@@ -12493,7 +12492,7 @@ void init_col(void)
 {
     mem_ptr(cur_align + 5)->b32.s0 = cur_cmd();
     if (cur_cmd() == OMIT)
-        align_state = 0;
+        set_align_state(0);
     else {
 
         back_input();
@@ -12515,7 +12514,7 @@ bool fin_col(void)
     q = mem(cur_align).b32.s1;
     if (q == TEX_NULL)
         confusion("endv");
-    if (align_state < 500000L)
+    if (align_state() < 500000L)
         fatal_error("(interwoven alignment preambles are not allowed)");
     p = mem(q).b32.s1;
     if ((p == TEX_NULL) && (mem(cur_align + 5).b32.s0 < CR_CODE)) {
@@ -12642,7 +12641,7 @@ bool fin_col(void)
         }
         init_span(p);
     }
-    align_state = 1000000L;
+    set_align_state(1000000L);
     do {
         get_x_or_protected();
     } while (!(cur_cmd() != SPACER));
@@ -12986,7 +12985,7 @@ void fin_align(void)
 void align_peek(void)
 {
 restart:
-    align_state = 1000000L;
+    set_align_state(1000000L);
 
     do {
         get_x_or_protected();
@@ -13772,7 +13771,7 @@ extra_right_brace(void)
     set_help_line(1, "the way to recover is to insert both the forgotten and the");
     set_help_line(0, "deleted material, e.g., by typing `I$}'.");
     error();
-    align_state++;
+    set_align_state(align_state() + 1);
 }
 
 
@@ -14719,7 +14718,7 @@ void make_accent(void)
 
 void align_error(void)
 {
-    if (abs(align_state) > 2) {      /*1163: */
+    if (abs(align_state()) > 2) {      /*1163: */
         error_here_with_diagnostic("Misplaced ");
         print_cmd_chr(cur_cmd(), cur_chr());
         capture_to_diagnostic(NULL);
@@ -14749,15 +14748,15 @@ void align_error(void)
     } else {
 
         back_input();
-        if (align_state < 0) {
+        if (align_state() < 0) {
             error_here_with_diagnostic("Missing { inserted");
             capture_to_diagnostic(NULL);
-            align_state++;
+            set_align_state(align_state() + 1);
             set_cur_tok((LEFT_BRACE_TOKEN + 123));
         } else {
             error_here_with_diagnostic("Missing } inserted");
             capture_to_diagnostic(NULL);
-            align_state--;
+            set_align_state(align_state() - 1);
             set_cur_tok((RIGHT_BRACE_TOKEN + 125));
         }
         {
@@ -16571,7 +16570,7 @@ reswitch:
         break;
 
     case HMODE + PAR_END:
-        if (align_state < 0)
+        if (align_state() < 0)
             off_save();
         end_graf();
         if (cur_list.mode == VMODE)

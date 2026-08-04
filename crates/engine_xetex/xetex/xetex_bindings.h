@@ -899,6 +899,14 @@ uint8_t scanner_status(void);
 
 void set_scanner_status(uint8_t val);
 
+int32_t param_ptr(void);
+
+void set_param_ptr(int32_t val);
+
+int32_t align_state(void);
+
+void set_align_state(int32_t val);
+
 MemoryWord eqtb(uintptr_t idx);
 
 void set_eqtb(uintptr_t idx, MemoryWord val);
@@ -1103,11 +1111,11 @@ void confusion(const char *s);
 
 void pdf_error(const char *t, const char *p);
 
+extern int _tt_abort(const char *s, ...);
+
 int32_t font_max(void);
 
 void set_font_max(int32_t val);
-
-extern int _tt_abort(const char *s, ...);
 
 int32_t font_ptr(void);
 
