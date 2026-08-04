@@ -180,6 +180,7 @@ pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<Vec<u8>,
     if cfg!(target_os = "macos") && globals.fonts.font_area[f] == AAT_FONT_FLAG {
         #[cfg(target_os = "macos")]
         unsafe {
+            use std::ptr::NonNull;
             unsafe fn cfstr(raw: CFStringRef) -> CFString {
                 CFString::new_borrowed(NonNull::new(raw.cast_mut()).unwrap())
             }
@@ -302,6 +303,7 @@ pub extern "C" fn release_font_engine(engine: *mut libc::c_void, flag: i32) {
     if cfg!(target_os = "macos") && flag == AAT_FONT_FLAG {
         #[cfg(target_os = "macos")]
         unsafe {
+            use std::ptr::NonNull;
             CFDictionary::<CFString, CFType>::new_owned(NonNull::new(engine).unwrap().cast())
         };
     } else if flag == OTGR_FONT_FLAG {
