@@ -187,7 +187,7 @@ pub fn make_font_def(globals: &mut Globals<'_, '_>, f: usize) -> Result<Vec<u8>,
 
             let attributes =
                 globals.fonts.font_layout_engine[f].cast::<CFDictionary<CFString, CFType>>();
-            let attributes = unsafe { attributes.as_ref().unwrap() };
+            let attributes = attributes.as_ref().unwrap();
 
             let font = attributes
                 .get(cfstr(kCTFontAttributeName))

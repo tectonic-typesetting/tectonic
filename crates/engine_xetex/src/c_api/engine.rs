@@ -1290,7 +1290,9 @@ fn rs_flush_list(globals: &mut Globals<'_, '_>, p: usize) {
                 break;
             }
         }
-        unsafe { globals.engine.mem[q].b32.s1 = globals.engine.avail };
+        // NEXT = avail
+        globals.engine.mem[q].b32.s1 = globals.engine.avail;
+        // avail = flush start
         globals.engine.avail = p as i32;
     }
 }
@@ -1303,14 +1305,14 @@ pub extern "C" fn flush_list(p: i32) {
 unsafe fn rs_free_node(globals: &mut Globals<'_, '_>, p: usize, s: i32) {
     globals.engine.base_node(p);
     // Type/Subtype = s
-    globals.engine.mem[p].b32.s0 = s as i32;
+    globals.engine.mem[p].b32.s0 = s;
     // Next = MAX_HALFWORD
     globals.engine.mem[p].b32.s1 = MAX_HALFWORD;
 
     // No idea what this bit does yet
     let q = globals.engine.mem[globals.engine.rover as usize + 1].b32.s0;
-    globals.engine.mem[p+1].b32.s0 = q;
-    globals.engine.mem[p+1].b32.s1 = globals.engine.rover;
+    globals.engine.mem[p + 1].b32.s0 = q;
+    globals.engine.mem[p + 1].b32.s1 = globals.engine.rover;
     globals.engine.mem[globals.engine.rover as usize + 1].b32.s0 = p as i32;
     globals.engine.mem[q as usize + 1].b32.s1 = p as i32;
 }
