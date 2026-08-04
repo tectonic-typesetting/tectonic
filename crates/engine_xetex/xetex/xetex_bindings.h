@@ -687,6 +687,8 @@ void close_files_and_terminate(void);
 
 void tt_cleanup(void);
 
+void flush_list(int32_t p);
+
 uint32_t selector(void);
 
 void set_selector(uint32_t val);
@@ -906,6 +908,10 @@ void set_param_ptr(int32_t val);
 int32_t align_state(void);
 
 void set_align_state(int32_t val);
+
+int32_t avail(void);
+
+void set_avail(int32_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 

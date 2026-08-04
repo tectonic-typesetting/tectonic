@@ -933,8 +933,8 @@ hlist_out(void)
                     if (LLIST_info(LR_ptr) == MATH_NODE_end_lr_type(p)) {
                         temp_ptr = LR_ptr;
                         LR_ptr = LLIST_link(temp_ptr);
-                        LLIST_link(temp_ptr) = avail;
-                        avail = temp_ptr;
+                        LLIST_link(temp_ptr) = avail();
+                        set_avail(temp_ptr);
                     } else {
                         if (NODE_subtype(p) > L_CODE)
                             LR_problems++;
@@ -1041,14 +1041,14 @@ hlist_out(void)
 
         temp_ptr = LR_ptr;
         LR_ptr = LLIST_link(temp_ptr);
-        LLIST_link(temp_ptr) = avail;
-        avail = temp_ptr;
+        LLIST_link(temp_ptr) = avail();
+        set_avail(temp_ptr);
     }
 
     temp_ptr = LR_ptr;
     LR_ptr = LLIST_link(temp_ptr);
-    LLIST_link(temp_ptr) = avail;
-    avail = temp_ptr;
+    LLIST_link(temp_ptr) = avail();
+    set_avail(temp_ptr);
 
     if (BOX_lr_mode(this_box) == DLIST)
         cur_dir = RIGHT_TO_LEFT;
@@ -1594,8 +1594,8 @@ reverse(int32_t this_box, int32_t t, scaled_t *cur_g, double *cur_glue)
                         } else {
                             temp_ptr = LR_ptr;
                             LR_ptr = LLIST_link(temp_ptr);
-                            LLIST_link(temp_ptr) = avail;
-                            avail = temp_ptr;
+                            LLIST_link(temp_ptr) = avail();
+                            set_avail(temp_ptr);
 
                             if (n > MIN_HALFWORD) {
                                 n--;

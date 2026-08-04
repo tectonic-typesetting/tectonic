@@ -1038,8 +1038,8 @@ post_line_break(bool d)
                         if (LR_ptr != TEX_NULL && mem(LR_ptr).b32.s0 == (L_CODE * (mem(q).b16.s0 / L_CODE) + 3)) {
                             temp_ptr = LR_ptr;
                             LR_ptr = mem(temp_ptr).b32.s1;
-                            mem_ptr(temp_ptr)->b32.s1 = avail;
-                            avail = temp_ptr;
+                            mem_ptr(temp_ptr)->b32.s1 = avail();
+                            set_avail(temp_ptr);
                         }
                     } else {
                         temp_ptr = get_avail();
@@ -1129,8 +1129,8 @@ post_line_break(bool d)
                     if (LR_ptr != TEX_NULL && mem(LR_ptr).b32.s0 == (L_CODE * (mem(q).b16.s0 / L_CODE) + 3)) {
                         temp_ptr = LR_ptr;
                         LR_ptr = mem(temp_ptr).b32.s1;
-                        mem_ptr(temp_ptr)->b32.s1 = avail;
-                        avail = temp_ptr;
+                        mem_ptr(temp_ptr)->b32.s1 = avail();
+                        set_avail(temp_ptr);
                     }
                 } else {
                     temp_ptr = get_avail();
@@ -1353,8 +1353,8 @@ post_line_break(bool d)
                             if (LR_ptr != TEX_NULL && mem(LR_ptr).b32.s0 == (L_CODE * (mem(q).b16.s0 / L_CODE) + 3)) {
                                 temp_ptr = LR_ptr;
                                 LR_ptr = mem(temp_ptr).b32.s1;
-                                mem_ptr(temp_ptr)->b32.s1 = avail;
-                                avail = temp_ptr;
+                                mem_ptr(temp_ptr)->b32.s1 = avail();
+                                set_avail(temp_ptr);
                             }
                         } else {
                             temp_ptr = get_avail();
@@ -2295,8 +2295,8 @@ found1:
                         c = hu[i];
                         hu[i] = hyf_char;
                         {
-                            mem_ptr(hyf_node)->b32.s1 = avail;
-                            avail = hyf_node;
+                            mem_ptr(hyf_node)->b32.s1 = avail();
+                            set_avail(hyf_node);
                         }
                     }
                     while (l <= i) {

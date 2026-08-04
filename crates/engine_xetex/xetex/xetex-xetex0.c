@@ -72,9 +72,9 @@ runaway(void)
 int32_t get_avail(void)
 {
     int32_t p;
-    p = avail;
+    p = avail();
     if (p != TEX_NULL)
-        avail = LLIST_link(avail);
+        set_avail(LLIST_link(avail()));
     else if (mem_end() < MEM_TOP) {
         set_mem_end(mem_end()+1);
         p = mem_end();
@@ -89,20 +89,6 @@ int32_t get_avail(void)
     }
     mem_ptr(p)->b32.s1 = TEX_NULL;
     return p;
-}
-
-void flush_list(int32_t p)
-{
-    int32_t q, r;
-    if (p != TEX_NULL) {
-        r = p;
-        do {
-            q = r;
-            r = LLIST_link(r);
-        } while (!(r == TEX_NULL));
-        mem_ptr(q)->b32.s1 = avail;
-        avail = p;
-    }
 }
 
 int32_t get_node(int32_t s)
@@ -1208,8 +1194,8 @@ flush_node_list(int32_t p)
         q = mem(p).b32.s1;
 
         if (is_char_node(p)) {
-            mem_ptr(p)->b32.s1 = avail;
-            avail = p;
+            mem_ptr(p)->b32.s1 = avail();
+            set_avail(p);
         } else {
             switch (mem(p).b16.s1) {
             case HLIST_NODE:
@@ -1540,8 +1526,8 @@ copy_node_list(int32_t p)
 
     mem_ptr(q)->b32.s1 = TEX_NULL;
     q = mem(h).b32.s1;
-    mem_ptr(h)->b32.s1 = avail;
-    avail = h;
+    mem_ptr(h)->b32.s1 = avail();
+    set_avail(h);
     return q;
 }
 
@@ -1623,8 +1609,8 @@ void push_nest(void)
 void pop_nest(void)
 {
     {
-        mem_ptr(cur_list.head)->b32.s1 = avail;
-        avail = cur_list.head;
+        mem_ptr(cur_list.head)->b32.s1 = avail();
+        set_avail(cur_list.head);
     }
     set_nest_cur(nest_cur()-1);
     cur_list = nest(nest_cur());
@@ -3882,8 +3868,8 @@ void pseudo_close(void)
     p = mem(pseudo_files).b32.s1;
     q = mem(pseudo_files).b32.s0;
     {
-        mem_ptr(pseudo_files)->b32.s1 = avail;
-        avail = pseudo_files;
+        mem_ptr(pseudo_files)->b32.s1 = avail();
+        set_avail(pseudo_files);
     }
     pseudo_files = p;
     while (q != TEX_NULL) {
@@ -5447,11 +5433,11 @@ macro_call(void)
                     unbalance = 1;
 
                     while (true) {
-                        q = avail;
+                        q = avail();
                         if (q == TEX_NULL) {
                             q = get_avail();
                         } else {
-                            avail = mem(q).b32.s1;
+                            set_avail(mem(q).b32.s1);
                             mem_ptr(q)->b32.s1 = TEX_NULL;
                         }
 
@@ -5551,12 +5537,12 @@ macro_call(void)
             if (s != TEX_NULL) { /*418:*/
                 if (m == 1 && mem(p).b32.s0 < RIGHT_BRACE_LIMIT) {
                     mem_ptr(rbrace_ptr)->b32.s1 = TEX_NULL;
-                    mem_ptr(p)->b32.s1 = avail;
-                    avail = p;
+                    mem_ptr(p)->b32.s1 = avail();
+                    set_avail(p);
                     p = mem(TEMP_HEAD).b32.s1;
                     pstack[n] = mem(p).b32.s1;
-                    mem_ptr(p)->b32.s1 = avail;
-                    avail = p;
+                    mem_ptr(p)->b32.s1 = avail();
+                    set_avail(p);
                 } else {
                     pstack[n] = mem(TEMP_HEAD).b32.s1;
                 }
@@ -7913,8 +7899,8 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                     set_dig(kk - 1, mem(p).b32.s0);
                     q = p;
                     p = LLIST_link(p);
-                    mem_ptr(q)->b32.s1 = avail;
-                    avail = q;
+                    mem_ptr(q)->b32.s1 = avail();
+                    set_avail(q);
                 }
 
                 f = round_decimals(k);
@@ -8641,8 +8627,8 @@ void scan_general_text(void)
  found:
     q = mem(def_ref).b32.s1;
     {
-        mem_ptr(def_ref)->b32.s1 = avail;
-        avail = def_ref;
+        mem_ptr(def_ref)->b32.s1 = avail();
+        set_avail(def_ref);
     }
     if (q == TEX_NULL)
         cur_val = TEMP_HEAD;
@@ -8785,12 +8771,12 @@ str_toks_cat(pool_pointer b, small_number cat)
                 t = MAX_CHAR_VAL * cat + t;
         }
 
-        q = avail;
+        q = avail();
 
         if (q == TEX_NULL) {
             q = get_avail();
         } else {
-            avail = LLIST_link(q);
+            set_avail(LLIST_link(q));
             LLIST_link(q) = TEX_NULL;
         }
 
@@ -8852,12 +8838,12 @@ int32_t the_toks(void)
 
                 {
                     {
-                        q = avail;
+                        q = avail();
                         if (q == TEX_NULL)
                             q = get_avail();
                         else {
 
-                            avail = mem(q).b32.s1;
+                            set_avail(mem(q).b32.s1);
                             mem_ptr(q)->b32.s1 = TEX_NULL;
                         }
                     }
@@ -8964,8 +8950,8 @@ conv_toks(void)
         warning_index = save_warning_index;
         set_scanner_status(save_scanner_status);
         begin_token_list(mem(def_ref).b32.s1, INSERTED);
-        mem_ptr(def_ref)->b32.s1 = avail;
-        avail = def_ref;
+        mem_ptr(def_ref)->b32.s1 = avail();
+        set_avail(def_ref);
         def_ref = save_def_ref;
         if (u != 0)
             set_str_ptr(str_ptr()-1);
@@ -11761,8 +11747,8 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                 temp_ptr = LR_ptr;
                                 LR_ptr = mem(temp_ptr).b32.s1;
                                 {
-                                    mem_ptr(temp_ptr)->b32.s1 = avail;
-                                    avail = temp_ptr;
+                                    mem_ptr(temp_ptr)->b32.s1 = avail();
+                                    set_avail(temp_ptr);
                                 }
                             } else {
 
@@ -11942,8 +11928,8 @@ exit:
                     temp_ptr = LR_ptr;
                     LR_ptr = mem(temp_ptr).b32.s1;
                     {
-                        mem_ptr(temp_ptr)->b32.s1 = avail;
-                        avail = temp_ptr;
+                        mem_ptr(temp_ptr)->b32.s1 = avail();
+                        set_avail(temp_ptr);
                     }
                 }
             } while (!(mem(LR_ptr).b32.s0 == BEFORE));
@@ -11966,8 +11952,8 @@ exit:
             temp_ptr = LR_ptr;
             LR_ptr = mem(temp_ptr).b32.s1;
             {
-                mem_ptr(temp_ptr)->b32.s1 = avail;
-                avail = temp_ptr;
+                mem_ptr(temp_ptr)->b32.s1 = avail();
+                set_avail(temp_ptr);
             }
         }
         if (LR_ptr != TEX_NULL)
@@ -12283,12 +12269,12 @@ void pop_alignment(void)
 {
     int32_t p;
     {
-        mem_ptr(cur_head)->b32.s1 = avail;
-        avail = cur_head;
+        mem_ptr(cur_head)->b32.s1 = avail();
+        set_avail(cur_head);
     }
     {
-        mem_ptr(cur_pre_head)->b32.s1 = avail;
-        avail = cur_pre_head;
+        mem_ptr(cur_pre_head)->b32.s1 = avail();
+        set_avail(cur_pre_head);
     }
     p = align_ptr;
     cur_tail = mem(p + 4).b32.s1;
@@ -15008,8 +14994,8 @@ void just_reverse(int32_t p)
                             temp_ptr = LR_ptr;
                             LR_ptr = mem(temp_ptr).b32.s1;
                             {
-                                mem_ptr(temp_ptr)->b32.s1 = avail;
-                                avail = temp_ptr;
+                                mem_ptr(temp_ptr)->b32.s1 = avail();
+                                set_avail(temp_ptr);
                             }
                         }
                         if (n > MIN_HALFWORD) {
@@ -15631,8 +15617,8 @@ shift_case(void)
     }
 
     begin_token_list(mem(def_ref).b32.s1, BACKED_UP);
-    mem_ptr(def_ref)->b32.s1 = avail;
-    avail = def_ref;
+    mem_ptr(def_ref)->b32.s1 = avail();
+    set_avail(def_ref);
 }
 
 
@@ -17382,12 +17368,12 @@ collected:
     }
 
     {
-        lig_stack = avail;
+        lig_stack = avail();
         if (lig_stack == TEX_NULL)
             lig_stack = get_avail();
         else {
 
-            avail = mem(lig_stack).b32.s1;
+            set_avail(mem(lig_stack).b32.s1);
             mem_ptr(lig_stack)->b32.s1 = TEX_NULL;
         }
     }
@@ -17460,8 +17446,8 @@ main_loop_move_2:
     if ((effective_char(false, main_f, cur_chr()) > font_ec(main_f))
                               || (effective_char(false, main_f, cur_chr()) < font_bc(main_f))) {
         char_warning(main_f, cur_chr());
-        mem_ptr(lig_stack)->b32.s1 = avail;
-        avail = lig_stack;
+        mem_ptr(lig_stack)->b32.s1 = avail();
+        set_avail(lig_stack);
         goto big_switch;
     }
 
@@ -17469,8 +17455,8 @@ main_loop_move_2:
 
     if (!(main_i.s3 > 0)) {
         char_warning(main_f, cur_chr());
-        mem_ptr(lig_stack)->b32.s1 = avail;
-        avail = lig_stack;
+        mem_ptr(lig_stack)->b32.s1 = avail();
+        set_avail(lig_stack);
         goto big_switch;
     }
 
@@ -17557,12 +17543,12 @@ main_loop_lookahead_1:
     }
 
     {
-        lig_stack = avail;
+        lig_stack = avail();
         if (lig_stack == TEX_NULL)
             lig_stack = get_avail();
         else {
 
-            avail = mem(lig_stack).b32.s1;
+            set_avail(mem(lig_stack).b32.s1);
             mem_ptr(lig_stack)->b32.s1 = TEX_NULL;
         }
     }

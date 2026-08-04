@@ -195,8 +195,8 @@ void init_math(void)
                                     temp_ptr = LR_ptr;
                                     LR_ptr = mem(temp_ptr).b32.s1;
                                     {
-                                        mem_ptr(temp_ptr)->b32.s1 = avail;
-                                        avail = temp_ptr;
+                                        mem_ptr(temp_ptr)->b32.s1 = avail();
+                                        set_avail(temp_ptr);
                                     }
                                 } else if (mem(p).b16.s0 > L_CODE) {
                                     w = MAX_HALFWORD;
@@ -277,8 +277,8 @@ void init_math(void)
                     temp_ptr = LR_ptr;
                     LR_ptr = mem(temp_ptr).b32.s1;
                     {
-                        mem_ptr(temp_ptr)->b32.s1 = avail;
-                        avail = temp_ptr;
+                        mem_ptr(temp_ptr)->b32.s1 = avail();
+                        set_avail(temp_ptr);
                     }
                 }
                 if (LR_problems != 0) {

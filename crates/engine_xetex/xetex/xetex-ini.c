@@ -51,7 +51,6 @@ scaled_t random_seed;
 int32_t temp_ptr;
 int32_t lo_mem_max;
 int32_t var_used, dyn_used;
-int32_t avail;
 int32_t rover;
 int32_t last_leftmost_char;
 int32_t last_rightmost_char;
@@ -1596,8 +1595,8 @@ prefixed_command(void)
                 eq_define(p, UNDEFINED_CS, TEX_NULL);
             }
 
-            mem_ptr(def_ref)->b32.s1 = avail;
-            avail = def_ref;
+            mem_ptr(def_ref)->b32.s1 = avail();
+            set_avail(def_ref);
         } else {
             if (p == LOCAL_BASE + LOCAL__output_routine && !e) {
                 mem_ptr(q)->b32.s1 = get_avail();
@@ -2086,11 +2085,11 @@ store_fmt_file(void)
 
     x = x + lo_mem_max + 1 - p;
     dump_int(hi_mem_min());
-    dump_int(avail);
+    dump_int(avail());
     dump_ptr(mem_ptr(hi_mem_min()), mem_end() + 1 - hi_mem_min());
 
     x = x + mem_end() + 1 - hi_mem_min();
-    p = avail;
+    p = avail();
     while (p != TEX_NULL) {
         dyn_used--;
         p = LLIST_link(p);
@@ -2519,7 +2518,7 @@ load_fmt_file(void)
     if (x < MIN_HALFWORD || x > MEM_TOP)
         goto bad_fmt;
     else
-        avail = x;
+        set_avail(x);
 
     set_mem_end(MEM_TOP);
 
@@ -3124,7 +3123,7 @@ initialize_more_initex_variables(void)
     mem_ptr(PAGE_INS_HEAD)->b32.s1 = PAGE_INS_HEAD;
     NODE_type(PAGE_HEAD) = GLUE_NODE;
     mem_ptr(PAGE_HEAD)->b16.s0 = NORMAL;
-    avail = TEX_NULL;
+    set_avail(TEX_NULL);
     set_mem_end(MEM_TOP);
     set_hi_mem_min(PRE_ADJUST_HEAD);
     var_used = 20;

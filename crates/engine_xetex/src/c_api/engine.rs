@@ -1277,3 +1277,25 @@ pub fn rs_tt_cleanup(globals: &mut Globals<'_, '_>) {
 pub extern "C" fn tt_cleanup() {
     Globals::with(rs_tt_cleanup)
 }
+
+fn rs_flush_list(globals: &mut Globals<'_, '_>, p: usize) {
+    let mut q;
+    let mut r;
+    if p != TEX_NULL as usize {
+        r = p;
+        loop {
+            q = r;
+            r = globals.engine.base_node(r).next();
+            if r == TEX_NULL as usize {
+                break;
+            }
+        }
+        unsafe { globals.engine.mem[q].b32.s1 = globals.engine.avail };
+        globals.engine.avail = p as i32;
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn flush_list(p: i32) {
+    Globals::with(|globals| rs_flush_list(globals, p as usize));
+}
