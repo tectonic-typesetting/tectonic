@@ -51,7 +51,6 @@ scaled_t random_seed;
 int32_t temp_ptr;
 int32_t lo_mem_max;
 int32_t var_used, dyn_used;
-int32_t rover;
 int32_t last_leftmost_char;
 int32_t last_rightmost_char;
 int32_t hlist_stack[MAX_HLIST_STACK + 1];
@@ -452,20 +451,20 @@ sort_avail(void)
     int32_t old_rover;
 
     p = get_node(0x40000000);
-    p = mem(rover + 1).b32.s1;
-    mem_ptr(rover + 1)->b32.s1 = MAX_HALFWORD;
-    old_rover = rover;
+    p = mem(rover() + 1).b32.s1;
+    mem_ptr(rover() + 1)->b32.s1 = MAX_HALFWORD;
+    old_rover = rover();
 
     /*136: */
 
     while (p != old_rover) {
-        if (p < rover) {
+        if (p < rover()) {
             q = p;
             p = mem(q + 1).b32.s1;
-            mem_ptr(q + 1)->b32.s1 = rover;
-            rover = q;
+            mem_ptr(q + 1)->b32.s1 = rover();
+            set_rover(q);
         } else {
-            q = rover;
+            q = rover();
             while (mem(q + 1).b32.s1 < p)
                 q = mem(q + 1).b32.s1;
             r = mem(p + 1).b32.s1;
@@ -475,15 +474,15 @@ sort_avail(void)
         }
     }
 
-    p = rover;
+    p = rover();
 
     while (mem(p + 1).b32.s1 != MAX_HALFWORD) {
         mem_ptr(mem(p + 1).b32.s1 + 1)->b32.s0 = p;
         p = mem(p + 1).b32.s1;
     }
 
-    mem_ptr(p + 1)->b32.s1 = rover;
-    mem_ptr(rover + 1)->b32.s0 = p;
+    mem_ptr(p + 1)->b32.s1 = rover();
+    mem_ptr(rover() + 1)->b32.s0 = p;
 }
 
 /*:271*//*276: */
@@ -2063,13 +2062,13 @@ store_fmt_file(void)
     sort_avail();
     var_used = 0;
     dump_int(lo_mem_max);
-    dump_int(rover);
+    dump_int(rover());
 
     for (k = INT_VAL; k <= INTER_CHAR_VAL; k++)
         dump_int(sa_root[k]);
 
     p = 0;
-    q = rover;
+    q = rover();
     x = 0;
     do {
         dump_ptr(mem_ptr(p), q + 2 - p);
@@ -2077,7 +2076,7 @@ store_fmt_file(void)
         var_used = var_used + q - p;
         p = q + mem(q).b32.s0;
         q = mem(q + 1).b32.s1;
-    } while (q != rover);
+    } while (q != rover());
 
     var_used = var_used + lo_mem_max - p;
     dyn_used = mem_end() + 1 - hi_mem_min();
@@ -2485,7 +2484,7 @@ load_fmt_file(void)
     if (x < 20 || x > lo_mem_max)
         goto bad_fmt;
     else
-        rover = x;
+        set_rover(x);
 
     for (k = INT_VAL; k <= INTER_CHAR_VAL; k++) {
         undump_int(x);
@@ -2496,15 +2495,15 @@ load_fmt_file(void)
     }
 
     p = 0;
-    q = rover;
+    q = rover();
 
     do {
         undump_ptr(mem_ptr(p), q + 2 - p);
         p = q + mem(q).b32.s0;
-        if (p > lo_mem_max || (q >= mem(q + 1).b32.s1 && mem(q + 1).b32.s1 != rover))
+        if (p > lo_mem_max || (q >= mem(q + 1).b32.s1 && mem(q + 1).b32.s1 != rover()))
             goto bad_fmt;
         q = mem(q + 1).b32.s1;
-    } while (q != rover);
+    } while (q != rover());
 
     undump_ptr(mem_ptr(p), lo_mem_max + 1 - p);
 
@@ -3100,12 +3099,12 @@ initialize_more_initex_variables(void)
     mem_ptr(12)->b16.s0 = FIL;
     mem_ptr(18)->b32.s1 = -65536L;
     mem_ptr(16)->b16.s1 = FIL;
-    rover = 20;
-    mem_ptr(rover)->b32.s1 = MAX_HALFWORD;
-    mem_ptr(rover)->b32.s0 = 1000;
-    mem_ptr(rover + 1)->b32.s0 = rover;
-    mem_ptr(rover + 1)->b32.s1 = rover;
-    lo_mem_max = rover + 1000;
+    set_rover(20);
+    mem_ptr(rover())->b32.s1 = MAX_HALFWORD;
+    mem_ptr(rover())->b32.s0 = 1000;
+    mem_ptr(rover() + 1)->b32.s0 = rover();
+    mem_ptr(rover() + 1)->b32.s1 = rover();
+    lo_mem_max = rover() + 1000;
     mem_ptr(lo_mem_max)->b32.s1 = TEX_NULL;
     mem_ptr(lo_mem_max)->b32.s0 = TEX_NULL;
 

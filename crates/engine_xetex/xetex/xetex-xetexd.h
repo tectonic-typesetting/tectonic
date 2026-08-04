@@ -400,7 +400,6 @@ extern scaled_t random_seed;
 extern int32_t temp_ptr;
 extern int32_t lo_mem_max;
 extern int32_t var_used, dyn_used;
-extern int32_t rover;
 extern int32_t last_leftmost_char;
 extern int32_t last_rightmost_char;
 extern int32_t hlist_stack[MAX_HLIST_STACK + 1];

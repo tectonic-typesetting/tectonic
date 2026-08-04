@@ -99,15 +99,15 @@ int32_t get_node(int32_t s)
     int32_t t;
 
 restart:
-    p = rover;
+    p = rover();
 
     do {
         /*131: */ q = p + mem(p).b32.s0;
         while (mem(q).b32.s1 == MAX_HALFWORD) {
 
             t = mem(q + 1).b32.s1;
-            if (q == rover)
-                rover = t;
+            if (q == rover())
+                set_rover(t);
             mem_ptr(t + 1)->b32.s0 = mem(q + 1).b32.s0;
             mem_ptr(mem(q + 1).b32.s0 + 1)->b32.s1 = t;
             q = q + mem(q).b32.s0;
@@ -115,22 +115,22 @@ restart:
         r = q - s;
         if (r > p + 1) {        /*132: */
             mem_ptr(p)->b32.s0 = r - p;
-            rover = p;
+            set_rover(p);
             goto found;
         }
         if (r == p) {
 
             if (mem(p + 1).b32.s1 != p) {      /*133: */
-                rover = mem(p + 1).b32.s1;
+                set_rover(mem(p + 1).b32.s1);
                 t = mem(p + 1).b32.s0;
-                mem_ptr(rover + 1)->b32.s0 = t;
-                mem_ptr(t + 1)->b32.s1 = rover;
+                mem_ptr(rover() + 1)->b32.s0 = t;
+                mem_ptr(t + 1)->b32.s1 = rover();
                 goto found;
             }
         }
         mem_ptr(p)->b32.s0 = q - /*:131 */ p;
         p = mem(p + 1).b32.s1;
-    } while (!(p == rover));
+    } while (!(p == rover()));
     if (s == 0x40000000) {
         return MAX_HALFWORD;
     }
@@ -141,20 +141,20 @@ restart:
                 t = lo_mem_max + 1000;
             else
                 t = lo_mem_max + 1 + (hi_mem_min() - lo_mem_max) / 2;
-            p = mem(rover + 1).b32.s0;
+            p = mem(rover() + 1).b32.s0;
             q = lo_mem_max;
             mem_ptr(p + 1)->b32.s1 = q;
-            mem_ptr(rover + 1)->b32.s0 = q;
+            mem_ptr(rover() + 1)->b32.s0 = q;
             if (t > MAX_HALFWORD)
                 t = MAX_HALFWORD;
-            mem_ptr(q + 1)->b32.s1 = rover;
+            mem_ptr(q + 1)->b32.s1 = rover();
             mem_ptr(q + 1)->b32.s0 = p;
             mem_ptr(q)->b32.s1 = MAX_HALFWORD;
             mem_ptr(q)->b32.s0 = t - lo_mem_max;
             lo_mem_max = t;
             mem_ptr(lo_mem_max)->b32.s1 = TEX_NULL;
             mem_ptr(lo_mem_max)->b32.s0 = TEX_NULL;
-            rover = q;
+            set_rover(q);
             goto restart;
         }
     }
@@ -167,18 +167,6 @@ found:
         mem_ptr(r + s - 1)->b32.s1 = line();
     }
     return r;
-}
-
-void free_node(int32_t p, int32_t s)
-{
-    int32_t q;
-    mem_ptr(p)->b32.s0 = s;
-    mem_ptr(p)->b32.s1 = MAX_HALFWORD;
-    q = mem(rover + 1).b32.s0;
-    mem_ptr(p + 1)->b32.s0 = q;
-    mem_ptr(p + 1)->b32.s1 = rover;
-    mem_ptr(rover + 1)->b32.s0 = p;
-    mem_ptr(q + 1)->b32.s1 = p;
 }
 
 int32_t new_null_box(void)

@@ -689,6 +689,8 @@ void tt_cleanup(void);
 
 void flush_list(int32_t p);
 
+void free_node(int32_t p, int32_t s);
+
 uint32_t selector(void);
 
 void set_selector(uint32_t val);
@@ -912,6 +914,10 @@ void set_align_state(int32_t val);
 int32_t avail(void);
 
 void set_avail(int32_t val);
+
+int32_t rover(void);
+
+void set_rover(int32_t val);
 
 MemoryWord eqtb(uintptr_t idx);
 

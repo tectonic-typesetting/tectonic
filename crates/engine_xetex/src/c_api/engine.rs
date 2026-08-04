@@ -1299,3 +1299,23 @@ fn rs_flush_list(globals: &mut Globals<'_, '_>, p: usize) {
 pub extern "C" fn flush_list(p: i32) {
     Globals::with(|globals| rs_flush_list(globals, p as usize));
 }
+
+unsafe fn rs_free_node(globals: &mut Globals<'_, '_>, p: usize, s: i32) {
+    globals.engine.base_node(p);
+    // Type/Subtype = s
+    globals.engine.mem[p].b32.s0 = s as i32;
+    // Next = MAX_HALFWORD
+    globals.engine.mem[p].b32.s1 = MAX_HALFWORD;
+
+    // No idea what this bit does yet
+    let q = globals.engine.mem[globals.engine.rover as usize + 1].b32.s0;
+    globals.engine.mem[p+1].b32.s0 = q;
+    globals.engine.mem[p+1].b32.s1 = globals.engine.rover;
+    globals.engine.mem[globals.engine.rover as usize + 1].b32.s0 = p as i32;
+    globals.engine.mem[q as usize + 1].b32.s1 = p as i32;
+}
+
+#[no_mangle]
+pub extern "C" fn free_node(p: i32, s: i32) {
+    Globals::with(|globals| unsafe { rs_free_node(globals, p as usize, s) })
+}

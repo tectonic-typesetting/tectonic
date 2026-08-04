@@ -66,6 +66,7 @@ pub struct EngineCtx {
     pub(crate) param_ptr: i32,
     pub(crate) align_state: i32,
     pub(crate) avail: i32,
+    pub(crate) rover: i32,
 
     pub(crate) eqtb: Vec<MemoryWord>,
     pub(crate) prim: Box<[B32x2; PRIM_SIZE + 1]>,
@@ -145,6 +146,7 @@ impl EngineCtx {
             param_ptr: 0,
             align_state: 0,
             avail: 0,
+            rover: 0,
 
             eqtb: Vec::new(),
             prim: Box::new([B32x2 { s0: 0, s1: 0 }; PRIM_SIZE + 1]),
@@ -384,6 +386,7 @@ c_var!(EngineCtx => scanner_status: u8);
 c_var!(EngineCtx => param_ptr: i32);
 c_var!(EngineCtx => align_state: i32);
 c_var!(EngineCtx => avail: i32);
+c_var!(EngineCtx => rover: i32);
 
 c_arr!(EngineCtx => eqtb: MemoryWord);
 c_arr!(EngineCtx => mem: MemoryWord);
