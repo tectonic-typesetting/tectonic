@@ -697,6 +697,8 @@ void delete_token_ref(int32_t p);
 
 void delete_glue_ref(int32_t p);
 
+void end_token_list(void);
+
 uint32_t selector(void);
 
 void set_selector(uint32_t val);

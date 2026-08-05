@@ -1,5 +1,5 @@
 use crate::c_api::dvi::{rs_deinitialize_shipout_variables, rs_finalize_dvi_file};
-use crate::c_api::errors::{ffi_abort, rs_int_error, EngineError};
+use crate::c_api::errors::{ffi_abort, rs_fatal_error, rs_int_error, EngineError};
 use crate::c_api::globals::Globals;
 use crate::c_api::is_dir_sep;
 use crate::c_api::output::{
@@ -1345,4 +1345,38 @@ pub fn rs_delete_glue_ref(globals: &mut Globals<'_, '_>, p: usize) {
 #[no_mangle]
 pub extern "C" fn delete_glue_ref(p: i32) {
     Globals::with(|globals| rs_delete_glue_ref(globals, p as usize))
+}
+
+pub fn rs_end_token_list(globals: &mut Globals<'_, '_>) -> Result<(), EngineError> {
+    if globals.engine.cur_input.index >= BACKED_UP {
+        if globals.engine.cur_input.index <= INSERTED {
+            rs_flush_list(globals, globals.engine.cur_input.start as usize);
+        } else {
+            rs_delete_token_ref(globals, globals.engine.cur_input.start as usize);
+            if globals.engine.cur_input.index == MACRO {
+                while globals.engine.param_ptr > globals.engine.cur_input.limit {
+                    globals.engine.param_ptr -= 1;
+                    rs_flush_list(
+                        globals,
+                        globals.engine.param_stack[globals.engine.param_ptr as usize] as usize,
+                    );
+                }
+            }
+        }
+    } else if globals.engine.cur_input.index == U_TEMPLATE {
+        if globals.engine.align_state > 500000 {
+            globals.engine.align_state = 0;
+        } else {
+            rs_fatal_error(globals, c"(interwoven alignment preambles are not allowed)")?;
+        }
+    }
+    globals.engine.input_ptr -= 1;
+    globals.engine.cur_input = globals.engine.input_stack[globals.engine.input_ptr].clone();
+    Ok(())
+}
+
+#[no_mangle]
+pub extern "C-unwind" fn end_token_list() {
+    let res = Globals::with(|globals| rs_end_token_list(globals));
+    ffi_abort(res)
 }

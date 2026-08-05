@@ -4774,37 +4774,6 @@ begin_token_list(int32_t p, uint16_t t)
     }
 }
 
-
-void end_token_list(void)
-{
-    if (cur_input().index >= BACKED_UP)
-    {
-        if (cur_input().index <= INSERTED)
-            flush_list(cur_input().start);
-        else
-        {
-            delete_token_ref(cur_input().start);
-            if (cur_input().index == MACRO)
-                while (param_ptr() > cur_input().limit)
-                {
-                    set_param_ptr(param_ptr() - 1);
-                    flush_list(param_stack(param_ptr()));
-                }
-        }
-    }
-    else if (cur_input().index == U_TEMPLATE)
-    {
-        if (align_state() > 500000L)
-            set_align_state(0);
-        else
-            fatal_error("(interwoven alignment preambles are not allowed)");
-    }
-    {
-        set_input_ptr(input_ptr() - 1);
-        set_cur_input(input_stack(input_ptr()));
-    }
-}
-
 void back_input(void)
 {
     int32_t p;
