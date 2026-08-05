@@ -11,6 +11,7 @@ use std::{ptr, slice};
 
 pub struct EngineCtx {
     pub(crate) selector: Selector,
+    pub(crate) old_setting: Selector,
     pub(crate) tally: i32,
     pub(crate) error_line: i32,
     pub(crate) trick_count: i32,
@@ -91,6 +92,7 @@ impl EngineCtx {
     pub(crate) fn new() -> EngineCtx {
         EngineCtx {
             selector: Selector::File(0),
+            old_setting: Selector::File(0),
             tally: 0,
             error_line: 0,
             trick_count: 0,

@@ -2076,26 +2076,6 @@ void print_param(int32_t n)
     }
 }
 
-void begin_diagnostic(void)
-{
-    old_setting = selector();
-
-    if (INTPAR(tracing_online) <= 0 && selector() == SELECTOR_TERM_AND_LOG)
-    {
-        set_selector(selector() - 1);
-        if (history() == HISTORY_SPOTLESS)
-            set_history(HISTORY_WARNING_ISSUED);
-    }
-}
-
-void end_diagnostic(bool blank_line)
-{
-    print_nl_cstr("");
-    if (blank_line)
-        print_ln();
-    set_selector(old_setting);
-}
-
 void print_length_param(int32_t n)
 {
     switch (n)
@@ -11263,7 +11243,7 @@ scan_file_name_braced(void)
     set_cur_cs(warning_index);
     scan_toks(false, true);
 
-    old_setting = selector();
+    unsigned char old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
     show_token_list(mem(def_ref).b32.s1, TEX_NULL, pool_size() - pool_ptr());
     set_selector(old_setting);
@@ -19697,7 +19677,7 @@ str_number tokens_to_string(int32_t p)
 {
     if (selector() == SELECTOR_NEW_STRING)
         pdf_error("tokens", "tokens_to_string() called while selector = new_string");
-    old_setting = selector();
+    unsigned char old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
     show_token_list(mem(p).b32.s1, TEX_NULL, pool_size() - pool_ptr());
     set_selector(old_setting);

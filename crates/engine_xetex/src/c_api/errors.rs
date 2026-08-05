@@ -1,6 +1,6 @@
 use crate::c_api::engine::{
     rs_close_files_and_terminate, rs_open_log_file, rs_show_context, rs_token_show, rs_tt_cleanup,
-    History, InteractionMode, Local, Selector,
+    History, IntPar, InteractionMode, Local, Selector,
 };
 use crate::c_api::globals::Globals;
 use crate::c_api::output::{
@@ -290,6 +290,37 @@ pub extern "C-unwind" fn pdf_error(t: *const libc::c_char, p: *const libc::c_cha
     };
     let p = unsafe { CStr::from_ptr(p).to_bytes() };
     Globals::with(|globals| rs_pdf_error(globals, t, p))
+}
+
+pub fn rs_begin_diagnostic(globals: &mut Globals<'_, '_>) {
+    globals.engine.old_setting = globals.engine.selector;
+
+    if globals.engine.int_par(IntPar::TracingOnline) <= 0
+        && globals.engine.selector == Selector::TermAndLog
+    {
+        globals.engine.selector = Selector::LogOnly;
+        if globals.engine.history == History::Spotless {
+            globals.engine.history = History::WarningIssued;
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn begin_diagnostic() {
+    Globals::with(rs_begin_diagnostic)
+}
+
+pub fn rs_end_diagnostic(globals: &mut Globals<'_, '_>, blank_line: bool) {
+    rs_print_nl_bytes(globals, b"");
+    if blank_line {
+        rs_print_ln(globals);
+    }
+    globals.engine.selector = globals.engine.old_setting;
+}
+
+#[no_mangle]
+pub extern "C" fn end_diagnostic(blank_line: bool) {
+    Globals::with(|globals| rs_end_diagnostic(globals, blank_line))
 }
 
 extern "C-unwind" {

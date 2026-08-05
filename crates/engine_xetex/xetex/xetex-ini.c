@@ -63,7 +63,6 @@ int32_t breadth_max;
 int32_t max_nest_stack;
 ListStateRecord cur_list;
 short shown_mode;
-unsigned char old_setting;
 int32_t hash_high;
 bool no_new_control_sequence;
 int32_t cs_count;

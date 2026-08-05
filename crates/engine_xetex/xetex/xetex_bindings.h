@@ -1131,6 +1131,10 @@ void confusion(const char *s);
 
 void pdf_error(const char *t, const char *p);
 
+void begin_diagnostic(void);
+
+void end_diagnostic(bool blank_line);
+
 extern int _tt_abort(const char *s, ...);
 
 int32_t font_max(void);
