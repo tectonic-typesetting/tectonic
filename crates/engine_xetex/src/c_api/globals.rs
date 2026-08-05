@@ -1,13 +1,42 @@
-use crate::c_api::dvi::{DviCtx, DVI_CTX};
+use crate::c_api::dvi::DviCtx;
 use crate::c_api::engine::EngineCtx;
 use crate::c_api::font::FontCtx;
-use crate::c_api::hash::{HashCtx, HASH_CTX};
+use crate::c_api::hash::HashCtx;
 use crate::c_api::inputs::FileCtx;
-use crate::c_api::output::{OutputCtx, OUTPUT_CTX};
-use crate::c_api::pool::{StringPool, STRING_POOL};
+use crate::c_api::output::OutputCtx;
+use crate::c_api::pool::StringPool;
 use crate::c_api::scaled_math::MathCtx;
 use crate::c_api::synctex::SynctexCtx;
+use crate::make_token;
 use tectonic_bridge_core::CoreBridgeState;
+
+type TokenCell<T> = crate::token::TokenCell<T, GlobalToken>;
+
+make_token!(GlobalToken, local);
+
+thread_local! {
+    pub(crate) static ALL_CTX: (
+        TokenCell<EngineCtx>,
+        TokenCell<StringPool>,
+        TokenCell<HashCtx>,
+        TokenCell<FileCtx>,
+        TokenCell<OutputCtx>,
+        TokenCell<DviCtx>,
+        TokenCell<FontCtx>,
+        TokenCell<SynctexCtx>,
+        TokenCell<MathCtx>,
+    )= (
+        TokenCell::new(EngineCtx::new()),
+        TokenCell::new(StringPool::new()),
+        TokenCell::new(HashCtx::new()),
+        TokenCell::new(FileCtx::new()),
+        TokenCell::new(OutputCtx::new()),
+        TokenCell::new(DviCtx::new()),
+        TokenCell::new(FontCtx::new()),
+        TokenCell::new(SynctexCtx::new()),
+        TokenCell::new(MathCtx::new()),
+    );
+}
 
 #[non_exhaustive]
 pub struct Globals<'a, 'b> {
@@ -24,39 +53,36 @@ pub struct Globals<'a, 'b> {
 }
 
 impl Globals<'_, '_> {
+    pub fn token<T>(f: impl FnOnce(&mut GlobalToken) -> T) -> T {
+        GlobalToken::with(f)
+    }
+
     pub fn with<T>(f: impl for<'a, 'b> FnOnce(&mut Globals<'a, 'b>) -> T) -> T {
-        CoreBridgeState::with_global_state(|state| {
-            EngineCtx::with(|engine| {
-                STRING_POOL.with_borrow_mut(|strings| {
-                    HASH_CTX.with_borrow_mut(|hash| {
-                        FileCtx::with(|files| {
-                            OUTPUT_CTX.with_borrow_mut(|out| {
-                                DVI_CTX.with_borrow_mut(|dvi| {
-                                    FontCtx::with(|fonts| {
-                                        SynctexCtx::with(|synctex| {
-                                            MathCtx::with(|math| {
-                                                let mut globals = Globals {
-                                                    state,
-                                                    engine,
-                                                    strings,
-                                                    hash,
-                                                    files,
-                                                    out,
-                                                    dvi,
-                                                    fonts,
-                                                    synctex,
-                                                    math,
-                                                };
-                                                f(&mut globals)
-                                            })
-                                        })
-                                    })
-                                })
-                            })
-                        })
+        ALL_CTX.with(
+            |(engine, strings, hash, files, out, dvi, fonts, synctex, math)| {
+                Globals::token(|token| unsafe {
+                    let (engine, strings, hash, files, out, dvi, fonts, synctex, math) =
+                        TokenCell::get_many_unchecked(
+                            (engine, strings, hash, files, out, dvi, fonts, synctex, math),
+                            token,
+                        );
+                    CoreBridgeState::with_global_state(|state| {
+                        let mut globals = Globals {
+                            state,
+                            engine,
+                            strings,
+                            hash,
+                            files,
+                            out,
+                            dvi,
+                            fonts,
+                            synctex,
+                            math,
+                        };
+                        f(&mut globals)
                     })
                 })
-            })
-        })
+            },
+        )
     }
 }

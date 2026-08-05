@@ -3,10 +3,9 @@ use crate::c_api::engine::{
     EQTB_SIZE, FROZEN_NULL_FONT, NULL_CS, PRIM_EQTB_BASE, SCRIPT_SIZE, SINGLE_BASE, TEXT_SIZE,
     UNDEFINED_CONTROL_SEQUENCE,
 };
-use crate::c_api::globals::Globals;
+use crate::c_api::globals::{Globals, ALL_CTX};
 use crate::c_api::hash::HASH_BASE;
 use crate::ty::{Scaled, StrNumber};
-use std::cell::RefCell;
 use std::ffi::CStr;
 use std::io::Write;
 use std::ptr;
@@ -27,10 +26,6 @@ pub const BIGGEST_USV: i32 = 0x10FFFF;
 
 pub const NUMBER_USVS: i32 = BIGGEST_USV + 1;
 
-thread_local! {
-    pub static OUTPUT_CTX: RefCell<OutputCtx> = const { RefCell::new(OutputCtx::new()) }
-}
-
 pub struct OutputCtx {
     pub(crate) current_diagnostic: Option<Box<Diagnostic>>,
     file_line_error_style_p: i32,
@@ -46,7 +41,7 @@ pub struct OutputCtx {
 }
 
 impl OutputCtx {
-    const fn new() -> OutputCtx {
+    pub(crate) const fn new() -> OutputCtx {
         OutputCtx {
             current_diagnostic: None,
             file_line_error_style_p: 0,
@@ -62,7 +57,7 @@ impl OutputCtx {
     }
 
     pub fn with<T>(f: impl FnOnce(&mut OutputCtx) -> T) -> T {
-        OUTPUT_CTX.with_borrow_mut(f)
+        Globals::token(|tok| ALL_CTX.with(|(_, _, _, _, out, _, _, _, _)| f(out.borrow_mut(tok))))
     }
 }
 
@@ -70,7 +65,7 @@ c_var!(OutputCtx => file_line_error_style_p: i32);
 
 #[no_mangle]
 pub extern "C" fn current_diagnostic() -> *mut Diagnostic {
-    OUTPUT_CTX.with_borrow_mut(|out| {
+    OutputCtx::with(|out| {
         out.current_diagnostic
             .as_mut()
             .map(|b| ptr::from_mut(&mut **b))
@@ -85,12 +80,12 @@ c_var!(OutputCtx => log_file: Option<OutputId>);
 
 #[no_mangle]
 pub extern "C" fn write_open(idx: usize) -> bool {
-    OUTPUT_CTX.with_borrow(|out| out.write_open[idx])
+    OutputCtx::with(|out| out.write_open[idx])
 }
 
 #[no_mangle]
 pub extern "C" fn set_write_open(idx: usize, val: bool) {
-    OUTPUT_CTX.with_borrow_mut(|out| {
+    OutputCtx::with(|out| {
         if out.write_open.len() < idx + 1 {
             out.write_open.resize(idx + 1, false);
         }
@@ -100,12 +95,12 @@ pub extern "C" fn set_write_open(idx: usize, val: bool) {
 
 #[no_mangle]
 pub extern "C" fn write_file(idx: usize) -> Option<OutputId> {
-    OUTPUT_CTX.with_borrow(|out| out.write_file[idx])
+    OutputCtx::with(|out| out.write_file[idx])
 }
 
 #[no_mangle]
 pub extern "C" fn set_write_file(idx: usize, val: Option<OutputId>) {
-    OUTPUT_CTX.with_borrow_mut(|out| {
+    OutputCtx::with(|out| {
         if out.write_file.len() < idx + 1 {
             out.write_file.resize(idx + 1, None);
         }
@@ -237,7 +232,7 @@ pub fn rs_warn_char(out: &mut OutputCtx, c: char) {
 
 #[no_mangle]
 pub extern "C" fn warn_char(c: libc::c_int) {
-    OUTPUT_CTX.with_borrow_mut(|out| {
+    OutputCtx::with(|out| {
         rs_warn_char(
             out,
             char::from_u32(c as u32).unwrap_or(char::REPLACEMENT_CHARACTER),

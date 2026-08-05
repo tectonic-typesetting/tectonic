@@ -4,11 +4,10 @@ use crate::c_api::engine::{
 };
 use crate::c_api::errors::{ffi_abort, rs_fatal_error, EngineError};
 use crate::c_api::font::{make_font_def, AAT_FONT_FLAG, OTGR_FONT_FLAG};
-use crate::c_api::globals::Globals;
+use crate::c_api::globals::{Globals, ALL_CTX};
 use crate::c_api::output::{rs_print, rs_print_bytes, rs_print_int, rs_print_nl_bytes};
 use crate::c_api::pool::rs_str_length;
 use crate::ty::StrNumber;
-use std::cell::RefCell;
 use std::io::Write;
 use std::ptr;
 use tectonic_bridge_core::OutputId;
@@ -19,10 +18,6 @@ pub const FNT_NUM_0: usize = 171; /* DVI code */
 
 pub const XDV_ID_BYTE: u8 = 7;
 pub const SPX_ID_BYTE: u8 = 100;
-
-thread_local! {
-    pub static DVI_CTX: RefCell<DviCtx> = const { RefCell::new(DviCtx::new()) }
-}
 
 pub struct DviCtx {
     file: Option<OutputId>,
@@ -36,7 +31,7 @@ pub struct DviCtx {
 }
 
 impl DviCtx {
-    const fn new() -> DviCtx {
+    pub(crate) const fn new() -> DviCtx {
         DviCtx {
             file: None,
             limit: 0,
@@ -48,101 +43,105 @@ impl DviCtx {
             output_file_name: 0,
         }
     }
+
+    pub fn with<T>(f: impl FnOnce(&mut DviCtx) -> T) -> T {
+        Globals::token(|tok| ALL_CTX.with(|(_, _, _, _, _, dvi, _, _, _)| f(dvi.borrow_mut(tok))))
+    }
 }
 
 #[no_mangle]
 pub extern "C" fn dvi_file() -> OutputId {
-    DVI_CTX.with_borrow(|dvi| dvi.file.unwrap())
+    DviCtx::with(|dvi| dvi.file.unwrap())
 }
 
 #[no_mangle]
 pub extern "C" fn set_dvi_file(file: OutputId) {
-    DVI_CTX.with_borrow_mut(|dvi| dvi.file = Some(file))
+    DviCtx::with(|dvi| dvi.file = Some(file))
 }
 
 #[no_mangle]
 pub extern "C" fn dvi_limit() -> i32 {
-    DVI_CTX.with_borrow(|dvi| dvi.limit)
+    DviCtx::with(|dvi| dvi.limit)
 }
 
 #[no_mangle]
 pub extern "C" fn set_dvi_limit(val: i32) {
-    DVI_CTX.with_borrow_mut(|dvi| dvi.limit = val)
+    DviCtx::with(|dvi| dvi.limit = val)
 }
 
 #[no_mangle]
 pub extern "C" fn dvi_ptr() -> i32 {
-    DVI_CTX.with_borrow(|dvi| dvi.ptr)
+    DviCtx::with(|dvi| dvi.ptr)
 }
 
 #[no_mangle]
 pub extern "C" fn set_dvi_ptr(val: i32) {
-    DVI_CTX.with_borrow_mut(|dvi| dvi.ptr = val)
+    DviCtx::with(|dvi| dvi.ptr = val)
 }
 
 #[no_mangle]
 pub extern "C" fn dvi_offset() -> i32 {
-    DVI_CTX.with_borrow(|dvi| dvi.offset)
+    DviCtx::with(|dvi| dvi.offset)
 }
 
 #[no_mangle]
 pub extern "C" fn set_dvi_offset(val: i32) {
-    DVI_CTX.with_borrow_mut(|dvi| dvi.offset = val)
+    DviCtx::with(|dvi| dvi.offset = val)
 }
 
 #[no_mangle]
 pub extern "C" fn dvi_gone() -> i32 {
-    DVI_CTX.with_borrow(|dvi| dvi.gone)
+    DviCtx::with(|dvi| dvi.gone)
 }
 
 #[no_mangle]
 pub extern "C" fn set_dvi_gone(val: i32) {
-    DVI_CTX.with_borrow_mut(|dvi| dvi.gone = val)
+    DviCtx::with(|dvi| dvi.gone = val)
 }
 
 #[no_mangle]
 pub extern "C" fn cur_s() -> i32 {
-    DVI_CTX.with_borrow(|dvi| dvi.cur_s)
+    DviCtx::with(|dvi| dvi.cur_s)
 }
 
 #[no_mangle]
 pub extern "C" fn set_cur_s(val: i32) {
-    DVI_CTX.with_borrow_mut(|dvi| dvi.cur_s = val)
+    DviCtx::with(|dvi| dvi.cur_s = val)
 }
 
 #[no_mangle]
 pub extern "C" fn output_file_name() -> i32 {
-    DVI_CTX.with_borrow(|dvi| dvi.output_file_name)
+    DviCtx::with(|dvi| dvi.output_file_name)
 }
 
 #[no_mangle]
 pub extern "C" fn set_output_file_name(val: i32) {
-    DVI_CTX.with_borrow_mut(|dvi| dvi.output_file_name = val)
+    DviCtx::with(|dvi| dvi.output_file_name = val)
 }
 
 #[no_mangle]
 pub extern "C" fn dvi_buf(idx: usize) -> u8 {
-    DVI_CTX.with_borrow(|engine| engine.buf[idx])
+    DviCtx::with(|engine| engine.buf[idx])
 }
 
 #[no_mangle]
 pub extern "C" fn set_dvi_buf(idx: usize, val: u8) {
-    DVI_CTX.with_borrow_mut(|engine| engine.buf[idx] = val)
+    DviCtx::with(|engine| engine.buf[idx] = val)
 }
 
 #[no_mangle]
 pub extern "C" fn dvi_buf_ptr(idx: usize) -> *mut u8 {
-    DVI_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.buf[idx]))
+    DviCtx::with(|engine| ptr::from_mut(&mut engine.buf[idx]))
 }
 
 #[no_mangle]
 pub extern "C" fn resize_dvi_buf(len: usize) {
-    DVI_CTX.with_borrow_mut(|engine| engine.buf.resize(len, 0))
+    DviCtx::with(|engine| engine.buf.resize(len, 0))
 }
 
 #[no_mangle]
 pub extern "C" fn clear_dvi_buf() {
-    DVI_CTX.with_borrow_mut(|engine| engine.buf.clear())
+    DviCtx::with(|engine| engine.buf.clear())
 }
 
 pub fn rs_write_to_dvi(globals: &mut Globals<'_, '_>, a: usize, b: usize) {

@@ -1,16 +1,11 @@
 use crate::c_api::engine::rs_gettexstring;
-use crate::c_api::globals::Globals;
+use crate::c_api::globals::{Globals, ALL_CTX};
 use crate::ty::StrNumber;
-use std::cell::RefCell;
 use std::io::Write;
 use tectonic_bridge_core::{CoreBridgeState, FileFormat, InputId};
 
 // pub const MAX_IN_OPEN: usize = 15;
 pub const ICUMAPPING: u8 = 5;
-
-thread_local! {
-    static FILE_CTX: RefCell<FileCtx> = const { RefCell::new(FileCtx::new()) };
-}
 
 pub struct FileCtx {
     pub(crate) in_open: i32,
@@ -21,7 +16,7 @@ pub struct FileCtx {
 }
 
 impl FileCtx {
-    const fn new() -> FileCtx {
+    pub(crate) const fn new() -> FileCtx {
         FileCtx {
             in_open: 0,
             source_filename_stack: Vec::new(),
@@ -32,30 +27,30 @@ impl FileCtx {
     }
 
     pub fn with<T>(f: impl FnOnce(&mut FileCtx) -> T) -> T {
-        FILE_CTX.with_borrow_mut(f)
+        Globals::token(|tok| ALL_CTX.with(|(_, _, _, files, _, _, _, _, _)| f(files.borrow_mut(tok))))
     }
 }
 
 #[no_mangle]
 pub extern "C" fn in_open() -> i32 {
-    FILE_CTX.with_borrow(|files| files.in_open)
+    FileCtx::with(|files| files.in_open)
 }
 
 #[no_mangle]
 pub extern "C" fn set_in_open(val: i32) {
-    FILE_CTX.with_borrow_mut(|files| files.in_open = val)
+    FileCtx::with(|files| files.in_open = val)
 }
 
 c_arr!(FileCtx => source_filename_stack: StrNumber);
 
 #[no_mangle]
 pub extern "C" fn full_source_filename_stack(idx: usize) -> StrNumber {
-    FILE_CTX.with_borrow(|files| files.full_source_filename_stack[idx])
+    FileCtx::with(|files| files.full_source_filename_stack[idx])
 }
 
 #[no_mangle]
 pub extern "C" fn set_full_source_filename_stack(idx: usize, val: StrNumber) {
-    FILE_CTX.with_borrow_mut(|files| {
+    FileCtx::with(|files| {
         if files.full_source_filename_stack.len() < idx + 1 {
             files.full_source_filename_stack.resize(idx + 1, 0);
         }
@@ -65,27 +60,27 @@ pub extern "C" fn set_full_source_filename_stack(idx: usize, val: StrNumber) {
 
 #[no_mangle]
 pub extern "C" fn clear_full_source_filename_stack() {
-    FILE_CTX.with_borrow_mut(|files| files.full_source_filename_stack.clear())
+    FileCtx::with(|files| files.full_source_filename_stack.clear())
 }
 
 #[no_mangle]
 pub extern "C" fn line() -> i32 {
-    FILE_CTX.with_borrow(|files| files.line)
+    FileCtx::with(|files| files.line)
 }
 
 #[no_mangle]
 pub extern "C" fn set_line(val: i32) {
-    FILE_CTX.with_borrow_mut(|files| files.line = val)
+    FileCtx::with(|files| files.line = val)
 }
 
 #[no_mangle]
 pub extern "C" fn line_stack(idx: usize) -> i32 {
-    FILE_CTX.with_borrow(|files| files.line_stack[idx])
+    FileCtx::with(|files| files.line_stack[idx])
 }
 
 #[no_mangle]
 pub extern "C" fn set_line_stack(idx: usize, val: i32) {
-    FILE_CTX.with_borrow_mut(|files| {
+    FileCtx::with(|files| {
         if files.line_stack.len() < idx + 1 {
             files.line_stack.resize(idx + 1, 0);
         }
@@ -95,7 +90,7 @@ pub extern "C" fn set_line_stack(idx: usize, val: i32) {
 
 #[no_mangle]
 pub extern "C" fn clear_line_stack() {
-    FILE_CTX.with_borrow_mut(|files| files.line_stack.clear())
+    FileCtx::with(|files| files.line_stack.clear())
 }
 
 #[derive(Clone, Default)]

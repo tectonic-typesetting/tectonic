@@ -3,15 +3,11 @@ use crate::c_api::engine::{
     MemoryWord, Node, NodeBase, NodeError, Selector, CAT_CODE_BASE, EQTB_SIZE, INT_BASE,
     LOCAL_BASE, PRIM_SIZE,
 };
+use crate::c_api::globals::{Globals, ALL_CTX};
 use crate::c_api::inputs::UFile;
 use crate::ty::{Scaled, StrNumber};
-use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::{ptr, slice};
-
-thread_local! {
-    static ENGINE_CTX: RefCell<EngineCtx> = RefCell::new(EngineCtx::new())
-}
 
 pub struct EngineCtx {
     pub(crate) selector: Selector,
@@ -92,7 +88,7 @@ pub struct EngineCtx {
 }
 
 impl EngineCtx {
-    fn new() -> EngineCtx {
+    pub(crate) fn new() -> EngineCtx {
         EngineCtx {
             selector: Selector::File(0),
             tally: 0,
@@ -172,7 +168,9 @@ impl EngineCtx {
     }
 
     pub fn with<T>(f: impl FnOnce(&mut EngineCtx) -> T) -> T {
-        ENGINE_CTX.with_borrow_mut(f)
+        Globals::token(|tok| {
+            ALL_CTX.with(|(engine, _, _, _, _, _, _, _, _)| f(engine.borrow_mut(tok)))
+        })
     }
 
     pub fn raw_mem(&self, idx: usize) -> MemoryWord {
@@ -250,7 +248,7 @@ c_var!(EngineCtx => eqtb_top: i32);
 
 #[no_mangle]
 pub extern "C" fn name_length() -> usize {
-    ENGINE_CTX.with_borrow(|engine| {
+    EngineCtx::with(|engine| {
         engine
             .name_of_file
             .as_ref()
@@ -261,7 +259,7 @@ pub extern "C" fn name_length() -> usize {
 
 #[no_mangle]
 pub extern "C" fn name_of_file() -> *const libc::c_char {
-    ENGINE_CTX.with_borrow(|engine| {
+    EngineCtx::with(|engine| {
         engine
             .name_of_file
             .as_ref()
@@ -277,12 +275,12 @@ pub extern "C" fn set_name_of_file(val: *const libc::c_char) {
     } else {
         Some(unsafe { CStr::from_ptr(val) })
     };
-    ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file = s.map(CStr::to_owned))
+    EngineCtx::with(|engine| engine.name_of_file = s.map(CStr::to_owned))
 }
 
 #[no_mangle]
 pub extern "C" fn name_length16() -> usize {
-    ENGINE_CTX.with_borrow(|engine| {
+    EngineCtx::with(|engine| {
         engine
             .name_of_file_utf16
             .as_ref()
@@ -293,7 +291,7 @@ pub extern "C" fn name_length16() -> usize {
 
 #[no_mangle]
 pub extern "C" fn name_of_file16() -> *const u16 {
-    ENGINE_CTX.with_borrow(|engine| {
+    EngineCtx::with(|engine| {
         engine
             .name_of_file_utf16
             .as_ref()
@@ -309,7 +307,7 @@ pub extern "C" fn set_name_of_file16(val: *const u16, len: usize) {
     } else {
         Some(unsafe { slice::from_raw_parts(val, len) })
     };
-    ENGINE_CTX.with_borrow_mut(|engine| engine.name_of_file_utf16 = s.map(<[u16]>::to_owned))
+    EngineCtx::with(|engine| engine.name_of_file_utf16 = s.map(<[u16]>::to_owned))
 }
 
 c_var!(EngineCtx => cur_name: StrNumber);
@@ -329,17 +327,17 @@ c_var!(EngineCtx => input_ptr: usize);
 
 #[no_mangle]
 pub extern "C" fn cur_input() -> InputState {
-    ENGINE_CTX.with_borrow(|engine| engine.cur_input.clone())
+    EngineCtx::with(|engine| engine.cur_input.clone())
 }
 
 #[no_mangle]
 pub extern "C" fn cur_input_ptr() -> *mut InputState {
-    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.cur_input))
+    EngineCtx::with(|engine| ptr::from_mut(&mut engine.cur_input))
 }
 
 #[no_mangle]
 pub extern "C" fn set_cur_input(val: InputState) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.cur_input = val)
+    EngineCtx::with(|engine| engine.cur_input = val)
 }
 
 c_var!(EngineCtx => interaction: into u8);
@@ -394,34 +392,34 @@ c_arr!(EngineCtx => prim[_]: B32x2);
 
 #[no_mangle]
 pub extern "C" fn resize_buffer(len: usize) {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.buffer.resize(len, '\0'))
+    EngineCtx::with(|engine| engine.buffer.resize(len, '\0'))
 }
 
 #[no_mangle]
 pub extern "C" fn buffer_ptr() -> *mut char {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.buffer.as_mut_ptr())
+    EngineCtx::with(|engine| engine.buffer.as_mut_ptr())
 }
 
 #[no_mangle]
 pub extern "C" fn buffer(idx: usize) -> u32 {
-    ENGINE_CTX.with_borrow(|engine| engine.buffer[idx]) as u32
+    EngineCtx::with(|engine| engine.buffer[idx]) as u32
 }
 
 #[no_mangle]
 pub extern "C" fn set_buffer(idx: usize, val: u32) {
-    ENGINE_CTX.with_borrow_mut(|engine| {
+    EngineCtx::with(|engine| {
         engine.buffer[idx] = char::from_u32(val).unwrap_or(char::REPLACEMENT_CHARACTER)
     })
 }
 
 #[no_mangle]
 pub extern "C" fn clear_buffer() {
-    ENGINE_CTX.with_borrow_mut(|engine| engine.buffer.clear())
+    EngineCtx::with(|engine| engine.buffer.clear())
 }
 
 #[no_mangle]
 pub extern "C" fn xeq_level_array_ptr(idx: usize) -> *mut u16 {
-    ENGINE_CTX.with_borrow_mut(|engine| ptr::from_mut(&mut engine.xeq_level_array[idx]))
+    EngineCtx::with(|engine| ptr::from_mut(&mut engine.xeq_level_array[idx]))
 }
 
 c_arr!(EngineCtx => nest: ListStateRecord);

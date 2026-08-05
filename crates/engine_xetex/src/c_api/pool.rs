@@ -1,14 +1,10 @@
+use crate::c_api::globals::{Globals, ALL_CTX};
 use crate::ty::StrNumber;
-use std::cell::RefCell;
 use std::ops::Range;
 use std::ptr;
 
 pub const TOO_BIG_CHAR: usize = 65536;
 pub const EMPTY_STRING: StrNumber = 65536 + 1;
-
-thread_local! {
-    pub static STRING_POOL: RefCell<StringPool> = const { RefCell::new(StringPool::new()) };
-}
 
 pub struct StringPool {
     pub(crate) str_pool: Vec<u16>,
@@ -20,7 +16,7 @@ pub struct StringPool {
 }
 
 impl StringPool {
-    const fn new() -> StringPool {
+    pub(crate) const fn new() -> StringPool {
         StringPool {
             str_pool: Vec::new(),
             str_start: Vec::new(),
@@ -29,6 +25,12 @@ impl StringPool {
             pool_size: 0,
             max_strings: 565536,
         }
+    }
+
+    pub fn with<T>(f: impl FnOnce(&mut StringPool) -> T) -> T {
+        Globals::token(|tok| {
+            ALL_CTX.with(|(_, strings, _, _, _, _, _, _, _)| f(strings.borrow_mut(tok)))
+        })
     }
 
     pub fn str(&self, str: StrNumber) -> &[u16] {
@@ -61,92 +63,92 @@ impl StringPool {
 
 #[no_mangle]
 pub extern "C" fn resize_str_pool(size: usize) {
-    STRING_POOL.with_borrow_mut(|strings| strings.str_pool.resize(size, 0))
+    StringPool::with(|strings| strings.str_pool.resize(size, 0))
 }
 
 #[no_mangle]
 pub extern "C" fn clear_str_pool() {
-    STRING_POOL.with_borrow_mut(|strings| strings.str_pool.clear());
+    StringPool::with(|strings| strings.str_pool.clear());
 }
 
 #[no_mangle]
 pub extern "C" fn str_pool(idx: usize) -> u16 {
-    STRING_POOL.with_borrow(|strings| strings.str_pool[idx])
+    StringPool::with(|strings| strings.str_pool[idx])
 }
 
 #[no_mangle]
 pub extern "C" fn str_pool_ptr(idx: usize) -> *mut u16 {
-    STRING_POOL.with_borrow_mut(|strings| ptr::from_mut(&mut strings.str_pool[idx..]).cast())
+    StringPool::with(|strings| ptr::from_mut(&mut strings.str_pool[idx..]).cast())
 }
 
 #[no_mangle]
 pub extern "C" fn set_str_pool(idx: usize, val: u16) {
-    STRING_POOL.with_borrow_mut(|strings| strings.str_pool[idx] = val)
+    StringPool::with(|strings| strings.str_pool[idx] = val)
 }
 
 #[no_mangle]
 pub extern "C" fn str_start(idx: usize) -> u32 {
-    STRING_POOL.with_borrow(|strings| strings.str_start[idx])
+    StringPool::with(|strings| strings.str_start[idx])
 }
 
 #[no_mangle]
 pub extern "C" fn str_start_ptr(idx: usize) -> *mut u32 {
-    STRING_POOL.with_borrow_mut(|strings| ptr::from_mut(&mut strings.str_start[idx..]).cast())
+    StringPool::with(|strings| ptr::from_mut(&mut strings.str_start[idx..]).cast())
 }
 
 #[no_mangle]
 pub extern "C" fn resize_str_start(size: usize) {
-    STRING_POOL.with_borrow_mut(|strings| strings.str_start.resize(size, 0))
+    StringPool::with(|strings| strings.str_start.resize(size, 0))
 }
 
 #[no_mangle]
 pub extern "C" fn clear_str_start() {
-    STRING_POOL.with_borrow_mut(|strings| strings.str_start.clear());
+    StringPool::with(|strings| strings.str_start.clear());
 }
 
 #[no_mangle]
 pub extern "C" fn set_str_start(idx: usize, val: u32) {
-    STRING_POOL.with_borrow_mut(|strings| strings.str_start[idx] = val)
+    StringPool::with(|strings| strings.str_start[idx] = val)
 }
 
 #[no_mangle]
 pub extern "C" fn pool_ptr() -> usize {
-    STRING_POOL.with_borrow(|strings| strings.pool_ptr)
+    StringPool::with(|strings| strings.pool_ptr)
 }
 
 #[no_mangle]
 pub extern "C" fn set_pool_ptr(val: usize) {
-    STRING_POOL.with_borrow_mut(|strings| strings.pool_ptr = val)
+    StringPool::with(|strings| strings.pool_ptr = val)
 }
 
 #[no_mangle]
 pub extern "C" fn str_ptr() -> usize {
-    STRING_POOL.with_borrow(|strings| strings.str_ptr)
+    StringPool::with(|strings| strings.str_ptr)
 }
 
 #[no_mangle]
 pub extern "C" fn set_str_ptr(val: usize) {
-    STRING_POOL.with_borrow_mut(|strings| strings.str_ptr = val)
+    StringPool::with(|strings| strings.str_ptr = val)
 }
 
 #[no_mangle]
 pub extern "C" fn pool_size() -> usize {
-    STRING_POOL.with_borrow(|strings| strings.pool_size)
+    StringPool::with(|strings| strings.pool_size)
 }
 
 #[no_mangle]
 pub extern "C" fn set_pool_size(val: usize) {
-    STRING_POOL.with_borrow_mut(|strings| strings.pool_size = val)
+    StringPool::with(|strings| strings.pool_size = val)
 }
 
 #[no_mangle]
 pub extern "C" fn max_strings() -> usize {
-    STRING_POOL.with_borrow(|strings| strings.max_strings)
+    StringPool::with(|strings| strings.max_strings)
 }
 
 #[no_mangle]
 pub extern "C" fn set_max_strings(val: usize) {
-    STRING_POOL.with_borrow_mut(|strings| strings.max_strings = val)
+    StringPool::with(|strings| strings.max_strings = val)
 }
 
 pub fn rs_make_string(pool: &mut StringPool) -> StrNumber {
@@ -174,12 +176,12 @@ pub fn rs_slow_make_string(pool: &mut StringPool) -> StrNumber {
 
 #[no_mangle]
 pub extern "C" fn make_string() -> StrNumber {
-    STRING_POOL.with_borrow_mut(rs_make_string)
+    StringPool::with(rs_make_string)
 }
 
 #[no_mangle]
 pub extern "C" fn slow_make_string() -> StrNumber {
-    STRING_POOL.with_borrow_mut(rs_slow_make_string)
+    StringPool::with(rs_slow_make_string)
 }
 
 pub fn rs_str_length(pool: &StringPool, s: StrNumber) -> usize {
@@ -238,15 +240,15 @@ pub fn rs_search_string(pool: &StringPool, search: StrNumber) -> StrNumber {
 
 #[no_mangle]
 pub extern "C" fn length(s: StrNumber) -> usize {
-    STRING_POOL.with_borrow(|pool| rs_str_length(pool, s))
+    StringPool::with(|pool| rs_str_length(pool, s))
 }
 
 #[no_mangle]
 pub extern "C" fn str_eq_str(s1: StrNumber, s2: StrNumber) -> bool {
-    STRING_POOL.with_borrow(|pool| rs_str_eq_str(pool, s1, s2))
+    StringPool::with(|pool| rs_str_eq_str(pool, s1, s2))
 }
 
 #[no_mangle]
 pub extern "C" fn search_string(search: StrNumber) -> StrNumber {
-    STRING_POOL.with_borrow(|pool| rs_search_string(pool, search))
+    StringPool::with(|pool| rs_search_string(pool, search))
 }

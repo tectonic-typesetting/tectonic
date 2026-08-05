@@ -26,6 +26,7 @@ use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
 
+mod token;
 mod ty;
 
 /// A serial number describing the detailed binary layout of the TeX "format

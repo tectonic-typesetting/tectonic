@@ -1,10 +1,9 @@
 use crate::c_api::d_to_fix;
 use crate::c_api::engine::{B16x4, MemoryWord};
 use crate::c_api::errors::EngineError;
-use crate::c_api::globals::Globals;
+use crate::c_api::globals::{Globals, ALL_CTX};
 use crate::ty::{Scaled, StrNumber};
 use std::borrow::Cow;
-use std::cell::RefCell;
 #[cfg(target_os = "macos")]
 use tectonic_mac_core::sys::{
     kCTFontAttributeName, kCTForegroundColorAttributeName, kCTVerticalFormsAttributeName,
@@ -27,10 +26,6 @@ pub const XDV_FLAG_COLORED: u16 = 0x0200;
 pub const XDV_FLAG_EXTEND: u16 = 0x1000;
 pub const XDV_FLAG_SLANT: u16 = 0x2000;
 pub const XDV_FLAG_EMBOLDEN: u16 = 0x4000;
-
-thread_local! {
-    static FONT_CTX: RefCell<FontCtx> = const { RefCell::new(FontCtx::new()) };
-}
 
 pub struct FontCtx {
     pub(crate) font_max: i32,
@@ -70,7 +65,7 @@ pub struct FontCtx {
 }
 
 impl FontCtx {
-    const fn new() -> FontCtx {
+    pub(crate) const fn new() -> FontCtx {
         FontCtx {
             font_max: 0,
             font_ptr: 0,
@@ -110,7 +105,9 @@ impl FontCtx {
     }
 
     pub fn with<T>(f: impl FnOnce(&mut FontCtx) -> T) -> T {
-        FONT_CTX.with_borrow_mut(f)
+        Globals::token(|tok| {
+            ALL_CTX.with(|(_, _, _, _, _, _, fonts, _, _)| f(fonts.borrow_mut(tok)))
+        })
     }
 }
 

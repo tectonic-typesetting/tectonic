@@ -1,15 +1,10 @@
 use crate::c_api::errors::{ffi_abort, rs_error, EngineError};
-use crate::c_api::globals::Globals;
+use crate::c_api::globals::{Globals, ALL_CTX};
 use crate::c_api::output::{
     rs_capture_to_diagnostic, rs_error_here_with_diagnostic, rs_print_bytes, rs_print_scaled,
 };
 use crate::ty::Scaled;
-use std::cell::RefCell;
 use std::mem;
-
-thread_local! {
-    static MATH_CTX: RefCell<MathCtx> = const { RefCell::new(MathCtx::new()) };
-}
 
 const POWERS_OF_TWO: [i32; 31] = {
     let mut out = [1; 31];
@@ -53,7 +48,7 @@ pub struct MathCtx {
 }
 
 impl MathCtx {
-    const fn new() -> MathCtx {
+    pub(crate) const fn new() -> MathCtx {
         MathCtx {
             arith_error: false,
             tex_remainder: 0,
@@ -63,7 +58,7 @@ impl MathCtx {
     }
 
     pub fn with<T>(f: impl FnOnce(&mut MathCtx) -> T) -> T {
-        MATH_CTX.with_borrow_mut(f)
+        Globals::token(|tok| ALL_CTX.with(|(_, _, _, _, _, _, _, _, math)| f(math.borrow_mut(tok))))
     }
 
     fn next_rand(&mut self) -> i32 {
@@ -81,7 +76,7 @@ c_var!(MathCtx => tex_remainder: Scaled);
 
 #[no_mangle]
 pub extern "C" fn randoms(idx: usize) -> i32 {
-    MATH_CTX.with_borrow(|ctx| ctx.randoms[idx])
+    MathCtx::with(|ctx| ctx.randoms[idx])
 }
 
 c_var!(MathCtx => j_random: u8);
@@ -422,7 +417,7 @@ fn new_randoms(math: &mut MathCtx) {
 
 #[no_mangle]
 pub extern "C" fn init_randoms(seed: i32) {
-    MATH_CTX.with_borrow_mut(|math| {
+    MathCtx::with(|math| {
         let mut j = seed.abs();
         while j >= 0x10000000 {
             j /= 2;
@@ -448,7 +443,7 @@ pub extern "C" fn init_randoms(seed: i32) {
 
 #[no_mangle]
 pub extern "C" fn unif_rand(x: i32) -> i32 {
-    MATH_CTX.with_borrow_mut(|math| {
+    MathCtx::with(|math| {
         let next_rand = math.next_rand();
         let y = take_frac(math, x.abs(), next_rand);
         if y == x.abs() {

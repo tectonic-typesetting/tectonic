@@ -1,15 +1,10 @@
-use crate::c_api::globals::Globals;
+use crate::c_api::globals::{Globals, ALL_CTX};
 use bitflags::bitflags;
-use std::cell::RefCell;
 use std::io::Write;
 use std::ptr;
 use tectonic_bridge_core::OutputId;
 
 pub type SynctexRecorder = extern "C" fn(i32);
-
-thread_local! {
-    static SYNCTEX: RefCell<SynctexCtx> = const { RefCell::new(SynctexCtx::new()) };
-}
 
 bitflags! {
     #[repr(transparent)]
@@ -64,7 +59,7 @@ pub struct SynctexCtx {
 }
 
 impl SynctexCtx {
-    const fn new() -> SynctexCtx {
+    pub(crate) const fn new() -> SynctexCtx {
         SynctexCtx {
             file: None,
             root_name: ptr::null(),
@@ -86,13 +81,15 @@ impl SynctexCtx {
     }
 
     pub fn with<T>(f: impl FnOnce(&mut SynctexCtx) -> T) -> T {
-        SYNCTEX.with_borrow_mut(f)
+        Globals::token(|tok| {
+            ALL_CTX.with(|(_, _, _, _, _, _, _, synctex, _)| f(synctex.borrow_mut(tok)))
+        })
     }
 }
 
 #[no_mangle]
 pub extern "C" fn synctex_ctx() -> *mut SynctexCtx {
-    SYNCTEX.with_borrow_mut(ptr::from_mut)
+    SynctexCtx::with(ptr::from_mut)
 }
 
 pub fn rs_synctex_record_anchor(globals: &mut Globals<'_, '_>) -> Option<()> {
