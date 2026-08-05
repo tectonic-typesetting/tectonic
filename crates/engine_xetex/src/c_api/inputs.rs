@@ -27,7 +27,9 @@ impl FileCtx {
     }
 
     pub fn with<T>(f: impl FnOnce(&mut FileCtx) -> T) -> T {
-        Globals::token(|tok| ALL_CTX.with(|(_, _, _, files, _, _, _, _, _)| f(files.borrow_mut(tok))))
+        Globals::token(|tok| {
+            ALL_CTX.with(|(_, _, _, files, _, _, _, _, _)| f(files.borrow_mut(tok)))
+        })
     }
 }
 

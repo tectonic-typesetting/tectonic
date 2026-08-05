@@ -1303,7 +1303,6 @@ pub extern "C" fn flush_list(p: i32) {
 }
 
 unsafe fn rs_free_node(globals: &mut Globals<'_, '_>, p: usize, s: i32) {
-    globals.engine.base_node(p);
     // Type/Subtype = s
     globals.engine.mem[p].b32.s0 = s;
     // Next = MAX_HALFWORD
@@ -1320,4 +1319,30 @@ unsafe fn rs_free_node(globals: &mut Globals<'_, '_>, p: usize, s: i32) {
 #[no_mangle]
 pub extern "C" fn free_node(p: i32, s: i32) {
     Globals::with(|globals| unsafe { rs_free_node(globals, p as usize, s) })
+}
+
+pub fn rs_delete_token_ref(globals: &mut Globals<'_, '_>, p: usize) {
+    if unsafe { globals.engine.mem[p].b32.s0 == TEX_NULL } {
+        rs_flush_list(globals, p);
+    } else {
+        unsafe { globals.engine.mem[p].b32.s0 -= 1 }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn delete_token_ref(p: i32) {
+    Globals::with(|globals| rs_delete_token_ref(globals, p as usize))
+}
+
+pub fn rs_delete_glue_ref(globals: &mut Globals<'_, '_>, p: usize) {
+    if unsafe { globals.engine.mem[p].b32.s1 == TEX_NULL } {
+        unsafe { rs_free_node(globals, p, GLUE_SPEC_SIZE) }
+    } else {
+        unsafe { globals.engine.mem[p].b32.s1 -= 1 }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn delete_glue_ref(p: i32) {
+    Globals::with(|globals| rs_delete_glue_ref(globals, p as usize))
 }

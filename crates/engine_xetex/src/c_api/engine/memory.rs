@@ -216,6 +216,9 @@ impl Default for MemoryWord {
  *
  */
 
+/* the size of various node types */
+pub const GLUE_SPEC_SIZE: i32 = 4;
+
 /* Types of nodes that can occur in general lists. */
 pub const WHATSIT_NODE: u16 = 8;
 

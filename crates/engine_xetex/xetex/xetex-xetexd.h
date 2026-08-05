@@ -619,8 +619,6 @@ void print_skip_param(int32_t n);
 void show_node_list(int32_t p);
 void show_box(int32_t p);
 void short_display_n(int32_t p, int32_t m);
-void delete_token_ref(int32_t p);
-void delete_glue_ref(int32_t p);
 void flush_node_list(int32_t p);
 int32_t copy_node_list(int32_t p);
 void print_mode(int32_t m);

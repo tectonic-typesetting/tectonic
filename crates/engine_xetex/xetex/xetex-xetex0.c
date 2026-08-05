@@ -42,8 +42,10 @@ runaway(void)
 {
     int32_t p = TEX_NULL;
 
-    if (scanner_status() > SKIPPING) {
-        switch (scanner_status()) {
+    if (scanner_status() > SKIPPING)
+    {
+        switch (scanner_status())
+        {
         case DEFINING:
             print_nl_cstr("Runaway definition");
             p = def_ref;
@@ -75,14 +77,17 @@ int32_t get_avail(void)
     p = avail();
     if (p != TEX_NULL)
         set_avail(LLIST_link(avail()));
-    else if (mem_end() < MEM_TOP) {
-        set_mem_end(mem_end()+1);
+    else if (mem_end() < MEM_TOP)
+    {
+        set_mem_end(mem_end() + 1);
         p = mem_end();
-    } else {
-
-        set_hi_mem_min(hi_mem_min()-1);
+    }
+    else
+    {
+        set_hi_mem_min(hi_mem_min() - 1);
         p = hi_mem_min();
-        if (is_char_node(lo_mem_max)) {
+        if (is_char_node(lo_mem_max))
+        {
             runaway();
             overflow("main memory size", MEM_TOP + 1);
         }
@@ -101,10 +106,12 @@ int32_t get_node(int32_t s)
 restart:
     p = rover();
 
-    do {
-        /*131: */ q = p + mem(p).b32.s0;
-        while (mem(q).b32.s1 == MAX_HALFWORD) {
-
+    do
+    {
+        /*131: */
+        q = p + mem(p).b32.s0;
+        while (mem(q).b32.s1 == MAX_HALFWORD)
+        {
             t = mem(q + 1).b32.s1;
             if (q == rover())
                 set_rover(t);
@@ -113,14 +120,18 @@ restart:
             q = q + mem(q).b32.s0;
         }
         r = q - s;
-        if (r > p + 1) {        /*132: */
+        if (r > p + 1)
+        {
+            /*132: */
             mem_ptr(p)->b32.s0 = r - p;
             set_rover(p);
             goto found;
         }
-        if (r == p) {
-
-            if (mem(p + 1).b32.s1 != p) {      /*133: */
+        if (r == p)
+        {
+            if (mem(p + 1).b32.s1 != p)
+            {
+                /*133: */
                 set_rover(mem(p + 1).b32.s1);
                 t = mem(p + 1).b32.s0;
                 mem_ptr(rover() + 1)->b32.s0 = t;
@@ -130,13 +141,17 @@ restart:
         }
         mem_ptr(p)->b32.s0 = q - /*:131 */ p;
         p = mem(p + 1).b32.s1;
-    } while (!(p == rover()));
-    if (s == 0x40000000) {
+    }
+    while (!(p == rover()));
+    if (s == 0x40000000)
+    {
         return MAX_HALFWORD;
     }
-    if (lo_mem_max + 2 < hi_mem_min()) {
-
-        if (lo_mem_max + 2 <= MAX_HALFWORD) {  /*130: */
+    if (lo_mem_max + 2 < hi_mem_min())
+    {
+        if (lo_mem_max + 2 <= MAX_HALFWORD)
+        {
+            /*130: */
             if (hi_mem_min() - lo_mem_max >= 1998)
                 t = lo_mem_max + 1000;
             else
@@ -162,7 +177,8 @@ restart:
 
 found:
     mem_ptr(r)->b32.s1 = TEX_NULL;
-    if (s >= MEDIUM_NODE_SIZE) {
+    if (s >= MEDIUM_NODE_SIZE)
+    {
         mem_ptr(r + s - 1)->b32.s0 = cur_input().synctex_tag;
         mem_ptr(r + s - 1)->b32.s1 = line();
     }
@@ -236,7 +252,8 @@ copy_native_glyph_info(int32_t src, int32_t dest)
 {
     int32_t glyph_count;
 
-    if (NATIVE_NODE_glyph_info_ptr(src) != NULL) {
+    if (NATIVE_NODE_glyph_info_ptr(src) != NULL)
+    {
         glyph_count = NATIVE_NODE_glyph_count(src);
         NATIVE_NODE_glyph_info_ptr(dest) = xmalloc_array(char, glyph_count * NATIVE_GLYPH_INFO_SIZE);
         memcpy(NATIVE_NODE_glyph_info_ptr(dest), NATIVE_NODE_glyph_info_ptr(src), glyph_count * NATIVE_GLYPH_INFO_SIZE);
@@ -298,7 +315,7 @@ int32_t new_skip_param(small_number n)
 {
     int32_t p;
 
-    temp_ptr = new_spec( /*232: */ eqtb_ptr(GLUE_BASE + n)->b32.s1 /*:232 */ );
+    temp_ptr = new_spec(/*232: */ eqtb_ptr(GLUE_BASE + n)->b32.s1 /*:232 */);
     p = new_glue(temp_ptr);
     mem_ptr(temp_ptr)->b32.s1 = TEX_NULL;
     mem_ptr(p)->b16.s0 = n + 1;
@@ -333,8 +350,8 @@ int32_t prev_rightmost(int32_t s, int32_t e)
     p = s;
     if (p == TEX_NULL)
         return TEX_NULL;
-    while (mem(p).b32.s1 != e) {
-
+    while (mem(p).b32.s1 != e)
+    {
         p = LLIST_link(p);
         if (p == TEX_NULL)
             return TEX_NULL;
@@ -362,10 +379,14 @@ short_display(int32_t p)
 {
     int32_t n;
 
-    while (p > 0) {
-        if (is_char_node(p)) {
-            if (p <= mem_end()) {
-                if (mem(p).b16.s1 != font_in_short_display) {
+    while (p > 0)
+    {
+        if (is_char_node(p))
+        {
+            if (p <= mem_end())
+            {
+                if (mem(p).b16.s1 != font_in_short_display)
+                {
                     if (mem(p).b16.s1 > font_max())
                         print_char('*');
                     else /*279:*/
@@ -375,9 +396,12 @@ short_display(int32_t p)
                 }
                 print(mem(p).b16.s0);
             }
-        } else {
+        }
+        else
+        {
             /*183:*/
-            switch (mem(p).b16.s1) {
+            switch (mem(p).b16.s1)
+            {
             case HLIST_NODE:
             case VLIST_NODE:
             case INS_NODE:
@@ -387,10 +411,12 @@ short_display(int32_t p)
                 print_cstr("[]");
                 break;
             case WHATSIT_NODE:
-                switch (mem(p).b16.s0) {
+                switch (mem(p).b16.s0)
+                {
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    if (mem(p + 4).b16.s2 != font_in_short_display) {
+                    if (mem(p + 4).b16.s2 != font_in_short_display)
+                    {
                         print_esc(hash(FONT_ID_BASE + mem(p + 4).b16.s2).s1);
                         print_char(' ');
                         font_in_short_display = mem(p + 4).b16.s2;
@@ -423,7 +449,8 @@ short_display(int32_t p)
                 short_display(mem(p + 1).b32.s1);
                 n = mem(p).b16.s0;
 
-                while (n > 0) {
+                while (n > 0)
+                {
                     if (mem(p).b32.s1 != TEX_NULL)
                         p = LLIST_link(p);
                     n--;
@@ -443,8 +470,8 @@ void print_font_and_char(int32_t p)
 {
     if (p > mem_end())
         print_esc_cstr("CLOBBERED.");
-    else {
-
+    else
+    {
         if ((mem(p).b16.s1 > font_max()))
             print_char('*');
         else /*279: */
@@ -477,31 +504,35 @@ void print_glue(scaled_t d, int32_t order, const char* s)
     print_scaled(d);
     if ((order < NORMAL) || (order > FILLL))
         print_cstr("foul");
-    else if (order > NORMAL) {
+    else if (order > NORMAL)
+    {
         print_cstr("fil");
-        while (order > FIL) {
-
+        while (order > FIL)
+        {
             print_char('l');
             order--;
         }
-    } else if (s != 0)
+    }
+    else if (s != 0)
         print_cstr(s);
 }
 
 void print_spec(int32_t p, const char* s)
 {
-
     if (p < 0 || p >= lo_mem_max)
         print_char('*');
-    else {
+    else
+    {
         print_scaled(mem(p + 1).b32.s1);
         if (s != NULL)
             print_cstr(s);
-        if (mem(p + 2).b32.s1 != 0) {
+        if (mem(p + 2).b32.s1 != 0)
+        {
             print_cstr(" plus ");
             print_glue(mem(p + 2).b32.s1, mem(p).b16.s1, s);
         }
-        if (mem(p + 3).b32.s1 != 0) {
+        if (mem(p + 3).b32.s1 != 0)
+        {
             print_cstr(" minus ");
             print_glue(mem(p + 3).b32.s1, mem(p).b16.s0, s);
         }
@@ -514,7 +545,7 @@ void print_fam_and_char(int32_t p)
     print_esc_cstr("fam");
     print_int((mem(p).b16.s1 % 256) % 256);
     print_char(' ');
-    c = ((unsigned short) mem(p).b16.s0 + ((mem(p).b16.s1 / 256) * 65536L));
+    c = ((unsigned short)mem(p).b16.s0 + ((mem(p).b16.s1 / 256) * 65536L));
     if (c < 65536L)
         print(c);
     else
@@ -536,16 +567,19 @@ void print_delimiter(int32_t p)
 void
 print_subsidiary_data(int32_t p, UTF16_code c)
 {
-
-    if (cur_length() >= depth_threshold) {
+    if (cur_length() >= depth_threshold)
+    {
         if (mem(p).b32.s1 != EMPTY)
             print_cstr(" []");
-    } else {
+    }
+    else
+    {
         set_str_pool(pool_ptr(), c);
-        set_pool_ptr(pool_ptr()+1);
+        set_pool_ptr(pool_ptr() + 1);
         temp_ptr = p;
 
-        switch (mem(p).b32.s1) {
+        switch (mem(p).b32.s1)
+        {
         case MATH_CHAR:
             print_ln();
             print_current_string();
@@ -555,11 +589,14 @@ print_subsidiary_data(int32_t p, UTF16_code c)
             show_info();
             break;
         case SUB_MLIST:
-            if (mem(p).b32.s0 == TEX_NULL) {
+            if (mem(p).b32.s0 == TEX_NULL)
+            {
                 print_ln();
                 print_current_string();
                 print_cstr("{}");
-            } else {
+            }
+            else
+            {
                 show_info();
             }
             break;
@@ -567,14 +604,15 @@ print_subsidiary_data(int32_t p, UTF16_code c)
             break;
         }
 
-        set_pool_ptr(pool_ptr()-1);
+        set_pool_ptr(pool_ptr() - 1);
     }
 }
 
 
 void print_style(int32_t c)
 {
-    switch (c / 2) {
+    switch (c / 2)
+    {
     case DISPLAY_STYLE / 2:
         print_esc_cstr("displaystyle");
         break;
@@ -595,7 +633,8 @@ void print_style(int32_t c)
 
 void print_skip_param(int32_t n)
 {
-    switch (n) {
+    switch (n)
+    {
     case GLUE_PAR__line_skip:
         print_esc_cstr("lineskip");
         break;
@@ -667,7 +706,8 @@ show_node_list(int32_t p)
     int32_t i;
     double g;
 
-    if (cur_length() > depth_threshold) {
+    if (cur_length() > depth_threshold)
+    {
         if (p > TEX_NULL)
             print_cstr(" []");
         return;
@@ -675,33 +715,40 @@ show_node_list(int32_t p)
 
     n = 0;
 
-    while (p > 0) {
+    while (p > 0)
+    {
         print_ln();
         print_current_string();
 
-        if (p > mem_end()) {
+        if (p > mem_end())
+        {
             print_cstr("Bad link, display aborted.");
             return;
         }
 
         n++;
 
-        if (n > breadth_max) {
+        if (n > breadth_max)
+        {
             print_cstr("etc.");
             return;
         }
 
-        if (is_char_node(p)) {
+        if (is_char_node(p))
+        {
             print_font_and_char(p);
-        } else {
-            switch (mem(p).b16.s1) {
+        }
+        else
+        {
+            switch (mem(p).b16.s1)
+            {
             case HLIST_NODE:
             case VLIST_NODE:
             case UNSET_NODE:
                 if (NODE_type(p) == HLIST_NODE)
-                    print_esc('h' );
+                    print_esc('h');
                 else if (NODE_type(p) == VLIST_NODE)
-                    print_esc('v' );
+                    print_esc('v');
                 else
                     print_esc_cstr("unset");
 
@@ -712,40 +759,52 @@ show_node_list(int32_t p)
                 print_cstr(")x");
                 print_scaled(mem(p + 1).b32.s1);
 
-                if (NODE_type(p) == UNSET_NODE) { /*193:*/
-                    if (mem(p).b16.s0 != 0) {
+                if (NODE_type(p) == UNSET_NODE)
+                {
+                    /*193:*/
+                    if (mem(p).b16.s0 != 0)
+                    {
                         print_cstr(" (");
                         print_int(mem(p).b16.s0 + 1);
                         print_cstr(" columns)");
                     }
-                    if (mem(p + 6).b32.s1 != 0) {
+                    if (mem(p + 6).b32.s1 != 0)
+                    {
                         print_cstr(", stretch ");
                         print_glue(mem(p + 6).b32.s1, mem(p + 5).b16.s0, NULL);
                     }
-                    if (mem(p + 4).b32.s1 != 0) {
+                    if (mem(p + 4).b32.s1 != 0)
+                    {
                         print_cstr(", shrink ");
                         print_glue(mem(p + 4).b32.s1, mem(p + 5).b16.s1, NULL);
                     }
-                } else {
+                }
+                else
+                {
                     g = BOX_glue_set(p);
 
-                    if (g != 0.0 && mem(p + 5).b16.s1 != NORMAL) {
+                    if (g != 0.0 && mem(p + 5).b16.s1 != NORMAL)
+                    {
                         print_cstr(", glue set ");
                         if (mem(p + 5).b16.s1 == SHRINKING)
                             print_cstr("- ");
 
-                        if (fabs(g) > 20000.0) {
+                        if (fabs(g) > 20000.0)
+                        {
                             if (g > 0.0)
                                 print_char('>');
                             else
                                 print_cstr("< -");
                             print_glue(20000 * 65536L, mem(p + 5).b16.s0, NULL);
-                        } else {
+                        }
+                        else
+                        {
                             print_glue(tex_round(65536L * g), mem(p + 5).b16.s0, NULL);
                         }
                     }
 
-                    if (mem(p + 4).b32.s1 != 0) {
+                    if (mem(p + 4).b32.s1 != 0)
+                    {
                         print_cstr(", shifted ");
                         print_scaled(mem(p + 4).b32.s1);
                     }
@@ -756,9 +815,9 @@ show_node_list(int32_t p)
                 }
 
                 set_str_pool(pool_ptr(), '.');
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 5).b32.s1);
-                set_pool_ptr(pool_ptr()-1);
+                set_pool_ptr(pool_ptr() - 1);
                 break;
 
             case RULE_NODE:
@@ -782,13 +841,14 @@ show_node_list(int32_t p)
                 print_cstr("); float cost ");
                 print_int(mem(p + 1).b32.s1);
                 set_str_pool(pool_ptr(), '.');
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 4).b32.s0);
-                set_pool_ptr(pool_ptr()-1);
+                set_pool_ptr(pool_ptr() - 1);
                 break;
 
             case WHATSIT_NODE:
-                switch (mem(p).b16.s0) {
+                switch (mem(p).b16.s0)
+                {
                 case OPEN_NODE:
                     print_write_whatsit("openout", p);
                     print_char('=');
@@ -847,7 +907,9 @@ show_node_list(int32_t p)
                 break; /* WHATSIT_NODE */
 
             case GLUE_NODE:
-                if (mem(p).b16.s0 >= A_LEADERS) {      /*198: */
+                if (mem(p).b16.s0 >= A_LEADERS)
+                {
+                    /*198: */
                     print_esc_cstr("");
                     if (mem(p).b16.s0 == C_LEADERS)
                         print_char('c');
@@ -856,13 +918,16 @@ show_node_list(int32_t p)
                     print_cstr("leaders ");
                     print_spec(mem(p + 1).b32.s0, NULL);
                     set_str_pool(pool_ptr(), '.');
-                    set_pool_ptr(pool_ptr()+1);
+                    set_pool_ptr(pool_ptr() + 1);
                     show_node_list(mem(p + 1).b32.s1);
-                    set_pool_ptr(pool_ptr()-1);
-                } else {
+                    set_pool_ptr(pool_ptr() - 1);
+                }
+                else
+                {
                     print_esc_cstr("glue");
 
-                    if (GLUE_SPEC_shrink_order(p) != NORMAL) {
+                    if (GLUE_SPEC_shrink_order(p) != NORMAL)
+                    {
                         print_char('(');
                         if (mem(p).b16.s0 < COND_MATH_GLUE)
                             print_skip_param(mem(p).b16.s0 - 1);
@@ -873,7 +938,8 @@ show_node_list(int32_t p)
                         print_char(')');
                     }
 
-                    if (mem(p).b16.s0 != COND_MATH_GLUE) {
+                    if (mem(p).b16.s0 != COND_MATH_GLUE)
+                    {
                         print_char(' ');
                         if (mem(p).b16.s0 < COND_MATH_GLUE)
                             print_spec(mem(p + 1).b32.s0, NULL);
@@ -884,7 +950,8 @@ show_node_list(int32_t p)
                 break;
 
             case KERN_NODE:
-                if (mem(p).b16.s0 != MU_GLUE) {
+                if (mem(p).b16.s0 != MU_GLUE)
+                {
                     print_esc_cstr("kern");
                     if (mem(p).b16.s0 != NORMAL)
                         print_char(' ');
@@ -893,7 +960,9 @@ show_node_list(int32_t p)
                         print_cstr(" (for accent)");
                     else if (NODE_subtype(p) == SPACE_ADJUSTMENT)
                         print_cstr(" (space adjustment)");
-                } else {
+                }
+                else
+                {
                     print_esc_cstr("mkern");
                     print_scaled(mem(p + 1).b32.s1);
                     print_cstr("mu");
@@ -910,7 +979,8 @@ show_node_list(int32_t p)
                 break;
 
             case MATH_NODE:
-                if (mem(p).b16.s0 > AFTER) {
+                if (mem(p).b16.s0 > AFTER)
+                {
                     if (odd(mem(p).b16.s0))
                         print_esc_cstr("end");
                     else
@@ -921,13 +991,16 @@ show_node_list(int32_t p)
                         print_char('L');
                     else
                         print_char('M');
-                } else {
+                }
+                else
+                {
                     print_esc_cstr("math");
                     if (mem(p).b16.s0 == BEFORE)
                         print_cstr("on");
                     else
                         print_cstr("off");
-                    if (mem(p + 1).b32.s1 != 0) {
+                    if (mem(p + 1).b32.s1 != 0)
+                    {
                         print_cstr(", surrounded ");
                         print_scaled(mem(p + 1).b32.s1);
                     }
@@ -953,24 +1026,26 @@ show_node_list(int32_t p)
 
             case DISC_NODE:
                 print_esc_cstr("discretionary");
-                if (mem(p).b16.s0 > 0) {
+                if (mem(p).b16.s0 > 0)
+                {
                     print_cstr(" replacing ");
                     print_int(mem(p).b16.s0);
                 }
 
                 set_str_pool(pool_ptr(), '.');
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 1).b32.s0);
-                set_pool_ptr(pool_ptr()-1);
-                set_str_pool(pool_ptr(), '|' );
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() - 1);
+                set_str_pool(pool_ptr(), '|');
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 1).b32.s1);
-                set_pool_ptr(pool_ptr()-1);
+                set_pool_ptr(pool_ptr() - 1);
                 break;
 
             case MARK_NODE:
                 print_esc_cstr("mark");
-                if (mem(p + 1).b32.s0 != 0) {
+                if (mem(p + 1).b32.s0 != 0)
+                {
                     print_char('s');
                     print_int(mem(p + 1).b32.s0);
                 }
@@ -982,10 +1057,10 @@ show_node_list(int32_t p)
                 if (mem(p).b16.s0 != 0)
                     print_cstr(" pre ");
 
-                set_str_pool(pool_ptr(), '.' );
-                set_pool_ptr(pool_ptr()+1);
+                set_str_pool(pool_ptr(), '.');
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 1).b32.s1);
-                set_pool_ptr(pool_ptr()-1);
+                set_pool_ptr(pool_ptr() - 1);
                 break;
 
             case STYLE_NODE:
@@ -994,22 +1069,22 @@ show_node_list(int32_t p)
 
             case CHOICE_NODE:
                 print_esc_cstr("mathchoice");
-                set_str_pool(pool_ptr(), 'D' );
-                set_pool_ptr(pool_ptr()+1);
+                set_str_pool(pool_ptr(), 'D');
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 1).b32.s0);
-                set_pool_ptr(pool_ptr()-1);
-                set_str_pool(pool_ptr(), 'T' );
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() - 1);
+                set_str_pool(pool_ptr(), 'T');
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 1).b32.s1);
-                set_pool_ptr(pool_ptr()-1);
-                set_str_pool(pool_ptr(), 'S' );
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() - 1);
+                set_str_pool(pool_ptr(), 'S');
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 2).b32.s0);
-                set_pool_ptr(pool_ptr()-1);
-                set_str_pool(pool_ptr(), 's' );
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() - 1);
+                set_str_pool(pool_ptr(), 's');
+                set_pool_ptr(pool_ptr() + 1);
                 show_node_list(mem(p + 2).b32.s1);
-                set_pool_ptr(pool_ptr()-1);
+                set_pool_ptr(pool_ptr() - 1);
                 break;
 
             case ORD_NOAD:
@@ -1028,7 +1103,8 @@ show_node_list(int32_t p)
             case LEFT_NOAD:
             case RIGHT_NOAD:
                 {
-                    switch (mem(p).b16.s1) {
+                    switch (mem(p).b16.s1)
+                    {
                     case ORD_NOAD:
                         print_esc_cstr("mathord");
                         break;
@@ -1083,18 +1159,20 @@ show_node_list(int32_t p)
                         break;
                     }
 
-                    if (mem(p).b16.s1 < LEFT_NOAD) {
-                        if (mem(p).b16.s0 != NORMAL) {
+                    if (mem(p).b16.s1 < LEFT_NOAD)
+                    {
+                        if (mem(p).b16.s0 != NORMAL)
+                        {
                             if (mem(p).b16.s0 == LIMITS)
                                 print_esc_cstr("limits");
                             else
                                 print_esc_cstr("nolimits");
                         }
-                        print_subsidiary_data(p + 1, '.' );
+                        print_subsidiary_data(p + 1, '.');
                     }
 
-                    print_subsidiary_data(p + 2, '^' );
-                    print_subsidiary_data(p + 3, '_' );
+                    print_subsidiary_data(p + 2, '^');
+                    print_subsidiary_data(p + 3, '_');
                 }
                 break; /* many math noads */
 
@@ -1108,7 +1186,8 @@ show_node_list(int32_t p)
                 if (mem(p + 4).b16.s3 % 256 != 0 ||
                     (mem(p + 4).b16.s2 + (mem(p + 4).b16.s3 / 256) * 65536L) != 0 ||
                     mem(p + 4).b16.s1 % 256 != 0 ||
-                    (mem(p + 4).b16.s0 + (mem(p + 4).b16.s1 / 256) * 65536L) != 0) {
+                    (mem(p + 4).b16.s0 + (mem(p + 4).b16.s1 / 256) * 65536L) != 0)
+                {
                     print_cstr(", left-delimiter ");
                     print_delimiter(p + 4);
                 }
@@ -1116,13 +1195,14 @@ show_node_list(int32_t p)
                 if (mem(p + 5).b16.s3 % 256 != 0 ||
                     (mem(p + 5).b16.s2 + (mem(p + 5).b16.s3 / 256) * 65536L) != 0 ||
                     mem(p + 5).b16.s1 % 256 != 0 ||
-                    (mem(p + 5).b16.s0 + (mem(p + 5).b16.s1 / 256) * 65536L) != 0) {
+                    (mem(p + 5).b16.s0 + (mem(p + 5).b16.s1 / 256) * 65536L) != 0)
+                {
                     print_cstr(", right-delimiter ");
                     print_delimiter(p + 5);
                 }
 
-                print_subsidiary_data(p + 2, '\\' );
-                print_subsidiary_data(p + 3, '/' );
+                print_subsidiary_data(p + 2, '\\');
+                print_subsidiary_data(p + 3, '/');
                 break;
 
             default:
@@ -1138,7 +1218,6 @@ show_node_list(int32_t p)
 
 void show_box(int32_t p)
 {
-
     depth_threshold = INTPAR(show_box_depth);
     breadth_max = INTPAR(show_box_breadth) /*:244 */ ;
     if (breadth_max <= 0)
@@ -1156,36 +1235,24 @@ void short_display_n(int32_t p, int32_t m)
     show_node_list(p);
 }
 
-void delete_token_ref(int32_t p)
-{
-    if (mem(p).b32.s0 == TEX_NULL)
-        flush_list(p);
-    else
-        mem_ptr(p)->b32.s0--;
-}
-
-void delete_glue_ref(int32_t p)
-{
-    if (mem(p).b32.s1 == TEX_NULL)
-        free_node(p, GLUE_SPEC_SIZE);
-    else
-        mem_ptr(p)->b32.s1--;
-}
-
-
 void
 flush_node_list(int32_t p)
 {
     int32_t q;
 
-    while (p != TEX_NULL) {
+    while (p != TEX_NULL)
+    {
         q = mem(p).b32.s1;
 
-        if (is_char_node(p)) {
+        if (is_char_node(p))
+        {
             mem_ptr(p)->b32.s1 = avail();
             set_avail(p);
-        } else {
-            switch (mem(p).b16.s1) {
+        }
+        else
+        {
+            switch (mem(p).b16.s1)
+            {
             case HLIST_NODE:
             case VLIST_NODE:
             case UNSET_NODE:
@@ -1207,7 +1274,8 @@ flush_node_list(int32_t p)
                 break;
 
             case WHATSIT_NODE:
-                switch (mem(p).b16.s0) {
+                switch (mem(p).b16.s0)
+                {
                 case OPEN_NODE:
                     free_node(p, OPEN_NODE_SIZE);
                     break;
@@ -1223,7 +1291,8 @@ flush_node_list(int32_t p)
                     break;
                 case NATIVE_WORD_NODE:
                 case NATIVE_WORD_NODE_AT:
-                    if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+                    if (NATIVE_NODE_glyph_info_ptr(p) != NULL)
+                    {
                         NATIVE_NODE_glyph_info_ptr(p) = mfree(NATIVE_NODE_glyph_info_ptr(p));
                         NATIVE_NODE_glyph_count(p) = 0;
                     }
@@ -1236,7 +1305,7 @@ flush_node_list(int32_t p)
                 case PDF_NODE:
                     free_node(p,
                               (PIC_NODE_SIZE +
-                               (mem(p + 4).b16.s1 + sizeof(memory_word) - 1) / sizeof(memory_word)));
+                                  (mem(p + 4).b16.s1 + sizeof(memory_word) - 1) / sizeof(memory_word)));
                     break;
                 case PDF_SAVE_POS_NODE:
                     free_node(p, SMALL_NODE_SIZE);
@@ -1370,12 +1439,18 @@ copy_node_list(int32_t p)
     h = get_avail();
     q = h;
 
-    while (p != TEX_NULL) {
+    while (p != TEX_NULL)
+    {
         words = 1;
-        if (is_char_node(p)) {
+        if (is_char_node(p))
+        {
             r = get_avail();
-        } else { /*214:*/
-            switch (mem(p).b16.s1) {
+        }
+        else
+        {
+            /*214:*/
+            switch (mem(p).b16.s1)
+            {
             case HLIST_NODE:
             case VLIST_NODE:
             case UNSET_NODE:
@@ -1402,7 +1477,8 @@ copy_node_list(int32_t p)
                 break;
 
             case WHATSIT_NODE:
-                switch (mem(p).b16.s0) {
+                switch (mem(p).b16.s0)
+                {
                 case OPEN_NODE:
                     r = get_node(OPEN_NODE_SIZE);
                     words = OPEN_NODE_SIZE;
@@ -1423,7 +1499,8 @@ copy_node_list(int32_t p)
                     words = NATIVE_NODE_size(p);
                     r = get_node(words);
 
-                    while (words > 0) {
+                    while (words > 0)
+                    {
                         words--;
                         set_mem(r + words, mem(p + words));
                     }
@@ -1439,8 +1516,8 @@ copy_node_list(int32_t p)
                 case PIC_NODE:
                 case PDF_NODE:
                     words =
-                        (PIC_NODE_SIZE +
-                         (mem(p + 4).b16.s1 + sizeof(memory_word) - 1) / sizeof(memory_word));
+                    (PIC_NODE_SIZE +
+                        (mem(p + 4).b16.s1 + sizeof(memory_word) - 1) / sizeof(memory_word));
                     r = get_node(words);
                     break;
                 case PDF_SAVE_POS_NODE:
@@ -1502,7 +1579,8 @@ copy_node_list(int32_t p)
             }
         }
 
-        while (words > 0) {
+        while (words > 0)
+        {
             words--;
             set_mem(r + words, mem(p + words));
         }
@@ -1523,7 +1601,8 @@ copy_node_list(int32_t p)
 void print_mode(int32_t m)
 {
     if (m > 0)
-        switch (m / ((MAX_COMMAND + 1))) {
+        switch (m / ((MAX_COMMAND + 1)))
+        {
         case 0:
             print_cstr("vertical mode");
             break;
@@ -1533,10 +1612,12 @@ void print_mode(int32_t m)
         case 2:
             print_cstr("display math mode");
             break;
-    } else if (m == 0)
+        }
+    else if (m == 0)
         print_cstr("no mode");
     else
-        switch ((-(int32_t) m) / ((MAX_COMMAND + 1))) {
+        switch ((-(int32_t)m) / ((MAX_COMMAND + 1)))
+        {
         case 0:
             print_cstr("internal vertical mode");
             break;
@@ -1552,7 +1633,8 @@ void print_mode(int32_t m)
 void print_in_mode(int32_t m)
 {
     if (m > 0)
-        switch (m / ((MAX_COMMAND + 1))) {
+        switch (m / ((MAX_COMMAND + 1)))
+        {
         case 0:
             print_cstr("' in vertical mode");
             break;
@@ -1562,10 +1644,12 @@ void print_in_mode(int32_t m)
         case 2:
             print_cstr("' in display math mode");
             break;
-    } else if (m == 0)
+        }
+    else if (m == 0)
         print_cstr("' in no mode");
     else
-        switch ((-(int32_t) m) / ((MAX_COMMAND + 1))) {
+        switch ((-(int32_t)m) / ((MAX_COMMAND + 1)))
+        {
         case 0:
             print_cstr("' in internal vertical mode");
             break;
@@ -1580,13 +1664,14 @@ void print_in_mode(int32_t m)
 
 void push_nest(void)
 {
-    if (nest_cur() > max_nest_stack) {
+    if (nest_cur() > max_nest_stack)
+    {
         max_nest_stack = nest_cur();
         if (nest_cur() == nest_size)
             overflow("semantic nest size", nest_size);
     }
     set_nest(nest_cur(), cur_list);
-    set_nest_cur(nest_cur()+1);
+    set_nest_cur(nest_cur() + 1);
     cur_list.head = get_avail();
     cur_list.tail = cur_list.head;
     cur_list.prev_graf = 0;
@@ -1600,7 +1685,7 @@ void pop_nest(void)
         mem_ptr(cur_list.head)->b32.s1 = avail();
         set_avail(cur_list.head);
     }
-    set_nest_cur(nest_cur()-1);
+    set_nest_cur(nest_cur() - 1);
     cur_list = nest(nest_cur());
 }
 
@@ -1620,16 +1705,18 @@ void show_activities(void)
         p = nest_cur();
         for_end = 0;
         if (p >= for_end)
-            do {
+            do
+            {
                 m = nest(p).mode;
                 a = nest(p).aux;
                 print_nl_cstr("### ");
                 print_mode(m);
                 print_cstr(" entered at line ");
                 print_int(abs(nest(p).mode_line));
-                if (m == HMODE) {
-
-                    if (nest(p).prev_graf != 0x830000) {
+                if (m == HMODE)
+                {
+                    if (nest(p).prev_graf != 0x830000)
+                    {
                         print_cstr(" (language");
                         print_int(nest(p).prev_graf % 65536L);
                         print_cstr(":hyphenmin");
@@ -1641,20 +1728,23 @@ void show_activities(void)
                 }
                 if (nest(p).mode_line < 0)
                     print_cstr(" (\\output routine)");
-                if (p == 0) {
-                    if (PAGE_HEAD != page_tail) {
+                if (p == 0)
+                {
+                    if (PAGE_HEAD != page_tail)
+                    {
                         print_nl_cstr("### current page:");
                         if (output_active)
                             print_cstr(" (held over for next output)");
                         show_box(mem(PAGE_HEAD).b32.s1);
-                        if (page_contents > EMPTY) {
+                        if (page_contents > EMPTY)
+                        {
                             print_nl_cstr("total height ");
                             print_totals();
                             print_nl_cstr(" goal height ");
                             print_scaled(page_so_far[0]);
                             r = mem(PAGE_INS_HEAD).b32.s1;
-                            while (r != PAGE_INS_HEAD) {
-
+                            while (r != PAGE_INS_HEAD)
+                            {
                                 print_ln();
                                 print_esc_cstr("insert");
                                 t = mem(r).b16.s0;
@@ -1665,14 +1755,17 @@ void show_activities(void)
                                 else
                                     t = x_over_n(mem(r + 3).b32.s1, 1000) * COUNT_REG(t);
                                 print_scaled(t);
-                                if (mem(r).b16.s1 == SPLIT_UP) {
+                                if (mem(r).b16.s1 == SPLIT_UP)
+                                {
                                     q = PAGE_HEAD;
                                     t = 0;
-                                    do {
+                                    do
+                                    {
                                         q = LLIST_link(q);
                                         if ((NODE_type(q) == INS_NODE) && (mem(q).b16.s0 == mem(r).b16.s0))
                                             t++;
-                                    } while (!(q == mem(r + 1).b32.s0));
+                                    }
+                                    while (!(q == mem(r + 1).b32.s0));
                                     print_cstr(", #");
                                     print_int(t);
                                     print_cstr(" might split");
@@ -1685,7 +1778,8 @@ void show_activities(void)
                         print_nl_cstr("### recent contributions:");
                 }
                 show_box(mem(nest(p).head).b32.s1);
-                switch (abs(m) / ((MAX_COMMAND + 1))) {
+                switch (abs(m) / ((MAX_COMMAND + 1)))
+                {
                 case 0:
                     {
                         print_nl_cstr("prevdepth ");
@@ -1693,7 +1787,8 @@ void show_activities(void)
                             print_cstr("ignored");
                         else
                             print_scaled(a.b32.s1);
-                        if (nest(p).prev_graf != 0) {
+                        if (nest(p).prev_graf != 0)
+                        {
                             print_cstr(", prevgraf ");
                             print_int(nest(p).prev_graf);
                             if (nest(p).prev_graf != 1)
@@ -1707,9 +1802,10 @@ void show_activities(void)
                     {
                         print_nl_cstr("spacefactor ");
                         print_int(a.b32.s0);
-                        if (m > 0) {
-
-                            if (a.b32.s1 > 0) {
+                        if (m > 0)
+                        {
+                            if (a.b32.s1 > 0)
+                            {
                                 print_cstr(", current language ");
                                 print_int(a.b32.s1);
                             }
@@ -1717,7 +1813,8 @@ void show_activities(void)
                     }
                     break;
                 case 2:
-                    if (a.b32.s1 != TEX_NULL) {
+                    if (a.b32.s1 != TEX_NULL)
+                    {
                         print_cstr("this will begin denominator of:");
                         show_box(a.b32.s1);
                     }
@@ -1730,7 +1827,8 @@ void show_activities(void)
 
 void print_param(int32_t n)
 {
-    switch (n) {
+    switch (n)
+    {
     case INT_PAR__pretolerance:
         print_esc_cstr("pretolerance");
         break;
@@ -1980,11 +2078,11 @@ void print_param(int32_t n)
 
 void begin_diagnostic(void)
 {
-
     old_setting = selector();
 
-    if (INTPAR(tracing_online) <= 0 && selector() == SELECTOR_TERM_AND_LOG) {
-        set_selector(selector()-1);
+    if (INTPAR(tracing_online) <= 0 && selector() == SELECTOR_TERM_AND_LOG)
+    {
+        set_selector(selector() - 1);
         if (history() == HISTORY_SPOTLESS)
             set_history(HISTORY_WARNING_ISSUED);
     }
@@ -2000,7 +2098,8 @@ void end_diagnostic(bool blank_line)
 
 void print_length_param(int32_t n)
 {
-    switch (n) {
+    switch (n)
+    {
     case DIMEN_PAR__par_indent:
         print_esc_cstr("parindent");
         break;
@@ -2084,7 +2183,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
     str_number font_name_str;
     UTF16_code quote_char;
 
-    switch (cmd) {
+    switch (cmd)
+    {
     case LEFT_BRACE:
         print_cstr("begin-group character ");
         if (chr_code < 65536L)
@@ -2163,23 +2263,32 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case ASSIGN_GLUE:
     case ASSIGN_MU_GLUE:
-        if (chr_code < SKIP_BASE) {
+        if (chr_code < SKIP_BASE)
+        {
             print_skip_param(chr_code - GLUE_BASE);
-        } else if (chr_code < MU_SKIP_BASE) {
+        }
+        else if (chr_code < MU_SKIP_BASE)
+        {
             print_esc_cstr("skip");
             print_int(chr_code - SKIP_BASE);
-        } else {
+        }
+        else
+        {
             print_esc_cstr("muskip");
             print_int(chr_code - MU_SKIP_BASE);
         }
         break;
 
     case ASSIGN_TOKS:
-        if (chr_code >= TOKS_BASE) {
+        if (chr_code >= TOKS_BASE)
+        {
             print_esc_cstr("toks");
             print_int(chr_code - TOKS_BASE);
-        } else {
-            switch (chr_code) {
+        }
+        else
+        {
+            switch (chr_code)
+            {
             case LOCAL_BASE + LOCAL__output_routine:
                 print_esc_cstr("output");
                 break;
@@ -2221,18 +2330,24 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case ASSIGN_INT:
-        if (chr_code < COUNT_BASE) {
+        if (chr_code < COUNT_BASE)
+        {
             print_param(chr_code - INT_BASE);
-        } else {
+        }
+        else
+        {
             print_esc_cstr("count");
             print_int(chr_code - COUNT_BASE);
         }
         break;
 
     case ASSIGN_DIMEN:
-        if (chr_code < SCALED_BASE) {
+        if (chr_code < SCALED_BASE)
+        {
             print_length_param(chr_code - DIMEN_BASE);
-        } else {
+        }
+        else
+        {
             print_esc_cstr("dimen");
             print_int(chr_code - SCALED_BASE);
         }
@@ -2298,7 +2413,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case EX_SPACE:
-        print_esc(' ' );
+        print_esc(' ');
         break;
 
     case EXPAND_AFTER:
@@ -2328,7 +2443,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case ITAL_CORR:
-        print_esc('/' );
+        print_esc('/');
         break;
 
     case MARK:
@@ -2411,7 +2526,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case SET_SHAPE:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case LOCAL_BASE + LOCAL__par_shape:
             print_esc_cstr("parshape");
             break;
@@ -2450,10 +2566,14 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case VALIGN:
-        if (chr_code == 0) {
+        if (chr_code == 0)
+        {
             print_esc_cstr("valign");
-        } else {
-            switch (chr_code) {
+        }
+        else
+        {
+            switch (chr_code)
+            {
             case BEGIN_L_CODE:
                 print_esc_cstr("beginL");
                 break;
@@ -2492,7 +2612,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case TOP_BOT_MARK:
-        switch (chr_code % MARKS_CODE) {
+        switch (chr_code % MARKS_CODE)
+        {
         case FIRST_MARK_CODE:
             print_esc_cstr("firstmark");
             break;
@@ -2514,9 +2635,12 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case REGISTER:
-        if (chr_code < 0 || chr_code > 19 /*lo_mem_stat_max*/) {
+        if (chr_code < 0 || chr_code > 19 /*lo_mem_stat_max*/)
+        {
             cmd = (mem(chr_code).b16.s1 / 64);
-        } else {
+        }
+        else
+        {
             cmd = chr_code;
             chr_code = TEX_NULL;
         }
@@ -2560,7 +2684,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case LAST_ITEM:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case INT_VAL:
             print_esc_cstr("lastpenalty");
             break;
@@ -2754,7 +2879,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case CONVERT:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case NUMBER_CODE:
             print_esc_cstr("number");
             break;
@@ -2837,7 +2963,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         if (chr_code >= UNLESS_CODE)
             print_esc_cstr("unless");
 
-        switch (chr_code % UNLESS_CODE) {
+        switch (chr_code % UNLESS_CODE)
+        {
         case IF_CAT_CODE:
             print_esc_cstr("ifcat");
             break;
@@ -2917,9 +3044,12 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case TAB_MARK:
-        if (chr_code == SPAN_CODE) {
+        if (chr_code == SPAN_CODE)
+        {
             print_esc_cstr("span");
-        } else {
+        }
+        else
+        {
             print_cstr("alignment tab character ");
             if (chr_code < 65536L)
                 print(chr_code);
@@ -2936,7 +3066,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case SET_PAGE_DIMEN:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case 0: /* genuine literal in WEB */
             print_esc_cstr("pagegoal");
             break;
@@ -2972,7 +3103,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case HSKIP:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case SKIP_CODE:
             print_esc_cstr("hskip");
             break;
@@ -2992,7 +3124,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case VSKIP:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case SKIP_CODE:
             print_esc_cstr("vskip");
             break;
@@ -3038,7 +3171,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case MAKE_BOX:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case BOX_CODE:
             print_esc_cstr("box");
             break;
@@ -3110,7 +3244,7 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
 
     case DISCRETIONARY:
         if (chr_code == 1)
-            print_esc('-' );
+            print_esc('-');
         else
             print_esc_cstr("discretionary");
         break;
@@ -3123,7 +3257,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case MATH_COMP:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case ORD_NOAD:
             print_esc_cstr("mathord");
             break;
@@ -3171,7 +3306,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case ABOVE:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case OVER_CODE:
             print_esc_cstr("over");
             break;
@@ -3232,7 +3368,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case SHORTHAND_DEF:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case CHAR_DEF_CODE:
             print_esc_cstr("chardef");
             break;
@@ -3323,7 +3460,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case ASSIGN_FONT_INT:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case 0:
             print_esc_cstr("hyphenchar");
             break;
@@ -3343,23 +3481,28 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         print_cstr("select font ");
 
         font_name_str = font_name(chr_code);
-        if (font_area(chr_code) == AAT_FONT_FLAG || font_area(chr_code) == OTGR_FONT_FLAG) {
+        if (font_area(chr_code) == AAT_FONT_FLAG || font_area(chr_code) == OTGR_FONT_FLAG)
+        {
             int32_t for_end = length(font_name_str) - 1;
-            quote_char = '"' ;
+            quote_char = '"';
 
-            for (n = 0; n <= for_end; n++) {
-                if (str_pool(str_start((font_name_str) - 65536L) + n) == '"' )
-                    quote_char = '\'' ;
+            for (n = 0; n <= for_end; n++)
+            {
+                if (str_pool(str_start((font_name_str) - 65536L) + n) == '"')
+                    quote_char = '\'';
             }
 
             print_char(quote_char);
             print(font_name_str);
             print_char(quote_char);
-        } else {
+        }
+        else
+        {
             print(font_name_str);
         }
 
-        if (font_size(chr_code) != font_dsize(chr_code)) {
+        if (font_size(chr_code) != font_dsize(chr_code))
+        {
             print_cstr(" at ");
             print_scaled(font_size(chr_code));
             print_cstr("pt");
@@ -3367,7 +3510,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case SET_INTERACTION:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case BATCH_MODE:
             print_esc_cstr("batchmode");
             break;
@@ -3405,7 +3549,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case XRAY:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case SHOW_BOX_CODE:
             print_esc_cstr("showbox");
             break;
@@ -3457,7 +3602,8 @@ print_cmd_chr(uint16_t cmd, int32_t chr_code)
         break;
 
     case EXTENSION:
-        switch (chr_code) {
+        switch (chr_code)
+        {
         case OPEN_NODE:
             print_esc_cstr("openout");
             break;
@@ -3578,7 +3724,8 @@ id_lookup(int32_t j, int32_t l)
 
     h = 0;
 
-    for (k = j; k <= j + l - 1; k++) {
+    for (k = j; k <= j + l - 1; k++)
+    {
         h = h + h + buffer(k);
         while (h >= HASH_PRIME)
             h = h - 8501;
@@ -3587,34 +3734,49 @@ id_lookup(int32_t j, int32_t l)
     p = h + HASH_BASE;
     ll = l;
 
-    for (d = 0; d <= l - 1; d++) {
+    for (d = 0; d <= l - 1; d++)
+    {
         if (buffer(j + d) >= 65536L)
             ll++;
     }
 
-    while (true) {
-        if (hash(p).s1 > 0) {
-            if (length(hash(p).s1) == ll) {
+    while (true)
+    {
+        if (hash(p).s1 > 0)
+        {
+            if (length(hash(p).s1) == ll)
+            {
                 if (str_eq_buf(hash(p).s1, j))
                     goto found;
             }
         }
 
-        if (hash(p).s0 == 0) {
-            if (no_new_control_sequence) {
+        if (hash(p).s0 == 0)
+        {
+            if (no_new_control_sequence)
+            {
                 p = UNDEFINED_CONTROL_SEQUENCE;
-            } else { /*269:*/
-                if (hash(p).s1 > 0) {
-                    if (hash_high < hash_extra()) {
+            }
+            else
+            {
+                /*269:*/
+                if (hash(p).s1 > 0)
+                {
+                    if (hash_high < hash_extra())
+                    {
                         hash_high++;
                         hash_ptr(p)->s0 = hash_high + EQTB_SIZE;
                         p = hash_high + EQTB_SIZE;
-                    } else {
-                        do {
+                    }
+                    else
+                    {
+                        do
+                        {
                             if (hash_used() == HASH_BASE)
                                 overflow("hash size", HASH_SIZE + hash_extra());
-                            set_hash_used(hash_used()-1);
-                        } while (hash(hash_used()).s1 != 0);
+                            set_hash_used(hash_used() - 1);
+                        }
+                        while (hash(hash_used()).s1 != 0);
 
                         hash_ptr(p)->s0 = hash_used();
                         p = hash_used();
@@ -3626,20 +3788,25 @@ id_lookup(int32_t j, int32_t l)
 
                 d = cur_length();
 
-                while (pool_ptr() > str_start(str_ptr() - TOO_BIG_CHAR)) {
-                    set_pool_ptr(pool_ptr()-1);
+                while (pool_ptr() > str_start(str_ptr() - TOO_BIG_CHAR))
+                {
+                    set_pool_ptr(pool_ptr() - 1);
                     set_str_pool(pool_ptr() + l, str_pool(pool_ptr()));
                 }
 
-                for (k = j; k <= j + l - 1; k++) {
-                    if (buffer(k) < 65536L) {
+                for (k = j; k <= j + l - 1; k++)
+                {
+                    if (buffer(k) < 65536L)
+                    {
                         set_str_pool(pool_ptr(), buffer(k));
-                        set_pool_ptr(pool_ptr()+1);
-                    } else {
+                        set_pool_ptr(pool_ptr() + 1);
+                    }
+                    else
+                    {
                         set_str_pool(pool_ptr(), 0xD800 + (buffer(k) - 65536L) / 1024);
-                        set_pool_ptr(pool_ptr()+1);
+                        set_pool_ptr(pool_ptr() + 1);
                         set_str_pool(pool_ptr(), 0xDC00 + (buffer(k) - 65536L) % 1024);
-                        set_pool_ptr(pool_ptr()+1);
+                        set_pool_ptr(pool_ptr() + 1);
                     }
                 }
 
@@ -3647,7 +3814,6 @@ id_lookup(int32_t j, int32_t l)
                 set_pool_ptr(pool_ptr() + d);
             }
             goto found;
-
         }
 
         p = hash(p).s0;
@@ -3665,14 +3831,18 @@ int32_t prim_lookup(str_number s)
     int32_t k;
     int32_t j, l = 0;
 
-    if (s <= BIGGEST_CHAR) {
-        if (s < 0) {
+    if (s <= BIGGEST_CHAR)
+    {
+        if (s < 0)
+        {
             p = UNDEFINED_PRIMITIVE;
             goto found;
-        } else
+        }
+        else
             p = (s % PRIM_PRIME) + 1;
-    } else {
-
+    }
+    else
+    {
         j = str_start((s) - 65536L);
         if (s == str_ptr())
             l = (cur_length());
@@ -3684,7 +3854,8 @@ int32_t prim_lookup(str_number s)
             k = j + 1;
             for_end = j + l - 1;
             if (k <= for_end)
-                do {
+                do
+                {
                     h = h + h + str_pool(k);
                     while (h >= PRIM_PRIME)
                         h = h - PRIM_PRIME;
@@ -3694,25 +3865,35 @@ int32_t prim_lookup(str_number s)
         p = h + 1;
     }
 
-    while (true) {
-        if (prim(p).s1 > 65536L) {
-            if (length(prim(p).s1) - 1 == l) {
-                    if (str_eq_str(prim(p).s1 - 1, s))
-                        goto found;
+    while (true)
+    {
+        if (prim(p).s1 > 65536L)
+        {
+            if (length(prim(p).s1) - 1 == l)
+            {
+                if (str_eq_str(prim(p).s1 - 1, s))
+                    goto found;
             }
-        } else if (prim(p).s1 == 1 + s)
+        }
+        else if (prim(p).s1 == 1 + s)
             goto found;
 
-        if (prim(p).s0 == 0) {
+        if (prim(p).s0 == 0)
+        {
             if (no_new_control_sequence)
                 p = UNDEFINED_PRIMITIVE;
-            else { /*272:*/
-                if (prim(p).s1 > 0) {
-                    do {
+            else
+            {
+                /*272:*/
+                if (prim(p).s1 > 0)
+                {
+                    do
+                    {
                         if (prim_used == PRIM_BASE)
                             overflow("primitive size", PRIM_SIZE);
                         prim_used--;
-                    } while (!(prim(prim_used).s1 == 0));
+                    }
+                    while (!(prim(prim_used).s1 == 0));
                     prim_ptr(p)->s0 = prim_used;
                     p = prim_used;
                 }
@@ -3727,11 +3908,12 @@ found:
     return p;
 }
 
-/*:276*//*280: *//*296: */
+/*:276*//*280: */ /*296: */
 
 void print_group(bool e)
 {
-    switch (cur_group) {
+    switch (cur_group)
+    {
     case BOTTOM_LEVEL:
         print_cstr("bottom level");
         return;
@@ -3795,7 +3977,8 @@ void print_group(bool e)
     print_cstr(" group (level ");
     print_int(cur_level);
     print_char(')');
-    if (save_stack(save_ptr - 1).b32.s1 != 0) {
+    if (save_stack(save_ptr - 1).b32.s1 != 0)
+    {
         if (e)
             print_cstr(" entered at line ");
         else
@@ -3804,7 +3987,7 @@ void print_group(bool e)
     }
 }
 
-/*:1448*//*1449: */
+/*:1448*/ /*1449: */
 
 bool pseudo_input(void)
 {
@@ -3816,11 +3999,13 @@ bool pseudo_input(void)
     p = mem(pseudo_files).b32.s0;
     if (p == TEX_NULL)
         return false;
-    else {
-
+    else
+    {
         mem_ptr(pseudo_files)->b32.s0 = mem(p).b32.s1;
         sz = mem(p).b32.s0;
-        if (4 * sz - 3 >= buf_size - last) {    /*35: */
+        if (4 * sz - 3 >= buf_size - last)
+        {
+            /*35: */
             cur_input_ptr()->loc = first;
             cur_input_ptr()->limit = last - 1;
             overflow("buffer size", buf_size);
@@ -3831,7 +4016,8 @@ bool pseudo_input(void)
             r = p + 1;
             for_end = p + sz - 1;
             if (r <= for_end)
-                do {
+                do
+                {
                     w = mem(r).b16;
                     set_buffer(last, w.s3);
                     set_buffer(last + 1, w.s2);
@@ -3843,7 +4029,7 @@ bool pseudo_input(void)
         }
         if (last >= max_buf_stack)
             max_buf_stack = last + 1;
-        while ((last > first) && (buffer(last - 1) == ' ' ))
+        while ((last > first) && (buffer(last - 1) == ' '))
             last--;
         free_node(p, sz);
         return true;
@@ -3860,8 +4046,8 @@ void pseudo_close(void)
         set_avail(pseudo_files);
     }
     pseudo_files = p;
-    while (q != TEX_NULL) {
-
+    while (q != TEX_NULL)
+    {
         p = q;
         q = mem(p).b32.s1;
         free_node(p, mem(p).b32.s0);
@@ -3877,18 +4063,20 @@ void group_warning(void)
     set_input_stack(base_ptr(), cur_input());
     i = in_open();
     w = false;
-    while ((grp_stack(i) == cur_boundary) && (i > 0)) {
-
-        if (INTPAR(tracing_nesting) > 0) {
+    while ((grp_stack(i) == cur_boundary) && (i > 0))
+    {
+        if (INTPAR(tracing_nesting) > 0)
+        {
             while ((input_stack(base_ptr()).state == TOKEN_LIST) || (input_stack(base_ptr()).index > i))
-                set_base_ptr(base_ptr()-1);
+                set_base_ptr(base_ptr() - 1);
             if (input_stack(base_ptr()).name > 17)
                 w = true;
         }
         set_grp_stack(i, save_stack(save_ptr).b32.s1);
         i--;
     }
-    if (w) {
+    if (w)
+    {
         print_nl_cstr("Warning: ");
         diagnostic_begin_capture_warning_here();
         print_cstr("end of ");
@@ -3914,24 +4102,27 @@ void if_warning(void)
     set_input_stack(base_ptr(), cur_input());
     i = in_open();
     w = false;
-    while (if_stack(i) == cond_ptr) {
-
-        if (INTPAR(tracing_nesting) > 0) {
+    while (if_stack(i) == cond_ptr)
+    {
+        if (INTPAR(tracing_nesting) > 0)
+        {
             while ((input_stack(base_ptr()).state == TOKEN_LIST) || (input_stack(base_ptr()).index > i))
-                set_base_ptr(base_ptr()-1);
+                set_base_ptr(base_ptr() - 1);
             if (input_stack(base_ptr()).name > 17)
                 w = true;
         }
         set_if_stack(i, mem(cond_ptr).b32.s1);
         i--;
     }
-    if (w) {
+    if (w)
+    {
         print_nl_cstr("Warning: ");
         diagnostic_begin_capture_warning_here();
         print_cstr("end of ");
 
         print_cmd_chr(IF_TEST, cur_if);
-        if (if_line != 0) {
+        if (if_line != 0)
+        {
             print_cstr(" entered on line ");
             print_int(if_line);
         }
@@ -3957,7 +4148,8 @@ void file_warning(void)
     l = cur_level;
     c = cur_group;
     save_ptr = cur_boundary;
-    while (grp_stack(in_open()) != save_ptr) {
+    while (grp_stack(in_open()) != save_ptr)
+    {
         cur_level--;
 
         print_nl_cstr("Warning: ");
@@ -3977,14 +4169,16 @@ void file_warning(void)
     l = if_limit;
     c = cur_if;
     i = if_line;
-    while (if_stack(in_open()) != cond_ptr) {
+    while (if_stack(in_open()) != cond_ptr)
+    {
         print_nl_cstr("Warning: ");
         diagnostic_begin_capture_warning_here();
         print_cstr("end of file when ");
         print_cmd_chr(IF_TEST, cur_if);
         if (if_limit == FI_CODE)
             print_esc_cstr("else");
-        if (if_line != 0) {
+        if (if_line != 0)
+        {
             print_cstr(" entered on line ");
             print_int(if_line);
         }
@@ -4001,7 +4195,8 @@ void file_warning(void)
     cur_if = c;
     if_line = i;
     print_ln();
-    if (INTPAR(tracing_nesting) > 1) {
+    if (INTPAR(tracing_nesting) > 1)
+    {
         diagnostic_begin_capture_warning_here();
         show_context();
         capture_to_diagnostic(NULL);
@@ -4018,30 +4213,34 @@ void delete_sa_ref(int32_t q)
     mem_ptr(q + 1)->b32.s0--;
     if (mem(q + 1).b32.s0 != TEX_NULL)
         return;
-    if (mem(q).b16.s1 < DIMEN_VAL_LIMIT) {
-
+    if (mem(q).b16.s1 < DIMEN_VAL_LIMIT)
+    {
         if (mem(q + 2).b32.s1 == 0)
             s = WORD_NODE_SIZE;
         else
             return;
-    } else {
-
-        if (mem(q).b16.s1 < MU_VAL_LIMIT) {
-
+    }
+    else
+    {
+        if (mem(q).b16.s1 < MU_VAL_LIMIT)
+        {
             if (mem(q + 1).b32.s1 == 0)
                 delete_glue_ref(0);
             else
                 return;
-        } else if (mem(q + 1).b32.s1 != TEX_NULL)
+        }
+        else if (mem(q + 1).b32.s1 != TEX_NULL)
             return;
         s = POINTER_NODE_SIZE;
     }
-    do {
+    do
+    {
         i = mem(q).b16.s1 % 64;
         p = q;
         q = mem(p).b32.s1;
         free_node(p, s);
-        if (q == TEX_NULL) {
+        if (q == TEX_NULL)
+        {
             sa_root[i] = TEX_NULL;
             return;
         }
@@ -4053,17 +4252,20 @@ void delete_sa_ref(int32_t q)
             mem_ptr(q)->b16.s0--;
         }
         s = INDEX_NODE_SIZE;
-    } while (!(mem(q).b16.s0 > 0));
+    }
+    while (!(mem(q).b16.s0 > 0));
 }
 
-/*:1609*//*1611: */
+/*:1609*/ /*1611: */
 
 void sa_save(int32_t p)
 {
     int32_t q;
     uint16_t i;
-    if (cur_level != sa_level) {
-        if (save_ptr > max_save_stack) {
+    if (cur_level != sa_level)
+    {
+        if (save_ptr > max_save_stack)
+        {
             max_save_stack = save_ptr;
             if (max_save_stack > save_size - 7)
                 overflow("save size", save_size);
@@ -4076,18 +4278,22 @@ void sa_save(int32_t p)
         sa_level = cur_level;
     }
     i = mem(p).b16.s1;
-    if (i < DIMEN_VAL_LIMIT) {
-        if (mem(p + 2).b32.s1 == 0) {
+    if (i < DIMEN_VAL_LIMIT)
+    {
+        if (mem(p + 2).b32.s1 == 0)
+        {
             q = get_node(POINTER_NODE_SIZE);
             i = TOK_VAL_LIMIT;
-        } else {
-
+        }
+        else
+        {
             q = get_node(WORD_NODE_SIZE);
             mem_ptr(q + 2)->b32.s1 = mem(p + 2).b32.s1;
         }
         mem_ptr(q + 1)->b32.s1 = TEX_NULL;
-    } else {
-
+    }
+    else
+    {
         q = get_node(POINTER_NODE_SIZE);
         mem_ptr(q + 1)->b32.s1 = mem(p + 1).b32.s1;
     }
@@ -4103,8 +4309,8 @@ void sa_destroy(int32_t p)
 {
     if (mem(p).b16.s1 < MU_VAL_LIMIT)
         delete_glue_ref(mem(p + 1).b32.s1);
-    else if (mem(p + 1).b32.s1 != TEX_NULL) {
-
+    else if (mem(p + 1).b32.s1 != TEX_NULL)
+    {
         if (mem(p).b16.s1 < BOX_VAL_LIMIT)
             flush_node_list(mem(p + 1).b32.s1);
         else
@@ -4114,11 +4320,13 @@ void sa_destroy(int32_t p)
 
 void sa_def(int32_t p, int32_t e)
 {
-
     mem_ptr(p + 1)->b32.s0++;
-    if (mem(p + 1).b32.s1 == e) {
+    if (mem(p + 1).b32.s1 == e)
+    {
         sa_destroy(p);
-    } else {
+    }
+    else
+    {
         if (mem(p).b16.s0 == cur_level)
             sa_destroy(p);
         else
@@ -4131,11 +4339,13 @@ void sa_def(int32_t p, int32_t e)
 
 void sa_w_def(int32_t p, int32_t w)
 {
-
     mem_ptr(p + 1)->b32.s0++;
 
-    if (mem(p + 2).b32.s1 == w) {
-    } else {
+    if (mem(p + 2).b32.s1 == w)
+    {
+    }
+    else
+    {
         if (mem(p).b16.s0 != cur_level)
             sa_save(p);
         mem_ptr(p)->b16.s0 = cur_level;
@@ -4146,7 +4356,6 @@ void sa_w_def(int32_t p, int32_t w)
 
 void gsa_def(int32_t p, int32_t e)
 {
-
     mem_ptr(p + 1)->b32.s0++;
     sa_destroy(p);
     mem_ptr(p)->b16.s0 = LEVEL_ONE;
@@ -4156,7 +4365,6 @@ void gsa_def(int32_t p, int32_t e)
 
 void gsa_w_def(int32_t p, int32_t w)
 {
-
     mem_ptr(p + 1)->b32.s0++;
     mem_ptr(p)->b16.s0 = LEVEL_ONE;
     mem_ptr(p + 2)->b32.s1 = w;
@@ -4167,21 +4375,25 @@ void sa_restore(void)
 {
     int32_t p;
 
-    do {
+    do
+    {
         p = mem(sa_chain + 1).b32.s0;
-        if (mem(p).b16.s0 == LEVEL_ONE) {
+        if (mem(p).b16.s0 == LEVEL_ONE)
+        {
             if (mem(p).b16.s1 >= DIMEN_VAL_LIMIT)
                 sa_destroy(sa_chain);
-        } else {
-
-            if (mem(p).b16.s1 < DIMEN_VAL_LIMIT) {
-
+        }
+        else
+        {
+            if (mem(p).b16.s1 < DIMEN_VAL_LIMIT)
+            {
                 if (mem(sa_chain).b16.s1 < DIMEN_VAL_LIMIT)
                     mem_ptr(p + 2)->b32.s1 = mem(sa_chain + 2).b32.s1;
                 else
                     mem_ptr(p + 2)->b32.s1 = 0;
-            } else {
-
+            }
+            else
+            {
                 sa_destroy(p);
                 mem_ptr(p + 1)->b32.s1 = mem(sa_chain + 1).b32.s1;
             }
@@ -4194,12 +4406,14 @@ void sa_restore(void)
             free_node(p, WORD_NODE_SIZE);
         else
             free_node(p, POINTER_NODE_SIZE);
-    } while (!(sa_chain == TEX_NULL));
+    }
+    while (!(sa_chain == TEX_NULL));
 }
 
 void new_save_level(group_code c)
 {
-    if (save_ptr > max_save_stack) {
+    if (save_ptr > max_save_stack)
+    {
         max_save_stack = save_ptr;
         if (max_save_stack > save_size - 7)
             overflow("save size", save_size);
@@ -4221,7 +4435,8 @@ void new_save_level(group_code c)
 void eq_destroy(memory_word w)
 {
     int32_t q;
-    switch (w.b16.s1) {
+    switch (w.b16.s1)
+    {
     case 113:
     case 114:
     case 115:
@@ -4254,16 +4469,16 @@ void eq_destroy(memory_word w)
 
 void eq_save(int32_t p, uint16_t l)
 {
-
-    if (save_ptr > max_save_stack) {
+    if (save_ptr > max_save_stack)
+    {
         max_save_stack = save_ptr;
         if (max_save_stack > save_size - 7)
             overflow("save size", save_size);
     }
     if (l == LEVEL_ZERO)
         save_stack_ptr(save_ptr)->b16.s1 = RESTORE_ZERO;
-    else {
-
+    else
+    {
         set_save_stack(save_ptr, eqtb(p));
         save_ptr++;
         save_stack_ptr(save_ptr)->b16.s1 = RESTORE_OLD_VALUE;
@@ -4276,8 +4491,8 @@ void eq_save(int32_t p, uint16_t l)
 void
 eq_define(int32_t p, uint16_t t, int32_t e)
 {
-
-    if (eqtb(p).b16.s1 == t && eqtb(p).b32.s1 == e) {
+    if (eqtb(p).b16.s1 == t && eqtb(p).b32.s1 == e)
+    {
         eq_destroy(eqtb(p));
         return;
     }
@@ -4295,11 +4510,11 @@ eq_define(int32_t p, uint16_t t, int32_t e)
 void
 eq_word_define(int32_t p, int32_t w)
 {
-
     if (eqtb(p).b32.s1 == w)
         return;
 
-    if (XEQ_LEVEL(p) != cur_level) {
+    if (XEQ_LEVEL(p) != cur_level)
+    {
         eq_save(p, XEQ_LEVEL(p));
         XEQ_LEVEL(p) = cur_level;
     }
@@ -4308,7 +4523,6 @@ eq_word_define(int32_t p, int32_t w)
 
 void geq_define(int32_t p, uint16_t t, int32_t e)
 {
-
     eq_destroy(eqtb(p));
     eqtb_ptr(p)->b16.s0 = LEVEL_ONE;
     eqtb_ptr(p)->b16.s1 = t;
@@ -4317,8 +4531,10 @@ void geq_define(int32_t p, uint16_t t, int32_t e)
 
 void save_for_after(int32_t t)
 {
-    if (cur_level > LEVEL_ONE) {
-        if (save_ptr > max_save_stack) {
+    if (cur_level > LEVEL_ONE)
+    {
+        if (save_ptr > max_save_stack)
+        {
             max_save_stack = save_ptr;
             if (max_save_stack > save_size - 7)
                 overflow("save size", save_size);
@@ -4338,55 +4554,71 @@ void unsave(void)
     bool a;
 
     a = false;
-    if (cur_level > LEVEL_ONE) {
+    if (cur_level > LEVEL_ONE)
+    {
         cur_level--;
-        while (true) {
-
+        while (true)
+        {
             save_ptr--;
             if (save_stack(save_ptr).b16.s1 == LEVEL_BOUNDARY)
                 goto done;
             p = save_stack(save_ptr).b32.s1;
-            if (save_stack(save_ptr).b16.s1 == INSERT_TOKEN) {   /*338: */
+            if (save_stack(save_ptr).b16.s1 == INSERT_TOKEN)
+            {
+                /*338: */
                 t = cur_tok();
                 set_cur_tok(p);
-                if (a) {
+                if (a)
+                {
                     p = get_avail();
                     mem_ptr(p)->b32.s0 = cur_tok();
                     mem_ptr(p)->b32.s1 = cur_input().loc;
                     cur_input_ptr()->loc = p;
                     cur_input_ptr()->start = p;
-                    if (cur_tok() < RIGHT_BRACE_LIMIT) {
-
+                    if (cur_tok() < RIGHT_BRACE_LIMIT)
+                    {
                         if (cur_tok() < LEFT_BRACE_LIMIT)
                             set_align_state(align_state() - 1);
                         else
                             set_align_state(align_state() + 1);
                     }
-                } else {
+                }
+                else
+                {
                     back_input();
                     a = true;
                 }
                 set_cur_tok(t);
-            } else if (save_stack(save_ptr).b16.s1 == RESTORE_SA) {
+            }
+            else if (save_stack(save_ptr).b16.s1 == RESTORE_SA)
+            {
                 sa_restore();
                 sa_chain = p;
                 sa_level = save_stack(save_ptr).b16.s0;
-            } else {
-
-                if (save_stack(save_ptr).b16.s1 == RESTORE_OLD_VALUE) {
+            }
+            else
+            {
+                if (save_stack(save_ptr).b16.s1 == RESTORE_OLD_VALUE)
+                {
                     l = save_stack(save_ptr).b16.s0;
                     save_ptr--;
-                } else
+                }
+                else
                     set_save_stack(save_ptr, eqtb(UNDEFINED_CONTROL_SEQUENCE));
-                if ((p < INT_BASE) || (p > EQTB_SIZE)) {
-
-                    if (eqtb_ptr(p)->b16.s0 == LEVEL_ONE) {
+                if ((p < INT_BASE) || (p > EQTB_SIZE))
+                {
+                    if (eqtb_ptr(p)->b16.s0 == LEVEL_ONE)
+                    {
                         eq_destroy(save_stack(save_ptr));
-                    } else {
+                    }
+                    else
+                    {
                         eq_destroy(eqtb(p));
                         set_eqtb(p, save_stack(save_ptr));
                     }
-                } else if (XEQ_LEVEL(p) != LEVEL_ONE) {
+                }
+                else if (XEQ_LEVEL(p) != LEVEL_ONE)
+                {
                     set_eqtb(p, save_stack(save_ptr));
                     XEQ_LEVEL(p) = l;
                 }
@@ -4399,18 +4631,22 @@ void unsave(void)
         cur_group = save_stack(save_ptr).b16.s0;
         cur_boundary = save_stack(save_ptr).b32.s1;
         save_ptr--;
-    } else
+    }
+    else
         confusion("curlevel");
 }
 
 void print_meaning(void)
 {
     print_cmd_chr(cur_cmd(), cur_chr());
-    if (cur_cmd() >= CALL) {
+    if (cur_cmd() >= CALL)
+    {
         print_char(':');
         print_ln();
         token_show(cur_chr());
-    } else if ((cur_cmd() == TOP_BOT_MARK) && (cur_chr() < 5)) {
+    }
+    else if ((cur_cmd() == TOP_BOT_MARK) && (cur_chr() < 5))
+    {
         print_char(':');
         print_ln();
         token_show(cur_mark[cur_chr()]);
@@ -4429,38 +4665,43 @@ void show_cur_cmd_chr(void)
     diagnostic_begin_capture_warning_here();
 
     print_nl('{');
-    if (cur_list.mode != shown_mode) {
+    if (cur_list.mode != shown_mode)
+    {
         print_mode(cur_list.mode);
         print_cstr(": ");
         shown_mode = cur_list.mode;
     }
     print_cmd_chr(cur_cmd(), cur_chr());
-    if (INTPAR(tracing_ifs) > 0) {
-
-        if (cur_cmd() >= IF_TEST) {
-
-            if (cur_cmd() <= FI_OR_ELSE) {
+    if (INTPAR(tracing_ifs) > 0)
+    {
+        if (cur_cmd() >= IF_TEST)
+        {
+            if (cur_cmd() <= FI_OR_ELSE)
+            {
                 print_cstr(": ");
-                if (cur_cmd() == FI_OR_ELSE) {
+                if (cur_cmd() == FI_OR_ELSE)
+                {
                     print_cmd_chr(IF_TEST, cur_if);
                     print_char(' ');
                     n = 0;
                     l = if_line;
-                } else {
-
+                }
+                else
+                {
                     n = 1;
                     l = line();
                 }
                 p = cond_ptr;
-                while (p != TEX_NULL) {
-
+                while (p != TEX_NULL)
+                {
                     n++;
                     p = LLIST_link(p);
                 }
                 print_cstr("(level ");
                 print_int(n);
                 print_char(')');
-                if (l != 0) {
+                if (l != 0)
+                {
                     print_cstr(" entered on line ");
                     print_int(l);
                 }
@@ -4477,33 +4718,39 @@ void show_cur_cmd_chr(void)
 void
 begin_token_list(int32_t p, uint16_t t)
 {
-
-    if (input_ptr() > max_in_stack) {
+    if (input_ptr() > max_in_stack)
+    {
         max_in_stack = input_ptr();
         if (input_ptr() == stack_size)
             overflow("input stack size", stack_size);
     }
 
     set_input_stack(input_ptr(), cur_input());
-    set_input_ptr(input_ptr()+1);
+    set_input_ptr(input_ptr() + 1);
 
     cur_input_ptr()->state = TOKEN_LIST;
     cur_input_ptr()->start = p;
     cur_input_ptr()->index = t;
 
-    if (t >= MACRO) {
+    if (t >= MACRO)
+    {
         mem_ptr(p)->b32.s0++;
 
-        if (t == MACRO) {
+        if (t == MACRO)
+        {
             cur_input_ptr()->limit = param_ptr();
-        } else {
+        }
+        else
+        {
             cur_input_ptr()->loc = mem(p).b32.s1;
 
-            if (INTPAR(tracing_macros) > 1) {
+            if (INTPAR(tracing_macros) > 1)
+            {
                 begin_diagnostic();
                 diagnostic_begin_capture_warning_here();
                 print_nl_cstr("");
-                switch (t) {
+                switch (t)
+                {
                 case MARK_TEXT:
                     print_esc_cstr("mark");
                     break;
@@ -4520,7 +4767,9 @@ begin_token_list(int32_t p, uint16_t t)
                 end_diagnostic(false);
             }
         }
-    } else {
+    }
+    else
+    {
         cur_input_ptr()->loc = p;
     }
 }
@@ -4528,27 +4777,30 @@ begin_token_list(int32_t p, uint16_t t)
 
 void end_token_list(void)
 {
-    if (cur_input().index >= BACKED_UP) {
+    if (cur_input().index >= BACKED_UP)
+    {
         if (cur_input().index <= INSERTED)
             flush_list(cur_input().start);
-        else {
-
+        else
+        {
             delete_token_ref(cur_input().start);
             if (cur_input().index == MACRO)
-                while (param_ptr() > cur_input().limit) {
+                while (param_ptr() > cur_input().limit)
+                {
                     set_param_ptr(param_ptr() - 1);
                     flush_list(param_stack(param_ptr()));
                 }
         }
-    } else if (cur_input().index == U_TEMPLATE) {
-
+    }
+    else if (cur_input().index == U_TEMPLATE)
+    {
         if (align_state() > 500000L)
             set_align_state(0);
         else
             fatal_error("(interwoven alignment preambles are not allowed)");
     }
     {
-        set_input_ptr(input_ptr()-1);
+        set_input_ptr(input_ptr() - 1);
         set_cur_input(input_stack(input_ptr()));
     }
 }
@@ -4557,25 +4809,26 @@ void back_input(void)
 {
     int32_t p;
     while ((cur_input().state == TOKEN_LIST) && (cur_input().loc == TEX_NULL)
-           && (cur_input().index != V_TEMPLATE))
+        && (cur_input().index != V_TEMPLATE))
         end_token_list();
     p = get_avail();
     mem_ptr(p)->b32.s0 = cur_tok();
-    if (cur_tok() < RIGHT_BRACE_LIMIT) {
-
+    if (cur_tok() < RIGHT_BRACE_LIMIT)
+    {
         if (cur_tok() < LEFT_BRACE_LIMIT)
             set_align_state(align_state() - 1);
         else
             set_align_state(align_state() + 1);
     }
     {
-        if (input_ptr() > max_in_stack) {
+        if (input_ptr() > max_in_stack)
+        {
             max_in_stack = input_ptr();
             if (input_ptr() == stack_size)
                 overflow("input stack size", stack_size);
         }
         set_input_stack(input_ptr(), cur_input());
-        set_input_ptr(input_ptr()+1);
+        set_input_ptr(input_ptr() + 1);
     }
     cur_input_ptr()->state = TOKEN_LIST;
     cur_input_ptr()->start = p;
@@ -4604,15 +4857,16 @@ void begin_file_reading(void)
         overflow("text input levels", max_in_open);
     if (first == buf_size)
         overflow("buffer size", buf_size);
-    set_in_open(in_open()+1);
+    set_in_open(in_open() + 1);
     {
-        if (input_ptr() > max_in_stack) {
+        if (input_ptr() > max_in_stack)
+        {
             max_in_stack = input_ptr();
             if (input_ptr() == stack_size)
                 overflow("input stack size", stack_size);
         }
         set_input_stack(input_ptr(), cur_input());
-        set_input_ptr(input_ptr()+1);
+        set_input_ptr(input_ptr() + 1);
     }
     cur_input_ptr()->index = in_open();
     set_source_filename_stack(cur_input().index, 0);
@@ -4633,14 +4887,17 @@ end_file_reading(void)
     first = cur_input().start;
     set_line(line_stack(cur_input().index));
 
-    if (cur_input().name == 18 || cur_input().name == 19) {
+    if (cur_input().name == 18 || cur_input().name == 19)
+    {
         pseudo_close();
-    } else if (cur_input().name > 17) {
+    }
+    else if (cur_input().name > 17)
+    {
         u_close(input_file(cur_input().index));
         set_input_file(cur_input().index, NULL);
     }
 
-    set_input_ptr(input_ptr()-1);
+    set_input_ptr(input_ptr() - 1);
     set_cur_input(input_stack(input_ptr()));
     set_in_open(in_open() - 1);
 }
@@ -4652,34 +4909,43 @@ check_outer_validity(void)
     int32_t p;
     int32_t q;
 
-    if (scanner_status() != NORMAL) {
-        if (cur_cs() != 0) {
-            if (cur_input().state == TOKEN_LIST || cur_input().name < 1 || cur_input().name > 17) {
+    if (scanner_status() != NORMAL)
+    {
+        if (cur_cs() != 0)
+        {
+            if (cur_input().state == TOKEN_LIST || cur_input().name < 1 || cur_input().name > 17)
+            {
                 p = get_avail();
                 mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + cur_cs();
                 begin_token_list(p, BACKED_UP);
             }
 
             set_cur_cmd(SPACER);
-            set_cur_chr(' ' );
+            set_cur_chr(' ');
         }
 
-        if (scanner_status() > SKIPPING) { /*350:*/
+        if (scanner_status() > SKIPPING)
+        {
+            /*350:*/
             runaway();
 
-            if (cur_cs() == 0) {
+            if (cur_cs() == 0)
+            {
                 error_here_with_diagnostic("File ended");
-            } else {
+            }
+            else
+            {
                 set_cur_cs(0);
                 error_here_with_diagnostic("Forbidden control sequence found");
             }
 
             p = get_avail();
 
-            switch (scanner_status()) {
+            switch (scanner_status())
+            {
             case DEFINING:
                 print_cstr(" while scanning definition");
-                mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
+                mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}');
                 break;
             case MATCHING:
                 print_cstr(" while scanning use");
@@ -4689,7 +4955,7 @@ check_outer_validity(void)
 
             case ALIGNING:
                 print_cstr(" while scanning preamble");
-                mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
+                mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}');
                 q = p;
                 p = get_avail();
                 mem_ptr(p)->b32.s1 = q;
@@ -4699,7 +4965,7 @@ check_outer_validity(void)
 
             case ABSORBING:
                 print_cstr(" while scanning text");
-                mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
+                mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}');
                 break;
             }
 
@@ -4713,7 +4979,9 @@ check_outer_validity(void)
             set_help_line(1, "I'll try to recover; but if the error is serious,");
             set_help_line(0, "you'd better type `E' or `X' now and fix your file.");
             error();
-        } else {
+        }
+        else
+        {
             error_here_with_diagnostic("Incomplete ");
             print_cmd_chr(IF_TEST, cur_if);
             print_cstr("; all text was ignored after line ");
@@ -4757,14 +5025,18 @@ get_next(void)
 restart:
     set_cur_cs(0);
 
-    if (cur_input().state != TOKEN_LIST) { /*355:*/
+    if (cur_input().state != TOKEN_LIST)
+    {
+        /*355:*/
     texswitch:
-        if (cur_input().loc <= cur_input().limit) {
+        if (cur_input().loc <= cur_input().limit)
+        {
             set_cur_chr(buffer(cur_input().loc));
             cur_input_ptr()->loc++;
 
             if (cur_chr() >= 0xD800 && cur_chr() < 0xDC00 && cur_input().loc <= cur_input().limit &&
-                buffer(cur_input().loc) >= 0xDC00 && buffer(cur_input().loc) < 0xE000) {
+                buffer(cur_input().loc) >= 0xDC00 && buffer(cur_input().loc) < 0xE000)
+            {
                 lower = buffer(cur_input().loc) - 0xDC00;
                 cur_input_ptr()->loc++;
                 set_cur_chr(65536L + (cur_chr() - 0xD800) * 1024 + lower);
@@ -4773,7 +5045,9 @@ restart:
         reswitch:
             set_cur_cmd(CAT_CODE(cur_chr()));
 
-            switch (cur_input().state + cur_cmd()) { /*357:*/
+            switch (cur_input().state + cur_cmd())
+            {
+                /*357:*/
             ANY_STATE_PLUS(IGNORE):
             case SKIP_BLANKS + SPACER:
             case NEW_LINE + SPACER:
@@ -4781,9 +5055,12 @@ restart:
                 break;
 
             ANY_STATE_PLUS(ESCAPE):
-                if (cur_input().loc > cur_input().limit) {
+                if (cur_input().loc > cur_input().limit)
+                {
                     set_cur_cs(NULL_CS);
-                } else {
+                }
+                else
+                {
                 start_cs:
                     k = cur_input().loc;
                     set_cur_chr(buffer(k));
@@ -4797,14 +5074,19 @@ restart:
                     else
                         cur_input_ptr()->state = MID_LINE;
 
-                    if (cat == LETTER && k <= cur_input().limit) { /*368:*/
-                        do {
+                    if (cat == LETTER && k <= cur_input().limit)
+                    {
+                        /*368:*/
+                        do
+                        {
                             set_cur_chr(buffer(k));
                             cat = CAT_CODE(cur_chr());
                             k++;
-                        } while (cat == LETTER && k <= cur_input().limit);
+                        }
+                        while (cat == LETTER && k <= cur_input().limit);
 
-                        if (cat == SUP_MARK && buffer(k) == cur_chr() && k < cur_input().limit) {
+                        if (cat == SUP_MARK && buffer(k) == cur_chr() && k < cur_input().limit)
+                        {
                             /* Special characters: either ^^X, or up to six
                              * ^'s followed by one hex character for each
                              * ^. */
@@ -4816,7 +5098,7 @@ restart:
                             sup_count = 2;
 
                             while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input().limit &&
-                                   buffer(k + sup_count - 1) == cur_chr())
+                                buffer(k + sup_count - 1) == cur_chr())
                                 sup_count++;
 
                             /* If they are followed by a sufficient number of
@@ -4826,48 +5108,60 @@ restart:
 
                             sup_count_save = sup_count;
 
-                            for (d = 1; d <= sup_count_save; d++) {
-                                if (!IS_LC_HEX(buffer(k + sup_count - 2 + d))) {
+                            for (d = 1; d <= sup_count_save; d++)
+                            {
+                                if (!IS_LC_HEX(buffer(k + sup_count - 2 + d)))
+                                {
                                     /* Non-hex: do it old style */
                                     c = buffer(k + 1);
 
-                                    if (c < 128) {
+                                    if (c < 128)
+                                    {
                                         if (c < 64)
                                             set_buffer(k - 1, c + 64);
                                         else
                                             set_buffer(k - 1, c - 64);
                                         d = 2;
                                         cur_input_ptr()->limit = cur_input().limit - d;
-                                        while (k <= cur_input().limit) {
+                                        while (k <= cur_input().limit)
+                                        {
                                             set_buffer(k, buffer(k + d));
                                             k++;
                                         }
                                         goto start_cs;
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         sup_count = 0;
                                     }
                                 }
                             }
 
-                            if (sup_count > 0) {
+                            if (sup_count > 0)
+                            {
                                 set_cur_chr(0);
 
-                                for (d = 1; d <= sup_count; d++) {
+                                for (d = 1; d <= sup_count; d++)
+                                {
                                     c = buffer(k + sup_count - 2 + d);
-                                    if (c <= '9' )
+                                    if (c <= '9')
                                         set_cur_chr(16 * cur_chr() + c - '0');
                                     else
                                         set_cur_chr(16 * cur_chr() + c - 'a' + 10);
                                 }
 
-                                if (cur_chr() > BIGGEST_USV) {
+                                if (cur_chr() > BIGGEST_USV)
+                                {
                                     set_cur_chr(buffer(k));
-                                } else {
+                                }
+                                else
+                                {
                                     set_buffer(k - 1, cur_chr());
                                     d = 2 * sup_count - 1;
                                     cur_input_ptr()->limit = cur_input().limit - d;
 
-                                    while (k <= cur_input().limit) {
+                                    while (k <= cur_input().limit)
+                                    {
                                         set_buffer(k, buffer(k + d));
                                         k++;
                                     }
@@ -4879,62 +5173,79 @@ restart:
                         if (cat != LETTER)
                             k--;
 
-                        if (k > cur_input().loc + 1) {
+                        if (k > cur_input().loc + 1)
+                        {
                             set_cur_cs(id_lookup(cur_input().loc, k - cur_input().loc));
                             cur_input_ptr()->loc = k;
                             goto found;
                         }
-                    } else { /*367:*/
-                        if (cat == SUP_MARK && buffer(k) == cur_chr() && k < cur_input().limit) {
+                    }
+                    else
+                    {
+                        /*367:*/
+                        if (cat == SUP_MARK && buffer(k) == cur_chr() && k < cur_input().limit)
+                        {
                             int32_t sup_count_save;
 
                             sup_count = 2;
 
                             while (sup_count < 6 && k + 2 * sup_count - 2 <= cur_input().limit &&
-                                   buffer(k + sup_count - 1) == cur_chr())
+                                buffer(k + sup_count - 1) == cur_chr())
                                 sup_count++;
 
                             sup_count_save = sup_count;
 
-                            for (d = 1; d <= sup_count_save; d++) {
-                                if (!IS_LC_HEX(buffer(k + sup_count - 2 + d))) {
+                            for (d = 1; d <= sup_count_save; d++)
+                            {
+                                if (!IS_LC_HEX(buffer(k + sup_count - 2 + d)))
+                                {
                                     c = buffer(k + 1);
-                                    if (c < 128) {
+                                    if (c < 128)
+                                    {
                                         if (c < 64)
                                             set_buffer(k - 1, c + 64);
                                         else
                                             set_buffer(k - 1, c - 64);
                                         d = 2;
                                         cur_input_ptr()->limit = cur_input().limit - d;
-                                        while (k <= cur_input().limit) {
+                                        while (k <= cur_input().limit)
+                                        {
                                             set_buffer(k, buffer(k + d));
                                             k++;
                                         }
                                         goto start_cs;
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         sup_count = 0;
                                     }
                                 }
                             }
 
-                            if (sup_count > 0) {
+                            if (sup_count > 0)
+                            {
                                 set_cur_chr(0);
 
-                                for (d = 1; d <= sup_count; d++) {
+                                for (d = 1; d <= sup_count; d++)
+                                {
                                     c = buffer(k + sup_count - 2 + d);
-                                    if (c <= '9' )
+                                    if (c <= '9')
                                         set_cur_chr(16 * cur_chr() + c - '0');
                                     else
                                         set_cur_chr(16 * cur_chr() + c - 'a' + 10);
                                 }
 
-                                if (cur_chr() > BIGGEST_USV) {
+                                if (cur_chr() > BIGGEST_USV)
+                                {
                                     set_cur_chr(buffer(k));
-                                } else {
+                                }
+                                else
+                                {
                                     set_buffer(k - 1, cur_chr());
                                     d = 2 * sup_count - 1;
                                     cur_input_ptr()->limit = cur_input().limit - d;
-                                    while (k <= cur_input().limit) {
+                                    while (k <= cur_input().limit)
+                                    {
                                         set_buffer(k, buffer(k + d));
                                         k++;
                                     }
@@ -4944,7 +5255,8 @@ restart:
                         }
                     }
 
-                    if (buffer(cur_input().loc) > 65535L) {
+                    if (buffer(cur_input().loc) > 65535L)
+                    {
                         set_cur_cs(id_lookup(cur_input().loc, 1));
                         cur_input_ptr()->loc++;
                         goto found;
@@ -4971,18 +5283,23 @@ restart:
                 break;
 
             ANY_STATE_PLUS(SUP_MARK):
-                if (cur_chr() == buffer(cur_input().loc)) {
-                    if (cur_input().loc < cur_input().limit) {
+                if (cur_chr() == buffer(cur_input().loc))
+                {
+                    if (cur_input().loc < cur_input().limit)
+                    {
                         sup_count = 2;
 
                         while (sup_count < 6 && cur_input().loc + 2 * sup_count - 2 <= cur_input().limit &&
-                               cur_chr() == buffer(cur_input().loc + sup_count - 1))
+                            cur_chr() == buffer(cur_input().loc + sup_count - 1))
                             sup_count++;
 
-                        for (d = 1; d <= sup_count; d++) {
-                            if (!IS_LC_HEX(buffer(cur_input().loc + sup_count - 2 + d))) {
+                        for (d = 1; d <= sup_count; d++)
+                        {
+                            if (!IS_LC_HEX(buffer(cur_input().loc + sup_count - 2 + d)))
+                            {
                                 c = buffer(cur_input().loc + 1);
-                                if (c < 128) {
+                                if (c < 128)
+                                {
                                     cur_input_ptr()->loc = cur_input().loc + 2;
                                     if (c < 64)
                                         set_cur_chr(c + 64);
@@ -4996,15 +5313,17 @@ restart:
 
                         set_cur_chr(0);
 
-                        for (d = 1; d <= sup_count; d++) {
+                        for (d = 1; d <= sup_count; d++)
+                        {
                             c = buffer(cur_input().loc + sup_count - 2 + d);
-                            if (c <= '9' )
+                            if (c <= '9')
                                 set_cur_chr(16 * cur_chr() + c - '0');
                             else
                                 set_cur_chr(16 * cur_chr() + c - 'a' + 10);
                         }
 
-                        if (cur_chr() > BIGGEST_USV) {
+                        if (cur_chr() > BIGGEST_USV)
+                        {
                             set_cur_chr(buffer(cur_input().loc));
                             goto not_exp;
                         }
@@ -5031,13 +5350,13 @@ restart:
 
             case MID_LINE + SPACER:
                 cur_input_ptr()->state = SKIP_BLANKS;
-                set_cur_chr(' ' );
+                set_cur_chr(' ');
                 break;
 
             case MID_LINE + CAR_RET:
                 cur_input_ptr()->loc = cur_input().limit + 1;
                 set_cur_cmd(SPACER);
-                set_cur_chr(' ' );
+                set_cur_chr(' ');
                 break;
 
             ANY_STATE_PLUS(COMMENT):
@@ -5083,46 +5402,67 @@ restart:
             default:
                 break;
             }
-        } else {
+        }
+        else
+        {
             cur_input_ptr()->state = NEW_LINE;
 
-            if (cur_input().name > 17) { /*374:*/
-                set_line(line()+1);
+            if (cur_input().name > 17)
+            {
+                /*374:*/
+                set_line(line() + 1);
                 first = cur_input().start;
 
-                if (!force_eof) {
-                    if (cur_input().name <= 19) {
-                        if (pseudo_input()) {
+                if (!force_eof)
+                {
+                    if (cur_input().name <= 19)
+                    {
+                        if (pseudo_input())
+                        {
                             cur_input_ptr()->limit = last;
-                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen(cur_input().index)) {
+                        }
+                        else if (LOCAL(every_eof) != TEX_NULL && !eof_seen(cur_input().index))
+                        {
                             cur_input_ptr()->limit = first - 1;
                             set_eof_seen(cur_input().index, true);
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
-                        } else {
+                        }
+                        else
+                        {
                             force_eof = true;
                         }
-                    } else {
-                        if (input_line(input_file(cur_input().index))) {
+                    }
+                    else
+                    {
+                        if (input_line(input_file(cur_input().index)))
+                        {
                             cur_input_ptr()->limit = last;
-                        } else if (LOCAL(every_eof) != TEX_NULL && !eof_seen(cur_input().index)) {
+                        }
+                        else if (LOCAL(every_eof) != TEX_NULL && !eof_seen(cur_input().index))
+                        {
                             cur_input_ptr()->limit = first - 1;
                             set_eof_seen(cur_input().index, true);
                             begin_token_list(LOCAL(every_eof), EVERY_EOF_TEXT);
                             goto restart;
-                        } else {
+                        }
+                        else
+                        {
                             force_eof = true;
                         }
                     }
                 }
 
-                if (force_eof) {
-                    if (INTPAR(tracing_nesting) > 0) {
+                if (force_eof)
+                {
+                    if (INTPAR(tracing_nesting) > 0)
+                    {
                         if (grp_stack(in_open()) != cur_boundary || if_stack(in_open()) != cond_ptr)
                             file_warning();
                     }
 
-                    if (cur_input().name >= 19) {
+                    if (cur_input().name >= 19)
+                    {
                         print_char(')');
                         open_parens--;
                         ttstub_output_flush(rust_stdout());
@@ -5141,14 +5481,18 @@ restart:
 
                 first = cur_input().limit + 1;
                 cur_input_ptr()->loc = cur_input().start;
-            } else {
-                if (cur_input().name != 0) {
+            }
+            else
+            {
+                if (cur_input().name != 0)
+                {
                     set_cur_cmd(0);
                     set_cur_chr(0);
                     return;
                 }
 
-                if (input_ptr() > 0) {
+                if (input_ptr() > 0)
+                {
                     end_file_reading();
                     goto restart;
                 }
@@ -5158,7 +5502,8 @@ restart:
                  * \end or \dump has been seen. We just use a global state
                  * variable to make sure it only gets inserted once. */
 
-                if (!used_tectonic_coda_tokens && LOCAL(tectonic_coda_tokens) != TEX_NULL) {
+                if (!used_tectonic_coda_tokens && LOCAL(tectonic_coda_tokens) != TEX_NULL)
+                {
                     used_tectonic_coda_tokens = true;
                     begin_token_list(LOCAL(tectonic_coda_tokens), TECTONIC_CODA_TEXT);
                     goto restart;
@@ -5171,34 +5516,47 @@ restart:
             }
             goto texswitch;
         }
-    } else if (cur_input().loc != TEX_NULL) { /* if we're inputting from a non-null token list: */
+    }
+    else if (cur_input().loc != TEX_NULL)
+    {
+        /* if we're inputting from a non-null token list: */
         t = mem(cur_input().loc).b32.s0;
         cur_input_ptr()->loc = LLIST_link(cur_input().loc);
 
-        if (t >= CS_TOKEN_FLAG) {
+        if (t >= CS_TOKEN_FLAG)
+        {
             set_cur_cs(t - CS_TOKEN_FLAG);
             set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
             set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
 
-            if (cur_cmd() >= OUTER_CALL) {
-                if (cur_cmd() == DONT_EXPAND) { /*370:*/
+            if (cur_cmd() >= OUTER_CALL)
+            {
+                if (cur_cmd() == DONT_EXPAND)
+                {
+                    /*370:*/
                     set_cur_cs(mem(cur_input().loc).b32.s0 - CS_TOKEN_FLAG);
                     cur_input_ptr()->loc = TEX_NULL;
                     set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
                     set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
-                    if (cur_cmd() > MAX_COMMAND) {
+                    if (cur_cmd() > MAX_COMMAND)
+                    {
                         set_cur_cmd(RELAX);
                         set_cur_chr(NO_EXPAND_FLAG);
                     }
-                } else {
+                }
+                else
+                {
                     check_outer_validity();
                 }
             }
-        } else {
+        }
+        else
+        {
             set_cur_cmd(t / MAX_CHAR_VAL);
             set_cur_chr(t % MAX_CHAR_VAL);
 
-            switch (cur_cmd()) {
+            switch (cur_cmd())
+            {
             case LEFT_BRACE:
                 set_align_state(align_state() + 1);
                 break;
@@ -5213,12 +5571,17 @@ restart:
                 break;
             }
         }
-    } else { /* token list but no tokens left */
+    }
+    else
+    {
+        /* token list but no tokens left */
         end_token_list();
         goto restart;
     }
 
-    if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == 0) { /*818:*/
+    if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == 0)
+    {
+        /*818:*/
         if (scanner_status() == ALIGNING || cur_align == TEX_NULL)
             fatal_error("(interwoven alignment preambles are not allowed)");
 
@@ -5271,29 +5634,38 @@ macro_call(void)
     r = mem(ref_count).b32.s1;
     n = 0;
 
-    if (INTPAR(tracing_macros) > 0) { /*419:*/
+    if (INTPAR(tracing_macros) > 0)
+    {
+        /*419:*/
         begin_diagnostic();
         diagnostic_begin_capture_warning_here();
 
-        if (INTPAR(tracing_stack_levels) > 0) {
-            if (input_ptr() < INTPAR(tracing_stack_levels)) {
+        if (INTPAR(tracing_stack_levels) > 0)
+        {
+            if (input_ptr() < INTPAR(tracing_stack_levels))
+            {
                 v = input_ptr();
                 print_ln();
                 print_char('~');
 
-                while (v > 0) {
+                while (v > 0)
+                {
                     print_char('.');
                     v--;
                 }
 
                 print_cs(warning_index);
                 token_show(ref_count);
-            } else {
+            }
+            else
+            {
                 print_char('~');
                 print_char('~');
                 print_cs(warning_index);
             }
-        } else {
+        }
+        else
+        {
             print_ln();
             print_cs(warning_index);
             token_show(ref_count);
@@ -5306,7 +5678,9 @@ macro_call(void)
     if (mem(r).b32.s0 == PROTECTED_TOKEN)
         r = LLIST_link(r);
 
-    if (mem(r).b32.s0 != END_MATCH_TOKEN) { /*409:*/
+    if (mem(r).b32.s0 != END_MATCH_TOKEN)
+    {
+        /*409:*/
         set_scanner_status(MATCHING);
         unbalance = 0;
         long_state = eqtb_ptr(cur_cs())->b16.s1;
@@ -5314,11 +5688,15 @@ macro_call(void)
         if (long_state >= OUTER_CALL)
             long_state = long_state - 2;
 
-        do {
+        do
+        {
             mem_ptr(TEMP_HEAD)->b32.s1 = TEX_NULL;
-            if (mem(r).b32.s0 >= END_MATCH_TOKEN || mem(r).b32.s0 < MATCH_TOKEN) {
+            if (mem(r).b32.s0 >= END_MATCH_TOKEN || mem(r).b32.s0 < MATCH_TOKEN)
+            {
                 s = TEX_NULL;
-            } else {
+            }
+            else
+            {
                 match_chr = mem(r).b32.s0 - MATCH_TOKEN;
                 s = mem(r).b32.s1;
                 r = s;
@@ -5329,19 +5707,27 @@ macro_call(void)
         continue_:
             get_token();
 
-            if (cur_tok() == mem(r).b32.s0) { /*412:*/
+            if (cur_tok() == mem(r).b32.s0)
+            {
+                /*412:*/
                 r = LLIST_link(r);
-                if (mem(r).b32.s0 >= MATCH_TOKEN && mem(r).b32.s0 <= END_MATCH_TOKEN) {
+                if (mem(r).b32.s0 >= MATCH_TOKEN && mem(r).b32.s0 <= END_MATCH_TOKEN)
+                {
                     if (cur_tok() < LEFT_BRACE_LIMIT)
                         set_align_state(align_state() - 1);
                     goto found;
-                } else {
+                }
+                else
+                {
                     goto continue_;
                 }
             }
 
-            if (s != r) {
-                if (s == TEX_NULL) { /*416:*/
+            if (s != r)
+            {
+                if (s == TEX_NULL)
+                {
+                    /*416:*/
                     error_here_with_diagnostic("Use of ");
                     sprint_cs(warning_index);
                     print_cstr(" doesn't match its definition");
@@ -5353,10 +5739,13 @@ macro_call(void)
                     set_help_line(0, "followed by the required stuff, so I'm ignoring it.");
                     error();
                     goto exit;
-                } else {
+                }
+                else
+                {
                     t = s;
 
-                    do {
+                    do
+                    {
                         q = get_avail();
                         mem_ptr(p)->b32.s1 = q;
                         mem_ptr(q)->b32.s0 = mem(t).b32.s0;
@@ -5366,11 +5755,16 @@ macro_call(void)
                         u = mem(t).b32.s1;
                         v = s;
 
-                        while (true) {
-                            if (u == r) {
-                                if (cur_tok() != mem(v).b32.s0) {
+                        while (true)
+                        {
+                            if (u == r)
+                            {
+                                if (cur_tok() != mem(v).b32.s0)
+                                {
                                     goto done;
-                                } else {
+                                }
+                                else
+                                {
                                     r = mem(v).b32.s1;
                                     goto continue_;
                                 }
@@ -5385,15 +5779,20 @@ macro_call(void)
 
                     done:
                         t = LLIST_link(t);
-                    } while (t != r);
+                    }
+                    while (t != r);
 
                     r = s;
                 }
             }
 
-            if (cur_tok() == par_token) {
-                if (long_state != LONG_CALL) { /*414:*/
-                    if (long_state == CALL) {
+            if (cur_tok() == par_token)
+            {
+                if (long_state != LONG_CALL)
+                {
+                    /*414:*/
+                    if (long_state == CALL)
+                    {
                         runaway();
                         error_here_with_diagnostic("Paragraph ended before ");
                         sprint_cs(warning_index);
@@ -5416,15 +5815,22 @@ macro_call(void)
                 }
             }
 
-            if (cur_tok() < RIGHT_BRACE_LIMIT) {
-                if (cur_tok() < LEFT_BRACE_LIMIT) { /*417:*/
+            if (cur_tok() < RIGHT_BRACE_LIMIT)
+            {
+                if (cur_tok() < LEFT_BRACE_LIMIT)
+                {
+                    /*417:*/
                     unbalance = 1;
 
-                    while (true) {
+                    while (true)
+                    {
                         q = avail();
-                        if (q == TEX_NULL) {
+                        if (q == TEX_NULL)
+                        {
                             q = get_avail();
-                        } else {
+                        }
+                        else
+                        {
                             set_avail(mem(q).b32.s1);
                             mem_ptr(q)->b32.s1 = TEX_NULL;
                         }
@@ -5435,9 +5841,13 @@ macro_call(void)
 
                         get_token();
 
-                        if (cur_tok() == par_token) {
-                            if (long_state != LONG_CALL) { /*414:*/
-                                if (long_state == CALL) {
+                        if (cur_tok() == par_token)
+                        {
+                            if (long_state != LONG_CALL)
+                            {
+                                /*414:*/
+                                if (long_state == CALL)
+                                {
                                     runaway();
                                     error_here_with_diagnostic("Paragraph ended before ");
                                     sprint_cs(warning_index);
@@ -5460,16 +5870,19 @@ macro_call(void)
                             }
                         }
 
-                        if (cur_tok() < RIGHT_BRACE_LIMIT) {
-                            if (cur_tok() < LEFT_BRACE_LIMIT) {
+                        if (cur_tok() < RIGHT_BRACE_LIMIT)
+                        {
+                            if (cur_tok() < LEFT_BRACE_LIMIT)
+                            {
                                 unbalance++;
-                            } else {
+                            }
+                            else
+                            {
                                 unbalance--;
                                 if (unbalance == 0)
                                     goto done1;
                             }
                         }
-
                     }
 
                 done1:
@@ -5479,7 +5892,10 @@ macro_call(void)
                     mem_ptr(p)->b32.s1 = q;
                     mem_ptr(q)->b32.s0 = cur_tok();
                     p = q;
-                } else { /*413:*/
+                }
+                else
+                {
+                    /*413:*/
                     back_input();
 
                     error_here_with_diagnostic("Argument of ");
@@ -5500,9 +5916,14 @@ macro_call(void)
                     ins_error();
                     goto continue_;
                 }
-            } else { /*411:*/
-                if (cur_tok() == SPACE_TOKEN) {
-                    if (mem(r).b32.s0 <= END_MATCH_TOKEN) {
+            }
+            else
+            {
+                /*411:*/
+                if (cur_tok() == SPACE_TOKEN)
+                {
+                    if (mem(r).b32.s0 <= END_MATCH_TOKEN)
+                    {
                         if (mem(r).b32.s0 >= MATCH_TOKEN)
                             goto continue_;
                     }
@@ -5522,8 +5943,11 @@ macro_call(void)
                 goto continue_;
 
         found:
-            if (s != TEX_NULL) { /*418:*/
-                if (m == 1 && mem(p).b32.s0 < RIGHT_BRACE_LIMIT) {
+            if (s != TEX_NULL)
+            {
+                /*418:*/
+                if (m == 1 && mem(p).b32.s0 < RIGHT_BRACE_LIMIT)
+                {
                     mem_ptr(rbrace_ptr)->b32.s1 = TEX_NULL;
                     mem_ptr(p)->b32.s1 = avail();
                     set_avail(p);
@@ -5531,14 +5955,18 @@ macro_call(void)
                     pstack[n] = mem(p).b32.s1;
                     mem_ptr(p)->b32.s1 = avail();
                     set_avail(p);
-                } else {
+                }
+                else
+                {
                     pstack[n] = mem(TEMP_HEAD).b32.s1;
                 }
 
                 n++;
 
-                if (INTPAR(tracing_macros) > 0) {
-                    if (INTPAR(tracing_stack_levels) == 0 || input_ptr() < INTPAR(tracing_stack_levels)) {
+                if (INTPAR(tracing_macros) > 0)
+                {
+                    if (INTPAR(tracing_stack_levels) == 0 || input_ptr() < INTPAR(tracing_stack_levels))
+                    {
                         begin_diagnostic();
                         diagnostic_begin_capture_warning_here();
                         print_nl(match_chr);
@@ -5550,7 +5978,8 @@ macro_call(void)
                     }
                 }
             }
-        } while (mem(r).b32.s0 != END_MATCH_TOKEN);
+        }
+        while (mem(r).b32.s0 != END_MATCH_TOKEN);
     }
 
     while (cur_input().state == TOKEN_LIST && cur_input().loc == TEX_NULL && cur_input().index != V_TEMPLATE)
@@ -5560,8 +5989,10 @@ macro_call(void)
     cur_input_ptr()->name = warning_index;
     cur_input_ptr()->loc = mem(r).b32.s1;
 
-    if (n > 0) {
-        if (param_ptr() + n > max_param_stack) {
+    if (n > 0)
+    {
+        if (param_ptr() + n > max_param_stack)
+        {
             max_param_stack = param_ptr() + n;
             if (max_param_stack > param_size)
                 overflow("parameter stack size", param_size);
@@ -5614,8 +6045,8 @@ void find_sa_element(small_number t, int32_t n, bool w)
     small_number i;
     cur_ptr = sa_root[t];
     {
-        if (cur_ptr == TEX_NULL) {
-
+        if (cur_ptr == TEX_NULL)
+        {
             if (w)
                 goto not_found;
             else
@@ -5629,8 +6060,8 @@ void find_sa_element(small_number t, int32_t n, bool w)
     else
         cur_ptr = mem(q + (i / 2) + 1).b32.s0;
     {
-        if (cur_ptr == TEX_NULL) {
-
+        if (cur_ptr == TEX_NULL)
+        {
             if (w)
                 goto lab46;
             else
@@ -5644,8 +6075,8 @@ void find_sa_element(small_number t, int32_t n, bool w)
     else
         cur_ptr = mem(q + (i / 2) + 1).b32.s0;
     {
-        if (cur_ptr == TEX_NULL) {
-
+        if (cur_ptr == TEX_NULL)
+        {
             if (w)
                 goto lab47;
             else
@@ -5659,8 +6090,8 @@ void find_sa_element(small_number t, int32_t n, bool w)
     else
         cur_ptr = mem(q + (i / 2) + 1).b32.s0;
     {
-        if (cur_ptr == TEX_NULL) {
-
+        if (cur_ptr == TEX_NULL)
+        {
             if (w)
                 goto lab48;
             else
@@ -5676,12 +6107,12 @@ void find_sa_element(small_number t, int32_t n, bool w)
     if ((cur_ptr == TEX_NULL) && w)
         goto lab49;
     return;
- not_found:
+not_found:
     new_index(t, TEX_NULL);
     sa_root[t] = cur_ptr;
     q = cur_ptr;
     i = n / 0x40000;
- lab46:                        /*not_found1 */ new_index(i, q);
+lab46: /*not_found1 */ new_index(i, q);
     {
         if (odd(i))
             mem_ptr(q + (i / 2) + 1)->b32.s1 = cur_ptr;
@@ -5691,7 +6122,7 @@ void find_sa_element(small_number t, int32_t n, bool w)
     }
     q = cur_ptr;
     i = (n / 4096) % 64;
- lab47:                        /*not_found2 */ new_index(i, q);
+lab47: /*not_found2 */ new_index(i, q);
     {
         if (odd(i))
             mem_ptr(q + (i / 2) + 1)->b32.s1 = cur_ptr;
@@ -5701,7 +6132,7 @@ void find_sa_element(small_number t, int32_t n, bool w)
     }
     q = cur_ptr;
     i = (n / 64) % 64;
- lab48:                        /*not_found3 */ new_index(i, q);
+lab48: /*not_found3 */ new_index(i, q);
     {
         if (odd(i))
             mem_ptr(q + (i / 2) + 1)->b32.s1 = cur_ptr;
@@ -5711,24 +6142,30 @@ void find_sa_element(small_number t, int32_t n, bool w)
     }
     q = cur_ptr;
     i = n % 64;
- lab49:/*not_found4 *//*1608: */ if (t == MARK_VAL) {
+lab49:/*not_found4 *//*1608: */ if (t == MARK_VAL)
+    {
         cur_ptr = get_node(MARK_CLASS_NODE_SIZE);
         set_mem(cur_ptr + 1, sa_null);
         set_mem(cur_ptr + 2, sa_null);
         set_mem(cur_ptr + 3, sa_null);
-    } else {
-
-        if (t <= DIMEN_VAL) {
+    }
+    else
+    {
+        if (t <= DIMEN_VAL)
+        {
             cur_ptr = get_node(WORD_NODE_SIZE);
             mem_ptr(cur_ptr + 2)->b32.s1 = 0;
             mem_ptr(cur_ptr + 1)->b32.s1 = n;
-        } else {
-
+        }
+        else
+        {
             cur_ptr = get_node(POINTER_NODE_SIZE);
-            if (t <= MU_VAL) {
+            if (t <= MU_VAL)
+            {
                 mem_ptr(cur_ptr + 1)->b32.s1 = 0;
                 GLUE_SPEC_ref_count(0)++;
-            } else
+            }
+            else
                 mem_ptr(cur_ptr + 1)->b32.s1 = TEX_NULL;
         }
         mem_ptr(cur_ptr + 1)->b32.s0 = TEX_NULL;
@@ -5769,11 +6206,14 @@ expand(void)
     backup_backup = mem(BACKUP_HEAD).b32.s1;
 
 reswitch:
-    if (cur_cmd() < CALL) { /*384:*/
+    if (cur_cmd() < CALL)
+    {
+        /*384:*/
         if (INTPAR(tracing_commands) > 1)
             show_cur_cmd_chr();
 
-        switch (cur_cmd()) {
+        switch (cur_cmd())
+        {
         case TOP_BOT_MARK:
             t = cur_chr() % 5;
 
@@ -5782,11 +6222,16 @@ reswitch:
             else
                 cur_val = 0;
 
-            if (cur_val == 0) {
+            if (cur_val == 0)
+            {
                 cur_ptr = cur_mark[t];
-            } else { /*1612:*/
+            }
+            else
+            {
+                /*1612:*/
                 find_sa_element(MARK_VAL, cur_val, false);
-                if (cur_ptr != TEX_NULL) {
+                if (cur_ptr != TEX_NULL)
+                {
                     if (odd(t))
                         cur_ptr = mem(cur_ptr + (t / 2) + 1).b32.s1;
                     else
@@ -5799,7 +6244,8 @@ reswitch:
             break;
 
         case EXPAND_AFTER: /*385:*/
-            if (cur_chr() == 0) {
+            if (cur_chr() == 0)
+            {
                 get_token();
                 t = cur_tok();
                 get_token();
@@ -5809,10 +6255,14 @@ reswitch:
                     back_input();
                 set_cur_tok(t);
                 back_input();
-            } else { /*1553: "\unless" implementation */
+            }
+            else
+            {
+                /*1553: "\unless" implementation */
                 get_token();
 
-                if (cur_cmd() == IF_TEST && cur_chr() != IF_CASE_CODE) {
+                if (cur_cmd() == IF_TEST && cur_chr() != IF_CASE_CODE)
+                {
                     set_cur_chr(cur_chr() + UNLESS_CODE);
                     goto reswitch;
                 }
@@ -5830,21 +6280,26 @@ reswitch:
             break;
 
         case NO_EXPAND: /*386:*/
-            if (cur_chr() == 0) {
+            if (cur_chr() == 0)
+            {
                 save_scanner_status = scanner_status();
                 set_scanner_status(NORMAL);
                 get_token();
                 set_scanner_status(save_scanner_status);
                 t = cur_tok();
                 back_input();
-                if (t >= CS_TOKEN_FLAG) {
+                if (t >= CS_TOKEN_FLAG)
+                {
                     p = get_avail();
                     mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_DONT_EXPAND;
                     mem_ptr(p)->b32.s1 = cur_input().loc;
                     cur_input_ptr()->start = p;
                     cur_input_ptr()->loc = p;
                 }
-            } else { /*387: \primitive implementation */
+            }
+            else
+            {
+                /*387: \primitive implementation */
                 save_scanner_status = scanner_status();
                 set_scanner_status(NORMAL);
                 get_token();
@@ -5855,15 +6310,19 @@ reswitch:
                 else
                     set_cur_cs(prim_lookup(hash(cur_cs()).s1));
 
-                if (cur_cs() != UNDEFINED_PRIMITIVE) {
+                if (cur_cs() != UNDEFINED_PRIMITIVE)
+                {
                     t = eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1;
-                    if (t > MAX_COMMAND) {
+                    if (t > MAX_COMMAND)
+                    {
                         set_cur_cmd(t);
                         set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
                         set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
                         set_cur_cs(0);
                         goto reswitch;
-                    } else {
+                    }
+                    else
+                    {
                         back_input();
                         p = get_avail();
                         mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_PRIMITIVE;
@@ -5881,17 +6340,22 @@ reswitch:
             b = is_in_csname;
             is_in_csname = true;
 
-            do {
+            do
+            {
                 get_x_token();
-                if (cur_cs() == 0) {
+                if (cur_cs() == 0)
+                {
                     q = get_avail();
                     mem_ptr(p)->b32.s1 = q;
                     mem_ptr(q)->b32.s0 = cur_tok();
                     p = q;
                 }
-            } while (cur_cs() == 0);
+            }
+            while (cur_cs() == 0);
 
-            if (cur_cmd() != END_CS_NAME) { /*391:*/
+            if (cur_cmd() != END_CS_NAME)
+            {
+                /*391:*/
                 error_here_with_diagnostic("Missing ");
                 print_esc_cstr("endcsname");
                 print_cstr(" inserted");
@@ -5907,8 +6371,10 @@ reswitch:
             j = first;
             p = mem(r).b32.s1;
 
-            while (p != TEX_NULL) {
-                if (j >= max_buf_stack) {
+            while (p != TEX_NULL)
+            {
+                if (j >= max_buf_stack)
+                {
                     max_buf_stack = j + 1;
                     if (max_buf_stack == buf_size)
                         overflow("buffer size", buf_size);
@@ -5918,13 +6384,18 @@ reswitch:
                 p = LLIST_link(p);
             }
 
-            if (j > first + 1 || buffer(first) > 65535L) {
+            if (j > first + 1 || buffer(first) > 65535L)
+            {
                 no_new_control_sequence = false;
                 set_cur_cs(id_lookup(first, j - first));
                 no_new_control_sequence = true;
-            } else if (j == first) {
+            }
+            else if (j == first)
+            {
                 set_cur_cs(NULL_CS);
-            } else {
+            }
+            else
+            {
                 set_cur_cs(SINGLE_BASE + buffer(first)); /*:392*/
             }
 
@@ -5950,15 +6421,20 @@ reswitch:
             break;
 
         case FI_OR_ELSE:
-            if (INTPAR(tracing_ifs) > 0) {
+            if (INTPAR(tracing_ifs) > 0)
+            {
                 if (INTPAR(tracing_commands) <= 1)
                     show_cur_cmd_chr();
             }
 
-            if (cur_chr() > if_limit) {
-                if (if_limit == IF_CODE) {
+            if (cur_chr() > if_limit)
+            {
+                if (if_limit == IF_CODE)
+                {
                     insert_relax();
-                } else {
+                }
+                else
+                {
                     error_here_with_diagnostic("Extra ");
                     print_cmd_chr(FI_OR_ELSE, cur_chr());
                     capture_to_diagnostic(NULL);
@@ -5967,7 +6443,9 @@ reswitch:
                     set_help_line(0, "I'm ignoring this; it doesn't match any \\if.");
                     error();
                 }
-            } else {
+            }
+            else
+            {
                 while (cur_chr() != FI_CODE)
                     pass_text();
 
@@ -6006,9 +6484,14 @@ reswitch:
             error();
             break;
         }
-    } else if (cur_cmd() < END_TEMPLATE) {
+    }
+    else if (cur_cmd() < END_TEMPLATE)
+    {
         macro_call();
-    } else { /*393:*/
+    }
+    else
+    {
+        /*393:*/
         set_cur_tok(CS_TOKEN_FLAG + FROZEN_ENDV);
         back_input();
     }
@@ -6024,22 +6507,23 @@ reswitch:
 
 void get_x_token(void)
 {
- restart:
+restart:
     get_next();
 
     if (cur_cmd() <= MAX_COMMAND)
         goto done;
-    if (cur_cmd() >= CALL) {
-
+    if (cur_cmd() >= CALL)
+    {
         if (cur_cmd() < END_TEMPLATE)
             macro_call();
-        else {
-
+        else
+        {
             set_cur_cs(FROZEN_ENDV);
             set_cur_cmd(ENDV);
             goto done;
         }
-    } else
+    }
+    else
         expand();
     goto restart;
 done:
@@ -6051,8 +6535,8 @@ done:
 
 void x_token(void)
 {
-    while (cur_cmd() > MAX_COMMAND) {
-
+    while (cur_cmd() > MAX_COMMAND)
+    {
         expand();
         get_next();
     }
@@ -6066,11 +6550,14 @@ void x_token(void)
 void
 scan_left_brace(void)
 {
-    do {
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
+    }
+    while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-    if (cur_cmd() != LEFT_BRACE) {
+    if (cur_cmd() != LEFT_BRACE)
+    {
         error_here_with_diagnostic("Missing { inserted");
         capture_to_diagnostic(NULL);
 
@@ -6080,9 +6567,9 @@ scan_left_brace(void)
         set_help_line(1, "so that I will find a matching right brace soon.");
         set_help_line(0, "(If you're confused by all this, try typing `I}' now.)");
         back_error();
-        set_cur_tok((LEFT_BRACE_TOKEN + '{' ));
+        set_cur_tok((LEFT_BRACE_TOKEN + '{'));
         set_cur_cmd(LEFT_BRACE);
-        set_cur_chr('{' );
+        set_cur_chr('{');
         set_align_state(align_state() + 1);
     }
 }
@@ -6091,9 +6578,11 @@ scan_left_brace(void)
 void
 scan_optional_equals(void)
 {
-    do {
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER);
+    }
+    while (cur_cmd() == SPACER);
 
     if (cur_tok() != OTHER_TOKEN + 61 /*"="*/)
         back_input();
@@ -6108,13 +6597,16 @@ bool scan_keyword(const char* s)
 
     mem_ptr(p)->b32.s1 = TEX_NULL;
 
-    if (strlen(s) == 1) {
+    if (strlen(s) == 1)
+    {
         char c = s[0];
         save_cur_cs = cur_cs();
 
-        while (true) {
+        while (true)
+        {
             get_x_token();
-            if ((cur_cs() == 0) && ((cur_chr() == c) || (cur_chr() == c - 32))) {
+            if ((cur_cs() == 0) && ((cur_chr() == c) || (cur_chr() == c - 32)))
+            {
                 {
                     q = get_avail();
                     mem_ptr(p)->b32.s1 = q;
@@ -6123,7 +6615,9 @@ bool scan_keyword(const char* s)
                 }
                 flush_list(mem(BACKUP_HEAD).b32.s1);
                 return true;
-            } else if ((cur_cmd() != SPACER) || (p != BACKUP_HEAD)) {
+            }
+            else if ((cur_cmd() != SPACER) || (p != BACKUP_HEAD))
+            {
                 back_input();
                 if (p != BACKUP_HEAD)
                     begin_token_list(mem(BACKUP_HEAD).b32.s1, BACKED_UP);
@@ -6135,10 +6629,11 @@ bool scan_keyword(const char* s)
 
     size_t slen = strlen(s);
     size_t i = 0;
-    while (i < slen) {
-
+    while (i < slen)
+    {
         get_x_token();
-        if ((cur_cs() == 0) && ((cur_chr() == s[i]) || (cur_chr() == s[i] - 32))) {
+        if ((cur_cs() == 0) && ((cur_chr() == s[i]) || (cur_chr() == s[i] - 32)))
+        {
             {
                 q = get_avail();
                 mem_ptr(p)->b32.s1 = q;
@@ -6146,7 +6641,9 @@ bool scan_keyword(const char* s)
                 p = q;
             }
             i++;
-        } else if ((cur_cmd() != SPACER) || (p != BACKUP_HEAD)) {
+        }
+        else if ((cur_cmd() != SPACER) || (p != BACKUP_HEAD))
+        {
             back_input();
             if (p != BACKUP_HEAD)
                 begin_token_list(mem(BACKUP_HEAD).b32.s1, BACKED_UP);
@@ -6169,27 +6666,32 @@ void mu_error(void)
 
 void scan_glyph_number(internal_font_number f)
 {
-    if (scan_keyword("/")) {
+    if (scan_keyword("/"))
+    {
         scan_and_pack_name();
         {
             cur_val = map_glyph_to_index(f);
             cur_val_level = INT_VAL;
         }
-    } else if (scan_keyword("u")) {
+    }
+    else if (scan_keyword("u"))
+    {
         scan_char_num();
         {
             cur_val = map_char_to_glyph(f, cur_val);
             cur_val_level = INT_VAL;
         }
-    } else
+    }
+    else
         scan_int();
 }
 
 void scan_char_class(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character class");
+    if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad character class");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6206,8 +6708,9 @@ void scan_char_class(void)
 void scan_char_class_not_ignored(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character class");
+    if ((cur_val < 0) || (cur_val > CHAR_CLASS_LIMIT))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad character class");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6224,8 +6727,9 @@ void scan_char_class_not_ignored(void)
 void scan_eight_bit_int(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > 255)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad register code");
+    if ((cur_val < 0) || (cur_val > 255))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad register code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6242,8 +6746,9 @@ void scan_eight_bit_int(void)
 void scan_usv_num(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > BIGGEST_USV)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character code");
+    if ((cur_val < 0) || (cur_val > BIGGEST_USV))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad character code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6260,8 +6765,9 @@ void scan_usv_num(void)
 void scan_char_num(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > BIGGEST_CHAR)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad character code");
+    if ((cur_val < 0) || (cur_val > BIGGEST_CHAR))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad character code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6278,9 +6784,11 @@ void scan_char_num(void)
 void scan_xetex_math_char_int(void)
 {
     scan_int();
-    if (math_char(cur_val) == ACTIVE_MATH_CHAR) {
-        if (cur_val != ACTIVE_MATH_CHAR) {
-            ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad active XeTeX math code");
+    if (math_char(cur_val) == ACTIVE_MATH_CHAR)
+    {
+        if (cur_val != ACTIVE_MATH_CHAR)
+        {
+            ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad active XeTeX math code");
             ttstub_diag_printf(errmsg, " (%d)", cur_val);
             capture_to_diagnostic(NULL);
 
@@ -6292,8 +6800,10 @@ void scan_xetex_math_char_int(void)
             int_error(cur_val);
             cur_val = ACTIVE_MATH_CHAR;
         }
-    } else if (math_char(cur_val) > BIGGEST_USV) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad XeTeX math character code");
+    }
+    else if (math_char(cur_val) > BIGGEST_USV)
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad XeTeX math character code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6312,17 +6822,21 @@ void scan_math(int32_t p)
     int32_t c;
 
 restart: /*422:*/
-    do {
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
+    }
+    while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 reswitch:
-    switch (cur_cmd()) {
+    switch (cur_cmd())
+    {
     case 11:
     case 12:
     case 68:
         {
             c = MATH_CODE(cur_chr());
-            if (math_char(c) == ACTIVE_MATH_CHAR) {
+            if (math_char(c) == ACTIVE_MATH_CHAR)
+            {
                 {
                     set_cur_cs(cur_chr() + 1);
                     set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
@@ -6343,18 +6857,22 @@ reswitch:
         }
         break;
     case 17:
-        if (cur_chr() == 2) {
+        if (cur_chr() == 2)
+        {
             scan_math_class_int();
             c = set_class(cur_val);
             scan_math_fam_int();
             c = c + set_family(cur_val);
             scan_usv_num();
             c = c + cur_val;
-        } else if (cur_chr() == 1) {
+        }
+        else if (cur_chr() == 1)
+        {
             scan_xetex_math_char_int();
             c = cur_val;
-        } else {
-
+        }
+        else
+        {
             scan_fifteen_bit_int();
             c = set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) + (cur_val % 256);
         }
@@ -6369,15 +6887,17 @@ reswitch:
         break;
     case 15:
         {
-            if (cur_chr() == 1) {
+            if (cur_chr() == 1)
+            {
                 scan_math_class_int();
                 c = set_class(cur_val);
                 scan_math_fam_int();
                 c = c + set_family(cur_val);
                 scan_usv_num();
                 c = c + cur_val;
-            } else {
-
+            }
+            else
+            {
                 scan_delimiter_int();
                 c = cur_val / 4096;
                 c = set_class(c / 4096) + set_family((c % 4096) / 256) + (c % 256);
@@ -6411,25 +6931,30 @@ void set_math_char(int32_t c)
     int32_t p;
     UnicodeScalar ch;
 
-    if (math_char(c) == ACTIVE_MATH_CHAR) {        /*1187: */
+    if (math_char(c) == ACTIVE_MATH_CHAR)
+    {
+        /*1187: */
         set_cur_cs(cur_chr() + 1);
         set_cur_cmd(eqtb_ptr(cur_cs())->b16.s1);
         set_cur_chr(eqtb_ptr(cur_cs())->b32.s1);
         x_token();
         back_input();
-    } else {
-
+    }
+    else
+    {
         p = new_noad();
         mem_ptr(p + 1)->b32.s1 = MATH_CHAR;
         ch = math_char(c);
         mem_ptr(p + 1)->b16.s0 = ch % 65536L;
         mem_ptr(p + 1)->b16.s1 = math_fam(c);
-        if (math_class(c) == 7) {
+        if (math_class(c) == 7)
+        {
             if (((INTPAR(cur_fam) >= 0)
-                 && (INTPAR(cur_fam) < NUMBER_MATH_FAMILIES)))
+                && (INTPAR(cur_fam) < NUMBER_MATH_FAMILIES)))
                 mem_ptr(p + 1)->b16.s1 = INTPAR(cur_fam);
             mem_ptr(p)->b16.s1 = ORD_NOAD;
-        } else
+        }
+        else
             mem_ptr(p)->b16.s1 = ORD_NOAD + math_class(c);
         mem_ptr(p + 1)->b16.s1 = mem(p + 1).b16.s1 + (ch / 65536L) * 256;
         mem_ptr(cur_list.tail)->b32.s1 = p;
@@ -6440,8 +6965,9 @@ void set_math_char(int32_t c)
 void scan_math_class_int(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > 7)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad math class");
+    if ((cur_val < 0) || (cur_val > 7))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad math class");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6458,8 +6984,9 @@ void scan_math_class_int(void)
 void scan_math_fam_int(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > (NUMBER_MATH_FAMILIES - 1))) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad math family");
+    if ((cur_val < 0) || (cur_val > (NUMBER_MATH_FAMILIES - 1)))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad math family");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6476,8 +7003,9 @@ void scan_math_fam_int(void)
 void scan_four_bit_int(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > 15)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad number");
+    if ((cur_val < 0) || (cur_val > 15))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad number");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6494,8 +7022,9 @@ void scan_four_bit_int(void)
 void scan_fifteen_bit_int(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > 32767)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad mathchar");
+    if ((cur_val < 0) || (cur_val > 32767))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad mathchar");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6515,8 +7044,9 @@ scan_delimiter_int(void)
 {
     scan_int();
 
-    if (cur_val < 0 || cur_val > 0x7FFFFFF) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad delimiter code");
+    if (cur_val < 0 || cur_val > 0x7FFFFFF)
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad delimiter code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6532,8 +7062,9 @@ scan_delimiter_int(void)
 void scan_register_num(void)
 {
     scan_int();
-    if ((cur_val < 0) || (cur_val > max_reg_num)) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad register code");
+    if ((cur_val < 0) || (cur_val > max_reg_num))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad register code");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6550,8 +7081,9 @@ void scan_register_num(void)
 void scan_four_bit_int_or_18(void)
 {
     scan_int();
-    if ((cur_val < 0) || ((cur_val > 15) && (cur_val != 18))) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad number");
+    if ((cur_val < 0) || ((cur_val > 15) && (cur_val != 18)))
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad number");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         capture_to_diagnostic(NULL);
 
@@ -6567,13 +7099,13 @@ void scan_four_bit_int_or_18(void)
 
 void get_x_or_protected(void)
 {
-    while (true) {
-
+    while (true)
+    {
         get_token();
         if (cur_cmd() <= MAX_COMMAND)
             return;
-        if ((cur_cmd() >= CALL) && (cur_cmd() < END_TEMPLATE)) {
-
+        if ((cur_cmd() >= CALL) && (cur_cmd() < END_TEMPLATE))
+        {
             if (mem(mem(cur_chr()).b32.s1).b32.s0 == PROTECTED_TOKEN)
                 return;
         }
@@ -6598,19 +7130,24 @@ void scan_font_ident(void)
     internal_font_number f;
     int32_t m;
 
-    do {
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER);
+    }
+    while (cur_cmd() == SPACER);
 
     if (cur_cmd() == DEF_FONT)
         f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     else if (cur_cmd() == SET_FONT)
         f = cur_chr();
-    else if (cur_cmd() == DEF_FAMILY) {
+    else if (cur_cmd() == DEF_FAMILY)
+    {
         m = cur_chr();
         scan_math_fam_int();
         f = eqtb_ptr(m + cur_val)->b32.s1;
-    } else {
+    }
+    else
+    {
         error_here_with_diagnostic("Missing font identifier");
         capture_to_diagnostic(NULL);
         {
@@ -6634,31 +7171,38 @@ void find_font_dimen(bool writing)
     f = cur_val;
     if (n <= 0)
         cur_val = fmem_ptr;
-    else {
-
-        if (writing && (n <= SPACE_SHRINK_CODE) && (n >= SPACE_CODE) && (font_glue(f) != TEX_NULL)) {
+    else
+    {
+        if (writing && (n <= SPACE_SHRINK_CODE) && (n >= SPACE_CODE) && (font_glue(f) != TEX_NULL))
+        {
             delete_glue_ref(font_glue(f));
             set_font_glue(f, TEX_NULL);
         }
-        if (n > font_params(f)) {
-
+        if (n > font_params(f))
+        {
             if (f < font_ptr())
                 cur_val = fmem_ptr;
-            else {              /*599: */
+            else
+            {
+                /*599: */
 
-                do {
+                do
+                {
                     if (fmem_ptr == font_mem_size)
                         overflow("font memory", font_mem_size);
                     font_info_ptr(fmem_ptr)->b32.s1 = 0;
                     fmem_ptr++;
-                    set_font_params(f, font_params(f)+1);
-                } while (!(n == font_params(f)));
+                    set_font_params(f, font_params(f) + 1);
+                }
+                while (!(n == font_params(f)));
                 cur_val = fmem_ptr - 1;
             }
-        } else
+        }
+        else
             cur_val = n + param_base(f);
     }
-    if (cur_val == fmem_ptr) {
+    if (cur_val == fmem_ptr)
+    {
         error_here_with_diagnostic("Font ");
         print_esc(hash(FONT_ID_BASE + f).s1);
         print_cstr(" has only ");
@@ -6688,15 +7232,20 @@ scan_something_internal(small_number level, bool negative)
 restart:
     m = cur_chr();
 
-    switch (cur_cmd()) {
+    switch (cur_cmd())
+    {
     case DEF_CODE:
         scan_usv_num();
-        if (m == MATH_CODE_BASE) {
+        if (m == MATH_CODE_BASE)
+        {
             cur_val1 = MATH_CODE(cur_val);
-            if (math_char(cur_val1) == ACTIVE_MATH_CHAR) {
+            if (math_char(cur_val1) == ACTIVE_MATH_CHAR)
+            {
                 cur_val1 = 0x8000;
-            } else if (math_class(cur_val1) > 7 || math_fam(cur_val1) > 15 || math_char(cur_val1) > 255) {
-                ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Extended mathchar used as mathchar");
+            }
+            else if (math_class(cur_val1) > 7 || math_fam(cur_val1) > 15 || math_char(cur_val1) > 255)
+            {
+                ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Extended mathchar used as mathchar");
                 ttstub_diag_printf(errmsg, " (%d)", cur_val1);
                 capture_to_diagnostic(NULL);
 
@@ -6710,9 +7259,12 @@ restart:
             cur_val1 = math_class(cur_val1) * 0x1000 + math_fam(cur_val1) * 0x100 + math_char(cur_val1);
             cur_val = cur_val1;
             cur_val_level = INT_VAL;
-        } else if (m == DEL_CODE_BASE) {
+        }
+        else if (m == DEL_CODE_BASE)
+        {
             cur_val1 = DEL_CODE(cur_val);
-            if (cur_val1 >= 0x40000000) {
+            if (cur_val1 >= 0x40000000)
+            {
                 error_here_with_diagnostic("Extended delcode used as delcode");
                 capture_to_diagnostic(NULL);
 
@@ -6722,17 +7274,25 @@ restart:
                 error();
                 cur_val = 0;
                 cur_val_level = INT_VAL;
-            } else {
+            }
+            else
+            {
                 cur_val = cur_val1;
                 cur_val_level = INT_VAL;
             }
-        } else if (m < SF_CODE_BASE) {
+        }
+        else if (m < SF_CODE_BASE)
+        {
             cur_val = eqtb_ptr(m + cur_val)->b32.s1;
             cur_val_level = INT_VAL;
-        } else if (m < MATH_CODE_BASE) {
+        }
+        else if (m < MATH_CODE_BASE)
+        {
             cur_val = eqtb_ptr(m + cur_val)->b32.s1 % 65536L;
             cur_val_level = INT_VAL;
-        } else {
+        }
+        else
+        {
             cur_val = eqtb_ptr(m + cur_val)->b32.s1;
             cur_val_level = INT_VAL;
         }
@@ -6741,13 +7301,18 @@ restart:
     case XETEX_DEF_CODE:
         scan_usv_num();
 
-        if (m == SF_CODE_BASE) {
+        if (m == SF_CODE_BASE)
+        {
             cur_val = SF_CODE(cur_val) / 65536L;
             cur_val_level = INT_VAL;
-        } else if (m == MATH_CODE_BASE) {
+        }
+        else if (m == MATH_CODE_BASE)
+        {
             cur_val = MATH_CODE(cur_val);
             cur_val_level = INT_VAL;
-        } else if (m == MATH_CODE_BASE + 1) {
+        }
+        else if (m == MATH_CODE_BASE + 1)
+        {
             error_here_with_diagnostic("Can't use \\Umathcode as a number (try \\Umathcodenum)");
             capture_to_diagnostic(NULL);
 
@@ -6757,10 +7322,14 @@ restart:
             error();
             cur_val = 0;
             cur_val_level = INT_VAL;
-        } else if (m == DEL_CODE_BASE) {
+        }
+        else if (m == DEL_CODE_BASE)
+        {
             cur_val = DEL_CODE(cur_val);
             cur_val_level = INT_VAL;
-        } else {
+        }
+        else
+        {
             error_here_with_diagnostic("Can't use \\Udelcode as a number (try \\Udelcodenum)");
             capture_to_diagnostic(NULL);
 
@@ -6778,7 +7347,8 @@ restart:
     case DEF_FAMILY:
     case SET_FONT:
     case DEF_FONT:
-        if (level != TOK_VAL) {
+        if (level != TOK_VAL)
+        {
             error_here_with_diagnostic("Missing number, treated as zero");
             capture_to_diagnostic(NULL);
 
@@ -6789,23 +7359,34 @@ restart:
             back_error();
             cur_val = 0;
             cur_val_level = DIMEN_VAL;
-        } else if (cur_cmd() <= ASSIGN_TOKS) {
-            if (cur_cmd() < ASSIGN_TOKS) {
-                if (m == 0) {
+        }
+        else if (cur_cmd() <= ASSIGN_TOKS)
+        {
+            if (cur_cmd() < ASSIGN_TOKS)
+            {
+                if (m == 0)
+                {
                     scan_register_num();
-                    if (cur_val < 256) {
+                    if (cur_val < 256)
+                    {
                         cur_val = TOKS_REG(cur_val);
-                    } else {
+                    }
+                    else
+                    {
                         find_sa_element(TOK_VAL, cur_val, false);
                         if (cur_ptr == TEX_NULL)
                             cur_val = TEX_NULL;
                         else
                             cur_val = mem(cur_ptr + 1).b32.s1;
                     }
-                } else {
+                }
+                else
+                {
                     cur_val = mem(m + 1).b32.s1;
                 }
-            } else if (cur_chr() == LOCAL_BASE + LOCAL__xetex_inter_char_toks) {
+            }
+            else if (cur_chr() == LOCAL_BASE + LOCAL__xetex_inter_char_toks)
+            {
                 scan_char_class_not_ignored();
                 cur_ptr = cur_val;
                 scan_char_class_not_ignored();
@@ -6814,11 +7395,15 @@ restart:
                     cur_val = TEX_NULL;
                 else
                     cur_val = mem(cur_ptr + 1).b32.s1;
-            } else {
+            }
+            else
+            {
                 cur_val = eqtb_ptr(m)->b32.s1;
             }
             cur_val_level = TOK_VAL;
-        } else {
+        }
+        else
+        {
             back_input();
             scan_font_ident();
             cur_val = FONT_ID_BASE + cur_val;
@@ -6847,7 +7432,8 @@ restart:
         break;
 
     case SET_AUX:
-        if (abs(cur_list.mode) != m) {
+        if (abs(cur_list.mode) != m)
+        {
             error_here_with_diagnostic("Improper ");
             print_cmd_chr(SET_AUX, m);
             capture_to_diagnostic(NULL);
@@ -6859,27 +7445,37 @@ restart:
             set_help_line(0, "I'm forgetting what you said and using zero instead.");
             error();
 
-            if (level != TOK_VAL) {
+            if (level != TOK_VAL)
+            {
                 cur_val = 0;
                 cur_val_level = DIMEN_VAL;
-            } else {
+            }
+            else
+            {
                 cur_val = 0;
                 cur_val_level = INT_VAL;
             }
-        } else if (m == VMODE) {
+        }
+        else if (m == VMODE)
+        {
             cur_val = cur_list.aux.b32.s1;
             cur_val_level = DIMEN_VAL;
-        } else {
+        }
+        else
+        {
             cur_val = cur_list.aux.b32.s0;
             cur_val_level = INT_VAL;
         }
         break;
 
     case SET_PREV_GRAF:
-        if (cur_list.mode == 0) {
+        if (cur_list.mode == 0)
+        {
             cur_val = 0;
             cur_val_level = INT_VAL;
-        } else {
+        }
+        else
+        {
             set_nest(nest_cur(), cur_list);
             p = nest_cur();
             while (abs(nest(p).mode) != VMODE)
@@ -6901,12 +7497,15 @@ restart:
         break;
 
     case SET_PAGE_DIMEN:
-        if (page_contents == EMPTY && !output_active) {
+        if (page_contents == EMPTY && !output_active)
+        {
             if (m == 0)
                 cur_val = MAX_HALFWORD;
             else
                 cur_val = 0;
-        } else {
+        }
+        else
+        {
             cur_val = page_so_far[m];
         }
 
@@ -6914,18 +7513,27 @@ restart:
         break;
 
     case SET_SHAPE:
-        if (m > LOCAL_BASE + LOCAL__par_shape) { /*1654:*/
+        if (m > LOCAL_BASE + LOCAL__par_shape)
+        {
+            /*1654:*/
             scan_int();
-            if (eqtb(m).b32.s1 == TEX_NULL || cur_val < 0) {
+            if (eqtb(m).b32.s1 == TEX_NULL || cur_val < 0)
+            {
                 cur_val = 0;
-            } else {
+            }
+            else
+            {
                 if (cur_val > mem(eqtb(m).b32.s1 + 1).b32.s1)
                     cur_val = mem(eqtb(m).b32.s1 + 1).b32.s1;
                 cur_val = mem(eqtb(m).b32.s1 + cur_val + 1).b32.s1;
             }
-        } else if (LOCAL(par_shape) == TEX_NULL) {
+        }
+        else if (LOCAL(par_shape) == TEX_NULL)
+        {
             cur_val = 0;
-        } else {
+        }
+        else
+        {
             cur_val = mem(LOCAL(par_shape)).b32.s0;
         }
 
@@ -6935,9 +7543,12 @@ restart:
     case SET_BOX_DIMEN:
         scan_register_num();
 
-        if (cur_val < 256) {
+        if (cur_val < 256)
+        {
             q = BOX_REG(cur_val);
-        } else {
+        }
+        else
+        {
             find_sa_element(4, cur_val, false);
             if (cur_ptr == TEX_NULL)
                 q = TEX_NULL;
@@ -6968,13 +7579,18 @@ restart:
 
     case ASSIGN_FONT_INT:
         scan_font_ident();
-        if (m == 0) {
+        if (m == 0)
+        {
             cur_val = hyphen_char(cur_val);
             cur_val_level = INT_VAL;
-        } else if (m == 1) {
+        }
+        else if (m == 1)
+        {
             cur_val = skew_char(cur_val);
             cur_val_level = INT_VAL;
-        } else {
+        }
+        else
+        {
             n = cur_val;
 
             if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG)
@@ -6983,7 +7599,8 @@ restart:
                 scan_char_num();
 
             k = cur_val;
-            switch (m) {
+            switch (m)
+            {
             case LP_CODE_BASE:
                 cur_val = get_cp_code(n, k, LEFT_SIDE);
                 cur_val_level = INT_VAL;
@@ -6997,16 +7614,21 @@ restart:
         break;
 
     case REGISTER:
-        if (m < 0 || m > 19) { /* 19 = "lo_mem_stat_max" */
+        if (m < 0 || m > 19)
+        {
+            /* 19 = "lo_mem_stat_max" */
             cur_val_level = (mem(m).b16.s1 / 64);
             if (cur_val_level < GLUE_VAL)
                 cur_val = mem(m + 2).b32.s1;
             else
                 cur_val = mem(m + 1).b32.s1;
-        } else {
+        }
+        else
+        {
             scan_register_num();
             cur_val_level = m;
-            if (cur_val > 255) {
+            if (cur_val > 255)
+            {
                 find_sa_element(cur_val_level, cur_val, false);
                 if (cur_ptr == TEX_NULL)
                     cur_val = 0;
@@ -7014,8 +7636,11 @@ restart:
                     cur_val = mem(cur_ptr + 2).b32.s1;
                 else
                     cur_val = mem(cur_ptr + 1).b32.s1;
-            } else {
-                switch (cur_val_level) {
+            }
+            else
+            {
+                switch (cur_val_level)
+                {
                 case INT_VAL:
                     cur_val = COUNT_REG(cur_val);
                     break;
@@ -7034,61 +7659,86 @@ restart:
         break;
 
     case LAST_ITEM:
-        if (m >= INPUT_LINE_NO_CODE) {
-            if (m >= ETEX_GLUE) { /*1568:*/
-                if (m < ETEX_MU) {
-                    switch (m) { /*1595:*/
+        if (m >= INPUT_LINE_NO_CODE)
+        {
+            if (m >= ETEX_GLUE)
+            {
+                /*1568:*/
+                if (m < ETEX_MU)
+                {
+                    switch (m)
+                    {
+                    /*1595:*/
                     case MU_TO_GLUE_CODE:
                         scan_mu_glue();
                         break;
                     }
                     cur_val_level = GLUE_VAL;
-                } else if (m < ETEX_EXPR) {
-                    switch (m) { /*1596:*/
+                }
+                else if (m < ETEX_EXPR)
+                {
+                    switch (m)
+                    {
+                    /*1596:*/
                     case GLUE_TO_MU_CODE:
                         scan_normal_glue();
                         break;
                     }
                     cur_val_level = MU_VAL;
-                } else {
+                }
+                else
+                {
                     cur_val_level = m - ETEX_EXPR;
                     scan_expr();
                 }
 
-                while (cur_val_level > level) {
-                    if (cur_val_level == GLUE_VAL) {
+                while (cur_val_level > level)
+                {
+                    if (cur_val_level == GLUE_VAL)
+                    {
                         m = cur_val;
                         cur_val = mem(m + 1).b32.s1;
                         delete_glue_ref(m);
-                    } else if (cur_val_level == MU_VAL) {
+                    }
+                    else if (cur_val_level == MU_VAL)
+                    {
                         mu_error();
                     }
                     cur_val_level--;
                 }
 
-                if (negative) {
-                    if (cur_val_level >= GLUE_VAL) {
+                if (negative)
+                {
+                    if (cur_val_level >= GLUE_VAL)
+                    {
                         m = cur_val;
                         cur_val = new_spec(m);
                         delete_glue_ref(m);
-                        mem_ptr(cur_val + 1)->b32.s1 = -(int32_t) mem(cur_val + 1).b32.s1;
-                        mem_ptr(cur_val + 2)->b32.s1 = -(int32_t) mem(cur_val + 2).b32.s1;
-                        mem_ptr(cur_val + 3)->b32.s1 = -(int32_t) mem(cur_val + 3).b32.s1;
-                    } else {
-                        cur_val = -(int32_t) cur_val;
+                        mem_ptr(cur_val + 1)->b32.s1 = -(int32_t)mem(cur_val + 1).b32.s1;
+                        mem_ptr(cur_val + 2)->b32.s1 = -(int32_t)mem(cur_val + 2).b32.s1;
+                        mem_ptr(cur_val + 3)->b32.s1 = -(int32_t)mem(cur_val + 3).b32.s1;
+                    }
+                    else
+                    {
+                        cur_val = -(int32_t)cur_val;
                     }
                 }
                 return;
             }
 
-            if (m >= XETEX_DIM) {
-                switch (m) { /*1435:*/
+            if (m >= XETEX_DIM)
+            {
+                switch (m)
+                {
+                /*1435:*/
                 case XETEX_GLYPH_BOUNDS_CODE:
                     if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG ||
-                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
+                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG)
+                    {
                         scan_int();
                         n = cur_val;
-                        if (n < 1 || n > 4) {
+                        if (n < 1 || n > 4)
+                        {
                             error_here_with_diagnostic("\\\\XeTeXglyphbounds requires an edge index from 1 to 4;");
                             print_nl_cstr("I don't know anything about edge ");
                             print_int(n);
@@ -7096,11 +7746,15 @@ restart:
 
                             error();
                             cur_val = 0;
-                        } else {
+                        }
+                        else
+                        {
                             scan_int();
                             cur_val = get_glyph_bounds(eqtb_ptr(CUR_FONT_LOC)->b32.s1, n, cur_val);
                         }
-                    } else {
+                    }
+                    else
+                    {
                         not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
@@ -7113,8 +7767,10 @@ restart:
                     scan_font_ident();
                     q = cur_val;
                     scan_usv_num();
-                    if (font_area(q) == AAT_FONT_FLAG || font_area(q) == OTGR_FONT_FLAG) {
-                        switch (m) {
+                    if (font_area(q) == AAT_FONT_FLAG || font_area(q) == OTGR_FONT_FLAG)
+                    {
+                        switch (m)
+                        {
                         case FONT_CHAR_WD_CODE:
                             cur_val = getnativecharwd(q, cur_val);
                             break;
@@ -7128,11 +7784,15 @@ restart:
                             cur_val = getnativecharic(q, cur_val);
                             break;
                         }
-                    } else {
-                        if (font_bc(q) <= cur_val && font_ec(q) >= cur_val) {
+                    }
+                    else
+                    {
+                        if (font_bc(q) <= cur_val && font_ec(q) >= cur_val)
+                        {
                             i = FONT_CHARACTER_INFO(q, effective_char(true, q, cur_val));
 
-                            switch (m) {
+                            switch (m)
+                            {
                             case FONT_CHAR_WD_CODE:
                                 cur_val = FONT_CHARINFO_WIDTH(q, i);
                                 break;
@@ -7146,7 +7806,9 @@ restart:
                                 cur_val = FONT_CHARINFO_ITALCORR(q, i);
                                 break;
                             }
-                        } else {
+                        }
+                        else
+                        {
                             cur_val = 0;
                         }
                     }
@@ -7157,10 +7819,14 @@ restart:
                 case PAR_SHAPE_DIMEN_CODE:
                     q = cur_chr() - PAR_SHAPE_LENGTH_CODE;
                     scan_int();
-                    if (LOCAL(par_shape) == TEX_NULL || cur_val <= 0) {
+                    if (LOCAL(par_shape) == TEX_NULL || cur_val <= 0)
+                    {
                         cur_val = 0;
-                    } else {
-                        if (q == 2) {
+                    }
+                    else
+                    {
+                        if (q == 2)
+                        {
                             q = cur_val % 2;
                             cur_val = (cur_val + q) / 2;
                         }
@@ -7183,8 +7849,12 @@ restart:
                     break;
                 }
                 cur_val_level = DIMEN_VAL;
-            } else { /* if(m >= XETEX_DIM) */
-                switch (m) {
+            }
+            else
+            {
+                /* if(m >= XETEX_DIM) */
+                switch (m)
+                {
                 case INPUT_LINE_NO_CODE:
                     cur_val = line();
                     break;
@@ -7205,9 +7875,12 @@ restart:
                     // 0 if shellescape disabled
                     // 1 if enabled & unrestricted
                     // 2 if enabled but restricted (which isn't currently supported)
-                    if (shell_escape_enabled) {
+                    if (shell_escape_enabled)
+                    {
                         cur_val = 1;
-                    } else {
+                    }
+                    else
+                    {
                         cur_val = 0;
                     }
                     break;
@@ -7257,15 +7930,20 @@ restart:
                 case XETEX_COUNT_SELECTORS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG)
+                    {
                         scan_int();
                         k = cur_val;
                         cur_val = aat_font_get_1(m - XETEX_INT, font_layout_engine(n), k);
-                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n))) {
+                    }
+                    else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n)))
+                    {
                         scan_int();
                         k = cur_val;
                         cur_val = ot_font_get_1(m - XETEX_INT, font_layout_engine(n), k);
-                    } else {
+                    }
+                    else
+                    {
                         not_aat_gr_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7275,17 +7953,22 @@ restart:
                 case XETEX_IS_DEFAULT_SELECTOR_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG)
+                    {
                         scan_int();
                         k = cur_val;
                         scan_int();
                         cur_val = aat_font_get_2(m - XETEX_INT, font_layout_engine(n), k, cur_val);
-                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n))) {
+                    }
+                    else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n)))
+                    {
                         scan_int();
                         k = cur_val;
                         scan_int();
                         cur_val = ot_font_get_2(m - XETEX_INT, font_layout_engine(n), k, cur_val);
-                    } else {
+                    }
+                    else
+                    {
                         not_aat_gr_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7294,10 +7977,13 @@ restart:
                 case XETEX_FIND_VARIATION_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG)
+                    {
                         scan_and_pack_name();
                         cur_val = aat_font_get_named(m - XETEX_INT, font_layout_engine(n));
-                    } else {
+                    }
+                    else
+                    {
                         not_aat_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7306,13 +7992,18 @@ restart:
                 case XETEX_FIND_FEATURE_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG)
+                    {
                         scan_and_pack_name();
                         cur_val = aat_font_get_named(m - XETEX_INT, font_layout_engine(n));
-                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n))) {
+                    }
+                    else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n)))
+                    {
                         scan_and_pack_name();
                         cur_val = gr_font_get_named(m - XETEX_INT, font_layout_engine(n));
-                    } else {
+                    }
+                    else
+                    {
                         not_aat_gr_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7321,17 +8012,22 @@ restart:
                 case XETEX_FIND_SELECTOR_BY_NAME_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == AAT_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG)
+                    {
                         scan_int();
                         k = cur_val;
                         scan_and_pack_name();
                         cur_val = aat_font_get_named_1(m - XETEX_INT, font_layout_engine(n), k);
-                    } else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n))) {
+                    }
+                    else if (font_area(n) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(n)))
+                    {
                         scan_int();
                         k = cur_val;
                         scan_and_pack_name();
                         cur_val = gr_font_get_named_1(m - XETEX_INT, font_layout_engine(n), k);
-                    } else {
+                    }
+                    else
+                    {
                         not_aat_gr_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7340,9 +8036,12 @@ restart:
                 case XETEX_OT_COUNT_SCRIPTS_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n))) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n)))
+                    {
                         cur_val = ot_font_get(m - XETEX_INT, font_layout_engine(n));
-                    } else {
+                    }
+                    else
+                    {
                         cur_val = 0;
                     }
                     break;
@@ -7351,10 +8050,13 @@ restart:
                 case XETEX_OT_SCRIPT_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n))) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n)))
+                    {
                         scan_int();
                         cur_val = ot_font_get_1(m - XETEX_INT, font_layout_engine(n), cur_val);
-                    } else {
+                    }
+                    else
+                    {
                         not_ot_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7364,12 +8066,15 @@ restart:
                 case XETEX_OT_LANGUAGE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n))) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n)))
+                    {
                         scan_int();
                         k = cur_val;
                         scan_int();
                         cur_val = ot_font_get_2(m - XETEX_INT, font_layout_engine(n), k, cur_val);
-                    } else {
+                    }
+                    else
+                    {
                         not_ot_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7378,14 +8083,17 @@ restart:
                 case XETEX_OT_FEATURE_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n))) {
+                    if (font_area(n) == OTGR_FONT_FLAG && usingOpenType(font_layout_engine(n)))
+                    {
                         scan_int();
                         k = cur_val;
                         scan_int();
                         kk = cur_val;
                         scan_int();
                         cur_val = ot_font_get_3(m - XETEX_INT, font_layout_engine(n), k, kk, cur_val);
-                    } else {
+                    }
+                    else
+                    {
                         not_ot_font_error(LAST_ITEM, m, n);
                         cur_val = -1;
                     }
@@ -7393,11 +8101,14 @@ restart:
 
                 case XETEX_MAP_CHAR_TO_GLYPH_CODE:
                     if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG ||
-                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
+                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG)
+                    {
                         scan_int();
                         n = cur_val;
                         cur_val = map_char_to_glyph(eqtb_ptr(CUR_FONT_LOC)->b32.s1, n);
-                    } else {
+                    }
+                    else
+                    {
                         not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
@@ -7405,10 +8116,13 @@ restart:
 
                 case XETEX_GLYPH_INDEX_CODE:
                     if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG ||
-                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
+                        font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG)
+                    {
                         scan_and_pack_name();
                         cur_val = map_glyph_to_index(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
-                    } else {
+                    }
+                    else
+                    {
                         not_native_font_error(LAST_ITEM, m, eqtb_ptr(CUR_FONT_LOC)->b32.s1);
                         cur_val = 0;
                     }
@@ -7431,9 +8145,12 @@ restart:
                 case XETEX_LAST_CHAR_CODE:
                     scan_font_ident();
                     n = cur_val;
-                    if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG) {
+                    if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG)
+                    {
                         cur_val = get_font_char_range(n, m == XETEX_FIRST_CHAR_CODE);
-                    } else {
+                    }
+                    else
+                    {
                         if (m == XETEX_FIRST_CHAR_CODE)
                             cur_val = font_bc(n);
                         else
@@ -7465,7 +8182,8 @@ restart:
                 case CURRENT_IF_LEVEL_CODE:
                     q = cond_ptr;
                     cur_val = 0;
-                    while (q != TEX_NULL) {
+                    while (q != TEX_NULL)
+                    {
                         cur_val++;
                         q = LLIST_link(q);
                     }
@@ -7477,7 +8195,7 @@ restart:
                     else if (cur_if < UNLESS_CODE)
                         cur_val = cur_if + 1;
                     else
-                        cur_val = -(int32_t) (cur_if - 31);
+                        cur_val = -(int32_t)(cur_if - 31);
                     break;
 
                 case CURRENT_IF_BRANCH_CODE:
@@ -7503,31 +8221,41 @@ restart:
 
                 cur_val_level = INT_VAL;
             }
-        } else {
+        }
+        else
+        {
             cur_val = 0;
             tx = cur_list.tail;
 
-            if (tx < hi_mem_min()) {
-                if (NODE_type(tx) == MATH_NODE && mem(tx).b16.s0 == END_M_CODE) {
+            if (tx < hi_mem_min())
+            {
+                if (NODE_type(tx) == MATH_NODE && mem(tx).b16.s0 == END_M_CODE)
+                {
                     r = cur_list.head;
-                    do {
+                    do
+                    {
                         q = r;
                         r = mem(q).b32.s1;
-                    } while (r != tx);
+                    }
+                    while (r != tx);
                     tx = q;
                 }
             }
 
-            if (cur_chr() == LAST_NODE_TYPE_CODE) {
+            if (cur_chr() == LAST_NODE_TYPE_CODE)
+            {
                 cur_val_level = INT_VAL;
                 if (tx == cur_list.head || cur_list.mode == 0)
                     cur_val = -1;
-            } else {
+            }
+            else
+            {
                 cur_val_level = cur_chr();
             }
 
             if (tx < hi_mem_min() && cur_list.mode != 0)
-                switch (cur_chr()) {
+                switch (cur_chr())
+                {
                 case INT_VAL:
                     if (NODE_type(tx) == PENALTY_NODE)
                         cur_val = mem(tx + 1).b32.s1;
@@ -7537,7 +8265,8 @@ restart:
                         cur_val = mem(tx + 1).b32.s1;
                     break;
                 case GLUE_VAL:
-                    if (NODE_type(tx) == GLUE_NODE) {
+                    if (NODE_type(tx) == GLUE_NODE)
+                    {
                         cur_val = mem(tx + 1).b32.s0;
                         if (mem(tx).b16.s0 == MU_GLUE)
                             cur_val_level = MU_VAL;
@@ -7549,8 +8278,10 @@ restart:
                     else
                         cur_val = (UNSET_NODE + 2);
                     break;
-            } else if (cur_list.mode == VMODE && tx == cur_list.head)
-                switch (cur_chr()) {
+                }
+            else if (cur_list.mode == VMODE && tx == cur_list.head)
+                switch (cur_chr())
+                {
                 case INT_VAL:
                     cur_val = last_penalty;
                     break;
@@ -7569,21 +8300,29 @@ restart:
         break;
 
     case IGNORE_SPACES:
-        if (cur_chr() == 1) { /*406: */
+        if (cur_chr() == 1)
+        {
+            /*406: */
             get_token();
 
-            if (cur_cs() < HASH_BASE) {
+            if (cur_cs() < HASH_BASE)
+            {
                 set_cur_cs(prim_lookup(cur_cs() - SINGLE_BASE));
-            } else {
+            }
+            else
+            {
                 set_cur_cs(prim_lookup(hash(cur_cs()).s1));
             }
 
-            if (cur_cs() != UNDEFINED_PRIMITIVE) {
+            if (cur_cs() != UNDEFINED_PRIMITIVE)
+            {
                 set_cur_cmd(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1);
                 set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
                 set_cur_cs(PRIM_EQTB_BASE + cur_cs());
                 set_cur_tok(CS_TOKEN_FLAG + cur_cs());
-            } else {
+            }
+            else
+            {
                 set_cur_cmd(RELAX);
                 set_cur_chr(0);
                 set_cur_tok(CS_TOKEN_FLAG + FROZEN_RELAX);
@@ -7604,15 +8343,20 @@ restart:
         set_help_line(0, "I'm forgetting what you said and using zero instead.");
         error();
         cur_val = 0;
-        if (level != TOK_VAL) {
+        if (level != TOK_VAL)
+        {
             cur_val_level = DIMEN_VAL;
-        } else {
+        }
+        else
+        {
             cur_val_level = INT_VAL;
         }
         break;
     }
 
-    while (cur_val_level > level) { /*447:*/
+    while (cur_val_level > level)
+    {
+        /*447:*/
         if (cur_val_level == GLUE_VAL)
             cur_val = mem(cur_val + 1).b32.s1;
         else if (cur_val_level == MU_VAL)
@@ -7620,16 +8364,22 @@ restart:
         cur_val_level--;
     }
 
-    if (negative) {
-        if (cur_val_level >= GLUE_VAL) {
+    if (negative)
+    {
+        if (cur_val_level >= GLUE_VAL)
+        {
             cur_val = new_spec(cur_val);
-            mem_ptr(cur_val + 1)->b32.s1 = -(int32_t) mem(cur_val + 1).b32.s1;
-            mem_ptr(cur_val + 2)->b32.s1 = -(int32_t) mem(cur_val + 2).b32.s1;
-            mem_ptr(cur_val + 3)->b32.s1 = -(int32_t) mem(cur_val + 3).b32.s1;
-        } else {
-            cur_val = -(int32_t) cur_val;
+            mem_ptr(cur_val + 1)->b32.s1 = -(int32_t)mem(cur_val + 1).b32.s1;
+            mem_ptr(cur_val + 2)->b32.s1 = -(int32_t)mem(cur_val + 2).b32.s1;
+            mem_ptr(cur_val + 3)->b32.s1 = -(int32_t)mem(cur_val + 3).b32.s1;
         }
-    } else if (cur_val_level >= GLUE_VAL && cur_val_level <= MU_VAL) {
+        else
+        {
+            cur_val = -(int32_t)cur_val;
+        }
+    }
+    else if (cur_val_level >= GLUE_VAL && cur_val_level <= MU_VAL)
+    {
         GLUE_SPEC_ref_count(cur_val)++;
     }
 }
@@ -7648,81 +8398,116 @@ scan_int(void)
     OK_so_far = true;
     negative = false;
 
-    do { /*424:*/
-        do {
+    do
+    {
+        /*424:*/
+        do
+        {
             get_x_token();
-        } while (cur_cmd() == SPACER);
+        }
+        while (cur_cmd() == SPACER);
 
-        if (cur_tok() == OTHER_TOKEN + '-' ) {
+        if (cur_tok() == OTHER_TOKEN + '-')
+        {
             negative = !negative;
             set_cur_tok(OTHER_TOKEN + '+');
         }
-    } while (cur_tok() == OTHER_TOKEN + '+');
+    }
+    while (cur_tok() == OTHER_TOKEN + '+');
 
 restart:
-    if (cur_tok() == ALPHA_TOKEN) { /*460:*/
+    if (cur_tok() == ALPHA_TOKEN)
+    {
+        /*460:*/
         get_token();
 
-        if (cur_tok() < CS_TOKEN_FLAG) {
+        if (cur_tok() < CS_TOKEN_FLAG)
+        {
             cur_val = cur_chr();
-            if (cur_cmd() <= RIGHT_BRACE) {
+            if (cur_cmd() <= RIGHT_BRACE)
+            {
                 if (cur_cmd() == RIGHT_BRACE)
                     set_align_state(align_state() + 1);
                 else
                     set_align_state(align_state() - 1);
             }
-        } else if (cur_tok() < CS_TOKEN_FLAG + SINGLE_BASE) {
+        }
+        else if (cur_tok() < CS_TOKEN_FLAG + SINGLE_BASE)
+        {
             cur_val = cur_tok() - (CS_TOKEN_FLAG + ACTIVE_BASE);
-        } else {
+        }
+        else
+        {
             cur_val = cur_tok() - (CS_TOKEN_FLAG + SINGLE_BASE);
         }
 
-        if (cur_val > BIGGEST_USV) {
+        if (cur_val > BIGGEST_USV)
+        {
             error_here_with_diagnostic("Improper alphabetic constant");
             capture_to_diagnostic(NULL);
 
             set_help_ptr(2);
             set_help_line(1, "A one-character control sequence belongs after a ` mark.");
             set_help_line(0, "So I'm essentially inserting \\0 here.");
-            cur_val = '0' ;
+            cur_val = '0';
             back_error();
-        } else { /*461:*/
+        }
+        else
+        {
+            /*461:*/
             get_x_token();
             if (cur_cmd() != SPACER)
                 back_input();
         }
-    } else if (cur_tok() == CS_TOKEN_FLAG + FROZEN_PRIMITIVE) { /*406:*/
+    }
+    else if (cur_tok() == CS_TOKEN_FLAG + FROZEN_PRIMITIVE)
+    {
+        /*406:*/
         get_token();
 
-        if (cur_cs() < HASH_BASE) {
+        if (cur_cs() < HASH_BASE)
+        {
             set_cur_cs(prim_lookup(cur_cs() - SINGLE_BASE));
-        } else {
+        }
+        else
+        {
             set_cur_cs(prim_lookup(hash(cur_cs()).s1));
         }
 
-        if (cur_cs() != UNDEFINED_PRIMITIVE) {
+        if (cur_cs() != UNDEFINED_PRIMITIVE)
+        {
             set_cur_cmd(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1);
             set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
             set_cur_cs(PRIM_EQTB_BASE + cur_cs());
             set_cur_tok(CS_TOKEN_FLAG + cur_cs());
-        } else {
+        }
+        else
+        {
             set_cur_cmd(RELAX);
             set_cur_chr(0);
             set_cur_tok(CS_TOKEN_FLAG + FROZEN_RELAX);
             set_cur_cs(FROZEN_RELAX);
         }
         goto restart;
-    } else if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL) {
+    }
+    else if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL)
+    {
         scan_something_internal(INT_VAL, false);
-    } else { /*462:*/
+    }
+    else
+    {
+        /*462:*/
         radix = 10;
         m = 0xCCCCCCC;
 
-        if (cur_tok() == OCTAL_TOKEN) {
+        if (cur_tok() == OCTAL_TOKEN)
+        {
             radix = 8;
             m = 0x10000000;
             get_x_token();
-        } else if (cur_tok() == HEX_TOKEN) {
+        }
+        else if (cur_tok() == HEX_TOKEN)
+        {
             radix = 16;
             m = 0x8000000;
             get_x_token();
@@ -7731,24 +8516,32 @@ restart:
         vacuous = true;
         cur_val = 0;
 
-        while (true) {
-            if (cur_tok() < ZERO_TOKEN + radix && cur_tok() >= ZERO_TOKEN && cur_tok() <= ZERO_TOKEN + 9) {
+        while (true)
+        {
+            if (cur_tok() < ZERO_TOKEN + radix && cur_tok() >= ZERO_TOKEN && cur_tok() <= ZERO_TOKEN + 9)
+            {
                 d = cur_tok() - ZERO_TOKEN;
-            } else if (radix == 16) {
+            }
+            else if (radix == 16)
+            {
                 if (cur_tok() <= A_TOKEN + 5 && cur_tok() >= A_TOKEN)
                     d = cur_tok() - A_TOKEN + 10;
                 else if (cur_tok() <= OTHER_A_TOKEN + 5 && cur_tok() >= OTHER_A_TOKEN)
                     d = cur_tok() - OTHER_A_TOKEN + 10;
                 else
                     break;
-            } else {
+            }
+            else
+            {
                 break;
             }
 
             vacuous = false;
 
-            if (cur_val >= m && (cur_val > m || d > 7 || radix != 10)) {
-                if (OK_so_far) {
+            if (cur_val >= m && (cur_val > m || d > 7 || radix != 10))
+            {
+                if (OK_so_far)
+                {
                     error_here_with_diagnostic("Number too big");
                     capture_to_diagnostic(NULL);
 
@@ -7759,14 +8552,18 @@ restart:
                     cur_val = TEX_INFINITY;
                     OK_so_far = false;
                 }
-            } else {
+            }
+            else
+            {
                 cur_val = cur_val * radix + d;
             }
 
             get_x_token();
         } /*:463*/
 
-        if (vacuous) { /*464:*/
+        if (vacuous)
+        {
+            /*464:*/
             error_here_with_diagnostic("Missing number, treated as zero");
             capture_to_diagnostic(NULL);
 
@@ -7775,13 +8572,15 @@ restart:
             set_help_line(1, "(If you can't figure out why I needed to see a number,");
             set_help_line(0, "look up `weird error' in the index to The TeXbook.)");
             back_error();
-        } else if (cur_cmd() != SPACER) {
+        }
+        else if (cur_cmd() != SPACER)
+        {
             back_input();
         }
     }
 
     if (negative)
-        cur_val = -(int32_t) cur_val;
+        cur_val = -(int32_t)cur_val;
 }
 
 
@@ -7790,7 +8589,8 @@ round_decimals(small_number k)
 {
     int32_t a = 0;
 
-    while (k > 0) {
+    while (k > 0)
+    {
         k--;
         a = (a + dig(k) * 0x20000) / 10;
     }
@@ -7815,24 +8615,34 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
     cur_order = NORMAL;
     negative = false;
 
-    if (!shortcut) {
+    if (!shortcut)
+    {
         negative = false;
 
-        do {
-            do {
+        do
+        {
+            do
+            {
                 get_x_token();
-            } while (cur_cmd() == SPACER);
+            }
+            while (cur_cmd() == SPACER);
 
-            if (cur_tok() == OTHER_TOKEN + '-' ) {
+            if (cur_tok() == OTHER_TOKEN + '-')
+            {
                 negative = !negative;
                 set_cur_tok(OTHER_TOKEN + '+');
             }
-        } while (cur_tok() == OTHER_TOKEN + '+');
+        }
+        while (cur_tok() == OTHER_TOKEN + '+');
 
-        if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL) { /*468:*/
-            if (mu) {
+        if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL)
+        {
+            /*468:*/
+            if (mu)
+            {
                 scan_something_internal(MU_VAL, false);
-                if (cur_val_level >= GLUE_VAL) {
+                if (cur_val_level >= GLUE_VAL)
+                {
                     v = mem(cur_val + 1).b32.s1;
                     delete_glue_ref(cur_val);
                     cur_val = v;
@@ -7842,20 +8652,27 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                     goto attach_sign;
                 if (cur_val_level != INT_VAL)
                     mu_error();
-            } else {
+            }
+            else
+            {
                 scan_something_internal(DIMEN_VAL, false);
                 if (cur_val_level == DIMEN_VAL)
                     goto attach_sign;
             }
-        } else {
+        }
+        else
+        {
             back_input();
 
             if (cur_tok() == CONTINENTAL_POINT_TOKEN)
                 set_cur_tok(POINT_TOKEN);
 
-            if (cur_tok() != POINT_TOKEN) {
+            if (cur_tok() != POINT_TOKEN)
+            {
                 scan_int();
-            } else {
+            }
+            else
+            {
                 radix = 10;
                 cur_val = 0;
             }
@@ -7863,17 +8680,21 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             if (cur_tok() == CONTINENTAL_POINT_TOKEN)
                 set_cur_tok(POINT_TOKEN);
 
-            if (radix == 10 && cur_tok() == POINT_TOKEN) { /*471:*/
+            if (radix == 10 && cur_tok() == POINT_TOKEN)
+            {
+                /*471:*/
                 k = 0;
                 p = TEX_NULL;
                 get_token();
 
-                while (true) {
+                while (true)
+                {
                     get_x_token();
                     if (cur_tok() > ZERO_TOKEN + 9 || cur_tok() < ZERO_TOKEN)
                         goto done1;
 
-                    if (k < 17) {
+                    if (k < 17)
+                    {
                         q = get_avail();
                         mem_ptr(q)->b32.s1 = p;
                         mem_ptr(q)->b32.s0 = cur_tok() - ZERO_TOKEN;
@@ -7883,7 +8704,8 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                 }
 
             done1:
-                for (kk = k; kk >= 1; kk--) {
+                for (kk = k; kk >= 1; kk--)
+                {
                     set_dig(kk - 1, mem(p).b32.s0);
                     q = p;
                     p = LLIST_link(p);
@@ -7898,18 +8720,25 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         }
     }
 
-    if (cur_val < 0) {
+    if (cur_val < 0)
+    {
         negative = !negative;
-        cur_val = -(int32_t) cur_val;
+        cur_val = -(int32_t)cur_val;
     }
 
-    if (requires_units) {
-        if (inf) { /*473:*/
-            if (scan_keyword("fil")) {
+    if (requires_units)
+    {
+        if (inf)
+        {
+            /*473:*/
+            if (scan_keyword("fil"))
+            {
                 cur_order = FIL;
 
-                while (scan_keyword("l")) {
-                    if (cur_order == FILLL) {
+                while (scan_keyword("l"))
+                {
+                    if (cur_order == FILLL)
+                    {
                         error_here_with_diagnostic("Illegal unit of measure (replaced with filll)");
                         capture_to_diagnostic(NULL);
 
@@ -7917,7 +8746,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
                         // "ddon't" looks like wordplay from Knuth inspired by "filll"
                         set_help_line(0, "I dddon't go any higher than filll.");
                         error();
-                    } else {
+                    }
+                    else
+                    {
                         cur_order++;
                     }
                 }
@@ -7928,23 +8759,32 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
 
         save_cur_val = cur_val;
 
-        do {
+        do
+        {
             get_x_token();
-        } while (cur_cmd() == SPACER);
+        }
+        while (cur_cmd() == SPACER);
 
-        if (cur_cmd() < MIN_INTERNAL || cur_cmd() > MAX_INTERNAL) {
+        if (cur_cmd() < MIN_INTERNAL || cur_cmd() > MAX_INTERNAL)
+        {
             back_input();
-        } else {
-            if (mu) {
+        }
+        else
+        {
+            if (mu)
+            {
                 scan_something_internal(MU_VAL, false);
-                if (cur_val_level >= GLUE_VAL) {
+                if (cur_val_level >= GLUE_VAL)
+                {
                     v = mem(cur_val + 1).b32.s1;
                     delete_glue_ref(cur_val);
                     cur_val = v;
                 }
                 if (cur_val_level != MU_VAL)
                     mu_error();
-            } else {
+            }
+            else
+            {
                 scan_something_internal(DIMEN_VAL, false);
             }
 
@@ -7971,10 +8811,15 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         goto attach_sign;
 
     not_found:
-        if (mu) { /*475:*/
-            if (scan_keyword("mu")) {
+        if (mu)
+        {
+            /*475:*/
+            if (scan_keyword("mu"))
+            {
                 goto attach_fraction;
-            } else {
+            }
+            else
+            {
                 error_here_with_diagnostic("Illegal unit of measure (mu inserted)");
                 capture_to_diagnostic(NULL);
 
@@ -7988,9 +8833,12 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
             }
         }
 
-        if (scan_keyword("true")) { /*476:*/
+        if (scan_keyword("true"))
+        {
+            /*476:*/
             prepare_mag();
-            if (INTPAR(mag) != 1000) {
+            if (INTPAR(mag) != 1000)
+            {
                 cur_val = xn_over_d(cur_val, 1000, INTPAR(mag));
                 f = (1000 * f + 65536L * tex_remainder()) / INTPAR(mag);
                 cur_val = cur_val + (f / 65536L);
@@ -8001,30 +8849,48 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         if (scan_keyword("pt"))
             goto attach_fraction;
 
-        if (scan_keyword("in")) {
+        if (scan_keyword("in"))
+        {
             num = 7227; /* magic ratio consant */
             denom = 100;
-        } else if (scan_keyword("pc")) {
+        }
+        else if (scan_keyword("pc"))
+        {
             num = 12;
             denom = 1;
-        } else if (scan_keyword("cm")) {
+        }
+        else if (scan_keyword("cm"))
+        {
             num = 7227; /* magic ratio consant */
             denom = 254; /* magic ratio consant */
-        } else if (scan_keyword("mm")) {
+        }
+        else if (scan_keyword("mm"))
+        {
             num = 7227; /* magic ratio consant */
             denom = 2540; /* magic ratio consant */
-        } else if (scan_keyword("bp")) {
+        }
+        else if (scan_keyword("bp"))
+        {
             num = 7227; /* magic ratio consant */
             denom = 7200; /* magic ratio consant */
-        } else if (scan_keyword("dd")) {
+        }
+        else if (scan_keyword("dd"))
+        {
             num = 1238; /* magic ratio consant */
             denom = 1157; /* magic ratio consant */
-        } else if (scan_keyword("cc")) {
+        }
+        else if (scan_keyword("cc"))
+        {
             num = 14856; /* magic ratio consant */
             denom = 1157; /* magic ratio consant */
-        } else if (scan_keyword("sp")) {
+        }
+        else if (scan_keyword("sp"))
+        {
             goto done;
-        } else { /*478:*/
+        }
+        else
+        {
+            /*478:*/
             error_here_with_diagnostic("Illegal unit of measure (pt inserted)");
             capture_to_diagnostic(NULL);
 
@@ -8057,7 +8923,10 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
         get_x_token();
         if (cur_cmd() != SPACER)
             back_input();
-    } else { /* if(requires_units) */
+    }
+    else
+    {
+        /* if(requires_units) */
         if (cur_val >= 16384)
             set_arith_error(true);
         else
@@ -8065,7 +8934,9 @@ xetex_scan_dimen(bool mu, bool inf, bool shortcut, bool requires_units)
     }
 
 attach_sign:
-    if (arith_error() || abs(cur_val) >= 0x40000000) { /*479:*/
+    if (arith_error() || abs(cur_val) >= 0x40000000)
+    {
+        /*479:*/
         error_here_with_diagnostic("Dimension too large");
         capture_to_diagnostic(NULL);
 
@@ -8078,7 +8949,7 @@ attach_sign:
     }
 
     if (negative)
-        cur_val = -(int32_t) cur_val;
+        cur_val = -(int32_t)cur_val;
 }
 
 
@@ -8103,20 +8974,27 @@ scan_glue(small_number level)
     mu = (level == MU_VAL);
     negative = false;
 
-    do {
-        do {
+    do
+    {
+        do
+        {
             get_x_token();
-        } while (cur_cmd() == SPACER);
+        }
+        while (cur_cmd() == SPACER);
 
-        if (cur_tok() == OTHER_TOKEN + 45 /*"-"*/) {
+        if (cur_tok() == OTHER_TOKEN + 45 /*"-"*/)
+        {
             negative = !negative;
             set_cur_tok(OTHER_TOKEN + 43 /*"+"*/);
         }
-    } while (cur_tok() == OTHER_TOKEN + 43 /*"+"*/);
+    }
+    while (cur_tok() == OTHER_TOKEN + 43 /*"+"*/);
 
-    if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL) {
+    if (cur_cmd() >= MIN_INTERNAL && cur_cmd() <= MAX_INTERNAL)
+    {
         scan_something_internal(level, negative);
-        if (cur_val_level >= GLUE_VAL) {
+        if (cur_val_level >= GLUE_VAL)
+        {
             if (cur_val_level != level)
                 mu_error();
             return;
@@ -8126,23 +9004,27 @@ scan_glue(small_number level)
             scan_dimen(mu, false, true);
         else if (level == MU_VAL)
             mu_error();
-    } else {
+    }
+    else
+    {
         back_input();
         scan_dimen(mu, false, false);
         if (negative)
-            cur_val = -(int32_t) cur_val;
+            cur_val = -(int32_t)cur_val;
     }
 
     q = new_spec(0);
     mem_ptr(q + 1)->b32.s1 = cur_val;
 
-    if (scan_keyword("plus")) {
+    if (scan_keyword("plus"))
+    {
         scan_dimen(mu, true, false);
         mem_ptr(q + 2)->b32.s1 = cur_val;
         mem_ptr(q)->b16.s1 = cur_order;
     }
 
-    if (scan_keyword("minus")) {
+    if (scan_keyword("minus"))
+    {
         scan_dimen(mu, true, false);
         mem_ptr(q + 3)->b32.s1 = cur_val;
         mem_ptr(q)->b16.s0 = cur_order;
@@ -8156,20 +9038,21 @@ int32_t add_or_sub(int32_t x, int32_t y, int32_t max_answer, bool negative)
 {
     int32_t a;
     if (negative)
-        y = -(int32_t) y;
-    if (x >= 0) {
-
+        y = -(int32_t)y;
+    if (x >= 0)
+    {
         if (y <= max_answer - x)
             a = x + y;
-        else {
-
+        else
+        {
             set_arith_error(true);
             a = 0;
         }
-    } else if (y >= -(int32_t) max_answer - x)
+    }
+    else if (y >= -(int32_t)max_answer - x)
         a = x + y;
-    else {
-
+    else
+    {
         set_arith_error(true);
         a = 0;
     }
@@ -8180,20 +9063,23 @@ int32_t quotient(int32_t n, int32_t d)
 {
     bool negative;
     int32_t a;
-    if (d == 0) {
+    if (d == 0)
+    {
         set_arith_error(true);
         a = 0;
-    } else {
-
+    }
+    else
+    {
         if (d > 0)
             negative = false;
-        else {
-
-            d = -(int32_t) d;
+        else
+        {
+            d = -(int32_t)d;
             negative = true;
         }
-        if (n < 0) {
-            n = -(int32_t) n;
+        if (n < 0)
+        {
+            n = -(int32_t)n;
             negative = !negative;
         }
         a = n / d;
@@ -8202,7 +9088,7 @@ int32_t quotient(int32_t n, int32_t d)
         if (d + n >= 0)
             a++;
         if (negative)
-            a = -(int32_t) a;
+            a = -(int32_t)a;
     }
     return a;
 }
@@ -8220,18 +9106,21 @@ int32_t fract(int32_t x, int32_t n, int32_t d, int32_t max_answer)
     a = 0;
     if (d > 0)
         negative = false;
-    else {
-
-        d = -(int32_t) d;
+    else
+    {
+        d = -(int32_t)d;
         negative = true;
     }
-    if (x < 0) {
-        x = -(int32_t) x;
+    if (x < 0)
+    {
+        x = -(int32_t)x;
         negative = !negative;
-    } else if (x == 0)
+    }
+    else if (x == 0)
         goto done;
-    if (n < 0) {
-        n = -(int32_t) n;
+    if (n < 0)
+    {
+        n = -(int32_t)n;
         negative = !negative;
     }
     t = n / d;
@@ -8248,19 +9137,22 @@ int32_t fract(int32_t x, int32_t n, int32_t d, int32_t max_answer)
     x = x - t * d;
     if (x == 0)
         goto found;
-    if (x < n) {
+    if (x < n)
+    {
         t = x;
         x = n;
         n = t;
     }
     f = 0;
     r = (d / 2) - d;
-    h = -(int32_t) r;
-    while (true) {
-
-        if (odd(n)) {
+    h = -(int32_t)r;
+    while (true)
+    {
+        if (odd(n))
+        {
             r = r + x;
-            if (r >= 0) {
+            if (r >= 0)
+            {
                 r = r - d;
                 f++;
             }
@@ -8270,12 +9162,13 @@ int32_t fract(int32_t x, int32_t n, int32_t d, int32_t max_answer)
             goto found1;
         if (x < h)
             x = x + x;
-        else {
-
+        else
+        {
             t = x - d;
             x = t + x;
             f = f + n;
-            if (x < n) {
+            if (x < n)
+            {
                 if (x == 0)
                     goto found1;
                 t = x;
@@ -8288,16 +9181,16 @@ found1:
     if (f > (max_answer - a))
         goto too_big;
     a = a + f;
- found:
+found:
     if (negative)
-        a = -(int32_t) a;
+        a = -(int32_t)a;
     goto done;
 too_big:
     {
         set_arith_error(true);
         a = 0;
     }
- done:
+done:
     return a;
 }
 
@@ -8334,10 +9227,14 @@ continue_:
         o = l;
     else
         o = INT_VAL;
-    do {
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER);
-    if (cur_tok() == (OTHER_TOKEN + 40)) {    /*1576: */
+    }
+    while (cur_cmd() == SPACER);
+    if (cur_tok() == (OTHER_TOKEN + 40))
+    {
+        /*1576: */
         q = get_node(EXPR_NODE_SIZE);
         mem_ptr(q)->b32.s1 = p;
         mem_ptr(q)->b16.s1 = l;
@@ -8359,10 +9256,12 @@ continue_:
     else
         scan_mu_glue();
     f = /*:1573 */ cur_val;
-found: /*1572:*//*424:*/
-    do {
+found: /*1572:*/ /*424:*/
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER);
+    }
+    while (cur_cmd() == SPACER);
     if (cur_tok() == (OTHER_TOKEN + 43))
         o = EXPR_ADD;
     else if (cur_tok() == (OTHER_TOKEN + 45))
@@ -8371,13 +9270,16 @@ found: /*1572:*//*424:*/
         o = EXPR_MULT;
     else if (cur_tok() == (OTHER_TOKEN + 47))
         o = EXPR_DIV;
-    else {
-
+    else
+    {
         o = EXPR_NONE;
-        if (p == TEX_NULL) {
+        if (p == TEX_NULL)
+        {
             if (cur_cmd() != RELAX)
                 back_input();
-        } else if (cur_tok() != (OTHER_TOKEN + 41)) {
+        }
+        else if (cur_tok() != (OTHER_TOKEN + 41))
+        {
             error_here_with_diagnostic("Missing ) inserted for expression");
             capture_to_diagnostic(NULL);
 
@@ -8389,47 +9291,60 @@ found: /*1572:*//*424:*/
         }
     }
     set_arith_error(b);
-    if ((l == INT_VAL) || (s > EXPR_SUB)) {
-        if ((f > TEX_INFINITY) || (f < -TEX_INFINITY)) {
+    if ((l == INT_VAL) || (s > EXPR_SUB))
+    {
+        if ((f > TEX_INFINITY) || (f < -TEX_INFINITY))
+        {
             set_arith_error(true);
             f = 0;
         }
-    } else if (l == DIMEN_VAL) {
-        if (abs(f) > MAX_HALFWORD) {
+    }
+    else if (l == DIMEN_VAL)
+    {
+        if (abs(f) > MAX_HALFWORD)
+        {
             set_arith_error(true);
             f = 0;
         }
-    } else {
-
+    }
+    else
+    {
         if ((abs(mem(f + 1).b32.s1) > MAX_HALFWORD) || (abs(mem(f + 2).b32.s1) > MAX_HALFWORD)
-            || (abs(mem(f + 3).b32.s1) > MAX_HALFWORD)) {
+            || (abs(mem(f + 3).b32.s1) > MAX_HALFWORD))
+        {
             set_arith_error(true);
             delete_glue_ref(f);
             f = new_spec(0);
         }
     }
-    switch (s) {                /*1579: */
+    switch (s)
+    {
+    /*1579: */
     case 0:
-        if ((l >= GLUE_VAL) && (o != EXPR_NONE)) {
+        if ((l >= GLUE_VAL) && (o != EXPR_NONE))
+        {
             t = new_spec(f);
             delete_glue_ref(f);
             if (mem(t + 2).b32.s1 == 0)
                 mem_ptr(t)->b16.s1 = NORMAL;
             if (mem(t + 3).b32.s1 == 0)
                 mem_ptr(t)->b16.s0 = NORMAL;
-        } else
+        }
+        else
             t = f;
         break;
     case 3:
-        if (o == EXPR_DIV) {
+        if (o == EXPR_DIV)
+        {
             n = f;
             o = EXPR_SCALE;
-        } else if (l == INT_VAL)
+        }
+        else if (l == INT_VAL)
             t = mult_and_add(t, f, 0, TEX_INFINITY);
         else if (l == DIMEN_VAL)
             t = mult_and_add(t, f, 0, MAX_HALFWORD);
-        else {
-
+        else
+        {
             mem_ptr(t + 1)->b32.s1 = mult_and_add(mem(t + 1).b32.s1, f, 0, MAX_HALFWORD);
             mem_ptr(t + 2)->b32.s1 = mult_and_add(mem(t + 2).b32.s1, f, 0, MAX_HALFWORD);
             mem_ptr(t + 3)->b32.s1 = mult_and_add(mem(t + 3).b32.s1, f, 0, MAX_HALFWORD);
@@ -8438,8 +9353,8 @@ found: /*1572:*//*424:*/
     case 4:
         if (l < GLUE_VAL)
             t = quotient(t, f);
-        else {
-
+        else
+        {
             mem_ptr(t + 1)->b32.s1 = quotient(mem(t + 1).b32.s1, f);
             mem_ptr(t + 2)->b32.s1 = quotient(mem(t + 2).b32.s1, f);
             mem_ptr(t + 3)->b32.s1 = quotient(mem(t + 3).b32.s1, f);
@@ -8450,8 +9365,8 @@ found: /*1572:*//*424:*/
             t = fract(t, n, f, TEX_INFINITY);
         else if (l == DIMEN_VAL)
             t = fract(t, n, f, MAX_HALFWORD);
-        else {
-
+        else
+        {
             mem_ptr(t + 1)->b32.s1 = fract(mem(t + 1).b32.s1, n, f, MAX_HALFWORD);
             mem_ptr(t + 2)->b32.s1 = fract(mem(t + 2).b32.s1, n, f, MAX_HALFWORD);
             mem_ptr(t + 3)->b32.s1 = fract(mem(t + 3).b32.s1, n, f, MAX_HALFWORD);
@@ -8460,7 +9375,9 @@ found: /*1572:*//*424:*/
     }
     if (o > EXPR_SUB)
         s = o;
-    else {                      /*1580: */
+    else
+    {
+        /*1580: */
 
         s = EXPR_NONE;
         if (r == EXPR_NONE)
@@ -8469,18 +9386,22 @@ found: /*1572:*//*424:*/
             e = add_or_sub(e, t, TEX_INFINITY, r == EXPR_SUB);
         else if (l == DIMEN_VAL)
             e = add_or_sub(e, t, MAX_HALFWORD, r == EXPR_SUB);
-        else {                  /*1582: */
+        else
+        {
+            /*1582: */
 
             mem_ptr(e + 1)->b32.s1 = add_or_sub(mem(e + 1).b32.s1, mem(t + 1).b32.s1, MAX_HALFWORD, r == EXPR_SUB);
             if (mem(e).b16.s1 == mem(t).b16.s1)
                 mem_ptr(e + 2)->b32.s1 = add_or_sub(mem(e + 2).b32.s1, mem(t + 2).b32.s1, MAX_HALFWORD, r == EXPR_SUB);
-            else if ((mem(e).b16.s1 < mem(t).b16.s1) && (mem(t + 2).b32.s1 != 0)) {
+            else if ((mem(e).b16.s1 < mem(t).b16.s1) && (mem(t + 2).b32.s1 != 0))
+            {
                 mem_ptr(e + 2)->b32.s1 = mem(t + 2).b32.s1;
                 mem_ptr(e)->b16.s1 = mem(t).b16.s1;
             }
             if (mem(e).b16.s0 == mem(t).b16.s0)
                 mem_ptr(e + 3)->b32.s1 = add_or_sub(mem(e + 3).b32.s1, mem(t + 3).b32.s1, MAX_HALFWORD, r == EXPR_SUB);
-            else if ((mem(e).b16.s0 < mem(t).b16.s0) && (mem(t + 3).b32.s1 != 0)) {
+            else if ((mem(e).b16.s0 < mem(t).b16.s0) && (mem(t + 3).b32.s1 != 0))
+            {
                 mem_ptr(e + 3)->b32.s1 = mem(t + 3).b32.s1;
                 mem_ptr(e)->b16.s0 = mem(t).b16.s0;
             }
@@ -8495,7 +9416,9 @@ found: /*1572:*//*424:*/
     b = arith_error();
     if (o != EXPR_NONE)
         goto continue_;
-    if (p != TEX_NULL) {     /*1577: */
+    if (p != TEX_NULL)
+    {
+        /*1577: */
         f = e;
         q = p;
         e = mem(q + 1).b32.s1;
@@ -8511,7 +9434,8 @@ found: /*1572:*//*424:*/
 
     expand_depth_count--;
 
-    if (b) {
+    if (b)
+    {
         error_here_with_diagnostic("Arithmetic overflow");
         capture_to_diagnostic(NULL);
 
@@ -8521,11 +9445,13 @@ found: /*1572:*//*424:*/
             set_help_line(0, "since the result is out of range.");
         }
         error();
-        if (l >= GLUE_VAL) {
+        if (l >= GLUE_VAL)
+        {
             delete_glue_ref(e);
             e = 0;
             GLUE_SPEC_ref_count(e)++;
-        } else
+        }
+        else
             e = 0;
     }
     set_arith_error(a);
@@ -8549,23 +9475,26 @@ int32_t scan_rule_spec(void)
     q = new_rule();
     if (cur_cmd() == VRULE)
         mem_ptr(q + 1)->b32.s1 = DEFAULT_RULE;
-    else {
-
+    else
+    {
         mem_ptr(q + 3)->b32.s1 = DEFAULT_RULE;
         mem_ptr(q + 2)->b32.s1 = 0;
     }
 reswitch:
-    if (scan_keyword("width")) {
+    if (scan_keyword("width"))
+    {
         scan_dimen(false, false, false);
         mem_ptr(q + 1)->b32.s1 = cur_val;
         goto reswitch;
     }
-    if (scan_keyword("height")) {
+    if (scan_keyword("height"))
+    {
         scan_dimen(false, false, false);
         mem_ptr(q + 3)->b32.s1 = cur_val;
         goto reswitch;
     }
-    if (scan_keyword("depth")) {
+    if (scan_keyword("depth"))
+    {
         scan_dimen(false, false, false);
         mem_ptr(q + 2)->b32.s1 = cur_val;
         goto reswitch;
@@ -8591,15 +9520,15 @@ void scan_general_text(void)
     p = def_ref;
     scan_left_brace();
     unbalance = 1;
-    while (true) {
-
+    while (true)
+    {
         get_token();
-        if (cur_tok() < RIGHT_BRACE_LIMIT) {
-
+        if (cur_tok() < RIGHT_BRACE_LIMIT)
+        {
             if (cur_cmd() < RIGHT_BRACE)
                 unbalance++;
-            else {
-
+            else
+            {
                 unbalance--;
                 if (unbalance == 0)
                     goto found;
@@ -8612,7 +9541,7 @@ void scan_general_text(void)
             p = q;
         }
     }
- found:
+found:
     q = mem(def_ref).b32.s1;
     {
         mem_ptr(def_ref)->b32.s1 = avail();
@@ -8648,13 +9577,13 @@ void pseudo_start(void)
             overflow("pool size", pool_size() - init_pool_ptr);
     }
     s = make_string();
-    set_str_pool(pool_ptr(), ' ' );
+    set_str_pool(pool_ptr(), ' ');
     l = str_start((s) - 65536L);
     nl = INTPAR(new_line_char);
     p = get_avail();
     q = p;
-    while (l < pool_ptr()) {
-
+    while (l < pool_ptr())
+    {
         m = l;
         while ((l < pool_ptr()) && (str_pool(l) != nl))
             l++;
@@ -8665,8 +9594,8 @@ void pseudo_start(void)
         mem_ptr(q)->b32.s1 = r;
         q = r;
         mem_ptr(q)->b32.s0 = sz;
-        while (sz > 2) {
-
+        while (sz > 2)
+        {
             sz--;
             r++;
             w.s3 = str_pool(m);
@@ -8676,15 +9605,18 @@ void pseudo_start(void)
             mem_ptr(r)->b16 = w;
             m = m + 4;
         }
-        w.s3 = ' ' ;
-        w.s2 = ' ' ;
-        w.s1 = ' ' ;
-        w.s0 = ' ' ;
-        if (l > m) {
+        w.s3 = ' ';
+        w.s2 = ' ';
+        w.s1 = ' ';
+        w.s0 = ' ';
+        if (l > m)
+        {
             w.s3 = str_pool(m);
-            if (l > m + 1) {
+            if (l > m + 1)
+            {
                 w.s2 = str_pool(m + 1);
-                if (l > m + 2) {
+                if (l > m + 2)
+                {
                     w.s1 = str_pool(m + 2);
                     if (l > m + 3)
                         w.s0 = str_pool(m + 3);
@@ -8699,14 +9631,15 @@ void pseudo_start(void)
     mem_ptr(p)->b32.s1 = pseudo_files;
     pseudo_files = /*:1542 */ p;
     {
-        set_str_ptr(str_ptr()-1);
+        set_str_ptr(str_ptr() - 1);
         set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
     begin_file_reading();
     set_line(0);
     cur_input_ptr()->limit = cur_input().start;
     cur_input_ptr()->loc = cur_input().limit + 1;
-    if (INTPAR(tracing_scan_tokens) > 0) {
+    if (INTPAR(tracing_scan_tokens) > 0)
+    {
         if (term_offset() > max_print_line - 3)
             print_ln();
         else if ((term_offset() > 0) || (file_offset() > 0))
@@ -8715,8 +9648,9 @@ void pseudo_start(void)
         print_cstr("( ");
         open_parens++;
         ttstub_output_flush(rust_stdout());
-    } else {
-
+    }
+    else
+    {
         cur_input_ptr()->name = 18;
         cur_input_ptr()->synctex_tag = 0;
     }
@@ -8740,13 +9674,19 @@ str_toks_cat(pool_pointer b, small_number cat)
     LLIST_link(p) = TEX_NULL;
     k = b;
 
-    while (k < pool_ptr()) {
+    while (k < pool_ptr())
+    {
         t = str_pool(k);
 
-        if (t == ' ' && cat == 0) {
+        if (t == ' ' && cat == 0)
+        {
             t = SPACE_TOKEN;
-        } else {
-            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr() && str_pool(k + 1) >= 0xDC00 && str_pool(k + 1) < 0xE000) {
+        }
+        else
+        {
+            if (t >= 0xD800 && t < 0xDC00 && k + 1 < pool_ptr() && str_pool(k + 1) >= 0xDC00 && str_pool(k + 1) <
+                0xE000)
+            {
                 k++;
                 t = 0x10000 + ((t - 0xD800) << 10) + (str_pool(k) - 0xDC00);
             }
@@ -8761,9 +9701,12 @@ str_toks_cat(pool_pointer b, small_number cat)
 
         q = avail();
 
-        if (q == TEX_NULL) {
+        if (q == TEX_NULL)
+        {
             q = get_avail();
-        } else {
+        }
+        else
+        {
             set_avail(LLIST_link(q));
             LLIST_link(q) = TEX_NULL;
         }
@@ -8792,13 +9735,14 @@ int32_t the_toks(void)
     int32_t p, q, r;
     pool_pointer b;
     small_number c;
-    if (odd(cur_chr())) {
+    if (odd(cur_chr()))
+    {
         c = cur_chr();
         scan_general_text();
         if (c == 1)
             return cur_val;
-        else {
-
+        else
+        {
             old_setting = selector();
             set_selector(SELECTOR_NEW_STRING);
             b = pool_ptr();
@@ -8812,25 +9756,30 @@ int32_t the_toks(void)
     }
     get_x_token();
     scan_something_internal(TOK_VAL, false);
-    if (cur_val_level >= IDENT_VAL) {   /*485: */
+    if (cur_val_level >= IDENT_VAL)
+    {
+        /*485: */
         p = TEMP_HEAD;
         mem_ptr(p)->b32.s1 = TEX_NULL;
-        if (cur_val_level == IDENT_VAL) {
+        if (cur_val_level == IDENT_VAL)
+        {
             q = get_avail();
             mem_ptr(p)->b32.s1 = q;
             mem_ptr(q)->b32.s0 = CS_TOKEN_FLAG + cur_val;
             p = q;
-        } else if (cur_val != TEX_NULL) {
+        }
+        else if (cur_val != TEX_NULL)
+        {
             r = mem(cur_val).b32.s1;
-            while (r != TEX_NULL) {
-
+            while (r != TEX_NULL)
+            {
                 {
                     {
                         q = avail();
                         if (q == TEX_NULL)
                             q = get_avail();
-                        else {
-
+                        else
+                        {
                             set_avail(mem(q).b32.s1);
                             mem_ptr(q)->b32.s1 = TEX_NULL;
                         }
@@ -8843,12 +9792,14 @@ int32_t the_toks(void)
             }
         }
         return p;
-    } else {
-
+    }
+    else
+    {
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
         b = pool_ptr();
-        switch (cur_val_level) {
+        switch (cur_val_level)
+        {
         case 0:
             print_int(cur_val);
             break;
@@ -8905,7 +9856,8 @@ conv_toks(void)
     cat = 0;
     c = cur_chr();
 
-    switch (c) {
+    switch (c)
+    {
     case NUMBER_CODE:
     case ROMAN_NUMERAL_CODE:
         scan_int();
@@ -8942,16 +9894,19 @@ conv_toks(void)
         set_avail(def_ref);
         def_ref = save_def_ref;
         if (u != 0)
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
         return;
 
     case LEFT_MARGIN_KERN_CODE:
     case RIGHT_MARGIN_KERN_CODE:
         scan_register_num();
 
-        if (cur_val < 256) {
+        if (cur_val < 256)
+        {
             p = BOX_REG(cur_val);
-        } else {
+        }
+        else
+        {
             find_sa_element(4, cur_val, false);
             if (cur_ptr == TEX_NULL)
                 p = TEX_NULL;
@@ -8993,17 +9948,18 @@ conv_toks(void)
         warning_index = save_warning_index;
         set_scanner_status(save_scanner_status);
         b = pool_ptr();
-        getfilemoddate(s);  /* <= the difference-maker */
+        getfilemoddate(s); /* <= the difference-maker */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
 
-        if (s == str_ptr() - 1) {
-            set_str_ptr(str_ptr()-1);
+        if (s == str_ptr() - 1)
+        {
+            set_str_ptr(str_ptr() - 1);
             set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem(TEMP_HEAD).b32.s1, INSERTED);
         if (u != 0)
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
         return;
 
     case PDF_FILE_SIZE_CODE:
@@ -9029,17 +9985,18 @@ conv_toks(void)
         warning_index = save_warning_index;
         set_scanner_status(save_scanner_status);
         b = pool_ptr();
-        getfilesize(s);  /* <= the difference-maker */
+        getfilesize(s); /* <= the difference-maker */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
 
-        if (s == str_ptr() - 1) {
-            set_str_ptr(str_ptr()-1);
+        if (s == str_ptr() - 1)
+        {
+            set_str_ptr(str_ptr() - 1);
             set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem(TEMP_HEAD).b32.s1, INSERTED);
         if (u != 0)
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
         return;
 
     case PDF_MDFIVE_SUM_CODE:
@@ -9071,14 +10028,15 @@ conv_toks(void)
         getmd5sum(s, boolvar); /* <== the difference-maker */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
 
-        if (s == str_ptr() - 1) {
-            set_str_ptr(str_ptr()-1);
+        if (s == str_ptr() - 1)
+        {
+            set_str_ptr(str_ptr() - 1);
             set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem(TEMP_HEAD).b32.s1, INSERTED);
         if (u != 0)
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
         return;
         break;
 
@@ -9094,10 +10052,12 @@ conv_toks(void)
 
         cur_val = 0;
 
-        if (scan_keyword("offset")) {
+        if (scan_keyword("offset"))
+        {
             scan_int();
 
-            if (cur_val < 0) {
+            if (cur_val < 0)
+            {
                 error_here_with_diagnostic("Bad file offset");
                 capture_to_diagnostic(NULL);
                 set_help_ptr(2);
@@ -9111,10 +10071,12 @@ conv_toks(void)
         i = cur_val;
         cur_val = 0;
 
-        if (scan_keyword("length")) {
+        if (scan_keyword("length"))
+        {
             scan_int();
 
-            if (cur_val < 0) {
+            if (cur_val < 0)
+            {
                 error_here_with_diagnostic("Bad dump length");
                 capture_to_diagnostic(NULL);
                 set_help_ptr(2);
@@ -9145,14 +10107,15 @@ conv_toks(void)
         getfiledump(s, i, j); /* <=== non-boilerplate */
         mem_ptr(GARBAGE)->b32.s1 = str_toks(b);
 
-        if (s == str_ptr() - 1) {
-            set_str_ptr(str_ptr()-1);
+        if (s == str_ptr() - 1)
+        {
+            set_str_ptr(str_ptr() - 1);
             set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
 
         begin_token_list(mem(TEMP_HEAD).b32.s1, INSERTED);
         if (u != 0)
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
         return;
 
     case PDF_STRCMP_CODE:
@@ -9168,7 +10131,7 @@ conv_toks(void)
         warning_index = save_warning_index;
         set_scanner_status(save_scanner_status);
         if (u != 0)
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
         break;
 
     case XETEX_UCHAR_CODE:
@@ -9180,7 +10143,8 @@ conv_toks(void)
         saved_chr = cur_val;
         scan_int();
 
-        if (cur_val < LEFT_BRACE || cur_val > ACTIVE_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE) {
+        if (cur_val < LEFT_BRACE || cur_val > ACTIVE_CHAR || cur_val == OUT_PARAM || cur_val == IGNORE)
+        {
             error_here_with_diagnostic("Invalid code (");
             print_int(cur_val);
             print_cstr("), should be in the ranges 1..4, 6..8, 10..13");
@@ -9190,7 +10154,9 @@ conv_toks(void)
             set_help_line(0, "I'm going to use 12 instead of that illegal code value.");
             error();
             cat = 12;
-        } else {
+        }
+        else
+        {
             cat = cur_val;
         }
 
@@ -9203,11 +10169,14 @@ conv_toks(void)
     case XETEX_VARIATION_NAME_CODE:
         scan_font_ident();
         fnt = cur_val;
-        if (font_area(fnt) == AAT_FONT_FLAG) {
+        if (font_area(fnt) == AAT_FONT_FLAG)
+        {
             scan_int();
             arg1 = cur_val;
             arg2 = 0;
-        } else {
+        }
+        else
+        {
             not_aat_font_error(CONVERT, c, fnt);
         }
         break;
@@ -9216,11 +10185,14 @@ conv_toks(void)
         scan_font_ident();
         fnt = cur_val;
         if (font_area(fnt) == AAT_FONT_FLAG ||
-            (font_area(fnt) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(fnt)))) {
+            (font_area(fnt) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(fnt))))
+        {
             scan_int();
             arg1 = cur_val;
             arg2 = 0;
-        } else {
+        }
+        else
+        {
             not_aat_gr_font_error(CONVERT, c, fnt);
         }
         break;
@@ -9229,12 +10201,15 @@ conv_toks(void)
         scan_font_ident();
         fnt = cur_val;
         if (font_area(fnt) == AAT_FONT_FLAG
-            || (font_area(fnt) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(fnt)))) {
+            || (font_area(fnt) == OTGR_FONT_FLAG && usingGraphite(font_layout_engine(fnt))))
+        {
             scan_int();
             arg1 = cur_val;
             scan_int();
             arg2 = cur_val;
-        } else {
+        }
+        else
+        {
             not_aat_gr_font_error(CONVERT, c, fnt);
         }
         break;
@@ -9242,10 +10217,13 @@ conv_toks(void)
     case XETEX_GLYPH_NAME_CODE:
         scan_font_ident();
         fnt = cur_val;
-        if (font_area(fnt) == AAT_FONT_FLAG || font_area(fnt) == OTGR_FONT_FLAG) {
+        if (font_area(fnt) == AAT_FONT_FLAG || font_area(fnt) == OTGR_FONT_FLAG)
+        {
             scan_int();
             arg1 = cur_val;
-        } else {
+        }
+        else
+        {
             not_native_font_error(CONVERT, c, fnt);
         }
         break;
@@ -9267,7 +10245,8 @@ conv_toks(void)
     set_selector(SELECTOR_NEW_STRING);
     b = pool_ptr();
 
-    switch (c) {
+    switch (c)
+    {
     case NUMBER_CODE:
         print_int(cur_val);
         break;
@@ -9290,21 +10269,25 @@ conv_toks(void)
     case FONT_NAME_CODE:
         font_name_str = font_name(cur_val);
 
-        if (font_area(cur_val) == AAT_FONT_FLAG || font_area(cur_val) == OTGR_FONT_FLAG) {
-            quote_char = '"' ;
+        if (font_area(cur_val) == AAT_FONT_FLAG || font_area(cur_val) == OTGR_FONT_FLAG)
+        {
+            quote_char = '"';
 
             for (i = 0; i <= length(font_name_str) - 1; i++)
-                if (str_pool(str_start((font_name_str) - 65536L) + i) == '"' )
-                    quote_char = '\'' ;
+                if (str_pool(str_start((font_name_str) - 65536L) + i) == '"')
+                    quote_char = '\'';
 
             print_char(quote_char);
             print(font_name_str);
             print_char(quote_char);
-        } else {
+        }
+        else
+        {
             print(font_name_str);
         }
 
-        if (font_size(cur_val) != font_dsize(cur_val)) {
+        if (font_size(cur_val) != font_dsize(cur_val))
+        {
             print_cstr(" at ");
             print_scaled(font_size(cur_val));
             print_cstr("pt");
@@ -9318,27 +10301,27 @@ conv_toks(void)
     case LEFT_MARGIN_KERN_CODE:
         p = mem(p + 5).b32.s1;
         while (p != TEX_NULL &&
-               ((p < hi_mem_min()
-                 && (NODE_type(p) == INS_NODE ||
-                     NODE_type(p) == MARK_NODE ||
-                     NODE_type(p) == ADJUST_NODE ||
-                     NODE_type(p) == PENALTY_NODE ||
-                     (NODE_type(p) == DISC_NODE &&
-                      mem(p + 1).b32.s0 == TEX_NULL &&
-                      mem(p + 1).b32.s1 == TEX_NULL &&
-                      mem(p).b16.s0 == 0) ||
-                     (NODE_type(p) == MATH_NODE &&
-                      mem(p + 1).b32.s1 == 0) ||
-                     (NODE_type(p) == KERN_NODE &&
-                      (mem(p + 1).b32.s1 == 0 || mem(p).b16.s0 == NORMAL)) ||
-                     (NODE_type(p) == GLUE_NODE &&
-                      mem(p + 1).b32.s0 == 0) ||
-                     (NODE_type(p) == HLIST_NODE &&
-                      mem(p + 1).b32.s1 == 0 &&
-                      mem(p + 3).b32.s1 == 0 &&
-                      mem(p + 2).b32.s1 == 0 &&
-                      mem(p + 5).b32.s1 == TEX_NULL)
-                     )) ||
+            ((p < hi_mem_min()
+                    && (NODE_type(p) == INS_NODE ||
+                        NODE_type(p) == MARK_NODE ||
+                        NODE_type(p) == ADJUST_NODE ||
+                        NODE_type(p) == PENALTY_NODE ||
+                        (NODE_type(p) == DISC_NODE &&
+                            mem(p + 1).b32.s0 == TEX_NULL &&
+                            mem(p + 1).b32.s1 == TEX_NULL &&
+                            mem(p).b16.s0 == 0) ||
+                        (NODE_type(p) == MATH_NODE &&
+                            mem(p + 1).b32.s1 == 0) ||
+                        (NODE_type(p) == KERN_NODE &&
+                            (mem(p + 1).b32.s1 == 0 || mem(p).b16.s0 == NORMAL)) ||
+                        (NODE_type(p) == GLUE_NODE &&
+                            mem(p + 1).b32.s0 == 0) ||
+                        (NODE_type(p) == HLIST_NODE &&
+                            mem(p + 1).b32.s1 == 0 &&
+                            mem(p + 3).b32.s1 == 0 &&
+                            mem(p + 2).b32.s1 == 0 &&
+                            mem(p + 5).b32.s1 == TEX_NULL)
+                    )) ||
                 (p < hi_mem_min() && NODE_type(p) == GLUE_NODE && mem(p).b16.s0 == (GLUE_PAR__left_skip + 1))))
             p = LLIST_link(p);
 
@@ -9353,27 +10336,27 @@ conv_toks(void)
         q = mem(p + 5).b32.s1;
         p = prev_rightmost(q, TEX_NULL);
         while (p != TEX_NULL &&
-               ((p < hi_mem_min() &&
-                 (NODE_type(p) == INS_NODE ||
-                  NODE_type(p) == MARK_NODE ||
-                  NODE_type(p) == ADJUST_NODE ||
-                  NODE_type(p) == PENALTY_NODE ||
-                  (NODE_type(p) == DISC_NODE &&
-                   mem(p + 1).b32.s0 == TEX_NULL &&
-                   mem(p + 1).b32.s1 == TEX_NULL &&
-                   mem(p).b16.s0 == 0) ||
-                  (NODE_type(p) == MATH_NODE &&
-                   mem(p + 1).b32.s1 == 0) ||
-                  (NODE_type(p) == KERN_NODE &&
-                   (mem(p + 1).b32.s1 == 0 || mem(p).b16.s0 == NORMAL)) ||
-                  (NODE_type(p) == GLUE_NODE &&
-                   mem(p + 1).b32.s0 == 0) ||
-                  (NODE_type(p) == HLIST_NODE &&
-                   mem(p + 1).b32.s1 == 0 &&
-                   mem(p + 3).b32.s1 == 0 &&
-                   mem(p + 2).b32.s1 == 0 &&
-                   mem(p + 5).b32.s1 == TEX_NULL)
-                  )) ||
+            ((p < hi_mem_min() &&
+                    (NODE_type(p) == INS_NODE ||
+                        NODE_type(p) == MARK_NODE ||
+                        NODE_type(p) == ADJUST_NODE ||
+                        NODE_type(p) == PENALTY_NODE ||
+                        (NODE_type(p) == DISC_NODE &&
+                            mem(p + 1).b32.s0 == TEX_NULL &&
+                            mem(p + 1).b32.s1 == TEX_NULL &&
+                            mem(p).b16.s0 == 0) ||
+                        (NODE_type(p) == MATH_NODE &&
+                            mem(p + 1).b32.s1 == 0) ||
+                        (NODE_type(p) == KERN_NODE &&
+                            (mem(p + 1).b32.s1 == 0 || mem(p).b16.s0 == NORMAL)) ||
+                        (NODE_type(p) == GLUE_NODE &&
+                            mem(p + 1).b32.s0 == 0) ||
+                        (NODE_type(p) == HLIST_NODE &&
+                            mem(p + 1).b32.s1 == 0 &&
+                            mem(p + 3).b32.s1 == 0 &&
+                            mem(p + 2).b32.s1 == 0 &&
+                            mem(p + 5).b32.s1 == TEX_NULL)
+                    )) ||
                 (p < hi_mem_min() && NODE_type(p) == GLUE_NODE && mem(p).b16.s0 == (GLUE_PAR__right_skip + 1))))
             p = prev_rightmost(q, p);
 
@@ -9452,16 +10435,21 @@ int32_t scan_toks(bool macro_def, bool xpand)
     p = def_ref;
     hash_brace = 0;
     t = ZERO_TOKEN;
-    if (macro_def) {            /*493: */
-        while (true) {
-
+    if (macro_def)
+    {
+        /*493: */
+        while (true)
+        {
             get_token();
             if (cur_tok() < RIGHT_BRACE_LIMIT)
                 goto done1;
-            if (cur_cmd() == MAC_PARAM) { /*495: */
+            if (cur_cmd() == MAC_PARAM)
+            {
+                /*495: */
                 s = MATCH_TOKEN + cur_chr();
                 get_token();
-                if (cur_tok() < LEFT_BRACE_LIMIT) {
+                if (cur_tok() < LEFT_BRACE_LIMIT)
+                {
                     hash_brace = cur_tok();
                     {
                         q = get_avail();
@@ -9477,7 +10465,8 @@ int32_t scan_toks(bool macro_def, bool xpand)
                     }
                     goto done;
                 }
-                if (t == (ZERO_TOKEN + 9)) {
+                if (t == (ZERO_TOKEN + 9))
+                {
                     error_here_with_diagnostic("You already have nine parameters");
                     capture_to_diagnostic(NULL);
                     {
@@ -9487,10 +10476,12 @@ int32_t scan_toks(bool macro_def, bool xpand)
                     }
                     error();
                     continue;
-                } else {
-
+                }
+                else
+                {
                     t++;
-                    if (cur_tok() != t) {
+                    if (cur_tok() != t)
+                    {
                         error_here_with_diagnostic("Parameters must be numbered consecutively");
                         {
                             set_help_ptr(2);
@@ -9516,7 +10507,9 @@ int32_t scan_toks(bool macro_def, bool xpand)
             mem_ptr(q)->b32.s0 = END_MATCH_TOKEN;
             p = q;
         }
-        if (cur_cmd() == RIGHT_BRACE) {   /*494: */
+        if (cur_cmd() == RIGHT_BRACE)
+        {
+            /*494: */
             error_here_with_diagnostic("Missing { inserted");
             capture_to_diagnostic(NULL);
 
@@ -9529,18 +10522,22 @@ int32_t scan_toks(bool macro_def, bool xpand)
         }
     done:
         ;
-    } else
+    }
+    else
         scan_left_brace();
     unbalance = 1;
-    while (true) {
-
-        if (xpand) {            /*497: */
-            while (true) {
-
+    while (true)
+    {
+        if (xpand)
+        {
+            /*497: */
+            while (true)
+            {
                 get_next();
-                if (cur_cmd() >= CALL) {
-
-                    if (mem(mem(cur_chr()).b32.s1).b32.s0 == PROTECTED_TOKEN) {
+                if (cur_cmd() >= CALL)
+                {
+                    if (mem(mem(cur_chr()).b32.s1).b32.s0 == PROTECTED_TOKEN)
+                    {
                         set_cur_cmd(RELAX);
                         set_cur_chr(NO_EXPAND_FLAG);
                     }
@@ -9549,10 +10546,11 @@ int32_t scan_toks(bool macro_def, bool xpand)
                     goto done2;
                 if (cur_cmd() != THE)
                     expand();
-                else {
-
+                else
+                {
                     q = the_toks();
-                    if (mem(TEMP_HEAD).b32.s1 != TEX_NULL) {
+                    if (mem(TEMP_HEAD).b32.s1 != TEX_NULL)
+                    {
                         mem_ptr(p)->b32.s1 = mem(TEMP_HEAD).b32.s1;
                         p = q;
                     }
@@ -9560,29 +10558,34 @@ int32_t scan_toks(bool macro_def, bool xpand)
             }
         done2:
             x_token();
-        } else
+        }
+        else
             get_token();
-        if (cur_tok() < RIGHT_BRACE_LIMIT) {
-
+        if (cur_tok() < RIGHT_BRACE_LIMIT)
+        {
             if (cur_cmd() < RIGHT_BRACE)
                 unbalance++;
-            else {
-
+            else
+            {
                 unbalance--;
                 if (unbalance == 0)
                     goto found;
             }
-        } else if (cur_cmd() == MAC_PARAM) {
-
-            if (macro_def) {    /*498: */
+        }
+        else if (cur_cmd() == MAC_PARAM)
+        {
+            if (macro_def)
+            {
+                /*498: */
                 s = cur_tok();
                 if (xpand)
                     get_x_token();
                 else
                     get_token();
-                if (cur_cmd() != MAC_PARAM) {
-
-                    if ((cur_tok() <= ZERO_TOKEN) || (cur_tok() > t)) {
+                if (cur_cmd() != MAC_PARAM)
+                {
+                    if ((cur_tok() <= ZERO_TOKEN) || (cur_tok() > t))
+                    {
                         error_here_with_diagnostic("Illegal parameter number in definition of ");
                         sprint_cs(warning_index);
                         capture_to_diagnostic(NULL);
@@ -9594,7 +10597,8 @@ int32_t scan_toks(bool macro_def, bool xpand)
                         }
                         back_error();
                         set_cur_tok(s);
-                    } else
+                    }
+                    else
                         set_cur_tok((OUT_PARAM_TOKEN - 48) + cur_chr());
                 }
             }
@@ -9608,7 +10612,8 @@ int32_t scan_toks(bool macro_def, bool xpand)
     }
 found:
     set_scanner_status(NORMAL);
-    if (hash_brace != 0) {
+    if (hash_brace != 0)
+    {
         q = get_avail();
         mem_ptr(p)->b32.s1 = q;
         mem_ptr(q)->b32.s0 = hash_brace;
@@ -9645,24 +10650,39 @@ read_toks(int32_t n, int32_t r, int32_t j)
     s = align_state();
     set_align_state(1000000L);
 
-    do { /*502:*/
+    do
+    {
+        /*502:*/
         begin_file_reading();
         cur_input_ptr()->name = m + 1;
 
-        if (read_open[m] == CLOSED) { /*503:*/
-            _tt_abort ("terminal input forbidden");
-        } else if (read_open[m] == JUST_OPEN) { /*504:*/
-            if (input_line(read_file[m])) {
+        if (read_open[m] == CLOSED)
+        {
+            /*503:*/
+            _tt_abort("terminal input forbidden");
+        }
+        else if (read_open[m] == JUST_OPEN)
+        {
+            /*504:*/
+            if (input_line(read_file[m]))
+            {
                 read_open[m] = NORMAL;
-            } else {
+            }
+            else
+            {
                 u_close(read_file[m]);
                 read_open[m] = CLOSED;
             }
-        } else { /*505:*/
-            if (!input_line(read_file[m])) {
+        }
+        else
+        {
+            /*505:*/
+            if (!input_line(read_file[m]))
+            {
                 u_close(read_file[m]);
                 read_open[m] = CLOSED;
-                if (align_state() != 1000000L) {
+                if (align_state() != 1000000L)
+                {
                     runaway();
                     error_here_with_diagnostic("File ended within ");
                     print_esc_cstr("read");
@@ -9687,11 +10707,13 @@ read_toks(int32_t n, int32_t r, int32_t j)
         cur_input_ptr()->loc = cur_input().start;
         cur_input_ptr()->state = NEW_LINE;
 
-        if (j == 1) {
-            while (cur_input().loc <= cur_input().limit) {
+        if (j == 1)
+        {
+            while (cur_input().loc <= cur_input().limit)
+            {
                 set_cur_chr(buffer(cur_input().loc));
                 cur_input_ptr()->loc++;
-                if (cur_chr() == ' ' )
+                if (cur_chr() == ' ')
                     set_cur_tok(SPACE_TOKEN);
                 else
                     set_cur_tok(cur_chr() + OTHER_TOKEN);
@@ -9704,15 +10726,19 @@ read_toks(int32_t n, int32_t r, int32_t j)
             goto done;
         }
 
-        while (true) {
+        while (true)
+        {
             get_token();
             if (cur_tok() == 0)
                 goto done;
 
-            if (align_state() < 1000000L) {
-                do {
+            if (align_state() < 1000000L)
+            {
+                do
+                {
                     get_token();
-                } while (cur_tok() != 0);
+                }
+                while (cur_tok() != 0);
                 set_align_state(1000000L);
                 goto done;
             }
@@ -9725,7 +10751,8 @@ read_toks(int32_t n, int32_t r, int32_t j)
 
     done:
         end_file_reading();
-    } while (align_state() != 1000000L);
+    }
+    while (align_state() != 1000000L);
 
     cur_val = def_ref;
     set_scanner_status(NORMAL);
@@ -9743,15 +10770,17 @@ void pass_text(void)
     l = 0;
     skip_line = line();
 
-    while (true) {
-
+    while (true)
+    {
         get_next();
-        if (cur_cmd() == FI_OR_ELSE) {
+        if (cur_cmd() == FI_OR_ELSE)
+        {
             if (l == 0)
                 goto done;
             if (cur_chr() == FI_CODE)
                 l--;
-        } else if (cur_cmd() == IF_TEST)
+        }
+        else if (cur_cmd() == IF_TEST)
             l++;
     }
 done:
@@ -9765,14 +10794,15 @@ void change_if_limit(small_number l, int32_t p)
     int32_t q;
     if (p == cond_ptr)
         if_limit = l;
-    else {
-
+    else
+    {
         q = cond_ptr;
-        while (true) {
-
+        while (true)
+        {
             if (q == TEX_NULL)
                 confusion("if");
-            if (mem(q).b32.s1 == p) {
+            if (mem(q).b32.s1 == p)
+            {
                 mem_ptr(q)->b16.s1 = l;
                 return;
             }
@@ -9795,7 +10825,8 @@ conditional(void)
     small_number this_if;
     bool is_unless;
 
-    if (INTPAR(tracing_ifs) > 0) {
+    if (INTPAR(tracing_ifs) > 0)
+    {
         if (INTPAR(tracing_commands) <= 1)
             show_cur_cmd_chr();
     }
@@ -9814,36 +10845,45 @@ conditional(void)
     is_unless = (cur_chr() >= UNLESS_CODE);
     this_if = cur_chr() % UNLESS_CODE;
 
-    switch (this_if) {
+    switch (this_if)
+    {
     case IF_CHAR_CODE:
     case IF_CAT_CODE:
         get_x_token();
 
-        if (cur_cmd() == RELAX) {
-            if (cur_chr() == NO_EXPAND_FLAG) {
+        if (cur_cmd() == RELAX)
+        {
+            if (cur_chr() == NO_EXPAND_FLAG)
+            {
                 set_cur_cmd(ACTIVE_CHAR);
                 set_cur_chr(cur_tok() - (CS_TOKEN_FLAG + ACTIVE_BASE));
             }
         }
 
-        if (cur_cmd() > ACTIVE_CHAR || cur_chr() > BIGGEST_USV) {
+        if (cur_cmd() > ACTIVE_CHAR || cur_chr() > BIGGEST_USV)
+        {
             m = RELAX;
             n = TOO_BIG_USV;
-        } else {
+        }
+        else
+        {
             m = cur_cmd();
             n = cur_chr();
         }
 
         get_x_token();
 
-        if (cur_cmd() == RELAX) {
-            if (cur_chr() == NO_EXPAND_FLAG) {
+        if (cur_cmd() == RELAX)
+        {
+            if (cur_chr() == NO_EXPAND_FLAG)
+            {
                 set_cur_cmd(ACTIVE_CHAR);
                 set_cur_chr(cur_tok() - (CS_TOKEN_FLAG + ACTIVE_BASE));
             }
         }
 
-        if (cur_cmd() > ACTIVE_CHAR || cur_chr() > BIGGEST_USV) {
+        if (cur_cmd() > ACTIVE_CHAR || cur_chr() > BIGGEST_USV)
+        {
             set_cur_cmd(RELAX);
             set_cur_chr(TOO_BIG_USV);
         }
@@ -9863,13 +10903,18 @@ conditional(void)
 
         n = cur_val;
 
-        do {
+        do
+        {
             get_x_token();
-        } while (cur_cmd() == SPACER);
+        }
+        while (cur_cmd() == SPACER);
 
-        if (cur_tok() >= OTHER_TOKEN + 60 && cur_tok() <= OTHER_TOKEN + 62) {
+        if (cur_tok() >= OTHER_TOKEN + 60 && cur_tok() <= OTHER_TOKEN + 62)
+        {
             r = cur_tok() - OTHER_TOKEN;
-        } else {
+        }
+        else
+        {
             error_here_with_diagnostic("Missing = inserted for ");
             print_cmd_chr(IF_TEST, this_if);
             capture_to_diagnostic(NULL);
@@ -9885,7 +10930,8 @@ conditional(void)
         else
             scan_dimen(false, false, false);
 
-        switch (r) {
+        switch (r)
+        {
         case 60: /*"<"*/
             b = (n < cur_val);
             break;
@@ -9923,9 +10969,12 @@ conditional(void)
     case IF_HBOX_CODE:
     case IF_VBOX_CODE:
         scan_register_num();
-        if (cur_val < 256) {
+        if (cur_val < 256)
+        {
             p = BOX_REG(cur_val);
-        } else {
+        }
+        else
+        {
             find_sa_element(4, cur_val, false);
             if (cur_ptr == TEX_NULL)
                 p = TEX_NULL;
@@ -9952,20 +11001,33 @@ conditional(void)
         q = cur_chr();
         get_next();
 
-        if (cur_cmd() != p) {
+        if (cur_cmd() != p)
+        {
             b = false;
-        } else if (cur_cmd() < CALL) {
+        }
+        else if (cur_cmd() < CALL)
+        {
             b = (cur_chr() == q);
-        } else { /*527:*/
+        }
+        else
+        {
+            /*527:*/
             p = mem(cur_chr()).b32.s1;
             q = mem(eqtb_ptr(n)->b32.s1).b32.s1;
-            if (p == q) {
+            if (p == q)
+            {
                 b = true;
-            } else {
-                while (p != TEX_NULL && q != TEX_NULL) {
-                    if (mem(p).b32.s0 != mem(q).b32.s0) {
+            }
+            else
+            {
+                while (p != TEX_NULL && q != TEX_NULL)
+                {
+                    if (mem(p).b32.s0 != mem(q).b32.s0)
+                    {
                         p = TEX_NULL;
-                    } else {
+                    }
+                    else
+                    {
                         p = LLIST_link(p);
                         q = LLIST_link(q);
                     }
@@ -10008,17 +11070,22 @@ conditional(void)
         e = is_in_csname;
         is_in_csname = true;
 
-        do {
+        do
+        {
             get_x_token();
-            if (cur_cs() == 0) {
+            if (cur_cs() == 0)
+            {
                 q = get_avail();
                 mem_ptr(p)->b32.s1 = q;
                 mem_ptr(q)->b32.s0 = cur_tok();
                 p = q;
             }
-        } while (cur_cs() == 0);
+        }
+        while (cur_cs() == 0);
 
-        if (cur_cmd() != END_CS_NAME) { /*391:*/
+        if (cur_cmd() != END_CS_NAME)
+        {
+            /*391:*/
             error_here_with_diagnostic("Missing ");
             print_esc_cstr("endcsname");
             print_cstr(" inserted");
@@ -10033,8 +11100,10 @@ conditional(void)
         m = first;
         p = mem(n).b32.s1;
 
-        while (p != TEX_NULL) {
-            if (m >= max_buf_stack) {
+        while (p != TEX_NULL)
+        {
+            if (m >= max_buf_stack)
+            {
                 max_buf_stack = m + 1;
                 if (max_buf_stack == buf_size)
                     overflow("buffer size", buf_size);
@@ -10066,9 +11135,12 @@ conditional(void)
         n = cur_val;
         scan_usv_num();
 
-        if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG) {
+        if (font_area(n) == AAT_FONT_FLAG || font_area(n) == OTGR_FONT_FLAG)
+        {
             b = (map_char_to_glyph(n, cur_val) > 0);
-        } else {
+        }
+        else
+        {
             if (font_bc(n) <= cur_val && font_ec(n) >= cur_val)
                 b = (FONT_CHARACTER_INFO(n, effective_char(true, n, cur_val)).s3 > 0);
             else
@@ -10080,7 +11152,8 @@ conditional(void)
         scan_int();
         n = cur_val;
 
-        if (INTPAR(tracing_commands) > 1) {
+        if (INTPAR(tracing_commands) > 1)
+        {
             begin_diagnostic();
             diagnostic_begin_capture_warning_here();
             print_cstr("{case ");
@@ -10090,15 +11163,20 @@ conditional(void)
             end_diagnostic(false);
         }
 
-        while (n != 0) {
+        while (n != 0)
+        {
             pass_text();
 
-            if (cond_ptr == save_cond_ptr) {
+            if (cond_ptr == save_cond_ptr)
+            {
                 if (cur_chr() == OR_CODE)
                     n--;
                 else
                     goto common_ending;
-            } else if (cur_chr() == FI_CODE) { /*515:*/
+            }
+            else if (cur_chr() == FI_CODE)
+            {
+                /*515:*/
                 if (if_stack(in_open()) == cond_ptr)
                     if_warning();
                 p = cond_ptr;
@@ -10123,16 +11201,18 @@ conditional(void)
         else
             m = prim_lookup(hash(cur_cs()).s1);
         b = (cur_cmd() != UNDEFINED_CS
-             && m != UNDEFINED_PRIMITIVE
-             && cur_cmd() == eqtb_ptr(PRIM_EQTB_BASE + m)->b16.s1
-             && cur_chr() == eqtb_ptr(PRIM_EQTB_BASE + m)->b32.s1);
+            && m != UNDEFINED_PRIMITIVE
+            && cur_cmd() == eqtb_ptr(PRIM_EQTB_BASE + m)->b16.s1
+            && cur_chr() == eqtb_ptr(PRIM_EQTB_BASE + m)->b32.s1);
         break;
     }
 
     if (is_unless)
         b = !b;
 
-    if (INTPAR(tracing_commands) > 1) { /*521:*/
+    if (INTPAR(tracing_commands) > 1)
+    {
+        /*521:*/
         begin_diagnostic();
         diagnostic_begin_capture_warning_here();
         if (b)
@@ -10143,15 +11223,18 @@ conditional(void)
         end_diagnostic(false);
     }
 
-    if (b) {
+    if (b)
+    {
         change_if_limit(ELSE_CODE, save_cond_ptr);
         return;
     }
 
-    while (true) {
+    while (true)
+    {
         pass_text();
 
-        if (cond_ptr == save_cond_ptr) {
+        if (cond_ptr == save_cond_ptr)
+        {
             if (cur_chr() != OR_CODE)
                 goto common_ending;
 
@@ -10162,7 +11245,10 @@ conditional(void)
             set_help_ptr(1);
             set_help_line(0, "I'm ignoring this; it doesn't match any \\if.");
             error();
-        } else if (cur_chr() == FI_CODE) { /*515:*/
+        }
+        else if (cur_chr() == FI_CODE)
+        {
+            /*515:*/
             if (if_stack(in_open()) == cond_ptr)
                 if_warning();
             p = cond_ptr;
@@ -10175,7 +11261,9 @@ conditional(void)
     }
 
 common_ending:
-    if (cur_chr() == FI_CODE) { /*515:*/
+    if (cur_chr() == FI_CODE)
+    {
+        /*515:*/
         if (if_stack(in_open()) == cond_ptr)
             if_warning();
         p = cond_ptr;
@@ -10184,7 +11272,9 @@ common_ending:
         if_limit = mem(p).b16.s1;
         cond_ptr = mem(p).b32.s1;
         free_node(p, IF_NODE_SIZE);
-    } else {
+    }
+    else
+    {
         if_limit = FI_CODE;
     }
 }
@@ -10231,24 +11321,33 @@ scan_file_name(void)
     save_warning_index = warning_index;
     warning_index = cur_cs();
 
-    do {
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
+    }
+    while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
     back_input();
 
-    if (cur_cmd() == LEFT_BRACE) {
+    if (cur_cmd() == LEFT_BRACE)
+    {
         scan_file_name_braced();
-    } else {
+    }
+    else
+    {
         set_name_in_progress(true);
         begin_name();
 
-        do {
+        do
+        {
             get_x_token();
-        } while(cur_cmd() == SPACER);
+        }
+        while (cur_cmd() == SPACER);
 
-        while (true) {
-            if (cur_cmd() > OTHER_CHAR || cur_chr() > BIGGEST_CHAR) {
+        while (true)
+        {
+            if (cur_cmd() > OTHER_CHAR || cur_chr() > BIGGEST_CHAR)
+            {
                 back_input();
                 break;
             }
@@ -10266,12 +11365,13 @@ scan_file_name(void)
 }
 
 void
-start_input(const char *primary_input_name)
+start_input(const char* primary_input_name)
 {
     ttbc_file_format format = TTBC_FILE_FORMAT_TEX;
     str_number temp_str;
 
-    if (primary_input_name != NULL) {
+    if (primary_input_name != NULL)
+    {
         /* If this is the case, we're opening the primary input file, and the
          * name that we should use to refer to it has been handed directly to
          * us. We emulate the hacks used below to fill in cur_name, etc., from
@@ -10284,38 +11384,52 @@ start_input(const char *primary_input_name)
         begin_name();
         set_stop_at_space(false);
 
-        const unsigned char *cp = (const unsigned char *) primary_input_name;
+        const unsigned char* cp = (const unsigned char*)primary_input_name;
 
         if (pool_ptr() + strlen(primary_input_name) * 2 >= pool_size())
-            _tt_abort ("string pool overflow [%i bytes]", (int) pool_size());
+            _tt_abort("string pool overflow [%i bytes]", (int)pool_size());
 
         UInt32 rval;
-        while ((rval = *(cp++)) != 0) {
+        while ((rval = *(cp++)) != 0)
+        {
             UInt16 extraBytes = bytesFromUTF8[rval];
-            switch (extraBytes) { /* note: code falls through cases! */
-            case 5: rval <<= 6; if (*cp) rval += *(cp++);
-            case 4: rval <<= 6; if (*cp) rval += *(cp++);
-            case 3: rval <<= 6; if (*cp) rval += *(cp++);
-            case 2: rval <<= 6; if (*cp) rval += *(cp++);
-            case 1: rval <<= 6; if (*cp) rval += *(cp++);
+            switch (extraBytes)
+            {
+            /* note: code falls through cases! */
+            case 5: rval <<= 6;
+                if (*cp) rval += *(cp++);
+            case 4: rval <<= 6;
+                if (*cp) rval += *(cp++);
+            case 3: rval <<= 6;
+                if (*cp) rval += *(cp++);
+            case 2: rval <<= 6;
+                if (*cp) rval += *(cp++);
+            case 1: rval <<= 6;
+                if (*cp) rval += *(cp++);
             case 0: ;
             };
             rval -= offsetsFromUTF8[extraBytes];
-            if (rval > 0xffff) {
+            if (rval > 0xffff)
+            {
                 rval -= 0x10000;
                 set_str_pool(pool_ptr(), 0xd800 + rval / 0x0400);
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() + 1);
                 set_str_pool(pool_ptr(), 0xdc00 + rval % 0x0400);
-                set_pool_ptr(pool_ptr()+1);
-            } else {
+                set_pool_ptr(pool_ptr() + 1);
+            }
+            else
+            {
                 set_str_pool(pool_ptr(), rval);
-                set_pool_ptr(pool_ptr()+1);
+                set_pool_ptr(pool_ptr() + 1);
             }
 
-            if (IS_DIR_SEP(rval)) {
+            if (IS_DIR_SEP(rval))
+            {
                 set_area_delimiter(cur_length());
                 set_ext_delimiter(0);
-            } else if (rval == '.' ) {
+            }
+            else if (rval == '.')
+            {
                 set_ext_delimiter(cur_length());
             }
         }
@@ -10323,7 +11437,9 @@ start_input(const char *primary_input_name)
         set_stop_at_space(true);
         end_name();
         set_name_in_progress(false);
-    } else {
+    }
+    else
+    {
         /* Scan in the file name from the current token stream. The file name to
          * input is saved as the stringpool strings `cur_{name,area,ext}` and the
          * UTF-8 string `name_of_file`. */
@@ -10338,8 +11454,8 @@ start_input(const char *primary_input_name)
     begin_file_reading();
 
     if (!u_open_in(input_file_ptr(cur_input().index), format, "rb",
-                  INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
-        _tt_abort ("failed to open input file \"%s\"", name_of_file());
+                   INTPAR(xetex_default_input_mode), INTPAR(xetex_default_input_encoding)))
+        _tt_abort("failed to open input file \"%s\"", name_of_file());
 
     /* Now re-encode `name_of_file` into the UTF-16 variable `name_of_file16`,
      * and use that to recompute `cur_{name,area,ext}`. */
@@ -10366,18 +11482,21 @@ start_input(const char *primary_input_name)
     /* *This* variant is a TeX string made out of `name_of_input_file`. */
 
     set_full_source_filename_stack(in_open(), maketexstring(name_of_input_file));
-    if (cur_input().name == str_ptr() - 1) {
+    if (cur_input().name == str_ptr() - 1)
+    {
         temp_str = search_string(cur_input().name);
-        if (temp_str > 0) {
+        if (temp_str > 0)
+        {
             cur_input_ptr()->name = temp_str;
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
             set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
         }
     }
 
     /* Finally we start really doing stuff with the newly-opened file. */
 
-    if (job_name() == 0) {
+    if (job_name() == 0)
+    {
         set_job_name(cur_name());
         open_log_file();
     }
@@ -10391,7 +11510,8 @@ start_input(const char *primary_input_name)
     print(full_source_filename_stack(in_open()));
     ttstub_output_flush(rust_stdout());
 
-    if (INTPAR(tracing_stack_levels) > 0) {
+    if (INTPAR(tracing_stack_levels) > 0)
+    {
         int32_t v;
 
         begin_diagnostic();
@@ -10399,12 +11519,16 @@ start_input(const char *primary_input_name)
         print_ln();
         print_char('~');
         v = input_ptr() - 1;
-        if (v < INTPAR(tracing_stack_levels)) {
-            while (v > 0) {
+        if (v < INTPAR(tracing_stack_levels))
+        {
+            while (v > 0)
+            {
                 print_char('.');
                 v--;
             }
-        } else {
+        }
+        else
+        {
             print_char('~');
         }
         print_cstr("INPUT ");
@@ -10448,18 +11572,22 @@ void char_warning(internal_font_number f, int32_t c)
 {
     int32_t old_setting;
 
-    if (INTPAR(tracing_lost_chars) > 0) {
+    if (INTPAR(tracing_lost_chars) > 0)
+    {
         old_setting = INTPAR(tracing_online);
         if (INTPAR(tracing_lost_chars) > 1)
             INTPAR(tracing_online) = 1;
 
-        if (INTPAR(tracing_lost_chars) > 2) {
+        if (INTPAR(tracing_lost_chars) > 2)
+        {
             if (file_line_error_style_p())
                 print_file_line();
             else
                 print_nl_cstr("! ");
             print_cstr("Missing character: There is no ");
-        } else {
+        }
+        else
+        {
             begin_diagnostic();
             diagnostic_begin_capture_warning_here();
             print_nl_cstr("Missing character: There is no ");
@@ -10472,9 +11600,12 @@ void char_warning(internal_font_number f, int32_t c)
 
         print_cstr(" (");
 
-        if (font_area(f) == AAT_FONT_FLAG || font_area(f) == OTGR_FONT_FLAG) {
+        if (font_area(f) == AAT_FONT_FLAG || font_area(f) == OTGR_FONT_FLAG)
+        {
             print_ucs_code(c);
-        } else {
+        }
+        else
+        {
             print_hex(c);
         }
 
@@ -10482,24 +11613,28 @@ void char_warning(internal_font_number f, int32_t c)
         print_cstr(" in font ");
         print(font_name(f));
 
-        if (INTPAR(tracing_lost_chars) < 3) {
+        if (INTPAR(tracing_lost_chars) < 3)
+        {
             print_char('!');
         }
 
         INTPAR(tracing_online) = old_setting;
 
-        if (INTPAR(tracing_lost_chars) > 2) {
+        if (INTPAR(tracing_lost_chars) > 2)
+        {
             set_help_ptr(0);
             error();
-        } else {
+        }
+        else
+        {
             capture_to_diagnostic(NULL);
             end_diagnostic(false);
         }
     }
 
     {
-        char *fn = gettexstring(font_name(f));
-        char *chr = NULL;
+        char* fn = gettexstring(font_name(f));
+        char* chr = NULL;
         selector_t prev_selector = selector();
         int s;
 
@@ -10511,7 +11646,7 @@ void char_warning(internal_font_number f, int32_t c)
         set_selector(prev_selector);
         s = make_string();
         chr = gettexstring(s);
-        set_str_ptr(str_ptr()-1); /* this is the "flush_string" macro which discards the most recent string */
+        set_str_ptr(str_ptr() - 1); /* this is the "flush_string" macro which discards the most recent string */
         set_pool_ptr(str_start(str_ptr() - 0x10000));
 
         ttstub_issue_warning("could not represent character \"%s\" (0x%" PRIx32 ") in font \"%s\"", chr, c, fn);
@@ -10519,7 +11654,8 @@ void char_warning(internal_font_number f, int32_t c)
         free(fn);
         free(chr);
 
-        if (!gave_char_warning_help) {
+        if (!gave_char_warning_help)
+        {
             ttstub_issue_warning("  you may need to load the `fontspec` package and use (e.g.) \\setmainfont to");
             ttstub_issue_warning("  choose a different font that covers the unrepresentable character(s)");
             gave_char_warning_help = true;
@@ -10558,21 +11694,25 @@ new_native_character(internal_font_number f, UnicodeScalar c)
     int32_t p;
     int32_t i, len;
 
-    if (font_mapping(f) != NULL) {
-        if (c > 65535L) {
+    if (font_mapping(f) != NULL)
+    {
+        if (c > 65535L)
+        {
             if (pool_ptr() + 2 > pool_size())
                 overflow("pool size", pool_size() - init_pool_ptr);
 
             set_str_pool(pool_ptr(), (c - 65536L) / 1024 + 0xD800);
-            set_pool_ptr(pool_ptr()+1);
+            set_pool_ptr(pool_ptr() + 1);
             set_str_pool(pool_ptr(), (c - 65536L) % 1024 + 0xDC00);
-            set_pool_ptr(pool_ptr()+1);
-        } else {
+            set_pool_ptr(pool_ptr() + 1);
+        }
+        else
+        {
             if (pool_ptr() + 1 > pool_size())
                 overflow("pool size", pool_size() - init_pool_ptr);
 
             set_str_pool(pool_ptr(), c);
-            set_pool_ptr(pool_ptr()+1);
+            set_pool_ptr(pool_ptr() + 1);
         }
 
         len = apply_mapping(
@@ -10584,14 +11724,18 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
         i = 0;
 
-        while (i < len) {
-            if (mapped_text[i] >= 0xD800 && mapped_text[i] < 0xDC00) {
+        while (i < len)
+        {
+            if (mapped_text[i] >= 0xD800 && mapped_text[i] < 0xDC00)
+            {
                 c = (mapped_text[i] - 0xD800) * 1024 + mapped_text[i + 1] + 9216;
                 if (map_char_to_glyph(f, c) == 0)
                     char_warning(f, c);
 
                 i += 2;
-            } else {
+            }
+            else
+            {
                 if (map_char_to_glyph(f, mapped_text[i]) == 0)
                     char_warning(f, mapped_text[i]);
 
@@ -10603,7 +11747,9 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 
         for (i = 0; i <= len - 1; i++)
             NATIVE_NODE_text(p)[i] = mapped_text[i];
-    } else {
+    }
+    else
+    {
         if (INTPAR(tracing_lost_chars) > 0)
             if (map_char_to_glyph(f, c) == 0)
                 char_warning(f, c);
@@ -10616,11 +11762,14 @@ new_native_character(internal_font_number f, UnicodeScalar c)
         NATIVE_NODE_glyph_info_ptr(p) = NULL;
         NATIVE_NODE_font(p) = f;
 
-        if (c > 65535L) {
+        if (c > 65535L)
+        {
             NATIVE_NODE_length(p) = 2;
             NATIVE_NODE_text(p)[0] = (c - 65536L) / 1024 + 0xD800;
             NATIVE_NODE_text(p)[1] = (c - 65536L) % 1024 + 0xDC00;
-        } else {
+        }
+        else
+        {
             NATIVE_NODE_length(p) = 1;
             NATIVE_NODE_text(p)[0] = c;
         }
@@ -10631,12 +11780,13 @@ new_native_character(internal_font_number f, UnicodeScalar c)
 }
 
 
-void font_feature_warning(const void *featureNameP, int32_t featLen, const void *settingNameP, int32_t setLen)
+void font_feature_warning(const void* featureNameP, int32_t featLen, const void* settingNameP, int32_t setLen)
 {
     begin_diagnostic();
     diagnostic_begin_capture_warning_here();
     print_nl_cstr("Unknown ");
-    if (setLen > 0) {
+    if (setLen > 0)
+    {
         print_cstr("selector `");
         print_utf8_str(settingNameP, setLen);
         print_cstr("' for ");
@@ -10651,7 +11801,7 @@ void font_feature_warning(const void *featureNameP, int32_t featLen, const void 
     end_diagnostic(false);
 }
 
-void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int32_t warningType)
+void font_mapping_warning(const void* mappingNameP, int32_t mappingNameLen, int32_t warningType)
 {
     begin_diagnostic();
     diagnostic_begin_capture_warning_here();
@@ -10665,7 +11815,8 @@ void font_mapping_warning(const void *mappingNameP, int32_t mappingNameLen, int3
     for (int32_t i = 0; name_of_file()[i] != 0; i++)
         print_raw_char(name_of_file()[i], true);
 
-    switch (warningType) {
+    switch (warningType)
+    {
     case 1:
         print_cstr("' not found.");
         break;
@@ -10702,7 +11853,7 @@ internal_font_number
 load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
 {
     int32_t k, num_font_dimens;
-    void *font_engine; /* "really a CFDictionaryRef or XeTeXLayoutEngine" */
+    void* font_engine; /* "really a CFDictionaryRef or XeTeXLayoutEngine" */
     scaled_t actual_size;
     int32_t p;
     scaled_t ascent, descent, font_slant, x_ht, cap_ht;
@@ -10716,25 +11867,28 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (s >= 0)
         actual_size = s;
     else if (s != -1000)
-        actual_size = xn_over_d(get_loaded_font_design_size(), -(int32_t) s, 1000);
+        actual_size = xn_over_d(get_loaded_font_design_size(), -(int32_t)s, 1000);
     else
         actual_size = get_loaded_font_design_size();
 
     if (pool_ptr() + name_length() > pool_size())
         overflow("pool size", pool_size() - init_pool_ptr);
 
-    for (k = 0; k < name_length(); k++) {
+    for (k = 0; k < name_length(); k++)
+    {
         set_str_pool(pool_ptr(), name_of_file()[k]);
-        set_pool_ptr(pool_ptr()+1);
+        set_pool_ptr(pool_ptr() + 1);
     }
 
     full_name = make_string();
 
-    for (f = FONT_BASE + 1; f <= font_ptr(); f++) {
-        if (font_area(f) == native_font_type_flag && str_eq_str(font_name(f), full_name) && font_size(f) == actual_size) {
+    for (f = FONT_BASE + 1; f <= font_ptr(); f++)
+    {
+        if (font_area(f) == native_font_type_flag && str_eq_str(font_name(f), full_name) && font_size(f) == actual_size)
+        {
             release_font_engine(font_engine, native_font_type_flag);
 
-            set_str_ptr(str_ptr()-1);
+            set_str_ptr(str_ptr() - 1);
             set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
 
             return f;
@@ -10742,11 +11896,13 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     }
 
     if (native_font_type_flag == OTGR_FONT_FLAG && isOpenTypeMathFont(font_engine))
-        num_font_dimens = 65; /* = first_math_fontdimen (=10) + lastMathConstant (= radicalDegreeBottomRaisePercent = 55) */
+        num_font_dimens = 65;
+        /* = first_math_fontdimen (=10) + lastMathConstant (= radicalDegreeBottomRaisePercent = 55) */
     else
         num_font_dimens = 8;
 
-    if (font_ptr() == font_max() || fmem_ptr + num_font_dimens > font_mem_size) {
+    if (font_ptr() == font_max() || fmem_ptr + num_font_dimens > font_mem_size)
+    {
         error_here_with_diagnostic("Font ");
         sprint_cs(u);
         print_char('=');
@@ -10755,13 +11911,16 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         print_file_name(nom, aire, cur_ext());
         if (file_name_quote_char() != 0)
             print_char(file_name_quote_char());
-        if (s >= 0) {
+        if (s >= 0)
+        {
             print_cstr(" at ");
             print_scaled(s);
             print_cstr("pt");
-        } else if (s != -1000) {
+        }
+        else if (s != -1000)
+        {
             print_cstr(" scaled ");
-            print_int(-(int32_t) s);
+            print_int(-(int32_t)s);
         }
         print_cstr(" not loaded: Not enough room left");
         capture_to_diagnostic(NULL);
@@ -10776,7 +11935,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         return FONT_BASE;
     }
 
-    set_font_ptr(font_ptr()+1);
+    set_font_ptr(font_ptr() + 1);
     set_font_area(font_ptr(), native_font_type_flag);
     set_font_name(font_ptr(), full_name);
     font_check_ptr(font_ptr())->s3 = 0;
@@ -10793,7 +11952,7 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
         ot_get_font_metrics(font_engine, &ascent, &descent, &x_ht, &cap_ht, &font_slant);
 
     set_height_base(font_ptr(), ascent);
-    set_depth_base(font_ptr(), -(int32_t) descent);
+    set_depth_base(font_ptr(), -(int32_t)descent);
     set_font_params(font_ptr(), num_font_dimens);
     set_font_bc(font_ptr(), 0);
     set_font_ec(font_ptr(), 65535L);
@@ -10806,11 +11965,12 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     set_font_letter_space(font_ptr(), loaded_font_letter_space);
 
     /* "measure the width of the space character and set up font parameters" */
-    p = new_native_character(font_ptr(), ' ' );
+    p = new_native_character(font_ptr(), ' ');
     s = BOX_width(p) + loaded_font_letter_space;
     /* Free up the memory */
-    if(NATIVE_NODE_glyph_info_ptr(p)) {
-       NATIVE_NODE_glyph_info_ptr(p) = mfree(NATIVE_NODE_glyph_info_ptr(p));
+    if (NATIVE_NODE_glyph_info_ptr(p))
+    {
+        NATIVE_NODE_glyph_info_ptr(p) = mfree(NATIVE_NODE_glyph_info_ptr(p));
     }
     free_node(p, NATIVE_NODE_size(p));
 
@@ -10823,7 +11983,8 @@ load_native_font(int32_t u, str_number nom, str_number aire, scaled_t s)
     font_info_ptr(fmem_ptr++)->b32.s1 = s / 3; /* extra_space */
     font_info_ptr(fmem_ptr++)->b32.s1 = cap_ht;
 
-    if (num_font_dimens == 65) {
+    if (num_font_dimens == 65)
+    {
         font_info_ptr(fmem_ptr++)->b32.s1 = num_font_dimens;
 
         for (k = 0; k <= 55; k++) /* 55 = lastMathConstant */
@@ -10841,7 +12002,8 @@ void do_locale_linebreaks(int32_t s, int32_t len)
     int32_t offs, prevOffs, i;
     bool use_penalty, use_skip;
 
-    if ((INTPAR(xetex_linebreak_locale) == 0) || (len == 1)) {
+    if ((INTPAR(xetex_linebreak_locale) == 0) || (len == 1))
+    {
         mem_ptr(cur_list.tail)->b32.s1 = new_native_word_node(main_f, len);
         cur_list.tail = LLIST_link(cur_list.tail);
         {
@@ -10854,22 +12016,28 @@ void do_locale_linebreaks(int32_t s, int32_t len)
                 while (i++ < for_end);
         }
         set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
-    } else {
-
+    }
+    else
+    {
         use_skip = GLUEPAR(xetex_linebreak_skip) != 0;
         use_penalty = INTPAR(xetex_linebreak_penalty) != 0 || !use_skip;
         linebreak_start(main_f, INTPAR(xetex_linebreak_locale), native_text_ptr(s), len);
         offs = 0;
-        do {
+        do
+        {
             prevOffs = offs;
             offs = linebreak_next(main_f);
-            if (offs > 0) {
-                if (prevOffs != 0) {
-                    if (use_penalty) {
+            if (offs > 0)
+            {
+                if (prevOffs != 0)
+                {
+                    if (use_penalty)
+                    {
                         mem_ptr(cur_list.tail)->b32.s1 = new_penalty(INTPAR(xetex_linebreak_penalty));
                         cur_list.tail = LLIST_link(cur_list.tail);
                     }
-                    if (use_skip) {
+                    if (use_skip)
+                    {
                         mem_ptr(cur_list.tail)->b32.s1 = new_param_glue(GLUE_PAR__xetex_linebreak_skip);
                         cur_list.tail = LLIST_link(cur_list.tail);
                     }
@@ -10887,7 +12055,8 @@ void do_locale_linebreaks(int32_t s, int32_t len)
                 }
                 set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
             }
-        } while (!(offs < 0));
+        }
+        while (!(offs < 0));
     }
 }
 
@@ -10898,8 +12067,8 @@ void bad_utf8_warning(void)
     print_nl_cstr("Invalid UTF-8 byte or sequence");
     if (cur_input().name == 0)
         print_cstr(" in terminal input");
-    else {
-
+    else
+    {
         print_cstr(" at line ");
         print_int(line());
     }
@@ -10910,7 +12079,6 @@ void bad_utf8_warning(void)
 
 int32_t get_input_normalization_state(void)
 {
-
     if (eqtb_ptr(0) == NULL)
         return 0;
     else
@@ -10919,7 +12087,6 @@ int32_t get_input_normalization_state(void)
 
 int32_t get_tracing_fonts_state(void)
 {
-
     return INTPAR(xetex_tracing_fonts);
 }
 
@@ -10947,16 +12114,20 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     file_opened = false;
     pack_file_name(nom, aire, cur_ext());
 
-    if (INTPAR(xetex_tracing_fonts) > 0) {
+    if (INTPAR(xetex_tracing_fonts) > 0)
+    {
         begin_diagnostic();
         diagnostic_begin_capture_warning_here();
         print_nl_cstr("Requested font \"");
         print_c_string(name_of_file());
         print('"');
-        if (s < 0) {
+        if (s < 0)
+        {
             print_cstr(" scaled ");
-            print_int(-(int32_t) s);
-        } else {
+            print_int(-(int32_t)s);
+        }
+        else
+        {
             print_cstr(" at ");
             print_scaled(s);
             print_cstr("pt");
@@ -10965,7 +12136,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         end_diagnostic(false);
     }
 
-    if (quoted_filename()) {
+    if (quoted_filename())
+    {
         g = load_native_font(u, nom, aire, s);
         if (g != FONT_BASE)
             goto done;
@@ -10978,9 +12150,11 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     pack_file_name(nom, aire, EMPTY_STRING);
     check_for_tfm_font_mapping();
 
-    tfm_file = tt_xetex_open_input (TTBC_FILE_FORMAT_TFM);
-    if (tfm_file == INVALID_HANDLE) {
-        if (!quoted_filename()) {
+    tfm_file = tt_xetex_open_input(TTBC_FILE_FORMAT_TFM);
+    if (tfm_file == INVALID_HANDLE)
+    {
+        if (!quoted_filename())
+        {
             g = load_native_font(u, nom, aire, s);
             if (g != FONT_BASE)
                 goto done;
@@ -11010,7 +12184,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (bc > ec + 1 || ec > 255)
         goto bad_tfm;
 
-    if (bc > 255) {
+    if (bc > 255)
+    {
         bc = 1;
         ec = 0;
     }
@@ -11050,43 +12225,46 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     if (lh < 2)
         goto bad_tfm;
 
-    qw.s3 = a = ttstub_input_getc (tfm_file);
-    qw.s2 = b = ttstub_input_getc (tfm_file);
-    qw.s1 = c = ttstub_input_getc (tfm_file);
-    qw.s0 = d = ttstub_input_getc (tfm_file);
+    qw.s3 = a = ttstub_input_getc(tfm_file);
+    qw.s2 = b = ttstub_input_getc(tfm_file);
+    qw.s1 = c = ttstub_input_getc(tfm_file);
+    qw.s0 = d = ttstub_input_getc(tfm_file);
     if (a == EOF || b == EOF || c == EOF || d == EOF)
         goto bad_tfm;
     set_font_check(f, qw);
 
     READFIFTEEN(z);
-    z = z * 256 + ttstub_input_getc (tfm_file);
-    z = (z * 16) + (ttstub_input_getc (tfm_file) / 16);
+    z = z * 256 + ttstub_input_getc(tfm_file);
+    z = (z * 16) + (ttstub_input_getc(tfm_file) / 16);
     if (z < 65536L)
         goto bad_tfm;
 
-    while (lh > 2) {
-        ttstub_input_getc (tfm_file);
-        ttstub_input_getc (tfm_file);
-        ttstub_input_getc (tfm_file);
-        ttstub_input_getc (tfm_file);
+    while (lh > 2)
+    {
+        ttstub_input_getc(tfm_file);
+        ttstub_input_getc(tfm_file);
+        ttstub_input_getc(tfm_file);
+        ttstub_input_getc(tfm_file);
         lh--;
     }
 
     set_font_dsize(f, z);
-    if (s != -1000) {
+    if (s != -1000)
+    {
         if (s >= 0)
             z = s;
         else
-            z = xn_over_d(z, -(int32_t) s, 1000);
+            z = xn_over_d(z, -(int32_t)s, 1000);
     }
 
     set_font_size(f, z);
 
-    for (k = fmem_ptr; k <= width_base(f) - 1; k++) {
-        qw.s3 = a = ttstub_input_getc (tfm_file);
-        qw.s2 = b = ttstub_input_getc (tfm_file);
-        qw.s1 = c = ttstub_input_getc (tfm_file);
-        qw.s0 = d = ttstub_input_getc (tfm_file);
+    for (k = fmem_ptr; k <= width_base(f) - 1; k++)
+    {
+        qw.s3 = a = ttstub_input_getc(tfm_file);
+        qw.s2 = b = ttstub_input_getc(tfm_file);
+        qw.s1 = c = ttstub_input_getc(tfm_file);
+        qw.s0 = d = ttstub_input_getc(tfm_file);
         if (a == EOF || b == EOF || c == EOF || d == EOF)
             goto bad_tfm;
         font_info_ptr(k)->b16 = qw;
@@ -11094,7 +12272,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
         if (a >= nw || b / 16 >= nh || b % 16 >= nd || c / 4 >= ni)
             goto bad_tfm;
 
-        switch (c % 4) {
+        switch (c % 4)
+        {
         case 1:
             if (d >= nl)
                 goto bad_tfm;
@@ -11107,7 +12286,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             if (d < bc || d > ec)
                 goto bad_tfm;
 
-            while (d < k + bc - fmem_ptr) {
+            while (d < k + bc - fmem_ptr)
+            {
                 qw = FONT_CHARACTER_INFO(f, d);
                 if ((qw.s1 % 4) != LIST_TAG)
                     goto not_found;
@@ -11123,18 +12303,20 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     }
 
     alpha = 16;
-    while (z >= 0x800000) {
+    while (z >= 0x800000)
+    {
         z = z / 2;
         alpha = alpha + alpha;
     }
     beta = 256 / alpha;
     alpha = alpha * z;
 
-    for (k = width_base(f); k <= lig_kern_base(f) - 1; k++) {
-        a = ttstub_input_getc (tfm_file);
-        b = ttstub_input_getc (tfm_file);
-        c = ttstub_input_getc (tfm_file);
-        d = ttstub_input_getc (tfm_file);
+    for (k = width_base(f); k <= lig_kern_base(f) - 1; k++)
+    {
+        a = ttstub_input_getc(tfm_file);
+        b = ttstub_input_getc(tfm_file);
+        c = ttstub_input_getc(tfm_file);
+        d = ttstub_input_getc(tfm_file);
         if (a == EOF || b == EOF || c == EOF || d == EOF)
             goto bad_tfm;
         sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
@@ -11159,24 +12341,30 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     bch_label = 32767;
     bchar = 256;
 
-    if (nl > 0) {
-        for (k = lig_kern_base(f); k <= kern_base(f) + 256 * 128 - 1; k++) {
-            qw.s3 = a = ttstub_input_getc (tfm_file);
-            qw.s2 = b = ttstub_input_getc (tfm_file);
-            qw.s1 = c = ttstub_input_getc (tfm_file);
-            qw.s0 = d = ttstub_input_getc (tfm_file);
+    if (nl > 0)
+    {
+        for (k = lig_kern_base(f); k <= kern_base(f) + 256 * 128 - 1; k++)
+        {
+            qw.s3 = a = ttstub_input_getc(tfm_file);
+            qw.s2 = b = ttstub_input_getc(tfm_file);
+            qw.s1 = c = ttstub_input_getc(tfm_file);
+            qw.s0 = d = ttstub_input_getc(tfm_file);
             if (a == EOF || b == EOF || c == EOF || d == EOF)
                 goto bad_tfm;
             font_info_ptr(k)->b16 = qw;
 
-            if (a > 128) {
+            if (a > 128)
+            {
                 if (256 * c + d >= nl)
                     goto bad_tfm;
 
                 if (a == 255 && k == lig_kern_base(f))
                     bchar = b;
-            } else {
-                if (b != bchar) {
+            }
+            else
+            {
+                if (b != bchar)
+                {
                     if ((b < bc) || (b > ec))
                         goto bad_tfm;
 
@@ -11185,13 +12373,15 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                         goto bad_tfm;
                 }
 
-                if (c < 128) {
+                if (c < 128)
+                {
                     if ((d < bc) || (d > ec))
                         goto bad_tfm;
                     qw = FONT_CHARACTER_INFO(f, d);
                     if (!(qw.s3 > 0))
                         goto bad_tfm;
-                } else if (256 * (c - 128) + d >= nk)
+                }
+                else if (256 * (c - 128) + d >= nk)
                     goto bad_tfm;
 
                 if (a < 128 && k - lig_kern_base(f) + a + 1 >= nl)
@@ -11203,11 +12393,12 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             bch_label = 256 * c + d;
     }
 
-    for (k = kern_base(f) + 256 * 128; k <= exten_base(f) - 1; k++) {
-        a = ttstub_input_getc (tfm_file);
-        b = ttstub_input_getc (tfm_file);
-        c = ttstub_input_getc (tfm_file);
-        d = ttstub_input_getc (tfm_file);
+    for (k = kern_base(f) + 256 * 128; k <= exten_base(f) - 1; k++)
+    {
+        a = ttstub_input_getc(tfm_file);
+        b = ttstub_input_getc(tfm_file);
+        c = ttstub_input_getc(tfm_file);
+        d = ttstub_input_getc(tfm_file);
         if (a == EOF || b == EOF || c == EOF || d == EOF)
             goto bad_tfm;
         sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
@@ -11220,16 +12411,18 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             goto bad_tfm;
     }
 
-    for (k = exten_base(f); k <= param_base(f) - 1; k++) {
-        qw.s3 = a = ttstub_input_getc (tfm_file);
-        qw.s2 = b = ttstub_input_getc (tfm_file);
-        qw.s1 = c = ttstub_input_getc (tfm_file);
-        qw.s0 = d = ttstub_input_getc (tfm_file);
+    for (k = exten_base(f); k <= param_base(f) - 1; k++)
+    {
+        qw.s3 = a = ttstub_input_getc(tfm_file);
+        qw.s2 = b = ttstub_input_getc(tfm_file);
+        qw.s1 = c = ttstub_input_getc(tfm_file);
+        qw.s0 = d = ttstub_input_getc(tfm_file);
         if (a == EOF || b == EOF || c == EOF || d == EOF)
             goto bad_tfm;
         font_info_ptr(k)->b16 = qw;
 
-        if (a != 0) {
+        if (a != 0)
+        {
             if ((a < bc) || (a > ec))
                 goto bad_tfm;
             qw = FONT_CHARACTER_INFO(f, a);
@@ -11237,7 +12430,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                 goto bad_tfm;
         }
 
-        if (b != 0) {
+        if (b != 0)
+        {
             if ((b < bc) || (b > ec))
                 goto bad_tfm;
             qw = FONT_CHARACTER_INFO(f, b);
@@ -11245,7 +12439,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
                 goto bad_tfm;
         }
 
-        if (c != 0) {
+        if (c != 0)
+        {
             if ((c < bc) || (c > ec))
                 goto bad_tfm;
             qw = FONT_CHARACTER_INFO(f, c);
@@ -11260,22 +12455,26 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
             goto bad_tfm;
     }
 
-    for (k = 1; k <= np; k++) {
-        if (k == 1) {
-            sw = ttstub_input_getc (tfm_file);
+    for (k = 1; k <= np; k++)
+    {
+        if (k == 1)
+        {
+            sw = ttstub_input_getc(tfm_file);
             if (sw == EOF)
                 goto bad_tfm;
             if (sw > 127)
                 sw = sw - 256;
 
-            sw = sw * 256 + ttstub_input_getc (tfm_file);
-            sw = sw * 256 + ttstub_input_getc (tfm_file);
-            font_info_ptr(param_base(f))->b32.s1 = (sw * 16) + (ttstub_input_getc (tfm_file) / 16);
-        } else {
-            a = ttstub_input_getc (tfm_file);
-            b = ttstub_input_getc (tfm_file);
-            c = ttstub_input_getc (tfm_file);
-            d = ttstub_input_getc (tfm_file);
+            sw = sw * 256 + ttstub_input_getc(tfm_file);
+            sw = sw * 256 + ttstub_input_getc(tfm_file);
+            font_info_ptr(param_base(f))->b32.s1 = (sw * 16) + (ttstub_input_getc(tfm_file) / 16);
+        }
+        else
+        {
+            a = ttstub_input_getc(tfm_file);
+            b = ttstub_input_getc(tfm_file);
+            c = ttstub_input_getc(tfm_file);
+            d = ttstub_input_getc(tfm_file);
             if (a == EOF || b == EOF || c == EOF || d == EOF)
                 goto bad_tfm;
             sw = (((((d * z) / 256) + c * z) / 256) + b * z) / beta;
@@ -11306,8 +12505,10 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     set_font_bchar(f, bchar);
     set_font_false_bchar(f, bchar);
 
-    if (bchar <= ec) {
-        if (bchar >= bc) {
+    if (bchar <= ec)
+    {
+        if (bchar >= bc)
+        {
             qw = FONT_CHARACTER_INFO(f, bchar);
             if ((qw.s3 > 0))
                 set_font_false_bchar(f, TOO_BIG_CHAR);
@@ -11319,7 +12520,7 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     set_font_bc(f, bc);
     set_font_ec(f, ec);
     set_font_glue(f, TEX_NULL);
-    set_param_base(f, param_base(f)-1);
+    set_param_base(f, param_base(f) - 1);
     fmem_ptr = fmem_ptr + lf;
     set_font_ptr(f);
     g = f;
@@ -11327,7 +12528,8 @@ read_font_info(int32_t u, str_number nom, str_number aire, scaled_t s)
     goto done;
 
 bad_tfm:
-    if (INTPAR(suppress_fontnotfound_error) == 0) {
+    if (INTPAR(suppress_fontnotfound_error) == 0)
+    {
         /* NOTE: must preserve this path to keep passing the TRIP tests */
 
         error_here_with_diagnostic("Font ");
@@ -11338,13 +12540,16 @@ bad_tfm:
         print_file_name(nom, aire, cur_ext());
         if (file_name_quote_char() != 0)
             print_char(file_name_quote_char());
-        if (s >= 0) {
+        if (s >= 0)
+        {
             print_cstr(" at ");
             print_scaled(s);
             print_cstr("pt");
-        } else if (s != -1000) {
+        }
+        else if (s != -1000)
+        {
             print_cstr(" scaled ");
-            print_int(-(int32_t) s);
+            print_int(-(int32_t)s);
         }
 
         if (file_opened)
@@ -11367,10 +12572,12 @@ bad_tfm:
 
 done:
     if (file_opened)
-        ttstub_input_close (tfm_file);
+        ttstub_input_close(tfm_file);
 
-    if (INTPAR(xetex_tracing_fonts) > 0) {
-        if (g == FONT_BASE || file_opened) {
+    if (INTPAR(xetex_tracing_fonts) > 0)
+    {
+        if (g == FONT_BASE || file_opened)
+        {
             begin_diagnostic();
             diagnostic_begin_capture_warning_here();
 
@@ -11392,15 +12599,17 @@ int32_t new_character(internal_font_number f, UTF16_code c)
 {
     int32_t p;
     uint16_t ec;
-    if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
+    if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG)))
+    {
         return new_native_character(f, c);
     }
     ec = effective_char(false, f, c);
-    if (font_bc(f) <= ec) {
-
-        if (font_ec(f) >= ec) {
-
-            if ((FONT_CHARACTER_INFO(f, ec).s3 > 0)) {
+    if (font_bc(f) <= ec)
+    {
+        if (font_ec(f) >= ec)
+        {
+            if ((FONT_CHARACTER_INFO(f, ec).s3 > 0))
+            {
                 p = get_avail();
                 mem_ptr(p)->b16.s1 = f;
                 mem_ptr(p)->b16.s0 = c;
@@ -11423,15 +12632,16 @@ void scan_spec(group_code c, bool three_codes)
         spec_code = EXACTLY;
     else if (scan_keyword("spread"))
         spec_code = ADDITIONAL;
-    else {
-
+    else
+    {
         spec_code = ADDITIONAL;
         cur_val = 0;
         goto found;
     }
     scan_dimen(false, false, false);
- found:
-    if (three_codes) {
+found:
+    if (three_codes)
+    {
         save_stack_ptr(save_ptr + 0)->b32.s1 = s;
         save_ptr++;
     }
@@ -11453,21 +12663,27 @@ scaled_t char_pw(int32_t p, small_number side)
     if (p == TEX_NULL)
         return 0;
     if (((p != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-          && (NODE_subtype(p) == NATIVE_WORD_NODE || NODE_subtype(p) == NATIVE_WORD_NODE_AT)))) {
-        if (NATIVE_NODE_glyph_info_ptr(p) != NULL) {
+        && (NODE_subtype(p) == NATIVE_WORD_NODE || NODE_subtype(p) == NATIVE_WORD_NODE_AT))))
+    {
+        if (NATIVE_NODE_glyph_info_ptr(p) != NULL)
+        {
             f = NATIVE_NODE_font(p);
             return round_xn_over_d(font_info(QUAD_CODE + param_base(f)).b32.s1, get_native_word_cp(p, side), 1000);
-        } else {
+        }
+        else
+        {
             return 0;
         }
     }
     if ((((p) != TEX_NULL && (!(is_char_node(p))) && (NODE_type(p) == WHATSIT_NODE)
-          && (mem(p).b16.s0 == GLYPH_NODE)))) {
+        && (mem(p).b16.s0 == GLYPH_NODE))))
+    {
         f = mem(p + 4).b16.s2;
         return round_xn_over_d(font_info(QUAD_CODE + param_base(f)).b32.s1, get_cp_code(f, mem(p + 4).b16.s1, side),
                                1000);
     }
-    if (!(is_char_node(p))) {
+    if (!(is_char_node(p)))
+    {
         if (NODE_type(p) == LIGATURE_NODE)
             p = p + 1;
         else
@@ -11475,7 +12691,8 @@ scaled_t char_pw(int32_t p, small_number side)
     }
     f = CHAR_NODE_font(p);
     c = get_cp_code(f, mem(p).b16.s0, side);
-    switch (side) {
+    switch (side)
+    {
     case 0:
         last_leftmost_char = p;
         break;
@@ -11529,17 +12746,22 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
     total_shrink[FILL] = 0;
     total_stretch[FILLL] = 0;
     total_shrink[FILLL] = 0 /*:673 */ ;
-    if (INTPAR(texxet) > 0) {    /*1497: */
+    if (INTPAR(texxet) > 0)
+    {
+        /*1497: */
         temp_ptr = get_avail();
         mem_ptr(temp_ptr)->b32.s0 = BEFORE;
         mem_ptr(temp_ptr)->b32.s1 = LR_ptr;
         LR_ptr = temp_ptr;
     }
-    while (p != TEX_NULL) {  /*674: */
+    while (p != TEX_NULL)
+    {
+        /*674: */
 
     reswitch:
-        while ((is_char_node(p))) {
-                                                        /*677: */
+        while ((is_char_node(p)))
+        {
+            /*677: */
 
             f = CHAR_NODE_font(p);
             i = FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)));
@@ -11552,8 +12774,10 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 d = s;
             p = LLIST_link(p);
         }
-        if (p != TEX_NULL) {
-            switch (mem(p).b16.s1) {
+        if (p != TEX_NULL)
+        {
+            switch (mem(p).b16.s1)
+            {
             case 0:
             case 1:
             case 2:
@@ -11573,18 +12797,23 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             case 3:
             case 4:
             case 5:
-                if ((adjust_tail != TEX_NULL) || (pre_adjust_tail != TEX_NULL)) { /*680: */
+                if ((adjust_tail != TEX_NULL) || (pre_adjust_tail != TEX_NULL))
+                {
+                    /*680: */
                     while (mem(q).b32.s1 != p)
                         q = LLIST_link(q);
-                    if (NODE_type(p) == ADJUST_NODE) {
-                        if (mem(p).b16.s0 != 0) {
+                    if (NODE_type(p) == ADJUST_NODE)
+                    {
+                        if (mem(p).b16.s0 != 0)
+                        {
                             if (pre_adjust_tail == TEX_NULL)
                                 confusion("pre vadjust");
                             mem_ptr(pre_adjust_tail)->b32.s1 = mem(p + 1).b32.s1;
                             while (mem(pre_adjust_tail).b32.s1 != TEX_NULL)
                                 pre_adjust_tail = LLIST_link(pre_adjust_tail);
-                        } else {
-
+                        }
+                        else
+                        {
                             if (adjust_tail == TEX_NULL)
                                 confusion("pre vadjust");
                             mem_ptr(adjust_tail)->b32.s1 = mem(p + 1).b32.s1;
@@ -11593,8 +12822,9 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                         }
                         p = LLIST_link(p);
                         free_node(mem(q).b32.s1, SMALL_NODE_SIZE);
-                    } else {
-
+                    }
+                    else
+                    {
                         mem_ptr(adjust_tail)->b32.s1 = p;
                         adjust_tail = p;
                         p = LLIST_link(p);
@@ -11605,7 +12835,8 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                 break;
             case 8:
                 {
-                    switch (mem(p).b16.s0) {
+                    switch (mem(p).b16.s0)
+                    {
                     case 40:
                     case 41:
                         {
@@ -11613,8 +12844,8 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                 k = mem(q).b16.s0;
                             else
                                 k = 0;
-                            while ((mem(q).b32.s1 != p)) {
-
+                            while ((mem(q).b32.s1 != p))
+                            {
                                 k--;
                                 q = LLIST_link(q);
                                 if (NODE_type(q) == DISC_NODE)
@@ -11622,30 +12853,36 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                             }
                             pp = mem(p).b32.s1;
                         restart:
-                            if ((k <= 0) && (pp != TEX_NULL) && (!(is_char_node(pp)))) {
+                            if ((k <= 0) && (pp != TEX_NULL) && (!(is_char_node(pp))))
+                            {
                                 if ((NODE_type(pp) == WHATSIT_NODE)
                                     && ((mem(pp).b16.s0 == NATIVE_WORD_NODE)
                                         || (mem(pp).b16.s0 == NATIVE_WORD_NODE_AT))
-                                    && (mem(pp + 4).b16.s2 == mem(p + 4).b16.s2)) {
+                                    && (mem(pp + 4).b16.s2 == mem(p + 4).b16.s2))
+                                {
                                     pp = LLIST_link(pp);
                                     goto restart;
-                                } else if (NODE_type(pp) == DISC_NODE) {
+                                }
+                                else if (NODE_type(pp) == DISC_NODE)
+                                {
                                     ppp = mem(pp).b32.s1;
                                     if ((((ppp) != TEX_NULL && (!(is_char_node(ppp)))
-                                          && (NODE_type(ppp) == WHATSIT_NODE)
-                                          && ((mem(ppp).b16.s0 == NATIVE_WORD_NODE)
-                                              || (mem(ppp).b16.s0 == NATIVE_WORD_NODE_AT))))
-                                        && (mem(ppp + 4).b16.s2 == mem(p + 4).b16.s2)) {
+                                            && (NODE_type(ppp) == WHATSIT_NODE)
+                                            && ((mem(ppp).b16.s0 == NATIVE_WORD_NODE)
+                                                || (mem(ppp).b16.s0 == NATIVE_WORD_NODE_AT))))
+                                        && (mem(ppp + 4).b16.s2 == mem(p + 4).b16.s2))
+                                    {
                                         pp = mem(ppp).b32.s1;
                                         goto restart;
                                     }
                                 }
                             }
-                            if ((pp != mem(p).b32.s1)) {
+                            if ((pp != mem(p).b32.s1))
+                            {
                                 total_chars = 0;
                                 p = mem(q).b32.s1;
-                                while ((p != pp)) {
-
+                                while ((p != pp))
+                                {
                                     if (NODE_type(p) == WHATSIT_NODE)
                                         total_chars = total_chars + mem(p + 4).b16.s1;
                                     ppp = p;
@@ -11659,20 +12896,24 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                                 mem_ptr(ppp)->b32.s1 = TEX_NULL;
                                 total_chars = 0;
                                 ppp = p;
-                                do {
-                                    if (NODE_type(ppp) == WHATSIT_NODE) {
+                                do
+                                {
+                                    if (NODE_type(ppp) == WHATSIT_NODE)
+                                    {
                                         register int32_t for_end;
                                         k = 0;
                                         for_end = mem(ppp + 4).b16.s1 - 1;
                                         if (k <= for_end)
-                                            do {
+                                            do
+                                            {
                                                 NATIVE_NODE_text(pp)[total_chars] = NATIVE_NODE_text(ppp)[k];
                                                 total_chars++;
                                             }
                                             while (k++ < for_end);
                                     }
                                     ppp = LLIST_link(ppp);
-                                } while (!((ppp == TEX_NULL)));
+                                }
+                                while (!((ppp == TEX_NULL)));
                                 flush_node_list(p);
                                 p = mem(q).b32.s1;
                                 set_native_metrics(p, (INTPAR(xetex_use_glyph_metrics) > 0));
@@ -11709,7 +12950,8 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
                     total_stretch[o] = total_stretch[o] + mem(g + 2).b32.s1;
                     o = mem(g).b16.s0;
                     total_shrink[o] = total_shrink[o] + mem(g + 3).b32.s1;
-                    if (mem(p).b16.s0 >= A_LEADERS) {
+                    if (mem(p).b16.s0 >= A_LEADERS)
+                    {
                         g = mem(p + 1).b32.s1;
                         if (mem(g + 3).b32.s1 > h)
                             h = mem(g + 3).b32.s1;
@@ -11727,25 +12969,30 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             case 9:
                 {
                     x = x + mem(p + 1).b32.s1;
-                    if (INTPAR(texxet) > 0) {    /*1498: */
+                    if (INTPAR(texxet) > 0)
+                    {
+                        /*1498: */
 
-                        if (odd(mem(p).b16.s0)) {
-
-                            if (mem(LR_ptr).b32.s0 == (L_CODE * (mem(p).b16.s0 / L_CODE) + 3)) {
+                        if (odd(mem(p).b16.s0))
+                        {
+                            if (mem(LR_ptr).b32.s0 == (L_CODE * (mem(p).b16.s0 / L_CODE) + 3))
+                            {
                                 temp_ptr = LR_ptr;
                                 LR_ptr = mem(temp_ptr).b32.s1;
                                 {
                                     mem_ptr(temp_ptr)->b32.s1 = avail();
                                     set_avail(temp_ptr);
                                 }
-                            } else {
-
+                            }
+                            else
+                            {
                                 LR_problems++;
                                 NODE_type(p) = KERN_NODE;
                                 NODE_subtype(p) = EXPLICIT;
                             }
-                        } else {
-
+                        }
+                        else
+                        {
                             temp_ptr = get_avail();
                             mem_ptr(temp_ptr)->b32.s0 = (L_CODE * (mem(p).b16.s0 / L_CODE) + 3);
                             mem_ptr(temp_ptr)->b32.s1 = LR_ptr;
@@ -11776,12 +13023,16 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         w = x + w;
     mem_ptr(r + 1)->b32.s1 = w;
     x = w - x;
-    if (x == 0) {
+    if (x == 0)
+    {
         mem_ptr(r + 5)->b16.s1 = NORMAL;
         mem_ptr(r + 5)->b16.s0 = NORMAL;
         BOX_glue_set(r) = 0.0;
         goto exit;
-    } else if (x > 0) {         /*683: */
+    }
+    else if (x > 0)
+    {
+        /*683: */
         if (total_stretch[FILLL] != 0)
             o = FILLL;
         else if (total_stretch[FILL] != 0)
@@ -11794,16 +13045,20 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         mem_ptr(r + 5)->b16.s1 = STRETCHING;
         if (total_stretch[o] != 0)
             BOX_glue_set(r) = x / ((double)total_stretch[o]);
-        else {
+        else
+        {
             mem_ptr(r + 5)->b16.s1 = NORMAL;
             BOX_glue_set(r) = 0.0;
         }
 
-        if (o == NORMAL) {
-
-            if (mem(r + 5).b32.s1 != TEX_NULL) {    /*685: */
+        if (o == NORMAL)
+        {
+            if (mem(r + 5).b32.s1 != TEX_NULL)
+            {
+                /*685: */
                 last_badness = badness(x, total_stretch[NORMAL]);
-                if (last_badness > INTPAR(hbadness)) {
+                if (last_badness > INTPAR(hbadness))
+                {
                     print_ln();
 
                     diagnostic_begin_capture_warning_here();
@@ -11819,7 +13074,10 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
             }
         }
         goto exit;
-    } else {                    /*689: */
+    }
+    else
+    {
+        /*689: */
 
         if (total_shrink[FILLL] != 0)
             o = FILLL;
@@ -11832,18 +13090,22 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
         mem_ptr(r + 5)->b16.s0 = o;
         mem_ptr(r + 5)->b16.s1 = SHRINKING;
         if (total_shrink[o] != 0)
-            BOX_glue_set(r) = (-(int32_t) x) / ((double)total_shrink[o]);
-        else {
+            BOX_glue_set(r) = (-(int32_t)x) / ((double)total_shrink[o]);
+        else
+        {
             mem_ptr(r + 5)->b16.s1 = NORMAL;
             BOX_glue_set(r) = 0.0;
         }
-        if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem(r + 5).b32.s1 != TEX_NULL)) {
+        if ((total_shrink[o] < -(int32_t)x) && (o == NORMAL) && (mem(r + 5).b32.s1 != TEX_NULL))
+        {
             last_badness = 1000000L;
             BOX_glue_set(r) = 1.0;
-            if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(hfuzz))
-                || (INTPAR(hbadness) < 100)) {
+            if ((-(int32_t)x - total_shrink[NORMAL] > DIMENPAR(hfuzz))
+                || (INTPAR(hbadness) < 100))
+            {
                 if ((DIMENPAR(overfull_rule) > 0)
-                    && (-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(hfuzz))) {
+                    && (-(int32_t)x - total_shrink[NORMAL] > DIMENPAR(hfuzz)))
+                {
                     while (mem(q).b32.s1 != TEX_NULL)
                         q = LLIST_link(q);
                     mem_ptr(q)->b32.s1 = new_rule();
@@ -11853,15 +13115,19 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
 
                 diagnostic_begin_capture_warning_here();
                 print_nl_cstr("Overfull \\hbox (");
-                print_scaled(-(int32_t) x - total_shrink[NORMAL]);
+                print_scaled(-(int32_t)x - total_shrink[NORMAL]);
                 print_cstr("pt too wide");
                 goto common_ending;
             }
-        } else if (o == NORMAL) {
-
-            if (mem(r + 5).b32.s1 != TEX_NULL) {    /*692: */
-                last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
-                if (last_badness > INTPAR(hbadness)) {
+        }
+        else if (o == NORMAL)
+        {
+            if (mem(r + 5).b32.s1 != TEX_NULL)
+            {
+                /*692: */
+                last_badness = badness(-(int32_t)x, total_shrink[NORMAL]);
+                if (last_badness > INTPAR(hbadness))
+                {
                     print_ln();
 
                     diagnostic_begin_capture_warning_here();
@@ -11877,16 +13143,18 @@ int32_t hpack(int32_t p, scaled_t w, small_number m)
 common_ending:
     if (output_active)
         print_cstr(") has occurred while \\output is active");
-    else {
-
-        if (pack_begin_line != 0) {
+    else
+    {
+        if (pack_begin_line != 0)
+        {
             if (pack_begin_line > 0)
                 print_cstr(") in paragraph at lines ");
             else
                 print_cstr(") in alignment at lines ");
             print_int(abs(pack_begin_line));
             print_cstr("--");
-        } else
+        }
+        else
             print_cstr(") detected at line ");
         print_int(line());
     }
@@ -11902,12 +13170,15 @@ common_ending:
     end_diagnostic(true);
 
 exit:
-    if (INTPAR(texxet) > 0) {
+    if (INTPAR(texxet) > 0)
+    {
         /*1499: */
-        if (mem(LR_ptr).b32.s0 != BEFORE) {
+        if (mem(LR_ptr).b32.s0 != BEFORE)
+        {
             while (mem(q).b32.s1 != TEX_NULL)
                 q = LLIST_link(q);
-            do {
+            do
+            {
                 temp_ptr = q;
                 q = new_math(0, mem(LR_ptr).b32.s0);
                 mem_ptr(temp_ptr)->b32.s1 = q;
@@ -11920,9 +13191,11 @@ exit:
                         set_avail(temp_ptr);
                     }
                 }
-            } while (!(mem(LR_ptr).b32.s0 == BEFORE));
+            }
+            while (!(mem(LR_ptr).b32.s0 == BEFORE));
         }
-        if (LR_problems > 0) {
+        if (LR_problems > 0)
+        {
             {
                 print_ln();
 
@@ -11978,12 +13251,15 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
     total_shrink[FILL] = 0;
     total_stretch[FILLL] = 0;
     total_shrink[FILLL] = 0 /*:673 */ ;
-    while (p != TEX_NULL) {  /*694: */
+    while (p != TEX_NULL)
+    {
+        /*694: */
 
         if ((is_char_node(p)))
             confusion("vpack");
         else
-            switch (mem(p).b16.s1) {
+            switch (mem(p).b16.s1)
+            {
             case 0:
             case 1:
             case 2:
@@ -12001,7 +13277,8 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                 break;
             case 8:
                 {
-                    if ((mem(p).b16.s0 == PIC_NODE) || (mem(p).b16.s0 == PDF_NODE)) {
+                    if ((mem(p).b16.s0 == PIC_NODE) || (mem(p).b16.s0 == PDF_NODE))
+                    {
                         x = x + d + mem(p + 3).b32.s1;
                         d = mem(p + 2).b32.s1;
                         if (mem(p + 1).b32.s1 > w)
@@ -12019,7 +13296,8 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
                     total_stretch[o] = total_stretch[o] + mem(g + 2).b32.s1;
                     o = mem(g).b16.s0;
                     total_shrink[o] = total_shrink[o] + mem(g + 3).b32.s1;
-                    if (mem(p).b16.s0 >= A_LEADERS) {
+                    if (mem(p).b16.s0 >= A_LEADERS)
+                    {
                         g = mem(p + 1).b32.s1;
                         if (mem(g + 1).b32.s1 > w)
                             w = mem(g + 1).b32.s1;
@@ -12039,21 +13317,27 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
         p = LLIST_link(p);
     }
     mem_ptr(r + 1)->b32.s1 = w;
-    if (d > l) {
+    if (d > l)
+    {
         x = x + d - l;
         mem_ptr(r + 2)->b32.s1 = l;
-    } else
+    }
+    else
         mem_ptr(r + 2)->b32.s1 = d;
     if (m == ADDITIONAL)
         h = x + h;
     mem_ptr(r + 3)->b32.s1 = h;
     x = h - x;
-    if (x == 0) {
+    if (x == 0)
+    {
         mem_ptr(r + 5)->b16.s1 = NORMAL;
         mem_ptr(r + 5)->b16.s0 = NORMAL;
         BOX_glue_set(r) = 0.0;
         goto exit;
-    } else if (x > 0) {         /*698: */
+    }
+    else if (x > 0)
+    {
+        /*698: */
         if (total_stretch[FILLL] != 0)
             o = FILLL;
         else if (total_stretch[FILL] != 0)
@@ -12066,15 +13350,19 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
         mem_ptr(r + 5)->b16.s1 = STRETCHING;
         if (total_stretch[o] != 0)
             BOX_glue_set(r) = x / ((double)total_stretch[o]);
-        else {
+        else
+        {
             mem_ptr(r + 5)->b16.s1 = NORMAL;
             BOX_glue_set(r) = 0.0;
         }
-        if (o == NORMAL) {
-
-            if (mem(r + 5).b32.s1 != TEX_NULL) {    /*699: */
+        if (o == NORMAL)
+        {
+            if (mem(r + 5).b32.s1 != TEX_NULL)
+            {
+                /*699: */
                 last_badness = badness(x, total_stretch[NORMAL]);
-                if (last_badness > INTPAR(vbadness)) {
+                if (last_badness > INTPAR(vbadness))
+                {
                     print_ln();
 
                     diagnostic_begin_capture_warning_here();
@@ -12089,7 +13377,10 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
             }
         }
         goto exit;
-    } else {                    /*701: */
+    }
+    else
+    {
+        /*701: */
 
         if (total_shrink[FILLL] != 0)
             o = FILLL;
@@ -12102,29 +13393,36 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
         mem_ptr(r + 5)->b16.s0 = o;
         mem_ptr(r + 5)->b16.s1 = SHRINKING;
         if (total_shrink[o] != 0)
-            BOX_glue_set(r) = (-(int32_t) x) / ((double)total_shrink[o]);
-        else {
+            BOX_glue_set(r) = (-(int32_t)x) / ((double)total_shrink[o]);
+        else
+        {
             mem_ptr(r + 5)->b16.s1 = NORMAL;
             BOX_glue_set(r) = 0.0;
         }
-        if ((total_shrink[o] < -(int32_t) x) && (o == NORMAL) && (mem(r + 5).b32.s1 != TEX_NULL)) {
+        if ((total_shrink[o] < -(int32_t)x) && (o == NORMAL) && (mem(r + 5).b32.s1 != TEX_NULL))
+        {
             last_badness = 1000000L;
             BOX_glue_set(r) = 1.0;
-            if ((-(int32_t) x - total_shrink[NORMAL] > DIMENPAR(vfuzz))
-                || (INTPAR(vbadness) < 100)) {
+            if ((-(int32_t)x - total_shrink[NORMAL] > DIMENPAR(vfuzz))
+                || (INTPAR(vbadness) < 100))
+            {
                 print_ln();
 
                 diagnostic_begin_capture_warning_here();
                 print_nl_cstr("Overfull \\vbox (");
-                print_scaled(-(int32_t) x - total_shrink[NORMAL]);
+                print_scaled(-(int32_t)x - total_shrink[NORMAL]);
                 print_cstr("pt too high");
                 goto common_ending;
             }
-        } else if (o == NORMAL) {
-
-            if (mem(r + 5).b32.s1 != TEX_NULL) {    /*703: */
-                last_badness = badness(-(int32_t) x, total_shrink[NORMAL]);
-                if (last_badness > INTPAR(vbadness)) {
+        }
+        else if (o == NORMAL)
+        {
+            if (mem(r + 5).b32.s1 != TEX_NULL)
+            {
+                /*703: */
+                last_badness = badness(-(int32_t)x, total_shrink[NORMAL]);
+                if (last_badness > INTPAR(vbadness))
+                {
                     print_ln();
 
                     diagnostic_begin_capture_warning_here();
@@ -12140,13 +13438,15 @@ int32_t vpackage(int32_t p, scaled_t h, small_number m, scaled_t l)
 common_ending:
     if (output_active)
         print_cstr(") has occurred while \\output is active");
-    else {
-
-        if (pack_begin_line != 0) {
+    else
+    {
+        if (pack_begin_line != 0)
+        {
             print_cstr(") in alignment at lines ");
             print_int(abs(pack_begin_line));
             print_cstr("--");
-        } else
+        }
+        else
             print_cstr(") detected at line ");
         print_int(line());
         print_ln();
@@ -12169,15 +13469,16 @@ void append_to_vlist(int32_t b)
     bool upwards;
 
     upwards = (INTPAR(xetex_upwards) > 0);
-    if (cur_list.aux.b32.s1 > IGNORE_DEPTH) {
+    if (cur_list.aux.b32.s1 > IGNORE_DEPTH)
+    {
         if (upwards)
             d = mem(GLUEPAR(baseline_skip) + 1).b32.s1 - cur_list.aux.b32.s1 - mem(b + 2).b32.s1;
         else
             d = mem(GLUEPAR(baseline_skip) + 1).b32.s1 - cur_list.aux.b32.s1 - mem(b + 3).b32.s1;
         if (d < DIMENPAR(line_skip_limit))
             p = new_param_glue(GLUE_PAR__line_skip);
-        else {
-
+        else
+        {
             p = new_skip_param(GLUE_PAR__baseline_skip);
             mem_ptr(temp_ptr + 1)->b32.s1 = d;
         }
@@ -12230,7 +13531,6 @@ int32_t new_choice(void)
 
 void show_info(void)
 {
-
     show_node_list(mem(temp_ptr).b32.s0);
 }
 
@@ -12280,21 +13580,22 @@ void pop_alignment(void)
 
 void get_preamble_token(void)
 {
-
 restart:
     get_token();
 
-    while ((cur_chr() == SPAN_CODE) && (cur_cmd() == TAB_MARK)) {
-
+    while ((cur_chr() == SPAN_CODE) && (cur_cmd() == TAB_MARK))
+    {
         get_token();
-        if (cur_cmd() > MAX_COMMAND) {
+        if (cur_cmd() > MAX_COMMAND)
+        {
             expand();
             get_token();
         }
     }
     if (cur_cmd() == ENDV)
         fatal_error("(interwoven alignment preambles are not allowed)");
-    if ((cur_cmd() == ASSIGN_GLUE) && (cur_chr() == (GLUE_BASE + 11))) {
+    if ((cur_cmd() == ASSIGN_GLUE) && (cur_chr() == (GLUE_BASE + 11)))
+    {
         scan_optional_equals();
         scan_glue(GLUE_VAL);
         if (INTPAR(global_defs) > 0)
@@ -12316,7 +13617,8 @@ init_align(void)
     push_alignment();
     set_align_state(-1000000L);
 
-    if (cur_list.mode == MMODE && (cur_list.tail != cur_list.head || cur_list.aux.b32.s1 != TEX_NULL)) {
+    if (cur_list.mode == MMODE && (cur_list.tail != cur_list.head || cur_list.aux.b32.s1 != TEX_NULL))
+    {
         error_here_with_diagnostic("Improper ");
         print_esc_cstr("halign");
         print_cstr(" inside $$'s");
@@ -12331,11 +13633,14 @@ init_align(void)
 
     push_nest();
 
-    if (cur_list.mode == MMODE) {
+    if (cur_list.mode == MMODE)
+    {
         cur_list.mode = -1;
         cur_list.aux.b32.s1 = nest(nest_cur() - 2).aux.b32.s1;
-    } else if (cur_list.mode > 0) {
-        cur_list.mode = -(int32_t) cur_list.mode; /*:804*/
+    }
+    else if (cur_list.mode > 0)
+    {
+        cur_list.mode = -(int32_t)cur_list.mode; /*:804*/
     }
 
     scan_spec(ALIGN_GROUP, false);
@@ -12346,7 +13651,8 @@ init_align(void)
     warning_index = save_cs_ptr;
     set_align_state(-1000000L);
 
-    while (true) {
+    while (true)
+    {
         mem_ptr(cur_align)->b32.s1 = new_param_glue(GLUE_PAR__tab_skip);
         cur_align = LLIST_link(cur_align); /*:807*/
         if (cur_cmd() == CAR_RET)
@@ -12355,15 +13661,20 @@ init_align(void)
         p = HOLD_HEAD;
         mem_ptr(p)->b32.s1 = TEX_NULL;
 
-        while (true) {
+        while (true)
+        {
             get_preamble_token();
             if (cur_cmd() == MAC_PARAM)
                 goto done1;
 
-            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == -1000000L) {
-                if (p == HOLD_HEAD && cur_loop == TEX_NULL && cur_cmd() == TAB_MARK) {
+            if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == -1000000L)
+            {
+                if (p == HOLD_HEAD && cur_loop == TEX_NULL && cur_cmd() == TAB_MARK)
+                {
                     cur_loop = cur_align;
-                } else {
+                }
+                else
+                {
                     error_here_with_diagnostic("Missing # inserted in alignment preamble");
                     capture_to_diagnostic(NULL);
                     set_help_ptr(3);
@@ -12373,7 +13684,9 @@ init_align(void)
                     back_error();
                     goto done1;
                 }
-            } else if (cur_cmd() != SPACER || p != HOLD_HEAD) {
+            }
+            else if (cur_cmd() != SPACER || p != HOLD_HEAD)
+            {
                 mem_ptr(p)->b32.s1 = get_avail();
                 p = LLIST_link(p);
                 mem_ptr(p)->b32.s0 = cur_tok();
@@ -12389,13 +13702,15 @@ init_align(void)
         p = HOLD_HEAD;
         mem_ptr(p)->b32.s1 = TEX_NULL;
 
-        while (true) {
+        while (true)
+        {
         continue_:
             get_preamble_token();
             if (cur_cmd() <= CAR_RET && cur_cmd() >= TAB_MARK && align_state() == -1000000L)
                 goto done2;
 
-            if (cur_cmd() == MAC_PARAM) {
+            if (cur_cmd() == MAC_PARAM)
+            {
                 error_here_with_diagnostic("Only one # is allowed per tab");
                 capture_to_diagnostic(NULL);
 
@@ -12435,8 +13750,8 @@ void init_span(int32_t p)
     push_nest();
     if (cur_list.mode == -104)
         cur_list.aux.b32.s0 = 1000;
-    else {
-
+    else
+    {
         cur_list.aux.b32.s1 = IGNORE_DEPTH;
         normal_paragraph();
     }
@@ -12467,8 +13782,8 @@ void init_col(void)
     mem_ptr(cur_align + 5)->b32.s0 = cur_cmd();
     if (cur_cmd() == OMIT)
         set_align_state(0);
-    else {
-
+    else
+    {
         back_input();
         begin_token_list(mem(cur_align + 3).b32.s1, U_TEMPLATE);
     }
@@ -12491,9 +13806,11 @@ bool fin_col(void)
     if (align_state() < 500000L)
         fatal_error("(interwoven alignment preambles are not allowed)");
     p = mem(q).b32.s1;
-    if ((p == TEX_NULL) && (mem(cur_align + 5).b32.s0 < CR_CODE)) {
-
-        if (cur_loop != TEX_NULL) {  /*822: */
+    if ((p == TEX_NULL) && (mem(cur_align + 5).b32.s0 < CR_CODE))
+    {
+        if (cur_loop != TEX_NULL)
+        {
+            /*822: */
             mem_ptr(q)->b32.s1 = new_null_box();
             p = mem(q).b32.s1;
             mem_ptr(p)->b32.s0 = END_SPAN;
@@ -12501,8 +13818,8 @@ bool fin_col(void)
             cur_loop = LLIST_link(cur_loop);
             q = HOLD_HEAD;
             r = mem(cur_loop + 3).b32.s1;
-            while (r != TEX_NULL) {
-
+            while (r != TEX_NULL)
+            {
                 mem_ptr(q)->b32.s1 = get_avail();
                 q = LLIST_link(q);
                 mem_ptr(q)->b32.s0 = mem(r).b32.s0;
@@ -12512,8 +13829,8 @@ bool fin_col(void)
             mem_ptr(p + 3)->b32.s1 = mem(HOLD_HEAD).b32.s1;
             q = HOLD_HEAD;
             r = mem(cur_loop + 2).b32.s1;
-            while (r != TEX_NULL) {
-
+            while (r != TEX_NULL)
+            {
                 mem_ptr(q)->b32.s1 = get_avail();
                 q = LLIST_link(q);
                 mem_ptr(q)->b32.s0 = mem(r).b32.s0;
@@ -12524,7 +13841,9 @@ bool fin_col(void)
             cur_loop = LLIST_link(cur_loop);
             mem_ptr(p)->b32.s1 = new_glue(mem(cur_loop + 1).b32.s0);
             NODE_subtype(LLIST_link(p)) = GLUE_PAR__tab_skip + 1;
-        } else {
+        }
+        else
+        {
             error_here_with_diagnostic("Extra alignment tab has been changed to ");
             print_esc_cstr("cr");
             capture_to_diagnostic(NULL);
@@ -12539,11 +13858,13 @@ bool fin_col(void)
             error();
         }
     }
-    if (mem(cur_align + 5).b32.s0 != SPAN_CODE) {
+    if (mem(cur_align + 5).b32.s0 != SPAN_CODE)
+    {
         unsave();
         new_save_level(ALIGN_GROUP);
         {
-            if (cur_list.mode == -104) {
+            if (cur_list.mode == -104)
+            {
                 adjust_tail = cur_tail;
                 pre_adjust_tail = cur_pre_tail;
                 u = hpack(mem(cur_list.head).b32.s1, 0, ADDITIONAL);
@@ -12552,32 +13873,40 @@ bool fin_col(void)
                 adjust_tail = TEX_NULL;
                 cur_pre_tail = pre_adjust_tail;
                 pre_adjust_tail = TEX_NULL;
-            } else {
-
+            }
+            else
+            {
                 u = vpackage(mem(cur_list.head).b32.s1, 0, ADDITIONAL, 0);
                 w = mem(u + 3).b32.s1;
             }
             n = 0;
-            if (cur_span != cur_align) {        /*827: */
+            if (cur_span != cur_align)
+            {
+                /*827: */
                 q = cur_span;
-                do {
+                do
+                {
                     n++;
                     q = mem(mem(q).b32.s1).b32.s1;
-                } while (!(q == cur_align));
+                }
+                while (!(q == cur_align));
                 if (n > UINT16_MAX)
                     confusion("too many spans");
                 q = cur_span;
                 while (mem(mem(q).b32.s0).b32.s1 < n)
                     q = mem(q).b32.s0;
-                if (mem(mem(q).b32.s0).b32.s1 > n) {
+                if (mem(mem(q).b32.s0).b32.s1 > n)
+                {
                     s = get_node(SPAN_NODE_SIZE);
                     mem_ptr(s)->b32.s0 = mem(q).b32.s0;
                     mem_ptr(s)->b32.s1 = n;
                     mem_ptr(q)->b32.s0 = s;
                     mem_ptr(s + 1)->b32.s1 = w;
-                } else if (mem(mem(q).b32.s0 + 1).b32.s1 < w)
+                }
+                else if (mem(mem(q).b32.s0 + 1).b32.s1 < w)
                     mem_ptr(mem(q).b32.s0 + 1)->b32.s1 = w;
-            } else if (w > mem(cur_align + 1).b32.s1)
+            }
+            else if (w > mem(cur_align + 1).b32.s1)
                 mem_ptr(cur_align + 1)->b32.s1 = w;
             NODE_type(u) = UNSET_NODE;
             mem_ptr(u)->b16.s0 = n;
@@ -12610,15 +13939,18 @@ bool fin_col(void)
             cur_list.tail = LLIST_link(cur_list.tail);
         }
         mem_ptr(cur_list.tail)->b16.s0 = 12 /*tab_skip_code 1 *//*:824 */ ;
-        if (mem(cur_align + 5).b32.s0 >= CR_CODE) {
+        if (mem(cur_align + 5).b32.s0 >= CR_CODE)
+        {
             return true;
         }
         init_span(p);
     }
     set_align_state(1000000L);
-    do {
+    do
+    {
         get_x_or_protected();
-    } while (!(cur_cmd() != SPACER));
+    }
+    while (!(cur_cmd() != SPACER));
     cur_align = p;
     init_col();
     return false;
@@ -12628,20 +13960,24 @@ void fin_row(void)
 {
     int32_t p;
 
-    if (cur_list.mode == -104) {
+    if (cur_list.mode == -104)
+    {
         p = hpack(mem(cur_list.head).b32.s1, 0, ADDITIONAL);
         pop_nest();
-        if (cur_pre_head != cur_pre_tail) {
+        if (cur_pre_head != cur_pre_tail)
+        {
             mem_ptr(cur_list.tail)->b32.s1 = mem(cur_pre_head).b32.s1;
             cur_list.tail = cur_pre_tail;
         }
         append_to_vlist(p);
-        if (cur_head != cur_tail) {
+        if (cur_head != cur_tail)
+        {
             mem_ptr(cur_list.tail)->b32.s1 = mem(cur_head).b32.s1;
             cur_list.tail = cur_tail;
         }
-    } else {
-
+    }
+    else
+    {
         p = vpackage(mem(cur_list.head).b32.s1, 0, ADDITIONAL, MAX_HALFWORD);
         pop_nest();
         mem_ptr(cur_list.tail)->b32.s1 = p;
@@ -12675,47 +14011,57 @@ void fin_align(void)
     else
         o = 0;
     q = mem(mem(ALIGN_HEAD).b32.s1).b32.s1;
-    do {
+    do
+    {
         flush_list(mem(q + 3).b32.s1);
         flush_list(mem(q + 2).b32.s1);
         p = mem(mem(q).b32.s1).b32.s1;
-        if (mem(q + 1).b32.s1 == NULL_FLAG) {  /*831: */
+        if (mem(q + 1).b32.s1 == NULL_FLAG)
+        {
+            /*831: */
             mem_ptr(q + 1)->b32.s1 = 0;
             r = mem(q).b32.s1;
             s = mem(r + 1).b32.s0;
-            if (s != 0) {
+            if (s != 0)
+            {
                 GLUE_SPEC_ref_count(0)++;
                 delete_glue_ref(s);
                 mem_ptr(r + 1)->b32.s0 = 0;
             }
         }
-        if (mem(q).b32.s0 != END_SPAN) {    /*832: */
+        if (mem(q).b32.s0 != END_SPAN)
+        {
+            /*832: */
             t = mem(q + 1).b32.s1 + mem(mem(mem(q).b32.s1 + 1).b32.s0 + 1).b32.s1;
             r = mem(q).b32.s0;
             s = END_SPAN;
             mem_ptr(s)->b32.s0 = p;
             n = 1;
-            do {
+            do
+            {
                 mem_ptr(r + 1)->b32.s1 = mem(r + 1).b32.s1 - t;
                 u = mem(r).b32.s0;
-                while (mem(r).b32.s1 > n) {
-
+                while (mem(r).b32.s1 > n)
+                {
                     s = mem(s).b32.s0;
                     n = mem(mem(s).b32.s0).b32.s1 + 1;
                 }
-                if (mem(r).b32.s1 < n) {
+                if (mem(r).b32.s1 < n)
+                {
                     mem_ptr(r)->b32.s0 = mem(s).b32.s0;
                     mem_ptr(s)->b32.s0 = r;
                     mem_ptr(r)->b32.s1--;
                     s = r;
-                } else {
-
+                }
+                else
+                {
                     if (mem(r + 1).b32.s1 > mem(mem(s).b32.s0 + 1).b32.s1)
                         mem_ptr(mem(s).b32.s0 + 1)->b32.s1 = mem(r + 1).b32.s1;
                     free_node(r, SPAN_NODE_SIZE);
                 }
                 r = u;
-            } while (!(r == END_SPAN));
+            }
+            while (!(r == END_SPAN));
         }
         NODE_type(q) = UNSET_NODE;
         mem_ptr(q)->b16.s0 = 0;
@@ -12726,46 +14072,57 @@ void fin_align(void)
         mem_ptr(q + 6)->b32.s1 = 0;
         mem_ptr(q + 4)->b32.s1 = 0;
         q = p;
-    } while (!(q == TEX_NULL /*:830 */ ));
+    }
+    while (!(q == TEX_NULL /*:830 */));
     save_ptr = save_ptr - 2;
-    pack_begin_line = -(int32_t) cur_list.mode_line;
-    if (cur_list.mode == -1) {
+    pack_begin_line = -(int32_t)cur_list.mode_line;
+    if (cur_list.mode == -1)
+    {
         rule_save = DIMENPAR(overfull_rule);
         DIMENPAR(overfull_rule) = 0;
         p = hpack(mem(ALIGN_HEAD).b32.s1, save_stack(save_ptr + 1).b32.s1, save_stack(save_ptr + 0).b32.s1);
         DIMENPAR(overfull_rule) = rule_save;
-    } else {
-
+    }
+    else
+    {
         q = mem(mem(ALIGN_HEAD).b32.s1).b32.s1;
-        do {
+        do
+        {
             mem_ptr(q + 3)->b32.s1 = mem(q + 1).b32.s1;
             mem_ptr(q + 1)->b32.s1 = 0;
             q = mem(mem(q).b32.s1).b32.s1;
-        } while (!(q == TEX_NULL));
+        }
+        while (!(q == TEX_NULL));
         p = vpackage(mem(ALIGN_HEAD).b32.s1, save_stack(save_ptr + 1).b32.s1, save_stack(save_ptr + 0).b32.s1,
                      MAX_HALFWORD);
         q = mem(mem(ALIGN_HEAD).b32.s1).b32.s1;
-        do {
+        do
+        {
             mem_ptr(q + 1)->b32.s1 = mem(q + 3).b32.s1;
             mem_ptr(q + 3)->b32.s1 = 0;
             q = mem(mem(q).b32.s1).b32.s1;
-        } while (!(q == TEX_NULL));
+        }
+        while (!(q == TEX_NULL));
     }
     pack_begin_line = 0 /*:833 */ ;
     q = mem(cur_list.head).b32.s1;
     s = cur_list.head;
-    while (q != TEX_NULL) {
-
-        if (!(is_char_node(q))) {
-
-            if (NODE_type(q) == UNSET_NODE) {  /*836: */
-                if (cur_list.mode == -1) {
+    while (q != TEX_NULL)
+    {
+        if (!(is_char_node(q)))
+        {
+            if (NODE_type(q) == UNSET_NODE)
+            {
+                /*836: */
+                if (cur_list.mode == -1)
+                {
                     NODE_type(q) = HLIST_NODE;
                     mem_ptr(q + 1)->b32.s1 = mem(p + 1).b32.s1;
                     if (nest(nest_cur() - 1).mode == MMODE)
                         mem_ptr(q)->b16.s0 = DLIST;
-                } else {
-
+                }
+                else
+                {
                     NODE_type(q) = VLIST_NODE;
                     mem_ptr(q + 3)->b32.s1 = mem(p + 3).b32.s1;
                 }
@@ -12775,14 +14132,16 @@ void fin_align(void)
                 mem_ptr(q + 4)->b32.s1 = o;
                 r = mem(mem(q + 5).b32.s1).b32.s1;
                 s = mem(mem(p + 5).b32.s1).b32.s1;
-                do {
-                    /*837: */ n = mem(r).b16.s0;
+                do
+                {
+                    /*837: */
+                    n = mem(r).b16.s0;
                     t = mem(s + 1).b32.s1;
                     w = t;
                     u = HOLD_HEAD;
                     mem_ptr(r)->b16.s0 = 0;
-                    while (n > 0) {
-
+                    while (n > 0)
+                    {
                         n--;
                         s = LLIST_link(s);
                         v = mem(s + 1).b32.s0;
@@ -12790,10 +14149,13 @@ void fin_align(void)
                         u = LLIST_link(u);
                         mem_ptr(u)->b16.s0 = (GLUE_PAR__tab_skip + 1);
                         t = t + mem(v + 1).b32.s1;
-                        if (mem(p + 5).b16.s1 == STRETCHING) {
+                        if (mem(p + 5).b16.s1 == STRETCHING)
+                        {
                             if (mem(v).b16.s1 == mem(p + 5).b16.s0)
                                 t = t + tex_round(BOX_glue_set(p) * mem(v + 2).b32.s1);
-                        } else if (mem(p + 5).b16.s1 == SHRINKING) {
+                        }
+                        else if (mem(p + 5).b16.s1 == SHRINKING)
+                        {
                             if (mem(v).b16.s0 == mem(p + 5).b16.s0)
                                 t = t - tex_round(BOX_glue_set(p) * mem(v + 3).b32.s1);
                         }
@@ -12803,27 +14165,33 @@ void fin_align(void)
                         t = t + mem(s + 1).b32.s1;
                         if (cur_list.mode == -1)
                             mem_ptr(u + 1)->b32.s1 = mem(s + 1).b32.s1;
-                        else {
-
+                        else
+                        {
                             NODE_type(u) = VLIST_NODE;
                             mem_ptr(u + 3)->b32.s1 = mem(s + 1).b32.s1;
                         }
                     }
-                    if (cur_list.mode == -1) {    /*839: */
+                    if (cur_list.mode == -1)
+                    {
+                        /*839: */
                         mem_ptr(r + 3)->b32.s1 = mem(q + 3).b32.s1;
                         mem_ptr(r + 2)->b32.s1 = mem(q + 2).b32.s1;
-                        if (t == mem(r + 1).b32.s1) {
+                        if (t == mem(r + 1).b32.s1)
+                        {
                             mem_ptr(r + 5)->b16.s1 = NORMAL;
                             mem_ptr(r + 5)->b16.s0 = NORMAL;
                             BOX_glue_set(r) = 0.0;
-                        } else if (t > mem(r + 1).b32.s1) {
+                        }
+                        else if (t > mem(r + 1).b32.s1)
+                        {
                             mem_ptr(r + 5)->b16.s1 = STRETCHING;
                             if (mem(r + 6).b32.s1 == 0)
                                 BOX_glue_set(r) = 0.0;
                             else
                                 BOX_glue_set(r) = (t - mem(r + 1).b32.s1) / ((double)mem(r + 6).b32.s1);
-                        } else {
-
+                        }
+                        else
+                        {
                             mem_ptr(r + 5)->b16.s0 = mem(r + 5).b16.s1;
                             mem_ptr(r + 5)->b16.s1 = SHRINKING;
                             if (mem(r + 4).b32.s1 == 0)
@@ -12835,21 +14203,28 @@ void fin_align(void)
                         }
                         mem_ptr(r + 1)->b32.s1 = w;
                         NODE_type(r) = HLIST_NODE;
-                    } else {    /*840: */
+                    }
+                    else
+                    {
+                        /*840: */
 
                         mem_ptr(r + 1)->b32.s1 = mem(q + 1).b32.s1;
-                        if (t == mem(r + 3).b32.s1) {
+                        if (t == mem(r + 3).b32.s1)
+                        {
                             mem_ptr(r + 5)->b16.s1 = NORMAL;
                             mem_ptr(r + 5)->b16.s0 = NORMAL;
                             BOX_glue_set(r) = 0.0;
-                        } else if (t > mem(r + 3).b32.s1) {
+                        }
+                        else if (t > mem(r + 3).b32.s1)
+                        {
                             mem_ptr(r + 5)->b16.s1 = STRETCHING;
                             if (mem(r + 6).b32.s1 == 0)
                                 BOX_glue_set(r) = 0.0;
                             else
                                 BOX_glue_set(r) = (t - mem(r + 3).b32.s1) / ((double)mem(r + 6).b32.s1);
-                        } else {
-
+                        }
+                        else
+                        {
                             mem_ptr(r + 5)->b16.s0 = mem(r + 5).b16.s1;
                             mem_ptr(r + 5)->b16.s1 = SHRINKING;
                             if (mem(r + 4).b32.s1 == 0)
@@ -12863,22 +14238,28 @@ void fin_align(void)
                         NODE_type(r) = VLIST_NODE;
                     }
                     mem_ptr(r + 4)->b32.s1 = 0;
-                    if (u != HOLD_HEAD) {
+                    if (u != HOLD_HEAD)
+                    {
                         mem_ptr(u)->b32.s1 = mem(r).b32.s1;
                         mem_ptr(r)->b32.s1 = mem(HOLD_HEAD).b32.s1;
                         r = u;
                     }
                     r = mem(mem(r).b32.s1).b32.s1;
                     s = mem(mem(s).b32.s1).b32.s1;
-                } while (!(r == TEX_NULL));
-            } else if (NODE_type(q) == RULE_NODE) {     /*835: */
+                }
+                while (!(r == TEX_NULL));
+            }
+            else if (NODE_type(q) == RULE_NODE)
+            {
+                /*835: */
                 if (mem(q + 1).b32.s1 == NULL_FLAG)
                     mem_ptr(q + 1)->b32.s1 = mem(p + 1).b32.s1;
                 if (mem(q + 3).b32.s1 == NULL_FLAG)
                     mem_ptr(q + 3)->b32.s1 = mem(p + 3).b32.s1;
                 if (mem(q + 2).b32.s1 == NULL_FLAG)
                     mem_ptr(q + 2)->b32.s1 = mem(p + 2).b32.s1;
-                if (o != 0) {
+                if (o != 0)
+                {
                     r = mem(q).b32.s1;
                     mem_ptr(q)->b32.s1 = TEX_NULL;
                     q = hpack(q, 0, ADDITIONAL);
@@ -12897,9 +14278,13 @@ void fin_align(void)
     p = mem(cur_list.head).b32.s1;
     q = cur_list.tail;
     pop_nest();
-    if (cur_list.mode == MMODE) {       /*1241: */
+    if (cur_list.mode == MMODE)
+    {
+        /*1241: */
         do_assignments();
-        if (cur_cmd() != MATH_SHIFT) {    /*1242: */
+        if (cur_cmd() != MATH_SHIFT)
+        {
+            /*1242: */
             error_here_with_diagnostic("Missing $$ inserted");
             capture_to_diagnostic(NULL);
             {
@@ -12908,10 +14293,14 @@ void fin_align(void)
                 set_help_line(0, "only if nothing but the alignment itself is between $$'s.");
             }
             back_error();
-        } else {                /*1232: */
+        }
+        else
+        {
+            /*1232: */
 
             get_x_token();
-            if (cur_cmd() != MATH_SHIFT) {
+            if (cur_cmd() != MATH_SHIFT)
+            {
                 error_here_with_diagnostic("Display math should end with $$");
                 capture_to_diagnostic(NULL);
                 {
@@ -12945,8 +14334,9 @@ void fin_align(void)
         }
         cur_list.aux.b32.s1 = aux_save.b32.s1;
         resume_after_display();
-    } else {
-
+    }
+    else
+    {
         cur_list.aux = aux_save;
         mem_ptr(cur_list.tail)->b32.s1 = p;
         if (p != TEX_NULL)
@@ -12961,20 +14351,24 @@ void align_peek(void)
 restart:
     set_align_state(1000000L);
 
-    do {
+    do
+    {
         get_x_or_protected();
-    } while (!(cur_cmd() != SPACER));
-    if (cur_cmd() == NO_ALIGN) {
+    }
+    while (!(cur_cmd() != SPACER));
+    if (cur_cmd() == NO_ALIGN)
+    {
         scan_left_brace();
         new_save_level(NO_ALIGN_GROUP);
         if (cur_list.mode == -1)
             normal_paragraph();
-    } else if (cur_cmd() == RIGHT_BRACE)
+    }
+    else if (cur_cmd() == RIGHT_BRACE)
         fin_align();
     else if ((cur_cmd() == CAR_RET) && (cur_chr() == CR_CR_CODE))
         goto restart;
-    else {
-
+    else
+    {
         init_row();
         init_col();
     }
@@ -12982,7 +14376,6 @@ restart:
 
 int32_t max_hyphenatable_length(void)
 {
-
     if (INTPAR(xetex_hyphenatable_length) > HYPHENATABLE_LENGTH_LIMIT)
         return HYPHENATABLE_LENGTH_LIMIT;
     return INTPAR(xetex_hyphenatable_length);
@@ -12990,7 +14383,8 @@ int32_t max_hyphenatable_length(void)
 
 bool eTeX_enabled(bool b, uint16_t j, int32_t k)
 {
-    if (!b) {
+    if (!b)
+    {
         error_here_with_diagnostic("Improper ");
         print_cmd_chr(j, k);
         capture_to_diagnostic(NULL);
@@ -13016,7 +14410,7 @@ show_save_groups(void)
     signed char a;
     int32_t i;
     uint16_t j;
-    const char * s = NULL;
+    const char* s = NULL;
 
     p = nest_cur();
     set_nest(p, cur_list);
@@ -13030,24 +14424,28 @@ show_save_groups(void)
     print_nl_cstr("");
     print_ln();
 
-    while (true) {
+    while (true)
+    {
         print_nl_cstr("### ");
         print_group(true);
 
         if (cur_group == BOTTOM_LEVEL)
             goto done;
 
-        do {
+        do
+        {
             m = nest(p).mode;
             if (p > 0)
                 p--;
             else
                 m = VMODE;
-        } while (m == HMODE);
+        }
+        while (m == HMODE);
 
         print_cstr(" (");
 
-        switch (cur_group) {
+        switch (cur_group)
+        {
         case SIMPLE_GROUP:
             p++;
             goto found2;
@@ -13067,14 +14465,17 @@ show_save_groups(void)
             break;
 
         case ALIGN_GROUP:
-            if (a == 0) {
+            if (a == 0)
+            {
                 if (m == -VMODE)
                     s = "halign";
                 else
                     s = "valign";
                 a = 1;
                 goto found1;
-            } else {
+            }
+            else
+            {
                 if (a == 1)
                     print_cstr("align entry");
                 else
@@ -13110,7 +14511,8 @@ show_save_groups(void)
             else
                 print_esc_cstr("mathchoice");
 
-            for (i = 1; i <= 3; i++) {
+            for (i = 1; i <= 3; i++)
+            {
                 if (i <= save_stack(save_ptr - 2).b32.s1)
                     print_cstr("{}");
             }
@@ -13118,9 +14520,12 @@ show_save_groups(void)
             break;
 
         case INSERT_GROUP:
-            if (save_stack(save_ptr - 2).b32.s1 == 255) {
+            if (save_stack(save_ptr - 2).b32.s1 == 255)
+            {
                 print_esc_cstr("vadjust");
-            } else {
+            }
+            else
+            {
                 print_esc_cstr("insert");
                 print_int(save_stack(save_ptr - 2).b32.s1);
             }
@@ -13139,9 +14544,12 @@ show_save_groups(void)
             break;
 
         case MATH_SHIFT_GROUP:
-            if (m == MMODE) {
+            if (m == MMODE)
+            {
                 print_char('$');
-            } else if (nest(p).mode == MMODE) {
+            }
+            else if (nest(p).mode == MMODE)
+            {
                 print_cmd_chr(EQ_NO, save_stack(save_ptr - 2).b32.s1);
                 goto found;
             }
@@ -13161,8 +14569,10 @@ show_save_groups(void)
 
         i = save_stack(save_ptr - 4).b32.s1;
 
-        if (i != 0) {
-            if (i < BOX_FLAG) {
+        if (i != 0)
+        {
+            if (i < BOX_FLAG)
+            {
                 if (abs(nest(p).mode) == VMODE)
                     j = HMOVE;
                 else
@@ -13175,8 +14585,11 @@ show_save_groups(void)
 
                 print_scaled(abs(i));
                 print_cstr("pt");
-            } else if (i < SHIP_OUT_FLAG) {
-                if (i >= GLOBAL_BOX_FLAG) {
+            }
+            else if (i < SHIP_OUT_FLAG)
+            {
+                if (i >= GLOBAL_BOX_FLAG)
+                {
                     print_esc_cstr("global");
                     i = i - (GLOBAL_BOX_FLAG - BOX_FLAG);
                 }
@@ -13184,14 +14597,17 @@ show_save_groups(void)
                 print_esc_cstr("setbox");
                 print_int(i - BOX_FLAG);
                 print_char('=');
-            } else {
+            }
+            else
+            {
                 print_cmd_chr(LEADER_SHIP, i - (LEADER_FLAG - A_LEADERS));
             }
         }
 
     found1:
         print_esc_cstr(s);
-        if (save_stack(save_ptr - 2).b32.s1 != 0) {
+        if (save_stack(save_ptr - 2).b32.s1 != 0)
+        {
             print_char(' ');
             if (save_stack(save_ptr - 3).b32.s1 == EXACTLY)
                 print_cstr("to");
@@ -13237,12 +14653,13 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
     active_width[5] = 0;
     active_width[6] = 0;
     prev_dp = 0;
-    while (true) {
-
+    while (true)
+    {
         if (p == TEX_NULL)
             pi = EJECT_PENALTY;
         else /*1008: */
-            switch (mem(p).b16.s1) {
+            switch (mem(p).b16.s1)
+            {
             case 0:
             case 1:
             case 2:
@@ -13250,28 +14667,38 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                 prev_dp = mem(p + 2).b32.s1;
                 goto not_found;
             case 8:
-                if ((mem(p).b16.s0 == PIC_NODE) || (mem(p).b16.s0 == PDF_NODE)) {
+                if ((mem(p).b16.s0 == PIC_NODE) || (mem(p).b16.s0 == PDF_NODE))
+                {
                     active_width[1] = active_width[1] + prev_dp + mem(p + 3).b32.s1;
                     prev_dp = mem(p + 2).b32.s1;
                 }
                 goto not_found;
             case 10:
-                if ((is_non_discardable_node(prev_p))) {
+                if ((is_non_discardable_node(prev_p)))
+                {
                     pi = 0;
                     break;
-                } else {
+                }
+                else
+                {
                     goto update_heights;
                 }
             case 11:
-                if (mem(p).b32.s1 == TEX_NULL) {
+                if (mem(p).b32.s1 == TEX_NULL)
+                {
                     t = PENALTY_NODE;
-                } else {
+                }
+                else
+                {
                     t = mem(mem(p).b32.s1).b16.s1;
                 }
-                if (t == GLUE_NODE)  {
+                if (t == GLUE_NODE)
+                {
                     pi = 0;
                     break;
-                } else {
+                }
+                else
+                {
                     goto update_heights;
                 }
             case 12:
@@ -13284,19 +14711,21 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                 confusion("vertbreak");
                 break;
             }
-        if (pi < INF_PENALTY) {
-            if (active_width[1] < h) {
-
+        if (pi < INF_PENALTY)
+        {
+            if (active_width[1] < h)
+            {
                 if ((active_width[3] != 0) || (active_width[4] != 0) || (active_width[5] != 0))
                     b = 0;
                 else
                     b = badness(h - active_width[1], active_width[2]);
-            } else if (active_width[1] - h > active_width[6])
+            }
+            else if (active_width[1] - h > active_width[6])
                 b = MAX_HALFWORD;
             else
                 b = badness(active_width[1] - h, active_width[6]) /*:1010 */ ;
-            if (b < MAX_HALFWORD) {
-
+            if (b < MAX_HALFWORD)
+            {
                 if (pi <= EJECT_PENALTY)
                     b = pi;
                 else if (b < INF_BAD)
@@ -13304,7 +14733,8 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
                 else
                     b = 100000L;
             }
-            if (b <= least_cost) {
+            if (b <= least_cost)
+            {
                 best_place = p;
                 least_cost = b;
                 best_height_plus_depth = active_width[1] + prev_dp;
@@ -13315,15 +14745,16 @@ int32_t vert_break(int32_t p, scaled_t h, scaled_t d)
         if ((NODE_type(p) < GLUE_NODE) || (NODE_type(p) > KERN_NODE))
             goto not_found;
 
-update_heights: /*1011: */
+    update_heights: /*1011: */
         if (NODE_type(p) == KERN_NODE)
             q = p;
-        else {
-
+        else
+        {
             q = mem(p + 1).b32.s0;
             active_width[2 + mem(q).b16.s1] = active_width[2 + mem(q).b16.s1] + mem(q + 2).b32.s1;
             active_width[6] = active_width[6] + mem(q + 3).b32.s1;
-            if ((mem(q).b16.s0 != NORMAL) && (mem(q + 3).b32.s1 != 0)) {
+            if ((mem(q).b16.s0 != NORMAL) && (mem(q + 3).b32.s1 != 0))
+            {
                 error_here_with_diagnostic("Infinite glue shrinkage found in box being split");
                 capture_to_diagnostic(NULL);
                 {
@@ -13344,7 +14775,8 @@ update_heights: /*1011: */
         active_width[1] = active_width[1] + prev_dp + mem(q + 1).b32.s1;
         prev_dp = 0 /*:1011 */ ;
     not_found:
-        if (prev_dp > d) {
+        if (prev_dp > d)
+        {
             active_width[1] = active_width[1] + prev_dp - d;
             prev_dp = d;
         }
@@ -13364,8 +14796,8 @@ int32_t vsplit(int32_t n, scaled_t h)
     cur_val = n;
     if (cur_val < 256)
         v = BOX_REG(cur_val);
-    else {
-
+    else
+    {
         find_sa_element(4, cur_val, false);
         if (cur_ptr == TEX_NULL)
             v = TEX_NULL;
@@ -13374,21 +14806,24 @@ int32_t vsplit(int32_t n, scaled_t h)
     }
     flush_node_list(disc_ptr[VSPLIT_CODE]);
     disc_ptr[VSPLIT_CODE] = TEX_NULL;
-    if (sa_root[MARK_VAL] != TEX_NULL) {
-
+    if (sa_root[MARK_VAL] != TEX_NULL)
+    {
         if (do_marks(0, 0, sa_root[MARK_VAL]))
             sa_root[MARK_VAL] = TEX_NULL;
     }
-    if (cur_mark[SPLIT_FIRST_MARK_CODE] != TEX_NULL) {
+    if (cur_mark[SPLIT_FIRST_MARK_CODE] != TEX_NULL)
+    {
         delete_token_ref(cur_mark[SPLIT_FIRST_MARK_CODE]);
         cur_mark[SPLIT_FIRST_MARK_CODE] = TEX_NULL;
         delete_token_ref(cur_mark[SPLIT_BOT_MARK_CODE]);
         cur_mark[SPLIT_BOT_MARK_CODE] = TEX_NULL;
     }
-    if (v == TEX_NULL) {
+    if (v == TEX_NULL)
+    {
         return TEX_NULL;
     }
-    if (NODE_type(v) != VLIST_NODE) {
+    if (NODE_type(v) != VLIST_NODE)
+    {
         error_here_with_diagnostic("");
         print_esc_cstr("vsplit");
         print_cstr(" needs a ");
@@ -13408,32 +14843,40 @@ int32_t vsplit(int32_t n, scaled_t h)
     if (p == q)
         mem_ptr(v + 5)->b32.s1 = TEX_NULL;
     else
-        while (true) {
-
-            if (NODE_type(p) == MARK_NODE) {
-
-                if (mem(p + 1).b32.s0 != 0) {  /*1615: */
+        while (true)
+        {
+            if (NODE_type(p) == MARK_NODE)
+            {
+                if (mem(p + 1).b32.s0 != 0)
+                {
+                    /*1615: */
                     find_sa_element(MARK_VAL, mem(p + 1).b32.s0, true);
-                    if (mem(cur_ptr + 2).b32.s1 == TEX_NULL) {
+                    if (mem(cur_ptr + 2).b32.s1 == TEX_NULL)
+                    {
                         mem_ptr(cur_ptr + 2)->b32.s1 = mem(p + 1).b32.s1;
                         mem_ptr(mem(p + 1).b32.s1)->b32.s0++;
-                    } else
+                    }
+                    else
                         delete_token_ref(mem(cur_ptr + 3).b32.s0);
                     mem_ptr(cur_ptr + 3)->b32.s0 = mem(p + 1).b32.s1;
                     mem_ptr(mem(p + 1).b32.s1)->b32.s0++;
-                } else if (cur_mark[SPLIT_FIRST_MARK_CODE] == TEX_NULL) {
+                }
+                else if (cur_mark[SPLIT_FIRST_MARK_CODE] == TEX_NULL)
+                {
                     cur_mark[SPLIT_FIRST_MARK_CODE] = mem(p + 1).b32.s1;
                     cur_mark[SPLIT_BOT_MARK_CODE] = cur_mark[SPLIT_FIRST_MARK_CODE];
                     mem_ptr(cur_mark[SPLIT_FIRST_MARK_CODE])->b32.s0 =
                         mem(cur_mark[SPLIT_FIRST_MARK_CODE]).b32.s0 + 2;
-                } else {
-
+                }
+                else
+                {
                     delete_token_ref(cur_mark[SPLIT_BOT_MARK_CODE]);
                     cur_mark[SPLIT_BOT_MARK_CODE] = mem(p + 1).b32.s1;
                     mem_ptr(cur_mark[SPLIT_BOT_MARK_CODE])->b32.s0++;
                 }
             }
-            if (mem(p).b32.s1 == q) {
+            if (mem(p).b32.s1 == q)
+            {
                 mem_ptr(p)->b32.s1 = TEX_NULL;
                 goto done;
             }
@@ -13447,10 +14890,11 @@ done:
         q = vpackage(q, 0, ADDITIONAL, MAX_HALFWORD);
     if (cur_val < 256)
         BOX_REG(cur_val) = q;
-    else {
-
+    else
+    {
         find_sa_element(4, cur_val, false);
-        if (cur_ptr != TEX_NULL) {
+        if (cur_ptr != TEX_NULL)
+        {
             mem_ptr(cur_ptr + 1)->b32.s1 = q;
             mem_ptr(cur_ptr + 1)->b32.s0++;
             delete_sa_ref(cur_ptr);
@@ -13462,27 +14906,32 @@ done:
 void print_totals(void)
 {
     print_scaled(page_so_far[1]);
-    if (page_so_far[2] != 0) {
+    if (page_so_far[2] != 0)
+    {
         print_cstr(" plus ");
         print_scaled(page_so_far[2]);
         print_cstr("");
     }
-    if (page_so_far[3] != 0) {
+    if (page_so_far[3] != 0)
+    {
         print_cstr(" plus ");
         print_scaled(page_so_far[3]);
         print_cstr("fil");
     }
-    if (page_so_far[4] != 0) {
+    if (page_so_far[4] != 0)
+    {
         print_cstr(" plus ");
         print_scaled(page_so_far[4]);
         print_cstr("fill");
     }
-    if (page_so_far[5] != 0) {
+    if (page_so_far[5] != 0)
+    {
         print_cstr(" plus ");
         print_scaled(page_so_far[5]);
         print_cstr("filll");
     }
-    if (page_so_far[6] != 0) {
+    if (page_so_far[6] != 0)
+    {
         print_cstr(" minus ");
         print_scaled(page_so_far[6]);
     }
@@ -13512,14 +14961,17 @@ void app_space(void)
 
     if ((cur_list.aux.b32.s0 >= 2000) && (GLUEPAR(xspace_skip) != 0))
         q = new_param_glue(GLUE_PAR__xspace_skip);
-    else {
-
+    else
+    {
         if (GLUEPAR(space_skip) != 0)
             main_p = GLUEPAR(space_skip);
-        else {                  /*1077: */
+        else
+        {
+            /*1077: */
 
             main_p = font_glue(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
-            if (main_p == TEX_NULL) {
+            if (main_p == TEX_NULL)
+            {
                 main_p = new_spec(0);
                 main_k = param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1) + 2;
                 mem_ptr(main_p + 1)->b32.s1 = font_info(main_k).b32.s1;
@@ -13532,7 +14984,7 @@ void app_space(void)
         if (cur_list.aux.b32.s0 >= 2000)
             mem_ptr(main_p + 1)->b32.s1 =
                 mem(main_p + 1).b32.s1 + font_info(EXTRA_SPACE_CODE +
-                                                 param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1)).b32.s1;
+                    param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1)).b32.s1;
         mem_ptr(main_p + 2)->b32.s1 = xn_over_d(mem(main_p + 2).b32.s1, cur_list.aux.b32.s0, 1000);
         mem_ptr(main_p + 3)->b32.s1 = xn_over_d(mem(main_p + 3).b32.s1, 1000, cur_list.aux.b32.s0) /*:1079 */ ;
         q = new_glue(main_p);
@@ -13580,9 +15032,12 @@ void report_illegal_case(void)
 
 bool privileged(void)
 {
-    if (cur_list.mode > 0) {
+    if (cur_list.mode > 0)
+    {
         return true;
-    } else {
+    }
+    else
+    {
         report_illegal_case();
         return false;
     }
@@ -13590,9 +15045,10 @@ bool privileged(void)
 
 bool its_all_over(void)
 {
-
-    if (privileged()) {
-        if ((PAGE_HEAD == page_tail) && (cur_list.head == cur_list.tail) && (dead_cycles == 0)) {
+    if (privileged())
+    {
+        if ((PAGE_HEAD == page_tail) && (cur_list.head == cur_list.tail) && (dead_cycles == 0))
+        {
             return true;
         }
         back_input();
@@ -13618,7 +15074,8 @@ void append_glue(void)
 {
     small_number s;
     s = cur_chr();
-    switch (s) {
+    switch (s)
+    {
     case 0:
         cur_val = 4;
         break;
@@ -13642,7 +15099,8 @@ void append_glue(void)
         mem_ptr(cur_list.tail)->b32.s1 = new_glue(cur_val);
         cur_list.tail = LLIST_link(cur_list.tail);
     }
-    if (s >= SKIP_CODE) {
+    if (s >= SKIP_CODE)
+    {
         mem_ptr(cur_val)->b32.s1--;
         if (s > SKIP_CODE)
             mem_ptr(cur_list.tail)->b16.s0 = MU_GLUE;
@@ -13667,7 +15125,9 @@ off_save(void)
 {
     int32_t p;
 
-    if (cur_group == BOTTOM_LEVEL) { /*1101:*/
+    if (cur_group == BOTTOM_LEVEL)
+    {
+        /*1101:*/
         error_here_with_diagnostic("Extra ");
         print_cmd_chr(cur_cmd(), cur_chr());
         capture_to_diagnostic(NULL);
@@ -13675,31 +15135,34 @@ off_save(void)
         set_help_ptr(1);
         set_help_line(0, "Things are pretty mixed up, but I think the worst is over.");
         error();
-    } else {
+    }
+    else
+    {
         back_input();
         p = get_avail();
         mem_ptr(TEMP_HEAD)->b32.s1 = p;
 
         error_here_with_diagnostic("Missing ");
 
-        switch (cur_group) {
+        switch (cur_group)
+        {
         case SEMI_SIMPLE_GROUP:
             mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_END_GROUP;
             print_esc_cstr("endgroup");
             break;
         case MATH_SHIFT_GROUP:
-            mem_ptr(p)->b32.s0 = MATH_SHIFT_TOKEN + '$' ;
+            mem_ptr(p)->b32.s0 = MATH_SHIFT_TOKEN + '$';
             print_char('$');
             break;
         case MATH_LEFT_GROUP:
             mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_RIGHT;
             mem_ptr(p)->b32.s1 = get_avail();
             p = LLIST_link(p);
-            mem_ptr(p)->b32.s0 = OTHER_TOKEN + '.' ;
+            mem_ptr(p)->b32.s0 = OTHER_TOKEN + '.';
             print_esc_cstr("right.");
             break;
         default:
-            mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
+            mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}');
             print_char('}');
             break;
         }
@@ -13724,7 +15187,8 @@ extra_right_brace(void)
 {
     error_here_with_diagnostic("Extra }, or forgotten ");
 
-    switch (cur_group) {
+    switch (cur_group)
+    {
     case SEMI_SIMPLE_GROUP:
         print_esc_cstr("endgroup");
         break;
@@ -13751,7 +15215,6 @@ extra_right_brace(void)
 
 void normal_paragraph(void)
 {
-
     if (INTPAR(looseness) != 0)
         eq_word_define(INT_BASE + INT_PAR__looseness, 0);
     if (DIMENPAR(hang_indent) != 0)
@@ -13777,13 +15240,19 @@ box_end(int32_t box_context)
     int32_t p;
     small_number a;
 
-    if (box_context < BOX_FLAG) { /*1111:*/
-        if (cur_box != TEX_NULL) {
+    if (box_context < BOX_FLAG)
+    {
+        /*1111:*/
+        if (cur_box != TEX_NULL)
+        {
             mem_ptr(cur_box + 4)->b32.s1 = box_context;
 
-            if (abs(cur_list.mode) == VMODE) {
-                if (pre_adjust_tail != TEX_NULL) {
-                    if (PRE_ADJUST_HEAD != pre_adjust_tail) {
+            if (abs(cur_list.mode) == VMODE)
+            {
+                if (pre_adjust_tail != TEX_NULL)
+                {
+                    if (PRE_ADJUST_HEAD != pre_adjust_tail)
+                    {
                         mem_ptr(cur_list.tail)->b32.s1 = mem(PRE_ADJUST_HEAD).b32.s1;
                         cur_list.tail = pre_adjust_tail;
                     }
@@ -13792,8 +15261,10 @@ box_end(int32_t box_context)
 
                 append_to_vlist(cur_box);
 
-                if (adjust_tail != TEX_NULL) {
-                    if (ADJUST_HEAD != adjust_tail) {
+                if (adjust_tail != TEX_NULL)
+                {
+                    if (ADJUST_HEAD != adjust_tail)
+                    {
                         mem_ptr(cur_list.tail)->b32.s1 = mem(ADJUST_HEAD).b32.s1;
                         cur_list.tail = adjust_tail;
                     }
@@ -13802,10 +15273,15 @@ box_end(int32_t box_context)
 
                 if (cur_list.mode > 0)
                     build_page();
-            } else {
-                if (abs(cur_list.mode) == HMODE) {
+            }
+            else
+            {
+                if (abs(cur_list.mode) == HMODE)
+                {
                     cur_list.aux.b32.s0 = 1000;
-                } else {
+                }
+                else
+                {
                     p = new_noad();
                     mem_ptr(p + 1)->b32.s1 = SUB_BOX;
                     mem_ptr(p + 1)->b32.s0 = cur_box;
@@ -13816,38 +15292,57 @@ box_end(int32_t box_context)
                 cur_list.tail = cur_box;
             }
         }
-    } else if (box_context < SHIP_OUT_FLAG) { /*1112:*/
-        if (box_context < GLOBAL_BOX_FLAG) {
+    }
+    else if (box_context < SHIP_OUT_FLAG)
+    {
+        /*1112:*/
+        if (box_context < GLOBAL_BOX_FLAG)
+        {
             cur_val = box_context - BOX_FLAG;
             a = 0;
-        } else {
+        }
+        else
+        {
             cur_val = box_context - GLOBAL_BOX_FLAG;
             a = 4;
         }
 
-        if (cur_val < 256) {
+        if (cur_val < 256)
+        {
             if (a >= 4)
                 geq_define(BOX_BASE + cur_val, BOX_REF, cur_box);
             else
                 eq_define(BOX_BASE + cur_val, BOX_REF, cur_box);
-        } else {
+        }
+        else
+        {
             find_sa_element(4, cur_val, true);
             if (a >= 4)
                 gsa_def(cur_ptr, cur_box);
             else
                 sa_def(cur_ptr, cur_box);
         }
-    } else if (cur_box != TEX_NULL) {
-        if (box_context > SHIP_OUT_FLAG) { /*1113:*/
-            do {
+    }
+    else if (cur_box != TEX_NULL)
+    {
+        if (box_context > SHIP_OUT_FLAG)
+        {
+            /*1113:*/
+            do
+            {
                 get_x_token();
-            } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
+            }
+            while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-            if ((cur_cmd() == HSKIP && abs(cur_list.mode) != VMODE) || (cur_cmd() == VSKIP && abs(cur_list.mode) == VMODE)) {
+            if ((cur_cmd() == HSKIP && abs(cur_list.mode) != VMODE) || (cur_cmd() == VSKIP && abs(cur_list.mode) ==
+                VMODE))
+            {
                 append_glue();
                 mem_ptr(cur_list.tail)->b16.s0 = box_context - (LEADER_FLAG - A_LEADERS);
                 mem_ptr(cur_list.tail + 1)->b32.s1 = cur_box;
-            } else {
+            }
+            else
+            {
                 error_here_with_diagnostic("Leaders not followed by proper glue");
                 capture_to_diagnostic(NULL);
 
@@ -13858,7 +15353,9 @@ box_end(int32_t box_context)
                 back_error();
                 flush_node_list(cur_box);
             }
-        } else {
+        }
+        else
+        {
             ship_out(cur_box);
         }
     }
@@ -13876,13 +15373,17 @@ begin_box(int32_t box_context)
     int32_t k;
     int32_t n;
 
-    switch (cur_chr()) {
+    switch (cur_chr())
+    {
     case BOX_CODE:
         scan_register_num();
 
-        if (cur_val < 256) {
+        if (cur_val < 256)
+        {
             cur_box = BOX_REG(cur_val);
-        } else {
+        }
+        else
+        {
             find_sa_element(4, cur_val, false);
             if (cur_ptr == TEX_NULL)
                 cur_box = TEX_NULL;
@@ -13890,11 +15391,15 @@ begin_box(int32_t box_context)
                 cur_box = mem(cur_ptr + 1).b32.s1;
         }
 
-        if (cur_val < 256) {
+        if (cur_val < 256)
+        {
             BOX_REG(cur_val) = TEX_NULL;
-        } else {
+        }
+        else
+        {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr != TEX_NULL) {
+            if (cur_ptr != TEX_NULL)
+            {
                 mem_ptr(cur_ptr + 1)->b32.s1 = TEX_NULL;
                 mem_ptr(cur_ptr + 1)->b32.s0++;
                 delete_sa_ref(cur_ptr);
@@ -13905,9 +15410,12 @@ begin_box(int32_t box_context)
     case COPY_CODE:
         scan_register_num();
 
-        if (cur_val < 256) {
+        if (cur_val < 256)
+        {
             q = BOX_REG(cur_val);
-        } else {
+        }
+        else
+        {
             find_sa_element(4, cur_val, false);
             if (cur_ptr == TEX_NULL)
                 q = TEX_NULL;
@@ -13921,66 +15429,87 @@ begin_box(int32_t box_context)
     case LAST_BOX_CODE:
         cur_box = TEX_NULL;
 
-        if (abs(cur_list.mode) == MMODE) {
+        if (abs(cur_list.mode) == MMODE)
+        {
             you_cant();
             set_help_ptr(1);
             set_help_line(0, "Sorry; this \\lastbox will be void.");
             error();
-        } else if (cur_list.mode == VMODE && cur_list.head == cur_list.tail) {
+        }
+        else if (cur_list.mode == VMODE && cur_list.head == cur_list.tail)
+        {
             you_cant();
             set_help_ptr(2);
             set_help_line(1, "Sorry...I usually can't take things from the current page.");
             set_help_line(0, "This \\lastbox will therefore be void.");
             error();
-        } else {
+        }
+        else
+        {
             tx = cur_list.tail;
 
-            if (tx < hi_mem_min()) {
-                if (NODE_type(tx) == MATH_NODE && mem(tx).b16.s0 == END_M_CODE) {
+            if (tx < hi_mem_min())
+            {
+                if (NODE_type(tx) == MATH_NODE && mem(tx).b16.s0 == END_M_CODE)
+                {
                     r = cur_list.head;
-                    do {
+                    do
+                    {
                         q = r;
                         r = mem(q).b32.s1;
-                    } while (r != tx);
+                    }
+                    while (r != tx);
                     tx = q;
                 }
             }
 
-            if (tx < hi_mem_min()) {
-                if (NODE_type(tx) == HLIST_NODE || NODE_type(tx) == VLIST_NODE) { /*1116:*/
+            if (tx < hi_mem_min())
+            {
+                if (NODE_type(tx) == HLIST_NODE || NODE_type(tx) == VLIST_NODE)
+                {
+                    /*1116:*/
                     q = cur_list.head;
                     p = TEX_NULL;
 
-                    do {
+                    do
+                    {
                         r = p;
                         p = q;
                         fm = false;
 
-                        if (q < hi_mem_min()) {
-                            if (NODE_type(q) == DISC_NODE) {
+                        if (q < hi_mem_min())
+                        {
+                            if (NODE_type(q) == DISC_NODE)
+                            {
                                 for (m = 1; m <= mem(q).b16.s0; m++)
                                     p = LLIST_link(p);
 
                                 if (p == tx)
                                     goto done;
-                            } else if (NODE_type(q) == MATH_NODE && mem(q).b16.s0 == BEGIN_M_CODE) {
+                            }
+                            else if (NODE_type(q) == MATH_NODE && mem(q).b16.s0 == BEGIN_M_CODE)
+                            {
                                 fm = true;
                             }
                         }
 
                         q = mem(p).b32.s1;
-                    } while (q != tx);
+                    }
+                    while (q != tx);
 
                     q = mem(tx).b32.s1;
                     mem_ptr(p)->b32.s1 = q;
                     mem_ptr(tx)->b32.s1 = TEX_NULL;
 
-                    if (q == TEX_NULL) {
+                    if (q == TEX_NULL)
+                    {
                         if (fm)
                             confusion("tail1");
                         else
                             cur_list.tail = p;
-                    } else if (fm) {
+                    }
+                    else if (fm)
+                    {
                         cur_list.tail = r;
                         mem_ptr(r)->b32.s1 = TEX_NULL;
                         flush_node_list(p);
@@ -13999,7 +15528,8 @@ begin_box(int32_t box_context)
         scan_register_num();
         n = cur_val;
 
-        if (!scan_keyword("to")) {
+        if (!scan_keyword("to"))
+        {
             error_here_with_diagnostic("Missing `to' inserted");
             capture_to_diagnostic(NULL);
 
@@ -14016,15 +15546,19 @@ begin_box(int32_t box_context)
     default:
         k = cur_chr() - 4;
         save_stack_ptr(save_ptr + 0)->b32.s1 = box_context;
-        if (k == HMODE) {
+        if (k == HMODE)
+        {
             if (box_context < BOX_FLAG && abs(cur_list.mode) == VMODE)
                 scan_spec(ADJUSTED_HBOX_GROUP, true);
             else
                 scan_spec(HBOX_GROUP, true);
-        } else {
+        }
+        else
+        {
             if (k == VMODE)
                 scan_spec(VBOX_GROUP, true);
-            else {
+            else
+            {
                 scan_spec(VTOP_GROUP, true);
                 k = VMODE;
             }
@@ -14032,13 +15566,16 @@ begin_box(int32_t box_context)
         }
 
         push_nest();
-        cur_list.mode = -(int32_t) k;
+        cur_list.mode = -(int32_t)k;
 
-        if (k == VMODE) {
+        if (k == VMODE)
+        {
             cur_list.aux.b32.s1 = IGNORE_DEPTH;
             if (LOCAL(every_vbox) != TEX_NULL)
                 begin_token_list(LOCAL(every_vbox), EVERY_VBOX_TEXT);
-        } else {
+        }
+        else
+        {
             cur_list.aux.b32.s0 = 1000;
             if (LOCAL(every_hbox) != TEX_NULL)
                 begin_token_list(LOCAL(every_hbox), EVERY_HBOX_TEXT);
@@ -14054,16 +15591,23 @@ begin_box(int32_t box_context)
 void
 scan_box(int32_t box_context)
 {
-    do {
+    do
+    {
         get_x_token();
-    } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
+    }
+    while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
-    if (cur_cmd() == MAKE_BOX) {
+    if (cur_cmd() == MAKE_BOX)
+    {
         begin_box(box_context);
-    } else if (box_context >= LEADER_FLAG && (cur_cmd() == HRULE || cur_cmd() == VRULE)) {
+    }
+    else if (box_context >= LEADER_FLAG && (cur_cmd() == HRULE || cur_cmd() == VRULE))
+    {
         cur_box = scan_rule_spec();
         box_end(box_context);
-    } else {
+    }
+    else
+    {
         error_here_with_diagnostic("A <box> was supposed to be here");
         capture_to_diagnostic(NULL);
 
@@ -14091,15 +15635,17 @@ void package(small_number c)
     INTPAR(xetex_upwards) = u;
     if (cur_list.mode == -104)
         cur_box = hpack(mem(cur_list.head).b32.s1, save_stack(save_ptr + 2).b32.s1, save_stack(save_ptr + 1).b32.s1);
-    else {
-
+    else
+    {
         cur_box =
             vpackage(mem(cur_list.head).b32.s1, save_stack(save_ptr + 2).b32.s1, save_stack(save_ptr + 1).b32.s1, d);
-        if (c == VTOP_CODE) {   /*1122: */
+        if (c == VTOP_CODE)
+        {
+            /*1122: */
             h = 0;
             p = mem(cur_box + 5).b32.s1;
-            if (p != TEX_NULL) {
-
+            if (p != TEX_NULL)
+            {
                 if (NODE_type(p) <= RULE_NODE)
                     h = mem(p + 3).b32.s1;
             }
@@ -14128,7 +15674,8 @@ new_graf(bool indented)
 {
     cur_list.prev_graf = 0;
 
-    if (cur_list.mode == VMODE || cur_list.head != cur_list.tail) {
+    if (cur_list.mode == VMODE || cur_list.head != cur_list.tail)
+    {
         mem_ptr(cur_list.tail)->b32.s1 = new_param_glue(GLUE_PAR__par_skip);
         cur_list.tail = LLIST_link(cur_list.tail);
     }
@@ -14146,10 +15693,11 @@ new_graf(bool indented)
 
     cur_list.aux.b32.s1 = cur_lang;
     cur_list.prev_graf =
-        (norm_min(INTPAR(left_hyphen_min)) * 64 +
-         norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
+    (norm_min(INTPAR(left_hyphen_min)) * 64 +
+        norm_min(INTPAR(right_hyphen_min))) * 65536L + cur_lang;
 
-    if (indented) {
+    if (indented)
+    {
         cur_list.tail = new_null_box();
         mem_ptr(cur_list.head)->b32.s1 = cur_list.tail;
         mem_ptr(cur_list.tail + 1)->b32.s1 = eqtb_ptr(DIMEN_BASE)->b32.s1;
@@ -14168,13 +15716,14 @@ void indent_in_hmode(void)
 {
     int32_t p, q;
 
-    if (cur_chr() > 0) {
+    if (cur_chr() > 0)
+    {
         p = new_null_box();
         mem_ptr(p + 1)->b32.s1 = eqtb_ptr(DIMEN_BASE)->b32.s1;
         if (abs(cur_list.mode) == HMODE)
             cur_list.aux.b32.s0 = 1000;
-        else {
-
+        else
+        {
             q = new_noad();
             mem_ptr(q + 1)->b32.s1 = SUB_BOX;
             mem_ptr(q + 1)->b32.s0 = p;
@@ -14189,11 +15738,12 @@ void indent_in_hmode(void)
 
 void head_for_vmode(void)
 {
-    if (cur_list.mode < 0) {
-
+    if (cur_list.mode < 0)
+    {
         if (cur_cmd() != HRULE)
             off_save();
-        else {
+        else
+        {
             error_here_with_diagnostic("You can't use `");
             print_esc_cstr("hrule");
             print_cstr("' here except with leaders");
@@ -14206,8 +15756,9 @@ void head_for_vmode(void)
             }
             error();
         }
-    } else {
-
+    }
+    else
+    {
         back_input();
         set_cur_tok(par_token);
         back_input();
@@ -14218,13 +15769,15 @@ void head_for_vmode(void)
 void
 end_graf(void)
 {
-    if (cur_list.mode == HMODE) {
+    if (cur_list.mode == HMODE)
+    {
         if (cur_list.head == cur_list.tail)
             pop_nest();
         else
             line_break(false);
 
-        if (cur_list.etex_aux != TEX_NULL) {
+        if (cur_list.etex_aux != TEX_NULL)
+        {
             flush_list(cur_list.etex_aux);
             cur_list.etex_aux = TEX_NULL;
         }
@@ -14238,10 +15791,11 @@ void begin_insert_or_adjust(void)
 {
     if (cur_cmd() == VADJUST)
         cur_val = 255;
-    else {
-
+    else
+    {
         scan_eight_bit_int();
-        if (cur_val == 255) {
+        if (cur_val == 255)
+        {
             error_here_with_diagnostic("You can't ");
             print_esc_cstr("insert");
             print_int(255);
@@ -14275,8 +15829,8 @@ void make_mark(void)
     int32_t c;
     if (cur_chr() == 0)
         c = 0;
-    else {
-
+    else
+    {
         scan_register_num();
         c = cur_val;
     }
@@ -14308,8 +15862,11 @@ void delete_last(void)
     bool fm;
     int32_t tx;
     uint16_t m;
-    if ((cur_list.mode == VMODE) && (cur_list.tail == cur_list.head)) {       /*1141: */
-        if ((cur_chr() != GLUE_NODE) || (last_glue != MAX_HALFWORD)) {
+    if ((cur_list.mode == VMODE) && (cur_list.tail == cur_list.head))
+    {
+        /*1141: */
+        if ((cur_chr() != GLUE_NODE) || (last_glue != MAX_HALFWORD))
+        {
             you_cant();
             {
                 set_help_ptr(2);
@@ -14322,32 +15879,39 @@ void delete_last(void)
                 set_help_line(0, "Perhaps you can make the output routine do it.");
             error();
         }
-    } else {
-
+    }
+    else
+    {
         tx = cur_list.tail;
-        if (!(is_char_node(tx))) {
-
-            if ((NODE_type(tx) == MATH_NODE) && (mem(tx).b16.s0 == END_M_CODE)) {
+        if (!(is_char_node(tx)))
+        {
+            if ((NODE_type(tx) == MATH_NODE) && (mem(tx).b16.s0 == END_M_CODE))
+            {
                 r = cur_list.head;
-                do {
+                do
+                {
                     q = r;
                     r = mem(q).b32.s1;
-                } while (!(r == tx));
+                }
+                while (!(r == tx));
                 tx = q;
             }
         }
-        if (!(is_char_node(tx))) {
-
-            if (mem(tx).b16.s1 == cur_chr()) {
+        if (!(is_char_node(tx)))
+        {
+            if (mem(tx).b16.s1 == cur_chr())
+            {
                 q = cur_list.head;
                 p = TEX_NULL;
-                do {
+                do
+                {
                     r = p;
                     p = q;
                     fm = false;
-                    if (!(is_char_node(q))) {
-
-                        if (NODE_type(q) == DISC_NODE) {
+                    if (!(is_char_node(q)))
+                    {
+                        if (NODE_type(q) == DISC_NODE)
+                        {
                             {
                                 register int32_t for_end;
                                 m = 1;
@@ -14359,21 +15923,25 @@ void delete_last(void)
                             }
                             if (p == tx)
                                 return;
-                        } else if ((NODE_type(q) == MATH_NODE) && (mem(q).b16.s0 == BEGIN_M_CODE))
+                        }
+                        else if ((NODE_type(q) == MATH_NODE) && (mem(q).b16.s0 == BEGIN_M_CODE))
                             fm = true;
                     }
                     q = mem(p).b32.s1;
-                } while (!(q == tx));
+                }
+                while (!(q == tx));
                 q = mem(tx).b32.s1;
                 mem_ptr(p)->b32.s1 = q;
                 mem_ptr(tx)->b32.s1 = TEX_NULL;
-                if (q == TEX_NULL) {
-
+                if (q == TEX_NULL)
+                {
                     if (fm)
                         confusion("tail1");
                     else
                         cur_list.tail = p;
-                } else if (fm) {
+                }
+                else if (fm)
+                {
                     cur_list.tail = r;
                     mem_ptr(r)->b32.s1 = TEX_NULL;
                     flush_node_list(p);
@@ -14390,7 +15958,9 @@ void unpackage(void)
     int32_t r;
     unsigned char /*copy_code */ c;
 
-    if (cur_chr() > COPY_CODE) {  /*1651: */
+    if (cur_chr() > COPY_CODE)
+    {
+        /*1651: */
         mem_ptr(cur_list.tail)->b32.s1 = disc_ptr[cur_chr()];
         disc_ptr[cur_chr()] = TEX_NULL;
         goto done;
@@ -14399,8 +15969,8 @@ void unpackage(void)
     scan_register_num();
     if (cur_val < 256)
         p = BOX_REG(cur_val);
-    else {
-
+    else
+    {
         find_sa_element(4, cur_val, false);
         if (cur_ptr == TEX_NULL)
             p = TEX_NULL;
@@ -14411,7 +15981,8 @@ void unpackage(void)
         return;
     if ((abs(cur_list.mode) == MMODE)
         || ((abs(cur_list.mode) == VMODE) && (NODE_type(p) != VLIST_NODE))
-        || ((abs(cur_list.mode) == HMODE) && (NODE_type(p) != HLIST_NODE))) {
+        || ((abs(cur_list.mode) == HMODE) && (NODE_type(p) != HLIST_NODE)))
+    {
         error_here_with_diagnostic("Incompatible list can't be unboxed");
         capture_to_diagnostic(NULL);
         {
@@ -14425,15 +15996,16 @@ void unpackage(void)
     }
     if (c == COPY_CODE)
         mem_ptr(cur_list.tail)->b32.s1 = copy_node_list(mem(p + 5).b32.s1);
-    else {
-
+    else
+    {
         mem_ptr(cur_list.tail)->b32.s1 = mem(p + 5).b32.s1;
         if (cur_val < 256)
             BOX_REG(cur_val) = TEX_NULL;
-        else {
-
+        else
+        {
             find_sa_element(4, cur_val, false);
-            if (cur_ptr != TEX_NULL) {
+            if (cur_ptr != TEX_NULL)
+            {
                 mem_ptr(cur_ptr + 1)->b32.s1 = TEX_NULL;
                 mem_ptr(cur_ptr + 1)->b32.s0++;
                 delete_sa_ref(cur_ptr);
@@ -14442,10 +16014,11 @@ void unpackage(void)
         free_node(p, BOX_NODE_SIZE);
     }
 done:
-    while (mem(cur_list.tail).b32.s1 != TEX_NULL) {
-
+    while (mem(cur_list.tail).b32.s1 != TEX_NULL)
+    {
         r = mem(cur_list.tail).b32.s1;
-        if (!(is_char_node(r)) && (NODE_type(r) == MARGIN_KERN_NODE)) {
+        if (!(is_char_node(r)) && (NODE_type(r) == MARGIN_KERN_NODE))
+        {
             mem_ptr(cur_list.tail)->b32.s1 = mem(r).b32.s1;
             free_node(r, MARGIN_KERN_NODE_SIZE);
         }
@@ -14457,20 +16030,25 @@ void append_italic_correction(void)
 {
     int32_t p;
     internal_font_number f;
-    if (cur_list.tail != cur_list.head) {
+    if (cur_list.tail != cur_list.head)
+    {
         if ((is_char_node(cur_list.tail)))
             p = cur_list.tail;
         else if (NODE_type(cur_list.tail) == LIGATURE_NODE)
             p = cur_list.tail + 1;
-        else if (NODE_type(cur_list.tail) == WHATSIT_NODE) {
+        else if (NODE_type(cur_list.tail) == WHATSIT_NODE)
+        {
             if ((mem(cur_list.tail).b16.s0 == NATIVE_WORD_NODE)
-                || (mem(cur_list.tail).b16.s0 == NATIVE_WORD_NODE_AT)) {
+                || (mem(cur_list.tail).b16.s0 == NATIVE_WORD_NODE_AT))
+            {
                 {
                     mem_ptr(cur_list.tail)->b32.s1 = new_kern(get_native_italic_correction(cur_list.tail));
                     cur_list.tail = LLIST_link(cur_list.tail);
                 }
                 NODE_subtype(cur_list.tail) = EXPLICIT;
-            } else if (mem(cur_list.tail).b16.s0 == GLYPH_NODE) {
+            }
+            else if (mem(cur_list.tail).b16.s0 == GLYPH_NODE)
+            {
                 {
                     mem_ptr(cur_list.tail)->b32.s1 =
                         new_kern(get_native_glyph_italic_correction(cur_list.tail));
@@ -14479,12 +16057,14 @@ void append_italic_correction(void)
                 NODE_subtype(cur_list.tail) = EXPLICIT;
             }
             return;
-        } else
+        }
+        else
             return;
         f = CHAR_NODE_font(p);
         {
             mem_ptr(cur_list.tail)->b32.s1 =
-                new_kern(FONT_CHARINFO_ITALCORR(f, FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)))));
+                new_kern(FONT_CHARINFO_ITALCORR(
+                    f, FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(p)))));
             cur_list.tail = LLIST_link(cur_list.tail);
         }
         NODE_subtype(cur_list.tail) = EXPLICIT;
@@ -14498,15 +16078,17 @@ void append_discretionary(void)
     mem_ptr(cur_list.tail)->b32.s1 = new_disc();
     cur_list.tail = LLIST_link(cur_list.tail);
 
-    if (cur_chr() == 1) {
+    if (cur_chr() == 1)
+    {
         c = hyphen_char(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
-        if (c >= 0) {
-
+        if (c >= 0)
+        {
             if (c <= BIGGEST_CHAR)
                 mem_ptr(cur_list.tail + 1)->b32.s0 = new_character(eqtb_ptr(CUR_FONT_LOC)->b32.s1, c);
         }
-    } else {
-
+    }
+    else
+    {
         save_ptr++;
         save_stack_ptr(save_ptr - 1)->b32.s1 = 0;
         new_save_level(DISC_GROUP);
@@ -14525,20 +16107,21 @@ void build_discretionary(void)
     q = cur_list.head;
     p = mem(q).b32.s1;
     n = 0;
-    while (p != TEX_NULL) {
-
-        if (!(is_char_node(p))) {
-
-            if (NODE_type(p) > RULE_NODE) {
-
-                if (NODE_type(p) != KERN_NODE) {
-
-                    if (NODE_type(p) != LIGATURE_NODE) {
-
+    while (p != TEX_NULL)
+    {
+        if (!(is_char_node(p)))
+        {
+            if (NODE_type(p) > RULE_NODE)
+            {
+                if (NODE_type(p) != KERN_NODE)
+                {
+                    if (NODE_type(p) != LIGATURE_NODE)
+                    {
                         if ((NODE_type(p) != WHATSIT_NODE)
                             || ((mem(p).b16.s0 != NATIVE_WORD_NODE)
                                 && (mem(p).b16.s0 != NATIVE_WORD_NODE_AT)
-                                && (mem(p).b16.s0 != GLYPH_NODE))) {
+                                && (mem(p).b16.s0 != GLYPH_NODE)))
+                        {
                             error_here_with_diagnostic("Improper discretionary list");
                             capture_to_diagnostic(NULL);
                             {
@@ -14570,7 +16153,8 @@ void build_discretionary(void)
 done:
     p = mem(cur_list.head).b32.s1;
     pop_nest();
-    switch (save_stack(save_ptr - 1).b32.s1) {
+    switch (save_stack(save_ptr - 1).b32.s1)
+    {
     case 0:
         mem_ptr(cur_list.tail + 1)->b32.s0 = p;
         break;
@@ -14579,7 +16163,8 @@ done:
         break;
     case 2:
         {
-            if ((n > 0) && (abs(cur_list.mode) == MMODE)) {
+            if ((n > 0) && (abs(cur_list.mode) == MMODE))
+            {
                 error_here_with_diagnostic("Illegal math ");
                 print_esc_cstr("discretionary");
                 capture_to_diagnostic(NULL);
@@ -14592,11 +16177,13 @@ done:
                 flush_node_list(p);
                 n = 0;
                 error();
-            } else
+            }
+            else
                 mem_ptr(cur_list.tail)->b32.s1 = p;
             if (n <= UINT16_MAX)
                 mem_ptr(cur_list.tail)->b16.s0 = n;
-            else {
+            else
+            {
                 error_here_with_diagnostic("Discretionary list is too long");
                 capture_to_diagnostic(NULL);
 
@@ -14634,39 +16221,51 @@ void make_accent(void)
     f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
     p = new_character(f, cur_val);
 
-    if (p != TEX_NULL) {
+    if (p != TEX_NULL)
+    {
         x = font_info(X_HEIGHT_CODE + param_base(f)).b32.s1;
         s = font_info(SLANT_CODE + param_base(f)).b32.s1 / ((double)65536.0);
-        if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
+        if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG)))
+        {
             a = mem(p + 1).b32.s1;
             if (a == 0)
                 get_native_char_sidebearings(f, cur_val, &lsb, &rsb);
-        } else
+        }
+        else
             a = FONT_CHARACTER_WIDTH(f,
                                      effective_char(true, f, CHAR_NODE_character(p)));
         do_assignments();
         q = TEX_NULL;
         f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
-        if ((cur_cmd() == LETTER) || (cur_cmd() == OTHER_CHAR) || (cur_cmd() == CHAR_GIVEN)) {
+        if ((cur_cmd() == LETTER) || (cur_cmd() == OTHER_CHAR) || (cur_cmd() == CHAR_GIVEN))
+        {
             q = new_character(f, cur_chr());
             cur_val = cur_chr();
-        } else if (cur_cmd() == CHAR_NUM) {
+        }
+        else if (cur_cmd() == CHAR_NUM)
+        {
             scan_char_num();
             q = new_character(f, cur_val);
-        } else
+        }
+        else
             back_input();
-        if (q != TEX_NULL) { /*1160: */
+        if (q != TEX_NULL)
+        {
+            /*1160: */
             t = font_info(SLANT_CODE + param_base(f)).b32.s1 / ((double)65536.0);
-            if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
+            if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG)))
+            {
                 w = mem(q + 1).b32.s1;
                 get_native_char_height_depth(f, cur_val, &h, &delta);
-            } else {
-
+            }
+            else
+            {
                 i = FONT_CHARACTER_INFO(f, effective_char(true, f, CHAR_NODE_character(q)));
                 w = FONT_CHARINFO_WIDTH(f, i);
                 h = FONT_CHARINFO_HEIGHT(f, i);
             }
-            if (h != x) {
+            if (h != x)
+            {
                 p = hpack(p, 0, ADDITIONAL);
                 mem_ptr(p + 4)->b32.s1 = x - h;
             }
@@ -14679,7 +16278,7 @@ void make_accent(void)
             NODE_subtype(r) = ACC_KERN;
             mem_ptr(cur_list.tail)->b32.s1 = r;
             mem_ptr(r)->b32.s1 = p;
-            cur_list.tail = new_kern(-(int32_t) a - delta);
+            cur_list.tail = new_kern(-(int32_t)a - delta);
             NODE_subtype(cur_list.tail) = ACC_KERN;
             mem_ptr(p)->b32.s1 = cur_list.tail;
             p = q;
@@ -14692,12 +16291,15 @@ void make_accent(void)
 
 void align_error(void)
 {
-    if (abs(align_state()) > 2) {      /*1163: */
+    if (abs(align_state()) > 2)
+    {
+        /*1163: */
         error_here_with_diagnostic("Misplaced ");
         print_cmd_chr(cur_cmd(), cur_chr());
         capture_to_diagnostic(NULL);
 
-        if (cur_tok() == (TAB_TOKEN + 38)) {
+        if (cur_tok() == (TAB_TOKEN + 38))
+        {
             {
                 set_help_ptr(6);
                 set_help_line(5, "I can't figure out why you would want to use a tab mark");
@@ -14707,8 +16309,9 @@ void align_error(void)
                 set_help_line(1, "you're probably due for more error messages, and you");
                 set_help_line(0, "might try typing `S' now just to see what is salvageable.");
             }
-        } else {
-
+        }
+        else
+        {
             {
                 set_help_ptr(5);
                 set_help_line(4, "I can't figure out why you would want to use a tab mark");
@@ -14719,15 +16322,19 @@ void align_error(void)
             }
         }
         error();
-    } else {
-
+    }
+    else
+    {
         back_input();
-        if (align_state() < 0) {
+        if (align_state() < 0)
+        {
             error_here_with_diagnostic("Missing { inserted");
             capture_to_diagnostic(NULL);
             set_align_state(align_state() + 1);
             set_cur_tok((LEFT_BRACE_TOKEN + 123));
-        } else {
+        }
+        else
+        {
             error_here_with_diagnostic("Missing } inserted");
             capture_to_diagnostic(NULL);
             set_align_state(align_state() - 1);
@@ -14776,16 +16383,18 @@ void do_endv(void)
     set_base_ptr(input_ptr());
     set_input_stack(base_ptr(), cur_input());
     while ((input_stack(base_ptr()).index != V_TEMPLATE) && (input_stack(base_ptr()).loc == TEX_NULL)
-           && (input_stack(base_ptr()).state == TOKEN_LIST))
-        set_base_ptr(base_ptr()-1);
+        && (input_stack(base_ptr()).state == TOKEN_LIST))
+        set_base_ptr(base_ptr() - 1);
     if ((input_stack(base_ptr()).index != V_TEMPLATE) || (input_stack(base_ptr()).loc != TEX_NULL)
         || (input_stack(base_ptr()).state != TOKEN_LIST))
         fatal_error("(interwoven alignment preambles are not allowed)");
-    if (cur_group == ALIGN_GROUP) {
+    if (cur_group == ALIGN_GROUP)
+    {
         end_graf();
         if (fin_col())
             fin_row();
-    } else
+    }
+    else
         off_save();
 }
 
@@ -14816,13 +16425,15 @@ just_copy(int32_t p, int32_t h, int32_t t)
     int32_t r;
     unsigned char words;
 
-    while (p != TEX_NULL) {
+    while (p != TEX_NULL)
+    {
         words = 1;
 
         if (is_char_node(p))
             r = get_avail();
         else
-            switch (NODE_type(p)) {
+            switch (NODE_type(p))
+            {
             case HLIST_NODE:
             case VLIST_NODE:
                 r = get_node(BOX_NODE_SIZE);
@@ -14861,7 +16472,8 @@ just_copy(int32_t p, int32_t h, int32_t t)
                 break;
 
             case WHATSIT_NODE:
-                switch (NODE_subtype(p)) {
+                switch (NODE_subtype(p))
+                {
                 case OPEN_NODE:
                     r = get_node(OPEN_NODE_SIZE);
                     words = OPEN_NODE_SIZE;
@@ -14885,7 +16497,8 @@ just_copy(int32_t p, int32_t h, int32_t t)
                     words = NATIVE_NODE_size(p);
                     r = get_node(words);
 
-                    while (words > 0) {
+                    while (words > 0)
+                    {
                         words--;
                         set_mem(r + words, mem(p + words));
                     }
@@ -14921,7 +16534,8 @@ just_copy(int32_t p, int32_t h, int32_t t)
                 break;
             }
 
-        while (words > 0) {
+        while (words > 0)
+        {
             words--;
             set_mem(r + words, mem(p + words));
         }
@@ -14945,11 +16559,13 @@ void just_reverse(int32_t p)
     int32_t m, n;
     m = MIN_HALFWORD;
     n = MIN_HALFWORD;
-    if (mem(TEMP_HEAD).b32.s1 == TEX_NULL) {
+    if (mem(TEMP_HEAD).b32.s1 == TEX_NULL)
+    {
         just_copy(mem(p).b32.s1, TEMP_HEAD, TEX_NULL);
         q = mem(TEMP_HEAD).b32.s1;
-    } else {
-
+    }
+    else
+    {
         q = mem(p).b32.s1;
         mem_ptr(p)->b32.s1 = TEX_NULL;
         flush_node_list(mem(TEMP_HEAD).b32.s1);
@@ -14959,25 +16575,31 @@ void just_reverse(int32_t p)
     cur_dir = 1 - cur_dir;
     while (q != TEX_NULL)
         if ((is_char_node(q)))
-            do {
+            do
+            {
                 p = q;
                 q = mem(p).b32.s1;
                 mem_ptr(p)->b32.s1 = l;
                 l = p;
-            } while (!(!(is_char_node(q))));
-        else {
-
+            }
+            while (!(!(is_char_node(q))));
+        else
+        {
             p = q;
             q = mem(p).b32.s1;
-            if (NODE_type(p) == MATH_NODE) {    /*1527: */
+            if (NODE_type(p) == MATH_NODE)
+            {
+                /*1527: */
 
-                if (odd(mem(p).b16.s0)) {
-
-                    if (mem(LR_ptr).b32.s0 != (L_CODE * (mem(p).b16.s0 / L_CODE) + 3)) {
+                if (odd(mem(p).b16.s0))
+                {
+                    if (mem(LR_ptr).b32.s0 != (L_CODE * (mem(p).b16.s0 / L_CODE) + 3))
+                    {
                         NODE_type(p) = KERN_NODE;
                         LR_problems++;
-                    } else {
-
+                    }
+                    else
+                    {
                         {
                             temp_ptr = LR_ptr;
                             LR_ptr = mem(temp_ptr).b32.s1;
@@ -14986,15 +16608,17 @@ void just_reverse(int32_t p)
                                 set_avail(temp_ptr);
                             }
                         }
-                        if (n > MIN_HALFWORD) {
+                        if (n > MIN_HALFWORD)
+                        {
                             n--;
                             mem_ptr(p)->b16.s0--;
-                        } else {
-
+                        }
+                        else
+                        {
                             if (m > MIN_HALFWORD)
                                 m--;
-                            else {
-
+                            else
+                            {
                                 mem_ptr(t + 1)->b32.s1 = mem(p + 1).b32.s1;
                                 mem_ptr(t)->b32.s1 = q;
                                 free_node(p, MEDIUM_NODE_SIZE);
@@ -15003,19 +16627,22 @@ void just_reverse(int32_t p)
                             NODE_type(p) = KERN_NODE;
                         }
                     }
-                } else {
-
+                }
+                else
+                {
                     {
                         temp_ptr = get_avail();
                         mem_ptr(temp_ptr)->b32.s0 = (L_CODE * (mem(p).b16.s0 / L_CODE) + 3);
                         mem_ptr(temp_ptr)->b32.s1 = LR_ptr;
                         LR_ptr = temp_ptr;
                     }
-                    if ((n > MIN_HALFWORD) || ((mem(p).b16.s0 / R_CODE) != cur_dir)) {
+                    if ((n > MIN_HALFWORD) || ((mem(p).b16.s0 / R_CODE) != cur_dir))
+                    {
                         n++;
                         mem_ptr(p)->b16.s0++;
-                    } else {
-
+                    }
+                    else
+                    {
                         NODE_type(p) = KERN_NODE;
                         m++;
                     }
@@ -15037,11 +16664,14 @@ void
 get_r_token(void)
 {
 restart:
-    do {
+    do
+    {
         get_token();
-    } while (cur_tok() == SPACE_TOKEN);
+    }
+    while (cur_tok() == SPACE_TOKEN);
 
-    if (cur_cs() == 0 || cur_cs() > eqtb_top() || (cur_cs() > FROZEN_CONTROL_SEQUENCE && cur_cs() <= EQTB_SIZE)) {
+    if (cur_cs() == 0 || cur_cs() > eqtb_top() || (cur_cs() > FROZEN_CONTROL_SEQUENCE && cur_cs() <= EQTB_SIZE))
+    {
         error_here_with_diagnostic("Missing control sequence inserted");
         capture_to_diagnostic(NULL);
 
@@ -15064,8 +16694,8 @@ restart:
 
 void trap_zero_glue(void)
 {
-
-    if ((mem(cur_val + 1).b32.s1 == 0) && (mem(cur_val + 2).b32.s1 == 0) && (mem(cur_val + 3).b32.s1 == 0)) {
+    if ((mem(cur_val + 1).b32.s1 == 0) && (mem(cur_val + 2).b32.s1 == 0) && (mem(cur_val + 3).b32.s1 == 0))
+    {
         GLUE_SPEC_ref_count(0)++;
         delete_glue_ref(cur_val);
         cur_val = 0;
@@ -15084,16 +16714,19 @@ do_register_command(small_number a)
     q = cur_cmd();
     e = false;
 
-    if (q != REGISTER) {
+    if (q != REGISTER)
+    {
         get_x_token();
 
-        if (cur_cmd() >= ASSIGN_INT && cur_cmd() <= ASSIGN_MU_GLUE) {
+        if (cur_cmd() >= ASSIGN_INT && cur_cmd() <= ASSIGN_MU_GLUE)
+        {
             l = cur_chr();
             p = cur_cmd() - ASSIGN_INT;
             goto found;
         }
 
-        if (cur_cmd() != REGISTER) {
+        if (cur_cmd() != REGISTER)
+        {
             error_here_with_diagnostic("You can't use `");
             print_cmd_chr(cur_cmd(), cur_chr());
             print_cstr("' after ");
@@ -15107,19 +16740,26 @@ do_register_command(small_number a)
         }
     }
 
-    if (cur_chr() < 0 || cur_chr() > 19 /*lo_mem_stat_max*/) {
+    if (cur_chr() < 0 || cur_chr() > 19 /*lo_mem_stat_max*/)
+    {
         l = cur_chr();
         p = (mem(l).b16.s1 / 64);
         e = true;
-    } else {
+    }
+    else
+    {
         p = cur_chr();
         scan_register_num();
-        if (cur_val > 255) {
+        if (cur_val > 255)
+        {
             find_sa_element(p, cur_val, true);
             l = cur_ptr;
             e = true;
-        } else {
-            switch (p) {
+        }
+        else
+        {
+            switch (p)
+            {
             case INT_VAL:
                 l = cur_val + COUNT_BASE;
                 break;
@@ -15137,14 +16777,19 @@ do_register_command(small_number a)
     }
 
 found:
-    if (p < GLUE_VAL) {
+    if (p < GLUE_VAL)
+    {
         if (e)
             w = mem(l + 2).b32.s1;
         else
             w = eqtb_ptr(l)->b32.s1;
-    } else if (e) {
+    }
+    else if (e)
+    {
         s = mem(l + 1).b32.s1;
-    } else {
+    }
+    else
+    {
         s = eqtb_ptr(l)->b32.s1; /*:1272*/
     }
 
@@ -15155,8 +16800,11 @@ found:
 
     set_arith_error(false);
 
-    if (q < MULTIPLY) { /*1273:*/
-        if (p < GLUE_VAL) {
+    if (q < MULTIPLY)
+    {
+        /*1273:*/
+        if (p < GLUE_VAL)
+        {
             if (p == INT_VAL)
                 scan_int();
             else
@@ -15164,10 +16812,14 @@ found:
 
             if (q == ADVANCE)
                 cur_val = cur_val + w;
-        } else {
+        }
+        else
+        {
             scan_glue(p);
 
-            if (q == ADVANCE) { /*1274:*/
+            if (q == ADVANCE)
+            {
+                /*1274:*/
                 q = new_spec(cur_val);
                 r = s;
                 delete_glue_ref(cur_val);
@@ -15176,9 +16828,12 @@ found:
                 if (mem(q + 2).b32.s1 == 0)
                     mem_ptr(q)->b16.s1 = NORMAL;
 
-                if (mem(q).b16.s1 == mem(r).b16.s1) {
+                if (mem(q).b16.s1 == mem(r).b16.s1)
+                {
                     mem_ptr(q + 2)->b32.s1 = mem(q + 2).b32.s1 + mem(r + 2).b32.s1;
-                } else if (mem(q).b16.s1 < mem(r).b16.s1 && mem(r + 2).b32.s1 != 0) {
+                }
+                else if (mem(q).b16.s1 < mem(r).b16.s1 && mem(r + 2).b32.s1 != 0)
+                {
                     mem_ptr(q + 2)->b32.s1 = mem(r + 2).b32.s1;
                     mem_ptr(q)->b16.s1 = mem(r).b16.s1;
                 }
@@ -15186,9 +16841,12 @@ found:
                 if (mem(q + 3).b32.s1 == 0)
                     mem_ptr(q)->b16.s0 = NORMAL;
 
-                if (mem(q).b16.s0 == mem(r).b16.s0) {
+                if (mem(q).b16.s0 == mem(r).b16.s0)
+                {
                     mem_ptr(q + 3)->b32.s1 = mem(q + 3).b32.s1 + mem(r + 3).b32.s1;
-                } else if (mem(q).b16.s0 < mem(r).b16.s0 && mem(r + 3).b32.s1 != 0) {
+                }
+                else if (mem(q).b16.s0 < mem(r).b16.s0 && mem(r + 3).b32.s1 != 0)
+                {
                     mem_ptr(q + 3)->b32.s1 = mem(r + 3).b32.s1;
                     mem_ptr(q)->b16.s0 = mem(r).b16.s0;
                 }
@@ -15196,26 +16854,38 @@ found:
                 cur_val = q;
             }
         }
-    } else { /*1275:*/
+    }
+    else
+    {
+        /*1275:*/
         scan_int();
 
-        if (p < GLUE_VAL) {
-            if (q == MULTIPLY) {
+        if (p < GLUE_VAL)
+        {
+            if (q == MULTIPLY)
+            {
                 if (p == INT_VAL)
                     cur_val = mult_and_add(w, cur_val, 0, TEX_INFINITY);
                 else
                     cur_val = mult_and_add(w, cur_val, 0, MAX_HALFWORD);
-            } else {
+            }
+            else
+            {
                 cur_val = x_over_n(w, cur_val);
             }
-        } else {
+        }
+        else
+        {
             r = new_spec(s);
 
-            if (q == MULTIPLY) {
+            if (q == MULTIPLY)
+            {
                 mem_ptr(r + 1)->b32.s1 = mult_and_add(mem(s + 1).b32.s1, cur_val, 0, MAX_HALFWORD);
                 mem_ptr(r + 2)->b32.s1 = mult_and_add(mem(s + 2).b32.s1, cur_val, 0, MAX_HALFWORD);
                 mem_ptr(r + 3)->b32.s1 = mult_and_add(mem(s + 3).b32.s1, cur_val, 0, MAX_HALFWORD);
-            } else {
+            }
+            else
+            {
                 mem_ptr(r + 1)->b32.s1 = x_over_n(mem(s + 1).b32.s1, cur_val);
                 mem_ptr(r + 2)->b32.s1 = x_over_n(mem(s + 2).b32.s1, cur_val);
                 mem_ptr(r + 3)->b32.s1 = x_over_n(mem(s + 3).b32.s1, cur_val);
@@ -15225,7 +16895,8 @@ found:
         }
     }
 
-    if (arith_error()) {
+    if (arith_error())
+    {
         error_here_with_diagnostic("Arithmetic overflow");
         capture_to_diagnostic(NULL);
 
@@ -15238,28 +16909,41 @@ found:
         return;
     }
 
-    if (p < GLUE_VAL) {
-        if (e) {
+    if (p < GLUE_VAL)
+    {
+        if (e)
+        {
             if (a >= 4)
                 gsa_w_def(l, cur_val);
             else
                 sa_w_def(l, cur_val);
-        } else if (a >= 4) {
+        }
+        else if (a >= 4)
+        {
             geq_word_define(l, cur_val);
-        } else {
+        }
+        else
+        {
             eq_word_define(l, cur_val);
         }
-    } else {
+    }
+    else
+    {
         trap_zero_glue();
 
-        if (e) {
+        if (e)
+        {
             if (a >= 4)
                 gsa_def(l, cur_val);
             else
                 sa_def(l, cur_val);
-        } else if (a >= 4) {
+        }
+        else if (a >= 4)
+        {
             geq_define(l, GLUE_REF, cur_val);
-        } else {
+        }
+        else
+        {
             eq_define(l, GLUE_REF, cur_val);
         }
     }
@@ -15271,18 +16955,21 @@ void alter_aux(void)
     int32_t c;
     if (cur_chr() != abs(cur_list.mode))
         report_illegal_case();
-    else {
-
+    else
+    {
         c = cur_chr();
         scan_optional_equals();
-        if (c == VMODE) {
+        if (c == VMODE)
+        {
             scan_dimen(false, false, false);
             cur_list.aux.b32.s1 = cur_val;
-        } else {
-
+        }
+        else
+        {
             scan_int();
-            if ((cur_val <= 0) || (cur_val > 32767)) {
-                ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad space factor");
+            if ((cur_val <= 0) || (cur_val > 32767))
+            {
+                ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad space factor");
                 ttstub_diag_printf(errmsg, " (%d)", cur_val);
                 capture_to_diagnostic(NULL);
 
@@ -15291,7 +16978,8 @@ void alter_aux(void)
                     set_help_line(0, "I allow only values in the range 1..32767 here.");
                 }
                 int_error(cur_val);
-            } else
+            }
+            else
                 cur_list.aux.b32.s0 = cur_val;
         }
     }
@@ -15306,8 +16994,9 @@ void alter_prev_graf(void)
         p--;
     scan_optional_equals();
     scan_int();
-    if (cur_val < 0) {
-        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad ");
+    if (cur_val < 0)
+    {
+        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad ");
         ttstub_diag_printf(errmsg, " (%d)", cur_val);
         print_esc_cstr("prevgraf");
         capture_to_diagnostic(NULL);
@@ -15316,8 +17005,9 @@ void alter_prev_graf(void)
             set_help_line(0, "I allow only nonnegative values here.");
         }
         int_error(cur_val);
-    } else {
-
+    }
+    else
+    {
         nest_ptr(p)->prev_graf = cur_val;
         cur_list = nest(nest_cur());
     }
@@ -15340,9 +17030,11 @@ void alter_integer(void)
     scan_int();
     if (c == 0)
         dead_cycles = /*1483: */ cur_val;
-    else if (c == 2) {
-        if ((cur_val < BATCH_MODE) || (cur_val > ERROR_STOP_MODE)) {
-            ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad interaction mode");
+    else if (c == 2)
+    {
+        if ((cur_val < BATCH_MODE) || (cur_val > ERROR_STOP_MODE))
+        {
+            ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad interaction mode");
             ttstub_diag_printf(errmsg, " (%d)", cur_val);
             capture_to_diagnostic(NULL);
             {
@@ -15351,12 +17043,14 @@ void alter_integer(void)
                 set_help_line(0, "3=errorstop. Proceed, and I'll ignore this case.");
             }
             int_error(cur_val);
-        } else {
-
+        }
+        else
+        {
             set_cur_chr(cur_val);
             new_interaction();
         }
-    } else
+    }
+    else
         insert_penalties = cur_val;
 }
 
@@ -15369,8 +17063,8 @@ void alter_box_dimen(void)
     scan_register_num();
     if (cur_val < 256)
         b = BOX_REG(cur_val);
-    else {
-
+    else
+    {
         find_sa_element(4, cur_val, false);
         if (cur_ptr == TEX_NULL)
             b = TEX_NULL;
@@ -15398,14 +17092,15 @@ void new_font(small_number a)
     u = cur_cs();
     if (u >= HASH_BASE)
         t = hash(u).s1;
-    else if (u >= SINGLE_BASE) {
-
+    else if (u >= SINGLE_BASE)
+    {
         if (u == NULL_CS)
             t = maketexstring("FONT");
         else
             t = u - SINGLE_BASE;
-    } else {
-
+    }
+    else
+    {
         old_setting = selector();
         set_selector(SELECTOR_NEW_STRING);
         print_cstr("FONT");
@@ -15424,10 +17119,13 @@ void new_font(small_number a)
     scan_optional_equals();
     scan_file_name();
     set_name_in_progress(true);
-    if (scan_keyword("at")) {      /*1294: */
+    if (scan_keyword("at"))
+    {
+        /*1294: */
         scan_dimen(false, false, false);
         s = cur_val;
-        if ((s <= 0) || (s >= 0x8000000)) {
+        if ((s <= 0) || (s >= 0x8000000))
+        {
             error_here_with_diagnostic("Improper `at' size (");
             print_scaled(s);
             print_cstr("pt), replaced by 10pt");
@@ -15440,11 +17138,14 @@ void new_font(small_number a)
             error();
             s = 10 * 65536L;
         }
-    } else if (scan_keyword("scaled")) {
+    }
+    else if (scan_keyword("scaled"))
+    {
         scan_int();
-        s = -(int32_t) cur_val;
-        if ((cur_val <= 0) || (cur_val > 32768L)) {
-            ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
+        s = -(int32_t)cur_val;
+        if ((cur_val <= 0) || (cur_val > 32768L))
+        {
+            ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Illegal magnification has been changed to 1000");
             ttstub_diag_printf(errmsg, " (%d)", cur_val);
             capture_to_diagnostic(NULL);
 
@@ -15455,7 +17156,8 @@ void new_font(small_number a)
             int_error(cur_val);
             s = -1000;
         }
-    } else
+    }
+    else
         s = -1000;
     set_name_in_progress(false);
     {
@@ -15463,40 +17165,49 @@ void new_font(small_number a)
         f = (FONT_BASE + 1);
         for_end = font_ptr();
         if (f <= for_end)
-            do {
+            do
+            {
                 if (
-                        str_eq_str(font_name(f), cur_name()) &&
+                    str_eq_str(font_name(f), cur_name()) &&
+                    (
                         (
-                            (
-                                (length(cur_area()) == 0) &&
-                                ((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))
-                            ) || str_eq_str(font_area(f), cur_area())
-                        )
-                    ) {
-                    if (s > 0) {
+                            (length(cur_area()) == 0) &&
+                            ((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))
+                        ) || str_eq_str(font_area(f), cur_area())
+                    )
+                )
+                {
+                    if (s > 0)
+                    {
                         if (s == font_size(f))
                             goto common_ending;
-                    } else if (font_size(f) == xn_over_d(font_dsize(f), -(int32_t) s, 1000))
+                    }
+                    else if (font_size(f) == xn_over_d(font_dsize(f), -(int32_t)s, 1000))
                         goto common_ending;
                 }
                 append_str(cur_area());
                 append_str(cur_name());
                 append_str(cur_ext());
-                if (str_eq_str(font_name(f), make_string())) {
+                if (str_eq_str(font_name(f), make_string()))
+                {
                     {
-                        set_str_ptr(str_ptr()-1);
+                        set_str_ptr(str_ptr() - 1);
                         set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                     }
-                    if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG))) {
-                        if (s > 0) {
+                    if (((font_area(f) == AAT_FONT_FLAG) || (font_area(f) == OTGR_FONT_FLAG)))
+                    {
+                        if (s > 0)
+                        {
                             if (s == font_size(f))
                                 goto common_ending;
-                        } else if (font_size(f) == xn_over_d(font_dsize(f), -(int32_t) s, 1000))
+                        }
+                        else if (font_size(f) == xn_over_d(font_dsize(f), -(int32_t)s, 1000))
                             goto common_ending;
                     }
-                } else {
-
-                    set_str_ptr(str_ptr()-1);
+                }
+                else
+                {
+                    set_str_ptr(str_ptr() - 1);
                     set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
                 }
             }
@@ -15540,28 +17251,35 @@ void issue_message(void)
     flush_list(def_ref);
     {
         if (pool_ptr() + 1 > pool_size())
-            overflow("pool size", pool_size( )- init_pool_ptr);
+            overflow("pool size", pool_size() - init_pool_ptr);
     }
     s = make_string();
-    if (c == 0) {               /*1315: */
+    if (c == 0)
+    {
+        /*1315: */
         if (term_offset() + length(s) > max_print_line - 2)
             print_ln();
         else if ((term_offset() > 0) || (file_offset() > 0))
             print_char(' ');
         print(s);
         ttstub_output_flush(rust_stdout());
-    } else {                    /*1318: */
+    }
+    else
+    {
+        /*1318: */
         error_here_with_diagnostic("");
         print(s);
         capture_to_diagnostic(NULL);
 
         if (LOCAL(err_help) != TEX_NULL)
             set_use_err_help(true);
-        else if (long_help_seen) {
+        else if (long_help_seen)
+        {
             set_help_ptr(1);
             set_help_line(0, "(That was another \\errmessage.)");
-        } else {
-
+        }
+        else
+        {
             if (interaction() < ERROR_STOP_MODE)
                 long_help_seen = true;
             {
@@ -15576,7 +17294,7 @@ void issue_message(void)
         set_use_err_help(false);
     }
     {
-        set_str_ptr(str_ptr()-1);
+        set_str_ptr(str_ptr() - 1);
         set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 }
@@ -15594,9 +17312,11 @@ shift_case(void)
     p = scan_toks(false, false);
     p = mem(def_ref).b32.s1;
 
-    while (p != TEX_NULL) {
+    while (p != TEX_NULL)
+    {
         t = mem(p).b32.s0;
-        if (t < CS_TOKEN_FLAG + SINGLE_BASE) {
+        if (t < CS_TOKEN_FLAG + SINGLE_BASE)
+        {
             c = t % MAX_CHAR_VAL;
             if (eqtb_ptr(b + c)->b32.s1 != 0)
                 mem_ptr(p)->b32.s0 = t - c + eqtb_ptr(b + c)->b32.s1;
@@ -15621,7 +17341,8 @@ void show_whatever(void)
     // In all cases we eventually call error().
     diagnostic_begin_capture_warning_here();
 
-    switch (cur_chr()) {
+    switch (cur_chr())
+    {
     case 3:
         {
             begin_diagnostic();
@@ -15633,8 +17354,8 @@ void show_whatever(void)
             scan_register_num();
             if (cur_val < 256)
                 p = BOX_REG(cur_val);
-            else {
-
+            else
+            {
                 find_sa_element(4, cur_val, false);
                 if (cur_ptr == TEX_NULL)
                     p = TEX_NULL;
@@ -15655,7 +17376,8 @@ void show_whatever(void)
         {
             get_token();
             print_nl_cstr("> ");
-            if (cur_cs() != 0) {
+            if (cur_cs() != 0)
+            {
                 sprint_cs(cur_cs());
                 print_char('=');
             }
@@ -15674,29 +17396,35 @@ void show_whatever(void)
             begin_diagnostic();
             print_nl_cstr("");
             print_ln();
-            if (cond_ptr == TEX_NULL) {
+            if (cond_ptr == TEX_NULL)
+            {
                 print_nl_cstr("### ");
                 print_cstr("no active conditionals");
-            } else {
-
+            }
+            else
+            {
                 p = cond_ptr;
                 n = 0;
-                do {
+                do
+                {
                     n++;
                     p = LLIST_link(p);
-                } while (!(p == TEX_NULL));
+                }
+                while (!(p == TEX_NULL));
                 p = cond_ptr;
                 t = cur_if;
                 l = if_line;
                 m = if_limit;
-                do {
+                do
+                {
                     print_nl_cstr("### level ");
                     print_int(n);
                     print_cstr(": ");
                     print_cmd_chr(IF_TEST, t);
                     if (m == FI_CODE)
                         print_esc_cstr("else");
-                    if (l != 0) {
+                    if (l != 0)
+                    {
                         print_cstr(" entered on line ");
                         print_int(l);
                     }
@@ -15705,7 +17433,8 @@ void show_whatever(void)
                     l = mem(p + 1).b32.s1;
                     m = mem(p).b16.s1;
                     p = LLIST_link(p);
-                } while (!(p == TEX_NULL));
+                }
+                while (!(p == TEX_NULL));
             }
         }
         break;
@@ -15728,9 +17457,10 @@ void show_whatever(void)
             print_nl_cstr("! ");
         print_cstr("OK");
     }
-    if (selector() == SELECTOR_TERM_AND_LOG) {
-
-        if (INTPAR(tracing_online) <= 0) {
+    if (selector() == SELECTOR_TERM_AND_LOG)
+    {
+        if (INTPAR(tracing_online) <= 0)
+        {
             set_selector(SELECTOR_TERM_ONLY);
             print_cstr(" (see the transcript file)");
             set_selector(SELECTOR_TERM_AND_LOG);
@@ -15739,18 +17469,22 @@ void show_whatever(void)
 
 common_ending:
     capture_to_diagnostic(NULL); // calling with null twice is fine
-    if (interaction() < ERROR_STOP_MODE) {
+    if (interaction() < ERROR_STOP_MODE)
+    {
         set_help_ptr(0);
-        set_error_count(error_count()-1);
-    } else if (INTPAR(tracing_online) > 0) {
+        set_error_count(error_count() - 1);
+    }
+    else if (INTPAR(tracing_online) > 0)
+    {
         {
             set_help_ptr(3);
             set_help_line(2, "This isn't an error message; I'm just \\showing something.");
             set_help_line(1, "Type `I\\show...' to show more (e.g., \\show\\cs,");
             set_help_line(0, "\\showthe\\count10, \\showbox255, \\showlists).");
         }
-    } else {
-
+    }
+    else
+    {
         {
             set_help_ptr(5);
             set_help_line(4, "This isn't an error message; I'm just \\showing something.");
@@ -15768,8 +17502,8 @@ void new_write_whatsit(small_number w)
     new_whatsit(cur_chr(), w);
     if (w != WRITE_NODE_SIZE)
         scan_four_bit_int();
-    else {
-
+    else
+    {
         scan_int();
         if (cur_val < 0)
             cur_val = 17;
@@ -15790,7 +17524,8 @@ void do_extension(void)
     int32_t i, j, k;
     int32_t p;
 
-    switch (cur_chr()) {
+    switch (cur_chr())
+    {
     case OPEN_NODE:
         {
             new_write_whatsit(OPEN_NODE_SIZE);
@@ -15831,14 +17566,16 @@ void do_extension(void)
     case IMMEDIATE_CODE:
         {
             get_x_token();
-            if ((cur_cmd() == EXTENSION) && (cur_chr() <= CLOSE_NODE)) {
+            if ((cur_cmd() == EXTENSION) && (cur_chr() <= CLOSE_NODE))
+            {
                 p = cur_list.tail;
                 do_extension();
                 out_what(cur_list.tail);
                 flush_node_list(cur_list.tail);
                 cur_list.tail = p;
                 mem_ptr(p)->b32.s1 = TEX_NULL;
-            } else
+            }
+            else
                 back_input();
         }
         break;
@@ -15846,7 +17583,8 @@ void do_extension(void)
     case SET_LANGUAGE_CODE:
         if (abs(cur_list.mode) != HMODE)
             report_illegal_case();
-        else {
+        else
+        {
             new_whatsit(LANGUAGE_NODE, SMALL_NODE_SIZE);
             scan_int();
             if (cur_val <= 0)
@@ -15893,19 +17631,23 @@ void do_extension(void)
 
     case GLYPH_CODE:
         {
-            if (abs(cur_list.mode) == VMODE) {
+            if (abs(cur_list.mode) == VMODE)
+            {
                 back_input();
                 new_graf(true);
-            } else if (abs(cur_list.mode) == MMODE)
+            }
+            else if (abs(cur_list.mode) == MMODE)
                 report_illegal_case();
-            else {
-
+            else
+            {
                 if (((font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG)
-                     || (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG))) {
+                    || (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG)))
+                {
                     new_whatsit(GLYPH_NODE, GLYPH_NODE_SIZE);
                     scan_int();
-                    if ((cur_val < 0) || (cur_val > 65535L)) {
-                        ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Bad glyph number");
+                    if ((cur_val < 0) || (cur_val > 65535L))
+                    {
+                        ttbc_diagnostic_t* errmsg = error_here_with_diagnostic("Bad glyph number");
                         ttstub_diag_printf(errmsg, " (%d)", cur_val);
                         capture_to_diagnostic(NULL);
 
@@ -15920,7 +17662,8 @@ void do_extension(void)
                     mem_ptr(cur_list.tail + 4)->b16.s2 = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
                     mem_ptr(cur_list.tail + 4)->b16.s1 = cur_val;
                     set_native_glyph_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
-                } else
+                }
+                else
                     not_native_font_error(EXTENSION, GLYPH_CODE,
                                           eqtb_ptr(CUR_FONT_LOC)->b32.s1);
             }
@@ -15931,7 +17674,8 @@ void do_extension(void)
         {
             scan_and_pack_name();
             i = get_encoding_mode_and_info(&j);
-            if (i == XETEX_INPUT_MODE_AUTO) {
+            if (i == XETEX_INPUT_MODE_AUTO)
+            {
                 error_here_with_diagnostic("Encoding mode `auto' is not valid for \\XeTeXinputencoding");
                 capture_to_diagnostic(NULL);
                 {
@@ -15940,7 +17684,8 @@ void do_extension(void)
                     set_help_line(0, "I'll ignore this and leave the current encoding unchanged.");
                 }
                 error();
-            } else
+            }
+            else
                 set_input_file_encoding(input_file(in_open()), i, j);
         }
         break;
@@ -15980,7 +17725,8 @@ void fix_language(void)
         l = 0;
     else
         l = INTPAR(language);
-    if (l != cur_list.aux.b32.s1) {
+    if (l != cur_list.aux.b32.s1)
+    {
         new_whatsit(LANGUAGE_NODE, SMALL_NODE_SIZE);
         mem_ptr(cur_list.tail + 1)->b32.s1 = l;
         cur_list.aux.b32.s1 = l;
@@ -15995,19 +17741,20 @@ insert_src_special(void)
 {
     int32_t toklist, p, q;
 
-    if (source_filename_stack(in_open()) > 0 && is_new_source(source_filename_stack(in_open()), line())) {
+    if (source_filename_stack(in_open()) > 0 && is_new_source(source_filename_stack(in_open()), line()))
+    {
         toklist = get_avail();
         p = toklist;
         mem_ptr(p)->b32.s0 = CS_TOKEN_FLAG + FROZEN_SPECIAL;
         mem_ptr(p)->b32.s1 = get_avail();
         p = LLIST_link(p);
-        mem_ptr(p)->b32.s0 = (LEFT_BRACE_TOKEN + '{' );
+        mem_ptr(p)->b32.s0 = (LEFT_BRACE_TOKEN + '{');
         q = str_toks(make_src_special(source_filename_stack(in_open()), line()));
         mem_ptr(p)->b32.s1 = mem(TEMP_HEAD).b32.s1;
         p = q;
         mem_ptr(p)->b32.s1 = get_avail();
         p = LLIST_link(p);
-        mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}' );
+        mem_ptr(p)->b32.s0 = (RIGHT_BRACE_TOKEN + '}');
         begin_token_list(toklist, INSERTED);
         remember_source_info(source_filename_stack(in_open()), line());
     }
@@ -16016,7 +17763,8 @@ insert_src_special(void)
 
 void append_src_special(void)
 {
-    if ((source_filename_stack(in_open()) > 0 && is_new_source(source_filename_stack(in_open()), line()))) {
+    if ((source_filename_stack(in_open()) > 0 && is_new_source(source_filename_stack(in_open()), line())))
+    {
         new_whatsit(SPECIAL_NODE, WRITE_NODE_SIZE);
         mem_ptr(cur_list.tail + 1)->b32.s0 = 0;
         def_ref = get_avail();
@@ -16031,18 +17779,19 @@ void append_src_special(void)
 
 /* Tectonic: insert a \special into the current token stream */
 void
-tt_insert_special(const char *ascii_text)
+tt_insert_special(const char* ascii_text)
 {
     int32_t toklist_start, p, q;
     pool_pointer start_pool_ptr = pool_ptr();
 
     /* Copy the text into the string pool so that we can use str_toks() */
-    if (pool_ptr() + strlen(ascii_text) >= (size_t) pool_size())
+    if (pool_ptr() + strlen(ascii_text) >= (size_t)pool_size())
         _tt_abort("string pool overflow");
 
-    while (*ascii_text) {
+    while (*ascii_text)
+    {
         set_str_pool(pool_ptr(), *ascii_text++);
-        set_pool_ptr(pool_ptr()+1);
+        set_pool_ptr(pool_ptr() + 1);
     }
 
     /* Create the linked list of inserted tokens */
@@ -16072,7 +17821,8 @@ handle_right_brace(void)
     scaled_t d;
     int32_t f;
 
-    switch (cur_group) {
+    switch (cur_group)
+    {
     case SIMPLE_GROUP:
         unsave();
         break;
@@ -16123,7 +17873,8 @@ handle_right_brace(void)
         p = vpackage(mem(cur_list.head).b32.s1, 0, ADDITIONAL, MAX_HALFWORD);
         pop_nest();
 
-        if (save_stack(save_ptr + 0).b32.s1 < 255) {
+        if (save_stack(save_ptr + 0).b32.s1 < 255)
+        {
             mem_ptr(cur_list.tail)->b32.s1 = get_node(INS_NODE_SIZE);
             cur_list.tail = LLIST_link(cur_list.tail);
             NODE_type(cur_list.tail) = INS_NODE;
@@ -16133,7 +17884,9 @@ handle_right_brace(void)
             mem_ptr(cur_list.tail + 4)->b32.s1 = q;
             mem_ptr(cur_list.tail + 2)->b32.s1 = d;
             mem_ptr(cur_list.tail + 1)->b32.s1 = f;
-        } else {
+        }
+        else
+        {
             mem_ptr(cur_list.tail)->b32.s1 = get_node(SMALL_NODE_SIZE);
             cur_list.tail = LLIST_link(cur_list.tail);
             NODE_type(cur_list.tail) = ADJUST_NODE;
@@ -16148,7 +17901,8 @@ handle_right_brace(void)
         break;
 
     case OUTPUT_GROUP: /*1062:*/
-        if (cur_input().loc != TEX_NULL || (cur_input().index != OUTPUT_TEXT && cur_input().index != BACKED_UP)) {
+        if (cur_input().loc != TEX_NULL || (cur_input().index != OUTPUT_TEXT && cur_input().index != BACKED_UP))
+        {
             error_here_with_diagnostic("Unbalanced output routine");
             capture_to_diagnostic(NULL);
             set_help_ptr(2);
@@ -16156,9 +17910,11 @@ handle_right_brace(void)
             set_help_line(0, "I can't handle that very well; good luck.");
             error();
 
-            do {
+            do
+            {
                 get_token();
-            } while (cur_input().loc != TEX_NULL);
+            }
+            while (cur_input().loc != TEX_NULL);
         }
 
         end_token_list();
@@ -16167,7 +17923,8 @@ handle_right_brace(void)
         output_active = false;
         insert_penalties = 0;
 
-        if (BOX_REG(255) != TEX_NULL) {
+        if (BOX_REG(255) != TEX_NULL)
+        {
             error_here_with_diagnostic("Output routine didn't use all of ");
             print_esc_cstr("box");
             print_int(255);
@@ -16180,12 +17937,14 @@ handle_right_brace(void)
             box_error(255);
         }
 
-        if (cur_list.tail != cur_list.head) {
+        if (cur_list.tail != cur_list.head)
+        {
             mem_ptr(page_tail)->b32.s1 = mem(cur_list.head).b32.s1;
             page_tail = cur_list.tail;
         }
 
-        if (mem(PAGE_HEAD).b32.s1 != TEX_NULL) {
+        if (mem(PAGE_HEAD).b32.s1 != TEX_NULL)
+        {
             if (mem(CONTRIB_HEAD).b32.s1 == TEX_NULL)
                 nest_ptr(0)->tail = page_tail;
             mem_ptr(page_tail)->b32.s1 = mem(CONTRIB_HEAD).b32.s1;
@@ -16251,18 +18010,28 @@ handle_right_brace(void)
         p = fin_mlist(TEX_NULL);
         mem_ptr(save_stack(save_ptr + 0).b32.s1)->b32.s0 = p;
 
-        if (p != TEX_NULL) {
-            if (mem(p).b32.s1 == TEX_NULL) {
-                if (mem(p).b16.s1 == ORD_NOAD) {
-                    if (mem(p + 3).b32.s1 == EMPTY) {
-                        if (mem(p + 2).b32.s1 == EMPTY) {
+        if (p != TEX_NULL)
+        {
+            if (mem(p).b32.s1 == TEX_NULL)
+            {
+                if (mem(p).b16.s1 == ORD_NOAD)
+                {
+                    if (mem(p + 3).b32.s1 == EMPTY)
+                    {
+                        if (mem(p + 2).b32.s1 == EMPTY)
+                        {
                             mem_ptr(save_stack(save_ptr + 0).b32.s1)->b32 = mem(p + 1).b32;
                             free_node(p, NOAD_SIZE);
                         }
                     }
-                } else if (mem(p).b16.s1 == ACCENT_NOAD) {
-                    if (save_stack(save_ptr + 0).b32.s1 == cur_list.tail + 1) {
-                        if (mem(cur_list.tail).b16.s1 == ORD_NOAD) { /*1222:*/
+                }
+                else if (mem(p).b16.s1 == ACCENT_NOAD)
+                {
+                    if (save_stack(save_ptr + 0).b32.s1 == cur_list.tail + 1)
+                    {
+                        if (mem(cur_list.tail).b16.s1 == ORD_NOAD)
+                        {
+                            /*1222:*/
                             q = cur_list.head;
                             while (mem(q).b32.s1 != cur_list.tail)
                                 q = LLIST_link(q);
@@ -16300,7 +18069,8 @@ reswitch:
     if (INTPAR(tracing_commands) > 0)
         show_cur_cmd_chr();
 
-    switch (abs(cur_list.mode) + cur_cmd()) {
+    switch (abs(cur_list.mode) + cur_cmd())
+    {
     case HMODE + LETTER:
     case HMODE + OTHER_CHAR:
     case HMODE + CHAR_GIVEN:
@@ -16321,12 +18091,14 @@ reswitch:
         break;
     }
 
-    if (abs(cur_list.mode) == HMODE) {
+    if (abs(cur_list.mode) == HMODE)
+    {
         if (
             INTPAR(xetex_inter_char_tokens) > 0
             && space_class != CHAR_CLASS_LIMIT
             && prev_class != CHAR_CLASS_LIMIT - 1
-        ) {
+        )
+        {
             prev_class = CHAR_CLASS_LIMIT - 1;
 
             find_sa_element(
@@ -16335,12 +18107,15 @@ reswitch:
                 false
             );
 
-            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                if (cur_cs() == 0) {
+            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+            {
+                if (cur_cs() == 0)
+                {
                     if (cur_cmd() == CHAR_NUM)
                         set_cur_cmd(OTHER_CHAR);
                     set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
-                } else
+                }
+                else
                     set_cur_tok(CS_TOKEN_FLAG + cur_cs());
 
                 back_input();
@@ -16350,7 +18125,8 @@ reswitch:
         }
     }
 
-    switch (abs(cur_list.mode) + cur_cmd()) {
+    switch (abs(cur_list.mode) + cur_cmd())
+    {
     case HMODE + SPACER:
         if (cur_list.aux.b32.s0 /*space_factor*/ == 1000)
             goto append_normal_space;
@@ -16363,14 +18139,14 @@ reswitch:
         goto append_normal_space;
         break;
 
-    /* 1101*: Cases of main_control that are not part of the inner loop: */
+        /* 1101*: Cases of main_control that are not part of the inner loop: */
 
-    #define ANY_MODE(cmd) \
+#define ANY_MODE(cmd) \
         HMODE + (cmd): \
         case VMODE + (cmd): \
         case MMODE + (cmd) /* note no leading "case" or trailing colon */
 
-    #define NON_MATH(cmd) \
+#define NON_MATH(cmd) \
         VMODE + (cmd): \
         case HMODE + (cmd) /* no leading "case", no trailing colon */
 
@@ -16381,11 +18157,16 @@ reswitch:
         break;
 
     case ANY_MODE(IGNORE_SPACES):
-        if (cur_chr() == 0) {
-            do {
+        if (cur_chr() == 0)
+        {
+            do
+            {
                 get_x_token();
-            } while (cur_cmd() == SPACER);
-        } else {
+            }
+            while (cur_cmd() == SPACER);
+        }
+        else
+        {
             t = scanner_status();
             set_scanner_status(NORMAL);
             get_next();
@@ -16396,7 +18177,8 @@ reswitch:
             else
                 set_cur_cs(prim_lookup(hash(cur_cs()).s1));
 
-            if (cur_cs() != UNDEFINED_PRIMITIVE) {
+            if (cur_cs() != UNDEFINED_PRIMITIVE)
+            {
                 set_cur_cmd(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b16.s1);
                 set_cur_chr(eqtb_ptr(PRIM_EQTB_BASE + cur_cs())->b32.s1);
                 set_cur_tok(CS_TOKEN_FLAG + PRIM_EQTB_BASE + cur_cs());
@@ -16500,7 +18282,7 @@ reswitch:
         if (t == 0)
             scan_box(cur_val);
         else
-            scan_box(-(int32_t) cur_val);
+            scan_box(-(int32_t)cur_val);
         break;
 
     case ANY_MODE(LEADER_SHIP):
@@ -16619,17 +18401,21 @@ reswitch:
         break;
 
     case HMODE + VALIGN:
-        if (cur_chr() > 0) {
-            if (eTeX_enabled(INTPAR(texxet) > 0, cur_cmd(), cur_chr())) {
+        if (cur_chr() > 0)
+        {
+            if (eTeX_enabled(INTPAR(texxet) > 0, cur_cmd(), cur_chr()))
+            {
                 mem_ptr(cur_list.tail)->b32.s1 = new_math(0, cur_chr());
                 cur_list.tail = LLIST_link(cur_list.tail);
             }
-        } else /*:1490 */
+        }
+        else /*:1490 */
             init_align();
         break;
 
     case MMODE + HALIGN:
-        if (privileged()) {
+        if (privileged())
+        {
             if (cur_group == MATH_SHIFT_GROUP)
                 init_align();
             else
@@ -16653,7 +18439,8 @@ reswitch:
         break;
 
     case MMODE + EQ_NO:
-        if (privileged()) {
+        if (privileged())
+        {
             if (cur_group == MATH_SHIFT_GROUP)
                 start_eq_no();
             else
@@ -16681,7 +18468,9 @@ reswitch:
         break;
 
     case MMODE + MATH_CHAR_NUM:
-        if (cur_chr() == 2) { /* \Umathchar? */
+        if (cur_chr() == 2)
+        {
+            /* \Umathchar? */
             scan_math_class_int();
             t = set_class(cur_val);
             scan_math_fam_int();
@@ -16689,13 +18478,18 @@ reswitch:
             scan_usv_num();
             t = t + cur_val;
             set_math_char(t);
-        } else if (cur_chr() == 1) { /* \Umathcharnum/ */
+        }
+        else if (cur_chr() == 1)
+        {
+            /* \Umathcharnum/ */
             scan_xetex_math_char_int();
             set_math_char(cur_val);
-        } else {
+        }
+        else
+        {
             scan_fifteen_bit_int();
             set_math_char(set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) +
-                            (cur_val % 256));
+                (cur_val % 256));
         }
         break;
 
@@ -16710,7 +18504,9 @@ reswitch:
         break;
 
     case MMODE + DELIM_NUM:
-        if (cur_chr() == 1) { /* \Udelimiter? */
+        if (cur_chr() == 1)
+        {
+            /* \Udelimiter? */
             scan_math_class_int();
             t = set_class(cur_val);
             scan_math_fam_int();
@@ -16718,11 +18514,13 @@ reswitch:
             scan_usv_num();
             t = t + cur_val;
             set_math_char(t);
-        } else {
+        }
+        else
+        {
             scan_delimiter_int();
             cur_val = cur_val / 4096;
             set_math_char(set_class(cur_val / 4096) + set_family((cur_val % 4096) / 256) +
-                            (cur_val % 256));
+                (cur_val % 256));
         }
         break;
 
@@ -16864,15 +18662,19 @@ reswitch:
     goto big_switch;
 
 main_loop: /*1069: */
-    if (cur_list.head == cur_list.tail && cur_list.mode > 0) {
+    if (cur_list.head == cur_list.tail && cur_list.mode > 0)
+    {
         if (insert_src_special_auto)
             append_src_special();
     }
 
     prev_class = CHAR_CLASS_LIMIT - 1;
 
-    if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG || font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == OTGR_FONT_FLAG) {
-        if (cur_list.mode > 0) {
+    if (font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) == AAT_FONT_FLAG || font_area(eqtb_ptr(CUR_FONT_LOC)->b32.s1) ==
+        OTGR_FONT_FLAG)
+    {
+        if (cur_list.mode > 0)
+        {
             if (INTPAR(language) != cur_list.aux.b32.s1)
                 fix_language();
         }
@@ -16881,30 +18683,41 @@ main_loop: /*1069: */
         main_f = eqtb_ptr(CUR_FONT_LOC)->b32.s1;
         native_len = 0;
 
-collect_native:
+    collect_native:
         main_s = SF_CODE(cur_chr()) % 65536L;
 
-        if (main_s == 1000) {
+        if (main_s == 1000)
+        {
             cur_list.aux.b32.s0 = 1000;
-        } else if (main_s < 1000) {
+        }
+        else if (main_s < 1000)
+        {
             if (main_s > 0)
                 cur_list.aux.b32.s0 = main_s;
-        } else if (cur_list.aux.b32.s0 < 1000) {
+        }
+        else if (cur_list.aux.b32.s0 < 1000)
+        {
             cur_list.aux.b32.s0 = 1000;
-        } else {
+        }
+        else
+        {
             cur_list.aux.b32.s0 = main_s;
         }
 
         cur_ptr = TEX_NULL;
         space_class = SF_CODE(cur_chr()) / 65536L;
 
-        if (INTPAR(xetex_inter_char_tokens) > 0 && space_class != CHAR_CLASS_LIMIT) {
-            if (prev_class == CHAR_CLASS_LIMIT - 1) {
-                if (cur_input().state != TOKEN_LIST || cur_input().index != BACKED_UP_CHAR) {
+        if (INTPAR(xetex_inter_char_tokens) > 0 && space_class != CHAR_CLASS_LIMIT)
+        {
+            if (prev_class == CHAR_CLASS_LIMIT - 1)
+            {
+                if (cur_input().state != TOKEN_LIST || cur_input().index != BACKED_UP_CHAR)
+                {
                     find_sa_element(INTER_CHAR_VAL,
                                     ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class,
                                     false);
-                    if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
+                    if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+                    {
                         if (cur_cmd() != LETTER)
                             set_cur_cmd(OTHER_CHAR);
                         set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
@@ -16914,9 +18727,12 @@ collect_native:
                         goto big_switch;
                     }
                 }
-            } else {
+            }
+            else
+            {
                 find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
-                if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
+                if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+                {
                     if (cur_cmd() != LETTER)
                         set_cur_cmd(OTHER_CHAR);
                     set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
@@ -16930,8 +18746,10 @@ collect_native:
             prev_class = space_class;
         }
 
-        if (cur_chr() > 65535L) {
-            while (native_text_size <= native_len + 2) {
+        if (cur_chr() > 65535L)
+        {
+            while (native_text_size <= native_len + 2)
+            {
                 native_text_size = native_text_size + 128;
                 resize_native_text(native_text_size);
             }
@@ -16940,8 +18758,11 @@ collect_native:
             native_len++;
             set_native_text(native_len, (cur_chr() - 65536L) % 1024 + 0xDC00);
             native_len++;
-        } else {
-            while (native_text_size <= native_len + 1) {
+        }
+        else
+        {
+            while (native_text_size <= native_len + 1)
+            {
                 native_text_size = native_text_size + 128;
                 resize_native_text(native_text_size);
             }
@@ -16951,7 +18772,7 @@ collect_native:
         }
 
         is_hyph = (cur_chr() == hyphen_char(main_f)) || ((INTPAR(xetex_dash_break) > 0)
-                                                       && ((cur_chr() == 8212) || (cur_chr() == 8211)));
+            && ((cur_chr() == 8212) || (cur_chr() == 8211)));
 
         if ((main_h == 0) && is_hyph)
             main_h = native_len;
@@ -16964,23 +18785,28 @@ collect_native:
         if (cur_cmd() == LETTER || cur_cmd() == OTHER_CHAR || cur_cmd() == CHAR_GIVEN)
             goto collect_native;
 
-        if (cur_cmd() == CHAR_NUM) {
+        if (cur_cmd() == CHAR_NUM)
+        {
             scan_usv_num();
             set_cur_chr(cur_val);
             goto collect_native;
         }
 
         if ((INTPAR(xetex_inter_char_tokens) > 0) && (space_class != CHAR_CLASS_LIMIT)
-            && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
+            && (prev_class != ((CHAR_CLASS_LIMIT - 1))))
+        {
             prev_class = ((CHAR_CLASS_LIMIT - 1));
             find_sa_element(INTER_CHAR_VAL,
                             space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)), false);
-            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-                if (cur_cs() == 0) {
+            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+            {
+                if (cur_cs() == 0)
+                {
                     if (cur_cmd() == CHAR_NUM)
                         set_cur_cmd(OTHER_CHAR);
                     set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
-                } else
+                }
+                else
                     set_cur_tok(CS_TOKEN_FLAG + cur_cs());
                 back_input();
                 begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -16988,12 +18814,14 @@ collect_native:
             }
         }
 
-collected:
-        if ((font_mapping(main_f) != NULL)) {
+    collected:
+        if ((font_mapping(main_f) != NULL))
+        {
             main_k = apply_mapping(font_mapping(main_f), native_text_ptr(0), native_len);
             native_len = 0;
 
-            while (native_text_size <= native_len + main_k) {
+            while (native_text_size <= native_len + main_k)
+            {
                 native_text_size = native_text_size + 128;
                 resize_native_text(native_text_size);
             }
@@ -17005,7 +18833,8 @@ collected:
                 main_p = 0;
                 for_end = main_k - 1;
                 if (main_p <= for_end)
-                    do {
+                    do
+                    {
                         {
                             set_native_text(native_len, mapped_text[main_p]);
                             native_len++;
@@ -17020,12 +18849,15 @@ collected:
             }
         }
 
-        if (INTPAR(tracing_lost_chars) > 0) {
+        if (INTPAR(tracing_lost_chars) > 0)
+        {
             temp_ptr = 0;
-            while ((temp_ptr < native_len)) {
+            while ((temp_ptr < native_len))
+            {
                 main_k = native_text(temp_ptr);
                 temp_ptr++;
-                if ((main_k >= 0xD800) && (main_k < 0xDC00)) {
+                if ((main_k >= 0xD800) && (main_k < 0xDC00))
+                {
                     main_k = 65536L + (main_k - 0xD800) * 1024;
                     main_k = main_k + native_text(temp_ptr) - 0xDC00;
                     temp_ptr++;
@@ -17038,11 +18870,14 @@ collected:
         main_k = native_len;
         main_pp = cur_list.tail;
 
-        if (cur_list.mode == HMODE) {
+        if (cur_list.mode == HMODE)
+        {
             main_ppp = cur_list.head;
 
-            while (main_ppp != main_pp && mem(main_ppp).b32.s1 != main_pp) {
-                if (!is_char_node(main_ppp) && NODE_type(main_ppp) == DISC_NODE) {
+            while (main_ppp != main_pp && mem(main_ppp).b32.s1 != main_pp)
+            {
+                if (!is_char_node(main_ppp) && NODE_type(main_ppp) == DISC_NODE)
+                {
                     temp_ptr = main_ppp;
                     {
                         register int32_t for_end;
@@ -17061,20 +18896,23 @@ collected:
 
             temp_ptr = 0;
 
-            do {
+            do
+            {
                 if (main_h == 0)
                     main_h = main_k;
 
                 if ((((main_pp) != TEX_NULL && (!(is_char_node(main_pp)))
-                      && (NODE_type(main_pp) == WHATSIT_NODE)
-                      && ((mem(main_pp).b16.s0 == NATIVE_WORD_NODE)
-                          || (mem(main_pp).b16.s0 == NATIVE_WORD_NODE_AT))))
+                        && (NODE_type(main_pp) == WHATSIT_NODE)
+                        && ((mem(main_pp).b16.s0 == NATIVE_WORD_NODE)
+                            || (mem(main_pp).b16.s0 == NATIVE_WORD_NODE_AT))))
                     && (mem(main_pp + 4).b16.s2 == main_f) && (main_ppp != main_pp) && (!(is_char_node(main_ppp)))
                     && (NODE_type(main_ppp) != DISC_NODE)
-                ) {
+                )
+                {
                     main_k = main_h + mem(main_pp + 4).b16.s1;
 
-                    while (native_text_size <= native_len + main_k) {
+                    while (native_text_size <= native_len + main_k)
+                    {
                         native_text_size = native_text_size + 128;
                         resize_native_text(native_text_size);
                     }
@@ -17086,7 +18924,8 @@ collected:
                         main_p = 0;
                         for_end = mem(main_pp + 4).b16.s1 - 1;
                         if (main_p <= for_end)
-                            do {
+                            do
+                            {
                                 set_native_text(native_len, NATIVE_NODE_text(main_pp)[main_p]);
                                 native_len++;
                             }
@@ -17097,7 +18936,8 @@ collected:
                         main_p = 0;
                         for_end = main_h - 1;
                         if (main_p <= for_end)
-                            do {
+                            do
+                            {
                                 set_native_text(native_len, native_text(temp_ptr + main_p));
                                 native_len++;
                             }
@@ -17111,9 +18951,9 @@ collected:
                     main_h = 0;
 
                     while ((main_h < main_k) && (native_text(temp_ptr + main_h) != hyphen_char(main_f))
-                           && ((!(INTPAR(xetex_dash_break) > 0))
-                               || ((native_text(temp_ptr + main_h) != 8212)
-                                   && (native_text(temp_ptr + main_h) != 8211))))
+                        && ((!(INTPAR(xetex_dash_break) > 0))
+                            || ((native_text(temp_ptr + main_h) != 8212)
+                                && (native_text(temp_ptr + main_h) != 8211))))
                         main_h++;
 
                     if ((main_h < main_k))
@@ -17126,31 +18966,39 @@ collected:
 
                     while ((mem(main_ppp).b32.s1 != main_pp))
                         main_ppp = LLIST_link(main_ppp);
-                } else {
+                }
+                else
+                {
                     do_locale_linebreaks(temp_ptr, main_h);
                     temp_ptr = temp_ptr + main_h;
                     main_k = main_k - main_h;
                     main_h = 0;
                     while ((main_h < main_k) && (native_text(temp_ptr + main_h) != hyphen_char(main_f))
-                           && ((!(INTPAR(xetex_dash_break) > 0))
-                               || ((native_text(temp_ptr + main_h) != 8212)
-                                   && (native_text(temp_ptr + main_h) != 8211))))
+                        && ((!(INTPAR(xetex_dash_break) > 0))
+                            || ((native_text(temp_ptr + main_h) != 8212)
+                                && (native_text(temp_ptr + main_h) != 8211))))
                         main_h++;
                     if ((main_h < main_k))
                         main_h++;
                 }
 
-                if ((main_k > 0) || is_hyph) {
+                if ((main_k > 0) || is_hyph)
+                {
                     mem_ptr(cur_list.tail)->b32.s1 = new_disc();
                     cur_list.tail = LLIST_link(cur_list.tail);
                     main_pp = cur_list.tail;
                 }
-            } while (!(main_k == 0));
-        } else {
+            }
+            while (!(main_k == 0));
+        }
+        else
+        {
             main_ppp = cur_list.head;
 
-            while (main_ppp != main_pp && mem(main_ppp).b32.s1 != main_pp) {
-                if (!is_char_node(main_ppp) && NODE_type(main_ppp) == DISC_NODE) {
+            while (main_ppp != main_pp && mem(main_ppp).b32.s1 != main_pp)
+            {
+                if (!is_char_node(main_ppp) && NODE_type(main_ppp) == DISC_NODE)
+                {
                     temp_ptr = main_ppp;
                     {
                         register int32_t for_end;
@@ -17168,10 +19016,11 @@ collected:
             }
 
             if ((((main_pp) != TEX_NULL && (!(is_char_node(main_pp))) && (NODE_type(main_pp) == WHATSIT_NODE)
-                  && ((mem(main_pp).b16.s0 == NATIVE_WORD_NODE)
-                      || (mem(main_pp).b16.s0 == NATIVE_WORD_NODE_AT)))) && (mem(main_pp + 4).b16.s2 == main_f)
+                    && ((mem(main_pp).b16.s0 == NATIVE_WORD_NODE)
+                        || (mem(main_pp).b16.s0 == NATIVE_WORD_NODE_AT)))) && (mem(main_pp + 4).b16.s2 == main_f)
                 && (main_ppp != main_pp) && (!(is_char_node(main_ppp))) && (NODE_type(main_ppp) != DISC_NODE)
-            ) {
+            )
+            {
                 mem_ptr(main_pp)->b32.s1 = new_native_word_node(main_f, main_k + mem(main_pp + 4).b16.s1);
                 cur_list.tail = mem(main_pp).b32.s1;
                 {
@@ -17200,7 +19049,9 @@ collected:
                 mem_ptr(main_p)->b32.s1 = mem(main_pp).b32.s1;
                 mem_ptr(main_pp)->b32.s1 = TEX_NULL;
                 flush_node_list(main_pp);
-            } else {
+            }
+            else
+            {
                 mem_ptr(main_pp)->b32.s1 = new_native_word_node(main_f, main_k);
                 cur_list.tail = mem(main_pp).b32.s1;
                 {
@@ -17209,44 +19060,49 @@ collected:
                     for_end = main_k - 1;
                     if (main_p <= for_end)
                         do
-                            NATIVE_NODE_text(cur_list.tail)[main_p] =  native_text(main_p);
+                            NATIVE_NODE_text(cur_list.tail)[main_p] = native_text(main_p);
                         while (main_p++ < for_end);
                 }
                 set_native_metrics(cur_list.tail, (INTPAR(xetex_use_glyph_metrics) > 0));
             }
         }
 
-        if (INTPAR(xetex_interword_space_shaping) > 0) {
+        if (INTPAR(xetex_interword_space_shaping) > 0)
+        {
             main_p = cur_list.head;
             main_pp = TEX_NULL;
-            while (main_p != cur_list.tail) {
-
+            while (main_p != cur_list.tail)
+            {
                 if ((((main_p) != TEX_NULL && (!(is_char_node(main_p)))
-                      && (NODE_type(main_p) == WHATSIT_NODE)
-                      && ((mem(main_p).b16.s0 == NATIVE_WORD_NODE)
-                          || (mem(main_p).b16.s0 == NATIVE_WORD_NODE_AT)))))
+                    && (NODE_type(main_p) == WHATSIT_NODE)
+                    && ((mem(main_p).b16.s0 == NATIVE_WORD_NODE)
+                        || (mem(main_p).b16.s0 == NATIVE_WORD_NODE_AT)))))
                     main_pp = main_p;
                 main_p = LLIST_link(main_p);
             }
 
-            if ((main_pp != TEX_NULL)) {
-                if (mem(main_pp + 4).b16.s2 == main_f) {
+            if ((main_pp != TEX_NULL))
+            {
+                if (mem(main_pp + 4).b16.s2 == main_f)
+                {
                     main_p = mem(main_pp).b32.s1;
                     while (!(is_char_node(main_p))
-                           && ((NODE_type(main_p) == PENALTY_NODE) || (NODE_type(main_p) == INS_NODE)
-                               || (NODE_type(main_p) == MARK_NODE) || (NODE_type(main_p) == ADJUST_NODE)
-                               || ((NODE_type(main_p) == WHATSIT_NODE) && (mem(main_p).b16.s0 <= 4))))
+                        && ((NODE_type(main_p) == PENALTY_NODE) || (NODE_type(main_p) == INS_NODE)
+                            || (NODE_type(main_p) == MARK_NODE) || (NODE_type(main_p) == ADJUST_NODE)
+                            || ((NODE_type(main_p) == WHATSIT_NODE) && (mem(main_p).b16.s0 <= 4))))
                         main_p = LLIST_link(main_p);
-                    if (!(is_char_node(main_p)) && (NODE_type(main_p) == GLUE_NODE)) {
+                    if (!(is_char_node(main_p)) && (NODE_type(main_p) == GLUE_NODE))
+                    {
                         main_ppp = mem(main_p).b32.s1;
                         while (!(is_char_node(main_ppp))
-                               && ((NODE_type(main_ppp) == PENALTY_NODE)
-                                   || (NODE_type(main_ppp) == INS_NODE)
-                                   || (NODE_type(main_ppp) == MARK_NODE)
-                                   || (NODE_type(main_ppp) == ADJUST_NODE)
-                                   || ((NODE_type(main_ppp) == WHATSIT_NODE) && (mem(main_ppp).b16.s0 <= 4))))
+                            && ((NODE_type(main_ppp) == PENALTY_NODE)
+                                || (NODE_type(main_ppp) == INS_NODE)
+                                || (NODE_type(main_ppp) == MARK_NODE)
+                                || (NODE_type(main_ppp) == ADJUST_NODE)
+                                || ((NODE_type(main_ppp) == WHATSIT_NODE) && (mem(main_ppp).b16.s0 <= 4))))
                             main_ppp = LLIST_link(main_ppp);
-                        if (main_ppp == cur_list.tail) {
+                        if (main_ppp == cur_list.tail)
+                        {
                             temp_ptr =
                                 new_native_word_node(
                                     main_f,
@@ -17258,7 +19114,8 @@ collected:
                                 t = 0;
                                 for_end = mem(main_pp + 4).b16.s1 - 1;
                                 if (t <= for_end)
-                                    do {
+                                    do
+                                    {
                                         NATIVE_NODE_text(temp_ptr)[main_k] = NATIVE_NODE_text(main_pp)[t];
                                         main_k++;
                                     }
@@ -17271,7 +19128,8 @@ collected:
                                 t = 0;
                                 for_end = mem(cur_list.tail + 4).b16.s1 - 1;
                                 if (t <= for_end)
-                                    do {
+                                    do
+                                    {
                                         NATIVE_NODE_text(temp_ptr)[main_k] = NATIVE_NODE_text(cur_list.tail)[t];
                                         main_k++;
                                     }
@@ -17280,7 +19138,8 @@ collected:
                             set_native_metrics(temp_ptr, (INTPAR(xetex_use_glyph_metrics) > 0));
                             t = mem(temp_ptr + 1).b32.s1 - mem(main_pp + 1).b32.s1 - mem(cur_list.tail + 1).b32.s1;
                             free_node(temp_ptr, mem(temp_ptr + 4).b16.s3);
-                            if (t != mem(font_glue(main_f) + 1).b32.s1) {
+                            if (t != mem(font_glue(main_f) + 1).b32.s1)
+                            {
                                 temp_ptr = new_kern(t - mem(font_glue(main_f) + 1).b32.s1);
                                 NODE_subtype(temp_ptr) = SPACE_ADJUSTMENT;
                                 mem_ptr(temp_ptr)->b32.s1 = mem(main_p).b32.s1;
@@ -17300,26 +19159,37 @@ collected:
 
     main_s = SF_CODE(cur_chr()) % 65536L;
 
-    if (main_s == 1000) {
+    if (main_s == 1000)
+    {
         cur_list.aux.b32.s0 = 1000;
-    } else if (main_s < 1000) {
+    }
+    else if (main_s < 1000)
+    {
         if (main_s > 0)
             cur_list.aux.b32.s0 = main_s;
-    } else if (cur_list.aux.b32.s0 < 1000) {
+    }
+    else if (cur_list.aux.b32.s0 < 1000)
+    {
         cur_list.aux.b32.s0 = 1000;
-    } else {
+    }
+    else
+    {
         cur_list.aux.b32.s0 = main_s;
     }
 
     cur_ptr = TEX_NULL;
     space_class = SF_CODE(cur_chr()) / 65536L;
 
-    if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
-        if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
-            if ((cur_input().state != TOKEN_LIST) || (cur_input().index != BACKED_UP_CHAR)) {
+    if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT)
+    {
+        if (prev_class == ((CHAR_CLASS_LIMIT - 1)))
+        {
+            if ((cur_input().state != TOKEN_LIST) || (cur_input().index != BACKED_UP_CHAR))
+            {
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
-                if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
+                if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+                {
                     if (cur_cmd() != LETTER)
                         set_cur_cmd(OTHER_CHAR);
                     set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
@@ -17329,9 +19199,12 @@ collected:
                     goto big_switch;
                 }
             }
-        } else {
+        }
+        else
+        {
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
-            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
+            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+            {
                 if (cur_cmd() != LETTER)
                     set_cur_cmd(OTHER_CHAR);
                 set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
@@ -17350,7 +19223,8 @@ collected:
     bchar = font_bchar(main_f);
     false_bchar = font_false_bchar(main_f);
 
-    if (cur_list.mode > 0) {
+    if (cur_list.mode > 0)
+    {
         if (INTPAR(language) != cur_list.aux.b32.s1)
             fix_language();
     }
@@ -17359,8 +19233,8 @@ collected:
         lig_stack = avail();
         if (lig_stack == TEX_NULL)
             lig_stack = get_avail();
-        else {
-
+        else
+        {
             set_avail(mem(lig_stack).b32.s1);
             mem_ptr(lig_stack)->b32.s1 = TEX_NULL;
         }
@@ -17371,10 +19245,13 @@ collected:
     mem_ptr(lig_stack)->b16.s0 = cur_l;
     cur_q = cur_list.tail;
 
-    if (cancel_boundary) {
+    if (cancel_boundary)
+    {
         cancel_boundary = false;
         main_k = NON_ADDRESS;
-    } else {
+    }
+    else
+    {
         main_k = bchar_label(main_f);
     }
 
@@ -17385,22 +19262,27 @@ collected:
     cur_l = TOO_BIG_CHAR;
     goto main_lig_loop_1;
 
- main_loop_wrapup: /*1070: */
-    if (cur_l < TOO_BIG_CHAR) {
-        if (mem(cur_q).b32.s1 > TEX_NULL) {
+main_loop_wrapup: /*1070: */
+    if (cur_l < TOO_BIG_CHAR)
+    {
+        if (mem(cur_q).b32.s1 > TEX_NULL)
+        {
             if (mem(cur_list.tail).b16.s0 == hyphen_char(main_f))
                 ins_disc = true;
         }
 
-        if (ligature_present) {
+        if (ligature_present)
+        {
             main_p = new_ligature(main_f, cur_l, mem(cur_q).b32.s1);
-            if (lft_hit) {
+            if (lft_hit)
+            {
                 mem_ptr(main_p)->b16.s0 = 2;
                 lft_hit = false;
             }
-            if (rt_hit) {
-
-                if (lig_stack == TEX_NULL) {
+            if (rt_hit)
+            {
+                if (lig_stack == TEX_NULL)
+                {
                     mem_ptr(main_p)->b16.s0++;
                     rt_hit = false;
                 }
@@ -17410,9 +19292,11 @@ collected:
             ligature_present = false;
         }
 
-        if (ins_disc) {
+        if (ins_disc)
+        {
             ins_disc = false;
-            if (cur_list.mode > 0) {
+            if (cur_list.mode > 0)
+            {
                 mem_ptr(cur_list.tail)->b32.s1 = new_disc();
                 cur_list.tail = LLIST_link(cur_list.tail);
             }
@@ -17432,7 +19316,8 @@ main_loop_move_1:
 
 main_loop_move_2:
     if ((effective_char(false, main_f, cur_chr()) > font_ec(main_f))
-                              || (effective_char(false, main_f, cur_chr()) < font_bc(main_f))) {
+        || (effective_char(false, main_f, cur_chr()) < font_bc(main_f)))
+    {
         char_warning(main_f, cur_chr());
         mem_ptr(lig_stack)->b32.s1 = avail();
         set_avail(lig_stack);
@@ -17441,7 +19326,8 @@ main_loop_move_2:
 
     main_i = effective_char_info(main_f, cur_l);
 
-    if (!(main_i.s3 > 0)) {
+    if (!(main_i.s3 > 0))
+    {
         char_warning(main_f, cur_chr());
         mem_ptr(lig_stack)->b32.s1 = avail();
         set_avail(lig_stack);
@@ -17469,7 +19355,8 @@ main_loop_lookahead: /*1073: */
     if (cur_cmd() == CHAR_GIVEN)
         goto main_loop_lookahead_1;
 
-    if (cur_cmd() == CHAR_NUM) {
+    if (cur_cmd() == CHAR_NUM)
+    {
         scan_char_num();
         set_cur_chr(cur_val);
         goto main_loop_lookahead_1;
@@ -17485,26 +19372,37 @@ main_loop_lookahead: /*1073: */
 main_loop_lookahead_1:
     main_s = SF_CODE(cur_chr()) % 65536L;
 
-    if (main_s == 1000) {
+    if (main_s == 1000)
+    {
         cur_list.aux.b32.s0 = 1000;
-    } else if (main_s < 1000) {
+    }
+    else if (main_s < 1000)
+    {
         if (main_s > 0)
             cur_list.aux.b32.s0 = main_s;
-    } else if (cur_list.aux.b32.s0 < 1000) {
+    }
+    else if (cur_list.aux.b32.s0 < 1000)
+    {
         cur_list.aux.b32.s0 = 1000;
-    } else {
+    }
+    else
+    {
         cur_list.aux.b32.s0 = main_s;
     }
 
     cur_ptr = TEX_NULL;
     space_class = SF_CODE(cur_chr()) / 65536L;
 
-    if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT) {
-        if (prev_class == ((CHAR_CLASS_LIMIT - 1))) {
-            if ((cur_input().state != TOKEN_LIST) || (cur_input().index != BACKED_UP_CHAR)) {
+    if ((INTPAR(xetex_inter_char_tokens) > 0) && space_class != CHAR_CLASS_LIMIT)
+    {
+        if (prev_class == ((CHAR_CLASS_LIMIT - 1)))
+        {
+            if ((cur_input().state != TOKEN_LIST) || (cur_input().index != BACKED_UP_CHAR))
+            {
                 find_sa_element(INTER_CHAR_VAL,
                                 ((CHAR_CLASS_LIMIT - 1)) * CHAR_CLASS_LIMIT + space_class, false);
-                if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
+                if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+                {
                     if (cur_cmd() != LETTER)
                         set_cur_cmd(OTHER_CHAR);
                     set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
@@ -17514,9 +19412,12 @@ main_loop_lookahead_1:
                     goto big_switch;
                 }
             }
-        } else {
+        }
+        else
+        {
             find_sa_element(INTER_CHAR_VAL, prev_class * CHAR_CLASS_LIMIT + space_class, false);
-            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
+            if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+            {
                 if (cur_cmd() != LETTER)
                     set_cur_cmd(OTHER_CHAR);
                 set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
@@ -17534,8 +19435,8 @@ main_loop_lookahead_1:
         lig_stack = avail();
         if (lig_stack == TEX_NULL)
             lig_stack = get_avail();
-        else {
-
+        else
+        {
             set_avail(mem(lig_stack).b32.s1);
             mem_ptr(lig_stack)->b32.s1 = TEX_NULL;
         }
@@ -17565,24 +19466,33 @@ main_lig_loop_1:
     main_j = font_info(main_k).b16;
 
 main_lig_loop_2:
-    if (main_j.s2 == cur_r) {
-        if (main_j.s3 <= 128) { /*1075: */
-            if (main_j.s1 >= 128) {
-                if (cur_l < TOO_BIG_CHAR) {
-                    if (mem(cur_q).b32.s1 > TEX_NULL) {
+    if (main_j.s2 == cur_r)
+    {
+        if (main_j.s3 <= 128)
+        {
+            /*1075: */
+            if (main_j.s1 >= 128)
+            {
+                if (cur_l < TOO_BIG_CHAR)
+                {
+                    if (mem(cur_q).b32.s1 > TEX_NULL)
+                    {
                         if (mem(cur_list.tail).b16.s0 == hyphen_char(main_f))
                             ins_disc = true;
                     }
 
-                    if (ligature_present) {
+                    if (ligature_present)
+                    {
                         main_p = new_ligature(main_f, cur_l, mem(cur_q).b32.s1);
-                        if (lft_hit) {
+                        if (lft_hit)
+                        {
                             mem_ptr(main_p)->b16.s0 = 2;
                             lft_hit = false;
                         }
-                        if (rt_hit) {
-
-                            if (lig_stack == TEX_NULL) {
+                        if (rt_hit)
+                        {
+                            if (lig_stack == TEX_NULL)
+                            {
                                 mem_ptr(main_p)->b16.s0++;
                                 rt_hit = false;
                             }
@@ -17592,9 +19502,11 @@ main_lig_loop_2:
                         ligature_present = false;
                     }
 
-                    if (ins_disc) {
+                    if (ins_disc)
+                    {
                         ins_disc = false;
-                        if (cur_list.mode > 0) {
+                        if (cur_list.mode > 0)
+                        {
                             mem_ptr(cur_list.tail)->b32.s1 = new_disc();
                             cur_list.tail = LLIST_link(cur_list.tail);
                         }
@@ -17612,7 +19524,8 @@ main_lig_loop_2:
             else if (lig_stack == TEX_NULL)
                 rt_hit = true;
 
-            switch (main_j.s1) {
+            switch (main_j.s1)
+            {
             case 1:
             case 5:
                 cur_l = main_j.s0;
@@ -17624,14 +19537,19 @@ main_lig_loop_2:
             case 6:
                 cur_r = main_j.s0;
 
-                if (lig_stack == TEX_NULL) {
+                if (lig_stack == TEX_NULL)
+                {
                     lig_stack = new_lig_item(cur_r);
                     bchar = TOO_BIG_CHAR;
-                } else if (is_char_node(lig_stack)) {
+                }
+                else if (is_char_node(lig_stack))
+                {
                     main_p = lig_stack;
                     lig_stack = new_lig_item(cur_r);
                     mem_ptr(lig_stack + 1)->b32.s1 = main_p;
-                } else {
+                }
+                else
+                {
                     mem_ptr(lig_stack)->b16.s0 = cur_r;
                 }
                 break;
@@ -17645,21 +19563,25 @@ main_lig_loop_2:
 
             case 7:
             case 11:
-                if (cur_l < TOO_BIG_CHAR) {
-                    if (mem(cur_q).b32.s1 > TEX_NULL) {
-
+                if (cur_l < TOO_BIG_CHAR)
+                {
+                    if (mem(cur_q).b32.s1 > TEX_NULL)
+                    {
                         if (mem(cur_list.tail).b16.s0 == hyphen_char(main_f))
                             ins_disc = true;
                     }
-                    if (ligature_present) {
+                    if (ligature_present)
+                    {
                         main_p = new_ligature(main_f, cur_l, mem(cur_q).b32.s1);
-                        if (lft_hit) {
+                        if (lft_hit)
+                        {
                             mem_ptr(main_p)->b16.s0 = 2;
                             lft_hit = false;
                         }
-                        if (false) {
-
-                            if (lig_stack == TEX_NULL) {
+                        if (false)
+                        {
+                            if (lig_stack == TEX_NULL)
+                            {
                                 mem_ptr(main_p)->b16.s0++;
                                 rt_hit = false;
                             }
@@ -17668,9 +19590,11 @@ main_lig_loop_2:
                         cur_list.tail = main_p;
                         ligature_present = false;
                     }
-                    if (ins_disc) {
+                    if (ins_disc)
+                    {
                         ins_disc = false;
-                        if (cur_list.mode > 0) {
+                        if (cur_list.mode > 0)
+                        {
                             mem_ptr(cur_list.tail)->b32.s1 = new_disc();
                             cur_list.tail = LLIST_link(cur_list.tail);
                         }
@@ -17692,7 +19616,8 @@ main_lig_loop_2:
                 break;
             }
 
-            if (main_j.s1 > 4) {
+            if (main_j.s1 > 4)
+            {
                 if (main_j.s1 != 7)
                     goto main_loop_wrapup;
             }
@@ -17707,7 +19632,8 @@ main_lig_loop_2:
 
     if (main_j.s3 == 0)
         main_k++;
-    else {
+    else
+    {
         if (main_j.s3 >= 128)
             goto main_loop_wrapup;
         main_k = main_k + main_j.s3 + 1;
@@ -17718,7 +19644,8 @@ main_lig_loop_2:
 main_loop_move_lig: /*1072: */
     main_p = mem(lig_stack + 1).b32.s1;
 
-    if (main_p > TEX_NULL) {
+    if (main_p > TEX_NULL)
+    {
         mem_ptr(cur_list.tail)->b32.s1 = main_p;
         cur_list.tail = LLIST_link(cur_list.tail);
     }
@@ -17729,29 +19656,35 @@ main_loop_move_lig: /*1072: */
     main_i = FONT_CHARACTER_INFO(main_f, effective_char(true, main_f, cur_l));
     ligature_present = true;
 
-    if (lig_stack == TEX_NULL) {
+    if (lig_stack == TEX_NULL)
+    {
         if (main_p > TEX_NULL)
             goto main_loop_lookahead;
         else
             cur_r = bchar;
-    } else
+    }
+    else
         cur_r = mem(lig_stack).b16.s0;
 
     goto main_lig_loop;
 
 append_normal_space:
     if ((INTPAR(xetex_inter_char_tokens) > 0)
-                                 && (space_class != CHAR_CLASS_LIMIT)
-                                 && (prev_class != ((CHAR_CLASS_LIMIT - 1)))) {
+        && (space_class != CHAR_CLASS_LIMIT)
+        && (prev_class != ((CHAR_CLASS_LIMIT - 1))))
+    {
         prev_class = ((CHAR_CLASS_LIMIT - 1));
         find_sa_element(INTER_CHAR_VAL,
                         space_class * CHAR_CLASS_LIMIT + ((CHAR_CLASS_LIMIT - 1)), false);
-        if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL) {
-            if (cur_cs() == 0) {
+        if (cur_ptr != TEX_NULL && ETEX_SA_ptr(cur_ptr) != TEX_NULL)
+        {
+            if (cur_cs() == 0)
+            {
                 if (cur_cmd() == CHAR_NUM)
                     set_cur_cmd(OTHER_CHAR);
                 set_cur_tok((cur_cmd() * MAX_CHAR_VAL) + cur_chr());
-            } else
+            }
+            else
                 set_cur_tok(CS_TOKEN_FLAG + cur_cs());
             back_input();
             begin_token_list(mem(cur_ptr + 1).b32.s1, INTER_CHAR_TEXT);
@@ -17759,9 +19692,11 @@ append_normal_space:
         }
     }
 
-    if (GLUEPAR(space_skip) == 0) {
+    if (GLUEPAR(space_skip) == 0)
+    {
         main_p = font_glue(eqtb_ptr(CUR_FONT_LOC)->b32.s1);
-        if (main_p == TEX_NULL) {
+        if (main_p == TEX_NULL)
+        {
             main_p = new_spec(0);
             main_k = param_base(eqtb_ptr(CUR_FONT_LOC)->b32.s1) + 2;
             mem_ptr(main_p + 1)->b32.s1 = font_info(main_k).b32.s1;
@@ -17770,7 +19705,8 @@ append_normal_space:
             set_font_glue(eqtb_ptr(CUR_FONT_LOC)->b32.s1, main_p);
         }
         temp_ptr = new_glue(main_p);
-    } else
+    }
+    else
         temp_ptr = new_param_glue(GLUE_PAR__space_skip);
 
     mem_ptr(cur_list.tail)->b32.s1 = temp_ptr;
@@ -17781,15 +19717,16 @@ append_normal_space:
 
 void flush_str(str_number s)
 {
-    if (s == str_ptr() - 1) {
-        set_str_ptr(str_ptr()-1);
+    if (s == str_ptr() - 1)
+    {
+        set_str_ptr(str_ptr() - 1);
         set_pool_ptr(str_start(str_ptr() - TOO_BIG_CHAR));
     }
 }
 
 str_number tokens_to_string(int32_t p)
 {
-    if (selector() == SELECTOR_NEW_STRING )
+    if (selector() == SELECTOR_NEW_STRING)
         pdf_error("tokens", "tokens_to_string() called while selector = new_string");
     old_setting = selector();
     set_selector(SELECTOR_NEW_STRING);
@@ -17825,13 +19762,15 @@ void compare_strings(void)
     j1 = str_start((s1 + 1) - 65536L);
     i2 = str_start((s2) - 65536L);
     j2 = str_start((s2 + 1) - 65536L);
-    while ((i1 < j1) && (i2 < j2)) {
-
-        if (str_pool(i1) < str_pool(i2)) {
+    while ((i1 < j1) && (i2 < j2))
+    {
+        if (str_pool(i1) < str_pool(i2))
+        {
             cur_val = -1;
             goto done;
         }
-        if (str_pool(i1) > str_pool(i2)) {
+        if (str_pool(i1) > str_pool(i2))
+        {
             cur_val = 1;
             goto done;
         }
@@ -17860,8 +19799,10 @@ prune_page_top(int32_t p, bool s)
     prev_p = TEMP_HEAD;
     mem_ptr(TEMP_HEAD)->b32.s1 = p;
 
-    while (p != TEX_NULL) {
-        switch (mem(p).b16.s1) {
+    while (p != TEX_NULL)
+    {
+        switch (mem(p).b16.s1)
+        {
         case HLIST_NODE:
         case VLIST_NODE:
         case RULE_NODE:
@@ -17887,13 +19828,16 @@ prune_page_top(int32_t p, bool s)
             p = mem(q).b32.s1;
             mem_ptr(q)->b32.s1 = TEX_NULL;
             mem_ptr(prev_p)->b32.s1 = p;
-            if (s) {
+            if (s)
+            {
                 if (disc_ptr[VSPLIT_CODE] == TEX_NULL)
                     disc_ptr[VSPLIT_CODE] = q;
                 else
                     mem_ptr(r)->b32.s1 = q;
                 r = q;
-            } else {
+            }
+            else
+            {
                 flush_node_list(q);
             }
             break;
@@ -17912,15 +19856,19 @@ do_marks(small_number a, small_number l, int32_t q)
 {
     small_number i;
 
-    if (l < 4) {
-        for (i = 0; i <= 15; i++) {
+    if (l < 4)
+    {
+        for (i = 0; i <= 15; i++)
+        {
             if (odd(i))
                 cur_ptr = mem(q + (i / 2) + 1).b32.s1;
             else
                 cur_ptr = mem(q + (i / 2) + 1).b32.s0;
 
-            if (cur_ptr != TEX_NULL) {
-                if (do_marks(a, l + 1, cur_ptr)) {
+            if (cur_ptr != TEX_NULL)
+            {
+                if (do_marks(a, l + 1, cur_ptr))
+                {
                     if (odd(i))
                         mem_ptr(q + (i / 2) + 1)->b32.s1 = TEX_NULL;
                     else
@@ -17930,14 +19878,20 @@ do_marks(small_number a, small_number l, int32_t q)
             }
         }
 
-        if (mem(q).b16.s0 == 0) {
+        if (mem(q).b16.s0 == 0)
+        {
             free_node(q, INDEX_NODE_SIZE);
             q = TEX_NULL;
         }
-    } else {
-        switch (a) { /*1614: */
+    }
+    else
+    {
+        switch (a)
+        {
+        /*1614: */
         case VSPLIT_INIT:
-            if (mem(q + 2).b32.s1 != TEX_NULL) {
+            if (mem(q + 2).b32.s1 != TEX_NULL)
+            {
                 delete_token_ref(mem(q + 2).b32.s1);
                 mem_ptr(q + 2)->b32.s1 = TEX_NULL;
                 delete_token_ref(mem(q + 3).b32.s0);
@@ -17946,35 +19900,41 @@ do_marks(small_number a, small_number l, int32_t q)
             break;
 
         case FIRE_UP_INIT:
-            if (mem(q + 2).b32.s0 != TEX_NULL) {
+            if (mem(q + 2).b32.s0 != TEX_NULL)
+            {
                 if (mem(q + 1).b32.s0 != TEX_NULL)
                     delete_token_ref(mem(q + 1).b32.s0);
                 delete_token_ref(mem(q + 1).b32.s1);
                 mem_ptr(q + 1)->b32.s1 = TEX_NULL;
-                if (mem(mem(q + 2).b32.s0).b32.s1 == TEX_NULL) {
+                if (mem(mem(q + 2).b32.s0).b32.s1 == TEX_NULL)
+                {
                     delete_token_ref(mem(q + 2).b32.s0);
                     mem_ptr(q + 2)->b32.s0 = TEX_NULL;
-                } else
+                }
+                else
                     mem_ptr(mem(q + 2).b32.s0)->b32.s0++;
                 mem_ptr(q + 1)->b32.s0 = mem(q + 2).b32.s0;
             }
             break;
 
         case FIRE_UP_DONE:
-            if ((mem(q + 1).b32.s0 != TEX_NULL) && (mem(q + 1).b32.s1 == TEX_NULL)) {
+            if ((mem(q + 1).b32.s0 != TEX_NULL) && (mem(q + 1).b32.s1 == TEX_NULL))
+            {
                 mem_ptr(q + 1)->b32.s1 = mem(q + 1).b32.s0;
                 mem_ptr(mem(q + 1).b32.s0)->b32.s0++;
             }
             break;
 
         case DESTROY_MARKS:
-            for (i = TOP_MARK_CODE; i <= SPLIT_BOT_MARK_CODE; i++) {
+            for (i = TOP_MARK_CODE; i <= SPLIT_BOT_MARK_CODE; i++)
+            {
                 if (odd(i))
                     cur_ptr = mem(q + (i / 2) + 1).b32.s1;
                 else
                     cur_ptr = mem(q + (i / 2) + 1).b32.s0;
 
-                if (cur_ptr != TEX_NULL) {
+                if (cur_ptr != TEX_NULL)
+                {
                     delete_token_ref(cur_ptr);
                     if (odd(i))
                         mem_ptr(q + (i / 2) + 1)->b32.s1 = TEX_NULL;
@@ -17985,8 +19945,10 @@ do_marks(small_number a, small_number l, int32_t q)
             break;
         }
 
-        if (mem(q + 2).b32.s0 == TEX_NULL) {
-            if (mem(q + 3).b32.s0 == TEX_NULL) {
+        if (mem(q + 2).b32.s0 == TEX_NULL)
+        {
+            if (mem(q + 3).b32.s0 == TEX_NULL)
+            {
                 free_node(q, MARK_CLASS_NODE_SIZE);
                 q = TEX_NULL;
             }
@@ -18000,10 +19962,13 @@ do_marks(small_number a, small_number l, int32_t q)
 void
 do_assignments(void)
 {
-    while (true) {
-        do {
+    while (true)
+    {
+        do
+        {
             get_x_token();
-        } while (cur_cmd() == SPACER || cur_cmd() == RELAX);
+        }
+        while (cur_cmd() == SPACER || cur_cmd() == RELAX);
 
         if (cur_cmd() <= MAX_NON_PREFIXED_COMMAND)
             return;

@@ -405,6 +405,8 @@ typedef unsigned char Flags;
 
 #define CS_TOKEN_FLAG 33554431
 
+#define GLUE_SPEC_SIZE 4
+
 #define WHATSIT_NODE 8
 
 #define NATIVE_WORD_NODE 40
@@ -690,6 +692,10 @@ void tt_cleanup(void);
 void flush_list(int32_t p);
 
 void free_node(int32_t p, int32_t s);
+
+void delete_token_ref(int32_t p);
+
+void delete_glue_ref(int32_t p);
 
 uint32_t selector(void);
 
