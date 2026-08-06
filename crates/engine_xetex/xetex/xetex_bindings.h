@@ -5,6 +5,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "xetex-core.h"
+typedef void(*Option_SynctexRecorder)(int32_t);
+typedef unsigned char Flags;
+
+#define FLAGS_CONTENT_READY 1
+#define FLAGS_OFF 2
+#define FLAGS_NOT_VOID 4
+#define FLAGS_WARN 8
+#define FLAGS_OUTPUT_P 16
+
 
 /**
  * A serial number describing the detailed binary layout of the TeX "format
@@ -18,6 +28,566 @@
  */
 #define FORMAT_SERIAL 33
 
+#define DVI_BUF_SIZE 16384
+
+#define HALF_BUF (DVI_BUF_SIZE / 2)
+
+#define FNT_NUM_0 171
+
+#define XDV_ID_BYTE 7
+
+#define SPX_ID_BYTE 100
+
+#define LEVEL_ZERO 0
+
+#define LEVEL_ONE 1
+
+#define NULL_CS 2228225
+
+#define PRIM_SIZE 2100
+
+#define UNDEFINED_CONTROL_SEQUENCE 2254339
+
+#define FROZEN_NULL_FONT 2245338
+
+#define DIMEN_VAL_LIMIT 128
+
+#define TEXT_SIZE 0
+
+#define SCRIPT_SIZE 256
+
+#define SCRIPT_SCRIPT_SIZE 512
+
+#define ESCAPE 0
+
+#define LEFT_BRACE 1
+
+#define RIGHT_BRACE 2
+
+#define MATH_SHIFT 3
+
+#define TAB_MARK 4
+
+#define CAR_RET 5
+
+#define OUT_PARAM 5
+
+#define MAC_PARAM 6
+
+#define SUP_MARK 7
+
+#define SUB_MARK 8
+
+#define ENDV 9
+
+#define IGNORE 9
+
+#define SPACER 10
+
+#define LETTER 11
+
+#define OTHER_CHAR 12
+
+#define PAR_END 13
+
+#define ACTIVE_CHAR 13
+
+#define MATCH 13
+
+#define STOP 14
+
+#define COMMENT 14
+
+#define END_MATCH 14
+
+#define DELIM_NUM 15
+
+#define INVALID_CHAR 15
+
+#define CHAR_NUM 16
+
+#define MAX_CHAR_CODE 15
+
+#define MATH_CHAR_NUM 17
+
+#define MARK 18
+
+#define XRAY 19
+
+#define MAKE_BOX 20
+
+#define HMOVE 21
+
+#define VMOVE 22
+
+#define UN_HBOX 23
+
+#define UN_VBOX 24
+
+#define REMOVE_ITEM 25
+
+#define HSKIP 26
+
+#define VSKIP 27
+
+#define MSKIP 28
+
+#define KERN 29
+
+#define MKERN 30
+
+#define LEADER_SHIP 31
+
+#define HALIGN 32
+
+#define VALIGN 33
+
+#define NO_ALIGN 34
+
+#define VRULE 35
+
+#define HRULE 36
+
+#define INSERT 37
+
+#define VADJUST 38
+
+#define IGNORE_SPACES 39
+
+#define AFTER_ASSIGNMENT 40
+
+#define AFTER_GROUP 41
+
+#define BREAK_PENALTY 42
+
+#define START_PAR 43
+
+#define ITAL_CORR 44
+
+#define ACCENT 45
+
+#define MATH_ACCENT 46
+
+#define DISCRETIONARY 47
+
+#define EQ_NO 48
+
+#define LEFT_RIGHT 49
+
+#define MATH_COMP 50
+
+#define LIMIT_SWITCH 51
+
+#define ABOVE 52
+
+#define MATH_STYLE 53
+
+#define MATH_CHOICE 54
+
+#define NON_SCRIPT 55
+
+#define VCENTER 56
+
+#define CASE_SHIFT 57
+
+#define MESSAGE 58
+
+#define EXTENSION 59
+
+#define IN_STREAM 60
+
+#define BEGIN_GROUP 61
+
+#define END_GROUP 62
+
+#define OMIT 63
+
+#define EX_SPACE 64
+
+#define NO_BOUNDARY 65
+
+#define RADICAL 66
+
+#define END_CS_NAME 67
+
+#define CHAR_GIVEN 68
+
+#define MIN_INTERNAL 68
+
+#define MATH_GIVEN 69
+
+#define XETEX_MATH_GIVEN 70
+
+#define LAST_ITEM 71
+
+#define TOKS_REGISTER 72
+
+#define MAX_NON_PREFIXED_COMMAND 71
+
+#define ASSIGN_TOKS 73
+
+#define ASSIGN_INT 74
+
+#define ASSIGN_DIMEN 75
+
+#define ASSIGN_GLUE 76
+
+#define ASSIGN_MU_GLUE 77
+
+#define ASSIGN_FONT_DIMEN 78
+
+#define ASSIGN_FONT_INT 79
+
+#define SET_AUX 80
+
+#define SET_PREV_GRAF 81
+
+#define SET_PAGE_DIMEN 82
+
+#define SET_PAGE_INT 83
+
+#define SET_BOX_DIMEN 84
+
+#define SET_SHAPE 85
+
+#define DEF_CODE 86
+
+#define XETEX_DEF_CODE 87
+
+#define DEF_FAMILY 88
+
+#define SET_FONT 89
+
+#define DEF_FONT 90
+
+#define REGISTER 91
+
+#define ADVANCE 92
+
+#define MAX_INTERNAL 91
+
+#define MULTIPLY 93
+
+#define DIVIDE 94
+
+#define PREFIX 95
+
+#define LET 96
+
+#define SHORTHAND_DEF 97
+
+#define READ_TO_CS 98
+
+#define DEF 99
+
+#define SET_BOX 100
+
+#define HYPH_DATA 101
+
+#define SET_INTERACTION 102
+
+#define UNDEFINED_CS 103
+
+#define MAX_COMMAND 102
+
+#define EXPAND_AFTER 104
+
+#define NO_EXPAND 105
+
+#define INPUT 106
+
+#define IF_TEST 107
+
+#define FI_OR_ELSE 108
+
+#define CS_NAME 109
+
+#define CONVERT 110
+
+#define THE 111
+
+#define TOP_BOT_MARK 112
+
+#define CALL 113
+
+#define LONG_CALL 114
+
+#define OUTER_CALL 115
+
+#define LONG_OUTER_CALL 116
+
+#define END_TEMPLATE 117
+
+#define DONT_EXPAND 118
+
+#define GLUE_REF 119
+
+#define SHAPE_REF 120
+
+#define BOX_REF 121
+
+#define DATA 122
+
+#define MIN_HALFWORD -268435455
+
+#define MAX_HALFWORD 1073741823
+
+#define TEX_NULL MIN_HALFWORD
+
+/**
+ * The largest positive value that TeX knows
+ */
+#define TEX_INFINITY 2147483647
+
+#define PARAMETER 0
+
+#define U_TEMPLATE 1
+
+#define V_TEMPLATE 2
+
+#define BACKED_UP 3
+
+#define BACKED_UP_CHAR 4
+
+#define INSERTED 5
+
+#define MACRO 6
+
+#define OUTPUT_TEXT 7
+
+#define EVERY_PAR_TEXT 8
+
+#define EVERY_MATH_TEXT 9
+
+#define EVERY_DISPLAY_TEXT 10
+
+#define EVERY_HBOX_TEXT 11
+
+#define EVERY_VBOX_TEXT 12
+
+#define EVERY_JOB_TEXT 13
+
+#define EVERY_CR_TEXT 14
+
+#define MARK_TEXT 15
+
+#define EVERY_EOF_TEXT 16
+
+#define INTER_CHAR_TEXT 17
+
+#define WRITE_TEXT 18
+
+#define TECTONIC_CODA_TEXT 19
+
+#define MID_LINE 1
+
+#define SKIP_BLANKS 17
+
+#define NEW_LINE 33
+
+#define EOP 140
+
+#define POP 142
+
+#define FNT_DEF1 243
+
+#define POST 248
+
+#define POST_POST 249
+
+#define DEFINE_NATIVE_FONT 252
+
+#define FONT_BASE 0
+
+#define TOKEN_LIST 0
+
+#define MAX_CHAR_VAL 2097152
+
+#define CS_TOKEN_FLAG 33554431
+
+#define GLUE_SPEC_SIZE 4
+
+#define WHATSIT_NODE 8
+
+#define NATIVE_WORD_NODE 40
+
+#define EQTB_SIZE 8941458
+
+#define ACTIVE_BASE 1
+
+#define SINGLE_BASE 1114113
+
+#define PRIM_EQTB_BASE 2243238
+
+#define LOCAL_BASE 2254871
+
+#define CAT_CODE_BASE 2256169
+
+#define INT_BASE 7826729
+
+#define INT_PARS 83
+
+#define AAT_FONT_FLAG 65535
+
+#define OTGR_FONT_FLAG 65534
+
+#define FONT_FLAGS_COLORED 1
+
+#define FONT_FLAGS_VERTICAL 2
+
+#define XDV_FLAG_VERTICAL 256
+
+#define XDV_FLAG_COLORED 512
+
+#define XDV_FLAG_EXTEND 4096
+
+#define XDV_FLAG_SLANT 8192
+
+#define XDV_FLAG_EMBOLDEN 16384
+
+#define HASH_OFFSET 514
+
+#define HASH_BASE 2228226
+
+#define ICUMAPPING 5
+
+#define MAX_PRINT_LINE 79
+
+#define BIGGEST_CHAR 65535
+
+#define BIGGEST_USV 1114111
+
+#define NUMBER_USVS (BIGGEST_USV + 1)
+
+#define TOO_BIG_CHAR 65536
+
+typedef int32_t StrNumber;
+
+typedef struct {
+  /**
+   * tokenizer state: mid_line, skip_blanks, new_line
+   */
+  uint16_t state;
+  /**
+   * index of this level of input in input_file array
+   */
+  uint16_t index;
+  /**
+   * position of beginning of current line in `buffer`
+   */
+  int32_t start;
+  /**
+   * position of next character to read in `buffer`
+   */
+  int32_t loc;
+  /**
+   * position of end of line in `buffer`
+   */
+  int32_t limit;
+  /**
+   * name of current file or magic value for terminal, etc.
+   */
+  StrNumber name;
+  int32_t synctex_tag;
+} input_state_t;
+
+typedef union {
+  B32x2 b32;
+  B16x4 b16;
+  double gr;
+  void *ptr;
+} MemoryWord;
+
+typedef struct {
+  int16_t mode;
+  int32_t head;
+  int32_t tail;
+  int32_t etex_aux;
+  int32_t prev_graf;
+  int32_t mode_line;
+  MemoryWord aux;
+} ListStateRecord;
+
+typedef struct {
+  Option_InputId handle;
+  int64_t saved_char;
+  bool skip_next_lf;
+  uint8_t encoding_mode;
+  void *conversion_data;
+  void (*conversion_drop)(void*);
+} UFile;
+
+typedef int32_t Scaled;
+
+typedef struct {
+  /**
+   * the foo.synctex or foo.synctex.gz I/O identifier
+   */
+  Option_OutputId file;
+  /**
+   * in general jobname.tex
+   */
+  const char *root_name;
+  /**
+   * The number of interesting records in "foo.synctex"
+   */
+  int32_t count;
+  /**
+   * the last synchronized node, must be set before the recorder
+   */
+  int32_t node;
+  /**
+   * the recorder of the node above, the routine that knows how to record the node to the .synctex file
+   */
+  Option_SynctexRecorder recorder;
+  /**
+   * Current tag
+   */
+  int32_t tag;
+  /**
+   * Current line
+   */
+  int32_t line;
+  /**
+   * Current point h
+   */
+  int32_t curh;
+  /**
+   * Current point v
+   */
+  int32_t curv;
+  /**
+   * The magnification as given by \mag
+   */
+  int32_t magnification;
+  /**
+   * The unit, defaults to 1, use 8192 to produce shorter but less accurate info
+   */
+  int32_t unit;
+  /**
+   * The total length of the bytes written since the last check point
+   */
+  int32_t total_length;
+  /**
+   * compression trick if |synctex_options & 4| > 0
+   */
+  int32_t lastv;
+  /**
+   * PDF forms are an example of nested sheets
+   */
+  int32_t form_depth;
+  /**
+   * Global tag counter, used to be a local static in synctex_start_input
+   */
+  uint32_t synctex_tag_counter;
+  /**
+   * Synctex flags that control behavior
+   */
+  Flags flags;
+} SynctexCtx;
+
+#define EMPTY_STRING (65536 + 1)
+
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
@@ -29,8 +599,1149 @@ extern int tt_engine_xetex_main(ttbc_state_t *api,
                                 const char *input_file_name,
                                 uint64_t build_date);
 
-#ifdef __cplusplus
-} // extern "C"
-#endif // __cplusplus
+rust_output_handle_t dvi_file(void);
 
-#endif /* TECTONIC_ENGINE_XETEX_BINDGEN_H */
+void set_dvi_file(rust_output_handle_t file);
+
+int32_t dvi_limit(void);
+
+void set_dvi_limit(int32_t val);
+
+int32_t dvi_ptr(void);
+
+void set_dvi_ptr(int32_t val);
+
+int32_t dvi_offset(void);
+
+void set_dvi_offset(int32_t val);
+
+int32_t dvi_gone(void);
+
+void set_dvi_gone(int32_t val);
+
+int32_t cur_s(void);
+
+void set_cur_s(int32_t val);
+
+int32_t output_file_name(void);
+
+void set_output_file_name(int32_t val);
+
+uint8_t dvi_buf(uintptr_t idx);
+
+void set_dvi_buf(uintptr_t idx, uint8_t val);
+
+uint8_t *dvi_buf_ptr(uintptr_t idx);
+
+void resize_dvi_buf(uintptr_t len);
+
+void clear_dvi_buf(void);
+
+void write_to_dvi(int32_t a, int32_t b);
+
+void deinitialize_shipout_variables(void);
+
+void dvi_out(uint8_t c);
+
+void dvi_four(int32_t x);
+
+void dvi_two(uint16_t s);
+
+void dvi_pop(int32_t l);
+
+void dvi_native_font_def(uintptr_t f);
+
+void dvi_font_def(uintptr_t f);
+
+void finalize_dvi_file(void);
+
+StrNumber maketexstring(const char *str);
+
+char *gettexstring(StrNumber s);
+
+void pack_file_name(StrNumber n, StrNumber a, StrNumber e);
+
+void pack_job_name(const char *s);
+
+void make_utf16_name(void);
+
+void begin_name(void);
+
+void end_name(void);
+
+bool more_name(uint16_t c);
+
+StrNumber make_name_string(void);
+
+void open_log_file(void);
+
+void show_token_list(int32_t p, int32_t q, int32_t l);
+
+void show_context(void);
+
+void token_show(int32_t p);
+
+void geq_word_define(int32_t p, int32_t w);
+
+void prepare_mag(void);
+
+void close_files_and_terminate(void);
+
+void tt_cleanup(void);
+
+void flush_list(int32_t p);
+
+void free_node(int32_t p, int32_t s);
+
+void delete_token_ref(int32_t p);
+
+void delete_glue_ref(int32_t p);
+
+void end_token_list(void);
+
+uint32_t selector(void);
+
+void set_selector(uint32_t val);
+
+int32_t tally(void);
+
+void set_tally(int32_t val);
+
+int32_t error_line(void);
+
+void set_error_line(int32_t val);
+
+int32_t trick_count(void);
+
+void set_trick_count(int32_t val);
+
+uint16_t trick_buf(uintptr_t idx);
+
+void set_trick_buf(uintptr_t idx, uint16_t val);
+
+uint16_t *trick_buf_ptr(uintptr_t idx);
+
+int32_t eqtb_top(void);
+
+void set_eqtb_top(int32_t val);
+
+uintptr_t name_length(void);
+
+const char *name_of_file(void);
+
+void set_name_of_file(const char *val);
+
+uintptr_t name_length16(void);
+
+const uint16_t *name_of_file16(void);
+
+void set_name_of_file16(const uint16_t *val, uintptr_t len);
+
+StrNumber cur_name(void);
+
+void set_cur_name(StrNumber val);
+
+StrNumber cur_area(void);
+
+void set_cur_area(StrNumber val);
+
+StrNumber cur_ext(void);
+
+void set_cur_ext(StrNumber val);
+
+StrNumber job_name(void);
+
+void set_job_name(StrNumber val);
+
+uintptr_t area_delimiter(void);
+
+void set_area_delimiter(uintptr_t val);
+
+uintptr_t ext_delimiter(void);
+
+void set_ext_delimiter(uintptr_t val);
+
+bool name_in_progress(void);
+
+void set_name_in_progress(bool val);
+
+bool stop_at_space(void);
+
+void set_stop_at_space(bool val);
+
+uint16_t file_name_quote_char(void);
+
+void set_file_name_quote_char(uint16_t val);
+
+bool quoted_filename(void);
+
+void set_quoted_filename(bool val);
+
+StrNumber texmf_log_name(void);
+
+void set_texmf_log_name(StrNumber val);
+
+bool log_opened(void);
+
+void set_log_opened(bool val);
+
+input_state_t input_stack(uintptr_t idx);
+
+void set_input_stack(uintptr_t idx, input_state_t val);
+
+input_state_t *input_stack_ptr(uintptr_t idx);
+
+void resize_input_stack(uintptr_t len);
+
+void clear_input_stack(void);
+
+uintptr_t input_ptr(void);
+
+void set_input_ptr(uintptr_t val);
+
+input_state_t cur_input(void);
+
+input_state_t *cur_input_ptr(void);
+
+void set_cur_input(input_state_t val);
+
+uint8_t interaction(void);
+
+void set_interaction(uint8_t val);
+
+uint8_t history(void);
+
+void set_history(uint8_t val);
+
+int32_t total_pages(void);
+
+void set_total_pages(int32_t val);
+
+int32_t last_bop(void);
+
+void set_last_bop(int32_t val);
+
+uintptr_t base_ptr(void);
+
+void set_base_ptr(uintptr_t val);
+
+int32_t first_count(void);
+
+void set_first_count(int32_t val);
+
+int32_t half_error_line(void);
+
+void set_half_error_line(int32_t val);
+
+int32_t hi_mem_min(void);
+
+void set_hi_mem_min(int32_t val);
+
+int32_t mem_end(void);
+
+void set_mem_end(int32_t val);
+
+int32_t halt_on_error_p(void);
+
+void set_halt_on_error_p(int32_t val);
+
+int8_t error_count(void);
+
+void set_error_count(int8_t val);
+
+bool use_err_help(void);
+
+void set_use_err_help(bool val);
+
+uintptr_t help_ptr(void);
+
+void set_help_ptr(uintptr_t val);
+
+const char *help_line(uintptr_t idx);
+
+void set_help_line(uintptr_t idx, const char *val);
+
+const char **help_line_ptr(uintptr_t idx);
+
+int32_t mag_set(void);
+
+void set_mag_set(int32_t val);
+
+int32_t max_h(void);
+
+void set_max_h(int32_t val);
+
+int32_t max_v(void);
+
+void set_max_v(int32_t val);
+
+int32_t max_push(void);
+
+void set_max_push(int32_t val);
+
+bool semantic_pagination_enabled(void);
+
+void set_semantic_pagination_enabled(bool val);
+
+const char *tex_format_default(void);
+
+void set_tex_format_default(const char *val);
+
+int32_t nest_cur(void);
+
+void set_nest_cur(int32_t val);
+
+int32_t cur_chr(void);
+
+void set_cur_chr(int32_t val);
+
+uint8_t cur_cmd(void);
+
+void set_cur_cmd(uint8_t val);
+
+int32_t cur_cs(void);
+
+void set_cur_cs(int32_t val);
+
+int32_t cur_tok(void);
+
+void set_cur_tok(int32_t val);
+
+uint8_t scanner_status(void);
+
+void set_scanner_status(uint8_t val);
+
+int32_t param_ptr(void);
+
+void set_param_ptr(int32_t val);
+
+int32_t align_state(void);
+
+void set_align_state(int32_t val);
+
+int32_t avail(void);
+
+void set_avail(int32_t val);
+
+int32_t rover(void);
+
+void set_rover(int32_t val);
+
+MemoryWord eqtb(uintptr_t idx);
+
+void set_eqtb(uintptr_t idx, MemoryWord val);
+
+MemoryWord *eqtb_ptr(uintptr_t idx);
+
+void resize_eqtb(uintptr_t len);
+
+void clear_eqtb(void);
+
+MemoryWord mem(uintptr_t idx);
+
+void set_mem(uintptr_t idx, MemoryWord val);
+
+MemoryWord *mem_ptr(uintptr_t idx);
+
+void resize_mem(uintptr_t len);
+
+void clear_mem(void);
+
+B32x2 prim(uintptr_t idx);
+
+void set_prim(uintptr_t idx, B32x2 val);
+
+B32x2 *prim_ptr(uintptr_t idx);
+
+void resize_buffer(uintptr_t len);
+
+uint32_t *buffer_ptr(void);
+
+uint32_t buffer(uintptr_t idx);
+
+void set_buffer(uintptr_t idx, uint32_t val);
+
+void clear_buffer(void);
+
+uint16_t *xeq_level_array_ptr(uintptr_t idx);
+
+ListStateRecord nest(uintptr_t idx);
+
+void set_nest(uintptr_t idx, ListStateRecord val);
+
+ListStateRecord *nest_ptr(uintptr_t idx);
+
+void resize_nest(uintptr_t len);
+
+void clear_nest(void);
+
+MemoryWord save_stack(uintptr_t idx);
+
+void set_save_stack(uintptr_t idx, MemoryWord val);
+
+MemoryWord *save_stack_ptr(uintptr_t idx);
+
+void resize_save_stack(uintptr_t len);
+
+void clear_save_stack(void);
+
+UFile *input_file(uintptr_t idx);
+
+void set_input_file(uintptr_t idx, UFile *val);
+
+UFile **input_file_ptr(uintptr_t idx);
+
+void resize_input_file(uintptr_t len);
+
+void clear_input_file(void);
+
+bool eof_seen(uintptr_t idx);
+
+void set_eof_seen(uintptr_t idx, bool val);
+
+bool *eof_seen_ptr(uintptr_t idx);
+
+void resize_eof_seen(uintptr_t len);
+
+void clear_eof_seen(void);
+
+int32_t grp_stack(uintptr_t idx);
+
+void set_grp_stack(uintptr_t idx, int32_t val);
+
+int32_t *grp_stack_ptr(uintptr_t idx);
+
+void resize_grp_stack(uintptr_t len);
+
+void clear_grp_stack(void);
+
+int32_t if_stack(uintptr_t idx);
+
+void set_if_stack(uintptr_t idx, int32_t val);
+
+int32_t *if_stack_ptr(uintptr_t idx);
+
+void resize_if_stack(uintptr_t len);
+
+void clear_if_stack(void);
+
+int32_t param_stack(uintptr_t idx);
+
+void set_param_stack(uintptr_t idx, int32_t val);
+
+int32_t *param_stack_ptr(uintptr_t idx);
+
+void resize_param_stack(uintptr_t len);
+
+void clear_param_stack(void);
+
+int32_t hyph_word(uintptr_t idx);
+
+void set_hyph_word(uintptr_t idx, int32_t val);
+
+int32_t *hyph_word_ptr(uintptr_t idx);
+
+void resize_hyph_word(uintptr_t len);
+
+void clear_hyph_word(void);
+
+int32_t hyph_list(uintptr_t idx);
+
+void set_hyph_list(uintptr_t idx, int32_t val);
+
+int32_t *hyph_list_ptr(uintptr_t idx);
+
+void resize_hyph_list(uintptr_t len);
+
+void clear_hyph_list(void);
+
+uint16_t hyph_link(uintptr_t idx);
+
+void set_hyph_link(uintptr_t idx, uint16_t val);
+
+uint16_t *hyph_link_ptr(uintptr_t idx);
+
+void resize_hyph_link(uintptr_t len);
+
+void clear_hyph_link(void);
+
+uint16_t native_text(uintptr_t idx);
+
+void set_native_text(uintptr_t idx, uint16_t val);
+
+uint16_t *native_text_ptr(uintptr_t idx);
+
+void resize_native_text(uintptr_t len);
+
+void clear_native_text(void);
+
+B32x2 yhash(uintptr_t idx);
+
+void set_yhash(uintptr_t idx, B32x2 val);
+
+B32x2 *yhash_ptr(uintptr_t idx);
+
+void resize_yhash(uintptr_t len);
+
+void clear_yhash(void);
+
+int32_t trie_trl(uintptr_t idx);
+
+void set_trie_trl(uintptr_t idx, int32_t val);
+
+int32_t *trie_trl_ptr(uintptr_t idx);
+
+void resize_trie_trl(uintptr_t len);
+
+void clear_trie_trl(void);
+
+int32_t trie_tro(uintptr_t idx);
+
+void set_trie_tro(uintptr_t idx, int32_t val);
+
+int32_t *trie_tro_ptr(uintptr_t idx);
+
+void resize_trie_tro(uintptr_t len);
+
+void clear_trie_tro(void);
+
+uint16_t trie_trc(uintptr_t idx);
+
+void set_trie_trc(uintptr_t idx, uint16_t val);
+
+uint16_t *trie_trc_ptr(uintptr_t idx);
+
+void resize_trie_trc(uintptr_t len);
+
+void clear_trie_trc(void);
+
+void pre_error_message(void);
+
+void error(void);
+
+void post_error_message(int32_t need_to_print_it);
+
+void fatal_error(const char *s);
+
+void int_error(int32_t n);
+
+void overflow(const char *s, int32_t n);
+
+void confusion(const char *s);
+
+void pdf_error(const char *t, const char *p);
+
+void begin_diagnostic(void);
+
+void end_diagnostic(bool blank_line);
+
+extern int _tt_abort(const char *s, ...);
+
+int32_t font_max(void);
+
+void set_font_max(int32_t val);
+
+int32_t font_ptr(void);
+
+void set_font_ptr(int32_t val);
+
+bool font_used(uintptr_t idx);
+
+void set_font_used(uintptr_t idx, bool val);
+
+bool *font_used_ptr(uintptr_t idx);
+
+void resize_font_used(uintptr_t len);
+
+void clear_font_used(void);
+
+MemoryWord font_info(uintptr_t idx);
+
+void set_font_info(uintptr_t idx, MemoryWord val);
+
+MemoryWord *font_info_ptr(uintptr_t idx);
+
+void resize_font_info(uintptr_t len);
+
+void clear_font_info(void);
+
+void *font_mapping(uintptr_t idx);
+
+void set_font_mapping(uintptr_t idx, void *val);
+
+void **font_mapping_ptr(uintptr_t idx);
+
+void resize_font_mapping(uintptr_t len);
+
+void clear_font_mapping(void);
+
+void *font_layout_engine(uintptr_t idx);
+
+void set_font_layout_engine(uintptr_t idx, void *val);
+
+void **font_layout_engine_ptr(uintptr_t idx);
+
+void resize_font_layout_engine(uintptr_t len);
+
+void clear_font_layout_engine(void);
+
+uint8_t font_flags(uintptr_t idx);
+
+void set_font_flags(uintptr_t idx, uint8_t val);
+
+uint8_t *font_flags_ptr(uintptr_t idx);
+
+void resize_font_flags(uintptr_t len);
+
+void clear_font_flags(void);
+
+Scaled font_letter_space(uintptr_t idx);
+
+void set_font_letter_space(uintptr_t idx, Scaled val);
+
+Scaled *font_letter_space_ptr(uintptr_t idx);
+
+void resize_font_letter_space(uintptr_t len);
+
+void clear_font_letter_space(void);
+
+B16x4 font_check(uintptr_t idx);
+
+void set_font_check(uintptr_t idx, B16x4 val);
+
+B16x4 *font_check_ptr(uintptr_t idx);
+
+void resize_font_check(uintptr_t len);
+
+void clear_font_check(void);
+
+Scaled font_size(uintptr_t idx);
+
+void set_font_size(uintptr_t idx, Scaled val);
+
+Scaled *font_size_ptr(uintptr_t idx);
+
+void resize_font_size(uintptr_t len);
+
+void clear_font_size(void);
+
+Scaled font_dsize(uintptr_t idx);
+
+void set_font_dsize(uintptr_t idx, Scaled val);
+
+Scaled *font_dsize_ptr(uintptr_t idx);
+
+void resize_font_dsize(uintptr_t len);
+
+void clear_font_dsize(void);
+
+int32_t font_params(uintptr_t idx);
+
+void set_font_params(uintptr_t idx, int32_t val);
+
+int32_t *font_params_ptr(uintptr_t idx);
+
+void resize_font_params(uintptr_t len);
+
+void clear_font_params(void);
+
+StrNumber font_name(uintptr_t idx);
+
+void set_font_name(uintptr_t idx, StrNumber val);
+
+StrNumber *font_name_ptr(uintptr_t idx);
+
+void resize_font_name(uintptr_t len);
+
+void clear_font_name(void);
+
+StrNumber font_area(uintptr_t idx);
+
+void set_font_area(uintptr_t idx, StrNumber val);
+
+StrNumber *font_area_ptr(uintptr_t idx);
+
+void resize_font_area(uintptr_t len);
+
+void clear_font_area(void);
+
+uint16_t font_bc(uintptr_t idx);
+
+void set_font_bc(uintptr_t idx, uint16_t val);
+
+uint16_t *font_bc_ptr(uintptr_t idx);
+
+void resize_font_bc(uintptr_t len);
+
+void clear_font_bc(void);
+
+uint16_t font_ec(uintptr_t idx);
+
+void set_font_ec(uintptr_t idx, uint16_t val);
+
+uint16_t *font_ec_ptr(uintptr_t idx);
+
+void resize_font_ec(uintptr_t len);
+
+void clear_font_ec(void);
+
+int32_t font_glue(uintptr_t idx);
+
+void set_font_glue(uintptr_t idx, int32_t val);
+
+int32_t *font_glue_ptr(uintptr_t idx);
+
+void resize_font_glue(uintptr_t len);
+
+void clear_font_glue(void);
+
+int32_t hyphen_char(uintptr_t idx);
+
+void set_hyphen_char(uintptr_t idx, int32_t val);
+
+int32_t *hyphen_char_ptr(uintptr_t idx);
+
+void resize_hyphen_char(uintptr_t len);
+
+void clear_hyphen_char(void);
+
+int32_t skew_char(uintptr_t idx);
+
+void set_skew_char(uintptr_t idx, int32_t val);
+
+int32_t *skew_char_ptr(uintptr_t idx);
+
+void resize_skew_char(uintptr_t len);
+
+void clear_skew_char(void);
+
+int32_t bchar_label(uintptr_t idx);
+
+void set_bchar_label(uintptr_t idx, int32_t val);
+
+int32_t *bchar_label_ptr(uintptr_t idx);
+
+void resize_bchar_label(uintptr_t len);
+
+void clear_bchar_label(void);
+
+int32_t font_bchar(uintptr_t idx);
+
+void set_font_bchar(uintptr_t idx, int32_t val);
+
+int32_t *font_bchar_ptr(uintptr_t idx);
+
+void resize_font_bchar(uintptr_t len);
+
+void clear_font_bchar(void);
+
+int32_t font_false_bchar(uintptr_t idx);
+
+void set_font_false_bchar(uintptr_t idx, int32_t val);
+
+int32_t *font_false_bchar_ptr(uintptr_t idx);
+
+void resize_font_false_bchar(uintptr_t len);
+
+void clear_font_false_bchar(void);
+
+int32_t char_base(uintptr_t idx);
+
+void set_char_base(uintptr_t idx, int32_t val);
+
+int32_t *char_base_ptr(uintptr_t idx);
+
+void resize_char_base(uintptr_t len);
+
+void clear_char_base(void);
+
+int32_t width_base(uintptr_t idx);
+
+void set_width_base(uintptr_t idx, int32_t val);
+
+int32_t *width_base_ptr(uintptr_t idx);
+
+void resize_width_base(uintptr_t len);
+
+void clear_width_base(void);
+
+int32_t height_base(uintptr_t idx);
+
+void set_height_base(uintptr_t idx, int32_t val);
+
+int32_t *height_base_ptr(uintptr_t idx);
+
+void resize_height_base(uintptr_t len);
+
+void clear_height_base(void);
+
+int32_t depth_base(uintptr_t idx);
+
+void set_depth_base(uintptr_t idx, int32_t val);
+
+int32_t *depth_base_ptr(uintptr_t idx);
+
+void resize_depth_base(uintptr_t len);
+
+void clear_depth_base(void);
+
+int32_t italic_base(uintptr_t idx);
+
+void set_italic_base(uintptr_t idx, int32_t val);
+
+int32_t *italic_base_ptr(uintptr_t idx);
+
+void resize_italic_base(uintptr_t len);
+
+void clear_italic_base(void);
+
+int32_t lig_kern_base(uintptr_t idx);
+
+void set_lig_kern_base(uintptr_t idx, int32_t val);
+
+int32_t *lig_kern_base_ptr(uintptr_t idx);
+
+void resize_lig_kern_base(uintptr_t len);
+
+void clear_lig_kern_base(void);
+
+int32_t kern_base(uintptr_t idx);
+
+void set_kern_base(uintptr_t idx, int32_t val);
+
+int32_t *kern_base_ptr(uintptr_t idx);
+
+void resize_kern_base(uintptr_t len);
+
+void clear_kern_base(void);
+
+int32_t exten_base(uintptr_t idx);
+
+void set_exten_base(uintptr_t idx, int32_t val);
+
+int32_t *exten_base_ptr(uintptr_t idx);
+
+void resize_exten_base(uintptr_t len);
+
+void clear_exten_base(void);
+
+int32_t param_base(uintptr_t idx);
+
+void set_param_base(uintptr_t idx, int32_t val);
+
+int32_t *param_base_ptr(uintptr_t idx);
+
+void resize_param_base(uintptr_t len);
+
+void clear_param_base(void);
+
+uint8_t xdv_buffer(uintptr_t idx);
+
+void set_xdv_buffer(uintptr_t idx, uint8_t val);
+
+uint8_t *xdv_buffer_ptr(uintptr_t idx);
+
+void resize_xdv_buffer(uintptr_t len);
+
+void clear_xdv_buffer(void);
+
+uintptr_t xdv_buf_size(void);
+
+void release_font_engine(void *engine, int32_t flag);
+
+void resize_hash(uintptr_t len);
+
+B32x2 hash(uintptr_t idx);
+
+void set_hash(uintptr_t idx, B32x2 val);
+
+B32x2 *hash_ptr(uintptr_t idx);
+
+void clear_hash(void);
+
+int32_t hash_used(void);
+
+void set_hash_used(int32_t val);
+
+int32_t hash_extra(void);
+
+void set_hash_extra(int32_t val);
+
+int32_t hash_top(void);
+
+void set_hash_top(int32_t val);
+
+int32_t in_open(void);
+
+void set_in_open(int32_t val);
+
+StrNumber source_filename_stack(uintptr_t idx);
+
+void set_source_filename_stack(uintptr_t idx, StrNumber val);
+
+StrNumber *source_filename_stack_ptr(uintptr_t idx);
+
+void resize_source_filename_stack(uintptr_t len);
+
+void clear_source_filename_stack(void);
+
+StrNumber full_source_filename_stack(uintptr_t idx);
+
+void set_full_source_filename_stack(uintptr_t idx, StrNumber val);
+
+void clear_full_source_filename_stack(void);
+
+int32_t line(void);
+
+void set_line(int32_t val);
+
+int32_t line_stack(uintptr_t idx);
+
+void set_line_stack(uintptr_t idx, int32_t val);
+
+void clear_line_stack(void);
+
+void u_close(UFile *file);
+
+void getfilesize(StrNumber s);
+
+int32_t file_line_error_style_p(void);
+
+void set_file_line_error_style_p(int32_t val);
+
+ttbc_diagnostic_t *current_diagnostic(void);
+
+int32_t term_offset(void);
+
+void set_term_offset(int32_t val);
+
+int32_t file_offset(void);
+
+void set_file_offset(int32_t val);
+
+Option_OutputId rust_stdout(void);
+
+void set_rust_stdout(Option_OutputId val);
+
+Option_OutputId log_file(void);
+
+void set_log_file(Option_OutputId val);
+
+bool write_open(uintptr_t idx);
+
+void set_write_open(uintptr_t idx, bool val);
+
+Option_OutputId write_file(uintptr_t idx);
+
+void set_write_file(uintptr_t idx, Option_OutputId val);
+
+bool doing_special(void);
+
+void set_doing_special(bool val);
+
+uint8_t dig(uintptr_t idx);
+
+void set_dig(uintptr_t idx, uint8_t val);
+
+uint8_t *dig_ptr(uintptr_t idx);
+
+/**
+ * A lower-level API to begin or end the capture of messages into the diagnostic
+ * buffer. You can start capture by obtaining a diagnostic_t and passing it to
+ * this function -- however, the other functions in this API generally do this
+ * for you. Complete capture by passing NULL. Either way, if a capture is in
+ * progress when this function is called, it will be completed and reported.
+ */
+void capture_to_diagnostic(ttbc_diagnostic_t *diagnostic);
+
+void diagnostic_print_file_line(ttbc_diagnostic_t *diagnostic);
+
+/**
+ * Duplicate messages printed to log/terminal into a warning diagnostic buffer,
+ * until a call capture_to_diagnostic(0). A standard usage of this is
+ * ```c
+ * ttbc_diagnostic_t *warning = diagnostic_begin_capture_warning_here();
+ *
+ * // ... XeTeX prints some errors using print_* functions ...
+ *
+ * capture_to_diagnostic(NULL);
+ * ```
+ *
+ * The current file and line number information are prefixed to the captured
+ * output.
+ *
+ * NOTE: the only reason there isn't also an _error_ version of this function is
+ * that we haven't yet wired up anything that uses it.
+ */
+ttbc_diagnostic_t *diagnostic_begin_capture_warning_here(void);
+
+/**
+ * A replacement for xetex print_file_line+print_nl_ctr blocks. e.g. Replace
+ *
+ * ```c
+ * if (file_line_error_style_p)
+ *     print_file_line();
+ * else
+ *     print_nl_cstr("! ");
+ * print_cstr("Cannot use ");
+ * ```
+ * with
+ * ```c
+ * ttbc_diagnostic_t *errmsg = error_here_with_diagnostic("Cannot use ");
+ * ```
+ *
+ * This function calls `capture_to_diagnostic(errmsg)` to begin diagnostic
+ * capture. You must call `capture_to_diagnostic(NULL)` to mark the capture as
+ * complete.
+ */
+ttbc_diagnostic_t *error_here_with_diagnostic(const char *msg);
+
+void warn_char(int c);
+
+void print_ln(void);
+
+void print_raw_char(uint16_t s, uint8_t offset);
+
+void print_char(int32_t s);
+
+void print_cstr(const char *str);
+
+void print_nl_cstr(const char *str);
+
+void print_esc_cstr(const char *str);
+
+void print(StrNumber str);
+
+void print_nl(StrNumber str);
+
+void print_esc(StrNumber str);
+
+void print_the_digs(uint8_t k);
+
+void print_int(int32_t n);
+
+void print_file_line(void);
+
+void print_cs(int32_t p);
+
+void sprint_cs(int32_t p);
+
+void print_file_name(int32_t n, int32_t a, int32_t e);
+
+void print_size(int32_t s);
+
+void print_write_whatsit(const char *s, int32_t p);
+
+void print_native_word(int32_t p);
+
+void print_sa_num(int32_t q);
+
+void print_two(int32_t n);
+
+void print_hex(int32_t n);
+
+void print_scaled(Scaled s);
+
+void print_ucs_code(uint32_t n);
+
+void print_current_string(void);
+
+void print_roman_int(int32_t n);
+
+void resize_str_pool(uintptr_t size);
+
+void clear_str_pool(void);
+
+uint16_t str_pool(uintptr_t idx);
+
+uint16_t *str_pool_ptr(uintptr_t idx);
+
+void set_str_pool(uintptr_t idx, uint16_t val);
+
+uint32_t str_start(uintptr_t idx);
+
+uint32_t *str_start_ptr(uintptr_t idx);
+
+void resize_str_start(uintptr_t size);
+
+void clear_str_start(void);
+
+void set_str_start(uintptr_t idx, uint32_t val);
+
+uintptr_t pool_ptr(void);
+
+void set_pool_ptr(uintptr_t val);
+
+uintptr_t str_ptr(void);
+
+void set_str_ptr(uintptr_t val);
+
+uintptr_t pool_size(void);
+
+void set_pool_size(uintptr_t val);
+
+uintptr_t max_strings(void);
+
+void set_max_strings(uintptr_t val);
+
+StrNumber make_string(void);
+
+StrNumber slow_make_string(void);
+
+uintptr_t length(StrNumber s);
+
+bool str_eq_str(StrNumber s1, StrNumber s2);
+
+StrNumber search_string(StrNumber search);
+
+bool arith_error(void);
+
+void set_arith_error(bool val);
+
+Scaled tex_remainder(void);
+
+void set_tex_remainder(Scaled val);
+
+int32_t randoms(uintptr_t idx);
+
+uint8_t j_random(void);
+
+void set_j_random(uint8_t val);
+
+int32_t tex_round(double r);
+
+int32_t half(int32_t x);
+
+Scaled mult_and_add(int32_t n, Scaled x, Scaled y, Scaled max_answer);
+
+Scaled x_over_n(Scaled x, int32_t n);
+
+Scaled xn_over_d(Scaled x, int32_t n, int32_t d);
+
+Scaled round_xn_over_d(Scaled x, int32_t n, int32_t d);
+
+void init_randoms(int32_t seed);
+
+int32_t unif_rand(int32_t x);
+
+int32_t norm_rand(void);
+
+int32_t m_log(int32_t x);
+
+SynctexCtx *synctex_ctx(void);
+
+int32_t synctex_record_anchor(void);
+
+int32_t synctex_record_count(void);
+
+int32_t synctex_record_postamble(void);
+
+void synctexabort(void);
+
+void synctex_terminate(bool log_opened);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  /* TECTONIC_ENGINE_XETEX_BINDGEN_H */

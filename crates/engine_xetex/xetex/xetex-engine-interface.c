@@ -9,14 +9,7 @@
 
 #include <string.h>
 
-int tt_xetex_set_int_variable (const char *var_name, int value);
 int tt_xetex_set_string_variable (const char *var_name, const char *value);
-int tt_engine_xetex_main(
-    ttbc_state_t *api,
-    const char *dump_name,
-    const char *input_file_name,
-    uint64_t build_date
-);
 
 /* These functions aren't used within the C/C++ library, but are called
  * by the Rust code to configure the XeTeX engine before launching it. */
@@ -25,13 +18,13 @@ int
 tt_xetex_set_int_variable (const char *var_name, int value)
 {
     if (streq_ptr(var_name, "halt_on_error_p"))
-        halt_on_error_p = value;
+        set_halt_on_error_p(value);
     else if (streq_ptr(var_name, "in_initex_mode"))
         in_initex_mode = (value != 0);
     else if (streq_ptr(var_name, "synctex_enabled"))
         synctex_enabled = (value != 0);
     else if (streq_ptr(var_name, "semantic_pagination_enabled"))
-        semantic_pagination_enabled = (value != 0);
+        set_semantic_pagination_enabled(value != 0);
     else if (streq_ptr(var_name, "shell_escape_enabled"))
         shell_escape_enabled = (value != 0);
     else

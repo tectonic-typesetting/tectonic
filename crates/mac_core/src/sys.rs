@@ -37,6 +37,12 @@ pub struct CFString(());
 pub struct CFURL(());
 
 #[repr(C)]
+pub struct CGColor(());
+
+#[repr(C)]
+pub struct CFNumber(());
+
+#[repr(C)]
 pub struct CFRange {
     pub location: CFIndex,
     pub length: CFIndex,
@@ -44,12 +50,12 @@ pub struct CFRange {
 
 #[repr(C)]
 pub struct CGAffineTransform {
-    a: CGFloat,
-    b: CGFloat,
-    c: CGFloat,
-    d: CGFloat,
-    tx: CGFloat,
-    ty: CGFloat,
+    pub a: CGFloat,
+    pub b: CGFloat,
+    pub c: CGFloat,
+    pub d: CGFloat,
+    pub tx: CGFloat,
+    pub ty: CGFloat,
 }
 
 #[repr(C)]
@@ -70,6 +76,8 @@ pub type CFStringEncoding = u32;
 pub type CGFloat = f32;
 #[cfg(not(target_os = "watchos"))]
 pub type CGFloat = f64;
+pub type CGColorRef = *const CGColor;
+pub type CFNumberRef = *const CFNumber;
 
 pub type CFTypeID = libc::c_ulong;
 
@@ -79,6 +87,13 @@ pub const kCFStringEncodingNonLossyASCII: CFStringEncoding = 0x0BFF;
 pub const kCFStringEncodingUnicode: CFStringEncoding = 0x0100;
 pub const kCFStringEncodingUTF8: CFStringEncoding = 0x08000100;
 pub const kCFStringEncodingInvalidId: CFStringEncoding = 0xFFFFFFFF;
+
+pub const kCFNumberSInt8Type: CFIndex = 1;
+pub const kCFNumberSInt16Type: CFIndex = 2;
+pub const kCFNumberSInt32Type: CFIndex = 3;
+pub const kCFNumberSInt64Type: CFIndex = 4;
+pub const kCFNumberFloat32Type: CFIndex = 5;
+pub const kCFNumberFloat64Type: CFIndex = 6;
 
 #[link(name = "CoreFoundation", kind = "framework")]
 extern "C" {
@@ -96,6 +111,7 @@ extern "C" {
         key_call_backs: *const CFDictionaryKeyCallBacks,
         value_call_backs: *const CFDictionaryValueCallBacks,
     ) -> CFDictionaryRef;
+    pub fn CFDictionaryGetValue(dict: CFDictionaryRef, key: *const ()) -> *const ();
     pub fn CFRelease(cf: CFTypeRef);
     pub fn CFArrayGetCount(array: CFArrayRef) -> CFIndex;
     pub fn CFArrayGetValueAtIndex(array: CFArrayRef, idx: CFIndex) -> *const ();
@@ -119,6 +135,14 @@ extern "C" {
         num_bytes: CFIndex,
         encoding: CFStringEncoding,
         is_external: bool,
+    ) -> CFStringRef;
+    pub fn CFStringCreateWithBytesNoCopy(
+        alloc: CFAllocatorRef,
+        bytes: *const u8,
+        num_bytes: CFIndex,
+        encoding: CFStringEncoding,
+        is_external: bool,
+        contents_deallocator: CFAllocatorRef,
     ) -> CFStringRef;
     pub fn CFStringGetBytes(
         str: CFStringRef,
@@ -184,8 +208,15 @@ extern "C" {
         actual_lang: *mut CFStringRef,
     ) -> CFStringRef;
     pub fn CTFontManagerCopyAvailableFontFamilyNames() -> CFArrayRef;
+    pub fn CTFontGetMatrix(font: CTFontRef) -> CGAffineTransform;
+    pub fn CTFontGetSize(font: CTFontRef) -> CGFloat;
     pub fn CTFontGetTypeID() -> CFTypeID;
     pub fn CTFontDescriptorGetTypeID() -> CFTypeID;
+    pub fn CGColorGetTypeID() -> CFTypeID;
+    pub fn CGColorGetNumberOfComponents(color: CGColorRef) -> libc::size_t;
+    pub fn CGColorGetComponents(color: CGColorRef) -> *const CGFloat;
+    pub fn CFNumberGetTypeID() -> CFTypeID;
+    pub fn CFNumberGetValue(number: CFNumberRef, ty: CFIndex, value: *mut libc::c_void) -> bool;
 
     pub static kCTFontNameAttribute: CFStringRef;
     pub static kCTFontFullNameKey: CFStringRef;
@@ -196,4 +227,8 @@ extern "C" {
     pub static kCTFontCascadeListAttribute: CFStringRef;
     pub static kCTFontFamilyNameAttribute: CFStringRef;
     pub static kCTFontDisplayNameAttribute: CFStringRef;
+
+    pub static kCTFontAttributeName: CFStringRef;
+    pub static kCTVerticalFormsAttributeName: CFStringRef;
+    pub static kCTForegroundColorAttributeName: CFStringRef;
 }

@@ -1,6 +1,8 @@
 // Copyright 2021-2022 the Tectonic Project
 // Licensed under the MIT License.
 
+#![allow(clippy::undocumented_unsafe_blocks, dead_code)]
+
 //! The [XeTeX] program as a reusable crate.
 //!
 //! [XeTeX]: http://www.xetex.org/
@@ -18,9 +20,14 @@
 // TODO: the internal interface we're using here is pretty janky. The bibtex
 // engine has a nicer approach that we should probably start using.
 
+use std::any::Any;
+use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::{ffi::CString, time::SystemTime};
 use tectonic_bridge_core::{CoreBridgeLauncher, EngineAbortedError};
 use tectonic_errors::prelude::*;
+
+mod token;
+mod ty;
 
 /// A serial number describing the detailed binary layout of the TeX "format
 /// files" used by this crate. This number will occasionally increment,
@@ -204,23 +211,33 @@ impl TexEngine {
                     self.semantic_pagination_enabled.into(),
                 );
 
-                tt_engine_xetex_main(
-                    state,
-                    cformat.as_ptr(),
-                    cinput.as_ptr(),
-                    self.build_date
-                        .duration_since(SystemTime::UNIX_EPOCH)
-                        .expect("invalid build date")
-                        .as_secs(),
-                )
+                catch_unwind(AssertUnwindSafe(|| {
+                    tt_engine_xetex_main(
+                        state,
+                        cformat.as_ptr(),
+                        cinput.as_ptr(),
+                        self.build_date
+                            .duration_since(SystemTime::UNIX_EPOCH)
+                            .expect("invalid build date")
+                            .as_secs(),
+                    )
+                }))
             };
 
+            fn downcast_str(e: Box<dyn Any>) -> String {
+                e.downcast::<&'static str>()
+                    .map(|s| s.to_string())
+                    .or_else(|e| e.downcast::<String>().map(|s| *s))
+                    .unwrap()
+            }
+
             match r {
-                0 => Ok(TexOutcome::Spotless),
-                1 => Ok(TexOutcome::Warnings),
-                2 => Ok(TexOutcome::Errors),
-                3 => Err(EngineAbortedError::new_abort_indicator().into()),
-                x => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
+                Ok(0) => Ok(TexOutcome::Spotless),
+                Ok(1) => Ok(TexOutcome::Warnings),
+                Ok(2) => Ok(TexOutcome::Errors),
+                Ok(3) => Err(EngineAbortedError::new_abort_indicator().into()),
+                Err(e) => Err(anyhow!("{}", downcast_str(e))),
+                Ok(x) => Err(anyhow!("internal error: unexpected 'history' value {}", x)),
             }
         })
     }
@@ -232,8 +249,100 @@ pub mod c_api {
 
     use tectonic_bridge_core::CoreBridgeState;
 
+    /// Helper for exposing variables in a thread-local context to C
+    macro_rules! c_var {
+        ($ctx:path => $name:ident: into $ty:ty) => {
+            #[no_mangle]
+            pub extern "C" fn $name() -> $ty {
+                <$ctx>::with(|ctx| ctx.$name.into())
+            }
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< set_ $name >](val: $ty) {
+                    <$ctx>::with(|ctx| ctx.$name = TryFrom::try_from(val).unwrap())
+                }
+            }
+        };
+        ($ctx:path => $name:ident: $ty:ty) => {
+            #[no_mangle]
+            pub extern "C" fn $name() -> $ty {
+                <$ctx>::with(|ctx| ctx.$name)
+            }
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< set_ $name >](val: $ty) {
+                    <$ctx>::with(|ctx| ctx.$name = val)
+                }
+            }
+        };
+    }
+
+    /// Helper for exposing vectors/arrays in a therad-local context to C
+    macro_rules! c_arr {
+        // Growable vector
+        ($ctx:path => $name:ident: $element:ty) => {
+            c_arr!($ctx => $name[_]: $element);
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< resize_ $name >](len: usize) {
+                    <$ctx>::with(|ctx| ctx.$name.resize(len, Default::default()))
+                }
+
+                #[no_mangle]
+                pub extern "C" fn [< clear_ $name >]() {
+                    <$ctx>::with(|ctx| ctx.$name.clear())
+                }
+            }
+        };
+        // Fixed-size array
+        ($ctx:path => $name:ident[_]: $element:ty) => {
+            #[no_mangle]
+            pub extern "C" fn $name(idx: usize) -> $element {
+                <$ctx>::with(|ctx| ctx.$name[idx].clone())
+            }
+
+            paste::paste! {
+                #[no_mangle]
+                pub extern "C" fn [< set_ $name >](idx: usize, val: $element) {
+                    <$ctx>::with(|ctx| ctx.$name[idx] = val)
+                }
+
+                #[no_mangle]
+                pub extern "C" fn [< $name _ptr >](idx: usize) -> *mut $element {
+                    <$ctx>::with(|ctx| core::ptr::from_mut(&mut ctx.$name[idx]))
+                }
+            }
+        };
+    }
+
+    mod dvi;
+    mod engine;
+    mod errors;
+    mod font;
+    mod globals;
+    mod hash;
+    mod inputs;
+    mod output;
+    mod pool;
+    mod scaled_math;
+    mod synctex;
+    /// cbindgen:ignore
+    mod teckit;
+
+    /// Copy of `IS_DIR_SEP` from bridge_core
+    fn is_dir_sep(c: char) -> bool {
+        c == '/'
+    }
+
+    fn d_to_fix(d: f64) -> i32 {
+        (d * 65536.0 + 0.5) as i32
+    }
+
     #[allow(improper_ctypes)] // for CoreBridgeState
-    extern "C" {
+    extern "C-unwind" {
         pub fn tt_xetex_set_int_variable(
             var_name: *const libc::c_char,
             value: libc::c_int,

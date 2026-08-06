@@ -10,6 +10,10 @@ use tectonic_cfg_support::*;
 fn main() {
     let target = env::var("TARGET").unwrap();
 
+    if env::var("CARGO_FEATURE_CBINDGEN").is_ok() {
+        return;
+    }
+
     // Include paths exported by our internal dependencies.
 
     let xetex_layout_include_path = env::var("DEP_TECTONIC_XETEX_LAYOUT_INCLUDE_PATH").unwrap();
@@ -132,6 +136,8 @@ fn main() {
         cxx_cfg.flag("/wd4820"); // padding added after data member
         cxx_cfg.flag("/wd4244"); // conversion from 'type1' to 'type2', possible loss of data
         cxx_cfg.flag("/wd4365"); // conversion from 'type1' to 'type2', signed/unsigned mismatch
+
+        println!("cargo::rustc-link-lib=advapi32")
     }
 
     // OK, back to generic build rules.
@@ -197,16 +203,13 @@ const C_FLAGS: &[&str] = &[
 
 const C_FILES: &[&str] = &[
     "xetex/xetex-engine-interface.c",
-    "xetex/xetex-errors.c",
     "xetex/xetex-ext.c",
     "xetex/xetex-ini.c",
     "xetex/xetex-io.c",
     "xetex/xetex-linebreak.c",
     "xetex/xetex-math.c",
-    "xetex/xetex-output.c",
     "xetex/xetex-pagebuilder.c",
     "xetex/xetex-pic.c",
-    "xetex/xetex-scaledmath.c",
     "xetex/xetex-shipout.c",
     "xetex/xetex-stringpool.c",
     "xetex/xetex-synctex.c",

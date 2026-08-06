@@ -22,6 +22,7 @@ links = "tectonic_engine_xetex"
 
 [dependencies]
 libc = "^0.2"
+paste = "1.0"
 tectonic_bridge_core = { path = "../bridge_core", version = "0.0.0-dev.0" }
 tectonic_bridge_freetype2 = { path = "../bridge_freetype2", version = "0.0.0-dev.0" }
 tectonic_bridge_flate = { path = "../bridge_flate", version = "0.0.0-dev.0" }
@@ -31,16 +32,22 @@ tectonic_bridge_icu = { path = "../bridge_icu", version = "0.0.0-dev.0" }
 tectonic_errors = { path = "../errors", version = "0.0.0-dev.0" }
 tectonic_pdf_io = { path = "../pdf_io", version = "0.0.0-dev.0" }
 tectonic_xetex_layout = { path = "../xetex_layout", version = "0.0.0-dev.0" }
+bitflags = "2.10.0"
+variadics_please = "2.0"
 
 [build-dependencies]
 cc = "^1.0.66"
 tectonic_cfg_support = { path = "../cfg_support", version = "0.0.0-dev.0" }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+tectonic_mac_core = { path = "../mac_core", version = "0.0.0-dev.0" }
 
 [features]
 external-harfbuzz = [
     "tectonic_bridge_harfbuzz/external-harfbuzz",
     "tectonic_xetex_layout/external-harfbuzz",
 ]
+cbindgen = []
 
 [package.metadata.internal_dep_versions]
 tectonic_bridge_core = "4e16bf963700aae59772a6fb223981ceaa9b5f57"
@@ -51,5 +58,6 @@ tectonic_bridge_harfbuzz = "2c1ffcd702a662c003bd3d7d0ca4d169784cb6ad"
 tectonic_bridge_icu = "thiscommit:2023-09-17:6uIZ4lA"
 tectonic_cfg_support = "9d5feb40c7ac6958ee3c50604af9271eb2db2b20"
 tectonic_errors = "317ae79ceaa2593fb56090e37bf1f5cc24213dd9"
+tectonic_mac_core = "6932d5f15fec0fb5c219b887bdd11b72641af07a"
 tectonic_pdf_io = "9a8b975e76c7a27f140d0974ec3442f2347e18ad"
 tectonic_xetex_layout = "7e63f1b55da1b75c159dd7138c08f3e6c4e43e9c"

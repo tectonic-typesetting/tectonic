@@ -71,7 +71,7 @@ fontFromAttributes(CFDictionaryRef attributes)
 CTFontRef
 fontFromInteger(int32_t font)
 {
-    CFDictionaryRef attributes = (CFDictionaryRef) font_layout_engine[font];
+    CFDictionaryRef attributes = (CFDictionaryRef) font_layout_engine(font);
     return fontFromAttributes(attributes);
 }
 
@@ -99,13 +99,13 @@ DoAATLayout(void* p, int justify)
     memory_word* node = (memory_word*)p;
 
     unsigned int f = native_font(node);
-    if (font_area[f] != AAT_FONT_FLAG)
+    if (font_area(f) != AAT_FONT_FLAG)
         _tt_abort("DoAATLayout called for non-AAT font");
 
     txtLen = native_length(node);
     txtPtr = (UniChar*)(node + NATIVE_NODE_SIZE);
 
-    attributes = font_layout_engine[native_font(node)];
+    attributes = font_layout_engine(native_font(node));
     string = CFStringCreateWithCharactersNoCopy(NULL, txtPtr, txtLen, kCFAllocatorNull);
     attrString = CFAttributedStringCreate(NULL, string, attributes);
     CFRelease(string);
@@ -188,9 +188,9 @@ DoAATLayout(void* p, int justify)
         if (totalGlyphCount > 0) {
             /* this is essentially a copy from similar code in XeTeX_ext.c, easier
              * to be done here */
-            if (font_letter_space[f] != 0) {
+            if (font_letter_space(f) != 0) {
                 Fixed lsDelta = 0;
-                Fixed lsUnit = font_letter_space[f];
+                Fixed lsUnit = font_letter_space(f);
                 int i;
                 for (i = 0; i < totalGlyphCount; ++i) {
                     if (glyphAdvances[i] == 0 && lsDelta != 0)

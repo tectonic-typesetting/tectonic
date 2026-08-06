@@ -384,6 +384,9 @@ impl<'a> CoreBridgeState<'a> {
     pub fn with_global_state<T, F: for<'b> FnOnce(&mut CoreBridgeState<'b>) -> T>(f: F) -> T {
         /// Ensures we only enter the state once at a time, globally
         static GLOBAL: Mutex<()> = Mutex::new(());
+        // We ignore prior panics - the engine should always either be in a continuable state, or
+        // about to restart and will fix up any bad state.
+        GLOBAL.clear_poison();
         let _lock = GLOBAL.lock().unwrap();
         // SAFETY: Pointer is either null or valid, set by the engine on entrance
         let state = unsafe { _ttbc_get_core_state().as_mut() }
@@ -580,7 +583,8 @@ impl<'a> CoreBridgeState<'a> {
         }
     }
 
-    fn output_flush(&mut self, handle: OutputId) -> bool {
+    /// Flush any pending data for the provided output
+    pub fn output_flush(&mut self, handle: OutputId) -> bool {
         let rhandle: &mut OutputHandle = self.get_output(handle);
         let result = rhandle.flush();
 
@@ -745,6 +749,12 @@ impl<'a> CoreBridgeState<'a> {
             );
             true
         }
+    }
+
+    /// Finish and emit a diagnostic
+    pub fn finish_diagnostic(&mut self, diag: Diagnostic) {
+        self.status
+            .report(diag.kind, format_args!("{}", diag.message), None);
     }
 }
 
@@ -1250,23 +1260,45 @@ pub struct Diagnostic {
     kind: MessageKind,
 }
 
+impl Diagnostic {
+    /// Create a new diagnostic that will be reported as an error.
+    pub fn error() -> Diagnostic {
+        Diagnostic {
+            message: String::new(),
+            kind: MessageKind::Error,
+        }
+    }
+
+    /// Create a new diagnostic that will be reported as a warning.
+    pub fn warning() -> Diagnostic {
+        Diagnostic {
+            message: String::new(),
+            kind: MessageKind::Warning,
+        }
+    }
+
+    /// Append text to a diagnostic.
+    pub fn append(&mut self, msg: impl AsRef<str>) {
+        self.message.push_str(msg.as_ref());
+    }
+
+    /// Append a single character to a diagnostic
+    pub fn append_char(&mut self, c: char) {
+        self.message.push(c);
+    }
+}
+
 /// Create a new diagnostic that will be reported as a warning.
 #[no_mangle]
 pub extern "C" fn ttbc_diag_begin_warning() -> *mut Diagnostic {
-    let warning = Box::new(Diagnostic {
-        message: String::new(),
-        kind: MessageKind::Warning,
-    });
+    let warning = Box::new(Diagnostic::error());
     Box::into_raw(warning)
 }
 
 /// Create a new diagnostic that will be reported as an error.
 #[no_mangle]
 pub extern "C" fn ttbc_diag_begin_error() -> *mut Diagnostic {
-    let warning = Box::new(Diagnostic {
-        message: String::new(),
-        kind: MessageKind::Error,
-    });
+    let warning = Box::new(Diagnostic::error());
     Box::into_raw(warning)
 }
 
@@ -1278,7 +1310,7 @@ pub extern "C" fn ttbc_diag_begin_error() -> *mut Diagnostic {
 #[no_mangle]
 pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const libc::c_char) {
     let rtext = CStr::from_ptr(text);
-    diag.message.push_str(&rtext.to_string_lossy());
+    diag.append(rtext.to_string_lossy());
 }
 
 /// "Finish" a diagnostic: report it to the driver and free the diagnostic object.
@@ -1290,8 +1322,7 @@ pub unsafe extern "C" fn ttbc_diag_append(diag: &mut Diagnostic, text: *const li
 pub unsafe extern "C" fn ttbc_diag_finish(es: &mut CoreBridgeState, diag: *mut Diagnostic) {
     // By creating the box, we will free the diagnostic when this function exits.
     let rdiag = Box::from_raw(diag);
-    es.status
-        .report(rdiag.kind, format_args!("{}", rdiag.message), None);
+    es.finish_diagnostic(*rdiag);
 }
 
 /// Run a shell command

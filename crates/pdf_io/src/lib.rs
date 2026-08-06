@@ -8,6 +8,8 @@
 //!
 //! [Tectonic]: https://tectonic-typesetting.github.io/
 
+pub mod sys;
+
 /// Import things from our bridge crates to ensure that we actually link with
 /// them.
 mod linkage {

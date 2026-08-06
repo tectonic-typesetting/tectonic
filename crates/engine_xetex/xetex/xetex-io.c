@@ -26,7 +26,7 @@ tt_xetex_open_input (int filefmt)
 
     if (filefmt == TTBC_FILE_FORMAT_TECTONIC_PRIMARY) {
         handle = ttstub_input_open_primary ();
-    } else if (name_of_file[0] == '|') {
+    } else if (name_of_file()[0] == '|') {
         // Tectonic TODO: issue #859. In mainline XeTeX, a pipe symbol indicates
         // piped input from an external command via `popen()`. Now that we have
         // shell-escape support we could also support this, but we don't have a
@@ -37,7 +37,7 @@ tt_xetex_open_input (int filefmt)
         capture_to_diagnostic(NULL);
         return INVALID_HANDLE;
     } else {
-        handle = ttstub_input_open (name_of_file, (ttbc_file_format) filefmt, 0);
+        handle = ttstub_input_open (name_of_file(), (ttbc_file_format) filefmt, 0);
     }
 
     if (handle == INVALID_HANDLE)
@@ -47,9 +47,9 @@ tt_xetex_open_input (int filefmt)
         abspath_of_input_file[0] = '\0';
     }
 
-    name_length = strlen(name_of_file);
+//    name_length = strlen(name_of_file());
     free(name_of_input_file);
-    name_of_input_file = xstrdup(name_of_file);
+    name_of_input_file = xstrdup(name_of_file());
     return handle;
 }
 
@@ -84,18 +84,19 @@ firstByteMark[7] = {
 };
 
 void
-set_input_file_encoding(UFILE* f, int32_t mode, int32_t encodingData)
+set_input_file_encoding(UFile* f, int32_t mode, int32_t encodingData)
 {
-    if ((f->encodingMode == ICUMAPPING) && (f->conversionData != NULL))
-        ucnv_close((UConverter*)(f->conversionData));
-    f->conversionData = 0;
+    if ((f->encoding_mode == ICUMAPPING) && (f->conversion_data != NULL))
+        (f->conversion_drop)(f->conversion_data);
+    f->conversion_data = 0;
+    f->conversion_drop = NULL;
 
     switch (mode) {
         case UTF8:
         case UTF16BE:
         case UTF16LE:
         case RAW:
-            f->encodingMode = mode;
+            f->encoding_mode = mode;
             break;
 
         case ICUMAPPING:
@@ -112,10 +113,11 @@ set_input_file_encoding(UFILE* f, int32_t mode, int32_t encodingData)
                     print_c_string(name);
                     print_c_string("'; reading as raw bytes");
                     end_diagnostic(1);
-                    f->encodingMode = RAW;
+                    f->encoding_mode = RAW;
                 } else {
-                    f->encodingMode = ICUMAPPING;
-                    f->conversionData = cnv;
+                    f->encoding_mode = ICUMAPPING;
+                    f->conversion_data = cnv;
+                    f->conversion_drop = (void(*)(void*))&ucnv_close;
                 }
                 free(name);
             }
@@ -125,7 +127,7 @@ set_input_file_encoding(UFILE* f, int32_t mode, int32_t encodingData)
 
 
 int
-u_open_in(UFILE **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int32_t encodingData)
+u_open_in(UFile **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int32_t encodingData)
 {
     rust_input_handle_t handle;
     int B1, B2;
@@ -134,11 +136,11 @@ u_open_in(UFILE **f, int32_t filefmt, const char *fopen_mode, int32_t mode, int3
     if (handle == INVALID_HANDLE)
         return 0;
 
-    *f = xmalloc(sizeof(UFILE));
-    (*f)->encodingMode = 0;
-    (*f)->conversionData = 0;
-    (*f)->savedChar = -1;
-    (*f)->skipNextLF = 0;
+    *f = xmalloc(sizeof(UFile));
+    (*f)->encoding_mode = 0;
+    (*f)->conversion_data = 0;
+    (*f)->saved_char = -1;
+    (*f)->skip_next_lf = 0;
     (*f)->handle = handle;
 
     if (mode == AUTO) {
@@ -209,16 +211,16 @@ apply_normalization(uint32_t* buf, int len, int norm)
     }
 
     status = TECkit_ConvertBuffer(*normPtr, (Byte*)buf, len * sizeof(UInt32), &inUsed,
-                (Byte*)&buffer[first], sizeof(*buffer) * (buf_size - first), &outUsed, 1);
+                (Byte*)&buffer_ptr()[first], sizeof(buffer(0)) * (buf_size - first), &outUsed, 1);
     TECkit_ResetConverter(*normPtr);
     if (status != kStatus_NoError)
         buffer_overflow();
-    last = first + outUsed / sizeof(*buffer);
+    last = first + outUsed / sizeof(buffer(0));
 }
 
 
 int
-input_line(UFILE* f)
+input_line(UFile* f)
 {
     static char* byteBuffer = NULL;
     static uint32_t *utf32Buf = NULL;
@@ -231,7 +233,7 @@ input_line(UFILE* f)
 
     last = first;
 
-    if (f->encodingMode == ICUMAPPING) {
+    if (f->encoding_mode == ICUMAPPING) {
         uint32_t bytesRead = 0;
         UConverter* cnv;
         int outLen;
@@ -242,8 +244,8 @@ input_line(UFILE* f)
 
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = ttstub_input_getc (f->handle);
-        if (f->skipNextLF) {
-            f->skipNextLF = 0;
+        if (f->skip_next_lf) {
+            f->skip_next_lf = 0;
             if (i == '\n')
                 i = ttstub_input_getc (f->handle);
         }
@@ -261,7 +263,7 @@ input_line(UFILE* f)
             buffer_overflow();
 
         /* now apply the mapping to turn external bytes into Unicode characters in buffer */
-        cnv = (UConverter*)(f->conversionData);
+        cnv = (UConverter*)(f->conversion_data);
         switch (norm) {
             case 1: // NFC
             case 2: // NFD
@@ -279,21 +281,21 @@ input_line(UFILE* f)
 
             default: // none
                 outLen = ucnv_toAlgorithmic(UCNV_UTF32_NativeEndian, cnv,
-                                            (char*)&buffer[first], sizeof(*buffer) * (buf_size - first),
+                                            (char*)&buffer_ptr()[first], sizeof(buffer(0)) * (buf_size - first),
                                             byteBuffer, bytesRead, &errorCode);
                 if (errorCode != 0) {
                     conversion_error((int)errorCode);
                     return false;
                 }
-                outLen /= sizeof(*buffer);
+                outLen /= sizeof(buffer(0));
                 last = first + outLen;
                 break;
         }
     } else {
         /* Recognize either LF or CR as a line terminator; skip initial LF if prev line ended with CR.  */
         i = get_uni_c(f);
-        if (f->skipNextLF) {
-            f->skipNextLF = 0;
+        if (f->skip_next_lf) {
+            f->skip_next_lf = 0;
             if (i == '\n')
                 i = get_uni_c(f);
         }
@@ -322,10 +324,10 @@ input_line(UFILE* f)
 
             default: // none
                 if (last < buf_size && i != EOF && i != '\n' && i != '\r')
-                    buffer[last++] = i;
+                    set_buffer(last++, i);
                 if (i != EOF && i != '\n' && i != '\r')
                     while (last < buf_size && (i = get_uni_c(f)) != EOF && i != '\n' && i != '\r')
-                        buffer[last++] = i;
+                        set_buffer(last++, i);
 
                 if (i == EOF && errno != EINTR && last == first)
                     return false;
@@ -339,50 +341,34 @@ input_line(UFILE* f)
 
     /* If line ended with CR, remember to skip following LF. */
     if (i == '\r')
-        f->skipNextLF = 1;
+        f->skip_next_lf = 1;
 
-    buffer[last] = ' ';
+    set_buffer(last, ' ');
     if (last >= max_buf_stack)
         max_buf_stack = last;
 
     /* Trim trailing space or EOL characters.  */
 #define IS_SPC_OR_EOL(c) ((c) == ' ' || (c) == '\r' || (c) == '\n')
-    while (last > first && IS_SPC_OR_EOL(buffer[last - 1]))
+    while (last > first && IS_SPC_OR_EOL(buffer(last - 1)))
         --last;
 
     return true;
 }
 
 
-void
-u_close(UFILE* f)
-{
-    if (f == NULL || f->handle == INVALID_HANDLE)
-        /* NULL handle is stdin/terminal file. Shouldn't happen but meh. */
-        return;
-
-    ttstub_input_close (f->handle);
-
-    if (f->encodingMode == ICUMAPPING && f->conversionData != NULL)
-        ucnv_close ((UConverter*) f->conversionData);
-
-    free (f);
-}
-
-
 int
-get_uni_c(UFILE* f)
+get_uni_c(UFile* f)
 {
     int rval;
     int c;
 
-    if (f->savedChar != -1) {
-        rval = f->savedChar;
-        f->savedChar = -1;
+    if (f->saved_char != -1) {
+        rval = f->saved_char;
+        f->saved_char = -1;
         return rval;
     }
 
-    switch (f->encodingMode) {
+    switch (f->encoding_mode) {
         case UTF8:
             c = rval = ttstub_input_getc(f->handle);
             if (rval != EOF) {
@@ -441,7 +427,7 @@ get_uni_c(UFILE* f)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
                         rval = 0xfffd;
-                        f->savedChar = lo;
+                        f->saved_char = lo;
                     }
                 } else if (rval >= 0xdc00 && rval <= 0xdfff)
                     rval = 0xfffd;
@@ -459,7 +445,7 @@ get_uni_c(UFILE* f)
                         rval = 0x10000 + (rval - 0xd800) * 0x400 + (lo - 0xdc00);
                     else {
                         rval = 0xfffd;
-                        f->savedChar = lo;
+                        f->saved_char = lo;
                     }
                 } else if (rval >= 0xdc00 && rval <= 0xdfff)
                     rval = 0xfffd;
@@ -471,49 +457,10 @@ get_uni_c(UFILE* f)
             break;
 
         default:
-            _tt_abort("internal error; file input mode=%d", f->encodingMode);
+            _tt_abort("internal error; file input mode=%d", f->encoding_mode);
     }
 
     return rval;
-}
-
-
-void
-make_utf16_name(void)
-{
-    unsigned char* s = (unsigned char *) name_of_file;
-    uint32_t rval;
-    uint16_t* t;
-    static int name16len = 0;
-    if (name16len <= name_length) {
-        free(name_of_file16);
-        name16len = name_length + 10;
-        name_of_file16 = xcalloc(name16len, sizeof(uint16_t));
-    }
-    t = name_of_file16;
-
-    while (s < (unsigned char *) name_of_file + name_length) {
-        uint16_t extraBytes;
-        rval = *(s++);
-        extraBytes = bytesFromUTF8[rval];
-        switch (extraBytes) {   /* note: code falls through cases! */
-            case 5: rval <<= 6; if (*s) rval += *(s++);
-            case 4: rval <<= 6; if (*s) rval += *(s++);
-            case 3: rval <<= 6; if (*s) rval += *(s++);
-            case 2: rval <<= 6; if (*s) rval += *(s++);
-            case 1: rval <<= 6; if (*s) rval += *(s++);
-            case 0: ;
-        };
-        rval -= offsetsFromUTF8[extraBytes];
-        if (rval > 0xffff) {
-            rval -= 0x10000;
-            *(t++) = 0xd800 + rval / 0x0400;
-            *(t++) = 0xdc00 + rval % 0x0400;
-        } else {
-            *(t++) = rval;
-        }
-    }
-    name_length16 = t - name_of_file16;
 }
 
 
@@ -523,7 +470,7 @@ open_or_close_in(void)
     unsigned char c, n;
     int32_t k;
 
-    c = cur_chr;
+    c = cur_chr();
     scan_four_bit_int();
     n = cur_val;
 
@@ -535,20 +482,20 @@ open_or_close_in(void)
     if (c != 0) {
         scan_optional_equals();
         scan_file_name();
-        pack_file_name(cur_name, cur_area, cur_ext);
+        pack_file_name(cur_name(), cur_area(), cur_ext());
 
         if (u_open_in(&read_file[n], TTBC_FILE_FORMAT_TEX, "rb", INTPAR(xetex_default_input_mode),
                       INTPAR(xetex_default_input_encoding))) {
             make_utf16_name();
-            name_in_progress = true;
+            set_name_in_progress(true);
             begin_name();
-            stop_at_space = false;
+            set_stop_at_space(false);
             k = 0;
-            while ((k < name_length16) && (more_name(name_of_file16[k])))
+            while ((k < name_length16()) && (more_name(name_of_file16()[k])))
                 k++;
-            stop_at_space = true;
+            set_stop_at_space(true);
             end_name();
-            name_in_progress = false;
+            set_name_in_progress(false);
             read_open[n] = JUST_OPEN;
         }
     }

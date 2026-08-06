@@ -8,23 +8,8 @@
 
 /* Limits of various built-in types */
 
-#define MIN_HALFWORD -0x0FFFFFFF
-#define MAX_HALFWORD  0x3FFFFFFF
-
-#define TEX_NULL     MIN_HALFWORD /* a null "pointer" */
-#define TEX_INFINITY 0x7FFFFFFF /* "the largest positive value that TeX knows" */
 #define NULL_FLAG   -0x40000000 /* "signifies a missing item" in rule nodes */
 #define DEFAULT_CODE 0x40000000 /* "denotes default_rule_thickness" */
-
-/* characters
- *
- * TeX thinks there are only 256 character but we know better. We use UTF16
- * codepoints. Actual Unicode character codes can exceed this, up to
- * BIGGEST_USV. "USV" here means Unicode Scalar Value. */
-
-#define BIGGEST_CHAR 0xFFFF /* must be <= max_quarterword */
-#define BIGGEST_USV  0x10FFFF
-#define NUMBER_USVS  (BIGGEST_USV + 1)
 
 /* Various buffer sizes not fixed in xetex_format.h */
 
@@ -67,24 +52,24 @@
 
 #define FONT_ID_BASE FROZEN_NULL_FONT /* nominally minus FONT_BASE, but that's 0 */
 
-#define GLUEPAR(p) (eqtb[GLUE_BASE + GLUE_PAR__##p].b32.s1)
-#define SKIP_REG(n) (eqtb[SKIP_BASE + (n)].b32.s1)
-#define MU_SKIP_REG(n) (eqtb[MU_SKIP_BASE + (n)].b32.s1)
-#define LOCAL(p) (eqtb[LOCAL_BASE + LOCAL__##p].b32.s1)
-#define TOKS_REG(n) (eqtb[TOKS_BASE + (n)].b32.s1)
-#define ETEX_PENALTIES_PAR(p) (eqtb[ETEX_PEN_BASE + ETEX_PENALTIES_PAR__##p].b32.s1)
-#define BOX_REG(n) (eqtb[BOX_BASE + (n)].b32.s1)
-#define MATH_FONT(n) (eqtb[MATH_FONT_BASE + (n)].b32.s1)
-#define CAT_CODE(n) (eqtb[CAT_CODE_BASE + (n)].b32.s1)
-#define LC_CODE(n) (eqtb[LC_CODE_BASE + (n)].b32.s1)
-#define UC_CODE(n) (eqtb[UC_CODE_BASE + (n)].b32.s1)
-#define SF_CODE(n) (eqtb[SF_CODE_BASE + (n)].b32.s1)
-#define MATH_CODE(n) (eqtb[MATH_CODE_BASE + (n)].b32.s1)
-#define INTPAR(n) (eqtb[INT_BASE + INT_PAR__##n].b32.s1)
-#define COUNT_REG(n) (eqtb[COUNT_BASE + (n)].b32.s1)
-#define DEL_CODE(n) (eqtb[DEL_CODE_BASE + (n)].b32.s1)
-#define DIMENPAR(n) (eqtb[DIMEN_BASE + DIMEN_PAR__##n].b32.s1)
-#define SCALED_REG(n) (eqtb[SCALED_BASE + (n)].b32.s1)
+#define GLUEPAR(p) (eqtb_ptr(GLUE_BASE + GLUE_PAR__##p)->b32.s1)
+#define SKIP_REG(n) (eqtb_ptr(SKIP_BASE + (n))->b32.s1)
+#define MU_SKIP_REG(n) (eqtb_ptr(MU_SKIP_BASE + (n))->b32.s1)
+#define LOCAL(p) (eqtb_ptr(LOCAL_BASE + LOCAL__##p)->b32.s1)
+#define TOKS_REG(n) (eqtb_ptr(TOKS_BASE + (n))->b32.s1)
+#define ETEX_PENALTIES_PAR(p) (eqtb_ptr(ETEX_PEN_BASE + ETEX_PENALTIES_PAR__##p)->b32.s1)
+#define BOX_REG(n) (eqtb_ptr(BOX_BASE + (n))->b32.s1)
+#define MATH_FONT(n) (eqtb_ptr(MATH_FONT_BASE + (n))->b32.s1)
+#define CAT_CODE(n) (eqtb_ptr(CAT_CODE_BASE + (n))->b32.s1)
+#define LC_CODE(n) (eqtb_ptr(LC_CODE_BASE + (n))->b32.s1)
+#define UC_CODE(n) (eqtb_ptr(UC_CODE_BASE + (n))->b32.s1)
+#define SF_CODE(n) (eqtb_ptr(SF_CODE_BASE + (n))->b32.s1)
+#define MATH_CODE(n) (eqtb_ptr(MATH_CODE_BASE + (n))->b32.s1)
+#define INTPAR(n) (eqtb_ptr(INT_BASE + INT_PAR__##n)->b32.s1)
+#define COUNT_REG(n) (eqtb_ptr(COUNT_BASE + (n))->b32.s1)
+#define DEL_CODE(n) (eqtb_ptr(DEL_CODE_BASE + (n))->b32.s1)
+#define DIMENPAR(n) (eqtb_ptr(DIMEN_BASE + DIMEN_PAR__##n)->b32.s1)
+#define SCALED_REG(n) (eqtb_ptr(SCALED_BASE + (n))->b32.s1)
 
 #define LEVEL_ZERO 0 /* "really" MIN_QUARTERWORD */
 #define LEVEL_ONE 1
@@ -178,7 +163,7 @@
 #define LIST_TAG 2
 #define EXT_TAG 3
 
-/* scanner_status values: */
+/* scanner_status() values: */
 #define NORMAL 0
 #define SKIPPING 1
 #define DEFINING 2
@@ -344,8 +329,6 @@
 
 /* Token codes */
 
-#define MAX_CHAR_VAL 0x200000 /* 1 << 21 */
-#define CS_TOKEN_FLAG 0x1FFFFFF
 #define LEFT_BRACE_TOKEN 0x200000 /* LEFT_BRACE << 21 */
 #define LEFT_BRACE_LIMIT 0x400000 /* (LEFT_BRACE + 1) << 21 */
 #define RIGHT_BRACE_TOKEN 0x400000 /* RIGHT_BRACE << 21 */
