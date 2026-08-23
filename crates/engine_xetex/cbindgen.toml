@@ -2,9 +2,34 @@ language = "C"
 cpp_compat = true
 style = "type"
 include_guard = "TECTONIC_ENGINE_XETEX_BINDGEN_H"
+includes = ["xetex-core.h"]
+after_includes = """
+typedef void(*Option_SynctexRecorder)(int32_t);
+typedef unsigned char Flags;
+
+#define FLAGS_CONTENT_READY 1
+#define FLAGS_OFF 2
+#define FLAGS_NOT_VOID 4
+#define FLAGS_WARN 8
+#define FLAGS_OUTPUT_P 16
+"""
+
+[parse.expand]
+crates = ["tectonic_engine_xetex"]
+features = ["cbindgen"]
 
 [export.rename]
 "CoreBridgeState" = "ttbc_state_t"
+"Diagnostic" = "ttbc_diagnostic_t"
+"FileFormat" = "ttbc_file_format"
+"OutputId" = "rust_output_handle_t"
+"InputState" = "input_state_t"
+
+[export]
+exclude = ["Option_OutputId", "Option_InputId", "B32x2", "B16x4", "Option_SynctexRecorder", "Flags"]
+
+[defines]
+"target_endian = big" = "WORDS_BIGENDIAN"
 
 [enum]
 prefix_with_name = true

@@ -96,6 +96,14 @@ impl<K: CoreType, V: CoreType> CFDictionary<K, V> {
         // SAFETY: If non-null, pointer from CFDictionaryCreate is a new, owned CFDictionary.
         unsafe { CFDictionary::new_owned(ptr) }
     }
+
+    /// Get the value for a given key. Returns `None` if the value isn't present.
+    pub fn get(&self, key: K) -> Option<V> {
+        let ptr =
+            unsafe { sys::CFDictionaryGetValue(self.as_type_ref(), key.into_ty().as_type_ref()) };
+        let ptr = NonNull::new(ptr.cast_mut());
+        ptr.map(|ptr| unsafe { V::new_borrowed(ptr.cast()) })
+    }
 }
 
 #[cfg(test)]

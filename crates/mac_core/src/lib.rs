@@ -13,17 +13,21 @@ pub mod sys;
 #[macro_use]
 mod macros;
 mod array;
+mod color;
 mod dict;
 mod font;
 mod font_desc;
+mod number;
 mod set;
 mod string;
 mod url;
 
 pub use array::CFArray;
+pub use color::CGColor;
 pub use dict::CFDictionary;
 pub use font::{CTFont, FontAttribute, FontNameKey};
 pub use font_desc::CTFontDescriptor;
+pub use number::{CFNumber, NumValue};
 pub use set::CFSet;
 pub use string::CFString;
 pub use url::CFUrl;

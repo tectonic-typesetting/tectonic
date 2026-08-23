@@ -288,7 +288,9 @@ pub unsafe extern "C" fn getFontFilename(
     engine: XeTeXLayoutEngine,
     index: *mut u32,
 ) -> *const libc::c_char {
-    (*engine).font().filename(&mut *index).to_owned().into_raw()
+    let (idx, filename) = (*engine).font().filename();
+    *index = idx;
+    filename.to_owned().into_raw()
 }
 
 #[no_mangle]
