@@ -1743,7 +1743,7 @@ pdf_dev_begin_actualtext (uint16_t *unicodes, int count)
         len += sprintf(buf + len, "%c", c);
       }
     }
-    dev_out(p, work_buffer, len);
+    dev_out(p, buf, len);
     ++unicodes;
   }
 
