@@ -47,6 +47,7 @@ members = [
     "crates/dep_support",
     "crates/docmodel",
     "crates/engine_bibtex",
+    "crates/engine_makeindex",
     "crates/engine_spx2html",
     "crates/engine_xdvipdfmx",
     "crates/engine_xetex",
@@ -86,6 +87,7 @@ tectonic_bridge_core = { path = "crates/bridge_core", version = "0.0.0-dev.0" }
 tectonic_bundles = { path = "crates/bundles", version = "0.0.0-dev.0", default-features = false }
 tectonic_docmodel = { path = "crates/docmodel", version = "0.0.0-dev.0", optional = true }
 tectonic_engine_bibtex = { path = "crates/engine_bibtex", version = "0.0.0-dev.0" }
+tectonic_engine_makeindex = { path = "crates/engine_makeindex", version = "0.0.0-dev.0" }
 tectonic_engine_spx2html = { path = "crates/engine_spx2html", version = "0.0.0-dev.0" }
 tectonic_engine_xdvipdfmx = { path = "crates/engine_xdvipdfmx", version = "0.0.0-dev.0" }
 tectonic_engine_xetex = { path = "crates/engine_xetex", version = "0.0.0-dev.0" }

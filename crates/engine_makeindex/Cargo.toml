@@ -1,0 +1,23 @@
+# Copyright 2025 the Tectonic Project
+# Licensed under the MIT License.
+
+# See README.md for discussion of the scope of this crate.
+
+lints.workspace = true
+
+[package]
+name = "tectonic_engine_makeindex"
+version = "0.0.0-dev.0"  # assigned with cranko (see README)
+authors = ["The Tectonic Project"]
+description = """
+A pure-Rust implementation of the makeindex index processor.
+"""
+homepage = "https://tectonic-typesetting.github.io/"
+documentation = "https://docs.rs/tectonic_engine_makeindex"
+repository = "https://github.com/tectonic-typesetting/tectonic/"
+readme = "README.md"
+license = "MIT"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0"

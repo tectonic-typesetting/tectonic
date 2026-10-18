@@ -10,10 +10,15 @@
 // Public sub-modules and reexports.
 
 pub mod bibtex;
+pub mod makeindex;
 pub mod spx2html;
 pub mod tex;
 pub mod xdvipdfmx;
 
 pub use self::{
-    bibtex::BibtexEngine, spx2html::Spx2HtmlEngine, tex::TexEngine, xdvipdfmx::XdvipdfmxEngine,
+    bibtex::BibtexEngine,
+    makeindex::{MakeindexEngine, MakeindexOutcome},
+    spx2html::Spx2HtmlEngine,
+    tex::TexEngine,
+    xdvipdfmx::XdvipdfmxEngine,
 };
