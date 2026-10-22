@@ -2054,8 +2054,9 @@ fn interp_text_len(
                             _ => (),
                         }
                         idx += 1;
-                        num_chars += 1;
                     }
+                    // An entire special character counts as one text character
+                    num_chars += 1;
                 }
             }
             b'}' => {
