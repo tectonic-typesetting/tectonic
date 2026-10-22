@@ -8,4 +8,7 @@ Ernst G{\"{a}}rtner.
 Kurt G{\"o}del.
 \newblock A special character within the label prefix, 1931.
 
+\bibitem[{\"O}st99]{Anon99}
+A label taken from the key field, 1999.
+
 \end{thebibliography}
