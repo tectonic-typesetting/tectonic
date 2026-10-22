@@ -2054,8 +2054,9 @@ fn interp_text_len(
                             _ => (),
                         }
                         idx += 1;
-                        num_chars += 1;
                     }
+                    // An entire special character counts as one text character
+                    num_chars += 1;
                 }
             }
             b'}' => {
@@ -2114,8 +2115,10 @@ fn interp_text_prefix(
                             b'}' => brace_level -= 1,
                             _ => (),
                         }
-                        num_chars += 1;
+                        idx += 1;
                     }
+                    // An entire special character counts as one text character
+                    num_chars += 1;
                 }
             }
             b'}' => {

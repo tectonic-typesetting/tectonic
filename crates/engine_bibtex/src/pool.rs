@@ -67,6 +67,7 @@ impl PoolCursor<'_> {
         let start = self.pool.str_start(str);
         self.pool
             .copy_range_raw(start + range.start..start + range.end, self.end);
+        self.end += range.len();
     }
 
     pub fn insert_str(&mut self, str: StrNumber, offset: usize) {
@@ -246,5 +247,18 @@ mod tests {
         });
         assert_eq!(new_str, new_str_2);
         assert_eq!(pool.get_str(str), pool.get_str(new_str_2));
+    }
+
+    #[test]
+    fn test_write_substr() {
+        let mut pool = StringPool::new();
+
+        let str = pool.add_string(b"Hello World!");
+
+        let new_str = pool.write_str(|cursor| {
+            cursor.append_substr(str, 0..5);
+            cursor.append(b'!');
+        });
+        assert_eq!(pool.get_str(new_str), b"Hello!");
     }
 }

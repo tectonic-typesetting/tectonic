@@ -137,6 +137,11 @@ fn test_control_sequences_alpha() {
 }
 
 #[test]
+fn test_text_prefix_special() {
+    TestCase::new(&["cites", "text_prefix_special"]).go();
+}
+
+#[test]
 fn test_multi_bib() {
     TestCase::new(&["cites", "multi_file"]).go();
 }
