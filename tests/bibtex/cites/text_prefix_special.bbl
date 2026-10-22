@@ -1,0 +1,11 @@
+\begin{thebibliography}{G{\"o}d31}
+
+\bibitem[G{\"{a}}r50]{Gartner50}
+Ernst G{\"{a}}rtner.
+\newblock A special character with nested braces, 1950.
+
+\bibitem[G{\"o}d31]{Godel31}
+Kurt G{\"o}del.
+\newblock A special character within the label prefix, 1931.
+
+\end{thebibliography}
