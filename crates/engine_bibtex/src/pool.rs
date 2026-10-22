@@ -51,9 +51,15 @@ pub(crate) struct PoolCursor<'a> {
 impl PoolCursor<'_> {
     pub fn extend(&mut self, len: usize) {
         self.end += len;
+        while self.end > self.pool.strings.len() {
+            self.pool.grow();
+        }
     }
 
     pub fn append(&mut self, c: u8) {
+        while self.end >= self.pool.strings.len() {
+            self.pool.grow();
+        }
         self.pool.strings[self.end] = c;
         self.end += 1;
     }
@@ -223,6 +229,34 @@ mod tests {
         assert_ne!(str1, str2);
         assert_eq!(pool.get_str(str1), b"String 1");
         assert_eq!(pool.get_str(str2), b"String 2");
+    }
+
+    #[test]
+    fn test_extend_past_capacity() {
+        let mut pool = StringPool::new();
+
+        // Fill the pool so the next string ends exactly at its current capacity
+        pool.add_string(&[b'a'; POOL_SIZE - 4]);
+        let str = pool.add_string(b"0123");
+        assert!(pool.remove_last_str(str));
+
+        // Extending over the removed string and past the end must grow the pool
+        let new_str = pool.write_str(|cursor| {
+            cursor.extend(8);
+            cursor.bytes()[4..].copy_from_slice(b"4567");
+        });
+        assert_eq!(pool.get_str(new_str), b"01234567");
+    }
+
+    #[test]
+    fn test_append_past_capacity() {
+        let mut pool = StringPool::new();
+
+        pool.add_string(&[b'a'; POOL_SIZE]);
+        let new_str = pool.write_str(|cursor| {
+            cursor.append(b'}');
+        });
+        assert_eq!(pool.get_str(new_str), b"}");
     }
 
     #[test]

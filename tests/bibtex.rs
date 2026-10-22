@@ -241,6 +241,13 @@ fn test_lots_of_cites() {
         .go();
 }
 
+/// Test for [#1402](https://github.com/tectonic-typesetting/tectonic/issues/1402), concatenating
+/// onto a scratch string until it no longer fits in the initial string pool allocation.
+#[test]
+fn test_long_concat() {
+    TestCase::new(&["strings", "long_concat"]).go();
+}
+
 #[test]
 fn test_dup_bib() {
     TestCase::new(&["aux_files", "dup_bib"])
