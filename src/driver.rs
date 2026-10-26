@@ -15,7 +15,7 @@
 
 use crate::errors::EngineError;
 use crate::{
-    ctry,
+    biber, ctry,
     io::{
         format_cache::FormatCache,
         memory::{MemoryFileCollection, MemoryIo},
@@ -157,6 +157,19 @@ pub enum PassSetting {
     Tex,
     /// Like the default pass, but runs BibTeX once first, before doing anything else.
     BibtexFirst,
+}
+
+/// How a processing session finds the Biber executable when one is needed.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub enum BiberMode {
+    /// Use an installed executable, preserving the library's existing behavior.
+    #[default]
+    System,
+    /// Download and cache a compatible executable when one is available.
+    Managed {
+        /// Avoid downloading a Biber executable that is absent from the cache.
+        only_cached: bool,
+    },
 }
 
 impl FromStr for PassSetting {
@@ -811,6 +824,7 @@ pub struct ProcessingSessionBuilder {
     makefile_output_path: Option<PathBuf>,
     hidden_input_paths: HashSet<PathBuf>,
     pass: PassSetting,
+    biber_mode: BiberMode,
     reruns: Option<usize>,
     print_stdout: bool,
     bundle: Option<Box<dyn Bundle>>,
@@ -833,6 +847,12 @@ impl ProcessingSessionBuilder {
             security,
             ..Default::default()
         }
+    }
+
+    /// Configure Biber selection for the default processing pass.
+    pub fn biber_mode(&mut self, mode: BiberMode) -> &mut Self {
+        self.biber_mode = mode;
+        self
     }
 
     /// Sets the path to the primary input file.
@@ -1248,6 +1268,7 @@ impl ProcessingSessionBuilder {
             security: self.security,
             bs,
             pass: self.pass,
+            biber_mode: self.biber_mode,
             primary_input_path,
             primary_input_tex_path: tex_input_name,
             format_name: self.format_name.unwrap(),
@@ -1320,6 +1341,7 @@ pub struct ProcessingSession {
     output_path: Option<PathBuf>,
 
     pass: PassSetting,
+    biber_mode: BiberMode,
     output_format: OutputFormat,
     tex_rerun_specification: Option<usize>,
     keep_intermediates: bool,
@@ -2059,46 +2081,7 @@ impl ProcessingSession {
             None => return Ok(None),
         };
 
-        // Yes, there is. Set up to potentially run biber. For testing support,
-        // we let the rig specify a custom executable to use, which lets us
-        // exercise different pieces of the external-tool behavior.
-
-        let s = (
-            crate::config::is_config_test_mode_activated(),
-            std::env::var("TECTONIC_TEST_FAKE_BIBER"),
-        );
-
-        let mut argv = match s {
-            (true, Ok(text)) if !text.trim().is_empty() => {
-                text.split_whitespace().map(|x| x.to_owned()).collect()
-            }
-            // when `TECTONIC_TEST_FAKE_BIBER` is empty, proceed to discover
-            // the biber binary as follows.
-            _ => vec!["biber".to_owned()],
-        };
-
-        // Moreover, we allow an override of the biber executable, to cope with
-        // possible version mismatch of the bundled biblatex package, as filed
-        // in issue #893. Since PR #1103, the `tectonic-biber` override can
-        // also be invoked with `tectonic -X biber`.
-        let find_by = |binary_name: &str| -> Option<String> {
-            if let Ok(pathbuf) = which(binary_name) {
-                if let Some(biber_path) = pathbuf.to_str() {
-                    return Some(biber_path.to_owned());
-                }
-            }
-            None
-        };
-
-        let mut use_tectonic_biber_override = false;
-        for binary_name in ["./tectonic-biber", "tectonic-biber"] {
-            if let Some(biber_path) = find_by(binary_name) {
-                argv = vec![biber_path];
-                use_tectonic_biber_override = true;
-                break;
-            }
-        }
-
+        let mut args = Vec::new();
         let mut extra_requires = HashSet::new();
 
         // Do a sketchy XML parse to see if there's info about a biber
@@ -2196,7 +2179,7 @@ impl ProcessingSession {
                 }
 
                 (State::InBiberArgument, Event::Text(ref e)) => {
-                    argv.push(e.decode()?.to_string());
+                    args.push(e.decode()?.to_string());
                     state = State::InBiberCmdline;
                 }
 
@@ -2265,13 +2248,83 @@ impl ProcessingSession {
             // No biber invocation, in the end.
             None
         } else {
-            if use_tectonic_biber_override {
-                tt_note!(status, "using `tectonic-biber`, found at {}", argv[0]);
-            }
+            let mut argv = self.select_biber_command(status)?;
+            argv.extend(args);
             Some(ExternalToolPass {
                 argv,
                 extra_requires,
             })
         })
+    }
+
+    fn select_biber_command(&self, status: &mut dyn StatusBackend) -> Result<Vec<String>> {
+        if crate::config::is_config_test_mode_activated() {
+            if let Ok(text) = std::env::var("TECTONIC_TEST_FAKE_BIBER") {
+                if !text.trim().is_empty() {
+                    return Ok(text.split_whitespace().map(str::to_owned).collect());
+                }
+            }
+        }
+
+        // Preserve the user-controlled override ahead of the managed version.
+        for name in ["./tectonic-biber", "tectonic-biber"] {
+            if let Ok(path) = which(name) {
+                tt_note!(
+                    status,
+                    "using `tectonic-biber`, found at {}",
+                    path.display()
+                );
+                return Ok(vec![path.to_string_lossy().into_owned()]);
+            }
+        }
+
+        if let BiberMode::Managed { only_cached } = self.biber_mode {
+            let mut bcf_path = PathBuf::from(&self.primary_input_tex_path);
+            bcf_path.set_extension("bcf");
+            let version = self
+                .bs
+                .mem
+                .files
+                .borrow()
+                .get(&bcf_path.display().to_string())
+                .and_then(|entry| biber::biblatex_version(&entry.data))
+                .and_then(|version| biber::compatible_biber_version(&version));
+
+            if let Some(version) = version {
+                match biber::resolve(version, only_cached) {
+                    Ok(Some(path)) => {
+                        tt_note!(
+                            status,
+                            "using managed Biber {} at {}",
+                            version,
+                            path.display()
+                        );
+                        return Ok(vec![path.to_string_lossy().into_owned()]);
+                    }
+                    Ok(None) => {}
+                    Err(error) => {
+                        if let Ok(path) = which("biber") {
+                            if biber::installed_version(&path).ok().flatten().as_deref()
+                                == Some(version)
+                            {
+                                tt_note!(
+                                    status,
+                                    "using compatible installed Biber at {}",
+                                    path.display()
+                                );
+                                return Ok(vec![path.to_string_lossy().into_owned()]);
+                            }
+                        }
+                        return Err(error).with_context(|| {
+                            format!(
+                                "could not obtain compatible Biber {version}; install it as `tectonic-biber` to override automatic selection"
+                            )
+                        });
+                    }
+                }
+            }
+        }
+
+        Ok(vec!["biber".to_owned()])
     }
 }

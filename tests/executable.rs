@@ -3,6 +3,7 @@
 //! Test suite for the top-level `tectonic` executable.
 
 use lazy_static::lazy_static;
+use sha2::Digest;
 use std::io::ErrorKind;
 use std::{
     env,
@@ -388,6 +389,46 @@ fn biber_success() {
     let tex = format!("{BIBER_TRIGGER_TEX}{BIBER_VALIDATE_TEX}");
     let output = run_with_biber("success", &tex);
     success_or_panic(&output);
+}
+
+#[cfg(all(target_os = "linux", target_arch = "x86_64", target_env = "gnu"))]
+#[test]
+fn biber_uses_compatible_cached_executable_offline() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let tempdir = setup_and_copy_files(&["subdirectory/empty.bib"]);
+    let cache = tempdir.path().join("cache");
+    let biber_dir = cache.join("tools/biber/2.17/linux-x86_64-gnu");
+    fs::create_dir_all(&biber_dir).unwrap();
+    let biber_path = biber_dir.join("biber-fixture");
+    let script = b"#!/bin/sh\nprintf '456\\n' > biberout.qqq\n";
+    fs::write(&biber_path, script).unwrap();
+    fs::set_permissions(&biber_path, fs::Permissions::from_mode(0o700)).unwrap();
+    let executable_hash = tectonic_io_base::digest::bytes_to_hex(&sha2::Sha256::digest(script));
+    fs::write(
+        biber_dir.join("biber-fixture.sha256"),
+        format!(
+            "129d2e0332a57e985ffa253e5e9fbd28ef99af5a068d1b141145211969aa8999 {executable_hash}"
+        ),
+    )
+    .unwrap();
+
+    let tex = BIBER_TRIGGER_TEX
+        .replace("Hello BCF file", "<bcf:controlfile bltxversion=\"3.17\"/>")
+        + BIBER_VALIDATE_TEX;
+    let fmt_arg = get_plain_format_arg();
+    let mut command = prep_tectonic(tempdir.path(), &["--only-cached", &fmt_arg, "-"]);
+    command
+        .env("TECTONIC_CACHE_DIR", "cache")
+        .env_remove("TECTONIC_TEST_FAKE_BIBER")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped());
+    let mut child = command.spawn().unwrap();
+    write!(child.stdin.as_mut().unwrap(), "{tex}").unwrap();
+    let output = child.wait_with_output().unwrap();
+    success_or_panic(&output);
+    assert!(String::from_utf8_lossy(&output.stdout).contains("using managed Biber 2.17"));
 }
 
 /// Test `tectonic-biber` override: when no args passed, fall back to $PATH

@@ -77,6 +77,7 @@
 //! The [`driver`] module provides a high-level interface for driving the
 //! engines in more realistic circumstances.
 
+mod biber;
 pub mod config;
 pub mod digest;
 #[cfg(feature = "serialization")]

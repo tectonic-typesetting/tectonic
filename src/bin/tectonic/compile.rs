@@ -14,7 +14,7 @@ use tectonic_errors::{Error, Result};
 use tectonic::errors::EngineError;
 use tectonic::{
     config::{maybe_return_test_bundle, PersistentConfig},
-    driver::{OutputFormat, PassSetting, ProcessingSession, ProcessingSessionBuilder},
+    driver::{BiberMode, OutputFormat, PassSetting, ProcessingSession, ProcessingSessionBuilder},
     status::StatusBackend,
     tt_error, tt_note,
     unstable_opts::{UnstableArg, UnstableOptions},
@@ -109,6 +109,9 @@ impl CompileOptions {
         let format_path = self.format;
         let deterministic_mode = unstable.deterministic_mode;
         sess_builder
+            .biber_mode(BiberMode::Managed {
+                only_cached: self.only_cached,
+            })
             .unstables(unstable)
             .format_name(&format_path)
             .keep_logs(self.keep_logs)

@@ -20,7 +20,7 @@ use tectonic_geturl::{DefaultBackend, GetUrlBackend};
 
 use crate::{
     config,
-    driver::{OutputFormat, PassSetting, ProcessingSessionBuilder},
+    driver::{BiberMode, OutputFormat, PassSetting, ProcessingSessionBuilder},
     status::StatusBackend,
     test_util, tt_note,
     unstable_opts::UnstableOptions,
@@ -145,6 +145,9 @@ impl DocumentExt for Document {
             .collect();
 
         sess_builder
+            .biber_mode(BiberMode::Managed {
+                only_cached: setup_options.only_cached,
+            })
             .output_format(output_format)
             .format_name(&profile.tex_format)
             .build_date_from_env(setup_options.deterministic_mode)
