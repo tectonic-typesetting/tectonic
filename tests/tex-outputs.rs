@@ -191,6 +191,19 @@ fn a4paper() {
 }
 
 #[test]
+fn a4paper_name_is_case_insensitive() {
+    // Same document and expected output as `a4paper`, asked for as "A4".
+    let unstables = UnstableOptions {
+        paper_size: Some(String::from("A4")),
+        ..Default::default()
+    };
+    TestCase::new("a4paper")
+        .with_unstables(unstables)
+        .check_pdf(true)
+        .go()
+}
+
+#[test]
 fn cmap04_unicode() {
     TestCase::new("cmap04_unicode").check_pdf(true).go()
 }

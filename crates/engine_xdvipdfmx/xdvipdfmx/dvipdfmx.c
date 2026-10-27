@@ -121,8 +121,21 @@ select_paper (const char *paperspec)
     const char  *p = paperspec, *endptr, *comma;
     comma  = strchr(p, ',');
     endptr = p + strlen(p);
-    if (!comma)
-      _tt_abort("Unrecognized paper format: %s", paperspec);
+    if (!comma) {
+      /* List what is accepted, so that a typo can be corrected without
+       * having to find the documentation. */
+      char known[256] = "";
+      size_t used = 0;
+      const struct paper *known_pi;
+      for (known_pi = paperfirst(); known_pi && papername(known_pi); known_pi = papernext(known_pi)) {
+        int n = snprintf(known + used, sizeof(known) - used, "%s%s", used ? ", " : "", papername(known_pi));
+        if (n < 0 || (size_t) n >= sizeof(known) - used)
+          break;
+        used += n;
+      }
+      _tt_abort("Unrecognized paper format: %s (known formats: %s; or give a size such as 210mm,297mm)",
+                paperspec, known);
+    }
     error = dpx_util_read_length(&paper_width, 1.0, &p, comma);
     p = comma + 1;
     error = dpx_util_read_length(&paper_height, 1.0, &p, endptr);

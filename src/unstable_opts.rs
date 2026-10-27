@@ -18,7 +18,9 @@ const HELPMSG: &str = r#"Available unstable options:
     -Z continue-on-errors       Keep compiling even when severe errors occur
     -Z min-crossrefs=<num>      Equivalent to bibtex's -min-crossrefs flag - "include after <num>
                                     crossrefs" [default: 2]
-    -Z paper-size=<spec>        Change the initial paper size [default: letter]
+    -Z paper-size=<spec>        Change the initial paper size [default: letter]. <spec> is a name
+                                    such as a4, letter or legal (any case), or <width>,<height>
+                                    with units, such as 210mm,297mm
     -Z search-path=<path>       Also look in <path> for files (unless --untrusted has been specified),
                                     like TEXINPUTS. Can be specified multiple times.
     -Z shell-escape             Enable \write18 (unless --untrusted has been specified)

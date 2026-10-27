@@ -23,6 +23,7 @@
 #include "dpx-dpxconf.h"
 
 #include <stdio.h>
+#include <string.h>
 
 
 struct _dpx_conf dpx_conf = {0, 0, dpx_mode_normal_mode, 0, {0}};
@@ -78,7 +79,9 @@ paperinfo (const char *ppformat)
 
   ppinfo = paperfirst();
   while (ppinfo && papername(ppinfo)) {
-    if (streq_ptr(ppformat, ppinfo->name))
+    /* Paper names are matched without regard to case, so that "A4" and "a4"
+     * both work. */
+    if (strcasecmp(ppformat, ppinfo->name) == 0)
       /* ppinfo->name == papername(ppinfo), but gcc doesn't like the latter */
       break;
     ppinfo = papernext(ppinfo);
