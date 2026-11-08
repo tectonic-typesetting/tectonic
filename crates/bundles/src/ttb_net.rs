@@ -167,6 +167,13 @@ impl CachableBundle<'_, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
         info: &TTBFileInfo,
         status: &mut dyn StatusBackend,
     ) -> OpenResult<InputHandle> {
+        // The index may have been initialized from the on-disk cache without
+        // going through `get_index_reader`, so make sure we have a range
+        // reader before using it. This does not perform network I/O.
+        if let Err(e) = self.connect_reader() {
+            return OpenResult::Err(e);
+        }
+
         let mut v: Vec<u8> = Vec::with_capacity(info.real_len as usize);
         tt_note!(status, "downloading {}", info.name);
 
@@ -217,5 +224,29 @@ impl CachableBundle<'_, TTBFileIndex> for TTBNetBundle<TTBFileIndex> {
             "failed to download \"{}\"; please check your network connection.",
             info.name
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tectonic_status_base::NoopStatusBackend;
+
+    #[test]
+    fn open_fileinfo_connects_range_reader() {
+        let mut bundle = TTBNetBundle::new("https://example.invalid/bundle.ttb".into()).unwrap();
+        let info = TTBFileInfo {
+            start: 0,
+            gzip_len: 0,
+            real_len: 0,
+            path: "/empty.tex".to_owned(),
+            name: "empty.tex".to_owned(),
+            hash: None,
+        };
+
+        assert!(bundle.reader.is_none());
+        let result = bundle.open_fileinfo(&info, &mut NoopStatusBackend {});
+        assert!(matches!(result, OpenResult::Ok(_)));
+        assert!(bundle.reader.is_some());
     }
 }
