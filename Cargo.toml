@@ -167,16 +167,18 @@ x86_64-unknown-linux-gnu = { install = [
     "icu",
 ] }
 x86_64-pc-windows-msvc = { triplet = "x64-windows-static-release", install = [
-    "fontconfig",
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
+    "fontconfig:x64-windows-static-release",
+    "freetype:x64-windows-static-release",
+    "harfbuzz[graphite2]:x64-windows-static-release",
+    "icu:x64-windows-static-release",
+    "libpng:x64-windows-static-release",
 ] }
 aarch64-pc-windows-msvc = { triplet = "arm64-windows-static-release", install = [
-    "fontconfig",
-    "freetype",
-    "harfbuzz[graphite2]",
-    "icu",
+    "fontconfig:arm64-windows-static-release",
+    "freetype:arm64-windows-static-release",
+    "harfbuzz[graphite2]:arm64-windows-static-release",
+    "icu:arm64-windows-static-release",
+    "libpng:arm64-windows-static-release",
 ] }
 
 [package.metadata.internal_dep_versions]
