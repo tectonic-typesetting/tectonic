@@ -50,7 +50,22 @@ pub(crate) type PlatformFontRef = tectonic_mac_core::CTFontDescriptor;
 
 /// key is combined value representing `(font_id, glyph)`
 /// value is glyph bounding box in TeX points
+///
+/// `font_id` is XeTeX's internal font number, which is assigned in order of
+/// first use and starts over on every engine run, while this map is
+/// process-global. It must therefore not outlive the run that filled it:
+/// [`clear_glyph_boxes`] empties it when the run's font manager is destroyed.
 static GLYPH_BOXES: Mutex<BTreeMap<(u16, u16), GlyphBBox>> = Mutex::new(BTreeMap::new());
+
+/// Forget every cached glyph box.
+///
+/// Called at the end of each engine run: when a document needs several passes
+/// they run in the same process, and a font that gets a different number in a
+/// later pass would otherwise be given the box of whatever font had that number
+/// before.
+pub(crate) fn clear_glyph_boxes() {
+    GLYPH_BOXES.lock().unwrap().clear();
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn getCachedGlyphBBox(
@@ -103,4 +118,32 @@ pub extern "C" fn get_cp_code(font_num: i32, code: u32, side: i32) -> i32 {
         _ => unreachable!(),
     }
     .unwrap_or(0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Glyph boxes are keyed by a per-run font number, so none may survive
+    /// the destruction of the font manager at the end of a run.
+    #[test]
+    fn glyph_boxes_do_not_outlive_the_font_manager() {
+        let cached = GlyphBBox {
+            x_min: 0.0,
+            y_min: -1.0,
+            x_max: 2.0,
+            y_max: 37.0,
+        };
+        let mut out = GlyphBBox::default();
+
+        unsafe {
+            cacheGlyphBBox(7, 9, &cached);
+            assert_eq!(getCachedGlyphBBox(7, 9, &mut out), 1);
+            assert_eq!(out, cached);
+
+            manager::destroy_font_manager();
+
+            assert_eq!(getCachedGlyphBBox(7, 9, &mut out), 0);
+        }
+    }
 }
