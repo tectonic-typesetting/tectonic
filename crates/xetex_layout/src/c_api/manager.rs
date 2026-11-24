@@ -20,6 +20,8 @@ pub extern "C" fn set_loaded_font_design_size(val: Fixed) {
 #[no_mangle]
 pub unsafe extern "C" fn destroy_font_manager() {
     FontManager::destroy();
+    // The glyph box cache is keyed by XeTeX's per-run font numbers.
+    super::clear_glyph_boxes();
 }
 
 #[no_mangle]
